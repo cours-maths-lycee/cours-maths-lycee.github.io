@@ -1,0 +1,912 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\entete{Chapitre 3 --- Polynômes du second degré --- Corrigé des exercices}{1\textsuperscript{re} STI2D}
+
+\usepackage{tkz-tab}
+\let\deuxpaquet\deux
+\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
+\newenvironment{tabsignes}[2]{\begin{center}\begin{tikzpicture}[scale=0.58]
+  \tkzTabInit[lgt=2.2,espcl=1.7]{#1}{#2}}{\end{tikzpicture}\end{center}}
+\clubpenalty=10000
+\widowpenalty=10000
+
+\begin{document}
+
+\entetecorrige{CORRIGÉ --- POLYNÔMES DU SECOND DEGRÉ}
+  {Chapitre 3 : fiche d'exercices --- Première STI2D}
+  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
+   fréquentes et les contrôles à faire. Le discriminant est toujours écrit
+   $\Delta=b^{2}-4ac$ avant d'être calculé, comme au devoir.}
+
+\partie{Fonction polynôme du second degré}
+
+\begin{exo}[Est-ce un trinôme ?]
+\begin{reponses}
+  \item Oui : \res{a=3}, \res{b=-2}, \res{c=5}.
+  \item Non : $4x+1$ est affine (pas de $x^{2}$).
+  \item Oui : \res{a=-1}, \res{b=0}, \res{c=6}.
+  \item Non : il y a un terme en $x^{3}$.
+  \item $l(x)=x^{2}-2x-8$ : oui, \res{a=1}, \res{b=-2}, \res{c=-8}.
+  \item $m(x)=x^{2}-\left(x^{2}-2x+1\right)=2x-1$ : non, affine.
+\end{reponses}
+\rem{Une expression avec des parenthèses se développe avant de conclure.}
+\end{exo}
+
+\begin{exo}[Lire les coefficients]
+\deux{$f$ : $3$ ; $-4$ ; $2$}{$g$ : $-1$ ; $5$ ; $0$}
+\deux{$h$ : $1$ ; $0$ ; $-16$}{$k$ : $-2$ ; $0$ ; $7$}
+\deux{$l$ : $\frac{1}{3}$ ; $1$ ; $-4$}{$m$ : $-1$ ; $-3$ ; $6$}
+\deux{$n$ : $-1$ ; $2$ ; $-5$}{$p$ : $5$ ; $0$ ; $0$}
+\rem{Pour $m$, on range d'abord : $-x^{2}-3x+6$. Un terme absent vaut $0$.}
+\end{exo}
+
+\begin{exo}[Développer d'abord]
+\deux{$f(x)=\res{x^{2}-x-12}$}{$g(x)=\res{3x^{2}+x-2}$}
+\deux{$h(x)=\res{x^{2}-4x+9}$}{$k(x)=\res{2x^{2}+12x+17}$}
+\begin{calculs}
+l(x)&=x^{2}+6x+9-\left(x^{2}-6x+9\right)\\
+l(x)&=12x\\
+m(x)&=9x^{2}+6x+1-9x^{2}\\
+m(x)&=6x+1
+\end{calculs}
+$l$ et $m$ ne sont \res{\text{pas des trinômes}} (les $x^{2}$ s'éliminent).
+\end{exo}
+
+\begin{exo}[Calculer des images]
+\begin{questions}
+  \item $f(0)=\res{1}$ ; \ $f(1)=3-2+1=\res{2}$ ; \ $f(-2)=12+4+1=\res{17}$ ;\\
+        $f\big(\frac{1}{3}\big)=\frac{1}{3}-\frac{2}{3}+1=\res{\tfrac{2}{3}}$
+  \item $g(2)=-4+12=\res{8}$ ; \ $g(-1)=-1-6=\res{-7}$ ; \ $g(7)=-49+42=\res{-7}$ ;\\
+        $g\big(\frac{1}{2}\big)=-\frac{1}{4}+3=\res{\tfrac{11}{4}}$
+  \item $g(-1)=g(7)$ : $-1$ et $7$ sont symétriques par rapport à $3$, l'axe de la
+        parabole.
+\end{questions}
+\rem{$(-2)^{2}=4$ : le carré d'un nombre négatif est positif.}
+\end{exo}
+
+\partie{Forme factorisée et racines}
+
+\begin{exo}[De la forme factorisée à la forme développée]
+\begin{calculs}
+f(x)&=3\left(x^{2}-x-2\right)\\
+f(x)&=\res{3x^{2}-3x-6}\\
+g(x)&=-\left(x^{2}-x-12\right)\\
+g(x)&=\res{-x^{2}+x+12}\\
+h(x)&=2\left(x^{2}+2x+1\right)\\
+h(x)&=\res{2x^{2}+4x+2}\\
+k(x)&=-3\left(x^{2}-3x+2\right)\\
+k(x)&=\res{-3x^{2}+9x-6}
+\end{calculs}
+\rem{On développe les deux parenthèses, puis on multiplie par $a$.}
+\end{exo}
+
+\begin{exo}[Équations produit]
+\begin{reponses}
+  \item \res{S=\ens{-2\,;5}}
+  \item $x+4=0$ ou $2x-3=0$ : \ \res{S=\ens{-4\,;\tfrac{3}{2}}}
+  \item $x+1=0$ : \ \res{S=\ens{-1}}
+  \item $x=0$ ou $2x-8=0$ : \ \res{S=\ens{0\,;4}}
+\end{reponses}
+\rem{Le facteur $-3$ (ou $5$) ne s'annule jamais : il n'intervient pas.}
+\end{exo}
+
+\begin{exo}[Lire les racines]
+\deux{$f$ : \res{3\text{ et }-4}}{$g$ : \res{-2\text{ et }6}}
+\deux{$h$ : \res{5\text{ et }-1}}{$k$ : \res{\tfrac{1}{3}\text{ et }-2}}
+\deux{$l$ : \res{1} (double)}{$m$ : \res{-5\text{ et }5}}
+\deux{$n$ : \res{0\text{ et }7}}{$p$ : \res{-1\text{ et }-6}}
+\rem{Pour $k$, $3x-1=0$ donne $x=\frac{1}{3}$ : ce n'est pas $1$.}
+\end{exo}
+
+\begin{exo}[Les deux formes d'une même fonction]
+\begin{questions}
+  \item $f(x)=3\left(x^{2}-x-2\right)=\res{3x^{2}-3x-6}$
+  \item Forme factorisée : $f(0)=3\times 1\times(-2)=-6$ ; forme développée :
+        $f(0)=-6$.
+  \item Racines \res{-1} et \res{2} : \res{S=\ens{-1\,;2}}.
+  \item Oui, avec \res{a=3}.
+\end{questions}
+\end{exo}
+
+\partie{Le discriminant}
+
+\begin{exo}[Calculer un discriminant]
+\rem{$\Delta=b^{2}-4ac$, avec les nombres négatifs entre parenthèses.}
+\deux{$f$ : $4+60=\res{64}>0$}{$g$ : $4+60=\res{64}>0$}
+\deux{$h$ : $4-60=\res{-56}<0$}{$k$ : $4-60=\res{-56}<0$}
+\deux{$l$ : $144-144=\res{0}$}{$m$ : $100-100=\res{0}$}
+\deux{$n$ : $25-24=\res{1}>0$}{$p$ : $16-24=\res{-8}<0$}
+\deux{$q$ : $49-24=\res{25}>0$}{}
+\rem{Pour $k$ : $-4\times(-1)\times(-15)=-60$. Le signe de $-4ac$ dépend des signes de
+$a$ et de $c$.}
+\end{exo}
+
+\begin{exo}[Combien de racines ?]
+\deux{$f$ : $\Delta=9$ : \res{2}}{$g$ : $\Delta=-4$ : \res{0}}
+\deux{$h$ : $\Delta=36$ : \res{2}}{$k$ : $\Delta=0$ : \res{1}}
+\deux{$l$ : $\Delta=1$ : \res{2}}{$m$ : $\Delta=-23$ : \res{0}}
+\end{exo}
+
+\begin{exo}[Quand $b$ ou $c$ est nul]
+\deux{$f$ : $0+100=\res{100}$ : 2}{$g$ : $0+144=\res{144}$ : 2}
+\deux{$h$ : $49-0=\res{49}$ : 2}{$k$ : $36-0=\res{36}$ : 2}
+\deux{$l$ : $0-40=\res{-40}$ : 0}{$m$ : $0-16=\res{-16}$ : 0}
+\rem{Si $b=0$, $\Delta=-4ac$ ; si $c=0$, $\Delta=b^{2}$.}
+\end{exo}
+
+\partie{Racines et équations du second degré}
+
+\begin{exo}[Deux racines]
+\textbf{a)} $\Delta=4+60=64$ :
+\begin{calculs}
+x_{1}&=\frac{2-8}{2}=-3 & x_{2}&=\frac{2+8}{2}=5
+\end{calculs}
+\res{S=\ens{-3\,;5}}\par
+\textbf{b)} $\Delta=9+16=25$ :
+\begin{calculs}
+x_{1}&=\frac{-3-5}{4}=-2 & x_{2}&=\frac{-3+5}{4}=\frac{1}{2}
+\end{calculs}
+\res{S=\ens{-2\,;\tfrac{1}{2}}}\par
+\textbf{c)} $\Delta=64-60=4$ :
+\begin{calculs}
+x_{1}&=\frac{8-2}{6}=1 & x_{2}&=\frac{8+2}{6}=\frac{5}{3}
+\end{calculs}
+\res{S=\ens{1\,;\tfrac{5}{3}}}\par
+\textbf{d)} $\Delta=49-48=1$ :
+\begin{calculs}
+x_{1}&=\frac{-7-1}{-2}=4 & x_{2}&=\frac{-7+1}{-2}=3
+\end{calculs}
+\res{S=\ens{3\,;4}}
+\rem{Avec $a<0$, le dénominateur $2a$ est négatif : attention aux signes.}
+\end{exo}
+
+\begin{exo}[Les trois cas]
+\begin{reponses}
+  \item $\Delta=400-400=0$ ; $x_{0}=\frac{20}{8}$ : \ \res{S=\ens{\tfrac{5}{2}}}
+  \item $\Delta=4-16=-12<0$ : \ \res{S=\varnothing}
+  \item $\Delta=4-60=-56<0$ : \ \res{S=\varnothing}
+  \item $\Delta=64-64=0$ ; $x_{0}=\frac{-8}{2}$ : \ \res{S=\ens{-4}}
+  \item $\Delta=1+48=49$ ; $\frac{-1-7}{12}$ et $\frac{-1+7}{12}$ :\\
+        \res{S=\ens{-\tfrac{2}{3}\,;\tfrac{1}{2}}}
+  \item $\Delta=25-16=9$ ; $\frac{-5-3}{-4}$ et $\frac{-5+3}{-4}$ :
+        \ \res{S=\ens{\tfrac{1}{2}\,;2}}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Sans discriminant]
+\begin{reponses}
+  \item $x^{2}=7$ : \ \res{S=\ens{-\sqrt{7}\,;\sqrt{7}}}
+  \item $x(2x-9)=0$ : \ \res{S=\ens{0\,;\tfrac{9}{2}}}
+  \item $(x-8)(x+8)=0$ : \ \res{S=\ens{-8\,;8}}
+  \item $(3x-2)(3x+2)=0$ : \ \res{S=\ens{-\tfrac{2}{3}\,;\tfrac{2}{3}}}
+  \item $3x(x+4)=0$ : \ \res{S=\ens{-4\,;0}}
+  \item $x^{2}=-9$, impossible : \ \res{S=\varnothing}
+\end{reponses}
+\rem{Pas de terme constant : facteur commun $x$. Pas de terme en $x$ : on isole
+$x^{2}$.}
+\end{exo}
+
+\begin{exo}[Tout ramener d'un côté]
+\begin{reponses}
+  \item $x^{2}+2x-8=0$ ; $\Delta=36$ : \ \res{S=\ens{-4\,;2}}
+  \item $x^{2}+3x+2x+6=0$, soit $x^{2}+5x+6=0$ ; $\Delta=1$ :\\
+        \res{S=\ens{-3\,;-2}}
+  \item $x^{2}-3x+2=0$ ; $\Delta=1$ : \ \res{S=\ens{1\,;2}}
+  \item $x^{2}-x-6-6=0$, soit $x^{2}-x-12=0$ ; $\Delta=49$ :\\
+        \res{S=\ens{-3\,;4}}
+\end{reponses}
+\rem{En d), on ne résout pas « $x+2=6$ ou $x-3=6$ » : le produit vaut $6$, pas $0$.}
+\end{exo}
+
+\begin{exo}[Racines d'une fonction]
+\begin{reponses}
+  \item $\Delta=81-80=1$ : \ \res{4\text{ et }5}
+  \item $\Delta=9+216=225$ ; $\frac{-3-15}{-6}$ et $\frac{-3+15}{-6}$ :
+        \ \res{3\text{ et }-2}
+  \item $\Delta=16-28=-12<0$ : \ \res{\text{aucune racine}}
+  \item $\Delta=36-36=0$ : \ \res{\tfrac{1}{3}} (racine double)
+\end{reponses}
+\rem{En b), on peut aussi diviser par $-3$ : $x^{2}-x-6=0$, même racines.}
+\end{exo}
+
+\partie{Factoriser un trinôme}
+
+\begin{exo}[Les racines sont données]
+\begin{reponses}
+  \item \res{(x+3)(x-2)}
+  \item \res{3(x+3)(x-2)}
+  \item \res{-(x-1)(x-4)}
+  \item \res{2(x-3)^{2}}
+\end{reponses}
+\rem{Contrôle sur le terme constant : en b), $3\times 3\times(-2)=-18$.}
+\end{exo}
+
+\begin{exo}[Factoriser]
+\begin{reponses}
+  \item $\Delta=36$, racines $-2$ et $4$ : \ \res{(x+2)(x-4)}
+  \item $\Delta=9$, racines $-\frac{1}{2}$ et $1$ : \ \res{2\left(x+\tfrac{1}{2}\right)(x-1)}
+  \item $\Delta=16$, racines $1$ et $-3$ : \ \res{-(x-1)(x+3)}
+  \item $\Delta=25$, racines $\frac{1}{3}$ et $2$ : \ \res{3\left(x-\tfrac{1}{3}\right)(x-2)}
+\end{reponses}
+\rem{En b) et d), on peut aussi écrire $(2x+1)(x-1)$ et $(3x-1)(x-2)$.}
+\end{exo}
+
+\begin{exo}[Factoriser si c'est possible]
+\begin{reponses}
+  \item $\Delta=0$, racine $-2$ : \ \res{(x+2)^{2}}
+  \item $\Delta=-36<0$ : \ \res{\text{ne se factorise pas}}
+  \item \res{(x-3)(x+3)}
+  \item $\Delta=49$, racines $-\frac{2}{3}$ et $\frac{1}{2}$ :
+        \ \res{6\left(x+\tfrac{2}{3}\right)\left(x-\tfrac{1}{2}\right)}
+  \item $\Delta=1-24=-23<0$ : \ \res{\text{ne se factorise pas}}
+  \item $\Delta=36-36=0$, racine $1$ : \ \res{-3(x-1)^{2}}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Racine évidente]
+\begin{reponses}
+  \item $f(1)=1-6+5=0$. $f(x)=(x-1)(x-x_{2})$ et $f(0)=5=x_{2}$ :
+        \ \res{(x-1)(x-5)}
+  \item $g(1)=2+5-7=0$. $g(0)=-7$ et $g(0)=2\times(-1)\times(-x_{2})$, soit $2x_{2}$ ; donc
+        $x_{2}=-\frac{7}{2}$ : \ \res{2(x-1)\left(x+\tfrac{7}{2}\right)}
+  \item $h(-1)=-2+5-3=0$. $h(0)=-3$ et $h(0)=-2\times 1\times(-x_{2})$, soit $2x_{2}$ ; donc
+        $x_{2}=-\frac{3}{2}$ : \ \res{-2(x+1)\left(x+\tfrac{3}{2}\right)}
+\end{reponses}
+\rem{On vérifie en développant : le calcul du discriminant donne le même résultat.}
+\end{exo}
+
+\partie{Représentation graphique}
+
+\begin{exo}[Tableau de valeurs et tracé]
+\textbf{1°)} $a=1>0$ : \res{\text{un creux}}.\par
+\textbf{2°)} $\Delta=1+8=9$ : racines $\frac{-1-3}{2}=\res{-2}$ et
+$\frac{-1+3}{2}=\res{1}$.\par
+\begin{minipage}[c]{0.55\linewidth}
+\textbf{3°)}\par
+{\small
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $-3$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
+\hline
+$f(x)$ & $4$ & $0$ & $-2$ & $-2$ & $0$ & $4$\\
+\hline
+\end{tabular}}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\textbf{4°)}\par
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-4}{-3}{3}{5}
+  \gradx{-3,-2,-1,1,2} \grady{-2,2,4}
+  \draw[coulCourbe,line width=1pt,domain=-3:2,samples=60] plot (\x,{\x*\x+\x-2});
+  \foreach \p in {(-3,4),(-2,0),(-1,-2),(0,-2),(1,0),(2,4)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\rem{Le tableau est symétrique par rapport à $x=-\frac{1}{2}$ : $f(-1)=f(0)$,
+$f(-2)=f(1)$. On relie à main levée, sans ligne brisée.}
+\end{exo}
+
+\begin{exo}[Un deuxième tracé]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+$a=-1<0$ : une bosse.\par
+$\Delta=16-12=4$ : racines $1$ et $3$.\par
+{\small
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$x$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$g(x)$ & $-3$ & $0$ & $1$ & $0$ & $-3$\\
+\hline
+\end{tabular}}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-1}{-4}{5}{2}
+  \gradx{1,2,3,4} \grady{-3,-1,1}
+  \draw[coulCourbe,line width=1pt,domain=0:4,samples=60] plot (\x,{-\x*\x+4*\x-3});
+  \foreach \p in {(0,-3),(1,0),(2,1),(3,0),(4,-3)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Associer une courbe à une fonction]
+\begin{questions}
+  \item $f$ : $a>0$, deux racines ($\pm 1$) ; \ $g$ : $a<0$, deux racines
+        ($\pm\sqrt{3}$) ;\\
+        $h$ : $a>0$, aucune racine ; \ $k$ : $a>0$, une racine double ($-1$).
+  \item Courbe 1 : \res{g} (une bosse) ; courbe 2 : \res{k} (touche l'axe en $-1$) ;\\
+        courbe 3 : \res{f} (coupe l'axe en $\pm 1$) ; courbe 4 : \res{h} (au-dessus de
+        l'axe).
+\end{questions}
+\end{exo}
+
+\begin{exo}[Sans tracer]
+\deux{$f$ : $\Delta=0$ : \res{1\text{ point}}}{$g$ : $\Delta=-47$ : \res{0}}
+\deux{$h$ : $\Delta=36$ : \res{2}}{$k$ : $\Delta=144$ : \res{2}}
+\deux{$l$ : $\Delta=0$ : \res{1}}{$m$ : $\Delta=-8$ : \res{0}}
+\end{exo}
+
+\partie{Sommet et variations}
+
+\begin{exo}[Coordonnées du sommet]
+\rem{$\alpha=-\frac{b}{2a}$, puis $\beta=f(\alpha)$.}
+\begin{reponses}
+  \item $\alpha=\frac{6}{2}=3$ ; $\beta=9-18+2=-7$ : \ \res{S(3\,;-7)}
+  \item $\alpha=-\frac{4}{-2}=2$ ; $\beta=-4+8+3=7$ : \ \res{S(2\,;7)}
+  \item $\alpha=-\frac{8}{4}=-2$ ; $\beta=8-16+5=-3$ : \ \res{S(-2\,;-3)}
+  \item $\alpha=-\frac{12}{-4}=3$ ; $\beta=-18+36-7=11$ : \ \res{S(3\,;11)}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Tableau de variation]
+\textbf{a)} $\alpha=2$, $\beta=-1$, $a>0$ : \res{\text{minimum }-1} en $x=2$.
+\begin{tabsignes}{$x$/1,$f(x)$/1.6}{$-\infty$,$2$,$+\infty$}
+  \tkzTabVar{+/$+\infty$,-/$-1$,+/$+\infty$}
+\end{tabsignes}
+\textbf{b)} $\alpha=1$, $\beta=-3+6+9=12$, $a<0$ : \res{\text{maximum }12} en $x=1$.
+\begin{tabsignes}{$x$/1,$g(x)$/1.6}{$-\infty$,$1$,$+\infty$}
+  \tkzTabVar{-/$-\infty$,+/$12$,-/$-\infty$}
+\end{tabsignes}
+\textbf{c)} $\alpha=-2$, $\beta=8-16=-8$, $a>0$ : \res{\text{minimum }-8} en $x=-2$.\par
+\textbf{d)} $\alpha=-3$, $\beta=-9+18-5=4$, $a<0$ : \res{\text{maximum }4} en $x=-3$.
+\rem{c) et d) : tableaux sur le même modèle que a) et b).}
+\end{exo}
+
+\begin{exo}[Le sommet à partir des racines]
+\begin{questions}
+  \item $f$ : $\Delta=4$, racines \res{2} et \res{4}. \ $g$ : on divise par $-2$,
+        $x^{2}-4x-5=0$, racines \res{-1} et \res{5}.
+  \item $f$ : $\alpha=\frac{2+4}{2}=3$ ; \ $g$ : $\alpha=\frac{-1+5}{2}=2$.
+  \item $f(3)=9-18+8=\res{-1}$ : minimum (creux) ;\\
+        $g(2)=-8+16+10=\res{18}$ : maximum (bosse).
+\end{questions}
+\end{exo}
+
+\begin{exo}[Maximum ou minimum ?]
+\begin{reponses}
+  \item $a>0$ ; $\alpha=1$ : \ \res{\text{minimum }-3} en $x=1$
+  \item $a<0$ ; $\alpha=2$ : \ \res{\text{maximum }6} en $x=2$
+  \item $a<0$ ; $\alpha=1$ : \ \res{\text{maximum }3} en $x=1$
+  \item $a>0$ ; $\alpha=-4$ : \ \res{\text{minimum }-4} en $x=-4$
+\end{reponses}
+\rem{Le signe de $a$ suffit à dire « maximum » ou « minimum ».}
+\end{exo}
+
+\partie{Synthèse : étudier et tracer une parabole}
+
+\begin{exo}[Étude complète]
+$a=1>0$ : un creux. $\alpha=1$, $\beta=-4$. $\Delta=16$ : racines $-1$ et $3$.
+\begin{tabsignes}{$x$/1,$f(x)$/1.6}{$-2$,$1$,$4$}
+  \tkzTabVar{+/$5$,-/$-4$,+/$5$}
+\end{tabsignes}
+\begin{minipage}[c]{0.55\linewidth}
+{\small
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$f(x)$ & $5$ & $0$ & $-3$ & $-4$ & $-3$ & $0$ & $5$\\
+\hline
+\end{tabular}}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-3}{-5}{5}{5}
+  \gradx{-2,2,4} \grady{-4,-2,2,4}
+  \draw[coulCourbe,line width=1pt,domain=-2:4,samples=60] plot (\x,{\x*\x-2*\x-3});
+  \foreach \p in {(-2,5),(-1,0),(0,-3),(1,-4),(2,-3),(3,0),(4,5)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Étude complète]
+$a=-1<0$ : une bosse. $\alpha=-\frac{1}{2}$, $\beta=-\frac{1}{4}+\frac{1}{2}+2=\frac{9}{4}$.
+$\Delta=1+8=9$ : racines $-2$ et $1$.
+\begin{tabsignes}{$x$/1,$g(x)$/1.6}{$-3$,$-\frac{1}{2}$,$2$}
+  \tkzTabVar{-/$-4$,+/$\frac{9}{4}$,-/$-4$}
+\end{tabsignes}
+\begin{minipage}[c]{0.55\linewidth}
+{\small
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $-3$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
+\hline
+$g(x)$ & $-4$ & $0$ & $2$ & $2$ & $0$ & $-4$\\
+\hline
+\end{tabular}}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-4}{-5}{3}{3}
+  \gradx{-3,-2,1,2} \grady{-4,-2,2}
+  \draw[coulCourbe,line width=1pt,domain=-3:2,samples=60] plot (\x,{-\x*\x-\x+2});
+  \foreach \p in {(-3,-4),(-2,0),(-1,2),(0,2),(1,0),(2,-4)} \path[coulCourbe] \p node[croix]{};
+  \path[coulExo] (-0.5,2.25) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Étude complète]
+$a=2>0$ : un creux. $\alpha=-\frac{2}{4}=-\frac{1}{2}$,
+$\beta=\frac{1}{2}-1-4=-\frac{9}{2}$. $\Delta=4+32=36$ : racines
+$\frac{-2-6}{4}=-2$ et $\frac{-2+6}{4}=1$.
+\begin{tabsignes}{$x$/1,$h(x)$/1.6}{$-2$,$-\frac{1}{2}$,$1$}
+  \tkzTabVar{+/$0$,-/$-\frac{9}{2}$,+/$0$}
+\end{tabsignes}
+\begin{minipage}[c]{0.55\linewidth}
+{\small
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$\\
+\hline
+$h(x)$ & $0$ & $-4$ & $-4$ & $0$\\
+\hline
+\end{tabular}}
+\par\smallskip
+La courbe passe bien par $(-2\,;0)$ et $(1\,;0)$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-3}{-5}{2}{2}
+  \gradx{-2,-1,1} \grady{-4,-2,1}
+  \draw[coulCourbe,line width=1pt,domain=-2:1,samples=60] plot (\x,{2*\x*\x+2*\x-4});
+  \foreach \p in {(-2,0),(-1,-4),(0,-4),(1,0)} \path[coulCourbe] \p node[croix]{};
+  \path[coulExo] (-0.5,-4.5) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Signe d'un trinôme}
+
+\begin{exo}[À partir de la forme factorisée]
+\rem{Signe de $a$ à l'extérieur des racines, signe contraire entre elles.}
+\textbf{$f$} : racines $-2$ et $5$, $a=3>0$.
+\begin{tabsignes}{$x$/1,$f(x)$/1}{$-\infty$,$-2$,$5$,$+\infty$}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\textbf{$g$} : racines $-6$ et $1$, $a=-2<0$ : signe $-$, $+$, $-$.\par
+\textbf{$h$} : racines $-4$ et $\frac{1}{3}$, $a=12>0$ : signe $+$, $-$, $+$.\par
+\textbf{$k$} : racines $-\frac{1}{4}$ et $\frac{5}{2}$, $a=-24<0$ : signe $-$, $+$, $-$.
+\rem{Pour $h$, $a=4\times 3=12$ : le coefficient de $x^{2}$ après développement.}
+\end{exo}
+
+\begin{exo}[À partir de la forme développée]
+\begin{reponses}
+  \item $\Delta=25+96=121$ ; racines $-4$ et $\frac{3}{2}$ ; $a>0$ : $+$, $-$, $+$.
+  \item $\Delta=4+32=36$ ; racines $-2$ et $4$ ; $a<0$ : $-$, $+$, $-$.
+  \item $\Delta=49-24=25$ ; racines $\frac{1}{2}$ et $3$ ; $a>0$ : $+$, $-$, $+$.
+  \item $\Delta=1+24=25$ ; racines $-1$ et $\frac{2}{3}$ ; $a<0$ : $-$, $+$, $-$.
+\end{reponses}
+\textbf{a)} par exemple :
+\begin{tabsignes}{$x$/1,$f(x)$/1}{$-\infty$,$-4$,$\frac{3}{2}$,$+\infty$}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\rem{On range toujours les racines dans l'ordre croissant avant de remplir le tableau.}
+\end{exo}
+
+\begin{exo}[Les trois cas]
+\begin{reponses}
+  \item $\Delta=0$, racine $-2$ : positif, nul en $-2$.
+  \item Racines $-2$ et $2$ : $+$, $-$, $+$.
+  \item $\Delta=-16<0$, $a>0$ : toujours positif.
+  \item $\Delta=-12<0$, $a<0$ : toujours négatif.
+  \item $\Delta=0$, racine $\frac{1}{3}$, $a<0$ : négatif, nul en $\frac{1}{3}$.
+  \item $\Delta=1$, racines $1$ et $\frac{3}{2}$, $a>0$ : $+$, $-$, $+$.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Sans tableau de signes]
+\begin{reponses}
+  \item $a>0$, $\Delta=-8<0$ : \res{\text{toujours positif}}
+  \item $a<0$, $\Delta=-24<0$ : \res{\text{toujours négatif}}
+  \item $\Delta=144>0$ : \res{\text{change de signe}} (en $-2$ et $2$)
+  \item $a<0$, $\Delta=0$ : \res{\text{négatif ou nul}} (nul en $2$)
+  \item $a>0$, $\Delta=-15<0$ : \res{\text{toujours positif}}
+  \item $a<0$, $\Delta=-8<0$ : \res{\text{toujours négatif}}
+\end{reponses}
+\end{exo}
+
+\partie{Inéquations du second degré}
+
+\begin{exo}[Inéquations]
+\begin{reponses}
+  \item $\Delta=0$, racine $-2$ ; positif sauf en $-2$ : \ \res{S=\R\setminus\{-2\}}
+  \item $\Delta=1$, racines $1$ et $\frac{3}{2}$ ; $a<0$ : négatif à l'extérieur :\\
+        \res{S=\left]-\infty\,;1\right]\cup\left[\tfrac{3}{2}\,;+\infty\right[}
+  \item Racines $-3$ et $5$ ; $a>0$ :
+        \ \res{S=\left]-\infty\,;-3\right]\cup\left[5\,;+\infty\right[}
+  \item $\Delta=49$, racines $-5$ et $2$ : \ \res{S=\left]-5\,;2\right[}
+\end{reponses}
+\rem{Crochets fermés en une racine pour $\le$ ou $\ge$, ouverts pour $<$ ou $>$.}
+\end{exo}
+
+\begin{exo}[Tout ramener d'un côté]
+\begin{reponses}
+  \item $-2x^{2}+7x-3\le 0$ ; $\Delta=25$, racines $\frac{1}{2}$ et $3$ ; $a<0$ :\\
+        \res{S=\left]-\infty\,;\tfrac{1}{2}\right]\cup\left[3\,;+\infty\right[}
+  \item $2x^{2}-3x+4\ge 0$ ; $\Delta=-23<0$, $a>0$ : \ \res{S=\R}
+  \item $x^{2}-5x+6\ge 0$ ; racines $2$ et $3$ :\\
+        \res{S=\left]-\infty\,;2\right]\cup\left[3\,;+\infty\right[}
+  \item $x^{2}-6x+8<0$ ; racines $2$ et $4$ : \ \res{S=\left]2\,;4\right[}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Cas particuliers]
+\begin{reponses}
+  \item \res{S=\left]-\infty\,;-5\right]\cup\left[5\,;+\infty\right[}
+  \item \res{S=\left]-3\,;3\right[}
+  \item \res{S=\left]-1\,;1\right[}
+  \item $3x^{2}+6>0$ toujours : \ \res{S=\varnothing}
+  \item Un carré est positif, nul seulement en $-2$ : \ \res{S=\R\setminus\{-2\}}
+  \item $\Delta=-15<0$, $a>0$ : \ \res{S=\R}
+\end{reponses}
+\rem{En a), $x^{2}\ge 25$ ne donne pas seulement $x\ge 5$ : on n'oublie pas les
+négatifs.}
+\end{exo}
+
+\begin{exo}[Lecture graphique]
+\begin{reponses}
+  \item La courbe coupe l'axe des abscisses en $-3$ et $1$ ; par le calcul, $\Delta=16$ :
+        \ \res{S=\ens{-3\,;1}}
+  \item Courbe au-dessus de l'axe :
+        \ \res{S=\left]-\infty\,;-3\right[\cup\left]1\,;+\infty\right[}
+  \item \res{S=\intff{-3}{1}}
+  \item $x^{2}+2x-3=-3$, soit $x(x+2)=0$ : \ \res{S=\ens{-2\,;0}} ; sur le graphique,
+        la droite $y=-3$ coupe la courbe en $-2$ et $0$.
+\end{reponses}
+\end{exo}
+
+\partie{Intersection d'une parabole et d'une droite}
+
+\begin{exo}[Points d'intersection]
+\rem{On résout $f(x)=g(x)$ ; les ordonnées se calculent avec la droite.}
+\begin{reponses}
+  \item $x^{2}-3x=0$, soit $x(x-3)=0$ : \ \res{(0\,;2)} et \res{(3\,;-1)}
+  \item $x^{2}-2x+1=0$, racine double $1$ : \ \res{(1\,;7)} (la droite est tangente)
+  \item $x^{2}-2x+2=0$, $\Delta=-4<0$ : \ \res{\text{aucun point}}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Deux paraboles]
+\begin{reponses}
+  \item $2x^{2}-2x-4=0$, soit $x^{2}-x-2=0$, racines $-1$ et $2$ :\\
+        \res{(-1\,;-3)} et \res{(2\,;3)}
+  \item $2x^{2}-4x+2=0$, soit $(x-1)^{2}=0$ : \ \res{(1\,;3)}
+  \item $-6x+6=0$, donc $x=1$ : \ \res{(1\,;2)}
+\end{reponses}
+\rem{En c), les termes en $x^{2}$ s'éliminent : l'équation est du premier degré.}
+\end{exo}
+
+\begin{exo}[Combien de points ?]
+\begin{itemize}
+  \item $\mathcal{D}_{1}$ : $x^{2}-4x+4=0$, $\Delta=0$ : \res{1\text{ point}}.
+  \item $\mathcal{D}_{2}$ : $x^{2}-4x+5=0$, $\Delta=-4$ : \res{\text{aucun}}.
+  \item $\mathcal{D}_{3}$ : $x^{2}-4x-1=0$, $\Delta=20$ : \res{2\text{ points}}.
+\end{itemize}
+\end{exo}
+
+\begin{exo}[Avec un paramètre]
+\begin{questions}
+  \item $x^{2}+x=3x+m$, soit $x^{2}-2x-m=0$.
+  \item $\Delta=(-2)^{2}-4\times 1\times(-m)=\res{4+4m}$.
+  \item Deux points si $4+4m>0$, soit \res{m>-1} ; un seul si \res{m=-1} ; aucun si
+        \res{m<-1}.
+\end{questions}
+\end{exo}
+
+\partie{Position relative de deux courbes}
+
+\begin{exo}[Une parabole et une droite]
+\begin{questions}
+  \item $d(x)=x^{2}+x-2-(3x-2)=\res{x^{2}-2x}$
+  \item $d(x)=x(x-2)$ : racines $0$ et $2$, $a>0$ : $+$, $-$, $+$.
+  \item $\Cf$ est \res{\text{au-dessus}} de la droite sur
+        $\left]-\infty\,;0\right[$ et sur $\left]2\,;+\infty\right[$,
+        \res{\text{au-dessous}} sur $\left]0\,;2\right[$ ; elles se coupent en
+        $(0\,;-2)$ et $(2\,;4)$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Trois situations]
+\begin{reponses}
+  \item $d(x)=x^{2}-5x+4$, racines $1$ et $4$ : $\Cf$ au-dessous sur
+        $\left]1\,;4\right[$, au-dessus ailleurs.
+  \item $d(x)=-x^{2}+2x=-x(x-2)$ : $\Cf$ au-dessus sur $\left]0\,;2\right[$,
+        au-dessous ailleurs.
+  \item $d(x)=x^{2}-2x+1=(x-1)^{2}\ge 0$ : $\Cf$ toujours au-dessus, sauf en $x=1$ où
+        elles se touchent.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Deux paraboles]
+\begin{reponses}
+  \item $d(x)=2x^{2}-3x-2$, $\Delta=25$, racines $-\frac{1}{2}$ et $2$ : $\Cf$
+        au-dessous sur $\left]-\frac{1}{2}\,;2\right[$, au-dessus ailleurs.
+  \item $d(x)=6x-6$ : $\Cf$ au-dessus pour $x>1$, au-dessous pour $x<1$.
+  \item $d(x)=x^{2}-2x-3$, racines $-1$ et $3$ : $\Cf$ au-dessous sur
+        $\left]-1\,;3\right[$, au-dessus ailleurs.
+\end{reponses}
+\rem{On soustrait \emph{toute} l'expression de $g$ : la parenthèse est indispensable.}
+\end{exo}
+
+\partie{Problèmes du second degré}
+
+\begin{exo}[Une aire imposée]
+\begin{questions}
+  \item Le demi-périmètre vaut $7$ : \res{0<x<7}.
+  \item Largeur \res{7-x} ; aire \res{x(7-x)=-x^{2}+7x}.
+  \item $-x^{2}+7x>10$, soit $x^{2}-7x+10<0$ ; racines $2$ et $5$ :
+        \res{2<x<5}. La longueur doit être strictement comprise entre $2$ et $5$~cm.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Une trajectoire]
+\begin{questions}
+  \item $h(0)=\res{35\text{ m}}$.
+  \item $\alpha=-\frac{30}{-10}=3$ ; $h(3)=-45+90+35=\res{80\text{ m}}$, au bout de
+        $3$~s.
+  \item $-5t^{2}+30t+35=0$, soit $t^{2}-6t-7=0$ ; racines $-1$ et $7$ ; on garde
+        \res{t=7\text{ s}}.
+  \item $h(t)>35$, soit $-5t^{2}+30t>0$, soit $t(t-6)<0$ : $t\in\left]0\,;6\right[$, soit
+        \res{6\text{ s}}.
+\end{questions}
+\rem{Diviser par $-5$ change le sens d'une inégalité.}
+\end{exo}
+
+\begin{exo}[Un atelier]
+\begin{questions}
+  \item $B(x)=42x-\left(x^{2}-8x+400\right)=\res{-x^{2}+50x-400}$.
+  \item $\Delta=2\,500-1\,600=900$ ; racines $10$ et $40$ ; $a<0$ : $B(x)>0$ pour
+        \res{10<x<40}.
+  \item $\alpha=25$ et $B(25)=-625+1\,250-400$ : \res{225\text{ € pour 25 pièces}}.
+\end{questions}
+\end{exo}
+
+\end{document}

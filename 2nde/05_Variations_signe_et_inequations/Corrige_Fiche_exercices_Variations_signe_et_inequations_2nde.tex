@@ -1,0 +1,1108 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 5 --- Variations, signe et inéquations --- Corrigé des exercices}{Seconde}
+
+\let\deuxpaquet\deux
+\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
+\let\resmath\res
+\renewcommand{\res}[1]{\relax\ifmmode\resmath{#1}\else\resmath{\text{#1}}\fi}
+\clubpenalty=10000
+\widowpenalty=10000
+
+\begin{document}
+
+\entetecorrige{CORRIGÉ --- VARIATIONS, SIGNE ET INÉQUATIONS}
+  {Chapitre 5 : fiche d'exercices --- Seconde}
+  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
+   fréquentes et les méthodes à retenir. Pour une courbe « pouvant représenter »
+   une fonction, la figure donne une réponse possible parmi d'autres.}
+
+\partie{Fonction croissante, fonction décroissante}
+
+\begin{exo}[Lire les variations]
+1) $f$ est définie sur $\res{\intff{-3}{5}}$.\par
+2) $f$ est \res{croissante sur $\intff{-3}{0}$}, \res{décroissante sur $\intff{0}{3}$} et
+\res{croissante sur $\intff{3}{5}$}.
+\rem{Les intervalles s'écrivent avec des valeurs de $x$, pas avec les hauteurs.}
+\end{exo}
+
+\begin{exo}[Une randonnée]
+1) $f$ est \res{croissante sur $\intff{8}{11}$} (montée), \res{constante sur
+$\intff{11}{12}$} (pause) et \res{décroissante sur $\intff{12}{15}$} (descente).\par
+2) $9<10$ et $f$ croissante sur $\intff{8}{11}$ : $\res{f(9)\le f(10)}$.\par
+$13<14$ et $f$ décroissante sur $\intff{12}{15}$ : $\res{f(13)\ge f(14)}$.
+\end{exo}
+
+\begin{exo}[Comparer des images]
+1) $2<5$, donc : a) $\res{g(2)\le g(5)}$ ; b) $\res{g(2)\ge g(5)}$ ; c)
+$\res{g(2)=g(5)}$.\par
+2) $-4<-1$ et $f$ croissante : $\res{f(-4)\le f(-1)}$.
+\end{exo}
+
+\begin{exo}[Conserver ou renverser l'ordre]
+1) $1<3<4<8$ et $f$ croissante : $\res{f(1)\le f(3)\le f(4)\le f(8)}$.\par
+2) $g$ décroissante : l'ordre est inversé, $\res{g(8)\le g(4)\le g(3)\le g(1)}$.\par
+3) Une fonction croissante \res{conserve} l'ordre ; une fonction décroissante
+\res{renverse} l'ordre.\par
+4) \res{Non} : si $a>b$, alors $f(b)\le f(a)$ ($f$ croissante), ce qui contredit
+$f(a)<f(b)$. Donc $a<b$.
+\end{exo}
+
+\begin{exo}[Tracer une courbe]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+1) Courbe bleue : elle monte de $A$ à $B$.\par\smallskip
+2) Courbe rouge : elle descend de $A$ jusqu'à un point d'abscisse $2$, par exemple
+$(2\,;-1)$, puis monte jusqu'à $B$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-1}{-2}{7}{4}
+  \gradx{1,2,3,4,5,6} \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1pt]
+    (0,1) .. controls (2,1.6) and (4,2.2) .. (6,3);
+  \draw[coulCourbeB,line width=1pt]
+    (0,1) .. controls (0.67,0.2) and (1.33,-1) .. (2,-1)
+          .. controls (3.33,-1) and (4.67,1.6) .. (6,3);
+  \pt{0,1}{above left}{A} \pt{6,3}{above left}{B}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+1) \res{Vrai} : $\intff{2}{5}$ est contenu dans $\intff{0}{10}$ ; la courbe y monte
+aussi.\par
+2) \res{Faux} : la courbe peut monter, redescendre, puis remonter. Par exemple
+$f(1)=0$, $f(2)=3$, $f(3)=-1$ et $f(4)=1$ : $f(1)<f(4)$, mais $f(2)>f(3)$.\par
+3) \res{Faux} : une fonction peut descendre puis monter ; elle n'est alors ni
+croissante ni décroissante sur $\intff{0}{5}$.
+\rem{Pour montrer qu'une affirmation est fausse, un seul contre-exemple suffit.}
+\end{exo}
+
+\partie{Maximum, minimum}
+
+\begin{exo}[Lire des extremums]
+1) Sur $\intff{-3}{5}$ : maximum \res{$3$, atteint en $0$} ; minimum \res{$-2$,
+atteint en $-3$}.\par
+2) Sur $\intff{0}{5}$ : maximum \res{$3$, en $0$} ; minimum \res{$-1$, en $3$}.\par
+3) Sur $\intff{3}{5}$ : minimum \res{$-1$, en $3$} ; maximum \res{$2$, en $5$}.
+\rem{Sur un intervalle plus petit, on ne regarde que le morceau de courbe
+correspondant : un extremum peut être au bord.}
+\end{exo}
+
+\begin{exo}[Tracer à partir d'une description]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+1) Points connus : $(-2\,;0)$, $(1\,;4)$, $(4\,;-3)$ et $(6\,;2)$ ; la courbe monte,
+descend, puis remonte, avec une tangente horizontale en $(1\,;4)$ et en
+$(4\,;-3)$.\par\smallskip
+2) Sur $\intff{4}{6}$ : minimum \res{$-3$, en $4$} ; maximum \res{$2$, en $6$}.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-3}{-4}{7}{5}
+  \gradx{-2,-1,1,2,3,4,5,6} \grady{-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1pt]
+    (-2,0) .. controls (-1,2) and (0,4) .. (1,4)
+           .. controls (2,4) and (3,-3) .. (4,-3)
+           .. controls (4.67,-3) and (5.33,0.33) .. (6,2);
+  \path[coulCourbe] (-2,0) node[croix]{} (1,4) node[croix]{} (4,-3) node[croix]{}
+    (6,2) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Les marées]
+1) $f$ est \res{décroissante sur $\intff{2}{8}$}, \res{croissante sur $\intff{8}{14}$}
+et \res{décroissante sur $\intff{14}{20}$}.\par
+2) Sur $\intff{2}{20}$ : maximum \res{$13$~m, à 14~h} ; minimum \res{$1$~m, à
+20~h}. Sur $\intff{2}{8}$ : maximum \res{$12$~m, à 2~h} ; minimum \res{$2$~m, à
+8~h}.\par
+3) Une courbe possible, un carreau pour 2~h et pour 1~m (tangente horizontale aux pleines et basses mers) :
+\begin{center}
+\begin{tikzpicture}[x=0.2cm,y=0.4cm]
+  \draw[grille,xstep=2,ystep=1] (0,0) grid (20,14);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(21.5,0) node[right,font=\footnotesize]{$t$ (h)};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,15.5) node[right,font=\footnotesize]{hauteur (m)};
+  \foreach \k in {2,4,...,20} \draw (\k,0.2)--(\k,-0.2) node[below,font=\scriptsize,inner sep=1.5pt]{$\k$};
+  \foreach \k in {2,4,...,14} \draw (0.8,\k)--(-0.8,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\k$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \draw[coulCourbe,line width=1pt]
+    (2,12) .. controls (4,12) and (6,2) .. (8,2)
+           .. controls (10,2) and (12,13) .. (14,13)
+           .. controls (16,13) and (18,1) .. (20,1);
+  \path[coulCourbe] (2,12) node[croix]{} (8,2) node[croix]{} (14,13) node[croix]{}
+    (20,1) node[croix]{};
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\partie{Tableau de variations}
+
+\begin{exo}[De la courbe au tableau]
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.6,deltacl=0.6]{$x$/1,$f(x)$/2}{$-3$,$0$,$3$,$5$}
+  \tkzTabVar{-/$-2$,+/$3$,-/$-1$,+/$2$}
+\end{tikzpicture}
+\end{center}
+\rem{Sur la première ligne : les bornes $-3$ et $5$, et les valeurs $0$ et $3$ où le
+sens de variation change.}
+\end{exo}
+
+\begin{exo}[Du tableau à la courbe]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+1) $g$ est définie sur $\res{\intff{-4}{5}}$.\par\smallskip
+2) $g$ est \res{décroissante sur $\intff{-4}{-1}$}, \res{croissante sur
+$\intff{-1}{2}$} et \res{décroissante sur $\intff{2}{5}$}.\par\smallskip
+3) Une courbe possible ci-contre.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-5}{-4}{6}{4}
+  \gradx{-4,-3,-2,-1,1,2,3,4,5} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1pt]
+    (-4,2) .. controls (-3,0.5) and (-2,-3) .. (-1,-3)
+           .. controls (0,-3) and (1,3) .. (2,3)
+           .. controls (3,3) and (4,0.3) .. (5,-1);
+  \path[coulCourbe] (-4,2) node[croix]{} (-1,-3) node[croix]{} (2,3) node[croix]{}
+    (5,-1) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Exploiter un tableau]
+1) $-4$ et $-2$ sont dans $\intff{-5}{-1}$, où $k$ est croissante ; $-4<-2$, donc
+$\res{k(-4)\le k(-2)}$.\par
+$1$ et $3$ sont dans $\intff{-1}{4}$, où $k$ est décroissante ; $1<3$, donc
+$\res{k(1)\ge k(3)}$.\par
+2) $-3$ et $2$ ne sont pas dans un même intervalle où $k$ varie dans un seul sens :
+$k(-3)$ est entre $-2$ et $4$, $k(2)$ entre $0$ et $4$ ; \res{on ne peut pas
+conclure}.\par
+3) Maximum \res{$4$, en $-1$} ; minimum \res{$-2$, en $-5$}.
+\end{exo}
+
+\begin{exo}[Extremums et tableau]
+1) Sur $\intff{-4}{6}$ : maximum \res{$5$, en $0$} ; minimum \res{$-3$, en $3$}.\par
+Sur $\intff{-4}{0}$ : maximum \res{$5$, en $0$} ; minimum \res{$2$, en $-4$}.\par
+Sur $\intff{3}{6}$ : minimum \res{$-3$, en $3$} ; maximum \res{$1$, en $6$}.\par
+2) Par exemple $\res{m=-3}$ et $\res{M=5}$ : $-3\le h(x)\le 5$.
+\end{exo}
+
+\begin{exo}[D'une description au tableau]
+1)
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.6,deltacl=0.6]{$x$/1,$f(x)$/2}{$-3$,$1$,$4$,$6$}
+  \tkzTabVar{+/$5$,-/$-2$,+/$3$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+2) Maximum \res{$5$, en $-3$} ; minimum \res{$-2$, en $1$}.\par\smallskip
+3) Une courbe possible ci-contre.
+\rem{Le maximum est au bord : $5>3$.}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-4}{-3}{7}{6}
+  \gradx{-3,-2,-1,1,2,3,4,5,6} \grady{-2,-1,1,2,3,4,5}
+  \draw[coulCourbe,line width=1pt]
+    (-3,5) .. controls (-1.67,1.67) and (-0.33,-2) .. (1,-2)
+           .. controls (2,-2) and (3,3) .. (4,3)
+           .. controls (4.67,3) and (5.33,1) .. (6,0);
+  \path[coulCourbe] (-3,5) node[croix]{} (1,-2) node[croix]{} (4,3) node[croix]{}
+    (6,0) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Fonctions affines et linéaires}
+
+\begin{exo}[Reconnaître une fonction affine]
+\deux{$f$ : affine, $\res{a=5}$ et $\res{b=2}$}{$g$ : affine, $\res{a=-2}$ et $\res{b=6}$}
+\deux{$h$ : \res{linéaire}, $a=\frac13$ et $b=0$}{$k$ : \res{constante}, $a=0$ et $b=-4$}
+\deux{$m$ : \res{non affine} ($x^{2}$)}{$p$ : affine, $\res{a=\frac12}$ et $\res{b=-\frac12}$}
+\rem{$g(x)=6-2x=-2x+6$ : $a$ est le nombre devant $x$, pas le premier nombre écrit.
+$p(x)=\frac{x-1}{2}=\frac12x-\frac12$.}
+\end{exo}
+
+\begin{exo}[Développer d'abord]
+\begin{calculs}
+f(x) &= (x+3)^{2}-x^{2}\\
+f(x) &= x^{2}+6x+9-x^{2}\\
+f(x) &= 6x+9
+\end{calculs}
+\par $f$ affine, $a=6>0$ : \res{croissante}.
+\begin{calculs}
+g(x) &= (2x-1)(x+2)-2x^{2}\\
+g(x) &= 2x^{2}+4x-x-2-2x^{2}\\
+g(x) &= 3x-2
+\end{calculs}
+\par $g$ affine, $a=3>0$ : \res{croissante}.
+\begin{calculs}
+h(x) &= (x+1)(x-1)-x(x+2)\\
+h(x) &= x^{2}-1-x^{2}-2x\\
+h(x) &= -2x-1
+\end{calculs}
+\par $h$ affine, $a=-2<0$ : \res{décroissante}.
+\end{exo}
+
+\begin{exo}[Sens de variation]
+1) $f$ : $a=-3<0$, \res{décroissante} ; $g$ : $a=0{,}5>0$, \res{croissante} ;
+$h$ : \res{constante} ; $k(x)=-\frac15x+2$ : $a<0$, \res{décroissante}.\par
+2) $-2<3$ et $f$ décroissante : $\res{f(-2)\ge f(3)}$. $g$ croissante :
+$\res{g(-2)\le g(3)}$.
+\rem{Contrôle : $f(-2)=7$ et $f(3)=-8$ ; $g(-2)=-5$ et $g(3)=-2{,}5$.}
+\end{exo}
+
+\begin{exo}[Tracer des droites]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+Deux points par droite :\par
+$f$ : $(0\,;-1)$ et $(2\,;3)$ ;\par
+$g$ : $(0\,;3)$ et $(3\,;0)$ ;\par
+$h$ : $(0\,;1)$ et $(2\,;2)$ ;\par
+$k$ : droite horizontale passant par $(0\,;-2)$.
+\rem{Pour $h$, on choisit $x$ pair : $\frac12x$ est entier.}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-3}{-4}{5}{5}
+  \gradx{-2,-1,1,2,3,4} \grady{-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1pt] (-1.5,-4)--(3,5);
+  \draw[coulCourbeB,line width=1pt] (-2,5)--(5,-2);
+  \draw[coulCourbeC,line width=1pt] (-3,-0.5)--(5,3.5);
+  \draw[black!70,line width=1pt] (-3,-2)--(5,-2);
+  \node[coulCourbe,font=\footnotesize,right] at (2.9,4.6) {$f$};
+  \node[coulCourbeB,font=\footnotesize,right] at (-1.9,4.6) {$g$};
+  \node[coulCourbeC,font=\footnotesize,above] at (4.5,3.3) {$h$};
+  \node[black!70,font=\footnotesize,below] at (4.5,-2) {$k$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Deux formules d'abonnement]
+1) $\res{A(x)=30}$ et $\res{B(x)=3x+12}$.\par
+2) $A$ est \res{constante} ; $B$ est \res{affine, croissante} ($a=3>0$).\par
+3) Droite horizontale pour $A$ ; droite passant par $(0\,;12)$ et $(10\,;42)$ pour $B$.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.09cm]
+  \draw[grille,xstep=1,ystep=5] (0,0) grid (10,45);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(11,0) node[right,font=\footnotesize]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,48) node[right,font=\footnotesize]{prix (€)};
+  \foreach \k in {1,...,10} \draw (\k,1)--(\k,-1) node[below,font=\scriptsize,inner sep=1.5pt]{$\k$};
+  \foreach \k in {10,20,...,40} \draw (0.15,\k)--(-0.15,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\k$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \draw[coulCourbe,line width=1pt] (0,30)--(10,30) node[above left,font=\footnotesize]{$A$};
+  \draw[coulCourbeB,line width=1pt] (0,12)--(10,42) node[left,font=\footnotesize]{$B$};
+  \path (6,30) node[croix]{};
+\end{tikzpicture}
+\end{center}
+4) Les droites se coupent en $x=6$ ; au-delà, celle de $B$ est au-dessus : A est la
+moins chère \res{à partir de 7 séances}.\par
+5) $B(6)=3\times 6+12=30$ : à $6$ séances, les deux formules coûtent \res{$30$~€}.
+\end{exo}
+
+\partie{Fonction affine par lecture graphique}
+
+\begin{exo}[Lire l'expression]
+1) $(d_1)$ : $b=-2$ ; de $(0\,;-2)$ à $(1\,;0)$, on avance de $1$ et on monte de $2$ :
+$\res{f_1(x)=2x-2}$.\par
+$(d_2)$ : $b=2$ ; de $(0\,;2)$ à $(2\,;1)$ : $a=\frac{-1}{2}$, $\res{f_2(x)=-\frac12x+2}$.\par
+$(d_3)$ : $b=-1$ ; de $(0\,;-1)$ à $(1\,;-2)$ : $a=-1$, $\res{f_3(x)=-x-1}$.\par
+$(d_4)$ : $b=0$ ; de $(0\,;0)$ à $(3\,;2)$ : $a=\frac23$, $\res{f_4(x)=\frac23x}$.\par
+2) \res{$f_4$} est linéaire : sa droite passe par l'origine.
+\end{exo}
+
+\begin{exo}[Associer fonctions et droites]
+$f$ et $g$ ont le même $a=2$ : les deux droites qui montent le plus. $f$ passe par
+$(0\,;1)$ : \res{$f\to(D_2)$} ; $g$ passe par $(0\,;-3)$ : \res{$g\to(D_4)$}.\par
+$h$ et $k$ descendent et passent par $(0\,;1)$ ; $h$ descend plus vite ($a=-1$) :
+\res{$h\to(D_1)$} et \res{$k\to(D_3)$}.
+\rem{Le signe de $a$ dit si la droite monte ou descend ; $b$ dit où elle coupe l'axe
+des ordonnées.}
+\end{exo}
+
+\begin{exo}[Location de vélo]
+1) $p(2)=\res{10}$~€.\par
+2) $\res{b=4}$ : le prix fixe, payé même pour une durée nulle.\par
+3) De $(0\,;4)$ à $(2\,;10)$ : on avance de $2$ et on monte de $6$, donc
+$a=\frac{6}{2}=\res{3}$ : le prix d'une heure de location.\par
+4) $\res{p(x)=3x+4}$ ; $p(8)=3\times 8+4=\res{28}$~€.
+\end{exo}
+
+\partie{Fonction affine passant par deux points}
+
+\begin{exo}[Deux images connues]
+$f$ : $a=\frac{10-4}{3-1}=3$ ; $f(1)=3+b=4$, donc $b=1$ : $\res{f(x)=3x+1}$.\par
+$g$ : $a=\frac{-1-7}{2-(-2)}=-2$ ; $g(-2)=4+b=7$, donc $b=3$ : $\res{g(x)=-2x+3}$.\par
+$h$ : $b=h(0)=5$ ; $a=\frac{3-5}{4-0}=-\frac12$ : $\res{h(x)=-\frac12x+5}$.\par
+$k$ : $a=\frac{2-(-4)}{6-(-3)}=\frac{6}{9}$, soit $a=\frac23$ ; $k(6)=4+b=2$, donc $b=-2$ :
+$\res{k(x)=\frac23x-2}$.
+\rem{Attention aux soustractions de nombres négatifs : $2-(-2)=4$. Contrôle avec
+l'autre point : $k(-3)=-2-2=-4$.}
+\end{exo}
+
+\begin{exo}[Droite passant par deux points]
+1) $a=\frac{3-1}{6-2}=\frac12$ ; $f(2)=1+b=1$, donc $b=0$ : $\res{f(x)=\frac12x}$. La
+fonction est \res{linéaire} : la droite passe par l'origine.\par
+2) $f(10)=5$ : \res{oui}, $E$ est sur $(AB)$.\par
+3) $a=\frac{-4-5}{2-(-1)}=-3$ ; $g(-1)=3+b=5$, donc $b=2$ : $\res{g(x)=-3x+2}$.\par
+4) $g(3)=-9+2=-7\neq -6$ : \res{non}, $F$ n'est pas sur $(CD)$.
+\end{exo}
+
+\begin{exo}[Température]
+1) $\res{T(8)=6}$ et $\res{T(14)=18}$. $a=\frac{18-6}{14-8}=2$ ; $T(8)=16+b=6$, donc
+$b=-10$ : $\res{T(h)=2h-10}$.\par
+2) $T(11)=22-10=\res{12}$~°C.\par
+3)
+\begin{calculs}
+2h-10 &= 14\\
+2h &= 24\\
+h &= 12
+\end{calculs}
+\par Il fait $14$~°C \res{à 12~h}.
+\end{exo}
+
+\begin{exo}[Facture d'électricité]
+1) $a=\frac{102-72}{500-300}=\frac{30}{200}$, soit $a=0{,}15$ ; $f(300)=45+b=72$, donc $b=27$ :
+$\res{f(x)=0{,}15x+27}$.\par
+2) $a$ : le \res{prix d'un kWh} ($0{,}15$~€) ; $b$ : l'\res{abonnement} ($27$~€),
+payé même sans consommer.\par
+3) $f(800)=120+27=\res{147}$~€.
+\end{exo}
+
+\partie{Signe d'une fonction par lecture graphique}
+
+\begin{exo}[Signe d'une fonction]
+1) $\Cf$ coupe l'axe des abscisses en $-3$, $1$ et $4$ : $\res{S=\ens{-3\,;1\,;4}}$.\par
+2)
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.2]{$x$/1,$f(x)$/1}{$-4$,$-3$,$1$,$4$,$5$}
+  \tkzTabLine{,+,z,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+3) $\res{S=\intfo{-4}{-3}\cup\intoo{1}{4}}$.\par
+4)
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.6,deltacl=0.6]{$x$/1,$f(x)$/2}{$-4$,$-1$,$2$,$5$}
+  \tkzTabVar{+/$2$,-/$-2$,+/$2$,-/$-2$}
+\end{tikzpicture}
+\end{center}
+\rem{Ne pas confondre les deux tableaux : le signe dit si la courbe est au-dessus ou
+au-dessous de l'axe ; les variations, si elle monte ou descend.}
+\end{exo}
+
+\begin{exo}[Signe de fonctions affines]
+On lit où chaque droite coupe l'axe des abscisses :\par
+$f_1$ : $-$ avant \res{$1$}, $+$ après ; \quad $f_2$ : $+$ avant \res{$4$}, $-$ après ;\par
+$f_3$ : $+$ avant \res{$-1$}, $-$ après ; \quad $f_4$ : $-$ avant \res{$0$}, $+$ après.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.3,espcl=1.6]{$x$/1,$f_1(x)$/1}{$-\infty$,$1$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+\end{tikzpicture}\;
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.3,espcl=1.6]{$x$/1,$f_2(x)$/1}{$-\infty$,$4$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\rem{Même présentation pour $f_3$ et $f_4$.}
+\end{exo}
+
+\begin{exo}[Des variations au signe]
+$f$ monte de $-2$ à $4$ en passant par $0$ en $-1$, puis descend de $4$ à $-1$ en
+passant par $0$ en $3$ :
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.4]{$x$/1,$f(x)$/1}{$-3$,$-1$,$3$,$5$}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\partie{Propriétés des inégalités, encadrer une quantité}
+
+\begin{exo}[Règles des inégalités]
+a) $\res{a+4<b+4}$ ; b) $\res{a-7<b-7}$ : ajouter ou soustraire conserve le sens.\par
+c) $\res{3a<3b}$ ; e) $\res{\frac{a}{2}<\frac{b}{2}}$ : multiplier ou diviser par un
+nombre positif conserve le sens.\par
+d) $\res{-5a>-5b}$ ; f) $\res{-a>-b}$ : multiplier par un nombre négatif change le
+sens.
+\end{exo}
+
+\begin{exo}[Encadrer]
+$A$ : $2\le 2x\le 8$, puis $\res{5\le A\le 11}$.\par
+$B$ :
+\begin{calculs}
+\renewcommand{\arraystretch}{1.4}
+\begin{array}{@{}r@{\;}c@{\;}c@{\;}c@{\;}l@{\quad}l@{}}
+1 & \le & x & \le & 4\\
+-3 & \ge & -3x & \ge & -12 & \text{\small\itshape $\times(-3)$ : le sens change}\\
+-2 & \ge & -3x+1 & \ge & -11
+\end{array}
+\end{calculs}
+\par donc $\res{-11\le B\le -2}$.\par
+$C$ : $-2\ge -2x\ge -8$, puis $3\ge 5-2x\ge -3$ : $\res{-3\le C\le 3}$.\par
+$D$ : $\frac{1}{2}\le \frac{1}{2}x\le 2$, puis $\res{-\frac{1}{2}\le D\le 1}$.
+\rem{Après une multiplication par un nombre négatif, on réécrit l'encadrement dans
+l'ordre croissant.}
+\end{exo}
+
+\begin{exo}[Mesures imprécises]
+1) $20\le 2x\le 24$, donc $\res{32\le P\le 36}$ (en m) ; $\res{60\le \mathcal{A}\le 72}$
+(en m²).\par
+2) $27\le 1{,}8C\le 45$, donc $\res{59\le F\le 77}$.
+\end{exo}
+
+\partie{Résoudre une inéquation du premier degré}
+
+\begin{exo}[Est-ce une solution ?]
+a) $2\times 3-1=5$ et $5>4$ : \res{oui}.\par
+b) $-3+5=2$ et $2\ge 2$ : \res{oui}.\par
+c) $4\times 3-9=3$ et $3<3$ est faux : \res{non}.\par
+d) $5-2\times 3=-1$ et $-1\le -1$ : \res{oui}.
+\rem{Avec $\le$ ou $\ge$, l'égalité convient (b et d).}
+\end{exo}
+
+\begin{exo}[Résoudre]
+a) $x>2-6$, donc $x>-4$ : $\res{S=\intoo{-4}{+\infty}}$.\par
+b) On divise par $-3<0$ : $x>-5$, $\res{S=\intoo{-5}{+\infty}}$.\par
+c) $2x\ge 12$, donc $x\ge 6$ : $\res{S=\intfo{6}{+\infty}}$.\par
+d) $-4x>-8$, donc $x<2$ : $\res{S=\intoo{-\infty}{2}}$.\par
+e)
+\begin{calculs}
+3x+2 &\le 5x-6\\
+3x-5x &\le -6-2\\
+-2x &\le -8\\
+x &\ge 4 \quad\text{\small\itshape $\div(-2)$ : le sens change}
+\end{calculs}
+\par $\res{S=\intfo{4}{+\infty}}$.\par
+f) $-4x\ge -12$, donc $x\le 3$ : $\res{S=\intof{-\infty}{3}}$.
+\end{exo}
+
+\begin{exo}[Parenthèses et fractions]
+a) $2x-6<x+1$, donc $x<7$ : $\res{S=\intoo{-\infty}{7}}$.\par
+b)
+\begin{calculs}
+3(2-x) &\ge 2(x+8)\\
+6-3x &\ge 2x+16\\
+-5x &\ge 10\\
+x &\le -2 \quad\text{\small\itshape $\div(-5)$ : le sens change}
+\end{calculs}
+\par $\res{S=\intof{-\infty}{-2}}$.\par
+c) $\frac{x}{2}>3$, donc $x>6$ : $\res{S=\intoo{6}{+\infty}}$.\par
+d)
+\begin{calculs}
+\frac{2x-1}{3} &\le x\\
+2x-1 &\le 3x \quad\text{\small\itshape $\times 3>0$}\\
+-x &\le 1\\
+x &\ge -1 \quad\text{\small\itshape $\times(-1)$ : le sens change}
+\end{calculs}
+\par $\res{S=\intfo{-1}{+\infty}}$.
+\end{exo}
+
+\begin{exo}[Corriger les erreurs]
+1) On a divisé par $-2$ sans changer le sens : $-2x>6$ donne $\res{x<-3}$, soit
+$S=\intoo{-\infty}{-3}$.\par
+2) On a changé le sens en divisant par $5>0$ : $\res{x\le -2}$, soit
+$S=\intof{-\infty}{-2}$.
+\rem{Le sens ne change que si l'on multiplie ou divise par un nombre négatif ; le
+signe du résultat ne compte pas.}
+\end{exo}
+
+\partie{Signe d'une fonction affine par le calcul}
+
+\begin{exo}[Tableaux de signes]
+On cherche la valeur qui annule l'expression, puis le signe de $a$ donne l'ordre des
+signes.\par
+$A$ : $2x-8=0$ pour $x=4$ ; $a=2>0$ : \res{$-$ avant $4$, $+$ après}.\par
+$B$ : $-3x+9=0$ pour $x=3$ ; $a<0$ : \res{$+$ avant $3$, $-$ après}.\par
+$C$ : $5x+15=0$ pour $x=-3$ ; $a>0$ : \res{$-$ avant $-3$, $+$ après}.\par
+$D$ : $-\frac12x+4=0$ pour $x=8$ ; $a<0$ : \res{$+$ avant $8$, $-$ après}.\par
+$E$ : $7x=0$ pour $x=0$ ; $a>0$ : \res{$-$ avant $0$, $+$ après}.\par
+$F$ : $-6x+4=0$ pour $x=\frac23$ ; $a<0$ : \res{$+$ avant $\frac23$, $-$ après}.
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=2.2,espcl=1.8]{$x$/1,$-6x+4$/1}{$-\infty$,$\frac23$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\rem{Pour $D$ : $-\frac12x=-4$, puis $x=-4\times(-2)=8$.}
+\end{exo}
+
+\begin{exo}[Variations, droite et signe]
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+1) $f$ : $a=3>0$, \res{croissante} ; $g(x)=-2x+8$ : $a=-2<0$,
+\res{décroissante}.\par\smallskip
+2) $f$ : points $(1\,;-3)$ et $(3\,;3)$ ; $g$ : points $(1\,;6)$ et $(4\,;0)$.\par\smallskip
+3) $3x-6=0$ pour $x=2$ : \res{$f$ : $-$ avant $2$, $+$ après}.\par
+$8-2x=0$ pour $x=4$ : \res{$g$ : $+$ avant $4$, $-$ après}.\par
+Sur le graphique, les droites coupent l'axe en $2$ et en $4$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-1}{-4}{6}{7}
+  \gradx{1,2,3,4,5} \grady{-3,-2,-1,1,2,3,4,5,6}
+  \draw[coulCourbe,line width=1pt] (0.67,-4)--(4.33,7);
+  \draw[coulCourbeB,line width=1pt] (0.5,7)--(6,-4);
+  \path[coulCourbe] (2,0) node[croix]{};
+  \path[coulCourbeB] (4,0) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,right] at (4.2,6.4) {$f$};
+  \node[coulCourbeB,font=\footnotesize,left] at (0.6,6.4) {$g$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Associer]
+$f(3)=0$ et $g(3)=0$ : les deux s'annulent en $3$.\par
+$f$ : $a=4>0$, $-$ puis $+$ : \res{tableau 2}. $g$ : $a=-2<0$, $+$ puis $-$ :
+\res{tableau 1}.
+\end{exo}
+
+\begin{exo}[Bénéfice]
+1) $B(0)=\res{-480}$ : sans vente, l'artisane perd $480$~€ (matériel, frais).\par
+2) $12x-480=0$ pour $x=40$ ; $a=12>0$ :
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/1,$B(x)$/1}{$0$,$40$,$100$}
+  \tkzTabLine{,-,z,+,}
+\end{tikzpicture}
+\end{center}
+3) $B(x)>0$ pour $x>40$ : elle gagne de l'argent \res{à partir de 41 bougies}.
+\end{exo}
+
+\partie{Inéquations produits}
+
+\begin{exo}[Signe d'un produit]
+$A$ : $x-2=0$ pour $x=2$ ; $3x+6=0$ pour $x=-2$ ; $a>0$ pour les deux.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.4,espcl=1.5]{$x$/1,$x-2$/1,$3x+6$/1,$A(x)$/1}%
+    {$-\infty$,$-2$,$2$,$+\infty$}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+$B$ : $4x-12=0$ pour $x=3$ ($a>0$) ; $-x+1=0$ pour $x=1$ ($a<0$).
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.4,espcl=1.5]{$x$/1,$4x-12$/1,$-x+1$/1,$B(x)$/1}%
+    {$-\infty$,$1$,$3$,$+\infty$}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,t,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+$C$ : $5-x=0$ pour $x=5$ ($a<0$) ; $2x+8=0$ pour $x=-4$ ($a>0$).
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.4,espcl=1.5]{$x$/1,$5-x$/1,$2x+8$/1,$C(x)$/1}%
+    {$-\infty$,$-4$,$5$,$+\infty$}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Résoudre]
+Tableau de signes du produit dans chaque cas (valeurs rangées dans l'ordre), puis
+lecture.\par
+a) Produit $+$, $0$, $-$, $0$, $+$ (valeurs $-1$ et $4$) ; « $<0$ » :
+$\res{S=\intoo{-1}{4}}$.\par
+b) Produit $+$, $0$, $-$, $0$, $+$ (valeurs $-3$ et $5$) ; « $\ge 0$ » :
+$\res{S=\intof{-\infty}{-3}\cup\intfo{5}{+\infty}}$.\par
+c) Produit $-$, $0$, $+$, $0$, $-$ (valeurs $-2$ et $3$) ; « $>0$ » :
+$\res{S=\intoo{-2}{3}}$.\par
+d) Produit $-$, $0$, $+$, $0$, $-$ (valeurs $2$ et $3$) ; « $\le 0$ » :
+$\res{S=\intof{-\infty}{2}\cup\intfo{3}{+\infty}}$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=3.6,espcl=1.5]{$x$/1,$-2x+4$/1,$3x-9$/1,$(-2x+4)(3x-9)$/1}%
+    {$-\infty$,$2$,$3$,$+\infty$}
+  \tkzTabLine{,+,z,-,t,-,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\rem{« $\le$ » ou « $\ge$ » : les valeurs où le produit s'annule sont des solutions
+(crochets fermés).}
+\end{exo}
+
+\begin{exo}[Trouver l'erreur]
+Lina a mal rangé les valeurs : \res{$-1$ doit être écrit avant $2$}.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.6,espcl=1.5]{$x$/1,$x+1$/1,$2-x$/1,$(x+1)(2-x)$/1}%
+    {$-\infty$,$-1$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\partie{Inéquations quotients}
+
+\begin{exo}[Signe d'un quotient]
+$A$ : valeur interdite \res{$2$} ; $x+3=0$ pour $x=-3$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.2,espcl=1.5]{$x$/1,$x+3$/1,$x-2$/1,$A(x)$/1}%
+    {$-\infty$,$-3$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,d,+,}
+\end{tikzpicture}
+\end{center}
+$B$ : valeur interdite \res{$-4$} ; $6-2x=0$ pour $x=3$ ($a<0$).
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.2,espcl=1.5]{$x$/1,$6-2x$/1,$x+4$/1,$B(x)$/1}%
+    {$-\infty$,$-4$,$3$,$+\infty$}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,d,+,z,-,}
+\end{tikzpicture}
+\end{center}
+$C$ : valeur interdite \res{$5$} ; $3x=0$ pour $x=0$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.2,espcl=1.5]{$x$/1,$3x$/1,$5-x$/1,$C(x)$/1}%
+    {$-\infty$,$0$,$5$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,d,-,}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Résoudre]
+a) Interdite $-3$, s'annule en $1$ ; quotient $+$, $\|$, $-$, $0$, $+$ :
+$\res{S=\intoo{-\infty}{-3}\cup\intfo{1}{+\infty}}$.\par
+b) Interdite $6$, s'annule en $-4$ ; quotient $+$, $0$, $-$, $\|$, $+$ :
+$\res{S=\intoo{-4}{6}}$.\par
+c) Interdite $1$, s'annule en $4$ ; quotient $-$, $\|$, $+$, $0$, $-$ :
+$\res{S=\intoo{-\infty}{1}\cup\intfo{4}{+\infty}}$.\par
+d) Interdite $-5$, s'annule en $-2$ ; quotient $-$, $\|$, $+$, $0$, $-$ :
+$\res{S=\intoo{-5}{-2}}$.
+\rem{La valeur interdite est toujours exclue : crochet ouvert de son côté, même avec
+« $\le$ » ou « $\ge$ ».}
+\end{exo}
+
+\begin{exo}[Produit, puis quotient]
+1) $3x+6$ : $-$ puis $+$ autour de $-2$ ; $-x+4$ : $+$ puis $-$ autour de $4$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=3.6,espcl=1.5]{$x$/1,$3x+6$/1,$-x+4$/1,$(3x+6)(-x+4)$/1,$\dfrac{3x+6}{-x+4}$/1.4}%
+    {$-\infty$,$-2$,$4$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+  \tkzTabLine{,-,z,+,d,-,}
+\end{tikzpicture}
+\end{center}
+$\res{S=\intoo{-2}{4}}$.\par
+2) Pour $\res{x=4}$ : le dénominateur $-x+4$ est nul.\par
+3) $\res{S=\intof{-\infty}{-2}\cup\intoo{4}{+\infty}}$.
+\rem{Même tableau de signes que le produit, sauf en $4$ : double barre.}
+\end{exo}
+
+\partie{Inéquations avancées}
+
+\begin{exo}[Factoriser d'abord]
+a) $x^{2}-3x\ge 0$, soit $x(x-3)\ge 0$ ; produit $+$, $0$, $-$, $0$, $+$ :
+$\res{S=\intof{-\infty}{0}\cup\intfo{3}{+\infty}}$.\par
+b) $2x^{2}-8x<0$, soit $2x(x-4)<0$ : $\res{S=\intoo{0}{4}}$.\par
+c) $x^{2}+5x\le 0$, soit $x(x+5)\le 0$ : $\res{S=\intff{-5}{0}}$.
+\rem{Ne jamais diviser par $x$ : son signe est inconnu, et on perdrait la solution
+$0$.}
+\end{exo}
+
+\begin{exo}[Avec une identité remarquable]
+a) $x^{2}-25<0$, soit $(x-5)(x+5)<0$ : $\res{S=\intoo{-5}{5}}$.\par
+b) $(x-3)^{2}-4\ge 0$, soit $(x-3-2)(x-3+2)\ge 0$, donc $(x-5)(x-1)\ge 0$ :
+$\res{S=\intof{-\infty}{1}\cup\intfo{5}{+\infty}}$.\par
+c) $(2x+1)^{2}-9\le 0$, soit $(2x+1-3)(2x+1+3)\le 0$, donc $(2x-2)(2x+4)\le 0$ :
+$\res{S=\intff{-2}{1}}$.
+\rem{On passe tout à gauche pour comparer à $0$, puis on factorise avec
+$a^{2}-b^{2}=(a-b)(a+b)$.}
+\end{exo}
+
+\begin{exo}[Comparer un quotient à un nombre]
+a) Valeur interdite : $1$.
+\begin{calculs}
+\frac{x+5}{x-1}-2 &\ge 0\\
+\frac{x+5}{x-1}-\frac{2\fois{(x-1)}}{1\fois{(x-1)}} &\ge 0\\
+\frac{x+5-2x+2}{x-1} &\ge 0\\
+\frac{-x+7}{x-1} &\ge 0
+\end{calculs}
+\par Quotient $-$, $\|$, $+$, $0$, $-$ (valeurs $1$ et $7$) : $\res{S=\intof{1}{7}}$.\par
+b) Valeur interdite : $-2$.
+\begin{calculs}
+\frac{3}{x+2}-1 &< 0\\
+\frac{3}{x+2}-\frac{1\fois{(x+2)}}{1\fois{(x+2)}} &< 0\\
+\frac{1-x}{x+2} &< 0
+\end{calculs}
+\par Quotient $-$, $\|$, $+$, $0$, $-$ (valeurs $-2$ et $1$) :
+$\res{S=\intoo{-\infty}{-2}\cup\intoo{1}{+\infty}}$.
+\rem{Contrôle de a) avec $x=3$ : $\frac{8}{2}=4\ge 2$, et $3$ est bien dans $S$.}
+\end{exo}
+
+\begin{exo}[Coût moyen]
+1) $M(10)=\frac{80}{10}=\res{8}$~€ et $M(30)=\frac{120}{30}=\res{4}$~€.\par
+2)
+\begin{calculs}
+\frac{2x+60}{x}-5 &\le 0\\
+\frac{2x+60}{x}-\frac{5\fois{x}}{1\fois{x}} &\le 0\\
+\frac{60-3x}{x} &\le 0
+\end{calculs}
+\par 3) Pour $x>0$, le dénominateur est positif ; $60-3x$ s'annule en $20$ et
+$a=-3<0$ :
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.2,espcl=1.6]{$x$/1,$60-3x$/1,$x$/1,$\dfrac{60-3x}{x}$/1.4}%
+    {$0$,$20$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabLine{z,+,t,+,}
+  \tkzTabLine{d,+,z,-,}
+\end{tikzpicture}
+\end{center}
+Le coût moyen est d'au plus $5$~€ \res{à partir de 20 figurines}.
+\end{exo}
+
+\partie{Problèmes d'inéquations}
+
+\begin{exo}[Moyenne trimestrielle]
+1) $\res{M(n)=\dfrac{31+n}{4}}$.\par
+2)
+\begin{calculs}
+\frac{31+n}{4} &\ge 12\\
+31+n &\ge 48 \quad\text{\small\itshape $\times 4>0$}\\
+n &\ge 17
+\end{calculs}
+\par Il lui faut \res{au moins 17 sur 20}.\par
+3) $31+n\ge 60$ donne $n\ge 29$ : \res{impossible}, car une note ne dépasse pas $20$.
+\end{exo}
+
+\begin{exo}[Rectangle ou carré]
+1)
+\begin{calculs}
+P(x) &= 2(x+5)+2\times 3\\
+P(x) &= \res{2x+16}
+\end{calculs}
+\par et $\res{Q(x)=4x}$.\par
+2) $4x>2x+16$, donc $2x>16$, puis $x>8$ : \res{pour $x>8$}.\par
+3) $P(10)=36$ et $Q(10)=40$ : on a bien $40>36$.
+\end{exo}
+
+\begin{exo}[Trottinettes en libre-service]
+1) $\res{A(x)=0{,}2x+1}$ et $\res{B(x)=0{,}3x}$.\par
+2) $5$ minutes : $A(5)=\res{2}$~€ et $B(5)=\res{1{,}50}$~€ ; $20$ minutes :
+$A(20)=\res{5}$~€ et $B(20)=\res{6}$~€.\par
+3)
+\begin{calculs}
+0{,}2x+1 &< 0{,}3x\\
+0{,}2x-0{,}3x &< -1\\
+-0{,}1x &< -1\\
+x &> 10 \quad\text{\small\itshape $\div(-0{,}1)$ : le sens change}
+\end{calculs}
+\par Avec $0\le x\le 30$ : $\res{S=\intof{10}{30}}$.\par
+4) \res{B est moins cher} pour moins de $10$ minutes, \res{A} pour plus de $10$ minutes ;
+à $10$ minutes, les deux coûtent $3$~€.
+\end{exo}
+
+\partiesansnum{Problème de synthèse}
+
+\begin{exo}[Étude complète d'une fonction]
+1)
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|*{7}{c|}}
+\hline
+$x$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\ \hline
+$f(x)$ & $5$ & $0$ & $-3$ & $-4$ & $-3$ & $0$ & $5$\\ \hline
+\end{tabular}
+\end{center}
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+2) Courbe ci-contre.\par\smallskip
+3) $f$ est \res{décroissante sur $\intff{0}{3}$} et \res{croissante sur
+$\intff{3}{6}$}.\par\smallskip
+4) Maximum \res{$5$, en $0$ et en $6$} ; minimum \res{$-4$, en $3$}.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-1}{-5}{7}{6}
+  \gradx{1,2,3,4,5,6} \grady{-4,-3,-2,-1,1,2,3,4,5}
+  \draw[coulCourbe,line width=1pt,domain=0:6,samples=60]
+    plot (\x,{(\x-1)*(\x-5)});
+  \foreach \a/\b in {0/5,1/0,2/-3,3/-4,4/-3,5/0,6/5}
+    \path[coulCourbe] (\a,\b) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=2,deltacl=0.6]{$x$/1,$f(x)$/2}{$0$,$3$,$6$}
+  \tkzTabVar{+/$5$,-/$-4$,+/$5$}
+\end{tikzpicture}
+\end{center}
+5) $x-1$ s'annule en $1$, $x-5$ en $5$ ; tous deux $-$ puis $+$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=2.2,espcl=1.4]{$x$/1,$x-1$/1,$x-5$/1,$f(x)$/1}%
+    {$0$,$1$,$5$,$6$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+6) $\res{S=\intoo{1}{5}}$ : sur la courbe, c'est là qu'elle est au-dessous de l'axe des
+abscisses.
+\end{exo}
+
+\end{document}

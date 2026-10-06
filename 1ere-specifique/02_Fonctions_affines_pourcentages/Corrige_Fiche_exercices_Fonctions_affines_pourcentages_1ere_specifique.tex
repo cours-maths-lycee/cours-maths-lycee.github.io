@@ -1,0 +1,857 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Ch 2 --- Fonctions affines et pourcentages --- Corrigé des exercices}{1\textsuperscript{re} mathématiques spécifiques}
+\providecommand{\justif}[1]{\quad\text{\small\itshape\color{coulPart}#1}}
+
+\begin{document}
+
+\entetecorrige{FONCTIONS AFFINES ET POURCENTAGES}{Corrigé --- Ch 2 : Fiche d'exercices --- 1\textsuperscript{re} mathématiques spécifiques}
+{Les remarques en italique signalent les erreurs les plus fréquentes et les méthodes à
+retenir. Les résultats sont encadrés. Tous les calculs se font sans calculatrice.}
+
+\partie{Appliquer un pourcentage}
+
+\begin{exo}[Calcul mental]
+\deux{a) \res{42}}{b) \res{15} \quad (le quart)}
+\deux{c) \res{24} \quad (la moitié)}{d) \res{9}}
+\deux{e) \res{4} \quad (moitié de $10\,\%$)}{f) \res{15}}
+\deux{g) \res{7} \quad ($2\times 3{,}5$)}{h) \res{75} \quad ($3\times 25$)}
+\deux{i) \res{6} \quad ($4\times 1{,}5$)}{}
+\rem{On passe par $10\,\%$ (diviser par $10$) ou $1\,\%$ (diviser par $100$).}
+\end{exo}
+
+\begin{exo}[Trois écritures d'un même nombre]
+\begin{center}
+\renewcommand{\arraystretch}{1.8}
+\small
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Fraction & $\dfrac{3}{5}$ & \res{\dfrac{9}{100}} & \res{\dfrac{9}{20}} & $\dfrac{1}{4}$ & \res{\dfrac{3}{2}}\\
+\hline
+Décimal & \res{0{,}6} & $0{,}09$ & \res{0{,}45} & \res{0{,}25} & $1{,}5$\\
+\hline
+Pourc. & \res{60\,\%} & \res{9\,\%} & $45\,\%$ & \res{25\,\%} & \res{150\,\%}\\
+\hline
+\end{tabular}
+\end{center}
+\rem{$0{,}09=9\,\%$, et non $90\,\%$ ; un pourcentage peut dépasser $100\,\%$.}
+\end{exo}
+
+\begin{exo}[Retrouver le total]
+\begin{reponses}
+  \item $5\,\%$ est la vingtième partie : $20\times 30=\res{600}$ animaux.
+  \item $30\,\%$ font $9$, donc $10\,\%$ font $3$ : \res{30} élèves.
+  \item $10\,\%$ font $8$~€, donc $100\,\%$ font \res{80\text{ €}}.
+  \item $75\,\%$ font $60$, donc $25\,\%$ font $20$ : \res{80} adhérents.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Augmenter ou diminuer]
+\begin{reponses}
+  \item Hausse : $15\,\%$ de $60$ font $9$ ; nouveau prix \res{69\text{ €}}.
+  \item Baisse : $20\,\%$ de $900$ font $180$ ; prix soldé \res{720\text{ €}}.
+  \item Hausse : $3\,\%$ de $2\,000$ font $60$ ; salaire \res{2\,060\text{ €}}.
+  \item Baisse : $5\,\%$ de $6\,000$ font $300$ ; \res{5\,700} habitants.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Prix hors taxe, prix TTC]
+\begin{reponses}
+  \item TVA : $20\,\%$ de $350$ font \res{70\text{ €}} ; prix TTC
+        $350+70=\res{420\text{ €}}$.
+  \item $10\,\%$ de $420$ font $42$ : prix soldé \res{378\text{ €}}.
+\end{reponses}
+\rem{La baisse porte sur le prix TTC, $420$~€, et non sur le prix HT.}
+\end{exo}
+
+\partie{Calculer un pourcentage}
+
+\begin{exo}[Proportions]
+\begin{reponses}
+  \item $\dfrac{12}{40}=\dfrac{30}{100}$, soit \res{30\,\%}
+  \item $\dfrac{9}{20}=\dfrac{45}{100}$, soit \res{45\,\%}
+  \item $\dfrac{33}{150}=\dfrac{22}{100}$, soit \res{22\,\%}
+  \item $\dfrac{80}{500}=\dfrac{16}{100}$, soit \res{16\,\%}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Deux enquêtes]
+\begin{reponses}
+  \item $\dfrac{140}{250}=\dfrac{56}{100}$, soit $56\,\%<60\,\%$ : \res{\text{non}}.
+  \item $\dfrac{340}{400}=\dfrac{85}{100}$, soit $85\,\%$ : \res{\text{c'est exact}}.
+\end{reponses}
+\rem{Autre rédaction pour a) : $60\,\%$ de $250$ font $150$, et $140<150$.}
+\end{exo}
+
+\begin{exo}[Taux d'évolution]
+\begin{reponses}
+  \item $t=\dfrac{180-150}{150}=\dfrac{30}{150}$, soit $t=0{,}2$ : \res{+20\,\%}.
+  \item $t=\dfrac{340-400}{400}=\dfrac{-60}{400}$, soit $t=-0{,}15$ : \res{-15\,\%}.
+  \item $t=\dfrac{720-800}{800}=\dfrac{-80}{800}$, soit $t=-0{,}1$ : \res{-10\,\%}.
+  \item $t=\dfrac{75-60}{60}=\dfrac{15}{60}$, soit $t=0{,}25$ : \res{+25\,\%}.
+\end{reponses}
+\rem{On divise toujours par la valeur de départ.}
+\end{exo}
+
+\begin{exo}[Plus ou moins de\ldots{} ?]
+\begin{reponses}
+  \item Perte : $80$ ; $10\,\%$ de $700$ font $70$ ; $80>70$ : \res{\text{oui}}.
+  \item Gain : $120$ ; $10\,\%$ de $1\,500$ font $150$ ; $120<150$ : \res{\text{non}}.
+  \item Perte : $120$ ; $5\,\%$ de $3\,000$ font $150$ ; $120<150$ : \res{\text{non}}.
+\end{reponses}
+\rem{Autre rédaction, celle des corrigés de l'épreuve, pour a) : une baisse de
+$10\,\%$ donnerait $700\times 0{,}9=630$ ; or $620<630$.}
+\end{exo}
+
+\begin{exo}[Au tableur]
+\begin{reponses}
+  \item $t=\dfrac{5\,500-5\,000}{5\,000}=\dfrac{500}{5\,000}$, soit $t=0{,}1$ :
+        \res{+10\,\%}.
+  \item \res{\texttt{=(C2-B2)/B2}}
+  \item \res{\texttt{=(D2-C2)/C2}}
+\end{reponses}
+\rem{Sans parenthèses, \texttt{=C2-B2/B2} calcule $C2-1$ : la division passe avant la
+soustraction. On divise par la cellule de l'année \emph{précédente}.}
+\end{exo}
+
+\partie{Coefficient multiplicateur}
+
+\begin{exo}[Du taux au coefficient]
+\deux{a) \res{1{,}06} \quad b) \res{0{,}94}}{c) \res{1{,}3} \quad d) \res{0{,}7}}
+\deux{e) \res{1{,}65} \quad f) \res{0{,}88}}{g) \res{1{,}04} \quad h) \res{0{,}55}}
+\deux{i) \res{3}}{}
+\rem{Hausse : $1+\frac{t}{100}$ ; baisse : $1-\frac{t}{100}$. Une hausse de $200\,\%$
+triple la valeur.}
+\end{exo}
+
+\begin{exo}[Du coefficient au taux]
+\deux{a) hausse de \res{9\,\%}}{b) baisse de \res{9\,\%}}
+\deux{c) $\frac{4}{5}=0{,}8$ : baisse de \res{20\,\%}}{d) baisse de \res{30\,\%}}
+\deux{e) hausse de \res{200\,\%}}{f) baisse de \res{2\,\%}}
+\end{exo}
+
+\begin{exo}[Appliquer une évolution]
+\begin{reponses}
+  \item $300\times 1{,}15=\res{345\text{ €}}$
+  \item $600\times 0{,}65=\res{390\text{ €}}$
+  \item $50\times 2{,}2=\res{110\text{ €}}$
+  \item $2\,000\times 0{,}985=\res{1\,970}$ habitants
+\end{reponses}
+\rem{c) $+120\,\%$ : $C_{M}=1+1{,}2=2{,}2$.}
+\end{exo}
+
+\begin{exo}[Le bon calcul]
+\begin{questions}
+  \item \res{\text{b) } 500\times 0{,}88} : $C_{M}=1-0{,}12$.
+  \item \res{\text{c) } 150\times 1{,}3} : $C_{M}=1+0{,}3$.
+\end{questions}
+\rem{$500\times 0{,}12$ est le montant de la baisse, pas le nouveau prix.}
+\end{exo}
+
+\begin{exo}[Retrouver un taux avec le coefficient]
+\begin{reponses}
+  \item $C_{M}=\dfrac{100}{80}=1{,}25$ : \res{+25\,\%}
+  \item $C_{M}=\dfrac{400}{500}=0{,}8$ : \res{-20\,\%}
+  \item $C_{M}=\dfrac{60}{20}=3$ : \res{+200\,\%}
+\end{reponses}
+\end{exo}
+
+\partie{Évolutions successives, évolution réciproque}
+
+\begin{exo}[Taux global]
+\begin{reponses}
+  \item $1{,}5\times 1{,}2=1{,}8$ : \res{+80\,\%}
+  \item $0{,}7\times 1{,}3=0{,}91$ : \res{-9\,\%}
+  \item $2\times 0{,}5=1$ : \res{0\,\%} (retour au départ)
+  \item $0{,}8\times 0{,}8=0{,}64$ : \res{-36\,\%}
+  \item $1{,}6\times 0{,}75=1{,}2$ : \res{+20\,\%}
+\end{reponses}
+\rem{Les taux ne s'ajoutent pas : on multiplie les coefficients.}
+\end{exo}
+
+\begin{exo}[Le prix de l'électricité]
+\begin{calculs}
+C_{M} &= 1{,}1\times 1{,}1\\
+C_{M} &= 1{,}21
+\end{calculs}
+La hausse est de \res{21\,\%} et non de $20\,\%$ : le journaliste \res{\text{a tort}}.
+\end{exo}
+
+\begin{exo}[Vrai ou faux ?]
+\begin{reponses}
+  \item \res{\text{Faux}} : $1{,}5\times 0{,}5=0{,}75$, baisse de $25\,\%$.
+  \item \res{\text{Vrai}} : $0{,}8\times 0{,}7=0{,}7\times 0{,}8=0{,}56$.
+  \item \res{\text{Vrai}} : $0{,}9\times 0{,}9=0{,}81$.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[La valeur d'un scooter]
+\begin{reponses}
+  \item $4\,000\times 0{,}75=\res{3\,000\text{ €}}$ ; \;
+        $3\,000\times 0{,}8=\res{2\,400\text{ €}}$.
+  \item $C_{M}=0{,}75\times 0{,}8=0{,}6$ : \res{-40\,\%}.
+\end{reponses}
+\rem{Et non $-45\,\%$ : la seconde baisse porte sur $3\,000$~€.}
+\end{exo}
+
+\begin{exo}[Une même évolution répétée]
+\begin{reponses}
+  \item Multipliée par $1{,}03^{3}\approx 1{,}09$ : hausse d'environ \res{9\,\%}.
+  \item $C_{M}=1{,}01^{12}\approx 1{,}13$ : hausse d'environ \res{13\,\%} (et non
+        $12\,\%$).
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Se compensent-elles ?]
+\deux{a) $0{,}8\times 1{,}25=1$ : \res{\text{oui}}}{b) $1{,}5\times 0{,}5=0{,}75$ : \res{\text{non}}}
+\deux{c) $0{,}5\times 2=1$ : \res{\text{oui}}}{d) $4\times 0{,}25=1$ : \res{\text{oui}}}
+\deux{e) $0{,}8\times 1{,}2=0{,}96$ : \res{\text{non}}}{f) $1{,}1\times 0{,}9=0{,}99$ : \res{\text{non}}}
+\rem{Une hausse de $t\,\%$ n'est jamais compensée par une baisse de $t\,\%$.}
+\end{exo}
+
+\begin{exo}[Quelle évolution compense ?]
+\begin{questions}
+  \item \res{\text{b}} : $4\times 0{,}25=1$.
+  \item \res{\text{c}} : $1{,}25\times 0{,}8=1$ (avec $25\,\%$ : $0{,}9375$).
+  \item \res{\text{a}} : $0{,}5\times 2=1$ (avec $50\,\%$ : $0{,}75$).
+\end{questions}
+\end{exo}
+
+\begin{exo}[Un verger]
+\begin{reponses}
+  \item $2\,000\times 0{,}8=\res{1\,600}$ arbres.
+  \item $1\,600\times 1{,}2=1\,920$ : \res{\text{non}}.
+  \item $1\,600\times 1{,}25=\res{2\,000}$ ; ou $0{,}8\times 1{,}25=1$.
+\end{reponses}
+\end{exo}
+
+\partie{Fonctions affines : image, antécédent}
+
+\begin{exo}[Affine ou non ?]
+\begin{reponses}
+  \item \res{\text{affine}}, $a=5$ et $b=1$
+  \item \res{\text{non}} (carré de $x$)
+  \item \res{\text{affine}}, $a=-3$ et $b=2$
+  \item \res{\text{non}} ($x$ au dénominateur)
+  \item \res{\text{affine}} (linéaire), $a=1{,}5$ et $b=0$
+  \item \res{\text{affine}} (constante), $a=0$ et $b=-4$
+\end{reponses}
+\rem{$2-3x=-3x+2$ : le coefficient de $x$ est $a$, même s'il est écrit en second.}
+\end{exo}
+
+\begin{exo}[Images]
+\begin{reponses}
+  \item $f(0)=\res{-4}$ ; $f(2)=\res{2}$ ; $f(-1)=\res{-7}$ ; $f(0{,}5)=\res{-2{,}5}$
+  \item $g(0)=\res{6}$ ; $g(2)=\res{-2}$ ; $g(-3)=\res{18}$ ; $g(1{,}5)=\res{0}$
+\end{reponses}
+\rem{$g(-3)=-4\times(-3)+6=12+6$ : parenthèses autour de $-3$.}
+\end{exo}
+
+\begin{exo}[Antécédents]
+a) Antécédent de $15$ :
+\begin{calculs}
+3x+9 &= 15\\
+3x &= 6\\
+x &= \res{2}
+\end{calculs}
+De même : $3x=-9$, antécédent de $0$ : \res{-3} ; \; $3x=-15$, antécédent de $-6$ :
+\res{-5}.
+
+\smallskip
+b) Antécédent de $14$ :
+\begin{calculs}
+-2x+8 &= 14\\
+-2x &= 6\\
+x &= \res{-3}
+\end{calculs}
+Antécédent de $0$ : $-2x=-8$, soit \res{4}.
+
+\smallskip
+c) $0{,}5x-2=3$, donc $0{,}5x=5$ et \res{x=10}.
+\end{exo}
+
+\begin{exo}[Deux tarifs]
+a) \res{T(x)=1{,}5x+40}.
+\begin{calculs}
+1{,}5x+40 &= 70\\
+1{,}5x &= 30\\
+x &= \res{20} &&\justif{$\frac{30}{1{,}5}=\frac{300}{15}$}
+\end{calculs}
+Le dépanneur a parcouru $20$~km.
+
+\smallskip
+b) \res{S(x)=15x+200} ; \; $S(40)=600+200=\res{800\text{ €}}$.
+\begin{calculs}
+15x+200 &= 650\\
+15x &= 450\\
+x &= \res{30} \text{ invités}
+\end{calculs}
+\end{exo}
+
+\partie{Trouver une fonction affine}
+
+\begin{exo}[Mettre en équation]
+\begin{reponses}
+  \item \res{L(x)=6x+8}
+  \item $5$~L pour $100$~km, soit $0{,}05$~L par km : \res{R(x)=60-0{,}05x}
+  \item $4\,\%$ des ventes : $0{,}04x$ ; \; \res{S(x)=0{,}04x+1\,400}
+\end{reponses}
+\rem{$b$ est la valeur fixe ; $a$ ce que coûte ou rapporte une unité de $x$.}
+\end{exo}
+
+\begin{exo}[Coefficient directeur]
+\begin{reponses}
+  \item $a=\dfrac{11-2}{4-1}=\dfrac{9}{3}$, soit \res{a=3}
+  \item $a=\dfrac{2-6}{2-0}=\dfrac{-4}{2}$, soit \res{a=-2}
+  \item $a=\dfrac{7-3}{-4-(-2)}=\dfrac{4}{-2}$, soit \res{a=-2}
+  \item $a=\dfrac{6-(-2)}{1-(-3)}=\dfrac{8}{4}$, soit \res{a=2}
+\end{reponses}
+\rem{Parenthèses autour des coordonnées négatives : $-4-(-2)=-4+2=-2$.}
+\end{exo}
+
+\begin{exo}[Déterminer une fonction affine]
+a) $a=\dfrac{11-5}{3-1}=3$. Avec $A$ :
+\begin{calculs}
+3\times 1+b &= 5\\
+b &= 2
+\end{calculs}
+\res{f(x)=3x+2}.
+
+\smallskip
+b) $a=\dfrac{2-(-4)}{2-0}=3$ et $b=-4$ (ordonnée de $A$) : \res{f(x)=3x-4}.
+
+\smallskip
+c) $a=\dfrac{3-3}{2-(-2)}=0$ : \res{f(x)=3} (fonction constante).
+
+\smallskip
+d) $a=\dfrac{4-(-5)}{2-(-4)}=\dfrac{9}{6}$, soit $a=1{,}5$. Avec $B$ :
+\begin{calculs}
+1{,}5\times 2+b &= 4\\
+3+b &= 4\\
+b &= 1
+\end{calculs}
+\res{f(x)=1{,}5x+1}.
+\rem{Contrôle avec l'autre point : $f(-4)=-6+1=-5$.}
+\end{exo}
+
+\begin{exo}[Le dioxyde de carbone dans l'air]
+\begin{reponses}
+  \item $f(0)=\res{370}$ et $f(10)=\res{390}$ ; $a=\dfrac{390-370}{10-0}=2$ et
+        $b=370$ : \res{f(x)=2x+370}.
+  \item La concentration augmente de \res{2\text{ ppm par an}}.
+  \item 2030 : $x=30$ ; $f(30)=60+370=\res{430\text{ ppm}}$.
+  \item $2x+370=450$, donc $2x=80$ et $x=40$ : en \res{2040}.
+\end{reponses}
+\end{exo}
+
+\partie{Tracer une fonction affine}
+
+\begin{exo}[Sens de variation]
+\begin{reponses}
+  \item $a=-1<0$ : \res{\text{décroissante}}
+  \item $a=3>0$ : \res{\text{croissante}}
+  \item $a=0$ : \res{\text{constante}}
+  \item $a=-5<0$ : \res{\text{décroissante}}
+  \item $a=-0{,}2<0$ : \res{\text{décroissante}}
+  \item $a=0{,}3>0$ : \res{\text{croissante}}
+\end{reponses}
+\rem{Seul le signe de $a$ compte, pas celui de $b$.}
+\end{exo}
+
+\begin{exo}[Tracer des droites]
+\begin{minipage}[t]{0.46\linewidth}\raggedright\vspace{0pt}
+$f$ : $(0\,;1)$ et $(2\,;3)$.
+
+$g$ : $(0\,;2)$ et $(1\,;-1)$.
+
+$h$ : $(0\,;-2)$ et $(4\,;0)$.
+
+\smallskip
+{\small\itshape\color{coulPart}Pour $h$, on choisit une abscisse paire : $h(4)$ est
+entier.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.52\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \quadrillage{-3}{-3}{5}{4}
+  \draw[->,>=Stealth,black!70] (-3,0) -- (5.5,0) node[below,font=\tiny] {$x$};
+  \draw[->,>=Stealth,black!70] (0,-3) -- (0,4.5) node[left,font=\tiny] {$y$};
+  \foreach \i in {-2,-1,1,2,3,4} {\node[below,font=\tiny,inner sep=1.5pt] at (\i,0) {$\i$};}
+  \foreach \i in {-2,-1,1,2,3} {\node[left,font=\tiny,inner sep=1.5pt] at (0,\i) {$\i$};}
+  \begin{scope}
+    \clip (-3,-3) rectangle (5,4);
+    \draw[coulCourbe,thick] (-3,-2) -- (3,4);
+    \draw[coulCourbeB,thick] (-0.667,4) -- (1.667,-3);
+    \draw[coulCourbeC,thick] (-2,-3) -- (5,0.5);
+  \end{scope}
+  \foreach \p in {(0,1),(2,3),(0,2),(1,-1),(0,-2),(4,0)} {\path \p node[croix]{};}
+  \node[coulCourbe,font=\small,left] at (2.6,3.7) {$f$};
+  \node[coulCourbeB,font=\small,right] at (1.5,-2.6) {$g$};
+  \node[coulCourbeC,font=\small,above] at (4.4,0.3) {$h$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Location de paddles]
+a) \res{L(x)=4x+4} \qquad b) $L(0)=\res{4}$ ; \; $L(8)=\res{36}$.
+
+\smallskip
+\begin{minipage}[t]{0.44\linewidth}\raggedright\vspace{0pt}
+c) Droite passant par $(0\,;4)$ et $(8\,;36)$ (figure réduite).
+
+\smallskip
+d) Pour $24$~€, on lit \res{5\text{ heures}}. Calcul : $4x+4=24$, donc $4x=20$ et
+$x=5$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.42cm,y=0.07cm]
+  \draw[grille,xstep=1,ystep=5] (0,0) grid (8,40);
+  \draw[->,>=Stealth,black!70] (0,0) -- (8.6,0) node[below,font=\tiny] {h};
+  \draw[->,>=Stealth,black!70] (0,0) -- (0,43) node[left,font=\tiny] {€};
+  \foreach \i in {1,...,8} {\node[below,font=\tiny,inner sep=1.5pt] at (\i,0) {$\i$};}
+  \foreach \v in {5,10,...,40} {\node[left,font=\tiny,inner sep=1.5pt] at (0,\v) {$\v$};}
+  \draw[coulCourbe,thick] (0,4) -- (8,36);
+  \draw[dashed,coulRep] (0,24) -- (5,24) -- (5,0);
+  \foreach \p in {(0,4),(8,36)} {\path \p node[croix]{};}
+\end{tikzpicture}
+\end{minipage}
+\rem{Repère non orthonormé : les deux grandeurs n'ont pas la même unité.}
+\end{exo}
+
+\begin{exo}[Proportionnalité et fonctions linéaires]
+\begin{reponses}
+  \item $a=\dfrac{10}{100}=0{,}1$ : \res{f(x)=0{,}1x} ; \; $f(330)=\res{33\text{ g}}$.
+  \item $40$ pouces : $2{,}5\times 40=\res{100\text{ cm}}$ ; \; $2{,}5x=75$ donne
+        \res{x=30} pouces.
+  \item \res{f} et \res{h} ($h(x)=0{,}25x$) ; $g$ est affine non linéaire, $k$ est
+        constante.
+  \item $a=\dfrac{15}{5}=3$ : \res{\ell(x)=3x}.
+\end{reponses}
+\rem{Linéaire : $b=0$, la droite passe par l'origine.}
+\end{exo}
+
+\partie{Lire l'équation d'une droite}
+
+\begin{exo}[Lire une équation réduite]
+\begin{reponses}
+  \item[$(d_{1})$ :] $b=-1$ ; de $(0\,;-1)$ à $(1\,;2)$ : $a=\dfrac{3}{1}=3$ ;
+        \res{y=3x-1}, croissante.
+  \item[$(d_{2})$ :] $b=2$ ; de $(0\,;2)$ à $(2\,;0)$ : $a=\dfrac{-2}{2}=-1$ ;
+        \res{y=-x+2}, décroissante.
+  \item[$(d_{3})$ :] $b=1$ ; de $(0\,;1)$ à $(3\,;2)$ : $a=\dfrac{1}{3}$ ;
+        \res{y=\tfrac{1}{3}x+1}, croissante.
+  \item[$(d_{4})$ :] horizontale : \res{y=-2}, constante.
+\end{reponses}
+\rem{$a=\dfrac{\text{déplacement vertical}}{\text{déplacement horizontal}}$ : pour
+$(d_{3})$, on avance de $3$ pour monter de $1$.}
+\end{exo}
+
+\begin{exo}[Points d'une droite]
+\begin{reponses}
+  \item $A$ : $-2\times 1+5=3$ : \res{\text{oui}} ; \; $B$ : $-2\times 3+5=-1$ et
+        $-1\ne 1$ : \res{\text{non}} ; \; $C$ : $-2\times(-2)+5=9$ : \res{\text{oui}}.
+  \item $y=-2\times 4+5=\res{-3}$.
+  \item $-2x+5=-7$, donc $-2x=-12$ et \res{x=6}.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Équation réduite sans graphique]
+\begin{questions}
+  \item \res{\text{b}} : $b=2$ et $a=\dfrac{1}{3}$.
+  \item \res{\text{c}} : $b=-3$ et $a=\dfrac{1-(-3)}{2-0}=2$.
+  \item \res{\text{a}} : $a=4>0$.
+\end{questions}
+\end{exo}
+
+\partie{Signe d'une fonction affine}
+
+\begin{exo}[Tableaux de signes]
+a) $3x-9=0$, \res{x=3} ; $a>0$\hfill
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$f(x)$/0.55}{$-\infty$,$3$,$+\infty$}
+\tkzTabLine{,-,z,+,}
+\end{tikzpicture}\par\smallskip
+b) $-2x+8=0$, \res{x=4} ; $a<0$\hfill
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$g(x)$/0.55}{$-\infty$,$4$,$+\infty$}
+\tkzTabLine{,+,z,-,}
+\end{tikzpicture}\par\smallskip
+c) $4x+12=0$, \res{x=-3} ; $a>0$\hfill
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$h(x)$/0.55}{$-\infty$,$-3$,$+\infty$}
+\tkzTabLine{,-,z,+,}
+\end{tikzpicture}\par\smallskip
+d) $-0{,}5x+3=0$, \res{x=6} ; $a<0$\hfill
+\begin{tikzpicture}[baseline=(current bounding box.center)]
+\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$k(x)$/0.55}{$-\infty$,$6$,$+\infty$}
+\tkzTabLine{,+,z,-,}
+\end{tikzpicture}\par\smallskip
+\rem{À droite du zéro, le signe de $a$ ; à gauche, le signe contraire.}
+\end{exo}
+
+\begin{exo}[Positif ou négatif ?]
+\begin{questions}
+  \item \res{\text{a}} : $-5x+2=0$ pour $x=0{,}4$ et $a<0$ : positif avant $0{,}4$.
+  \item \res{\text{c}} : $3x+12=0$ pour $x=-4$ et $a>0$ : négatif avant $-4$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Un bénéfice]
+\begin{reponses}
+  \item $B(0)=\res{-150}$ : sans vente, le food-truck perd $150$~€ (ses frais fixes).
+  \item $5x-150=0$, donc $5x=150$ et \res{x=30}.
+  \item $a=5>0$ :\par
+\begin{tikzpicture}
+\tkzTabInit[lgt=1.2,espcl=1.3]{$x$/0.6,$B(x)$/0.6}{$0$,$30$,$80$}
+\tkzTabLine{,-,z,+,}
+\end{tikzpicture}
+  \item Le bénéfice est positif à partir de \res{31} repas (nul pour $30$).
+\end{reponses}
+\end{exo}
+
+\partie{Comparer deux fonctions affines}
+
+\begin{exo}[Équations]
+a)
+\begin{calculs}
+6x+5 &= 4x+11\\
+2x &= 6\\
+x &= \res{3}
+\end{calculs}
+b)
+\begin{calculs}
+3x-2 &= x+8\\
+2x &= 10\\
+x &= \res{5}
+\end{calculs}
+c)
+\begin{calculs}
+2x+3 &= 5x-9\\
+-3x &= -12\\
+x &= \res{4}
+\end{calculs}
+d)
+\begin{calculs}
+4x+1 &= -2x+4\\
+6x &= 3\\
+x &= \res{0{,}5}
+\end{calculs}
+\rem{En d), on ajoute $2x$ des deux côtés : $4x+2x=6x$.}
+\end{exo}
+
+\begin{exo}[Deux offres d'emploi]
+a) \res{f(x)=0{,}1x+1\,200} et \res{g(x)=0{,}2x+800}.
+
+b)
+\begin{calculs}
+0{,}1x+1\,200 &= 0{,}2x+800\\
+400 &= 0{,}1x\\
+x &= \res{4\,000\text{ €}}
+\end{calculs}
+c) $f(5\,000)=500+1\,200=1\,700$ et $g(5\,000)=1\,000+800=1\,800$ :
+\res{\text{société B}}.
+\rem{En dessous de $4\,000$~€ de ventes, la société A est plus intéressante.}
+\end{exo}
+
+\begin{exo}[Deux formules de piscine]
+\begin{reponses}
+  \item \res{f(x)=5x} et \res{g(x)=2x+24}.
+  \item Intersection : \res{(8\,;40)}.
+  \item $5x=2x+24$, donc $3x=24$ et $x=8$ ; $f(8)=40$.
+  \item Moins de $8$ entrées : \res{\text{A}} ; plus de $8$ : \res{\text{B}} ; pour
+        $8$ entrées, les deux coûtent $40$~€.
+\end{reponses}
+\end{exo}
+
+\partiesansnum{Exercices type épreuve anticipée}
+
+\begin{exo}[Automatismes (QCM)]
+\begin{questions}
+  \item \res{\text{a}} : $3\times 7=21$ ($10\,\%$ de $70$ font $7$).
+  \item \res{\text{b}} : $100\times 1{,}2\times 0{,}8=100\times 0{,}96$.
+  \item \res{\text{c}} : $\frac{1}{8}=0{,}125$ ($\frac{1}{4}=25\,\%=0{,}25$).
+  \item \res{\text{b}} : $0{,}8\times 1{,}25=1$.
+  \item \res{\text{a}} : $\dfrac{7-1}{4-2}=\dfrac{6}{2}$.
+  \item \res{\text{a}} : $a=3>0$.
+  \item \res{\text{b}} : $2x+3=13$ donne $2x=10$.
+  \item \res{\text{a}} : $-6+4=-2$.
+  \item \res{\text{a}} : $1{,}6\times 25=40$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Les inscrits d'un club de judo]
+\begin{questions}
+  \item $t=\dfrac{171-180}{180}=\dfrac{-9}{180}$, soit $t=-0{,}05$ : \res{-5\,\%}.
+  \item \res{\texttt{=(C3-B3)/B3}}
+  \item $a=-8<0$ : $f$ est \res{\text{décroissante}} ; chaque année, le club compte
+        \res{8} inscrits de moins.
+  \item 2028 : $x=8$ ; $f(8)=-64+180=\res{116}$ inscrits.
+  \item On résout l'inéquation :
+\begin{calculs}
+-8x+180 &< 100\\
+-8x &< -80\\
+x &> 10 &&\justif{on divise par $-8$ : le sens change}
+\end{calculs}
+        Premier entier : $x=11$, soit \res{2031} ($f(10)=100$ n'est pas « moins de
+        $100$ »).
+\end{questions}
+\end{exo}
+
+\begin{exo}[Les soldes]
+\begin{questions}
+  \item Casque : $80\times 0{,}75=\res{60\text{ €}}$ ; enceinte :
+        $120\times 0{,}9=\res{108\text{ €}}$.
+  \item Total : $60+108=\res{168\text{ €}}$ au lieu de $200$~€ ;
+        $t=\dfrac{168-200}{200}=\dfrac{-32}{200}$, soit une remise globale de
+        \res{16\,\%}.
+  \item $108\times 1{,}1=118{,}80$ : \res{\text{non}} ($0{,}9\times 1{,}1=0{,}99$
+        et $0{,}99\ne 1$).
+\end{questions}
+\rem{La remise globale n'est ni $35\,\%$ ni la moyenne $17{,}5\,\%$ : l'enceinte, plus
+chère, pèse davantage.}
+\end{exo}
+
+\end{document}

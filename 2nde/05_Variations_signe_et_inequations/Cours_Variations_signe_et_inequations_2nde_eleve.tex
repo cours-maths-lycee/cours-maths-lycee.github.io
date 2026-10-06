@@ -1,0 +1,1041 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1\signet{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \\[2pt]{\small\itshape Version élève}
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{5}{Variations, signe et inéquations}
+\niveaucours{Seconde}
+\titrecours{VARIATIONS, SIGNE ET INÉQUATIONS}{Cours --- Seconde}
+
+\begin{document}
+
+\providecommand{\Ch}{\mathcal{C}\sb{\scriptscriptstyle h}}
+\providecommand{\Ck}{\mathcal{C}\sb{\scriptscriptstyle k}}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\smallskip
+Sur cette feuille, seuls les \textbf{énoncés} des exemples figurent : la résolution,
+signalée par la mention \emph{(au tableau)}, est à rédiger dans le cahier.
+
+\end{remarquebox}
+
+\partiecours{Fonction croissante, fonction décroissante}
+
+Une courbe se lit comme le profil d'une étape de montagne du Tour de France : en la
+parcourant \textbf{de gauche à droite}, on monte ou on descend.
+
+\begin{definitionbox}[Définition 1 --- Fonction croissante, décroissante, constante]
+Soit $f$ une fonction définie sur un intervalle $I$.
+\begin{itemize}
+  \item $f$ est \textbf{croissante} sur $I$ si, quand $x$ augmente, $f(x)$ augmente :
+        pour tous nombres $a$ et $b$ de $I$, si $a<b$ alors $f(a)\le f(b)$. Sa courbe
+        \textbf{monte}.
+  \item $f$ est \textbf{décroissante} sur $I$ si, quand $x$ augmente, $f(x)$ diminue :
+        si $a<b$ alors $f(a)\ge f(b)$. Sa courbe \textbf{descend}.
+  \item $f$ est \textbf{constante} sur $I$ si $f(x)$ garde toujours la même valeur.
+        Sa courbe est horizontale.
+\end{itemize}
+
+\smallskip
+\begin{minipage}{0.48\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(3.6,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,2.6) node[below left=-1pt]{$y$};
+  \draw[coulCourbe,line width=1.1pt,domain=0.4:3.2,samples=30]
+    plot (\x,{0.2*\x*\x+0.3});
+  \draw[dashed,black!60] (1,0) node[below,font=\small]{$a$}--(1,0.5)
+    --(0,0.5) node[left,font=\small]{$f(a)$};
+  \draw[dashed,black!60] (2.6,0) node[below,font=\small]{$b$}--(2.6,1.652)
+    --(0,1.652) node[left,font=\small]{$f(b)$};
+  \path[coulCourbe] (1,0.5) node[croix]{} (2.6,1.652) node[croix]{};
+\end{tikzpicture}
+
+{\small croissante : $a<b$ et $f(a)\le f(b)$}
+\end{minipage}\hfill
+\begin{minipage}{0.48\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(3.6,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,2.6) node[below left=-1pt]{$y$};
+  \draw[coulCourbeB,line width=1.1pt,domain=0.4:3.2,samples=30]
+    plot (\x,{2.4-0.2*\x*\x});
+  \draw[dashed,black!60] (1,0) node[below,font=\small]{$a$}--(1,2.2)
+    --(0,2.2) node[left,font=\small]{$f(a)$};
+  \draw[dashed,black!60] (2.6,0) node[below,font=\small]{$b$}--(2.6,1.048)
+    --(0,1.048) node[left,font=\small]{$f(b)$};
+  \path[coulCourbeB] (1,2.2) node[croix]{} (2.6,1.048) node[croix]{};
+\end{tikzpicture}
+
+{\small décroissante : $a<b$ et $f(a)\ge f(b)$}
+\end{minipage}
+
+\smallskip
+\textbf{Une fonction croissante conserve l'ordre ; une fonction décroissante
+renverse l'ordre.}
+
+\textit{Exemple :} $2<7$. Si $f$ est croissante sur $\intff{0}{10}$, alors
+$f(2)\le f(7)$ ; si $g$ est décroissante sur $\intff{0}{10}$, alors $g(2)\ge g(7)$.
+
+\smallskip
+Donner les \textbf{variations} de $f$, c'est dire sur quels intervalles elle est
+croissante et sur lesquels elle est décroissante.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Lire les variations d'une fonction sur sa courbe]
+\etapeexemples
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+La fonction $f$ est représentée ci-contre par sa courbe $\Cf$.
+\begin{questions}[label=\alph*)]
+  \item Sur quel intervalle la fonction $f$ est-elle définie ?
+  \item Sur quels intervalles $f$ est-elle croissante ? décroissante ?
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-5}{-3}{6}{5}
+  \gradx{-4,-3,-2,-1,1,2,3,4,5} \grady{-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,1) .. controls (-3,2.8) and (-2,4) .. (-1,4)
+           .. controls (0,4) and (0.33,2) .. (1,1)
+           .. controls (1.67,0) and (2.33,-2) .. (3,-2)
+           .. controls (3.67,-2) and (4.33,0) .. (5,1);
+  \path[coulCourbe] (-4,1) node[croix]{} (5,1) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-3.6,3.2) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+La fonction $g$ est représentée ci-contre par sa courbe $\Cg$.
+\begin{questions}[label=\alph*)]
+  \item Sur quel intervalle la fonction $g$ est-elle définie ?
+  \item Donner les variations de $g$.
+\end{questions}
+
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-4}{-2}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-1,1,2,3}
+  \draw[coulCourbeB,line width=1.1pt]
+    (-3,3) .. controls (-2,1.4) and (-1,-1) .. (0,-1)
+           .. controls (0.67,-1) and (1.33,2) .. (2,2)
+           .. controls (2.67,2) and (3.33,0.87) .. (4,0);
+  \path[coulCourbeB] (-3,3) node[croix]{} (4,0) node[croix]{};
+  \node[coulCourbeB,font=\footnotesize] at (-2.4,3.4) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+\end{methodebox}
+
+\afaire{exercices 1 à 6}
+
+\partiecours{Maximum, minimum}
+
+\begin{definitionbox}[Définition 2 --- Maximum, minimum]
+Soit $f$ une fonction définie sur un intervalle $I$, et $a$ un nombre de $I$.
+\begin{itemize}
+  \item $f$ admet un \textbf{maximum} $M$ en $a$ si $f(a)=M$ et si, pour tout $x$ de $I$,
+        $f(x)\le M$ : c'est la plus grande image, au point le plus haut de la courbe.
+  \item $f$ admet un \textbf{minimum} $m$ en $a$ si $f(a)=m$ et si, pour tout $x$ de $I$,
+        $f(x)\ge m$ : c'est la plus petite image, au point le plus bas.
+\end{itemize}
+Un maximum ou un minimum s'appelle un \textbf{extremum}. On dit qu'il est
+\textbf{atteint} en $a$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Lire les extremums d'une fonction sur sa courbe]
+\etapeexemples
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+La fonction $h$, définie sur $\intff{-4}{3}$, est représentée ci-contre par sa
+courbe $\Ch$.
+\begin{questions}[label=\alph*)]
+  \item Donner le maximum et le minimum de $h$ sur $\intff{-4}{3}$, et où ils sont
+        atteints.
+  \item Même question sur l'intervalle $\intff{1}{3}$ seulement.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-5}{-4}{4}{4}
+  \gradx{-4,-3,-2,-1,1,2,3} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,1) .. controls (-3.33,-0.67) and (-2.67,-3) .. (-2,-3)
+           .. controls (-1,-3) and (0,3) .. (1,3)
+           .. controls (1.67,3) and (2.33,2) .. (3,1);
+  \path[coulCourbe] (-4,1) node[croix]{} (3,1) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-3.4,2) {$\Ch$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+Donner le maximum et le minimum de la fonction $g$ de la méthode 1 sur $\intff{-3}{4}$,
+et où ils sont atteints.
+
+\end{methodebox}
+
+\afaire{exercices 7 à 9}
+
+\partiecours{Tableau de variations}
+
+\begin{definitionbox}[Définition 3 --- Tableau de variations]
+Le \textbf{tableau de variations} d'une fonction résume ses variations :
+\begin{itemize}
+  \item sur la première ligne, les valeurs de $x$ : les bornes de l'intervalle de
+        définition et les valeurs où le sens de variation change ;
+  \item sur la seconde ligne, une flèche qui monte (fonction croissante) ou qui
+        descend (fonction décroissante), avec les images au bout des flèches.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 3 --- Dresser le tableau de variations à partir de la courbe]
+\etapeexemples
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+La fonction $k$, définie sur $\intff{-3}{4}$, est représentée ci-contre par sa
+courbe $\Ck$. Dresser son tableau de variations.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-4}{-3}{5}{5}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,4) .. controls (-1.67,1.33) and (-0.33,-2) .. (1,-2)
+           .. controls (2,-2) and (3,0.67) .. (4,2);
+  \path[coulCourbe] (-3,4) node[croix]{} (4,2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-2,4.2) {$\Ck$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+Dresser le tableau de variations de la fonction $g$ de la méthode 1.
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 4 --- Exploiter un tableau de variations]
+\etapeexemples
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+La fonction $s$ a le tableau de variations ci-contre.
+\begin{questions}[label=\alph*)]
+  \item Comparer $s(-4)$ et $s(-2)$.
+  \item Comparer $s(0)$ et $s(3)$.
+  \item Donner le maximum et le minimum de $s$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=1.3,espcl=1.6,deltacl=0.6]{$x$/1,$s(x)$/2}{$-5$,$-1$,$4$,$6$}
+  \tkzTabVar{-/$2$,+/$7$,-/$-3$,+/$0$}
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+La fonction $t$ a le tableau de variations ci-contre.
+\begin{questions}[label=\alph*)]
+  \item Comparer $t(-2)$ et $t(0)$, puis $t(2)$ et $t(4)$.
+  \item Donner le maximum et le minimum de $t$.
+\end{questions}
+
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=1.3,espcl=2.2,deltacl=0.6]{$x$/1,$t(x)$/2}{$-3$,$1$,$5$}
+  \tkzTabVar{-/$-1$,+/$5$,-/$2$}
+\end{tikzpicture}
+\end{minipage}
+\end{methodebox}
+
+\afaire{exercices 10 à 14}
+
+\partiecours{Fonctions affines et linéaires}
+
+\begin{definitionbox}[Définition 4 --- Fonction affine, fonction linéaire]
+Une fonction $f$ est \textbf{affine} s'il existe deux nombres $a$ et $b$ tels que,
+pour tout $x$ de $\R$ :
+\[
+  f(x)=ax+b
+\]
+\begin{itemize}
+  \item Si $b=0$, $f(x)=ax$ : $f$ est \textbf{linéaire} (elle traduit une situation
+        de proportionnalité).
+  \item Si $a=0$, $f(x)=b$ : $f$ est \textbf{constante}.
+\end{itemize}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Droite représentative]
+La courbe d'une fonction affine $f(x)=ax+b$ est une \textbf{droite} :
+\begin{itemize}
+  \item $b$ est l'\textbf{ordonnée à l'origine} : la droite coupe l'axe des ordonnées
+        au point $(0\,;b)$ ;
+  \item $a$ est le \textbf{coefficient directeur} : quand $x$ augmente de $1$, $y$
+        augmente de $a$ (ou diminue, si $a$ est négatif).
+\end{itemize}
+La droite d'une fonction linéaire passe par l'origine du repère.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 2 --- Variations d'une fonction affine]
+Soit $f(x)=ax+b$ une fonction affine.
+\begin{itemize}
+  \item Si $a>0$, $f$ est croissante sur $\R$.
+  \item Si $a<0$, $f$ est décroissante sur $\R$.
+  \item Si $a=0$, $f$ est constante sur $\R$.
+\end{itemize}
+\end{proprietebox}
+
+\textbf{Démonstration}\autableau
+
+\begin{methodebox}[Méthode 5 --- Reconnaître une fonction affine et donner ses variations]
+\etapeexemples
+Pour chaque fonction $f$, $g$, $h$, dire si elle est affine ; si oui, donner $a$, $b$
+et ses variations.
+\begin{questions}[label=\alph*)]
+  \item ${f(x)=5-3x}$
+  \item ${g(x)=(x+2)^{2}-x^{2}}$
+  \item ${h(x)=x(x+1)}$
+\end{questions}
+
+\etape{À vous de jouer}
+Même consigne pour les fonctions $p$, $q$ et $r$ :
+\[
+  p(x)=2(x-3)+x \qquad q(x)=-\frac{x}{2} \qquad r(x)=(x-1)^{2}-(x+1)^{2}
+\]
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 6 --- Tracer la droite d'une fonction affine]
+\etapeexemples
+Dans un même repère, tracer les droites représentant les fonctions
+${f(x)=2x-3}$ et ${g(x)=-\frac{1}{2}x+1}$.
+
+\etape{À vous de jouer}
+Tracer les droites représentant ${h(x)=-x+2}$ et ${k(x)=\frac{1}{3}x-1}$.
+
+\end{methodebox}
+
+\afaire{exercices 15 à 19}
+
+\partiecours{Fonction affine par lecture graphique}
+
+\begin{remarquebox}[Lire le coefficient directeur $a$]
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+On part d'un point de la droite situé sur un nœud du quadrillage et on va, vers la
+droite, jusqu'à un autre nœud de la droite :
+\[
+  a=\frac{\text{déplacement vertical}}{\text{déplacement horizontal}}
+\]
+Le déplacement vertical est \textbf{positif} si l'on monte, \textbf{négatif} si l'on
+descend. Ci-contre : on avance de $2$ et on monte de $3$, donc $a=\dfrac{3}{2}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \quadrillage{0}{0}{5}{5}
+  \draw[coulCourbe,line width=1.1pt] (0.333,0)--(3.667,5);
+  \draw[-{Stealth[length=2mm]},thick,coulExo] (1,1)--(3,1)
+    node[midway,below,font=\footnotesize]{$+2$};
+  \draw[-{Stealth[length=2mm]},thick,coulExo] (3,1)--(3,4)
+    node[midway,right,font=\footnotesize]{$+3$};
+  \path[coulCourbe] (1,1) node[croix]{} (3,4) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 7 --- Retrouver l'expression d'une fonction affine sur sa droite]
+\etapeexemples
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Les droites $(d_1)$, $(d_2)$ et $(d_3)$ représentent trois fonctions affines $f$, $g$
+et $h$. Donner l'expression de chacune.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-4}{-4}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-1.5,-4)--(2.5,4);
+  \draw[coulCourbeB,line width=1.1pt] (-3,4)--(5,-1.333);
+  \draw[coulCourbeC,line width=1.1pt] (-4,-3)--(5,-3);
+  \node[coulCourbe,font=\footnotesize,right] at (2.4,3.6) {$(d_1)$};
+  \node[coulCourbeB,font=\footnotesize,above] at (-2.6,4) {$(d_2)$};
+  \node[coulCourbeC,font=\footnotesize,above] at (4,-3) {$(d_3)$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Les droites $(d_4)$ et $(d_5)$ représentent deux fonctions affines $k$ et $\ell$.
+Donner l'expression de chacune.
+
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,1,2,3} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-2.667,-4)--(2.667,4);
+  \draw[coulCourbeB,line width=1.1pt] (-1,4)--(3,-4);
+  \node[coulCourbe,font=\footnotesize,right] at (2.6,3.6) {$(d_4)$};
+  \node[coulCourbeB,font=\footnotesize,left] at (-1,3.6) {$(d_5)$};
+\end{tikzpicture}
+\end{minipage}
+\end{methodebox}
+
+\afaire{exercices 20 à 22}
+
+\partiecours{Fonction affine passant par deux points}
+
+\begin{proprietebox}[Propriété 3 --- Coefficient directeur]
+Si $A(x_{A}\,;y_{A})$ et $B(x_{B}\,;y_{B})$ sont deux points de la droite d'une fonction
+affine $f(x)=ax+b$, avec $x_{A}\neq x_{B}$, alors :
+\[
+  a=\frac{y_{B}-y_{A}}{x_{B}-x_{A}}
+  \qquad\text{(différence des ordonnées sur différence des abscisses)}
+\]
+\end{proprietebox}
+
+\textbf{Démonstration}\autableau
+
+\begin{methodebox}[Méthode 8 --- Trouver la fonction affine qui passe par deux points]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Trouver la fonction affine $f$ telle que $f(1)=5$ et $f(3)=-1$.
+  \item Une course de taxi de $4$~km coûte $11$~€ ; une course de $10$~km coûte
+        $20$~€. Le prix est une fonction affine $p$ de la distance $x$ (en km).
+        Trouver $p(x)$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Trouver la fonction affine $f$ telle que $f(-1)=6$ et $f(3)=-2$.
+  \item Trouver la fonction affine $g$ dont la droite passe par $A(-2\,;0)$ et $B(4\,;3)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 23 à 26}
+
+\partiecours{Signe d'une fonction par lecture graphique}
+
+\begin{definitionbox}[Définition 5 --- Signe d'une fonction, tableau de signes]
+Étudier le \textbf{signe} d'une fonction $f$, c'est trouver pour quels $x$ :
+\begin{itemize}
+  \item $f(x)>0$ : la courbe est \textbf{au-dessus} de l'axe des abscisses ;
+  \item $f(x)<0$ : la courbe est \textbf{au-dessous} de l'axe des abscisses ;
+  \item $f(x)=0$ : la courbe \textbf{coupe} l'axe des abscisses.
+\end{itemize}
+On le résume dans un \textbf{tableau de signes} : les valeurs de $x$ sur la première
+ligne, les signes $+$ ou $-$ et les $0$ sur la seconde.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 9 --- Lire le signe d'une fonction sur sa courbe]
+\etapeexemples
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+La courbe $\Cf$ représente une fonction $f$ définie sur $\intff{-4}{4}$ ; la droite
+$\Cg$ représente une fonction affine $g$ définie sur $\R$. Dresser le tableau de
+signes de $f$, puis celui de $g$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-5}{-4}{5}{4}
+  \gradx{-4,-3,-2,-1,1,2,3,4} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,-2) .. controls (-3.67,-1.33) and (-3.33,-0.56) .. (-3,0)
+            .. controls (-2.33,1.11) and (-1.67,3) .. (-1,3)
+            .. controls (-0.33,3) and (0.33,0.89) .. (1,0)
+            .. controls (1.33,-0.44) and (1.67,-1) .. (2,-1)
+            .. controls (2.33,-1) and (2.67,-0.5) .. (3,0)
+            .. controls (3.33,0.5) and (3.67,1.33) .. (4,2);
+  \path[coulCourbe] (-4,-2) node[croix]{} (4,2) node[croix]{};
+  \draw[coulCourbeB,line width=1.1pt] (0,4)--(4,-4);
+  \node[coulCourbe,font=\footnotesize] at (-3.2,2.4) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize,right] at (0.6,3.6) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+Dresser le tableau de signes des fonctions $k$ et $\ell$ de la méthode 7 (droites
+$(d_4)$ et $(d_5)$).
+
+\end{methodebox}
+
+\afaire{exercices 27 à 29}
+
+\partiecours{Propriétés des inégalités, encadrer une quantité}
+
+\begin{proprietebox}[Propriété 4 --- Opérations sur les inégalités]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $a<b$, et $c$ un nombre.
+\begin{itemize}
+  \item Ajouter ou soustraire $c$ \textbf{conserve} le sens :
+        $a+c<b+c$ et $a-c<b-c$.\\
+        \textit{Exemple :} $2<5$, donc $2+3<5+3$, soit $5<8$.
+  \item Multiplier ou diviser par $c>0$ \textbf{conserve} le sens :
+        $a\times c<b\times c$.\\
+        \textit{Exemple :} $2<5$, donc $2\times 4<5\times 4$, soit $8<20$.
+  \item Multiplier ou diviser par $c<0$ \textbf{change} le sens :
+        $a\times c>b\times c$.\\
+        \textit{Exemple :} $2<5$, donc $2\times(-3)>5\times(-3)$, soit $-6>-15$.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \draw[-{Stealth[length=2mm]},thick] (-6.5,0)--(6.5,0);
+  \foreach \t in {-5,...,5} \draw (\t,0.15)--(\t,-0.15);
+  \node[below,font=\small] at (0,-0.15) {$0$};
+  \path[coulCourbe] (2,0) node[croix]{} (5,0) node[croix]{};
+  \path[coulCourbeB] (-2,0) node[croix]{} (-5,0) node[croix]{};
+  \node[coulCourbe,above,font=\small] at (2,0.2) {$2$};
+  \node[coulCourbe,above,font=\small] at (5,0.2) {$5$};
+  \node[coulCourbeB,above,font=\small] at (-2,0.2) {$-2$};
+  \node[coulCourbeB,above,font=\small] at (-5,0.2) {$-5$};
+\end{tikzpicture}
+
+{\small $2<5$, mais $-2>-5$ :\\ multiplier par $-1$ renverse l'ordre}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Encadrer une quantité]
+\etapeexemples
+On sait que $2\le x\le 5$. Encadrer chaque expression $A$, $B$.
+\begin{questions}[label=\alph*)]
+  \item $A=3x-1$
+  \item $B=-2x+4$
+\end{questions}
+
+\etape{À vous de jouer}
+On sait que $-1\le x\le 3$. Encadrer $C=4x+2$, puis $D=5-x$.
+
+\end{methodebox}
+
+\afaire{exercices 30 à 32}
+
+\partiecours{Résoudre une inéquation du premier degré}
+
+Une inéquation du \textbf{premier degré} ne contient que des termes en $x$ et des
+nombres. On la résout comme une équation, avec la propriété 4 : les $x$ d'un côté,
+les nombres de l'autre, puis on divise par le coefficient de $x$, \textbf{en changeant
+le sens s'il est négatif}. On conclut par un intervalle.
+
+\smallskip
+\textbf{Changer le sens}, c'est remplacer $<$ par $>$, $>$ par $<$, $\le$ par $\ge$ et
+$\ge$ par $\le$. \textit{Exemple :} $-2x<6$ devient $x>-3$.
+
+\begin{methodebox}[Méthode 11 --- Résoudre une inéquation du premier degré]
+\etapeexemples
+Résoudre chaque inéquation.
+\begin{questions}[label=\alph*)]
+  \item $3x-7<8$
+  \item $5-2x\ge 11$
+  \item $4x+1>7x-8$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre $2x+9\le 1$, puis $6-3x>0$, puis $5x-4\ge 2x+11$.
+
+\end{methodebox}
+
+\afaire{exercices 33 à 36}
+
+\besoinplace{9cm}
+\partiecours{Signe d'une fonction affine par le calcul}
+
+\begin{proprietebox}[Propriété 5 --- Signe de $ax+b$]
+Soit $f(x)=ax+b$ avec $a\neq 0$. On trouve d'abord la valeur qui annule $f(x)$, en
+résolvant $ax+b=0$ ; le signe de $a$ donne ensuite l'ordre des signes :
+
+\smallskip
+\begin{minipage}{0.48\linewidth}\centering
+{\small $a>0$ : droite qui monte}\\[2pt]
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2.2,espcl=2.2]{$x$/1,$ax+b$/1}{$-\infty$,$-\frac{b}{a}$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+\end{tikzpicture}
+
+\smallskip
+\begin{tikzpicture}[x=0.8cm,y=0.8cm]
+  \draw[-{Stealth[length=2mm]},thick] (-0.2,0)--(4.4,0) node[below left=-1pt]{$x$};
+  \draw[coulCourbe,line width=1.1pt] (0.6,-1)--(3.4,1);
+  \path[coulCourbe] (2,0) node[croix]{};
+  \node[below right,font=\small] at (2,0) {$-\frac{b}{a}$};
+  \node[coulCourbe,font=\small,anchor=west] at (1,-1.15) {$-$ : au-dessous};
+  \node[coulCourbe,font=\small,anchor=east] at (3,1.15) {$+$ : au-dessus};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.48\linewidth}\centering
+{\small $a<0$ : droite qui descend}\\[2pt]
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2.2,espcl=2.2]{$x$/1,$ax+b$/1}{$-\infty$,$-\frac{b}{a}$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+\end{tikzpicture}
+
+\smallskip
+\begin{tikzpicture}[x=0.8cm,y=0.8cm]
+  \draw[-{Stealth[length=2mm]},thick] (-0.2,0)--(4.4,0) node[below left=-1pt]{$x$};
+  \draw[coulCourbeB,line width=1.1pt] (0.6,1)--(3.4,-1);
+  \path[coulCourbeB] (2,0) node[croix]{};
+  \node[below left,font=\small] at (2,0) {$-\frac{b}{a}$};
+  \node[coulCourbeB,font=\small,anchor=west] at (1,1.15) {$+$ : au-dessus};
+  \node[coulCourbeB,font=\small,anchor=east] at (3,-1.15) {$-$ : au-dessous};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textit{Pourquoi ?} Pour $a>0$, on résout $ax+b>0$ (méthode 11) :
+\begin{calculs}
+ax+b &> 0 &\qquad& \rem{$f(x)$ strictement positif}\\
+ax &> -b && \rem{on enlève $b$}\\
+x &> -\frac{b}{a} && \rem{on divise par $a>0$ : même sens}
+\end{calculs}
+Donc $+$ après $-\frac{b}{a}$. Pour $a<0$, la division change le sens : $+$ avant
+$-\frac{b}{a}$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 12 --- Dresser le tableau de signes de $ax+b$]
+\etapeexemples
+Dresser le tableau de signes de chaque expression $A$, $B$.
+\begin{questions}[label=\alph*)]
+  \item $A(x)=3x-12$
+  \item $B(x)=-2x+5$
+\end{questions}
+
+\etape{À vous de jouer}
+Dresser le tableau de signes de chaque expression $C$, $D$, $E$ :
+\[
+  C(x)=5x+10 \qquad D(x)=6-4x \qquad E(x)=\frac{1}{2}x-3
+\]
+
+\end{methodebox}
+
+\afaire{exercices 37 à 40}
+
+\partiecours{Inéquations produits}
+
+\begin{proprietebox}[Propriété 6 --- Signe d'un produit]
+Le signe d'un produit suit la \textbf{règle des signes} : deux facteurs de même signe
+donnent un produit positif, deux facteurs de signes contraires un produit négatif.
+
+Dans un tableau de signes, on met une ligne par facteur, puis une dernière ligne
+pour le produit ; un $0$ dans une colonne donne un $0$ au produit.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 13 --- Résoudre une inéquation produit]
+\etapeexemples
+Résoudre chaque inéquation.
+\begin{questions}[label=\alph*)]
+  \item $(x-3)(2x+4)<0$
+  \item $(5-x)(3x+3)\ge 0$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre $(2x-6)(x+1)\le 0$, puis $x(4-x)>0$.
+
+\end{methodebox}
+
+\afaire{exercices 41 à 43}
+
+\partiecours{Inéquations quotients}
+
+\begin{proprietebox}[Propriété 7 --- Signe d'un quotient]
+Un quotient suit la même règle des signes qu'un produit. Le dénominateur ne peut pas
+être nul : la valeur qui l'annule est une \textbf{valeur interdite}. Dans le tableau,
+on la marque d'une \textbf{double barre}, et elle n'est jamais solution.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 14 --- Résoudre une inéquation quotient]
+\etapeexemples
+Résoudre chaque inéquation.
+\begin{questions}[label=\alph*)]
+  \item $\dfrac{3x-6}{x+1}\ge 0$
+  \item $\dfrac{4-2x}{x+3}>0$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre $\dfrac{x-5}{x+2}\le 0$, puis $\dfrac{2x+1}{3-x}\ge 0$.
+
+\end{methodebox}
+
+\afaire{exercices 44 à 46}
+
+\partiecours{Inéquations avancées}
+
+Le tableau de signes ne sert qu'à comparer un produit ou un quotient \textbf{à $0$}.
+Sinon, on s'y ramène : on passe tout dans le membre de gauche, puis on factorise ou on
+met au même dénominateur.
+
+\begin{methodebox}[Méthode 15 --- Se ramener à une comparaison avec $0$]
+\etapeexemples
+Résoudre chaque inéquation.
+\begin{questions}[label=\alph*)]
+  \item $x^{2}\ge 5x$
+  \item $\dfrac{x+4}{x-2}\le 3$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre $(x+2)^{2}<9$, puis $\dfrac{6}{x+1}\ge 2$.
+
+\end{methodebox}
+
+\afaire{exercices 47 à 50}
+
+\partiecours{Problèmes d'inéquations}
+
+\begin{methodebox}[Méthode 16 --- Résoudre un problème avec une inéquation]
+\etapeexemples
+Pour une fête, la salle A coûte $200$~€ plus $15$~€ par invité ; la salle B coûte
+$50$~€ plus $20$~€ par invité. On note $x$ le nombre d'invités.
+\begin{questions}[label=\alph*)]
+  \item Exprimer les prix $A(x)$ et $B(x)$ des deux salles.
+  \item Traduire « la salle A est moins chère que la salle B » par une inéquation.
+  \item Résoudre cette inéquation.
+  \item Conclure par une phrase.
+\end{questions}
+
+\etape{À vous de jouer}
+Un taxi facture $4$~€ de prise en charge, puis $1{,}50$~€ par kilomètre. Avec un budget
+de $25$~€, quelle distance peut-on parcourir au plus ?
+
+\end{methodebox}
+
+\afaire{exercices 51 à 53}
+
+\end{document}

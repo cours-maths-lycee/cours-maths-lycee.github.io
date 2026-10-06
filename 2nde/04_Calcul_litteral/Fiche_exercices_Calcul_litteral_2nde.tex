@@ -1,0 +1,904 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{bottom=1cm}
+
+\setlength{\espaceexo}{4pt}
+\tikzset{
+  fig/.style={line width=0.8pt,black!75},
+  zoneB/.style={fill=coulCourbeB!12,draw=coulCourbeB,line width=0.8pt},
+  cote/.style={{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]},line width=0.5pt},
+}
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=1pt,topsep=1pt}
+
+\begin{document}
+
+\titrefiche{Seconde --- Calcul littéral}{Fiche d'exercices du chapitre}
+
+{\small\itshape On écrit toutes les étapes. On contrôle chaque fois que c'est
+possible : en redéveloppant une factorisation, ou en remplaçant $x$ par la solution
+trouvée.\par}
+\vspace{0.1cm}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Réduire, substituer}
+
+\exo[Réduire une somme]
+Réduire, si possible :
+\deux{$A=7a+5a+2a$}{$B=6+2a+5a$}
+\deux{$C=4a^{2}+3+7a^{2}$}{$D=6a+3a^{2}+4a^{2}$}
+\deux{$E=9m-12m+5m$}{$F=-6m-3m-4m$}
+\deux{$G=3m-8m^{2}+5m^{2}$}{$H=-6m^{2}+4m^{2}-5m^{2}$}
+\par\hspace*{0.6em}$K=3n^{2}+6n-5+4n^{2}+3+8$
+\par\hspace*{0.6em}$L=4+5n-3n^{2}+7n^{2}+2n-4$
+\par\hspace*{0.6em}$M=-7n^{2}+6-4n+3n^{2}-3n-9$
+
+\exo[Réduire un produit]
+Réduire :
+\trois{$A=6\times 4x$}{$B=3x\times 5x$}{$C=7\times 2x^{2}$}
+\trois{$D=3x^{2}\times 5$}{$E=-4x\times 3x$}{$F=-6\times 5x$}
+\trois{$G=2x(-7x)$}{$H=-3x(-6x)$}{$K=4(-3x^{2})$}
+\deux{$L=-5(-2x^{2})$}{$M=3x^{2}\times(-4)$}
+
+\exo[Substituer]
+\begin{enumerate}
+  \item Calculer $B=3x^{2}-4x-4$ pour $x=2$, $x=3$, $x=-1$, $x=-2$, puis
+        $x=\frac13$.
+  \item Calculer $C=2m-4p+5$ pour $m=3$ et $p=-2$, puis pour $m=-1$ et $p=4$.
+\end{enumerate}
+
+\exo[Égales ou non ?]
+On pose $A=(x-2)(x+5)$ et $B=2x^{2}-10$.
+\begin{enumerate}
+  \item Calculer $A$ et $B$ pour $x=0$, puis pour $x=1$.
+  \item $A$ et $B$ sont-elles égales ?
+  \item Développer $A$. Que conclure ?
+\end{enumerate}
+
+\partiefiche{Développer}
+
+\exo[Distributivité simple]
+Développer et réduire :
+\deux{$A=4(3x+5)$}{$B=(6+3x)\times 2$}
+\deux{$C=x(4x+5)$}{$D=3x(2x+7)$}
+\deux{$E=5x+3(2x+4)$}{$F=2(5x+6)+4(2x+3)$}
+\deux{$G=5(3+2x)+4x$}{$H=3(4x+2)+2(6+3x)$}
+\deux{$K=x(3x+5)+2(5x+1)$}{$L=2x(4x+3)+3x(2x+5)$}
+
+\exo[Avec des signes moins]
+Développer et réduire :
+\deux{$A=6(a+3)-4a$}{$B=-7a+3(2a-4)$}
+\par\hspace*{0.6em}$C=4(3+2a)-3(5+2a)$
+\par\hspace*{0.6em}$D=-5(-3a+2)+2(4a-3)$
+\deux{$E=3b+2b(5+7b)$}{$F=5b(-3b+2)+4b^{2}$}
+\par\hspace*{0.6em}$G=4b(-3b-2)-b(2b-9)$
+\par\hspace*{0.6em}$H=-3b(4b-2)+6b(-2b-3)$
+
+\exo[Double distributivité]
+Développer et réduire :
+\deux{$A=(2x+5)(4x+3)$}{$B=(3+4x)(2x+7)$}
+\deux{$C=(3x-4)(-2x+5)$}{$D=(-5+2x)(3-4x)$}
+\deux{$E=(-4x-2)(-3x-5)$}{$F=(2-3x)(4-5x)$}
+\deux{$G=(-6x+5)(-3x+2)$}{$H=(-3+2x)(4x-5)$}
+
+\exo[Une différence de produits]
+Développer et réduire. \emph{Le produit qui suit un $-$ se développe d'abord entre
+crochets.}
+\par\hspace*{0.6em}$A=(4x+3)(2x+5)-(3x+2)(2x-5)$
+\par\hspace*{0.6em}$B=(-2x+7)(3x-4)+(5x-2)(2x-3)$
+\par\hspace*{0.6em}$C=(-4x-5)(-3x+6)-(2+3x)(5-4x)$
+\par\hspace*{0.6em}$D=(6x+1)(3x-2)-(5x-2)(4-3x)$
+
+\exo[Crochets et trois facteurs]
+Développer et réduire :
+\par\hspace*{0.6em}$A=(6-3x)-4-(5x-2)$
+\par\hspace*{0.6em}$B=(4x-3)+5x-(6x+2)$
+\par\hspace*{0.6em}$C=4-\big[6-(2x+3)\big]+(3-4x)$
+\par\hspace*{0.6em}$D=5x+\big[2-(6-x)\big]-\big[3x-(x-4)\big]$
+\par\hspace*{0.6em}$E=3x(2x+5)-4(2x+5)(x-3)$
+\par\hspace*{0.6em}$F=(x+2)(3x-4)(-x+3)$
+
+\partiefiche{Identités remarquables}
+
+\exo[Le carré d'une somme]
+Développer :
+\deux{$A=(3x+4)^{2}$}{$B=(5+2x)^{2}$}
+\deux{$C=(4a+3)^{2}$}{$D=(3+5b)^{2}$}
+\deux{$E=(x+6)^{2}$}{$F=(4x+1)^{2}$}
+\deux{$G=(3m+5)^{2}$}{$H=(4+3r)^{2}$}
+
+\exo[Le carré d'une différence]
+Développer :
+\deux{$A=(4x-3)^{2}$}{$B=(3x-5)^{2}$}
+\deux{$C=(4-3x)^{2}$}{$D=(5-2x)^{2}$}
+\deux{$E=(5a-3)^{2}$}{$F=(2-5b)^{2}$}
+\deux{$G=(3m-1)^{2}$}{$H=(n-4)^{2}$}
+
+\exo[Somme par différence]
+Développer. \emph{Attention : un des produits n'est pas une identité remarquable.}
+\deux{$A=(4x+3)(4x-3)$}{$B=(2x+5)(2x-3)$}
+\deux{$C=(3+5x)(3-5x)$}{$D=(3a+4)(3a-4)$}
+\deux{$E=(b-5)(b+5)$}{$F=(7+c)(7-c)$}
+
+\exo[Choisir la bonne formule]
+Développer et réduire :
+\deux{$A=3(2x+5)$}{$B=(2x+5)^{2}$}
+\deux{$C=(3x-4)^{2}$}{$D=(5x-3)(5x+3)$}
+\deux{$E=(7x+2)(3x-5)$}{$F=(3+7x)(3-7x)$}
+\par\hspace*{0.6em}$G=(2x+3)^{2}-(x-4)^{2}$
+\par\hspace*{0.6em}$H=(x-5)(x+5)-(2x+1)(2x-1)$
+\par\hspace*{0.6em}$K=(x+4)^{2}+3(2x-1)(x+2)$
+\par\hspace*{0.6em}$L=(3x+1)(3x-1)-2(x-3)^{2}$
+
+\partiefiche{Factoriser}
+
+\exo[Compléter les factorisations]
+Compléter :
+\deux{a) $5\times x+5\times 8=5(\ldots+\ldots)$}{b) $12x-8=4(\ldots-\ldots)$}
+\deux{c) $10x-15=\ldots(2x-3)$}{d) $8x^{2}+12x=4x(\ldots+\ldots)$}
+\deux{e) $x^{2}-9x=\ldots(x-9)$}{}
+\par\hspace*{0.6em}f) $(x+3)(3x-2)+(x+3)(x+4)=(x+3)(\ldots)$
+
+\exo[Un nombre ou $x$ en facteur]
+Factoriser le plus possible :
+\deux{$A=48a-36b$}{$B=150a-90b$}
+\deux{$C=24x-36$}{$D=35x+13x^{2}$}
+\deux{$E=28x^{2}-7x$}{$F=5x^{3}+10x^{2}+15x$}
+
+\exo[Une parenthèse en facteur]
+Factoriser, puis réduire chaque facteur :
+\par\hspace*{0.6em}$A=(4x+3)(2x-5)+(4x+3)(3x+7)$
+\par\hspace*{0.6em}$B=(6x-5)(2x+3)+(6x-5)(4x-1)$
+\par\hspace*{0.6em}$C=(3x+5)(2x-7)+(2x-7)(4x+1)$
+\par\hspace*{0.6em}$D=(8r-2)(5r+3)+(3r-4)(5r+3)$
+\par\hspace*{0.6em}$E=(x-4)(x+2)-(x-4)(2x+5)$
+\par\hspace*{0.6em}$F=x(2y-5)+3(2y-5)$
+
+\partiefiche{Factoriser avec une identité remarquable}
+
+\exo[Différence de deux carrés]
+Factoriser, si possible :
+\deux{$A=25x^{2}-16$}{$B=1-9x^{2}$}
+\deux{$C=4x^{2}+9$}{$D=36R^{2}-25$}
+\deux{$E=5x^{2}-5$}{$F=-x^{2}+9$}
+
+\exo[Carrés parfaits]
+Factoriser, si possible. \emph{On trouve d'abord $a$ et $b$, puis on contrôle $2ab$.}
+\deux{$A=9x^{2}+12x+4$}{$B=25a^{2}+15a+9$}
+\deux{$C=24d+16d^{2}+9$}{$D=36-12x+x^{2}$}
+\deux{$E=9x^{2}+6x-1$}{$F=16b^{2}+25-40b$}
+
+\exo[Quelle méthode ?]
+Factoriser, si possible :
+\deux{$A=49x^{2}-16$}{$B=16x^{2}+7x$}
+\deux{$C=4x^{2}+20x+25$}{$D=64-48x+9x^{2}$}
+\deux{$E=5a-4a^{2}$}{$F=1+25f^{2}-10f$}
+
+\partiefiche{Factorisations avancées}
+
+\exo[Identité remarquable sur des expressions]
+Factoriser, puis réduire chaque facteur. \emph{Écrire la factorisation avec des
+parenthèses à l'intérieur des crochets.}
+\par\hspace*{0.6em}$A=(7x+5)^{2}-(3x+1)^{2}$
+\par\hspace*{0.6em}$B=(7x-3)^{2}-(2x-1)^{2}$
+\deux{$C=(3x-2)^{2}-49$}{$D=81-(2x-3)^{2}$}
+\par\hspace*{0.6em}$E=(x+5)^{2}-(x+2)^{2}$
+
+\exo[Le « 1 » caché et le carré]
+Factoriser :
+\par\hspace*{0.6em}$A=(5x+4)(3x-2)+(5x+4)$
+\par\hspace*{0.6em}$B=3(x-1)(x+2)-(x-1)$
+\par\hspace*{0.6em}$C=(6r-4)(2r-3)+(6r-4)^{2}$
+\par\hspace*{0.6em}$D=(4m-2)^{2}-(4m-2)(3m+1)$
+\par\hspace*{0.6em}$E=(x+2)^{2}+4(x+2)+x+2$
+
+\exo[Faire apparaître le facteur commun]
+Factoriser. \emph{Penser aux facteurs opposés, aux multiples et aux identités cachées
+dans un seul morceau.}
+\par\hspace*{0.6em}$A=(3x-4)(x+2)+6(-4+3x)$
+\par\hspace*{0.6em}$B=(5-x)^{2}+(x-5)$
+\par\hspace*{0.6em}$C=(-x+2)(3x+1)+(-3x-1)(x-7)$
+\par\hspace*{0.6em}$D=9x^{2}-16+(3x+4)(2x+5)$
+\par\hspace*{0.6em}$E=16x^{2}+40x+25-2(4x+5)$
+
+\exo[Choisir la méthode]
+Factoriser :
+\deux{$A=16x^{2}-56x+49$}{$B=24x-10x^{2}+3x^{3}$}
+\par\hspace*{0.6em}$C=(2x+5)(3x-4)+(2x+5)(4x+9)$
+\par\hspace*{0.6em}$D=(5x+3)(4x-9)-(5x+3)(6x-9)$
+\par\hspace*{0.6em}$E=(4x-1)^{2}-(3x+2)^{2}$
+
+\partiefiche{Fractions rationnelles}
+
+\exo[Valeurs interdites]
+Donner la ou les valeurs interdites :
+\trois{$A=\dfrac{2x+5}{x+3}$}{$B=\dfrac{7}{3x-2}$}{$C=\dfrac{x-1}{x(x+5)}$}
+\par\smallskip
+\deux{$D=\dfrac{4x}{(3x+2)(2-x)}$}{$E=\dfrac{5}{x^{2}-16}$}
+
+\exo[Premiers calculs]
+Écrire avec une seule fraction, pour $x\ne 0$ :
+\trois{$A=2+\dfrac{1}{x}$}{$B=4-\dfrac{3}{x}$}{$C=\dfrac{2}{x}+\dfrac{5}{x}$}
+\par\smallskip
+\deux{$D=x+\dfrac{3}{x}$}{$E=\dfrac13+\dfrac{2}{x}$}
+
+\exo[Une seule fraction]
+Écrire avec une seule fraction, en précisant les valeurs interdites :
+\trois{$A=1+\dfrac{3}{x-2}$}{$B=\dfrac{4}{x}-\dfrac{3}{x+2}$}{$C=\dfrac{x}{x+3}+\dfrac{2}{x}$}
+\par\smallskip
+\deux{$D=3-\dfrac{x+2}{x-1}$}{$E=\dfrac{1}{x-2}+\dfrac{1}{x+2}$}
+
+\exo[Démontrer une égalité]
+\begin{enumerate}
+  \item Démontrer que, pour tout $x\ne 1$ : \quad $\dfrac{2x-3}{x-1}=2-\dfrac{1}{x-1}$.
+  \item Démontrer que, pour tout $x\ne 0$ et $x\ne 2$ :
+        \[ \frac{1}{x-2}-\frac{1}{x}=\frac{2}{x(x-2)}. \]
+\end{enumerate}
+
+\partiefiche{Équations du premier degré}
+
+\exo[Les deux règles]
+Résoudre dans $\R$ :
+\deux{a) $4x+3=3x+8$}{b) $3x+2=4x-6$}
+\deux{c) $2x+5=6x+1$}{d) $7-2x=0$}
+\deux{e) $2x-9=5x+12$}{f) $3x+7=3x-4$}
+
+\exo[Avec des parenthèses]
+Résoudre dans $\R$, en supprimant d'abord les parenthèses :
+\par\hspace*{0.6em}a) $7-(x-2)=5x-(4x-9)$
+\par\hspace*{0.6em}b) $4(x-2)+3(3-x)=0$
+\par\hspace*{0.6em}c) $6(x+3)-2(x+4)=x+16$
+\par\hspace*{0.6em}d) $3(x-2)-2(x+1)=5(x-4)$
+\par\hspace*{0.6em}e) $m-(4-2m)=2m+5$
+
+\exo[Coefficients fractionnaires]
+Résoudre dans $\R$ :
+\trois{a) $\dfrac{-5x}{3}=\dfrac{10}{3}$}{b) $\dfrac{12x}{5}=\dfrac{3}{10}$}{c) $\dfrac34x=\dfrac92$}
+\par\smallskip
+\trois{d) $-3x=\dfrac{12}{5}$}{e) $\dfrac{-3}{7}x=\dfrac{-1}{14}$}{f) $\dfrac56=\dfrac{-10}{9}x$}
+
+\exo[Supprimer les fractions]
+Résoudre dans $\R$, en multipliant chaque terme par le dénominateur commun :
+\deux{a) $-\dfrac13x+4=x-8$}{b) $\dfrac52x+1=3x-4$}
+\par\smallskip
+\deux{c) $\dfrac{3x}{5}-\dfrac43=\dfrac{7}{15}$}{d) $\dfrac{x}{2}+\dfrac53=-\dfrac{x}{6}+9$}
+\par\smallskip
+\par\hspace*{0.6em}e) $\dfrac{x-3}{2}-4=\dfrac{3x+1}{4}+\dfrac12$
+\par\smallskip
+\par\hspace*{0.6em}f) $\dfrac{3x+1}{4}-\dfrac{x-3}{4}=\dfrac{x+5}{3}$
+
+\exo[Produit en croix, cas particuliers]
+\begin{enumerate}
+  \item Résoudre avec un produit en croix :
+        \par\smallskip
+        a) $\dfrac{3x+2}{4}=\dfrac{5x-1}{3}$ \qquad b) $\dfrac{3x-2}{5}=\dfrac23$
+  \item Résoudre, en concluant par $S=\R$ ou $S=\varnothing$ :
+        \par\smallskip
+        a) $\dfrac12(x+4)-\dfrac23(x-3)=\dfrac16(-x+12)+2$
+        \par\smallskip
+        b) $\dfrac{x+1}{3}-\dfrac{2x-1}{4}-1=-\dfrac{2x+1}{12}$
+\end{enumerate}
+
+\exo[L'inconnue au dénominateur]
+Résoudre, après avoir donné les valeurs interdites :
+\deux{a) $\dfrac{3x-2}{2x+1}=2$}{b) $\dfrac{3-2x}{2-x}=1$}
+\par\smallskip
+\deux{c) $\dfrac{3-x}{2x+1}=\dfrac34$}{d) $\dfrac{2+x}{1+2x}=\dfrac12$}
+\par\smallskip
+\deux{e) $\dfrac{3-x}{x-2}=2$}{f) $\dfrac{-3x}{2+x}=2$}
+
+\partiefiche{Équations produits}
+
+\exo[Produit nul]
+Résoudre dans $\R$ :
+\deux{a) $2x(3x-5)=0$}{b) $-4x^{2}(3x-8)=0$}
+\deux{c) $(-2x+5)^{2}=0$}{d) $x^{2}(x+2)(-4-3x)=0$}
+\par\hspace*{0.6em}e) $(x+1)(3x-2)(x-5)=0$
+
+\exo[Factoriser d'abord]
+Résoudre en se ramenant à une équation produit :
+\deux{a) $3x^{2}-8x=0$}{b) $2x^{3}-5x^{2}=0$}
+\par\hspace*{0.6em}c) $(x+3)^{2}=(x+3)(4x-3)$
+\par\hspace*{0.6em}d) $(2x-5)(3x+1)=(2x-5)(4-x)$
+\par\hspace*{0.6em}e) $9x^{2}-4-3(3x+2)+x(3x+2)=0$
+\par\hspace*{0.6em}f) $(3x-1)(x+2)^{2}=9(3x-1)$
+
+\exo[Différence de deux carrés nulle]
+Résoudre dans $\R$ :
+\deux{a) $9x^{2}-(x+2)^{2}=0$}{b) $(3x+1)^{2}-(x+3)^{2}=0$}
+\par\hspace*{0.6em}c) $(3x+5)^{2}-4(x+1)^{2}=0$
+\par\hspace*{0.6em}d) $9(x+1)^{2}-4(2x+3)^{2}=0$
+
+\exo[Développer d'abord]
+Résoudre en commençant par développer. \emph{Les $x^{2}$ s'éliminent-ils ?}
+\par\hspace*{0.6em}a) $(3x-2)(4+x)=3x^{2}+5$
+\par\hspace*{0.6em}b) $(2x+3)^{2}=4x(x+0{,}5)$
+\par\hspace*{0.6em}c) $(x+3)(x-1)=(x+5)(x-4)$
+\par\hspace*{0.6em}d) $x(4-x)^{2}=x^{2}(x+3)$
+
+\exo[Choisir la bonne écriture]
+Pour tout réel $x$, on pose $E(x)=(x-2)^{2}-36$ (forme A).
+\begin{enumerate}
+  \item Prouver que $E(x)=x^{2}-4x-32$ (forme B), puis que $E(x)=(x-8)(x+4)$ (forme C).
+  \item Avec la forme la mieux adaptée, calculer $E(0)$, puis résoudre $E(x)=0$,
+        $E(x)=-32$ et $E(x)=-36$.
+\end{enumerate}
+
+\partiefiche{Équations $x^{2}=a$ et équations quotients}
+
+\exo[Équations $x^{2}=a$]
+Résoudre dans $\R$ :
+\trois{a) $x^{2}=81$}{b) $x^{2}=-16$}{c) $3x^{2}=48$}
+\trois{d) $x^{2}-5=0$}{e) $4x^{2}-25=0$}{f) $(x+2)^{2}=49$}
+
+\exo[Équations quotients]
+Résoudre, après avoir donné les valeurs interdites :
+\deux{a) $\dfrac{3x-4}{x+2}=0$}{b) $\dfrac{2x+9}{3-x}=0$}
+\par\smallskip
+\par\hspace*{0.6em}c) $\dfrac{(2x+3)^{2}-9(x-1)^{2}}{4x^{2}-4}=0$
+\par\hspace*{0.6em}\emph{(factoriser le numérateur et le dénominateur)}
+\par\smallskip
+\par\hspace*{0.6em}d) $\dfrac{9x^{2}-16-2(3x-4)}{12-9x}=0$
+\par\smallskip
+\par\hspace*{0.6em}e) $\dfrac{3}{x}+\dfrac12=\dfrac{7}{2x}$ \quad \emph{(se ramener à un
+quotient nul)}
+
+\exo[Dans des problèmes]
+\begin{enumerate}
+  \item Un carré a pour aire $30$~cm$^{2}$. Donner la valeur exacte de son côté.
+  \item Un disque a pour aire $49\pi$~cm$^{2}$. Quel est son rayon ?
+  \item Le carré d'un nombre, augmenté de $7$, vaut $43$. Quel peut être ce nombre ?
+  \item Pour quelle valeur de $x$ la fraction $\dfrac{x-6}{x+2}$ est-elle nulle ?
+        Peut-elle valoir $1$ ?
+\end{enumerate}
+
+\partiefiche{Mise en équation}
+
+\exo[Quatre problèmes courts]
+Pour chacun : choisir l'inconnue, écrire l'équation, la résoudre et conclure.
+\begin{enumerate}
+  \item Zoé ajoute $9$ à son âge et multiplie le résultat par $3$ : elle trouve $75$.
+        Quel âge a-t-elle ?
+  \item \og Choisissez un nombre, multipliez-le par $3$, retranchez $4$, puis multipliez
+        le tout par $5$.\fg{} Lina annonce $205$. Quel nombre avait-elle choisi ?
+  \item En ajoutant $15$~L dans une cuve remplie au quart, on la remplit aux deux tiers.
+        Quelle est la contenance de la cuve ?
+  \item Trouver deux entiers impairs consécutifs dont la somme vaut $152$.
+\end{enumerate}
+
+\exo[Entiers et âges]
+\begin{enumerate}
+  \item On prend trois entiers consécutifs. Le premier, augmenté du triple du troisième,
+        donne $98$. Quels sont ces entiers ?
+  \item Trois sœurs ont $30$, $18$ et $4$ ans. Dans combien d'années l'âge de l'aînée
+        sera-t-il égal à la somme des âges des deux autres ?
+\end{enumerate}
+
+\exo[Stocks, jardin et concert]
+\begin{enumerate}
+  \item Un magasin reçoit $95$ paires de chaussures : des bottes, des baskets et des
+        sandales. Il y a trois fois plus de baskets que de bottes, et $5$ paires de
+        sandales de plus que de bottes. Combien y a-t-il de paires de chaque sorte ?
+  \item Le quart d'un jardin est un potager, le tiers une pelouse, et le reste, soit
+        $75$~m$^{2}$, un verger. Quelle est l'aire du jardin ?
+  \item $800$ spectateurs assistent à un concert. Une place assise coûte $40$~€, une
+        place debout $25$~€, et la recette est de $26\,000$~€. Combien de places assises
+        ont été vendues ?
+\end{enumerate}
+
+\partiefiche{Problèmes de géométrie}
+
+\exo[Exprimer des longueurs et des aires]
+\begin{enumerate}
+  \item Exprimer $GO$, puis $RS$, en fonction de $x$ ($[RT]$ est partagé en cinq parts
+        égales).
+\end{enumerate}
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \draw[fig] (0,0)--(3.6,0);
+  \foreach \a in {0,2,3.6} \draw[fig] (\a,-0.1)--(\a,0.1);
+  \node[left,font=\small] at (0,0) {$G$};
+  \node[right,font=\small] at (3.6,0) {$O$};
+  \draw[cote] (0,-0.35)--node[below,font=\small]{$x$}(2,-0.35);
+  \draw[cote] (2,0.35)--node[above,font=\small]{$7$}(3.6,0.35);
+\end{tikzpicture}
+\hspace{16pt}
+\begin{tikzpicture}[scale=0.8]
+  \draw[fig] (0,0)--(3.5,0);
+  \foreach \a in {0,0.7,1.4,2.1,2.8,3.5} \draw[fig] (\a,-0.1)--(\a,0.1);
+  \node[left,font=\small] at (0,0) {$R$};
+  \node[above,font=\small] at (1.4,0.1) {$S$};
+  \node[right,font=\small] at (3.5,0) {$T$};
+  \draw[cote] (0,-0.35)--node[below,font=\small]{$x$}(3.5,-0.35);
+\end{tikzpicture}
+\end{center}
+\begin{minipage}[c]{0.52\linewidth}
+\begin{enumerate}[resume]
+  \item Exprimer l'aire de la partie colorée en fonction de $x$ (avec $0<x<6$). Que
+        remarque-t-on ?
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.45\linewidth}
+\centering
+\begin{tikzpicture}[scale=0.32]
+  \def\x{2.4}
+  \fill[coulCourbe!25] (0,0) rectangle (\x+6,6);
+  \fill[white] (\x,6-\x) rectangle (\x+6,6);
+  \draw[fig] (0,0)--(\x+6,0)--(\x+6,6-\x)--(\x,6-\x)--(\x,6)--(0,6)--cycle;
+  \draw[fig,dashed] (\x,6)--(\x+6,6)--(\x+6,6-\x);
+  \draw[cote] (-0.6,0)--node[left,font=\small]{$6$}(-0.6,6);
+  \draw[cote] (\x,6.6)--node[above,font=\small]{$6$}(\x+6,6.6);
+  \draw[cote] (\x+6.6,6)--node[right,font=\small]{$x$}(\x+6.6,6-\x);
+  \draw[cote] (0,6.6)--node[above,font=\small]{$x$}(\x,6.6);
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Un trapèze et un triangle]
+Les longueurs sont en cm, avec $x>0$.
+\begin{center}
+\begin{tikzpicture}[scale=0.55]
+  \draw[fig] (0,0)--(4.5,0)--(3,2.4)--(1.5,2.4)--cycle;
+  \draw[fig,black!45] (1.5,2.4)--(1.5,0);
+  \draw[black!45] (1.5,0.25)--(1.75,0.25)--(1.75,0);
+  \node[above,font=\small] at (2.25,2.4) {$x$};
+  \node[below,font=\small] at (2.25,0) {$3x$};
+  \node[right,font=\small] at (1.5,1.2) {$x+3$};
+\end{tikzpicture}
+\hspace{14pt}
+\begin{tikzpicture}[scale=0.55]
+  \draw[fig] (0,0)--(5,0)--(3,3)--cycle;
+  \draw[fig,black!45] (3,3)--(3,0);
+  \draw[black!45] (3,0.25)--(3.25,0.25)--(3.25,0);
+  \node[below,font=\small] at (1.5,0) {$6$};
+  \node[below,font=\small] at (4,0) {$x$};
+  \node[left,font=\small] at (3,1.5) {$2x$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Exprimer l'aire de chaque figure en fonction de $x$.
+  \item Montrer que la somme de ces aires est l'aire d'un rectangle dont un côté mesure
+        $3x$. Quel est l'autre côté ?
+\end{enumerate}
+
+\exo[Deux solides]
+Montrer que le pavé droit et le prisme droit ci-dessous ont le même volume, pour tout
+$x>0$.
+\begin{center}
+\begin{tikzpicture}[scale=0.5]
+  \draw[fig] (0,0) rectangle (4,1.5);
+  \draw[fig] (0,1.5)--(1.2,2.4)--(5.2,2.4)--(4,1.5);
+  \draw[fig] (4,0)--(5.2,0.9)--(5.2,2.4);
+  \draw[fig,dashed,black!45] (0,0)--(1.2,0.9)--(5.2,0.9) (1.2,0.9)--(1.2,2.4);
+  \node[below,font=\small] at (2,0) {$2x+6$};
+  \node[right,font=\small] at (4.6,0.3) {$2x$};
+  \node[right,font=\small] at (5.2,1.65) {$x$};
+\end{tikzpicture}
+\hspace{10pt}
+\begin{tikzpicture}[scale=0.5]
+  \draw[fig] (0,0)--(1.6,0)--(0,3)--cycle;
+  \draw[fig] (1.6,0)--(4.4,1)--(2.8,4)--(0,3);
+  \draw[fig,dashed,black!45] (0,0)--(2.8,1)--(4.4,1) (2.8,1)--(2.8,4);
+  \draw[black!60] (0,0.25)--(0.25,0.25)--(0.25,0);
+  \node[left,font=\small] at (0,1.5) {$4x$};
+  \node[below,font=\small] at (0.8,0) {$2x$};
+  \node[below right,font=\small] at (3,0.5) {$x+3$};
+\end{tikzpicture}
+\end{center}
+
+\exo[Une aire donnée]
+Les longueurs sont en cm et $AEFD$ est un rectangle. Calculer $x$ sachant que l'aire du
+rectangle $ABCD$ vaut $30$~cm$^{2}$.
+\begin{center}
+\begin{tikzpicture}[scale=0.45]
+  \draw[fig] (0,0) rectangle (7,3.5);
+  \draw[fig] (5.4,0)--(5.4,3.5);
+  \draw[black!60] (5.4,3.2)--(5.7,3.2)--(5.7,3.5);
+  \node[above left,font=\small] at (0,3.5) {$A$};
+  \node[above,font=\small] at (5.4,3.5) {$E$};
+  \node[above right,font=\small] at (7,3.5) {$B$};
+  \node[below right,font=\small] at (7,0) {$C$};
+  \node[below,font=\small] at (5.4,0) {$F$};
+  \node[below left,font=\small] at (0,0) {$D$};
+  \draw[cote] (0,4.2)--node[above,font=\small]{$6$}(5.4,4.2);
+  \draw[cote] (5.4,4.2)--node[above,font=\small]{$x$}(7,4.2);
+  \node[right,font=\small] at (7,1.75) {$4$};
+\end{tikzpicture}
+\end{center}
+
+\exo[Un carré dans un carré]
+\begin{minipage}[c]{0.7\linewidth}
+On entoure un carré de $3$~cm de côté par une bande de largeur $x$~cm : on obtient un
+autre carré. Calculer $x$ pour que :
+\begin{enumerate}
+  \item le périmètre du grand carré soit égal à $36$~cm ;
+  \item l'aire du grand carré soit égale à $49$~cm$^{2}$ ;
+  \item l'aire de la bande soit égale au triple de celle du petit carré.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.27\linewidth}
+\centering
+\begin{tikzpicture}[scale=0.5]
+  \fill[coulCourbeC!25] (0,0) rectangle (4,4);
+  \draw[fig] (0,0) rectangle (4,4);
+  \draw[zoneB] (1,1) rectangle (3,3);
+  \node[font=\small] at (2,2) {$3$~cm};
+  \draw[cote] (3,2)--node[above,font=\small]{$x$}(4,2);
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Un bassin dans une parcelle]
+\begin{minipage}[c]{0.72\linewidth}
+Dans une parcelle carrée de côté $x$ (en m, avec $x>2$), on creuse un bassin carré en
+laissant, sur deux côtés, une bordure de $2$~m (en gris).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.26\linewidth}
+\centering
+\begin{tikzpicture}[scale=0.3]
+  \fill[black!25] (0,0) rectangle (5,5);
+  \draw[fig] (0,0) rectangle (5,5);
+  \draw[zoneB] (0,1.2) rectangle (3.8,5);
+  \node[font=\small] at (1.9,3.1) {bassin};
+  \draw[cote] (0,-0.6)--node[below,font=\small]{$x$}(5,-0.6);
+  \draw[cote] (3.8,5.6)--node[above,font=\small]{$2$}(5,5.6);
+  \draw[cote] (-0.6,0)--node[left,font=\small]{$2$}(-0.6,1.2);
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}
+  \item Parmi ces expressions, lesquelles donnent l'aire de la bordure ?
+        \par a)~$(x+2)^{2}-x^{2}$ \quad b)~$4x$ \quad c)~$4x-4$ \quad
+        d)~$x^{2}-(x-2)^{2}$ \quad e)~$x(x-2)$
+  \item Pour quelle valeur de $x$ l'aire du bassin vaut-elle $36$~m$^{2}$ ?
+\end{enumerate}
+
+\partiefiche{Isoler une grandeur}
+
+\exo[Échauffement]
+Isoler $A$ dans chaque égalité :
+\trois{a) $A+3=B$}{b) $5-A=B$}{c) $4A=B$}
+\trois{d) $\dfrac{A}{3}=B$}{e) $\dfrac{6}{A}=B$}{f) $2A+B=C$}
+
+\exo[Formules de géométrie et de physique]\label{exoformules}
+\begin{enumerate}
+  \item Volume d'un pavé $V=L\,\ell\,h$ : isoler $\ell$.
+  \item Aire d'un triangle $\mathcal{A}=\dfrac{b\times h}{2}$ : isoler $h$.
+  \item Tension aux bornes d'une pile $U=E-rI$ : isoler $r$.
+  \item $L\,H-\dfrac{V}{d}=0$ : isoler $d$.
+  \item Capital placé $C=C_{0}(1+t)$ : isoler $C_{0}$.
+  \item Aire d'un disque $\mathcal{A}=\pi r^{2}$ : isoler $r$ (avec $r>0$).
+\end{enumerate}
+
+\exo[Plus difficile]
+Les grandeurs sont strictement positives.
+\begin{enumerate}
+  \item Formule des lentilles $\dfrac{1}{f}=\dfrac1a+\dfrac1b$ : exprimer $f$ en fonction
+        de $a$ et $b$. \emph{(Réduire d'abord le membre de droite au même dénominateur.)}
+  \item $F=6{,}67\times 10^{-11}\,\dfrac{m\,m'}{d^{2}}$ : exprimer $d$ en fonction de $m$,
+        $m'$ et $F$.
+\end{enumerate}
+
+\exo[Isoler, puis calculer]
+\begin{enumerate}
+  \item On a $4x+2y-3z=10$. Exprimer $y$ en fonction de $x$ et $z$, puis calculer $y$
+        pour $x=1$ et $z=2$.
+  \item Un pavé droit a pour volume $72$~cm$^{3}$, pour longueur $6$~cm et pour hauteur
+        $3$~cm. Calculer sa largeur avec l'exercice \ref{exoformules}.
+  \item Un disque a une aire de $80$~cm$^{2}$. Calculer son rayon, arrondi au millimètre.
+\end{enumerate}
+
+\partiefichesansnum{Vers le devoir commun}
+
+{\small\itshape Les tâches du devoir commun, avec d'autres nombres. Sans calculatrice.\par}
+\vspace{2pt}
+
+\exo[Maîtrise des calculs]
+\begin{enumerate}
+  \item Développer et réduire :
+        \par\hspace*{0.6em}$A(x)=3(2x-5)+(3x+4)(2x-1)$
+        \par\hspace*{0.6em}$B(x)=(x+2)(-3x+4)-(5-x)$
+  \item Factoriser :
+        \par\hspace*{0.6em}$C(x)=8x^{2}-5x$ \qquad $D(x)=9x^{2}+30x+25$
+        \par\hspace*{0.6em}$E(x)=(2x-5)-3(2x-5)^{2}$
+        \par\hspace*{0.6em}$F(x)=(x+2)(-2x+3)-(x+2)^{2}$
+\end{enumerate}
+
+\exo[Une fonction, trois écritures]
+Soit $f$ la fonction définie sur $\R$ par ${f(x)=(x+3)^{2}-16}$.
+\begin{enumerate}
+  \item Développer $f(x)$, puis factoriser $f(x)$.
+  \item Avec l'écriture la plus adaptée : calculer $f(0)$ et $f\big(\frac12\big)$ ;
+        déterminer les antécédents de $0$, de $-7$, puis de $-16$ par $f$.
+\end{enumerate}
+
+\exo[Lire, puis démontrer]
+\begin{minipage}[c]{0.56\linewidth}
+\raggedright
+Soit $f$ la fonction définie sur $\intff{-2}{5}$ par
+\[ f(x)=(2x-3)(x+1)-(x+1)^{2}. \]
+Sa courbe est tracée ci-contre.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}
+\centering
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-3}{-7}{6}{7}
+  \gradx{-2,-1,1,2,3,4,5}
+  \grady{-6,-4,-2,2,4,6}
+  \draw[coulCourbe,line width=1pt,domain=-2:5,samples=60] plot (\x,{(\x)*(\x)-3*(\x)-4});
+  \node[coulCourbe,font=\footnotesize] at (4.3,6.6) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}
+  \item Par lecture graphique, conjecturer les solutions de $f(x)=0$, puis de $f(x)=-4$.
+  \item Montrer que $f(x)=x^{2}-3x-4$, puis que $f(x)=(x+1)(x-4)$.
+  \item Avec la forme adaptée, calculer $f(2)$, puis résoudre $f(x)=0$ et $f(x)=-4$.
+        Conclure sur les conjectures.
+\end{enumerate}
+
+\exo[Équations]
+Résoudre dans $\R$ :
+\deux{a) $\dfrac23x-3=5$}{b) $\dfrac74-\dfrac{x}{3}=1$}
+\par\smallskip
+\deux{c) $4x+3=1-3(2-x)$}{d) $(3x-4)^{2}-(x+6)^{2}=0$}
+\par\hspace*{0.6em}e) $9x^{2}-12x+4=4(x+2)^{2}$ \quad \emph{(reconnaître deux carrés)}
+
+\exo[Points d'intersection de deux courbes]
+Pour chaque couple, calculer les coordonnées des points d'intersection de $\Cf$ et
+$\Cg$ (on résout $f(x)=g(x)$).
+\deux{a) ${f(x)=x^{2}+2x-3}$}{${g(x)=2x+6}$}
+\deux{b) ${f(x)=3x^{2}-x+1}$}{${g(x)=5x+1}$}
+
+\exo[Deux problèmes]
+\begin{enumerate}
+  \item Quand on augmente de $3$~cm les côtés d'un carré, son aire augmente de
+        $51$~cm$^{2}$. Quelle est l'aire du carré de départ ?
+  \item Dans le rectangle $ABCD$, $AB=6$~cm et $BC=9$~cm ; $M$ est sur $[AB]$ et
+        $AM=x$. On construit le carré $AMNP$ et le rectangle $NQCR$ (méthode 16 du
+        cours). Où placer $M$ pour qu'ils aient la même aire ?
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

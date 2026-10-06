@@ -1,0 +1,1090 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1\signet{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \\[2pt]{\small\itshape Version élève}
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+\usepackage{colortbl}
+
+\chapitrecours{2}{Intervalles et fonctions}
+\niveaucours{Seconde}
+\titrecours{INTERVALLES ET FONCTIONS}{Cours --- Seconde}
+
+\begin{document}
+
+\ShorthandsOff
+\definecolor{coulInt}{HTML}{D62828}
+\definecolor{coulIntB}{HTML}{1565C0}
+\providecommand{\axegrad}[2]{%
+  \draw[-{Stealth[length=2mm]}] ({#1-0.5},0)--({#2+0.5},0);
+  \foreach \k in {#1,...,#2} \draw (\k,0.07)--(\k,-0.07);}
+\ProvideDocumentCommand{\morceau}{O{coulInt} O{0} m m}{%
+  \draw[#1,line width=1.8pt] (#3,#2)--(#4,#2);}
+\ProvideDocumentCommand{\crochet}{O{coulInt} O{0} m m}{%
+  \ifx[#4%
+    \draw[#1,line width=1.2pt] ($(#3,#2)+(2.6pt,5pt)$) -- ++(-2.6pt,0) -- ++(0,-10pt) -- ++(2.6pt,0);
+  \else
+    \draw[#1,line width=1.2pt] ($(#3,#2)+(-2.6pt,5pt)$) -- ++(2.6pt,0) -- ++(0,-10pt) -- ++(-2.6pt,0);
+  \fi}
+\ProvideDocumentCommand{\bornelab}{O{0} m m}{%
+  \node[below=6.5pt,font=\scriptsize,inner sep=1pt] at (#2,#1) {$#3$};}
+\providecommand{\surligne}[2]{\fill[yellow!45] (#1,-0.55) rectangle (#2,0.55);}
+\providecommand{\mini}[1]{\begin{tikzpicture}[x=0.42cm,baseline=-3pt]
+  \draw[-{Stealth[length=1.6mm]}] (-2.6,0)--(5.6,0);
+  \foreach \k in {-2,...,5} \draw (\k,0.06)--(\k,-0.06);
+  #1\end{tikzpicture}}
+\providecommand{\resultat}[1]{\colorbox{coulMeth!12}{$#1$}}
+\ShorthandsOn
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\smallskip
+Sur cette feuille, seuls les \textbf{énoncés} des exemples figurent : la résolution,
+signalée par la mention \emph{(au tableau)}, est à rédiger dans le cahier.
+
+\end{remarquebox}
+
+\partiecours{Droite numérique, intervalles fermés}
+
+\begin{definitionbox}[Définition 1 --- Droite numérique]
+Sur une droite graduée, chaque point a une abscisse, et chaque nombre est l'abscisse
+d'un seul point. Les nombres ainsi repérés sont les \textbf{nombres réels} ; leur
+ensemble est noté $\R$, et la droite graduée s'appelle la \textbf{droite numérique}.
+\begin{center}
+\begin{tikzpicture}[x=1.1cm]
+  \axegrad{-3}{4}
+  \foreach \p in {-2.5,-1,0,0.75,2,3.1416} {\path[coulDef] (\p,0) node[croix]{};}
+  \node[above=2pt,font=\scriptsize] at (-2.5,0) {$-\frac52$};
+  \node[above=2pt,font=\scriptsize] at (-1,0) {$-1$};
+  \node[above=2pt,font=\scriptsize] at (0,0) {$0$};
+  \node[above=2pt,font=\scriptsize] at (0.75,0) {$0{,}75$};
+  \node[above=2pt,font=\scriptsize] at (2,0) {$2$};
+  \node[above=2pt,font=\scriptsize] at (3.1416,0) {$\pi$};
+\end{tikzpicture}
+\end{center}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Symboles de comparaison]
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|l|l|}
+\hline
+\rowcolor{coulDef!10}\textbf{On écrit} & \textbf{On lit} & \textbf{Cela veut dire}\\\hline
+$a<b$ & $a$ est \textbf{strictement inférieur} à $b$ & $a$ est plus petit que $b$, sans lui être égal\\\hline
+$a\le b$ & $a$ est \textbf{inférieur ou égal} à $b$ & $a<b$ \textbf{ou} $a=b$\\\hline
+$a>b$ & $a$ est \textbf{strictement supérieur} à $b$ & $a$ est plus grand que $b$, sans lui être égal\\\hline
+$a\ge b$ & $a$ est \textbf{supérieur ou égal} à $b$ & $a>b$ \textbf{ou} $a=b$\\\hline
+\end{tabular}
+\end{center}
+Le petit trait sous $\le$ et $\ge$ dit que l'égalité est permise : $4\le 4$ est vrai,
+$4<4$ est faux ; $-1\ge -6$ est vrai.
+\end{definitionbox}
+
+\begin{exemplebox}[Exemple --- l'intervalle $\intff{-1}{3}$]
+Les nombres $x$ compris entre $-1$ et $3$, ces deux nombres compris, vérifient
+$-1\le x\le 3$. Leur ensemble est l'\textbf{intervalle} $\intff{-1}{3}$ ; $-1$ et $3$
+en sont les \textbf{bornes}.
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \axegrad{-2}{5}
+  \bornelab{-1}{-1}\bornelab{0}{0}\bornelab{1}{1}\bornelab{3}{3}
+  \morceau{-1}{3}\crochet{-1}{[}\crochet{3}{]}
+\end{tikzpicture}
+\end{center}
+On écrit $0\in\intff{-1}{3}$, $3\in\intff{-1}{3}$ et $4\notin\intff{-1}{3}$ :
+$\in$ se lit \og appartient à\fg{}, $\notin$ \og n'appartient pas à\fg{}.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 3 --- Intervalle fermé]
+Pour deux réels $a<b$, l'intervalle $\intff{a}{b}$ est l'ensemble des réels $x$ tels
+que $a\le x\le b$. Ses deux bornes lui appartiennent : les crochets sont
+\textbf{tournés vers l'intervalle}. On dit que l'intervalle est \textbf{fermé}.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Représenter un intervalle fermé]
+\etapeexemples
+Représenter sur une droite graduée :
+\begin{questions}[label=\alph*)]
+  \item $I=\intff{-2}{3}$
+  \item $J=\intff{-\frac32}{\frac12}$
+\end{questions}
+
+\etape{À vous de jouer}
+Représenter sur une droite graduée : \quad $\intff{1}{6}$ \qquad $\intff{-5}{-2}$
+\qquad $\intff{-\frac12}{\frac52}$
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Dire si un nombre appartient à un intervalle]
+\etapeexemples
+Pour chaque nombre $1$ ; $\frac23$ ; $\frac12$ ; $\pi$ ; $4{,}01$, dire s'il appartient à
+$I=\intff{\frac23}{4}$.
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Avec $J=\intff{-3}{\frac52}$, compléter par $\in$ ou $\notin$ : \quad
+        $-3\;\ldots\;J$ \qquad $\frac52\;\ldots\;J$ \qquad $2{,}6\;\ldots\;J$ \qquad
+        $\pi\;\ldots\;J$ \qquad $-3{,}1\;\ldots\;J$
+  \item Même question avec $K=\intff{-1}{\pi}$ : \quad $-1\;\ldots\;K$ \qquad
+        $3\;\ldots\;K$ \qquad $3{,}2\;\ldots\;K$ \qquad $-1{,}5\;\ldots\;K$
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 1 à 3}
+
+\partiecours{Intervalles ouverts, inégalités}
+
+\begin{definitionbox}[Définition 4 --- Bornes exclues, infini]
+\begin{itemize}
+  \item Un crochet \textbf{tourné vers l'extérieur} indique que la borne \textbf{n'appartient
+        pas} à l'intervalle.
+  \item Un intervalle sans aucune de ses bornes est \textbf{ouvert} ; avec une seule de
+        ses bornes, il est \textbf{semi-ouvert}.
+  \item Quand l'intervalle n'est pas limité d'un côté, on écrit $+\infty$ (\og plus
+        l'infini\fg{}) ou $-\infty$ (\og moins l'infini\fg{}) ; de ce côté, le crochet
+        est toujours tourné vers l'extérieur. L'infini n'est pas un nombre : on ne
+        peut jamais l'atteindre.
+\end{itemize}
+\end{definitionbox}
+
+\besoinplace{18\baselineskip}
+\begin{exemplebox}[Exemples]
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}l@{\qquad}c@{\qquad}l@{}}
+\textbf{Inégalité(s)} & \textbf{Représentation} & \textbf{Intervalle}\\
+$-2<x<3$ &
+\begin{tikzpicture}[x=0.45cm,baseline=-3pt]\axegrad{-4}{6}
+\morceau{-2}{3}\crochet{-2}{]}\crochet{3}{[}\bornelab{-2}{-2}\bornelab{0}{0}\bornelab{3}{3}\end{tikzpicture}
+& $x\in\intoo{-2}{3}$ \quad (ouvert)\\
+$-2<x\le 3$ &
+\begin{tikzpicture}[x=0.45cm,baseline=-3pt]\axegrad{-4}{6}
+\morceau{-2}{3}\crochet{-2}{]}\crochet{3}{]}\bornelab{-2}{-2}\bornelab{0}{0}\bornelab{3}{3}\end{tikzpicture}
+& $x\in\intof{-2}{3}$ \quad ($-2$ exclu, $3$ inclus)\\
+$x>1$ &
+\begin{tikzpicture}[x=0.45cm,baseline=-3pt]\axegrad{-4}{6}
+\morceau{1}{6.5}\crochet{1}{]}\bornelab{0}{0}\bornelab{1}{1}\end{tikzpicture}
+& $x\in\intoo{1}{+\infty}$\\
+$x\le 4$ &
+\begin{tikzpicture}[x=0.45cm,baseline=-3pt]\axegrad{-4}{6}
+\morceau{-4.5}{4}\crochet{4}{]}\bornelab{0}{0}\bornelab{4}{4}\end{tikzpicture}
+& $x\in\intof{-\infty}{4}$\\
+tous les réels &
+\begin{tikzpicture}[x=0.45cm,baseline=-3pt]\axegrad{-4}{6}
+\morceau{-4.5}{6.5}\bornelab{0}{0}\end{tikzpicture}
+& $x\in\intoo{-\infty}{+\infty}$, c'est-à-dire $x\in\R$
+\end{tabular}
+\end{exemplebox}
+
+\begin{proprietebox}[Propriété 1 --- À retenir]
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{|>{\centering\arraybackslash}m{3.2cm}|>{\centering\arraybackslash}m{3.2cm}|>{\centering\arraybackslash}m{4.4cm}|}
+\hline
+\rowcolor{coulProp!10}\textbf{Réels $x$ tels que} & \textbf{Notation} & \textbf{Représentation}\\\hline
+$a\le x<b$ & $x\in\intfo{a}{b}$ & \mini{\morceau{0}{3}\crochet{0}{[}\crochet{3}{[}\bornelab{0}{a}\bornelab{3}{b}}\\\hline
+$x>a$ & $x\in\intoo{a}{+\infty}$ & \mini{\morceau{1}{5.6}\crochet{1}{]}\bornelab{1}{a}}\\\hline
+$x\le b$ & $x\in\intof{-\infty}{b}$ & \mini{\morceau{-2.6}{3}\crochet{3}{]}\bornelab{3}{b}}\\\hline
+\end{tabular}
+\end{center}
+$\le$ ou $\ge$ : crochet \textbf{fermé} ; \quad $<$, $>$, $+\infty$ ou $-\infty$ : crochet
+\textbf{ouvert}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Passer d'une inégalité à un intervalle, et inversement]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Écrire avec un intervalle, puis représenter : \quad ${-1<x\le 4}$ \qquad
+        ${x\ge -2}$ \qquad ${x<\frac32}$
+  \item Écrire avec une inégalité : \quad ${x\in\intfo{-5}{1}}$ \qquad
+        ${x\in\intoo{2}{+\infty}}$
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Écrire avec un intervalle, puis représenter : \quad $2\le x<7$ \qquad $x>-3$
+        \qquad $x\le 1{,}5$ \qquad $-2<x<\frac12$
+  \item Écrire avec une inégalité : \quad $x\in\intoo{-\infty}{4}$ \qquad
+        $x\in\intof{-3}{2}$ \qquad $x\in\intfo{0}{+\infty}$
+  \item Compléter par $\in$ ou $\notin$ : \quad $5\;\ldots\;\intoo{2}{5}$ \qquad
+        $-4\;\ldots\;\intof{-\infty}{-4}$ \qquad $0\;\ldots\;\intoo{-\infty}{0}$
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 4 à 8}
+
+\partiecours{Intersection, réunion, complémentaire}
+
+\begin{definitionbox}[Définition 5 --- Intersection]
+L'\textbf{intersection} de deux intervalles $I$ et $J$, notée $I\cap J$ (\og $I$ inter
+$J$\fg{}), est l'ensemble des nombres qui appartiennent \textbf{à la fois} à $I$ et à
+$J$. S'il n'y en a aucun, l'intersection est l'\textbf{ensemble vide}, noté
+$\varnothing$.
+\end{definitionbox}
+
+\begin{exemplebox}[Exemple --- $I=\intff{-1}{3}$ et $J=\intff{1}{5}$]
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{1}{3}
+  \axegrad{-2}{6}
+  \foreach \k in {-1,0,1,3,5} {\bornelab[-0.3]{\k}{\k}}
+  \morceau[coulInt][0.3]{-1}{3}\crochet[coulInt][0.3]{-1}{[}\crochet[coulInt][0.3]{3}{]}
+  \morceau[coulIntB][-0.3]{1}{5}\crochet[coulIntB][-0.3]{1}{[}\crochet[coulIntB][-0.3]{5}{]}
+  \node[coulInt,right,font=\scriptsize] at (6.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (6.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+Les deux intervalles se superposent de $1$ à $3$ (zone surlignée), et $1$ et $3$ sont
+dans $I$ et dans $J$ : \quad $I\cap J=\intff{1}{3}$.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 6 --- Réunion]
+La \textbf{réunion} de deux intervalles $I$ et $J$, notée $I\cup J$ (\og $I$ union
+$J$\fg{}), est l'ensemble des nombres qui appartiennent à $I$ \textbf{ou} à $J$ :
+à $I$ seulement, à $J$ seulement, ou aux deux.
+\end{definitionbox}
+
+\begin{exemplebox}[Exemple --- $I=\intff{-1}{3}$ et $J=\intff{1}{5}$]
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{-1}{5}
+  \axegrad{-2}{6}
+  \foreach \k in {-1,0,1,3,5} {\bornelab[-0.3]{\k}{\k}}
+  \morceau[coulInt][0.3]{-1}{3}\crochet[coulInt][0.3]{-1}{[}\crochet[coulInt][0.3]{3}{]}
+  \morceau[coulIntB][-0.3]{1}{5}\crochet[coulIntB][-0.3]{1}{[}\crochet[coulIntB][-0.3]{5}{]}
+  \node[coulInt,right,font=\scriptsize] at (6.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (6.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+À eux deux, les intervalles couvrent la droite de $-1$ à $5$ (zone surlignée) :
+\quad $I\cup J=\intff{-1}{5}$.
+\end{exemplebox}
+
+\begin{methodebox}[Méthode 4 --- Trouver l'intersection et la réunion]
+\etapeexemples
+Déterminer $I\cap J$ et $I\cup J$ :
+\begin{questions}[label=\alph*)]
+  \item $I=\intff{-2}{2}$ et $J=\intoo{0}{5}$
+  \item $I=\intof{-\infty}{-2}$ et $J=\intff{1}{3}$
+\end{questions}
+
+\etape{À vous de jouer}
+Déterminer $I\cap J$ et $I\cup J$ :
+\begin{questions}[label=\alph*)]
+  \item $I=\intfo{-3}{2}$ et $J=\intfo{-1}{+\infty}$
+  \item $I=\intof{-\infty}{1}$ et $J=\intof{1}{4}$
+  \item $I=\intff{0}{5}$ et $J=\intoo{1}{3}$
+\end{questions}
+
+\end{methodebox}
+
+\begin{definitionbox}[Définition 7 --- Complémentaire]
+Le \textbf{complémentaire} dans $\R$ d'un intervalle $I$, noté $\complement_{\R} I$, est
+l'ensemble des réels qui \textbf{n'appartiennent pas} à $I$.
+\end{definitionbox}
+
+\begin{exemplebox}[Exemple --- $I=\intfo{2}{4}$]
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{-1.5}{2}\surligne{4}{7.5}
+  \axegrad{-1}{7}
+  \foreach \k in {0,1,2,4} {\bornelab[-0.3]{\k}{\k}}
+  \morceau[coulInt][0.3]{2}{4}\crochet[coulInt][0.3]{2}{[}\crochet[coulInt][0.3]{4}{[}
+  \morceau[coulIntB][-0.3]{-1.5}{2}\crochet[coulIntB][-0.3]{2}{[}
+  \morceau[coulIntB][-0.3]{4}{7.5}\crochet[coulIntB][-0.3]{4}{[}
+  \node[coulInt,right,font=\scriptsize] at (7.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (7.6,-0.3) {$\complement_{\R} I$};
+\end{tikzpicture}
+\end{center}
+Le complémentaire est tout le reste de la droite. $2\in I$, donc $2$ n'est pas dans le
+complémentaire ; $4\notin I$, donc $4$ y est : \quad
+$\complement_{\R} I=\intoo{-\infty}{2}\cup\intfo{4}{+\infty}$.
+\end{exemplebox}
+
+\begin{methodebox}[Méthode 5 --- Trouver le complémentaire d'un intervalle]
+\etapeexemples
+Déterminer le complémentaire dans $\R$ de :
+\begin{questions}[label=\alph*)]
+  \item $I=\intff{1}{3}$
+  \item $K=\intoo{-\infty}{2}$
+\end{questions}
+
+\etape{À vous de jouer}
+Déterminer le complémentaire dans $\R$ de : \quad $L=\intoo{-2}{+\infty}$ \qquad
+$M=\intfo{1}{4}$ \qquad $N=\intof{-\infty}{3}$
+
+\end{methodebox}
+
+\afaire{exercices 9 à 13}
+
+\partiecours{Image et antécédent}
+
+\begin{definitionbox}[Définition 8 --- Fonction, image, antécédent]
+Une \textbf{fonction} $f$ associe à chaque nombre $x$ de départ \textbf{un seul} nombre,
+noté $f(x)$ (on lit \og $f$ de $x$\fg{}).
+\begin{itemize}
+  \item $f(x)$ est l'\textbf{image} de $x$ par $f$ ;
+  \item $x$ est \textbf{un antécédent} de $f(x)$ par $f$.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}[>={Stealth[length=2.5mm]}]
+  \node (a) at (0,0) {$x$};
+  \node[draw=coulDef,thick,fill=coulDef!8,minimum width=1.4cm,minimum height=0.75cm,rounded corners] (f) at (2.4,0) {$f$};
+  \node (b) at (4.8,0) {$f(x)$};
+  \draw[->,thick] (a)--(f); \draw[->,thick] (f)--(b);
+  \node[below,font=\scriptsize,coulDef] at (a.south) {antécédent};
+  \node[below,font=\scriptsize,coulDef] at (b.south) {image};
+\end{tikzpicture}
+\end{center}
+Exemple : avec $f(x)=3x-2$, on a $f(4)=3\times 4-2=10$ ; $10$ est l'image de $4$, et $4$
+est un antécédent de $10$. On écrit aussi $f : 4\longmapsto 10$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 6 --- Calculer une image]
+On remplace $x$ par le nombre, \textbf{entre parenthèses} s'il est négatif, puis on
+calcule en respectant les priorités.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit ${f(x)=4x-3}$. Calculer $f(3)$ et $f(-2)$.
+  \item Soit ${h(x)=2x^{2}-3x+1}$. Calculer $h(3)$, $h(-2)$ et $h\!\left(\frac12\right)$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Soit ${g(x)=\frac23x+1}$. Calculer $g(6)$, $g(0)$ et $g\!\left(\frac34\right)$.
+  \item Soit ${k(x)=-x^{2}+3x+2}$. Calculer $k(2)$, $k(-1)$ et $k\!\left(\frac12\right)$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 7 --- Chercher ou vérifier un antécédent]
+Chercher les antécédents de $b$, c'est \textbf{résoudre l'équation} $f(x)=b$. Vérifier
+que $a$ est un antécédent de $b$, c'est \textbf{calculer} $f(a)$ et regarder si l'on
+trouve $b$.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit ${f(x)=3x+2}$. Déterminer l'antécédent de $-10$ par $f$.
+  \item Soit ${p(x)=x^{2}+2x}$. Le nombre $-3$ est-il un antécédent de $3$ par $p$ ?
+        Et le nombre $2$ ?
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Soit ${u(x)=4x-7}$. Déterminer l'antécédent de $9$ par $u$.
+  \item Soit ${k(x)=-x^{2}+3x+2}$. Le nombre $-1$ est-il un antécédent de $-2$ par $k$ ?
+        Et le nombre $3$ ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 14 à 17}
+
+\partiecours{Ensemble de définition}
+
+\begin{exemplebox}[Deux calculs impossibles]
+Certains nombres n'ont pas d'image, parce que le calcul est impossible : ce sont des
+\textbf{valeurs interdites}.
+\begin{itemize}
+  \item Avec $f(x)=\dfrac{1}{x}$, $f(0)=1\div 0$ n'existe pas : \textbf{on ne divise pas
+        par zéro}. Le nombre $0$ est une valeur interdite.
+  \item Avec $g(x)=\sqrt{x}$, $g(-4)=\sqrt{-4}$ n'existe pas : \textbf{un nombre négatif
+        n'a pas de racine carrée}. Tous les nombres strictement négatifs sont interdits.
+\end{itemize}
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 9 --- Ensemble de définition]
+L'\textbf{ensemble de définition} d'une fonction $f$, noté $D_f$, est l'ensemble des
+nombres qui ont une image par $f$. On note $f : D_f\longrightarrow\R$,
+$x\longmapsto f(x)$.
+
+\smallskip
+Exemples : $D_f=\intoo{-\infty}{0}\cup\intoo{0}{+\infty}$ pour $f(x)=\frac1x$ ;
+$D_g=\intfo{0}{+\infty}$ pour $g(x)=\sqrt{x}$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- À retenir]
+\begin{itemize}
+  \item Une \textbf{fonction affine} $f(x)=ax+b$ est définie sur $\R$, comme toute
+        expression sans quotient ni racine carrée (par exemple $x^{2}+5x-3$).
+  \item Un \textbf{dénominateur} ne doit pas être nul : les nombres qui l'annulent sont
+        des valeurs interdites.
+  \item Sous une \textbf{racine carrée}, le nombre doit être \textbf{positif ou nul}.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Trouver la valeur interdite d'un quotient]
+On résout l'équation \og dénominateur $=0$\fg{}.
+\etapeexemples
+Trouver la valeur interdite de \quad $h(x)=\dfrac{1}{3x-2}$ \quad et de \quad
+$u(x)=\dfrac{x+1}{x-4}$.
+
+\etape{À vous de jouer}
+Trouver la valeur interdite de \quad $p(x)=\dfrac{x-2}{2x+8}$ \quad et de \quad
+$v(x)=\dfrac{3}{x+5}$.
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 9 --- Déterminer un ensemble de définition]
+Sans quotient ni racine : $D_f=\R$. Avec un quotient : on retire de $\R$ la valeur
+interdite. Avec une racine : on résout \og nombre sous la racine $\ge 0$\fg{} comme une
+équation (on ajoute ou on retranche un même nombre, on divise par un même nombre
+positif).
+\etapeexemples
+Déterminer l'ensemble de définition de :
+\[
+  f(x)=2x+7 \qquad h(x)=\dfrac{1}{3x-2} \qquad i(x)=\sqrt{x-4} \qquad j(x)=\sqrt{3x+6}
+\]
+
+\etape{À vous de jouer}
+Déterminer l'ensemble de définition de :
+\[
+  g(x)=-2x+9 \qquad p(x)=\dfrac{x-2}{2x+8} \qquad q(x)=\sqrt{x+3} \qquad
+  r(x)=\sqrt{2x-10} \qquad s(x)=4x-1
+\]
+
+\end{methodebox}
+
+\afaire{exercices 18 à 21}
+
+\partiecours{Tableau de valeurs}
+
+\begin{definitionbox}[Définition 10 --- Tableau de valeurs]
+Un \textbf{tableau de valeurs} d'une fonction $f$ donne sur la première ligne des valeurs
+de $x$ (des \textbf{antécédents}) et sur la seconde leurs \textbf{images} $f(x)$. Une
+image se lit de haut en bas, un antécédent de bas en haut.
+
+\smallskip
+Le \textbf{pas} est l'écart entre deux valeurs de $x$ qui se suivent. De $-2$ à $2$ avec un
+pas de $1$ : $-2$ ; $-1$ ; $0$ ; $1$ ; $2$. Avec un pas de $0{,}5$ : $-2$ ; $-1{,}5$ ;
+$-1$ ; \ldots ; $2$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 10 --- Dresser et lire un tableau de valeurs]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit ${f(x)=3x-2}$. Dresser le tableau de valeurs de $f$ de $-3$ à $3$ avec un pas
+        de $1$. Donner l'image de $-3$ et un antécédent de $4$.
+  \item Même travail avec $g(x)=x^{2}-1$, de $-3$ à $3$ avec un pas de $1$. Combien le
+        nombre $3$ a-t-il d'antécédents dans le tableau ?
+\end{questions}
+
+\begin{remarquebox}[À retenir]
+Un nombre de départ n'a \textbf{qu'une seule image} ; un nombre peut avoir
+\textbf{plusieurs antécédents}, ou aucun.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Soit ${u(x)=-x^{2}+4x}$.
+\begin{questions}
+  \item Dresser le tableau de valeurs de $u$ de $-1$ à $5$ avec un pas de $1$.
+  \item Donner l'image de $2$, puis les antécédents de $0$ et de $3$ lus dans le tableau.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 22 à 24}
+
+\partiecours{Courbe représentative}
+
+\begin{definitionbox}[Définition 11 --- Courbe d'une fonction]
+Dans un repère, la \textbf{courbe représentative} $\Cf$ d'une fonction $f$ est formée des
+points de coordonnées $\bigl(x\,;f(x)\bigr)$ : antécédents en abscisse, images en
+ordonnée. Un point $M(x\,;y)$ est sur $\Cf$ lorsque $y=f(x)$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 11 --- Tracer une courbe, lire images et antécédents]
+On place les points d'un tableau de valeurs et on les relie à main levée par une courbe
+\textbf{sans angle}. L'\textbf{image} de $a$ se lit en ordonnée, au-dessus (ou
+au-dessous) de $a$ ; les \textbf{antécédents} de $b$ sont les abscisses des points de la
+courbe situés sur la droite horizontale $y=b$.
+\etapeexemples
+Soit ${f(x)=x^{2}-4}$, de $-3$ à $3$.
+\begin{questions}[label=\alph*)]
+  \item Dresser le tableau de valeurs de $f$ de $-3$ à $3$ avec un pas de $1$, puis
+        tracer la courbe de $f$.
+  \item Lire les antécédents de $5$, puis ceux de $-5$.
+\end{questions}
+
+\begin{remarquebox}
+Une courbe représente une fonction seulement si chaque droite verticale la coupe
+\textbf{au plus une fois} : un nombre n'a qu'une image.
+\end{remarquebox}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 12 --- Savoir si un point est sur une courbe]
+On calcule l'image de l'abscisse du point et on la compare à son ordonnée :
+$M(x_M\,;y_M)$ est sur $\Cf$ lorsque $f(x_M)=y_M$.
+\etapeexemples
+Avec $f(x)=x^{2}-4$ : les points $A(2{,}5\,;2{,}25)$ et $B(-1\,;3)$ sont-ils sur $\Cf$ ?
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+\begin{questions}
+  \item Ci-contre, la courbe d'une fonction $f$. Lire :
+        \begin{questions}
+          \item l'ensemble de définition de $f$ ;
+          \item l'image de $-3$, de $0$ et de $4$ ;
+          \item les antécédents de $1$, de $-1$, de $2$ et de $4$.
+        \end{questions}
+  \item Soit ${u(x)=2x^{2}-5}$. Les points $A(-2\,;3)$, $B(1{,}5\,;-0{,}5)$ et
+        $C(0\,;5)$ sont-ils sur la courbe de $u$ ?
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-6}{-3}{5}{4}
+  \gradx{-5,-4,-3,-2,-1,1,2,3,4}
+  \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-5,-1)
+    .. controls (-4.667,-0.333) and (-4.333,0.5) .. (-4,1)
+    .. controls (-3.667,1.5) and (-3.333,2) .. (-3,2)
+    .. controls (-2.667,2) and (-2.333,1.5) .. (-2,1)
+    .. controls (-1.667,0.5) and (-1.333,-0.5) .. (-1,-1)
+    .. controls (-0.667,-1.5) and (-0.333,-2) .. (0,-2)
+    .. controls (0.333,-2) and (0.667,-1.5) .. (1,-1)
+    .. controls (1.333,-0.5) and (1.667,0.5) .. (2,1)
+    .. controls (2.333,1.5) and (2.667,1.667) .. (3,2)
+    .. controls (3.333,2.333) and (3.667,2.667) .. (4,3);
+  \path[coulCourbe] (-5,-1) node[croix]{} (4,3) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-4.4,2.5) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+
+\end{methodebox}
+
+\afaire{exercices 25 à 28}
+
+\partiecours{Calculatrice NumWorks}
+
+\begin{proprietebox}[Application \texttt{Calculs}]
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{4.4cm}|>{\raggedright\arraybackslash}p{6.4cm}|>{\raggedright\arraybackslash}p{5.4cm}|}
+\hline
+\rowcolor{coulProp!10}\textbf{Pour} & \textbf{On tape} & \textbf{On obtient}\\\hline
+une puissance & $3$ \fbox{\small$x^{y}$} $4$ & $3^{4}=81$\\\hline
+une fraction & la touche \fbox{\small$\div$} crée une fraction & $\frac34+\frac25=\frac{23}{20}$\\\hline
+reprendre un calcul & flèche \fbox{\small$\uparrow$}, puis \fbox{\small OK} & le calcul revient dans la ligne de saisie\\\hline
+effacer l'historique & \fbox{\small shift} puis \fbox{\small$\leftarrow$} (\texttt{clear}) & écran vide\\\hline
+une puissance de 10 & touche \fbox{\small$\times10^{x}$} : $3\times10^{2}+1{,}5\times10^{3}$ & $1~800$\\\hline
+décomposer un entier & \fbox{\small toolbox}, \texttt{Arithmétique}, \texttt{factor(360)} & $2^{3}\times3^{2}\times5$\\\hline
+le nombre $\pi$ & \fbox{\small shift} \fbox{\small$\times10^{x}$} : $2\times\pi\times 3$ & $\approx 18{,}85$\\\hline
+\end{tabular}
+\end{center}
+Un nombre négatif se tape entre parenthèses : $2\times(-3)^{2}$ vaut $18$, mais
+$2\times -3^{2}$ est compris comme $2\times(-9)=-18$. {\footnotesize\itshape Les intitulés
+peuvent varier selon la version du logiciel.}
+\end{proprietebox}
+
+\begin{proprietebox}[Application \texttt{Grapheur}]
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{4.3cm}|>{\raggedright\arraybackslash}p{12.3cm}|}
+\hline
+\rowcolor{coulProp!10}\textbf{Pour} & \textbf{On fait}\\\hline
+entrer une fonction & Onglet \texttt{Expressions}, \texttt{Ajouter un élément}, puis
+  par exemple $f(x)=x^{2}-2$ ($x$ avec la touche \fbox{\small$x,n,t$}) et
+  \fbox{\small OK}.\\\hline
+afficher un tableau & Onglet \texttt{Tableau}, \texttt{Régler l'intervalle} :
+  \texttt{X début}, \texttt{X fin}, \texttt{Pas}.\\\hline
+tracer la courbe & Onglet \texttt{Graphique}, menu \texttt{Axes} pour régler $X_{\min}$,
+  $X_{\max}$, $Y_{\min}$, $Y_{\max}$.\\\hline
+lire une image & Sur la courbe : \fbox{\small OK}, \texttt{Aller à}, puis la valeur de
+  $x$.\\\hline
+chercher des antécédents & Sur la courbe : \fbox{\small OK}, \texttt{Calculer},
+  \texttt{Antécédent}, puis la valeur ; les flèches passent d'un antécédent à
+  l'autre.\\\hline
+couper deux courbes & Sur l'une des courbes : \fbox{\small OK}, \texttt{Calculer},
+  \texttt{Intersection}.\\\hline
+\end{tabular}
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 13 --- Étudier une fonction à la calculatrice]
+On entre la fonction, on règle le tableau (début, fin, pas), puis les axes d'après le
+tableau ; on lit enfin images et antécédents.
+\etapeexemples
+Soit ${f(x)=x^{2}-2}$.
+\begin{questions}[label=\alph*)]
+  \item Afficher le tableau de valeurs de $f$ de $-4$ à $4$ avec un pas de $1$.
+  \item Tracer la courbe de $f$ avec des axes adaptés.
+  \item Lire $f(3)$ et $f(1{,}5)$, puis les antécédents de $3$ arrondis à $0{,}01$.
+\end{questions}
+
+\etape{À vous de jouer}
+Soit ${g(x)=(x+1)^{2}}$.
+\begin{questions}
+  \item Développer $g(x)$.
+  \item Afficher le tableau de valeurs de $g$ de $-3$ à $3$ avec un pas de $0{,}5$, et le
+        recopier.
+  \item Tracer la courbe de $g$ avec des axes adaptés.
+  \item Lire $g(0{,}25)$, puis les antécédents de $3$ arrondis à $0{,}01$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 29 à 32}
+
+\partiecours{Résolution graphique}
+
+\begin{proprietebox}[Propriété 3 --- Résoudre graphiquement]
+\begin{itemize}
+  \item Les solutions de $f(x)=k$ sont les \textbf{abscisses} des points de $\Cf$ situés
+        sur la droite horizontale $y=k$ : ce sont les antécédents de $k$.
+  \item Les solutions de $f(x)>k$ sont les abscisses des points de $\Cf$ situés
+        \textbf{strictement au-dessus} de cette droite ; pour $f(x)<k$,
+        \textbf{strictement au-dessous}.
+  \item Pour $f(x)\ge k$ ou $f(x)\le k$, on garde aussi les points sur la droite :
+        crochets fermés.
+\end{itemize}
+Une équation se conclut par des \textbf{accolades}, une inéquation par des
+\textbf{intervalles}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 14 --- Résoudre graphiquement une équation ou une inéquation]
+\etapeexemples
+Un rectangle a un périmètre de $12$~cm ; un de ses côtés mesure $x$~cm, avec
+$0\le x\le 6$. Son aire est ${f(x)=6x-x^{2}}$.
+\begin{questions}[label=\alph*)]
+  \item Dresser le tableau de valeurs de $f$ de $0$ à $6$ avec un pas de $1$, puis tracer
+        la courbe de $f$.
+  \item Résoudre graphiquement $f(x)=5$, puis $f(x)=10$.
+  \item Résoudre graphiquement $f(x)\ge 5$, puis $f(x)<5$.
+\end{questions}
+
+\begin{remarquebox}
+Une lecture graphique donne en général des valeurs \textbf{approchées} ; ici, le calcul
+confirme les valeurs lues : $f(1)=6-1=5$ et $f(5)=30-25=5$. On ne conclut que sur la
+partie tracée de la courbe.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+Ci-contre, la courbe d'une fonction $f$ définie sur $\intff{-4}{4}$.
+\begin{questions}
+  \item Résoudre graphiquement : \quad $f(x)=1$ \quad $f(x)=2$ \quad $f(x)=-2$ \quad
+        $f(x)=3$
+  \item Résoudre graphiquement : \quad $f(x)\ge 1$ \quad $f(x)<2$ \quad $f(x)>-2$
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,-3,-2,-1,1,2,3,4}
+  \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt] (-4,-1)
+    .. controls (-3.667,-0.333) and (-3.333,0.5) .. (-3,1)
+    .. controls (-2.667,1.5) and (-2.333,2) .. (-2,2)
+    .. controls (-1.667,2) and (-1.333,1.5) .. (-1,1)
+    .. controls (-0.667,0.5) and (-0.333,-0.5) .. (0,-1)
+    .. controls (0.333,-1.5) and (0.667,-2) .. (1,-2)
+    .. controls (1.333,-2) and (1.667,-1.5) .. (2,-1)
+    .. controls (2.333,-0.5) and (2.667,0.5) .. (3,1)
+    .. controls (3.333,1.5) and (3.667,1.667) .. (4,2);
+  \path[coulCourbe] (-4,-1) node[croix]{} (4,2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-3.6,2) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+
+\end{methodebox}
+
+\afaire{exercices 33 à 36}
+
+\partiecours{Comparer deux fonctions}
+
+\begin{proprietebox}[Propriété 4 --- Deux courbes]
+Soit $f$ et $g$ deux fonctions définies sur un même intervalle.
+\begin{itemize}
+  \item Les solutions de $f(x)=g(x)$ sont les abscisses des \textbf{points
+        d'intersection} de $\Cf$ et $\Cg$.
+  \item Les solutions de $f(x)<g(x)$ sont les abscisses des points où $\Cf$ est
+        \textbf{strictement au-dessous} de $\Cg$ ; pour $f(x)>g(x)$,
+        \textbf{strictement au-dessus}.
+\end{itemize}
+Pour $f(x)\le g(x)$ ou $f(x)\ge g(x)$, on ajoute les abscisses des points
+d'intersection.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 15 --- Comparer graphiquement deux fonctions]
+\etapeexemples
+Sur $\intff{-1}{4}$, on considère ${f(x)=x^{2}-2x}$ et $g(x)=x$, tracées ci-contre.
+Résoudre graphiquement :
+\begin{questions}[label=\alph*)]
+  \item $f(x)=g(x)$
+  \item $f(x)<g(x)$
+  \item $f(x)\ge g(x)$
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+Sur $\intff{-3}{2}$, on considère ${f(x)=4-x^{2}}$ et $g(x)=x+2$, tracées ci-contre.
+Résoudre graphiquement :
+\begin{questions}
+  \item $f(x)=g(x)$
+  \item $f(x)\le g(x)$
+  \item $f(x)>g(x)$
+\end{questions}
+
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-6}{3}{5}
+  \gradx{-3,-2,-1,1,2}
+  \grady{-5,-4,-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:2,samples=60] plot (\x,{4-(\x)*(\x)});
+  \draw[coulCourbeC,line width=1.1pt] (-3,-1)--(2,4);
+  \node[coulCourbe,font=\footnotesize,right] at (-3,-5) {$\Cf$};
+  \node[coulCourbeC,font=\footnotesize,left] at (2,4.4) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+\end{methodebox}
+
+\afaire{exercices 37 à 39}
+
+\end{document}

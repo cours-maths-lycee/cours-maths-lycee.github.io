@@ -1,0 +1,1173 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 2 --- Fonctions --- corrigé}{Première spécialité}
+\usepackage{tkz-tab}
+
+\begin{document}
+
+\entetefiche{Chapitre 2 --- Fonctions}{Première spécialité mathématiques}
+
+\partie{Images et antécédents}
+
+\begin{exo}[Vocabulaire]
+\begin{questions}
+  \item a) \res{$f(3)=-1$} \quad b) \res{$g(-2)=6$} \quad c) \res{$h(0)=5$} \quad
+        d) \res{$k(4)=9$}
+  \item L'image de $5$ par $f$ est $-7$. Le nombre $5$ est un antécédent de $-7$ par $f$.
+        Le point de coordonnées $(5\,;-7)$ est sur la courbe de $f$.
+\end{questions}
+\rem{On dit « \emph{l'}image » (il n'y en a qu'une) mais « \emph{un} antécédent » (il
+peut y en avoir plusieurs).}
+\end{exo}
+
+\begin{exo}[Calculer des images]
+Avec $f(x)=2x^{2}-5x$ :
+\begin{questions}
+  \item $f(3)=2\times 9-15=\res{3}$ \qquad $f(-2)=2\times 4+10=\res{18}$ \qquad
+        $f\!\left(\frac{1}{2}\right)=\frac{1}{2}-\frac{5}{2}=\res{-2}$\\[2pt]
+        $f(-1{,}5)=2\times 2{,}25+7{,}5=\res{12}$ \qquad
+        $f\!\left(\sqrt{3}\right)=2\times 3-5\sqrt{3}=\res{6-5\sqrt{3}}$
+  \item $f(-1)=2+5=7$ : \res{oui}, $-1$ est un antécédent de $7$.\\
+        $f(2)=8-10=-2$ : \res{non}, l'image de $2$ est $-2$.
+\end{questions}
+\rem{$(-2)^{2}=4$ et $-5\times(-2)=+10$ : les parenthèses autour des nombres négatifs
+évitent les erreurs de signe.}
+\end{exo}
+
+\begin{exo}[Calculer des antécédents]
+On résout à chaque fois l'équation « $f(x)=$ nombre ».
+\begin{questions}[label=\alph*)]
+  \item $x-7=2$, donc $x=\res{9}$.
+  \item $x^{2}=49$ : deux antécédents, \res{$-7$ et $7$}.
+  \item $5x+3=0$, soit $5x=-3$, donc $x=\res{-\frac{3}{5}}$.
+  \item $(x-1)(x+4)=0$ : un produit est nul si l'un de ses facteurs est nul, donc
+        $x=\res{1}$ ou $x=\res{-4}$.
+  \item $x^{2}+3=2$, soit $x^{2}=-1$ : un carré n'est jamais négatif, $2$ n'a
+        \res{aucun antécédent}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Lire des images et des antécédents]
+\begin{questions}
+  \item $g(-2)=\res{1}$ \quad;\quad $g(0)=\res{-2}$ \quad;\quad $g(3)=\res{2}$
+        \quad;\quad $g(5)=\res{-1}$
+  \item Antécédents de $1$ : \res{$-2$ ; $2$ et $4$}. Antécédents de $-1$ :
+        \res{$-1$ ; $1$ et $5$}. Antécédent de $-2$ : \res{$0$} (un seul). Antécédents
+        de $5$ : \res{aucun}, la courbe ne monte pas au-dessus de $4$.
+  \item L'axe des abscisses coupe la courbe en trois points : \res{trois solutions}
+        (une entre $-2$ et $-1$, une entre $1$ et $2$, une entre $4$ et $5$).
+  \item $g(\res{-3})=4$.
+\end{questions}
+\rem{Une image se lit sur l'axe des ordonnées ; un antécédent sur l'axe des abscisses.}
+\end{exo}
+
+\begin{exo}[Points d'une courbe]
+Avec $h(x)=x^{2}+2x-8$ :
+\begin{questions}
+  \item $h(1)=1+2-8=-5$ : c'est l'ordonnée de $A$, donc \res{$A$ est sur
+        $\mathcal{C}_h$}.\\
+        $h(-2)=4-4-8=-8$, et non $0$ : \res{$B$ n'est pas sur $\mathcal{C}_h$}.
+  \item Sur l'axe des ordonnées, $x=0$ : $h(0)=-8$, le point est \res{$(0\,;-8)$}.
+  \item \begin{calculs}
+        (x-2)(x+4) &= x^{2}+4x-2x-8\\
+        (x-2)(x+4) &= x^{2}+2x-8
+        \end{calculs}
+        donc $h(x)=(x-2)(x+4)$. Sur l'axe des abscisses, $h(x)=0$ : $x=2$ ou $x=-4$.
+        Les points sont \res{$(2\,;0)$ et $(-4\,;0)$}.
+\end{questions}
+\rem{« Le point est sur la courbe » se vérifie par un calcul : ses coordonnées vérifient
+$y=h(x)$.}
+\end{exo}
+
+\partie{Ensemble de définition}
+
+\begin{exo}[Un nombre sans image]
+Pour $f$, \res{$0$} n'a pas d'image (division par $0$). Pour $g$, \res{$5$} n'a pas
+d'image ($5-5=0$). Pour $h$, \res{$-2$} n'a pas d'image ($\sqrt{-1}$ n'existe pas).
+\end{exo}
+
+\begin{exo}[Ensembles de définition]
+Quotient : on retire les valeurs qui annulent le dénominateur. Racine carrée : le nombre
+sous la racine doit être positif ou nul.
+\begin{questions}[label=\alph*)]
+  \item $x+6=0$ pour $x=-6$ : $f$ est définie sur \res{$\R\setminus\ens{-6}$}.
+  \item $4x-12=0$ pour $x=3$ : $g$ est définie sur \res{$\R\setminus\ens{3}$}.
+  \item $x^{2}+5\ge 5$ ne s'annule jamais : $h$ est définie sur \res{$\R$}.
+  \item $x^{2}-16=0$ pour $x^{2}=16$, soit $x=-4$ ou $x=4$ : $k$ est définie sur
+        \res{$\R\setminus\ens{-4\,;4}$}.
+  \item \begin{calculs}
+        12-3x &\ge 0\\
+        -3x &\ge -12\\
+        x &\le 4 &&\justif{on divise par $-3<0$ : le sens change}
+        \end{calculs}
+        $m$ est définie sur \res{$\intof{-\infty}{4}$}.
+  \item Deux conditions : $x-1\ge 0$ pour la racine, et $\sqrt{x-1}\ne 0$ pour le
+        dénominateur, soit $x\ne 1$. Il reste $x>1$ : $p$ est définie sur
+        \res{$\intoo{1}{+\infty}$}.
+\end{questions}
+\rem{En c), le numérateur peut s'annuler : seul le dénominateur compte.}
+\end{exo}
+
+\begin{exo}[Avec une valeur interdite]
+Avec $f(x)=\dfrac{6}{x-1}$ :
+\begin{questions}
+  \item $x-1=0$ pour $x=1$ : $f$ est définie sur \res{$\R\setminus\ens{1}$}.
+  \item $f(0)=\dfrac{6}{-1}=\res{-6}$ \qquad $f(4)=\dfrac{6}{3}=\res{2}$ \qquad
+        $f(-2)=\dfrac{6}{-3}=\res{-2}$
+  \item Pour $x\ne 1$ :
+        \begin{itemize}
+          \item $\dfrac{6}{x-1}=3$ lorsque $x-1=2$, soit $x=\res{3}$ ;
+          \item $\dfrac{6}{x-1}=-6$ lorsque $x-1=-1$, soit $x=\res{0}$ ;
+          \item le numérateur vaut $6$, jamais $0$ : $0$ n'a \res{aucun antécédent}.
+        \end{itemize}
+\end{questions}
+\rem{Le 3) se contrôle avec le 2) : $f(0)=-6$.}
+\end{exo}
+
+\begin{exo}[Avec une racine carrée]
+Avec $g(x)=\sqrt{4x+8}$ :
+\begin{questions}
+  \item $4x+8\ge 0$, soit $4x\ge -8$, donc $x\ge -2$ : $g$ est définie sur
+        \res{$\intfo{-2}{+\infty}$}.
+  \item $g(2)=\sqrt{16}=\res{4}$ \qquad $g(-1)=\sqrt{4}=\res{2}$ \qquad $-3<-2$ :
+        $g(-3)=\sqrt{-4}$ \res{n'existe pas}.
+  \item Pour $x\ge -2$ :
+        \begin{itemize}
+          \item $\sqrt{4x+8}=6$ lorsque $4x+8=36$, soit $4x=28$, donc $x=\res{7}$ ;
+          \item $\sqrt{4x+8}=0$ lorsque $4x+8=0$, donc $x=\res{-2}$ ;
+          \item une racine carrée est positive : $-1$ n'a \res{aucun antécédent}.
+        \end{itemize}
+\end{questions}
+\end{exo}
+
+\partie{Comparaison de deux fonctions}
+
+\begin{exo}[Comparer sur un graphique]
+\begin{questions}[label=\alph*)]
+  \item Les courbes se coupent aux points d'abscisses $-2$ ; $1$ et $4$ :
+        \res{$S=\ens{-2\,;1\,;4}$}.
+  \item $\Cf$ est strictement au-dessus de $\Cg$ :
+        \res{$S=\intfo{-3}{-2}\cup\intoo{1}{4}$}.
+  \item $g(x)=2$ en $-1$ (le maximum local de $g$ touche la droite $y=2$) et en $4$ ;
+        $\Cg$ est au-dessus de cette droite après $4$ : \res{$S=\ens{-1}\cup\intff{4}{5}$}.
+\end{questions}
+\rem{On répond par des abscisses, jamais par les ordonnées des points d'intersection. En
+c), le nombre isolé $-1$ est souvent oublié.}
+\end{exo}
+
+\begin{exo}[Signe d'une différence]
+\begin{questions}[label=\alph*)]
+  \item \begin{minipage}[t]{0.58\linewidth}\raggedright
+        \begin{calculs}
+        f(x)-g(x) &= 3x-4-(x+2)\\
+        f(x)-g(x) &= 2x-6
+        \end{calculs}
+        $2x-6>0$ pour $x>3$. $\Cf$ est \res{au-dessous} de $\Cg$ sur
+        $\intoo{-\infty}{3}$, \res{au-dessus} sur $\intoo{3}{+\infty}$ ; les droites se
+        coupent en \res{$(3\,;5)$}, car $g(3)=5$.
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.38\linewidth}\centering
+        \vspace{0pt}
+        \begin{tikzpicture}[x=0.26cm,y=0.26cm]
+          \repere{-1}{-3}{6}{11}
+          \gradx{3} \grady{5,10}
+          \draw[coulCourbe,line width=1.1pt] (1/3,-3) -- (5,11);
+          \draw[coulCourbeC,line width=1.1pt] (-1,1) -- (6,8);
+          \draw[dashed] (3,0) -- (3,5);
+          \path (3,5) node[croix]{};
+          \node[coulCourbe,font=\footnotesize] at (3.6,10.6) {$\Cf$};
+          \node[coulCourbeC,font=\footnotesize] at (6.6,7) {$\Cg$};
+        \end{tikzpicture}
+        \end{minipage}
+  \item \begin{minipage}[t]{0.58\linewidth}\raggedright
+        \begin{calculs}
+        f(x)-g(x) &= x^{2}-(2x-1)\\
+        f(x)-g(x) &= x^{2}-2x+1\\
+        f(x)-g(x) &= (x-1)^{2}
+        \end{calculs}
+        Un carré est positif : $\Cf$ est \res{au-dessus} de $\Cg$ sur $\R$, avec un seul
+        point commun, \res{$(1\,;1)$}. La droite touche la parabole sans la traverser.
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.38\linewidth}\centering
+        \vspace{0pt}
+        \begin{tikzpicture}[x=0.26cm,y=0.26cm]
+          \repere{-3}{-3}{4}{9}
+          \gradx{-2,1,2} \grady{1,5}
+          \draw[coulCourbe,line width=1.1pt,domain=-3:3,samples=50] plot (\x,{\x*\x});
+          \draw[coulCourbeC,line width=1.1pt] (-1,-3) -- (4,7);
+          \path (1,1) node[croix]{};
+          \node[coulCourbe,font=\footnotesize] at (-3.6,8) {$\Cf$};
+          \node[coulCourbeC,font=\footnotesize] at (4.6,6) {$\Cg$};
+        \end{tikzpicture}
+        \end{minipage}
+  \item \begin{minipage}[t]{0.58\linewidth}\raggedright
+        \begin{calculs}
+        f(x)-g(x) &= x^{2}-x-(-x+4)\\
+        f(x)-g(x) &= x^{2}-4\\
+        f(x)-g(x) &= (x-2)(x+2)
+        \end{calculs}
+        $x+2=0$ pour $x=-2$, et $x-2=0$ pour $x=2$ (tableau ci-dessous).
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.38\linewidth}\centering
+        \vspace{0pt}
+        \begin{tikzpicture}[x=0.26cm,y=0.26cm]
+          \repere{-4}{-1}{4}{12}
+          \gradx{-2,2} \grady{2,6,10}
+          \draw[coulCourbe,line width=1.1pt,domain=-3:3.6,samples=50] plot (\x,{\x*\x-\x});
+          \draw[coulCourbeC,line width=1.1pt] (-4,8) -- (4,0);
+          \draw[dashed] (-2,0) -- (-2,6) (2,0) -- (2,2);
+          \path (-2,6) node[croix]{} (2,2) node[croix]{};
+          \node[coulCourbe,font=\footnotesize] at (-3.6,10.5) {$\Cf$};
+          \node[coulCourbeC,font=\footnotesize] at (-3.4,6.4) {$\Cg$};
+        \end{tikzpicture}
+        \end{minipage}
+        \begin{center}
+        \begin{tikzpicture}[scale=0.7]
+          \tkzTabInit[lgt=2.8,espcl=1.6,deltacl=0.6]{$x$/1,$x+2$/1,$x-2$/1,$f(x)-g(x)$/1}%
+            {$-\infty$,$-2$,$2$,$+\infty$}
+          \tkzTabLine{,-,z,+,t,+,}
+          \tkzTabLine{,-,t,-,z,+,}
+          \tkzTabLine{,+,z,-,z,+,}
+        \end{tikzpicture}
+        \end{center}
+        $\Cf$ est \res{au-dessous} de $\Cg$ sur $\intoo{-2}{2}$, \res{au-dessus} sur
+        $\intoo{-\infty}{-2}$ et sur $\intoo{2}{+\infty}$ ; points d'intersection
+        \res{$(-2\,;6)$ et $(2\,;2)$}.
+\end{questions}
+\rem{L'ordonnée d'un point d'intersection se calcule avec $f$ ou avec $g$ : on doit
+trouver le même nombre, ce qui contrôle le calcul.}
+\end{exo}
+
+\begin{exo}[Une parabole et une droite]
+\begin{questions}
+  \item \begin{minipage}[t]{0.58\linewidth}\raggedright
+        {\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{4pt}
+        \begin{tabular}{|c|*{8}{c|}}
+        \hline
+        $x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+        \hline
+        $f(x)$ & $6$ & $1$ & $-2$ & $-3$ & $-2$ & $1$ & $6$ & $13$\\
+        \hline
+        $g(x)$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$\\
+        \hline
+        \end{tabular}\par}
+        \medskip
+        $\Cf$ est une parabole, $\Cg$ une droite (figure ci-contre).
+  \item Les courbes se coupent en $(-1\,;1)$ et $(4\,;6)$ :
+        \res{$S=\ens{-1\,;4}$}.\\
+        $\Cf$ est sur ou sous $\Cg$ entre ces points : \res{$S=\intff{-1}{4}$} (en rouge
+        sur l'axe).
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.38\linewidth}\centering
+        \vspace{0pt}
+        \begin{tikzpicture}[x=0.32cm,y=0.32cm]
+          \repere{-3}{-4}{6}{14}
+          \gradx{-1,1,4} \grady{2,6,10}
+          \draw[coulCourbe,line width=1.1pt,domain=-2.4:5.2,samples=60] plot (\x,{\x*\x-2*\x-2});
+          \draw[coulCourbeC,line width=1.1pt] (-3,-1) -- (6,8);
+          \draw[dashed] (-1,0) -- (-1,1) (4,0) -- (4,6);
+          \draw[red,line width=1.6pt] (-1,0) -- (4,0);
+          \path[coulCourbe] (-2,6) node[croix]{} (-1,1) node[croix]{} (0,-2) node[croix]{}
+            (1,-3) node[croix]{} (2,-2) node[croix]{} (3,1) node[croix]{} (4,6) node[croix]{}
+            (5,13) node[croix]{};
+          \node[coulCourbe,font=\footnotesize] at (6,12.5) {$\Cf$};
+          \node[coulCourbeC,font=\footnotesize] at (6.5,7) {$\Cg$};
+        \end{tikzpicture}
+        \end{minipage}
+  \item \begin{calculs}
+        f(x)-g(x) &= x^{2}-2x-2-(x+2)\\
+        f(x)-g(x) &= x^{2}-3x-4\\[3pt]
+        (x+1)(x-4) &= x^{2}-4x+x-4\\
+        (x+1)(x-4) &= x^{2}-3x-4
+        \end{calculs}
+        Les deux expressions sont égales : \res{$f(x)-g(x)=(x+1)(x-4)$}.
+  \item $x+1=0$ pour $x=-1$ et $x-4=0$ pour $x=4$ :
+        \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=3,espcl=2,deltacl=0.6]{$x$/1,$x+1$/1,$x-4$/1,$f(x)-g(x)$/1}%
+            {$-\infty$,$-1$,$4$,$+\infty$}
+          \tkzTabLine{,-,z,+,t,+,}
+          \tkzTabLine{,-,t,-,z,+,}
+          \tkzTabLine{,+,z,-,z,+,}
+        \end{tikzpicture}
+        \end{center}
+  \item $\Cf$ est \res{au-dessus} de $\Cg$ sur $\intoo{-\infty}{-1}$ et sur
+        $\intoo{4}{+\infty}$, \res{au-dessous} sur $\intoo{-1}{4}$ ; elles se coupent en
+        $(-1\,;1)$ et $(4\,;6)$. Le calcul \emph{démontre} ce que la figure du 2) laissait
+        voir.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Une fonction quotient]
+Avec $f(x)=\dfrac{2x+1}{x-3}$ :
+\begin{questions}
+  \item $x-3=0$ pour $x=3$ : \res{$D=\R\setminus\ens{3}$}.
+  \item $f(0)=\dfrac{1}{-3}=\res{-\dfrac{1}{3}}$ \qquad $f(4)=\dfrac{9}{1}=\res{9}$
+        \qquad $f(2)=\dfrac{5}{-1}=\res{-5}$
+  \item Pour $x\ne 3$ :
+        \begin{itemize}
+          \item $f(x)=1$ lorsque $2x+1=x-3$, soit $x=\res{-4}$ ;
+          \item $f(x)=0$ lorsque $2x+1=0$, soit $x=\res{-\frac{1}{2}}$ ;
+          \item $f(x)=2$ lorsque $2x+1=2(x-3)$, soit $2x+1=2x-6$, ou $1=-6$ : c'est
+                impossible, $2$ n'a \res{aucun antécédent}.
+        \end{itemize}
+  \item On réduit au même dénominateur :
+        \begin{calculs}
+        2+\frac{7}{x-3} &= \frac{2(x-3)+7}{x-3}\\
+        2+\frac{7}{x-3} &= \frac{2x+1}{x-3}
+        \end{calculs}
+        c'est bien \res{$f(x)$}.
+  \item $f(x)-2=\dfrac{7}{x-3}$ a le signe de $x-3$ :
+        \begin{itemize}
+          \item pour $x>3$, $f(x)-2>0$ : $\Cf$ est \res{au-dessus} de la droite $y=2$ ;
+          \item pour $x<3$, $f(x)-2<0$ : $\Cf$ est \res{au-dessous}.
+        \end{itemize}
+        La courbe ne coupe jamais la droite : on retrouve le 3).
+  \item \begin{minipage}[t]{0.58\linewidth}\raggedright
+        $f(-4)=\res{1}$ ; $f(-1)=\res{0{,}25}$ ; $f(5)=\res{5{,}5}$ ; $f(10)=\res{3}$.\\[3pt]
+        Avec le 2) : $f(0)\approx -0{,}33$ ; $f(2)=-5$ ; $f(4)=9$.\\[3pt]
+        La courbe a deux branches, de part et d'autre de la droite verticale $x=3$ ;
+        elles s'approchent de la droite $y=2$, la gauche par-dessous, la droite
+        par-dessus.
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.38\linewidth}\centering
+        \vspace{0pt}
+        \begin{tikzpicture}[x=0.25cm,y=0.25cm]
+          \repere{-6}{-7}{12}{11}
+          \gradx{-4,3,5,10} \grady{-5,2,5,9}
+          \draw[dashed] (3,-7) -- (3,11);
+          \draw[coulCourbeC,line width=1.1pt] (-6,2) -- (12,2);
+          \draw[coulCourbe,line width=1.1pt,domain=-6:2.125,samples=60] plot (\x,{(2*\x+1)/(\x-3)});
+          \draw[coulCourbe,line width=1.1pt,domain=3.875:12,samples=60] plot (\x,{(2*\x+1)/(\x-3)});
+          \path[coulCourbe] (-4,1) node[croix]{} (-1,0.25) node[croix]{} (0,-1/3) node[croix]{}
+            (2,-5) node[croix]{} (4,9) node[croix]{} (5,5.5) node[croix]{} (10,3) node[croix]{};
+          \node[coulCourbe,font=\footnotesize] at (6,9.5) {$\Cf$};
+          \node[coulCourbeC,font=\footnotesize] at (11,3.2) {$y=2$};
+        \end{tikzpicture}
+        \end{minipage}
+\end{questions}
+\end{exo}
+
+\partie{Sens de variation}
+
+\begin{exo}[Lecture graphique complète]
+\begin{questions}
+  \item Antécédents de $0$ : \res{$-4$ ; $0$ et $4$}. Antécédents de $1$ :
+        \res{$-3$ ; $-1$ et $5$}. Antécédents de $-2$ : \res{$1$ et $3$}. Antécédents de
+        $4$ : \res{aucun}, car le maximum de $f$ vaut $3$.
+  \item Le \textbf{maximum} est \res{$3$, atteint en $6$} ; le \textbf{minimum} est
+        \res{$-3$, atteint en $2$}.
+  \item $f$ est croissante sur $\intff{-4}{-2}$, décroissante sur $\intff{-2}{2}$,
+        croissante sur $\intff{2}{6}$.
+        \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=1.6,espcl=2]{$x$/1,$f(x)$/2}{$-4$,$-2$,$2$,$6$}
+          \tkzTabVar{-/$0$,+/$2$,-/$-3$,+/$3$}
+        \end{tikzpicture}
+        \end{center}
+  \item $f(x)\ge 0$ : $\Cf$ est sur ou au-dessus de l'axe des abscisses,
+        \res{$S=\intff{-4}{0}\cup\intff{4}{6}$}.\\
+        $f(x)<1$ : $\Cf$ est strictement sous la droite $y=1$,
+        \res{$S=\intfo{-4}{-3}\cup\intoo{-1}{5}$}.
+  \item Si $-2\le x\le 2$, alors \res{$-3$}$\;\le f(x)\le\;$\res{$2$} ; si
+        $2\le x\le 5$, alors \res{$-3$}$\;\le f(x)\le\;$\res{$1$}.
+  \item $\Cf$ et $(D)$ se coupent en un seul point, $(3\,;-2)$ : \res{$S=\ens{3}$}.\\
+        $\Cf$ est sur ou sous $(D)$ avant ce point : \res{$S=\intff{-4}{3}$}.
+\end{questions}
+\rem{En 5), on lit le tableau de variations : sur $\intff{-2}{2}$, $f$ descend de $2$
+à $-3$ ; sur $\intff{2}{5}$, elle monte de $-3$ à $f(5)=1$.}
+\end{exo}
+
+\begin{exo}[Du tableau de variations à la courbe]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+\begin{questions}
+  \item \res{$\intff{-3}{4}$} : c'est la première ligne du tableau.
+  \item $g$ est \res{croissante} sur $\intff{-3}{0}$ (de $-1$ à $3$), \res{décroissante}
+        sur $\intff{0}{2}$ (de $3$ à $-2$), puis \res{croissante} sur $\intff{2}{4}$ (de
+        $-2$ à $1$).
+  \item Le maximum est \res{$3$, atteint en $0$} ; le minimum est \res{$-2$, atteint en
+        $2$}.
+  \item Une courbe possible ci-contre : elle passe par $(-3\,;-1)$, $(0\,;3)$,
+        $(2\,;-2)$ et $(4\,;1)$, et respecte les variations.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-3}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-3,-1)
+    .. controls (-2,-1) and (-1,3) .. (0,3)
+    .. controls (0.667,3) and (1.333,-2) .. (2,-2)
+    .. controls (2.667,-2) and (3.333,0) .. (4,1);
+  \path[coulCourbe] (-3,-1) node[croix]{} (0,3) node[croix]{} (2,-2) node[croix]{}
+    (4,1) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (4.4,1.8) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+\rem{Un tableau de variations ne donne que l'allure de la courbe : il y a une infinité de
+courbes possibles.}
+\end{exo}
+
+\begin{exo}[Le bénéfice d'un atelier]
+Avec $B(x)=-x^{2}+12x-20$ :
+\begin{questions}
+  \item \begin{center}
+        {\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{4pt}
+        \begin{tabular}{|c|*{11}{c|}}
+        \hline
+        $x$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$ & $9$ & $10$ & $11$\\
+        \hline
+        $B(x)$ & $-9$ & $0$ & $7$ & $12$ & $15$ & $16$ & $15$ & $12$ & $7$ & $0$ & $-9$\\
+        \hline
+        \end{tabular}}
+        \end{center}
+  \item \begin{minipage}[t]{0.50\linewidth}\raggedright
+        La courbe est une parabole « tournée vers le bas », symétrique par rapport à la
+        droite $x=6$ (repère à unités différentes : grandeurs différentes sur les deux
+        axes).
+  \item[3\textdegree)] $B$ est croissante sur $\intff{1}{6}$, décroissante sur
+        $\intff{6}{11}$.
+        \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=1.6,espcl=2.4]{$x$/1,$B(x)$/2}{$1$,$6$,$11$}
+          \tkzTabVar{-/$-9$,+/$16$,-/$-9$}
+        \end{tikzpicture}
+        \end{center}
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.46\linewidth}\centering
+        \vspace{0pt}
+        \begin{tikzpicture}[x=0.5cm,y=0.12cm]
+          \foreach \k in {-10,-8,...,18} \draw[grille] (0,\k) -- (12,\k);
+          \foreach \k in {0,...,12} \draw[grille] (\k,-10) -- (\k,18);
+          \draw[-{Stealth[length=2mm]},thick] (0,0) -- (12.5,0) node[below left]{$x$};
+          \draw[-{Stealth[length=2mm]},thick] (0,-10) -- (0,19.5) node[below left]{$y$};
+          \foreach \k in {2,6,10} \node[below,font=\scriptsize] at (\k,0) {$\k$};
+          \foreach \k in {-8,8,16} \node[left,font=\scriptsize] at (0,\k) {$\k$};
+          \draw[coulCourbe,line width=1.1pt,domain=1:11,samples=60] plot (\x,{-\x*\x+12*\x-20});
+          \draw[red,line width=1.6pt] (2,0) -- (10,0);
+          \path[coulCourbe] (1,-9) node[croix]{} (2,0) node[croix]{} (3,7) node[croix]{}
+            (4,12) node[croix]{} (5,15) node[croix]{} (6,16) node[croix]{} (7,15) node[croix]{}
+            (8,12) node[croix]{} (9,7) node[croix]{} (10,0) node[croix]{} (11,-9) node[croix]{};
+        \end{tikzpicture}
+        \end{minipage}
+  \item[4\textdegree)] Le bénéfice maximal est \res{$16$ centaines d'euros, soit
+        $1\,600$~€}, pour $x=6$, c'est-à-dire \res{$60$ trottinettes}.
+  \item[5\textdegree)] $B(x)\ge 0$ pour $x\in\intff{2}{10}$ (en rouge sur l'axe) :
+        l'atelier ne perd pas d'argent lorsqu'il vend \res{entre $20$ et $100$
+        trottinettes}.
+\end{questions}
+\rem{Attention aux unités : $x$ est en \emph{dizaines} de trottinettes, $B$ en
+\emph{centaines} d'euros.}
+\end{exo}
+
+\begin{exo}[Sens de variation par le calcul]
+Dans tout l'exercice, $a<b$, donc $a-b<0$.
+\begin{questions}
+  \item \begin{calculs}
+        f(a)-f(b) &= (4a-7)-(4b-7)\\
+        f(a)-f(b) &= 4a-4b\\
+        f(a)-f(b) &= 4(a-b)
+        \end{calculs}
+        $4>0$ et $a-b<0$ : $f(a)-f(b)<0$, donc $f(a)<f(b)$. $f$ est \res{strictement
+        croissante} sur $\R$.
+  \item \begin{calculs}
+        g(a)-g(b) &= (-3a+2)-(-3b+2)\\
+        g(a)-g(b) &= -3a+3b\\
+        g(a)-g(b) &= -3(a-b)
+        \end{calculs}
+        $-3<0$ et $a-b<0$ : $g(a)-g(b)>0$, donc $g(a)>g(b)$. $g$ est \res{strictement
+        décroissante} sur $\R$.
+  \item De même, $(ma+p)-(mb+p)=m(a-b)$, de signe contraire à celui de $m$ :
+        \res{croissante si $m>0$, décroissante si $m<0$, constante si $m=0$}.
+  \item \begin{calculs}
+        u(a)-u(b) &= a^{2}+4a-b^{2}-4b\\
+        u(a)-u(b) &= \left(a^{2}-b^{2}\right)+4(a-b)\\
+        u(a)-u(b) &= (a-b)(a+b)+4(a-b)\\
+        u(a)-u(b) &= (a-b)(a+b+4) &&\justif{facteur commun $a-b$}
+        \end{calculs}
+        Sur $\intfo{0}{+\infty}$, $a+b+4>0$ et $a-b<0$ : $u(a)-u(b)<0$, donc $u(a)<u(b)$.
+        $u$ est \res{croissante} sur $\intfo{0}{+\infty}$.
+  \item \begin{calculs}
+        v(a)-v(b) &= \left(1-\frac{1}{a}\right)-\left(1-\frac{1}{b}\right)\\
+        v(a)-v(b) &= -\frac{1}{a}+\frac{1}{b}\\
+        v(a)-v(b) &= \frac{-b+a}{ab} &&\justif{même dénominateur $ab$}\\
+        v(a)-v(b) &= \frac{a-b}{ab}
+        \end{calculs}
+        $a-b<0$ et $ab>0$ (deux nombres positifs) : $v(a)-v(b)<0$, donc $v(a)<v(b)$. $v$
+        est \res{croissante} sur $\intoo{0}{+\infty}$.
+\end{questions}
+\rem{Toujours la même démarche : calculer $f(a)-f(b)$, \emph{factoriser} pour faire
+apparaître $a-b$, puis conclure sur le signe.}
+\end{exo}
+
+\partie{Fonction carré}
+
+\begin{exo}[Équations avec des carrés]
+On se ramène à $x^{2}=k$ (ou $A^{2}=k$) : deux solutions si $k>0$, aucune si $k<0$.
+\begin{questions}[label=\alph*)]
+  \item $x^{2}=36$ : \res{$S=\ens{-6\,;6}$}.
+  \item $x^{2}=11$ : \res{$S=\ens{-\sqrt{11}\,;\sqrt{11}}$}.
+  \item $2x^{2}-5=x^{2}+4$ équivaut à $x^{2}=9$ : \res{$S=\ens{-3\,;3}$}.
+  \item $(3x+1)^{2}=16$ équivaut à $3x+1=4$ ou $3x+1=-4$, soit $x=1$ ou
+        $x=-\frac{5}{3}$ : \res{$S=\ens{-\frac{5}{3}\,;1}$}.
+  \item $x^{2}+9=0$ équivaut à $x^{2}=-9$ : un carré n'est jamais négatif,
+        \res{$S=\varnothing$}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Comparer et encadrer des carrés]
+\begin{questions}
+  \item $-4{,}2<-3{,}9\le 0$ et la fonction carré est décroissante sur
+        $\intof{-\infty}{0}$ : elle inverse l'ordre, \res{$(-4{,}2)^{2}>(-3{,}9)^{2}$}.\\
+        $0\le 1{,}05<1{,}5$ et elle est croissante sur $\intfo{0}{+\infty}$ : elle
+        conserve l'ordre, \res{$1{,}05^{2}<1{,}5^{2}$}.
+  \item Sur $\intff{3}{6}$ (positifs, ordre conservé) : \res{$9\le x^{2}\le 36$}.\\
+        Sur $\intff{-5}{-2}$ (négatifs, ordre inversé) : \res{$4\le x^{2}\le 25$}.\\
+        Sur $\intff{-3}{1}$, qui contient $0$ : $x^{2}$ descend de $9$ à $0$, puis monte
+        jusqu'à $1$, donc \res{$0\le x^{2}\le 9$}.
+\end{questions}
+\rem{Piège du dernier cas : écrire $1\le x^{2}\le 9$. Dès que l'intervalle contient $0$,
+la plus petite valeur de $x^{2}$ est $0$.}
+\end{exo}
+
+\begin{exo}[Deux paraboles]
+\begin{questions}
+  \item \begin{calculs}
+        f(x)-g(x) &= 2x^{2}+x+7-\left(x^{2}-3x+3\right)\\
+        f(x)-g(x) &= x^{2}+4x+4\\
+        f(x)-g(x) &= (x+2)^{2} &&\justif{identité remarquable}
+        \end{calculs}
+  \item Un carré est positif : $f(x)-g(x)\ge 0$ pour tout $x$, \res{$\Cf$ est au-dessus
+        de $\Cg$ sur $\R$}. L'égalité n'a lieu que pour $x=-2$ : $f(-2)=8-2+7=13$, le
+        point commun est \res{$(-2\,;13)$}.
+\end{questions}
+\end{exo}
+
+\partie{Fonction cube}
+
+\begin{exo}[Variations de la fonction cube]
+\begin{questions}
+  \item \begin{calculs}
+        (a-b)\left(a^{2}+ab+b^{2}\right) &= a^{3}+a^{2}b+ab^{2}-a^{2}b-ab^{2}-b^{3}\\
+        (a-b)\left(a^{2}+ab+b^{2}\right) &= \res{a^{3}-b^{3}} &&\justif{les termes $a^{2}b$ et $ab^{2}$ s'annulent}
+        \end{calculs}
+  \item Si $a<b\le 0$ : $a^{2}>0$ (car $a<0$), $b^{2}\ge 0$, et $ab\ge 0$ (produit de
+        deux nombres négatifs). Donc $a^{2}+ab+b^{2}>0$.\\
+        Comme $a-b<0$, le produit $a^{3}-b^{3}$ est \res{négatif} : $a^{3}<b^{3}$. La
+        fonction cube est \res{croissante} sur $\intof{-\infty}{0}$.
+  \item Si $0\le a<b$ : $a^{2}\ge 0$, $b^{2}>0$ et $ab\ge 0$, donc $a^{2}+ab+b^{2}>0$, et
+        de nouveau $a^{3}<b^{3}$ : elle est croissante sur $\intfo{0}{+\infty}$.\\
+        Enfin, si $a<0<b$, alors $a^{3}<0<b^{3}$. La fonction cube est \res{croissante sur
+        $\R$}.
+\end{questions}
+\rem{C'est la différence avec la fonction carré, qui change de sens en $0$.}
+\end{exo}
+
+\begin{exo}[Calculs et équations]
+\begin{questions}
+  \item $3^{3}=\res{27}$ \quad;\quad $(-2)^{3}=\res{-8}$ \quad;\quad
+        $\left(\frac{1}{3}\right)^{3}=\res{\frac{1}{27}}$ \quad;\quad
+        $(-0{,}2)^{3}=\res{-0{,}008}$
+  \item L'équation $x^{3}=k$ a une seule solution, la racine cubique $\sqrt[3]{k}$.
+        \begin{questions}[label=\alph*)]
+          \item $x=\sqrt[3]{-125}$, soit $x=-5$ : \res{$S=\ens{-5}$}.
+          \item $x=\sqrt[3]{1}$, soit $x=1$ : \res{$S=\ens{1}$}.
+          \item $3x^{3}=-24$, soit $x^{3}=-8$, donc $x=\sqrt[3]{-8}$ : \res{$S=\ens{-2}$}.
+          \item $x^{3}-4x=0$, soit $x\left(x^{2}-4\right)=0$, ou $x(x-2)(x+2)=0$ :
+                \res{$S=\ens{-2\,;0\,;2}$}.
+        \end{questions}
+\end{questions}
+\rem{En d), « diviser par $x$ » ferait perdre la solution $0$ : on factorise et l'on
+utilise le produit nul.}
+\end{exo}
+
+\begin{exo}[Encadrer des cubes]
+\begin{questions}
+  \item La fonction cube conserve l'ordre : $(-3)^{3}\le x^{3}\le 2^{3}$, soit
+        \res{$-27\le x^{3}\le 8$}.
+  \item $-2{,}1<-1{,}9$ et la fonction cube est croissante :
+        \res{$(-2{,}1)^{3}<(-1{,}9)^{3}$}.
+  \item Le volume est $V=x^{3}$ : $2\le x\le 3$ donne \res{$8\le V\le 27$} (en
+        cm$^{3}$). $x^{3}=64$ pour $x=\sqrt[3]{64}$, soit $4$ : une arête de \res{$4$~cm}.
+\end{questions}
+\end{exo}
+
+\partie{Fonction inverse}
+
+\begin{exo}[Variations de la fonction inverse]
+\begin{questions}
+  \item \begin{calculs}
+        \frac{1}{a}-\frac{1}{b} &= \frac{b}{ab}-\frac{a}{ab}\\
+        \frac{1}{a}-\frac{1}{b} &= \frac{b-a}{ab}
+        \end{calculs}
+        $b-a>0$ (car $a<b$) et $ab>0$ (deux positifs) : $\frac{1}{a}-\frac{1}{b}>0$, donc
+        $\frac{1}{a}>\frac{1}{b}$. La fonction inverse est \res{décroissante} sur
+        $\intoo{0}{+\infty}$.
+  \item Si $a<b<0$ : le calcul est le même, $b-a>0$, et $ab>0$ comme produit de deux
+        négatifs. Elle est \res{décroissante} sur $\intoo{-\infty}{0}$.
+  \item \begin{tikzpicture}[scale=0.8,baseline=(current bounding box.center)]
+          \tkzTabInit[lgt=1.6,espcl=2.4]{$x$/1,$\frac{1}{x}$/2}{$-\infty$,$0$,$+\infty$}
+          \tkzTabVar{+/,-D+//,-/}
+        \end{tikzpicture}
+        \quad La double barre : $0$ n'a pas d'image.
+  \item $\dfrac{1}{-2}=-\dfrac{1}{2}$ et $\dfrac{1}{2}$ : $-2<2$ et
+        $-\frac{1}{2}<\frac{1}{2}$, l'ordre est \emph{conservé}. La fonction inverse
+        \res{n'est pas décroissante sur $\Rs$} : elle l'est sur chacun des deux
+        intervalles, séparément.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Équations et encadrements]
+\begin{questions}
+  \item Pour $x\ne 0$ :
+        \begin{questions}[label=\alph*)]
+          \item $x=\frac{1}{8}$ : \res{$S=\ens{\frac{1}{8}}$}.
+          \item $x=-\frac{3}{2}$ (l'inverse de $-\frac{2}{3}$) :
+                \res{$S=\ens{-\frac{3}{2}}$}.
+          \item $4=6x$, soit $x=\frac{2}{3}$ : \res{$S=\ens{\frac{2}{3}}$}.
+          \item Produit en croix : $x^{2}=25$, soit \res{$S=\ens{-5\,;5}$}.
+        \end{questions}
+  \item Sur $\intff{2}{8}$ (positifs, ordre inversé) :
+        \res{$\frac{1}{8}\le\frac{1}{x}\le\frac{1}{2}$}.\\
+        Sur $\intff{-10}{-5}$ (négatifs, ordre inversé) :
+        \res{$-\frac{1}{5}\le\frac{1}{x}\le-\frac{1}{10}$}.
+  \item $0<0{,}3<0{,}4$ et la fonction inverse est décroissante sur
+        $\intoo{0}{+\infty}$ : \res{$\frac{1}{0{,}3}>\frac{1}{0{,}4}$}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Équations et inéquations quotients]
+\begin{questions}
+  \item Valeur interdite : $2$. Produit en croix, pour $x\ne 2$ :
+        \begin{calculs}
+        2(x+3) &= 3(x-2)\\
+        2x+6 &= 3x-6\\
+        x &= 12
+        \end{calculs}
+        $12\ne 2$ : \res{$S=\ens{12}$}.
+  \item \begin{questions}[label=\alph*)]
+          \item \begin{minipage}[t]{0.40\linewidth}\raggedright
+                Valeur interdite : $0$.
+                \begin{calculs}
+                \frac{1}{x}-3 &= \frac{1-3x}{x}
+                \end{calculs}
+                On cherche où $\frac{1-3x}{x}\le 0$ :\\
+                \res{$S=\intoo{-\infty}{0}\cup\intfo{\frac{1}{3}}{+\infty}$}.
+                \end{minipage}\hfill
+                \begin{minipage}[t]{0.56\linewidth}\centering
+                \vspace{0pt}
+                \begin{tikzpicture}[scale=0.75]
+                  \tkzTabInit[lgt=2.2,espcl=2]{$x$/1,$1-3x$/1,$x$/1,$\frac{1-3x}{x}$/1.5}%
+                    {$-\infty$,$0$,$\frac{1}{3}$,$+\infty$}
+                  \tkzTabLine{,+,t,+,z,-,}
+                  \tkzTabLine{,-,z,+,t,+,}
+                  \tkzTabLine{,-,d,+,z,-,}
+                \end{tikzpicture}
+                \end{minipage}
+          \item \begin{minipage}[t]{0.40\linewidth}\raggedright
+                Valeur interdite : $1$.
+                \begin{calculs}
+                \frac{4}{x-1}-2 &= \frac{4-2(x-1)}{x-1}\\
+                \frac{4}{x-1}-2 &= \frac{6-2x}{x-1}
+                \end{calculs}
+                On cherche où $\frac{6-2x}{x-1}\ge 0$ : \res{$S=\intof{1}{3}$}.
+                \end{minipage}\hfill
+                \begin{minipage}[t]{0.56\linewidth}\centering
+                \vspace{0pt}
+                \begin{tikzpicture}[scale=0.75]
+                  \tkzTabInit[lgt=2.2,espcl=2]{$x$/1,$6-2x$/1,$x-1$/1,$\frac{6-2x}{x-1}$/1.5}%
+                    {$-\infty$,$1$,$3$,$+\infty$}
+                  \tkzTabLine{,+,t,+,z,-,}
+                  \tkzTabLine{,-,z,+,t,+,}
+                  \tkzTabLine{,-,d,+,z,-,}
+                \end{tikzpicture}
+                \end{minipage}
+        \end{questions}
+\end{questions}
+\rem{On ne multiplie jamais une inéquation par $x$ ou par $x-1$, dont le signe est
+inconnu : on se ramène à un quotient comparé à $0$. La valeur interdite est toujours
+exclue.}
+\end{exo}
+
+\partie{Fonction racine carrée}
+
+\begin{exo}[Calculer avec des racines carrées]
+\begin{questions}
+  \item a) $\sqrt{18}=\sqrt{9\times 2}=3\sqrt{2}$, donc $\sqrt{18}-\sqrt{2}=\res{2\sqrt{2}}$.\\
+        b) $\left(\sqrt{5}-\sqrt{2}\right)\left(\sqrt{5}+\sqrt{2}\right)=5-2=\res{3}$
+        \quad ($(a-b)(a+b)=a^{2}-b^{2}$).\par\smallskip
+        c) $\begin{aligned}[t]
+        \left(\sqrt{3}+\sqrt{6}\right)^{2} &= 3+2\sqrt{3}\sqrt{6}+6\\
+        \left(\sqrt{3}+\sqrt{6}\right)^{2} &= 9+2\sqrt{18}\\
+        \left(\sqrt{3}+\sqrt{6}\right)^{2} &= \res{9+6\sqrt{2}}
+        \end{aligned}$\par\smallskip
+  \item $A^{2}=9-6\sqrt{10}+10=19-6\sqrt{10}$ et $B^{2}=19-6\sqrt{10}$ : $A^{2}=B^{2}$.\\
+        Mais \res{$A\ne B$} : $\sqrt{10}>3$, donc $A<0$, alors que $B\ge 0$ (une racine
+        carrée est positive). En fait, $B=-A=\sqrt{10}-3$.
+  \item a) $\dfrac{1}{\sqrt{3}}=\dfrac{\sqrt{3}}{\sqrt{3}\times\sqrt{3}}$, soit
+        $\dfrac{\sqrt{3}}{3}$.\\
+        b) $\displaystyle\begin{aligned}[t]
+        \frac{1}{\sqrt{7}-2} &= \frac{\sqrt{7}+2}{\left(\sqrt{7}-2\right)\left(\sqrt{7}+2\right)} &&\justif{quantité conjuguée}\\
+        \frac{1}{\sqrt{7}-2} &= \frac{\sqrt{7}+2}{7-4}\\
+        \frac{1}{\sqrt{7}-2} &= \frac{\sqrt{7}+2}{3}
+        \end{aligned}$\par\smallskip
+        c) $\sqrt{50}=5\sqrt{2}$ et $\sqrt{32}=4\sqrt{2}$, donc
+        $\sqrt{50}-\sqrt{32}+\sqrt{2}=(5-4+1)\sqrt{2}$, soit $2\sqrt{2}$.
+  \item $\left(\sqrt{6}+\sqrt{7}\right)\left(\sqrt{6}-\sqrt{7}\right)=6-7=\res{-1}$.
+        Ce produit est négatif et $\sqrt{6}+\sqrt{7}>0$ : donc $\sqrt{6}-\sqrt{7}<0$,
+        c'est-à-dire \res{$\sqrt{6}<\sqrt{7}$}.
+\end{questions}
+\rem{En 2), $A^{2}=B^{2}$ donne seulement $|A|=|B|$ : on ne peut pas conclure $A=B$.}
+\end{exo}
+
+\begin{exo}[Équations avec des racines carrées]
+\begin{questions}[label=\alph*)]
+  \item Il faut $x\ge 0$ ; on élève au carré : $x=81$. \res{$S=\ens{81}$}.
+  \item Une racine carrée est positive : \res{$S=\varnothing$}.
+  \item Il faut $x\ge 4$ ; $x-4=25$, donc $x=29$. \res{$S=\ens{29}$}.
+  \item $\sqrt{2x+1}=5$ ; il faut $x\ge -\frac{1}{2}$ ; $2x+1=25$, donc $x=12$.
+        \res{$S=\ens{12}$}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Se ramener au second degré]
+\begin{questions}
+  \item La courbe de $x\mapsto\sqrt{x+3}$ et la droite $y=x+1$ ont \textbf{un seul}
+        point commun, d'abscisse environ $1$.
+  \item Une racine carrée est positive : une solution vérifie $x+1\ge 0$. On élève au
+        carré :
+        \begin{calculs}
+        x+3 &= (x+1)^{2}\\
+        x+3 &= x^{2}+2x+1\\
+        0 &= x^{2}+x-2
+        \end{calculs}
+  \item $(x+2)(x-1)=x^{2}-x+2x-2$, soit $x^{2}+x-2$. Une solution vérifie donc
+        $(x+2)(x-1)=0$ : $x=-2$ ou $x=1$. Or $-2+1<0$ : $-2$ ne convient pas.
+        Contrôle pour $1$ : $\sqrt{4}=2=1+1$. \res{$S=\ens{1}$}.
+  \item Il faut $x-3\ge 0$, soit $x\ge 3$. On élève au carré :
+        \begin{calculs}
+        4x &= (x-3)^{2}\\
+        4x &= x^{2}-6x+9\\
+        0 &= x^{2}-10x+9\\[3pt]
+        (x-5)^{2}-4^{2} &= x^{2}-10x+25-16\\
+        (x-5)^{2}-4^{2} &= x^{2}-10x+9
+        \end{calculs}
+        Avec $a^{2}-b^{2}=(a-b)(a+b)$ : $x^{2}-10x+9=(x-9)(x-1)$, donc $x=9$ ou $x=1$. Or
+        $1<3$ ne convient pas ; contrôle pour $9$ : $2\sqrt{9}=6=9-3$.
+        \res{$S=\ens{9}$}.
+\end{questions}
+\rem{Élever au carré fait apparaître une fausse solution : on revient toujours à la
+condition ($x+1\ge 0$, $x\ge 3$).}
+\end{exo}
+
+\partie{Fonction valeur absolue}
+
+\begin{exo}[Calculs et distances]
+\begin{questions}
+  \item a) \res{$12$} \quad b) $|-7|=\res{7}$ \quad c) $4\times 5=\res{20}$ \quad
+        d) $\sqrt{2}\approx 1{,}41<2$, donc $|\sqrt{2}-2|=\res{2-\sqrt{2}}$ \quad
+        e) $6-2=\res{4}$
+  \item $\sqrt{(-8)^{2}}=\sqrt{64}=\res{8}$ ; $\sqrt{(-0{,}5)^{2}}=\sqrt{0{,}25}=\res{0{,}5}$.
+        En général, \res{$\sqrt{a^{2}}=|a|$}, et non $a$, qui est faux pour $a<0$.
+  \item Distance entre $-6$ et $3$ : $|3-(-6)|=\res{9}$. Entre $7$ et $-1$ :
+        $|-1-7|=\res{8}$.
+\end{questions}
+\rem{En d), on cherche d'abord le signe de $\sqrt{2}-2$ : $|A|=-A$ lorsque $A<0$.}
+\end{exo}
+
+\begin{exo}[Équations avec des valeurs absolues]
+\begin{questions}[label=\alph*)]
+  \item $x=9$ ou $x=-9$ : \res{$S=\ens{-9\,;9}$}.
+  \item Une valeur absolue est positive : \res{$S=\varnothing$}.
+  \item $x+2=6$ ou $x+2=-6$, soit $x=4$ ou $x=-8$ : \res{$S=\ens{-8\,;4}$}.
+  \item $3x-1=8$ ou $3x-1=-8$, soit $x=3$ ou $x=-\frac{7}{3}$ :
+        \res{$S=\ens{-\frac{7}{3}\,;3}$}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Étude de $x\mapsto|x+3|$]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+\begin{questions}
+  \item {\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{4pt}
+        \begin{tabular}{|c|*{7}{c|}}
+        \hline
+        $x$ & $-6$ & $-5$ & $-4$ & $-3$ & $-2$ & $-1$ & $0$\\
+        \hline
+        $f(x)$ & $3$ & $2$ & $1$ & $0$ & $1$ & $2$ & $3$\\
+        \hline
+        \end{tabular}}
+  \item C'est le « V » de la valeur absolue, \res{décalé de $3$ unités vers la gauche},
+        de sommet $(-3\,;0)$.
+  \item \begin{tikzpicture}[scale=0.75,baseline=(current bounding box.center)]
+          \tkzTabInit[lgt=1.8,espcl=2.2]{$x$/1,$|x+3|$/2}{$-\infty$,$-3$,$+\infty$}
+          \tkzTabVar{+/,-/$0$,+/}
+        \end{tikzpicture}
+        \quad minimum \res{$0$, en $-3$}.
+  \item a) $x+3=2$ ou $x+3=-2$ : \res{$S=\ens{-5\,;-1}$}.\\
+        b) $|x+3|\le 1$ équivaut à $-1\le x+3\le 1$, soit $-4\le x\le -2$ :
+        \res{$S=\intff{-4}{-2}$}.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-7}{-1}{1}{4}
+  \gradx{-6,-5,-4,-3,-2,-1} \grady{1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-6.5,3.5) -- (-3,0) -- (0.5,3.5);
+  \draw[coulCourbeC,thick] (-7,2) -- (1,2);
+  \draw[red,line width=1.6pt] (-4,0) -- (-2,0);
+  \path[coulCourbe] (-6,3) node[croix]{} (-5,2) node[croix]{} (-4,1) node[croix]{}
+    (-3,0) node[croix]{} (-2,1) node[croix]{} (-1,2) node[croix]{} (0,3) node[croix]{};
+  \node[coulCourbeC,font=\footnotesize] at (-6.2,2.5) {$y=2$};
+\end{tikzpicture}
+\end{minipage}
+\rem{$|A|\le r$ (avec $r\ge 0$) équivaut à $-r\le A\le r$ : la distance de $A$ à $0$ est
+au plus $r$. Sur la figure : $f(x)=2$ en $-5$ et en $-1$ ; $f(x)\le 1$ en rouge.}
+\end{exo}
+
+\partie{Fonctions affines}
+
+\begin{exo}[Lire l'expression d'une fonction affine]
+On lit l'ordonnée à l'origine $b$ (où la droite coupe l'axe des ordonnées), puis le
+coefficient directeur $a$ avec deux points à coordonnées entières.
+\begin{itemize}
+  \item $(d_{1})$ passe par $(0\,;1)$ et descend de $2$ quand $x$ augmente de $1$ :
+        \res{$y=-2x+1$}.
+  \item $(d_{2})$ est horizontale, à la hauteur $3$ : \res{$y=3$} (fonction constante).
+  \item $(d_{3})$ passe par $(0\,;-2)$ et $(3\,;0)$ : $a=\frac{0-(-2)}{3-0}=\frac{2}{3}$,
+        donc \res{$y=\frac{2}{3}x-2$}.
+\end{itemize}
+\rem{Pour $(d_{3})$, la variation « quand $x$ augmente de $1$ » ne tombe pas sur le
+quadrillage : on prend deux points à coordonnées entières.}
+\end{exo}
+
+\begin{exo}[Équation réduite et alignement]
+\begin{questions}
+  \item \begin{calculs}
+        a &= \frac{-2-4}{2-(-1)}\\
+        a &= \res{-2}
+        \end{calculs}
+  \item L'équation est $y=-2x+b$, et $A$ est sur la droite : $4=-2\times(-1)+b$, soit
+        $4=2+b$, donc $b=2$. \res{$(AB) : y=-2x+2$}. Contrôle avec $B$ : $-4+2=-2$.
+  \item $C$ : $-2\times 5+2=-8$, c'est $y_{C}$ : \res{$C$ est aligné} avec $A$ et $B$.\\
+        $D$ : $-2\times(-3)+2=8\ne 9$ : \res{$D$ n'est pas aligné} avec $A$ et $B$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Intersection de deux droites]
+Un point commun a la même ordonnée sur les deux droites : on résout « $y$ de $(d)$
+$=$ $y$ de $(d')$ ».
+\begin{questions}
+  \item \begin{calculs}
+        3x-5 &= -2x+5\\
+        5x &= 10\\
+        x &= 2
+        \end{calculs}
+        puis $y=3\times 2-5=1$ (contrôle : $-4+5=1$). Le point est \res{$(2\,;1)$}.
+  \item $(d)$ : $a=\frac{5-(-1)}{3-0}=2$ et $b=-1$ (ordonnée de $A$, d'abscisse $0$),
+        donc $(d) : y=2x-1$. Puis $2x-1=-x+5$, soit $3x=6$, donc $x=2$ et $y=3$ (contrôle :
+        $-2+5=3$). Le point est \res{$(2\,;3)$}.
+\end{questions}
+\end{exo}
+
+\partie{Prolongement : vers la dérivation}
+
+\begin{exo}[Calculer des taux de variation]
+\begin{questions}
+  \item $f(0)=0$ et $f(3)=15$ :
+        \begin{calculs}
+        T &= \frac{15-0}{3-0}\\
+        T &= \res{5}
+        \end{calculs}
+        $f(-4)=8$ et $f(-1)=-1$ :
+        \begin{calculs}
+        T &= \frac{-1-8}{-1-(-4)}\\
+        T &= \res{-3}
+        \end{calculs}
+  \item $g(-1)=9$ et $g(4)=-1$, donc $T=\frac{-10}{5}$, soit \res{$-2$}. $g(2)=3$ et
+        $g(10)=-13$, donc $T=\frac{-16}{8}$, soit \res{$-2$}. On trouve \res{le même
+        nombre}, le coefficient directeur de la droite.
+  \item \begin{calculs}
+        T &= \frac{(mb+p)-(ma+p)}{b-a}\\
+        T &= \frac{m(b-a)}{b-a}\\
+        T &= \res{m}
+        \end{calculs}
+        La courbe d'une fonction affine est une droite : toute sécante est cette droite
+        elle-même, de coefficient directeur $m$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Taux et sens de variation]
+\begin{questions}
+  \item \begin{calculs}
+        T &= \frac{\left(b^{2}-4b\right)-\left(a^{2}-4a\right)}{b-a}\\
+        T &= \frac{(b-a)(b+a)-4(b-a)}{b-a}\\
+        T &= \res{a+b-4} &&\justif{on simplifie par $b-a\ne 0$}
+        \end{calculs}
+        Sur $\intfo{2}{+\infty}$ : $a\ge 2$ et $b\ge 2$, distincts, donc $a+b>4$ et
+        $T>0$ : $g$ est \res{croissante}. Sur $\intof{-\infty}{2}$ : $a+b<4$, $T<0$ : $g$
+        est \res{décroissante}.
+  \item \begin{calculs}
+        T &= \frac{\frac{1}{b}-\frac{1}{a}}{b-a}\\
+        T &= \frac{a-b}{ab}\times\frac{1}{b-a}\\
+        T &= \res{-\frac{1}{ab}} &&\justif{$a-b=-(b-a)$}
+        \end{calculs}
+        Sur $\intoo{0}{+\infty}$ : $ab>0$, donc $T<0$ : $h$ est \res{décroissante}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Vitesse moyenne d'une chute]
+\begin{questions}
+  \item $d(1)=5$ et $d(3)=45$ : $\frac{45-5}{3-1}=\res{20}$~m/s.
+  \item $d(2)=20$ et $d(2{,}5)=31{,}25$ : $\frac{11{,}25}{0{,}5}=\res{22{,}5}$~m/s.\\
+        $d(2{,}1)=22{,}05$ : $\frac{2{,}05}{0{,}1}=\res{20{,}5}$~m/s.
+  \item Quand le second instant se rapproche de $2$, la vitesse moyenne se rapproche de
+        \res{$20$~m/s} : c'est la vitesse de la bille à l'instant $t=2$, le futur
+        \emph{nombre dérivé} de $d$ en $2$.
+\end{questions}
+\end{exo}
+
+\vfill
+
+\end{document}

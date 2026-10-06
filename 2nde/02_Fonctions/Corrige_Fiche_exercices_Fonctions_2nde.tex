@@ -1,0 +1,745 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\entete{Chapitre 2 --- Intervalles et fonctions --- Corrigé des exercices}{Seconde}
+
+\let\deuxpaquet\deux
+\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
+\definecolor{coulInt}{HTML}{D62828}
+\definecolor{coulIntB}{HTML}{1565C0}
+\newcommand{\axegrad}[2]{%
+  \draw[-{Stealth[length=2mm]}] ({#1-0.5},0)--({#2+0.5},0);
+  \foreach \k in {#1,...,#2} \draw (\k,0.07)--(\k,-0.07);}
+\NewDocumentCommand{\crochet}{O{coulInt} O{0} m m}{%
+  \ifx[#4%
+    \draw[#1,line width=1.1pt] ($(#3,#2)+(2.4pt,4.5pt)$) -- ++(-2.4pt,0) -- ++(0,-9pt) -- ++(2.4pt,0);
+  \else
+    \draw[#1,line width=1.1pt] ($(#3,#2)+(-2.4pt,4.5pt)$) -- ++(2.4pt,0) -- ++(0,-9pt) -- ++(-2.4pt,0);
+  \fi}
+\NewDocumentCommand{\morceau}{O{coulInt} O{0} m m}{%
+  \draw[#1,line width=1.6pt] (#3,#2)--(#4,#2);}
+\NewDocumentCommand{\bornelab}{O{0} m m}{%
+  \node[below=5pt,font=\scriptsize,inner sep=1pt] at (#2,#1) {$#3$};}
+\clubpenalty=10000
+\widowpenalty=10000
+
+\begin{document}
+
+\entetecorrige{CORRIGÉ --- INTERVALLES ET FONCTIONS}
+  {Chapitre 2 : fiche d'exercices --- Seconde}
+  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
+   fréquentes et les méthodes à retenir. Une équation se conclut par des accolades,
+   une inéquation par des intervalles.}
+
+\partie{Droite numérique, intervalles fermés}
+
+\begin{exo}[Représenter des intervalles fermés]
+1)
+\begin{center}
+\begin{tikzpicture}[x=0.32cm]
+  \axegrad{-7}{5}
+  \bornelab[-0.3]{-6}{-6}\bornelab[-0.3]{-3}{-3}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}\bornelab[-0.3]{4}{4}
+  \morceau[coulInt][0.3]{1}{4}\crochet[coulInt][0.3]{1}{[}\crochet[coulInt][0.3]{4}{]}
+  \morceau[coulIntB][0.3]{-6}{-3}\crochet[coulIntB][0.3]{-6}{[}\crochet[coulIntB][0.3]{-3}{]}
+  \node[coulInt,font=\scriptsize] at (2.5,0.8) {$I$};
+  \node[coulIntB,font=\scriptsize] at (-4.5,0.8) {$J$};
+\end{tikzpicture}
+
+\smallskip
+\begin{tikzpicture}[x=0.32cm]
+  \axegrad{-7}{5}
+  \bornelab[-0.3]{-2}{-2}\bornelab[-0.3]{-0.5}{-\frac12}\bornelab[-0.3]{2.5}{\frac52}\bornelab[-0.3]{3}{3}
+  \morceau[coulInt][0.3]{-2}{3}\crochet[coulInt][0.3]{-2}{[}\crochet[coulInt][0.3]{3}{]}
+  \morceau[coulIntB][-0.3]{-0.5}{2.5}\crochet[coulIntB][-0.3]{-0.5}{[}\crochet[coulIntB][-0.3]{2.5}{]}
+  \node[coulInt,font=\scriptsize] at (4,0.3) {$K$};
+  \node[coulIntB,font=\scriptsize] at (4,-0.3) {$L$};
+\end{tikzpicture}
+\end{center}
+\rem{Une droite par intervalle, ou deux couleurs sur une même droite.}
+2) \res{\intff{-2}{5}}\par
+3) a) $\res{4\in\intff{0}{4}}$ (borne incluse) ; b) $\res{9\notin\intff{3}{8{,}9}}$ ;
+c) $\res{-3\in\intff{-4}{-2}}$ ; d) $\res{-50\notin\intff{-49}{-5}}$ ($-50<-49$).
+\end{exo}
+
+\begin{exo}[Appartenance]
+\deux{a) $\res{2\in\intff{-3}{7}}$}{b) $\res{-4\notin\intff{-3}{5}}$}
+\deux{c) $\res{10^{-2}\in\intff{0}{1}}$}{d) $\res{\pi\in\intff{3{,}1}{3{,}2}}$}
+\deux{e) $\res{-3\in\intff{-6}{-3}}$}{f) $\res{1{,}5\notin\intff{1{,}6}{2}}$}
+\rem{c) $10^{-2}=0{,}01$ ; d) $\pi\approx 3{,}14$.}
+\end{exo}
+
+\begin{exo}[Nombres dans un intervalle]
+1) $\frac72=3{,}5$ : les entiers positifs ou nuls de l'intervalle sont \res{0\,;1\,;2\,;3}.\par
+2) Par exemple \res{3{,}72} et \res{3{,}75}.\par
+3) $3<\pi<4$ : \res{\intff{3}{4}}.
+\end{exo}
+
+\partie{Intervalles ouverts, inégalités}
+
+\begin{exo}[D'un intervalle à une inégalité]
+a) $\res{2\le x\le 7}$, fermé \quad b) $\res{x>-1{,}5}$, ouvert\par
+c) $\res{-4<x\le 0}$, semi-ouvert \quad d) $\res{x<5}$, ouvert\par
+e) $\res{-3\le x<8}$, semi-ouvert \quad f) $\res{0<x<1}$, ouvert
+\end{exo}
+
+\begin{exo}[D'une phrase à un intervalle]
+1) $x\ge -1$ : \res{\intfo{-1}{+\infty}}\par
+2) $-3<x<2$ : \res{\intoo{-3}{2}}\par
+3) $x<4$ : \res{\intoo{-\infty}{4}}\par
+4) $0\le x<6$ : \res{\intfo{0}{6}}
+\rem{\og Positifs ou nuls\fg{} : $0$ est inclus ; \og strictement\fg{} : la borne est
+exclue.}
+\end{exo}
+
+\begin{exo}[D'une inégalité à un intervalle]
+\deux{a) \res{\intff{-4}{2}}}{b) \res{\intoo{-\infty}{3}}}
+\deux{c) \res{\intoo{5}{+\infty}}}{d) \res{\intoo{2}{3}}}
+\deux{e) \res{\intfo{1{,}5}{+\infty}}}{f) \res{\intof{-\infty}{10^{-2}}}}
+\rem{Les représentations se font comme à l'exercice 1 : crochet tourné vers
+l'extérieur pour une borne exclue et du côté de l'infini.}
+\end{exo}
+
+\begin{exo}[Tableau à compléter]
+1) \res{\intfo{\frac14}{\frac23}} ; \res{\intoo{\pi}{+\infty}} ; \res{\intoo{-\infty}{-1}}\par
+2)
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Inégalité(s)} & \textbf{Intervalle}\\\hline
+$-1\le x\le 4$ & $\intff{-1}{4}$\\\hline
+$1<x\le 5$ & $\intof{1}{5}$\\\hline
+$-3\le x<2$ & $\intfo{-3}{2}$\\\hline
+$0<x<3$ & $\intoo{0}{3}$\\\hline
+$x>2$ & $\intoo{2}{+\infty}$\\\hline
+$x\le 1$ & $\intof{-\infty}{1}$\\\hline
+$-2\le x<6$ & $\intfo{-2}{6}$\\\hline
+\end{tabular}
+\end{center}
+\end{exo}
+
+\begin{exo}[Bornes incluses ou exclues ?]
+\deux{a) $\res{6\in\intof{-2}{6}}$}{b) $\res{-2\notin\intoo{-2}{4}}$}
+\deux{c) $\res{10^{-2}\in\intoo{0}{+\infty}}$}{d) $\res{\pi\in\intoo{3{,}1}{3{,}2}}$}
+\deux{e) $\res{-4\notin\intoo{-\infty}{-4}}$}{f) $\res{-1{,}5\in\intfo{-1{,}5}{1{,}5}}$}
+\deux{g) $\res{0\in\intoo{-\infty}{+\infty}}$}{h) $\res{-1\notin\intof{-1}{3}}$}
+\end{exo}
+
+\partie{Intersection, réunion, complémentaire}
+
+\begin{exo}[Premières intersections et réunions]
+\begin{center}
+\begin{tikzpicture}[x=0.38cm]
+  \axegrad{-2}{7}
+  \bornelab[-0.3]{-1.5}{-1{,}5}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{3}{3}\bornelab[-0.3]{6}{6}
+  \morceau[coulInt][0.3]{-1.5}{3}\crochet[coulInt][0.3]{-1.5}{[}\crochet[coulInt][0.3]{3}{[}
+  \morceau[coulIntB][-0.3]{0}{6}\crochet[coulIntB][-0.3]{0}{]}\crochet[coulIntB][-0.3]{6}{]}
+  \node[coulInt,font=\scriptsize] at (7.6,0.3) {$I$};
+  \node[coulIntB,font=\scriptsize] at (7.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+a) $I\cap J=\res{\intoo{0}{3}}$ ; \quad $I\cup J=\res{\intff{-1{,}5}{6}}$\par
+b) $I\cap J=\res{\intfo{1}{3}}$ ; \quad $I\cup J=\res{\R}$
+\rem{En a), $0\notin J$ et $3\notin I$ : les deux bornes de $I\cap J$ sont exclues.}
+\end{exo}
+
+\begin{exo}[Attention aux bornes]
+a) $I\cap J=\res{\intff{-2}{1}}$ ; \quad $I\cup J=\res{\intoo{-3}{+\infty}}$\par
+b) $I\cap J=\res{\varnothing}$ ; \quad $I\cup J=\res{\intoo{1}{6{,}5}}$\par
+c) $I\cap J=\res{\intof{-\infty}{2}}$ ; \quad $I\cup J=\res{\intoo{-\infty}{4}}$\par
+d) $I\cap J=\res{\ens{5}}$ ; \quad $I\cup J=\res{\R}$\par
+e) $I\cap J=\res{\varnothing}$ ; \quad $I\cup J=\res{\R}$
+\rem{b) $3\in I$ mais $3\notin J$ : pas de nombre commun, et la réunion n'a pas de
+trou. d) Seul $5$ est dans les deux intervalles.}
+\end{exo}
+
+\begin{exo}[Plusieurs intervalles]
+1) $I=\res{\intff{-2}{6}}$ ; $J=\res{\intfo{-4}{-1}}$ ; $L=\res{\intof{-\infty}{6}}$ ;
+$M=\res{\intoo{2}{+\infty}}$.\par
+2)
+\deux{$I\cap J=\res{\intfo{-2}{-1}}$}{$I\cup J=\res{\intff{-4}{6}}$}
+\deux{$J\cap K=\res{\varnothing}$}{$K\cup L=\res{\intof{-\infty}{10}}$}
+\deux{$I\cap L=\res{\intff{-2}{6}}$}{$K\cup M=\res{\intoo{1}{+\infty}}$}
+\rem{$I$ est contenu dans $L$ : $I\cap L=I$.}
+\end{exo}
+
+\begin{exo}[Complémentaire]
+\deux{a) \res{\intof{-\infty}{3}}}{b) \res{\intoo{4}{+\infty}}}
+\deux{c) \res{\intoo{-\infty}{-2}}}{d) \res{\intfo{6}{+\infty}}}
+e) \res{\intoo{-\infty}{1}\cup\intoo{2}{+\infty}}\par
+f) \res{\intof{-\infty}{-5}\cup\intfo{8}{+\infty}}
+\rem{Chaque crochet se retourne : une borne incluse devient exclue, et inversement.}
+\end{exo}
+
+\begin{exo}[Inégalités et intervalles : « et », « ou »]
+a) \res{\intof{-3}{-1}\cup\intfo{2}{5}}\par
+b) \res{-2\le x\le 0 \text{ ou } x\ge 3}\par
+c) \res{\intoo{-\infty}{-1}\cup\intoo{4}{+\infty}}\par
+d) \res{x\le -3 \text{ ou } x>2}\par
+e) $\intoo{-2}{+\infty}\cap\intof{-\infty}{3}=\res{\intof{-2}{3}}$\par
+f) \res{x\ge 1 \text{ et } x<5}, soit $1\le x<5$ : \res{\intfo{1}{5}}\par
+g) $\intfo{-4}{+\infty}\cap\intfo{1}{+\infty}=\res{\intfo{1}{+\infty}}$\par
+h) $\intoo{-\infty}{0}\cup\intof{-\infty}{2}=\res{\intof{-\infty}{2}}$\par
+i) $\intoo{-\infty}{-1}\cap\intoo{3}{+\infty}=\res{\varnothing}$
+\rem{\og et\fg{} : les deux conditions à la fois (intersection) ; \og ou\fg{} : au moins
+l'une des deux (réunion). En g) et h), un intervalle contient l'autre ; en i), aucun
+nombre n'est à la fois inférieur à $-1$ et supérieur à $3$.}
+\end{exo}
+
+\partie{Image et antécédent}
+
+\begin{exo}[Calculer des images]
+1)
+\begin{calculs}
+f(1)&=2-3=\res{-1}\\
+f(-2)&=-4-3\times 4=\res{-16}\\
+f\!\left(\tfrac12\right)&=1-\tfrac34=\res{\tfrac14}
+\end{calculs}
+2) $f(2)=4-12=-8$ : \res{\text{oui}}, $2$ est un antécédent de $-8$.
+\rem{$-3x^{2}$ pour $x=-2$ : $-3\times(-2)^{2}=-12$, le carré d'abord.}
+\end{exo}
+
+\begin{exo}[Image et antécédent]
+1)
+\begin{calculs}
+g(-3)&=-12-5=\res{-17}\\
+g(5)&=20-5=\res{15}\\
+g\!\left(\tfrac34\right)&=3-5=\res{-2}
+\end{calculs}
+2) $g\!\left(\frac12\right)=2-5=-3\ne 3$ : \res{\text{non}}.\par
+3)
+\begin{calculs}
+4x-5&=3\\
+4x&=8\\
+x&=\res{2}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Calculer des antécédents]
+a) $x-4=-2$, donc \res{x=2}.\par
+b) $x^{2}=36$ : deux antécédents, \res{-6} et \res{6}.\par
+c) $\frac1x=4$, donc \res{x=\frac14}.\par
+d) $x(x-3)=0$ : un produit est nul si l'un de ses facteurs est nul : \res{0} et \res{3}.
+\rem{b) $(-6)^{2}=36$ aussi : ne pas oublier l'antécédent négatif.}
+\end{exo}
+
+\begin{exo}[Deux fonctions égales]
+1) $f(2)=6\times 1+4-10=\res{0}$ et $g(2)=\res{0}$.\par
+2) Par exemple $f(0)=12-10=2$ et $g(0)=2$.\par
+3)
+\begin{calculs}
+f(x)&=3x-x^{2}+12-4x+x^{2}-10\\
+f(x)&=\res{2-x}
+\end{calculs}
+Donc $f(x)=g(x)$ pour tout nombre $x$.
+\end{exo}
+
+\partie{Ensemble de définition}
+
+\begin{exo}[Un nombre sans image]
+$f_1$ : \res{0} (division par zéro) ; $f_2$ : \res{2} ($2-2=0$) ; $f_3$ : \res{-5}
+(racine carrée d'un nombre négatif).
+\end{exo}
+
+\begin{exo}[Valeurs interdites]
+\deux{a) $x-6=0$ : \res{6}}{b) $x+5=0$ : \res{-5}}
+\deux{c) $3x=0$ : \res{0}}{d) $2x-8=0$ : \res{4}}
+\deux{e) $2x+6=0$ : \res{-3}}{f) $4x-12=0$ : \res{3}}
+\rem{Seul le dénominateur compte : le numérateur peut être nul.}
+\end{exo}
+
+\begin{exo}[Racines carrées]
+\deux{a) \res{\intfo{0}{+\infty}}}{b) $x\ge 2$ : \res{\intfo{2}{+\infty}}}
+\deux{c) $x\ge -4$ : \res{\intfo{-4}{+\infty}}}{d) $x\ge 5$ : \res{\intfo{5}{+\infty}}}
+e) $3x-9\ge 0$ donne $3x\ge 9$ puis $x\ge 3$ : \res{\intfo{3}{+\infty}}\par
+f) $2x+8\ge 0$ donne $2x\ge -8$ puis $x\ge -4$ : \res{\intfo{-4}{+\infty}}
+\end{exo}
+
+\begin{exo}[Pour s'entraîner]
+\deux{a) \res{\R}}{b) \res{\R} (affine)}
+c) valeur interdite $1$ : \res{\intoo{-\infty}{1}\cup\intoo{1}{+\infty}}\par
+d) $5x+15=0$ pour $x=-3$ : \res{\intoo{-\infty}{-3}\cup\intoo{-3}{+\infty}}\par
+e) $4x-8\ge 0$ donne $x\ge 2$ : \res{\intfo{2}{+\infty}}
+\end{exo}
+
+\partie{Tableau de valeurs}
+
+\begin{exo}[Lire un tableau]
+1) $f(-1)=\res{0}$ ; $f(1)=\res{-1}$ ; $f(-2)=\res{2}$.\par
+2) $f(2)=4\ne -1$ : \res{\text{non}}. Le tableau donne $f(1)=-1$ : $1$ est un antécédent
+de $-1$.
+\end{exo}
+
+\begin{exo}[Lire un tableau (suite)]
+1) $g(4)=\res{5}$ ; $g(2)=\res{0}$ ; $g(-1)=\res{-2}$.\par
+2) Antécédents de $5$ : \res{4} ; de $-2$ : \res{-1} ; de $4$ : \res{-3} et \res{6}.
+\end{exo}
+
+\begin{exo}[Construire un tableau]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+1) Par exemple $f(-2)=0{,}5\times(-3)^{2}-2=2{,}5$.
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{7}{c|}}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+$f(x)$ & $2{,}5$ & $0$ & $-1{,}5$ & $-2$ & $-1{,}5$ & $0$ & $2{,}5$\\\hline
+\end{tabular}
+\end{center}
+2) Antécédents de $0$ : \res{-1} et \res{3} ; de $2{,}5$ : \res{-2} et \res{4}.\par
+3) Ci-contre.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.38cm,y=0.38cm]
+  \repere{-3}{-3}{5}{4}
+  \gradx{-2,-1,1,2,3,4}
+  \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1pt,domain=-2:4,samples=50] plot (\x,{0.5*(\x-1)*(\x-1)-2});
+  \foreach \a/\b in {-2/2.5,-1/0,0/-1.5,1/-2,2/-1.5,3/0,4/2.5} \path[coulCourbe] (\a,\b) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Courbe représentative}
+
+\begin{exo}[Lecture graphique]
+a) $D_f=\res{\intff{-4}{5}}$\par
+b) $f(3)=\res{0}$ et $f(-1)=\res{0}$\par
+c) $f(-2)=\res{2}$ et $f(-4)=\res{2}$\par
+d) Antécédents de $2$ : \res{-4\,;-2\,;4} ; de $0$ : \res{-1\,;3} ; de $-2$ : \res{1} ;
+$-3$ n'a \res{\text{aucun antécédent}}.\par
+e) \res{-3} et \res{5}.
+\rem{Pour les antécédents de $2$, on trace la droite $y=2$ et on lit toutes les
+abscisses des points de la courbe sur cette droite.}
+\end{exo}
+
+\begin{exo}[Points et courbes]
+1) Les points \res{(0\,;-3)} ; \res{(-4\,;0)} ; \res{(2\,;1)} et \res{(6\,;1)}
+appartiennent à $\Cf$.\par
+2) a) \res{f(3)=-2} ; b) \res{f(0)=4} ; c) \res{f(-1)=0} et \res{f(5)=0}.\par
+3) a) $f(-2)=1$ : \res{A\in\Cf} ; $f(3)=6\ne 5$ : \res{B\notin\Cf} ;
+$f(1{,}5)=2{,}25-3=-0{,}75$ : \res{C\in\Cf}. Autres points : $(0\,;-3)$, $(1\,;-2)$.\par
+b) $f(-2)=-5$ : \res{A\in\Cf} ; $f(2)=7\ne 6$ : \res{B\notin\Cf} ;
+$f\!\left(\frac13\right)=2$ : \res{C\in\Cf}. Autres points : $(0\,;1)$, $(1\,;4)$.
+\end{exo}
+
+\begin{exo}[Trois antécédents]
+a) \res{\intff{-3}{3}} \quad b) $f(2)=\res{0}$ \quad c) \res{-3}\par
+d) \res{0} (antécédents $-2$, $0$ et $2$) ; tout nombre strictement compris entre $-1$ et
+$2$ convient aussi.\par
+e) Par exemple \res{5} : aucun point de la courbe n'a une ordonnée supérieure à $4$.
+\end{exo}
+
+\begin{exo}[Quelle courbe passe par ce point ?]
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ & $f$ & $g$ & $h$ & $k$\\\hline
+$x=4$ & $6$ & $6$ & $6$ & $8$\\\hline
+$x=6$ & $4$ & $4$ & $2$ & $8$\\\hline
+$x=8$ & $2$ & $3$ & $-2$ & $4$\\\hline
+\end{tabular}
+\end{center}
+1) $A(4\,;6)$ : courbes de \res{f}, \res{g} et \res{h}.\par
+2) $B(6\,;4)$ : courbes de \res{f} et \res{g} ; $C(8\,;4)$ : courbe de \res{k}.
+\end{exo}
+
+\partie{Calculatrice}
+
+\begin{exo}[Antécédents à la calculatrice]
+1) Tableau : $7$ ; $3{,}5$ ; $1$ ; $-0{,}5$ ; $-1$ ; $-0{,}5$ ; $1$ ; $3{,}5$ ; $7$.
+Axes : $x$ de $-2$ à $6$, $y$ de $-2$ à $8$.\par
+2) Antécédents de $2$ : \res{x\approx -0{,}4} et \res{x\approx 4{,}4}.\par
+3) Oui, deux : $x\approx 0{,}6$ et $x\approx 3{,}4$.
+\end{exo}
+
+\begin{exo}[Tableau avec un pas de 0,5]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+1)
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{7}{c|}}
+\hline
+$x$ & $-1$ & $-0{,}5$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\\hline
+$g(x)$ & $0$ & $2$ & $3$ & $3$ & $2$ & $0$ & $-3$\\\hline
+\end{tabular}
+\end{center}
+2) Ci-contre.\par
+3) $g(0{,}25)=\res{3{,}125}$ ; antécédents de $2$ : \res{-0{,}5} et \res{1} ; de $0$ :
+\res{-1} et \res{1{,}5}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-2}{-4}{3}{4}
+  \gradx{-1,1,2}
+  \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1pt,domain=-1:2,samples=50] plot (\x,{-2*(\x)*(\x)+(\x)+3});
+  \foreach \a/\b in {-1/0,-0.5/2,0/3,0.5/3,1/2,1.5/0,2/-3} \path[coulCourbe] (\a,\b) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Une fonction quotient]
+1) $-1$ ; $0$ ; $0{,}25$ ; $0{,}32$ ; $0{,}33$ ; $0{,}33$ ; $0{,}31$ ; $0{,}30$ ; $0{,}28$ ;
+$0{,}26$ ; $0{,}25$.\par
+3) Antécédents de $0{,}25$ : \res{1} et \res{5}.\par
+4) $f(x)=0$ : \res{S=\ens{0{,}5}} ; $f(x)\ge 0{,}25$ : \res{S=\intff{1}{5}}.\par
+5) Les deux courbes se coupent en deux points : \res{S\approx\ens{0\,;1{,}30}}.
+\rem{$f(0)=-1$ et $0-1=-1$ : $0$ est une solution exacte.}
+\end{exo}
+
+\begin{exo}[Intersections de courbes]
+1) Les courbes se coupent en $x=-1$, $x=1$ et $x=2$ ; $\Cf$ est sur $\Cg$ ou au-dessous
+pour \res{S=\intff{-2}{-1}\cup\intff{1}{2}}.\par
+2) Un seul point commun, \res{(1\,;9)}. Par le calcul :
+\begin{calculs}
+3x^{2}+x+5&=3x^{2}-2x+8\\
+3x&=3\\
+x&=1
+\end{calculs}
+et $3+1+5=9$.\par
+3) $\frac1x=\frac{1+2x}{x}$ donne $1=1+2x$, soit $x=0$, valeur interdite : \res{\text{aucun
+point commun}}.
+\end{exo}
+
+\partie{Résolution graphique}
+
+\begin{exo}[Équations]
+1) a) \res{S=\ens{5}} \quad b) \res{S=\ens{4\,;6}} \quad c) \res{S=\ens{0\,;3\,;8}}\par
+d) \res{S=\ens{1}} \quad e) \res{S=\varnothing}\par
+2) La droite $y=-1$ coupe la courbe en \res{3} points (entre $0$ et $1$, en $2$ et en
+$10$) : trois solutions.
+\end{exo}
+
+\begin{exo}[Inéquations]
+a) \res{S=\intfo{0}{1}\cup\intof{1}{10}}\par
+b) \res{S=\intfo{0}{4}\cup\intof{6}{10}}\par
+c) \res{S=\intff{0}{10}}\par
+d) \res{S=\intff{4}{6}}
+\rem{a) $f(1)=-2$ : $1$ est exclu, car l'inégalité est stricte. c) La courbe ne monte
+jamais au-dessus de $y=2$.}
+\end{exo}
+
+\begin{exo}[Équation et inéquations]
+a) \res{S=\ens{-4\,;0\,;4}}\par
+b) \res{S=\intff{-4}{0}\cup\intff{4}{5}}\par
+c) \res{S=\intoo{-3}{-1}}
+\end{exo}
+
+\begin{exo}[Avec la formule]
+1) $0$ ; $6$ ; $6$ ; $3$ ; $0$ ; $0$ ; $6$.\par
+2) $f(0)=\res{3}$ ; $f(x)=6$ : \res{S=\ens{-2\,;-1\,;3}}.\par
+3)
+\begin{calculs}
+(x+1)(x+2)&=x^{2}+3x+2\\
+(x^{2}+3x+2)(x-3)&=x^{3}-7x-6
+\end{calculs}
+$f(x)=6$ revient à $x^{3}-7x+6=12$, soit $x^{3}-7x-6=0$, c'est-à-dire
+$(x+1)(x+2)(x-3)=0$ : les solutions exactes sont $-1$, $-2$ et $3$.\par
+4) $f(x)\ge 6$ : \res{S=\intff{-2}{-1}\cup\ens{3}} ; $f(x)<0$ : \res{S=\intoo{1}{2}}.\par
+5) $f(x)=0$ : \res{3} solutions ($-3$, $1$, $2$) ; $f(x)=4$ : \res{3} ; $f(x)=-1$ :
+\res{0}.
+\end{exo}
+
+\partie{Comparer deux fonctions}
+
+\begin{exo}[Deux courbes]
+a) \res{S=\ens{-2\,;2\,;6}}\par
+b) \res{S=\intoo{-2}{2}\cup\intof{6}{7}}\par
+c) \res{S=\intff{-3}{-2}\cup\intff{2}{6}}
+\rem{On regarde quelle courbe est au-dessus entre deux points d'intersection qui se
+suivent.}
+\end{exo}
+
+\begin{exo}[Une droite et une courbe]
+a) La droite est sur $y=2$ ou au-dessous à partir de $x=0$ : \res{S=\intff{0}{6}}\par
+b) \res{S=\intof{3}{6}} \quad c) \res{S=\intff{-4}{-2}}\par
+d) \res{S=\ens{-4\,;2\,;6}} \quad e) \res{S=\intoo{-4}{2}}
+\end{exo}
+
+\begin{exo}[Graphique et calcul]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+1)
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{6}{c|}}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$\\\hline
+$f(x)$ & $2$ & $-1$ & $-2$ & $-1$ & $2$ & $7$\\\hline
+$g(x)$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$\\\hline
+\end{tabular}
+\end{center}
+3) \res{S=\ens{-1\,;2}} ; $f(x)<g(x)$ : \res{S=\intoo{-1}{2}}.\par
+4) $(x+1)(x-2)=x^{2}-2x+x-2=x^{2}-x-2$ ; $f(x)=g(x)$ revient à $(x+1)(x-2)=0$ : $x=-1$
+ou $x=2$.\par
+5) $f(1{,}5)=0{,}25$ : \res{P\in\Cf} ; $g(1{,}5)=1{,}5\ne 0{,}25$ : \res{P\notin\Cg}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-3}{-3}{4}{8}
+  \gradx{-2,-1,1,2,3}
+  \grady{-2,-1,1,2,3,4,5,6,7}
+  \draw[coulCourbe,line width=1pt,domain=-2:3,samples=50] plot (\x,{(\x)*(\x)-2});
+  \draw[coulCourbeC,line width=1pt] (-2,-2)--(3,3);
+  \path (-1,-1) node[croix]{} (2,2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,left] at (2.9,7) {$\Cf$};
+  \node[coulCourbeC,font=\footnotesize,right] at (3,3) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\end{document}

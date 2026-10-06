@@ -1,0 +1,857 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\entete{Chapitre 4 --- Calcul littéral --- Corrigé des exercices}{Seconde}
+
+\let\deuxpaquet\deux
+\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
+\clubpenalty=10000
+\widowpenalty=10000
+
+\begin{document}
+
+\entetecorrige{CORRIGÉ --- CALCUL LITTÉRAL}
+  {Chapitre 4 : fiche d'exercices --- Seconde}
+  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
+   fréquentes et les méthodes à retenir. Chaque équation se termine par l'ensemble $S$
+   des solutions.}
+
+\partie{Réduire, substituer}
+
+\begin{exo}[Réduire une somme]
+\deux{$A=\res{14a}$}{$B=\res{7a+6}$}
+\deux{$C=\res{11a^{2}+3}$}{$D=\res{7a^{2}+6a}$}
+\deux{$E=\res{2m}$}{$F=\res{-13m}$}
+\deux{$G=\res{-3m^{2}+3m}$}{$H=\res{-7m^{2}}$}
+\deux{$K=\res{7n^{2}+6n+6}$}{$L=\res{4n^{2}+7n}$}
+$M=\res{-4n^{2}-7n-3}$
+\rem{Dans $B$, le $6$ reste seul : on n'écrit pas $13a$.}
+\end{exo}
+
+\begin{exo}[Réduire un produit]
+\deux{$A=\res{24x}$}{$B=\res{15x^{2}}$}
+\deux{$C=\res{14x^{2}}$}{$D=\res{15x^{2}}$}
+\deux{$E=\res{-12x^{2}}$}{$F=\res{-30x}$}
+\deux{$G=\res{-14x^{2}}$}{$H=\res{18x^{2}}$}
+\deux{$K=\res{-12x^{2}}$}{$L=\res{10x^{2}}$}
+$M=\res{-12x^{2}}$
+\end{exo}
+
+\begin{exo}[Substituer]
+1) Pour $x=2$ : $B=12-8-4=\res{0}$ ; pour $x=3$ : $B=27-12-4=\res{11}$ ; pour $x=-1$ :
+$B=3+4-4=\res{3}$ ; pour $x=-2$ : $B=12+8-4=\res{16}$ ; pour $x=\frac13$ :
+$B=\frac13-\frac43-4=\res{-5}$.\par
+2) $C=6+8+5=\res{19}$ ; \; $C=-2-16+5=\res{-13}$.
+\rem{$-4p$ pour $p=-2$ : $-4\times(-2)=+8$.}
+\end{exo}
+
+\begin{exo}[Égales ou non ?]
+1) Pour $x=0$ : $A=-10$ et $B=-10$ ; pour $x=1$ : $A=-6$ et $B=-8$.\par
+2) \res{\text{Non}} : pour $x=1$, elles sont différentes.\par
+3) $A=x^{2}+5x-2x-10=\res{x^{2}+3x-10}$, qui n'est pas $B$.
+\rem{Un test réussi ($x=0$) ne prouve pas une égalité ; un seul contre-exemple suffit à
+la réfuter.}
+\end{exo}
+
+\partie{Développer}
+
+\begin{exo}[Distributivité simple]
+\deux{$A=\res{12x+20}$}{$B=\res{6x+12}$}
+\deux{$C=\res{4x^{2}+5x}$}{$D=\res{6x^{2}+21x}$}
+\deux{$E=\res{11x+12}$}{$F=\res{18x+24}$}
+\deux{$G=\res{14x+15}$}{$H=\res{18x+18}$}
+\deux{$K=\res{3x^{2}+15x+2}$}{$L=\res{14x^{2}+21x}$}
+\end{exo}
+
+\begin{exo}[Avec des signes moins]
+\deux{$A=\res{2a+18}$}{$B=\res{-a-12}$}
+\begin{calculs}
+C&=12+8a-15-6a=\res{2a-3}\\
+D&=15a-10+8a-6=\res{23a-16}
+\end{calculs}
+\deux{$E=\res{14b^{2}+13b}$}{$F=\res{-11b^{2}+10b}$}
+\begin{calculs}
+G&=-12b^{2}-8b-2b^{2}+9b\\
+G&=\res{-14b^{2}+b}\\
+H&=-12b^{2}+6b-12b^{2}-18b\\
+H&=\res{-24b^{2}-12b}
+\end{calculs}
+\rem{Dans $G$ : $-b\times(-9)=+9b$.}
+\end{exo}
+
+\begin{exo}[Double distributivité]
+\deux{$A=\res{8x^{2}+26x+15}$}{$B=\res{8x^{2}+34x+21}$}
+\begin{calculs}
+C&=-6x^{2}+15x+8x-20=\res{-6x^{2}+23x-20}\\
+D&=-15+20x+6x-8x^{2}=\res{-8x^{2}+26x-15}
+\end{calculs}
+\deux{$E=\res{12x^{2}+26x+10}$}{$F=\res{15x^{2}-22x+8}$}
+\deux{$G=\res{18x^{2}-27x+10}$}{$H=\res{8x^{2}-22x+15}$}
+\end{exo}
+
+\begin{exo}[Une différence de produits]
+\begin{calculs}
+A&=8x^{2}+26x+15-\big[6x^{2}-11x-10\big]\\
+A&=\res{2x^{2}+37x+25}\\
+B&=-6x^{2}+29x-28+10x^{2}-19x+6\\
+B&=\res{4x^{2}+10x-22}\\
+C&=12x^{2}-9x-30-\big[-12x^{2}+7x+10\big]\\
+C&=\res{24x^{2}-16x-40}\\
+D&=18x^{2}-9x-2-\big[-15x^{2}+26x-8\big]\\
+D&=\res{33x^{2}-35x+6}
+\end{calculs}
+\rem{Le crochet garde le produit entier ; le $-$ change ensuite tous ses signes.}
+\end{exo}
+
+\begin{exo}[Crochets et trois facteurs]
+\begin{calculs}
+A&=6-3x-4-5x+2=\res{4-8x}\\
+B&=4x-3+5x-6x-2=\res{3x-5}\\
+C&=4-\big[3-2x\big]+3-4x=\res{4-2x}\\
+D&=5x+\big[x-4\big]-\big[2x+4\big]=\res{4x-8}\\
+E&=6x^{2}+15x-4\big[2x^{2}-x-15\big]\\
+E&=\res{-2x^{2}+19x+60}\\
+F&=(3x^{2}+2x-8)(-x+3)\\
+F&=\res{-3x^{3}+7x^{2}+14x-24}
+\end{calculs}
+\end{exo}
+
+\partie{Identités remarquables}
+
+\begin{exo}[Le carré d'une somme]
+\deux{$A=\res{9x^{2}+24x+16}$}{$B=\res{25+20x+4x^{2}}$}
+\deux{$C=\res{16a^{2}+24a+9}$}{$D=\res{9+30b+25b^{2}}$}
+\deux{$E=\res{x^{2}+12x+36}$}{$F=\res{16x^{2}+8x+1}$}
+\deux{$G=\res{9m^{2}+30m+25}$}{$H=\res{16+24r+9r^{2}}$}
+\rem{Le double produit : pour $A$, $2\times 3x\times 4=24x$.}
+\end{exo}
+
+\begin{exo}[Le carré d'une différence]
+\deux{$A=\res{16x^{2}-24x+9}$}{$B=\res{9x^{2}-30x+25}$}
+\deux{$C=\res{16-24x+9x^{2}}$}{$D=\res{25-20x+4x^{2}}$}
+\deux{$E=\res{25a^{2}-30a+9}$}{$F=\res{4-20b+25b^{2}}$}
+\deux{$G=\res{9m^{2}-6m+1}$}{$H=\res{n^{2}-8n+16}$}
+\end{exo}
+
+\begin{exo}[Somme par différence]
+\deux{$A=\res{16x^{2}-9}$}{$C=\res{9-25x^{2}}$}
+\deux{$D=\res{9a^{2}-16}$}{$E=\res{b^{2}-25}$}
+$F=\res{49-c^{2}}$\par
+$B=4x^{2}-6x+10x-15=\res{4x^{2}+4x-15}$
+\rem{$B$ n'est pas une identité : $2x+5$ et $2x-3$ n'ont pas les mêmes termes.}
+\end{exo}
+
+\begin{exo}[Choisir la bonne formule]
+\deux{$A=\res{6x+15}$}{$B=\res{4x^{2}+20x+25}$}
+\deux{$C=\res{9x^{2}-24x+16}$}{$D=\res{25x^{2}-9}$}
+\deux{$E=\res{21x^{2}-29x-10}$}{$F=\res{9-49x^{2}}$}
+\begin{calculs}
+G&=4x^{2}+12x+9-\big[x^{2}-8x+16\big]\\
+G&=\res{3x^{2}+20x-7}\\
+H&=x^{2}-25-\big[4x^{2}-1\big]=\res{-3x^{2}-24}\\
+K&=x^{2}+8x+16+3\big[2x^{2}+3x-2\big]\\
+K&=\res{7x^{2}+17x+10}\\
+L&=9x^{2}-1-2\big[x^{2}-6x+9\big]\\
+L&=\res{7x^{2}+12x-19}
+\end{calculs}
+\end{exo}
+
+\partie{Factoriser}
+
+\begin{exo}[Compléter les factorisations]
+\deux{a) $\res{5(x+8)}$}{b) $\res{4(3x-2)}$}
+\deux{c) $\res{5(2x-3)}$}{d) $\res{4x(2x+3)}$}
+e) $\res{x(x-9)}$ \quad f) $(x+3)(3x-2+x+4)=\res{(x+3)(4x+2)}$
+\end{exo}
+
+\begin{exo}[Un nombre ou $x$ en facteur]
+\deux{$A=\res{12(4a-3b)}$}{$B=\res{30(5a-3b)}$}
+\deux{$C=\res{12(2x-3)}$}{$D=\res{x(35+13x)}$}
+\deux{$E=\res{7x(4x-1)}$}{$F=\res{5x(x^{2}+2x+3)}$}
+\rem{On prend le plus grand facteur commun : $C=6(4x-6)$ n'est pas terminé.}
+\end{exo}
+
+\begin{exo}[Une parenthèse en facteur]
+\begin{calculs}
+A&=(4x+3)\big[(2x-5)+(3x+7)\big]\\
+A&=\res{(4x+3)(5x+2)}\\
+B&=(6x-5)\big[(2x+3)+(4x-1)\big]\\
+B&=\res{(6x-5)(6x+2)}\\
+C&=(2x-7)\big[(3x+5)+(4x+1)\big]\\
+C&=\res{(2x-7)(7x+6)}\\
+D&=(5r+3)\big[(8r-2)+(3r-4)\big]\\
+D&=\res{(5r+3)(11r-6)}\\
+E&=(x-4)\big[(x+2)-(2x+5)\big]\\
+E&=\res{(x-4)(-x-3)}\\
+F&=\res{(2y-5)(x+3)}
+\end{calculs}
+\rem{$B$ peut encore s'écrire $2(6x-5)(3x+1)$.}
+\end{exo}
+
+\partie{Factoriser avec une identité remarquable}
+
+\begin{exo}[Différence de deux carrés]
+\deux{$A=\res{(5x+4)(5x-4)}$}{$B=\res{(1+3x)(1-3x)}$}
+\deux{$C$ : \res{\text{impossible}}}{$D=\res{(6R+5)(6R-5)}$}
+\deux{$E=5(x^{2}-1)=\res{5(x+1)(x-1)}$}{}
+$F=9-x^{2}=\res{(3+x)(3-x)}$
+\rem{$C$ est une somme de deux carrés. Pour $E$, on factorise d'abord par $5$.}
+\end{exo}
+
+\begin{exo}[Carrés parfaits]
+\deux{$A=\res{(3x+2)^{2}}$}{$C=\res{(4d+3)^{2}}$}
+\deux{$D=\res{(6-x)^{2}}$}{$F=\res{(4b-5)^{2}}$}
+$B$ : $a=5a$, $b=3$, mais $2\times 5a\times 3=30a\ne 15a$ : \res{\text{impossible}}.\par
+$E$ : $-1$ n'est pas un carré : \res{\text{impossible}}.
+\end{exo}
+
+\begin{exo}[Quelle méthode ?]
+\deux{$A=\res{(7x+4)(7x-4)}$}{$B=\res{x(16x+7)}$}
+\deux{$C=\res{(2x+5)^{2}}$}{$D=\res{(8-3x)^{2}}$}
+\deux{$E=\res{a(5-4a)}$}{$F=\res{(1-5f)^{2}}$}
+\end{exo}
+
+\partie{Factorisations avancées}
+
+\begin{exo}[Identité remarquable sur des expressions]
+\begin{calculs}
+A&=\big[(7x+5)+(3x+1)\big]\big[(7x+5)-(3x+1)\big]\\
+A&=\res{(10x+6)(4x+4)}\\
+B&=\big[(7x-3)+(2x-1)\big]\big[(7x-3)-(2x-1)\big]\\
+B&=\res{(9x-4)(5x-2)}\\
+C&=\big[(3x-2)+7\big]\big[(3x-2)-7\big]\\
+C&=\res{(3x+5)(3x-9)}\\
+D&=\big[9-(2x-3)\big]\big[9+(2x-3)\big]\\
+D&=\res{(12-2x)(2x+6)}\\
+E&=\big[(x+5)+(x+2)\big]\big[(x+5)-(x+2)\big]\\
+E&=\res{3(2x+7)}
+\end{calculs}
+\rem{Dans $B$ : $-(2x-1)=-2x+1$. On peut encore sortir des facteurs numériques :
+$A=8(5x+3)(x+1)$.}
+\end{exo}
+
+\begin{exo}[Le « 1 » caché et le carré]
+\begin{calculs}
+A&=(5x+4)\big[(3x-2)+1\big]=\res{(5x+4)(3x-1)}\\
+B&=(x-1)\big[3(x+2)-1\big]=\res{(x-1)(3x+5)}\\
+C&=(6r-4)\big[(2r-3)+(6r-4)\big]\\
+C&=\res{(6r-4)(8r-7)}\\
+D&=(4m-2)\big[(4m-2)-(3m+1)\big]\\
+D&=\res{(4m-2)(m-3)}\\
+E&=(x+2)\big[(x+2)+4+1\big]=\res{(x+2)(x+7)}
+\end{calculs}
+\rem{Dans $E$, $x+2$ apparaît trois fois : le dernier terme donne le \og 1\fg{}.}
+\end{exo}
+
+\begin{exo}[Faire apparaître le facteur commun]
+\begin{calculs}
+A&=(3x-4)(x+2)+6(3x-4)\\
+A&=\res{(3x-4)(x+8)}\\
+B&=(x-5)^{2}+(x-5)\\
+B&=\res{(x-5)(x-4)}\\
+C&=(-x+2)(3x+1)-(3x+1)(x-7)\\
+C&=\res{(3x+1)(9-2x)}\\
+D&=(3x+4)(3x-4)+(3x+4)(2x+5)\\
+D&=\res{(3x+4)(5x+1)}\\
+E&=(4x+5)^{2}-2(4x+5)\\
+E&=\res{(4x+5)(4x+3)}
+\end{calculs}
+\rem{$B$ : $(5-x)^{2}=(x-5)^{2}$ (un carré efface le signe). $C$ :
+$-3x-1=-(3x+1)$.}
+\end{exo}
+
+\begin{exo}[Choisir la méthode]
+\deux{$A=\res{(4x-7)^{2}}$}{$B=\res{x(3x^{2}-10x+24)}$}
+\begin{calculs}
+C&=(2x+5)\big[(3x-4)+(4x+9)\big]\\
+C&=\res{(2x+5)(7x+5)}\\
+D&=(5x+3)\big[(4x-9)-(6x-9)\big]\\
+D&=\res{-2x(5x+3)}\\
+E&=\big[(4x-1)+(3x+2)\big]\big[(4x-1)-(3x+2)\big]\\
+E&=\res{(7x+1)(x-3)}
+\end{calculs}
+\end{exo}
+
+\partie{Fractions rationnelles}
+
+\begin{exo}[Valeurs interdites]
+\deux{$A$ : \res{-3}}{$B$ : \res{\frac23}}
+\deux{$C$ : \res{0} et \res{-5}}{$D$ : \res{-\frac23} et \res{2}}
+$E$ : $x^{2}-16=0$ pour \res{-4} et \res{4}.
+\end{exo}
+
+\begin{exo}[Premiers calculs]
+\deux{$A=\res{\dfrac{2x+1}{x}}$}{$B=\res{\dfrac{4x-3}{x}}$}
+\deux{$C=\res{\dfrac{7}{x}}$}{$D=\res{\dfrac{x^{2}+3}{x}}$}
+$E=\dfrac{x}{3x}+\dfrac{6}{3x}=\res{\dfrac{x+6}{3x}}$
+\end{exo}
+
+\begin{exo}[Une seule fraction]
+\begin{calculs}
+A&=\frac{x-2+3}{x-2}=\res{\frac{x+1}{x-2}}\\
+B&=\frac{4(x+2)-3x}{x(x+2)}=\res{\frac{x+8}{x(x+2)}}\\
+C&=\frac{x^{2}+2(x+3)}{x(x+3)}=\res{\frac{x^{2}+2x+6}{x(x+3)}}\\
+D&=\frac{3(x-1)-(x+2)}{x-1}=\res{\frac{2x-5}{x-1}}\\
+E&=\frac{x+2+x-2}{(x-2)(x+2)}=\res{\frac{2x}{(x-2)(x+2)}}
+\end{calculs}
+Valeurs interdites : $A$ : $2$ ; $B$ : $0$ et $-2$ ; $C$ : $0$ et $-3$ ; $D$ : $1$ ;
+$E$ : $2$ et $-2$.
+\rem{$D$ : la parenthèse autour de $x+2$ est indispensable.}
+\end{exo}
+
+\begin{exo}[Démontrer une égalité]
+1)
+\begin{calculs}
+2-\frac{1}{x-1}&=\frac{2(x-1)-1}{x-1}\\
+2-\frac{1}{x-1}&=\res{\frac{2x-3}{x-1}}
+\end{calculs}
+2)
+\begin{calculs}
+\frac{1}{x-2}-\frac1x&=\frac{x-(x-2)}{x(x-2)}\\
+\frac{1}{x-2}-\frac1x&=\res{\frac{2}{x(x-2)}}
+\end{calculs}
+\end{exo}
+
+\partie{Équations du premier degré}
+
+\begin{exo}[Les deux règles]
+\deux{a) $\res{S=\ens{5}}$}{b) $\res{S=\ens{8}}$}
+\deux{c) $4=4x$ : $\res{S=\ens{1}}$}{d) $\res{S=\ens{\frac72}}$}
+\deux{e) $-3x=21$ : $\res{S=\ens{-7}}$}{f) $0x=-11$ : $\res{S=\varnothing}$}
+\end{exo}
+
+\begin{exo}[Avec des parenthèses]
+\begin{calculs}
+\text{a) } 9-x&=x+9\\
+-2x&=0 \;:\; \res{S=\ens{0}}\\
+\text{b) } x+1&=0 \;:\; \res{S=\ens{-1}}\\
+\text{c) } 4x+10&=x+16\\
+3x&=6 \;:\; \res{S=\ens{2}}\\
+\text{d) } x-8&=5x-20\\
+12&=4x \;:\; \res{S=\ens{3}}\\
+\text{e) } 3m-4&=2m+5 \;:\; \res{S=\ens{9}}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Coefficients fractionnaires]
+\deux{a) $\res{S=\ens{-2}}$}{b) $\res{S=\ens{\frac18}}$}
+\deux{c) $\res{S=\ens{6}}$}{d) $\res{S=\ens{-\frac45}}$}
+\deux{e) $\res{S=\ens{\frac16}}$}{f) $\res{S=\ens{-\frac34}}$}
+\rem{c) $x=\frac92\times\frac43$ : on multiplie par l'inverse du coefficient.}
+\end{exo}
+
+\begin{exo}[Supprimer les fractions]
+\begin{calculs}
+\text{a) } -x+12&=3x-24 \;:\; \res{S=\ens{9}}\\
+\text{b) } 5x+2&=6x-8 \;:\; \res{S=\ens{10}}\\
+\text{c) } 9x-20&=7 \;:\; \res{S=\ens{3}}\\
+\text{d) } 3x+10&=-x+54 \;:\; \res{S=\ens{11}}\\
+\text{e) } 2x-6-16&=3x+1+2 \;:\; \res{S=\ens{-25}}\\
+\text{f) } 3(2x+4)&=4(x+5) \;:\; \res{S=\ens{4}}
+\end{calculs}
+\rem{On multiplie par $3$, $2$, $15$, $6$, $4$ et $12$ ; chaque terme, y compris celui
+sans fraction.}
+\end{exo}
+
+\begin{exo}[Produit en croix, cas particuliers]
+1) a) $9x+6=20x-4$ : $\res{S=\ens{\frac{10}{11}}}$ \quad b) $9x-6=10$ :
+$\res{S=\ens{\frac{16}{9}}}$\par
+2) a) ($\times 6$) $-x+24=-x+24$ : $0x=0$, $\res{S=\R}$.\par
+b) ($\times 12$) $-2x-5=-2x-1$ : $0x=4$, $\res{S=\varnothing}$.
+\end{exo}
+
+\begin{exo}[L'inconnue au dénominateur]
+\begin{calculs}
+\text{a) } x&\ne -\tfrac12 \;:\; 3x-2=4x+2\\
+x&=-4 \;:\; \res{S=\ens{-4}}\\
+\text{b) } x&\ne 2 \;:\; 3-2x=2-x\\
+x&=1 \;:\; \res{S=\ens{1}}\\
+\text{c) } x&\ne -\tfrac12 \;:\; 12-4x=6x+3\\
+x&=\tfrac{9}{10} \;:\; \res{S=\ens{\tfrac{9}{10}}}\\
+\text{d) } x&\ne -\tfrac12 \;:\; 4+2x=1+2x\\
+0x&=-3 \;:\; \res{S=\varnothing}\\
+\text{e) } x&\ne 2 \;:\; 3-x=2x-4\\
+x&=\tfrac73 \;:\; \res{S=\ens{\tfrac73}}\\
+\text{f) } x&\ne -2 \;:\; -3x=4+2x\\
+x&=-\tfrac45 \;:\; \res{S=\ens{-\tfrac45}}
+\end{calculs}
+\end{exo}
+
+\partie{Équations produits}
+
+\begin{exo}[Produit nul]
+\deux{a) $\res{S=\ens{0\,;\frac53}}$}{b) $\res{S=\ens{0\,;\frac83}}$}
+\deux{c) $\res{S=\ens{\frac52}}$}{d) $\res{S=\ens{-2\,;-\frac43\,;0}}$}
+e) $\res{S=\ens{-1\,;\frac23\,;5}}$
+\rem{c) Un carré est nul si et seulement si le nombre est nul : une seule solution.}
+\end{exo}
+
+\begin{exo}[Factoriser d'abord]
+\begin{calculs}
+\text{a) } x(3x-8)&=0 \;:\; \res{S=\ens{0\,;\tfrac83}}\\
+\text{b) } x^{2}(2x-5)&=0 \;:\; \res{S=\ens{0\,;\tfrac52}}\\
+\text{c) } (x+3)\big[(x+3)-(4x-3)\big]&=0\\
+(x+3)(6-3x)&=0 \;:\; \res{S=\ens{-3\,;2}}\\
+\text{d) } (2x-5)\big[(3x+1)-(4-x)\big]&=0\\
+(2x-5)(4x-3)&=0 \;:\; \res{S=\ens{\tfrac34\,;\tfrac52}}\\
+\text{e) } (3x+2)(3x-2-3+x)&=0\\
+(3x+2)(4x-5)&=0 \;:\; \res{S=\ens{-\tfrac23\,;\tfrac54}}\\
+\text{f) } (3x-1)\big[(x+2)^{2}-9\big]&=0\\
+(3x-1)(x+5)(x-1)&=0 \;:\; \res{S=\ens{-5\,;\tfrac13\,;1}}
+\end{calculs}
+\rem{e) $9x^{2}-4=(3x+2)(3x-2)$ fait apparaître le facteur commun.}
+\end{exo}
+
+\begin{exo}[Différence de deux carrés nulle]
+\begin{calculs}
+\text{a) } (3x-x-2)(3x+x+2)&=0\\
+(2x-2)(4x+2)&=0 \;:\; \res{S=\ens{-\tfrac12\,;1}}\\
+\text{b) } (2x-2)(4x+4)&=0 \;:\; \res{S=\ens{-1\,;1}}\\
+\text{c) } \big[(3x+5)-2(x+1)\big]\big[(3x+5)+2(x+1)\big]&=0\\
+(x+3)(5x+7)&=0 \;:\; \res{S=\ens{-3\,;-\tfrac75}}\\
+\text{d) } \big[3(x+1)-2(2x+3)\big]\big[3(x+1)+2(2x+3)\big]&=0\\
+(-x-3)(7x+9)&=0 \;:\; \res{S=\ens{-3\,;-\tfrac97}}
+\end{calculs}
+\rem{c) $4(x+1)^{2}=\big[2(x+1)\big]^{2}$.}
+\end{exo}
+
+\begin{exo}[Développer d'abord]
+\begin{calculs}
+\text{a) } 3x^{2}+10x-8&=3x^{2}+5\\
+10x&=13 \;:\; \res{S=\ens{\tfrac{13}{10}}}\\
+\text{b) } 4x^{2}+12x+9&=4x^{2}+2x\\
+10x&=-9 \;:\; \res{S=\ens{-0{,}9}}\\
+\text{c) } x^{2}+2x-3&=x^{2}+x-20 \;:\; \res{S=\ens{-17}}\\
+\text{d) } x^{3}-8x^{2}+16x&=x^{3}+3x^{2}\\
+x(16-11x)&=0 \;:\; \res{S=\ens{0\,;\tfrac{16}{11}}}
+\end{calculs}
+\rem{En d), ce sont les $x^{3}$ qui s'éliminent ; il reste une équation produit.}
+\end{exo}
+
+\begin{exo}[Choisir la bonne écriture]
+1) $E(x)=x^{2}-4x+4-36=x^{2}-4x-32$ ; \; $E(x)=\big[(x-2)-6\big]\big[(x-2)+6\big]$, soit
+$(x-8)(x+4)$.\par
+2) $E(0)=\res{-32}$ (forme B) ;\; $E(x)=0$ : $\res{S=\ens{-4\,;8}}$ (forme C) ;\;
+$E(x)=-32$ : $x(x-4)=0$, $\res{S=\ens{0\,;4}}$ (forme B) ;\; $E(x)=-36$ :
+$(x-2)^{2}=0$, $\res{S=\ens{2}}$ (forme A).
+\end{exo}
+
+\partie{Équations $x^{2}=a$ et équations quotients}
+
+\begin{exo}[Équations $x^{2}=a$]
+\deux{a) $\res{S=\ens{-9\,;9}}$}{b) $\res{S=\varnothing}$}
+\deux{c) $x^{2}=16$ : $\res{S=\ens{-4\,;4}}$}{d) $\res{S=\ens{-\sqrt5\,;\sqrt5}}$}
+\deux{e) $x^{2}=\frac{25}{4}$ : $\res{S=\ens{-\frac52\,;\frac52}}$}{}
+f) $x+2=7$ ou $x+2=-7$ : $\res{S=\ens{-9\,;5}}$
+\end{exo}
+
+\begin{exo}[Équations quotients]
+a) $x\ne -2$ : $\res{S=\ens{\frac43}}$ \quad b) $x\ne 3$ : $\res{S=\ens{-\frac92}}$\par
+c) Numérateur : $\big[(2x+3)-3(x-1)\big]\big[(2x+3)+3(x-1)\big]=(6-x)\times 5x$ ;
+dénominateur : $4(x-1)(x+1)$, nul pour $1$ et $-1$. Le numérateur s'annule pour $0$ et
+$6$ : $\res{S=\ens{0\,;6}}$.\par
+d) Numérateur : $(3x-4)(3x+4)-2(3x-4)=(3x-4)(3x+2)$ ; dénominateur nul pour $\frac43$.
+Il reste $\res{S=\ens{-\frac23}}$.\par
+e) Pour $x\ne 0$ : $\dfrac{6+x-7}{2x}=0$, soit $x-1=0$ : $\res{S=\ens{1}}$.
+\rem{d) $\frac43$ annule aussi le numérateur, mais il est interdit.}
+\end{exo}
+
+\begin{exo}[Dans des problèmes]
+1) $c^{2}=30$ et $c>0$ : $c=\res{\sqrt{30}\text{ cm}}$.\par
+2) $\pi r^{2}=49\pi$, soit $r^{2}=49$ : $r=\res{7\text{ cm}}$.\par
+3) $x^{2}+7=43$, soit $x^{2}=36$ : \res{-6} ou \res{6}.\par
+4) Pour $x=\res{6}$ ($x\ne -2$). Valoir $1$ : $x-6=x+2$ est impossible : \res{\text{jamais}}.
+\end{exo}
+
+\partie{Mise en équation}
+
+\begin{exo}[Quatre problèmes courts]
+1) Soit $x$ l'âge de Zoé : $3(x+9)=75$ donne $x+9=25$ : Zoé a \res{16\text{ ans}}.\par
+2) Soit $x$ le nombre choisi : $5(3x-4)=205$ donne $3x-4=41$ : \res{x=15}.\par
+3) Soit $x$ la contenance : $\frac{x}{4}+15=\frac{2x}{3}$ ; ($\times 12$)
+$3x+180=8x$ : \res{36\text{ L}}.\par
+4) $n+(n+2)=152$, $n=75$ : \res{75} et \res{77}.
+\end{exo}
+
+\begin{exo}[Entiers et âges]
+1) $n+3(n+2)=98$ donne $4n+6=98$, puis $n=23$ : \res{23}, \res{24} et \res{25}.\par
+2) Dans $x$ ans : $30+x=(18+x)+(4+x)$, soit $30+x=22+2x$ : \res{8\text{ ans}}.
+\rem{Vérification : $38=26+12$.}
+\end{exo}
+
+\begin{exo}[Stocks, jardin et concert]
+1) Soit $b$ le nombre de paires de bottes : $b+3b+(b+5)=95$ donne $5b=90$, puis $b=18$ :
+\res{18} bottes, \res{54} baskets, \res{23} sandales.\par
+2) Le verger représente $1-\frac14-\frac13=\frac{5}{12}$ du jardin : $\frac{5}{12}x=75$,
+$x=\res{180\text{ m}^{2}}$.\par
+3) $40x+25(800-x)=26\,000$ donne $15x=6\,000$ : \res{400} places assises.
+\end{exo}
+
+\partie{Problèmes de géométrie}
+
+\begin{exo}[Exprimer des longueurs et des aires]
+1) $GO=\res{x+7}$ ; \; $RS=\res{\frac{2x}{5}}$ (deux parts sur cinq).\par
+2) Le grand rectangle moins le rectangle blanc : $6(x+6)-6x=\res{36}$. L'aire ne
+dépend pas de $x$.
+\end{exo}
+
+\begin{exo}[Un trapèze et un triangle]
+1) Trapèze : $\dfrac{(x+3x)(x+3)}{2}=\res{2x^{2}+6x}$ ; triangle :
+$\dfrac{(6+x)\times 2x}{2}=\res{x^{2}+6x}$.\par
+2) Somme : $3x^{2}+12x=\res{3x(x+4)}$ : l'autre côté mesure $\res{x+4}$.
+\end{exo}
+
+\begin{exo}[Deux solides]
+Pavé : $(2x+6)\times 2x\times x=4x^{3}+12x^{2}$.\par
+Prisme : aire de la base $\dfrac{2x\times 4x}{2}=4x^{2}$, puis volume
+$4x^{2}(x+3)=4x^{3}+12x^{2}$.\par
+Les volumes sont \res{\text{égaux}} pour tout $x>0$.
+\end{exo}
+
+\begin{exo}[Une aire donnée]
+$4(6+x)=30$, $24+4x=30$, $x=\res{1{,}5\text{ cm}}$.
+\end{exo}
+
+\begin{exo}[Un carré dans un carré]
+Le grand carré a pour côté $3+2x$.\par
+1) $4(3+2x)=36$ : $x=\res{3}$.\par
+2) $(3+2x)^{2}=49$ et $3+2x>0$ : $3+2x=7$, $x=\res{2}$.\par
+3) $(3+2x)^{2}-9=27$, soit $(3+2x)^{2}=36$ : $3+2x=6$, $x=\res{1{,}5}$.
+\end{exo}
+
+\begin{exo}[Un bassin dans une parcelle]
+1) \res{c)} et \res{d)} : la parcelle moins le bassin, $x^{2}-(x-2)^{2}=4x-4$.\par
+2) Le bassin a pour côté $x-2$ : $(x-2)^{2}=36$ et $x-2>0$, donc $x-2=6$ et
+$x=\res{8\text{ m}}$.
+\end{exo}
+
+\partie{Isoler une grandeur}
+
+\begin{exo}[Échauffement]
+\deux{a) $\res{A=B-3}$}{b) $\res{A=5-B}$}
+\deux{c) $\res{A=\frac{B}{4}}$}{d) $\res{A=3B}$}
+\deux{e) $\res{A=\frac{6}{B}}$}{f) $\res{A=\frac{C-B}{2}}$}
+\end{exo}
+
+\begin{exo}[Formules de géométrie et de physique]
+\deux{1) $\res{\ell=\dfrac{V}{L\,h}}$}{2) $\res{h=\dfrac{2\mathcal{A}}{b}}$}
+\deux{3) $\res{r=\dfrac{E-U}{I}}$}{4) $\res{d=\dfrac{V}{L\,H}}$}
+\deux{5) $\res{C_{0}=\dfrac{C}{1+t}}$}{6) $\res{r=\sqrt{\dfrac{\mathcal{A}}{\pi}}}$}
+\rem{3) $rI=E-U$ ; 4) $L\,H=\frac{V}{d}$, puis produit en croix.}
+\end{exo}
+
+\begin{exo}[Plus difficile]
+1) $\dfrac1f=\dfrac{a+b}{ab}$, donc $\res{f=\dfrac{ab}{a+b}}$.\par
+2) $d^{2}=\dfrac{6{,}67\times 10^{-11}\,m\,m'}{F}$, donc
+$\res{d=\sqrt{\dfrac{6{,}67\times 10^{-11}\,m\,m'}{F}}}$.
+\end{exo}
+
+\begin{exo}[Isoler, puis calculer]
+1) $2y=10-4x+3z$, $\res{y=\dfrac{10-4x+3z}{2}}$ ; pour $x=1$ et $z=2$ : $y=\res{6}$.\par
+2) $\ell=\dfrac{72}{6\times 3}=\res{4\text{ cm}}$.\par
+3) $r=\sqrt{\dfrac{80}{\pi}}\approx\res{5{,}0\text{ cm}}$.
+\end{exo}
+
+\partiesansnum{Vers le devoir commun}
+
+\begin{exo}[Maîtrise des calculs]
+\begin{calculs}
+A(x)&=6x-15+6x^{2}+5x-4\\
+A(x)&=\res{6x^{2}+11x-19}\\
+B(x)&=-3x^{2}-2x+8-5+x\\
+B(x)&=\res{-3x^{2}-x+3}
+\end{calculs}
+\deux{$C(x)=\res{x(8x-5)}$}{$D(x)=\res{(3x+5)^{2}}$}
+\begin{calculs}
+E(x)&=(2x-5)\big[1-3(2x-5)\big]\\
+E(x)&=\res{(2x-5)(16-6x)}\\
+F(x)&=(x+2)\big[(-2x+3)-(x+2)\big]\\
+F(x)&=\res{(x+2)(-3x+1)}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Une fonction, trois écritures]
+1) $f(x)=x^{2}+6x+9-16=\res{x^{2}+6x-7}$ ;\; $f(x)=\big[(x+3)-4\big]\big[(x+3)+4\big]$,
+soit $\res{(x-1)(x+7)}$.\par
+2) $f(0)=\res{-7}$ ; $f\big(\frac12\big)=\frac14+3-7=\res{-\frac{15}{4}}$.\par
+Antécédents de $0$ : $(x-1)(x+7)=0$, \res{1} et \res{-7}.\par
+De $-7$ : $x^{2}+6x=0$, soit $x(x+6)=0$ : \res{0} et \res{-6} ; \; de $-16$ : $(x+3)^{2}=0$ : \res{-3}.
+\end{exo}
+
+\begin{exo}[Lire, puis démontrer]
+1) On lit $f(x)=0$ pour $x=-1$ et $x=4$ ; $f(x)=-4$ pour $x=0$ et $x=3$.\par
+2)
+\begin{calculs}
+f(x)&=2x^{2}-x-3-(x^{2}+2x+1)\\
+f(x)&=\res{x^{2}-3x-4}\\
+f(x)&=(x+1)\big[(2x-3)-(x+1)\big]\\
+f(x)&=\res{(x+1)(x-4)}
+\end{calculs}
+3) $f(2)=4-6-4=\res{-6}$ ; $f(x)=0$ : $\res{S=\ens{-1\,;4}}$ ; $f(x)=-4$ :
+$x(x-3)=0$, $\res{S=\ens{0\,;3}}$. Les conjectures sont démontrées.
+\end{exo}
+
+\begin{exo}[Équations]
+\deux{a) $\frac23x=8$ : $\res{S=\ens{12}}$}{b) $\res{S=\ens{\frac94}}$}
+c) $4x+3=-5+3x$ : $\res{S=\ens{-8}}$\par
+d) $(2x-10)(4x+2)=0$ : $\res{S=\ens{-\frac12\,;5}}$\par
+e) $(3x-2)^{2}-\big[2(x+2)\big]^{2}=0$, soit $(x-6)(5x+2)=0$ :
+$\res{S=\ens{-\frac25\,;6}}$
+\end{exo}
+
+\begin{exo}[Points d'intersection de deux courbes]
+a) $x^{2}+2x-3=2x+6$ donne $x^{2}-9=0$, soit $(x-3)(x+3)=0$.
+$g(3)=12$ et $g(-3)=0$ : $\res{(3\,;12)}$ et $\res{(-3\,;0)}$.\par
+b) $3x^{2}-x+1=5x+1$ donne $3x^{2}-6x=0$, soit $3x(x-2)=0$.
+$g(0)=1$ et $g(2)=11$ : $\res{(0\,;1)}$ et $\res{(2\,;11)}$.
+\end{exo}
+
+\begin{exo}[Deux problèmes]
+1) $(x+3)^{2}=x^{2}+51$ donne $6x+9=51$, puis $x=7$ : l'aire de départ vaut \res{49\text{ cm}^{2}}.\par
+2) $0<x\le 6$ ; carré : $x^{2}$ ; rectangle : $(6-x)(9-x)=54-15x+x^{2}$.
+$x^{2}=54-15x+x^{2}$ donne $x=\res{3{,}6\text{ cm}}$, qui convient.
+\end{exo}
+
+\end{document}

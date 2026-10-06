@@ -1,0 +1,1120 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 3 --- Le second degré --- corrigé}{Première spécialité}
+
+\usepackage{tkz-tab}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2mm]},thick},
+    label style={font=\scriptsize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+    xlabel={$x$},ylabel={$y$},
+  },
+  courbe/.style={coulCourbe,line width=1pt,samples=100},
+  croix/.style={only marks,mark=x,mark size=2pt,mark options={line width=0.6pt},black},
+}
+\newcommand{\Cf}{\mathcal{C}}
+
+\begin{document}
+
+\entetefiche{Chapitre 3 --- Le second degré}{Première spécialité mathématiques}
+
+\partie{Forme canonique}
+
+\begin{exo}[Compléter un carré ($a=1$)]
+$x^{2}+kx$ est le début de $\left(x+\frac{k}{2}\right)^{2}=x^{2}+kx+\frac{k^{2}}{4}$ : on
+retire ensuite $\frac{k^{2}}{4}$.
+\begin{expr}
+  \item $x^{2}+8x-3=(x+4)^{2}-16-3=\res{(x+4)^{2}-19}$
+  \item $x^{2}-6x+2=(x-3)^{2}-9+2=\res{(x-3)^{2}-7}$
+  \item $x^{2}-3x+1=\left(x-\frac{3}{2}\right)^{2}-\frac{9}{4}+\frac{4}{4}
+        =\res{\left(x-\frac{3}{2}\right)^{2}-\frac{5}{4}}$
+  \item $x^{2}+5x+2=\left(x+\frac{5}{2}\right)^{2}-\frac{25}{4}+\frac{8}{4}
+        =\res{\left(x+\frac{5}{2}\right)^{2}-\frac{17}{4}}$
+  \item $x^{2}-12x+35=(x-6)^{2}-36+35=\res{(x-6)^{2}-1}$
+  \item $x^{2}-9x=\res{\left(x-\frac{9}{2}\right)^{2}-\frac{81}{4}}$
+\end{expr}
+\rem{Dans la parenthèse : la \emph{moitié} du coefficient de $x$, avec son signe.}
+\end{exo}
+
+\begin{exo}[Compléter un carré ($a\ne 1$)]
+On met $a$ en facteur dans les deux premiers termes, puis on complète le carré.
+\begin{expr}
+  \item $2x^{2}+8x+3$
+        \begin{calculs}
+        A &= 2\left(x^{2}+4x\right)+3\\
+        A &= 2\left[(x+2)^{2}-4\right]+3\\
+        A &= 2(x+2)^{2}-8+3\\
+        A &= \res{2(x+2)^{2}-5}
+        \end{calculs}
+  \item $-x^{2}+3x+2$
+        \begin{calculs}
+        B &= -\left(x^{2}-3x\right)+2\\
+        B &= -\left[\left(x-\frac{3}{2}\right)^{2}-\frac{9}{4}\right]+2\\
+        B &= \res{-\left(x-\frac{3}{2}\right)^{2}+\frac{17}{4}}
+        \end{calculs}
+  \item $4x^{2}-8x+4=4\left(x^{2}-2x+1\right)=\res{4(x-1)^{2}}$ \quad ($\beta=0$)
+  \item $-x^{2}+5x-4$
+        \begin{calculs}
+        D &= -\left(x^{2}-5x\right)-4\\
+        D &= -\left[\left(x-\frac{5}{2}\right)^{2}-\frac{25}{4}\right]-4\\
+        D &= \res{-\left(x-\frac{5}{2}\right)^{2}+\frac{9}{4}}
+        \end{calculs}
+  \item $2x^{2}+2x-1$
+        \begin{calculs}
+        E &= 2\left(x^{2}+x\right)-1\\
+        E &= 2\left[\left(x+\frac{1}{2}\right)^{2}-\frac{1}{4}\right]-1\\
+        E &= \res{2\left(x+\frac{1}{2}\right)^{2}-\frac{3}{2}}
+        \end{calculs}
+  \item $-2x^{2}+8x-5$
+        \begin{calculs}
+        F &= -2\left(x^{2}-4x\right)-5\\
+        F &= -2\left[(x-2)^{2}-4\right]-5\\
+        F &= \res{-2(x-2)^{2}+3}
+        \end{calculs}
+\end{expr}
+\rem{Erreur fréquente : oublier de multiplier par $a$ le terme retiré. En A,
+     $2\times(-4)=-8$, et non $-4$.}
+\end{exo}
+
+\begin{exo}[Forme canonique par $\alpha$ et $\beta$]
+\begin{questions}[label=\arabic*)]
+  \item \begin{calculs}
+        \alpha &= -\frac{-6}{2}=3\\
+        \beta &= P(3)=9-18+1\\
+        \beta &= -8
+        \end{calculs}
+        donc $P(x)=\res{(x-3)^{2}-8}$.\\
+        Vérification : $(x-3)^{2}-8=x^{2}-6x+9-8$, soit $x^{2}-6x+1$.
+  \item \begin{calculs}
+        \alpha &= -\frac{6}{6}=-1\\
+        \beta &= Q(-1)=3-6-2\\
+        \beta &= -5
+        \end{calculs}
+        donc $Q(x)=\res{3(x+1)^{2}-5}$.\\
+        Vérification : $3\left(x^{2}+2x+1\right)-5=3x^{2}+6x-2$.
+  \item \begin{calculs}
+        \alpha &= -\frac{-4}{-2}=-2\\
+        \beta &= R(-2)=-4+8-9\\
+        \beta &= -5
+        \end{calculs}
+        donc $R(x)=\res{-(x+2)^{2}-5}$.\\
+        Vérification : $-\left(x^{2}+4x+4\right)-5=-x^{2}-4x-9$.
+\end{questions}
+\rem{Devant le carré, on écrit toujours $a$ : $3$ en 2), $-1$ en 3).}
+\end{exo}
+
+\begin{exo}[De la forme canonique à la factorisation]
+\begin{expr}
+  \item $x^{2}-4x-5$
+        \begin{calculs}
+        A &= (x-2)^{2}-9\\
+        A &= (x-2)^{2}-3^{2}\\
+        A &= (x-2-3)(x-2+3)\\
+        A &= \res{(x-5)(x+1)}
+        \end{calculs}
+  \item $x^{2}+4x+7=\res{(x+2)^{2}+3}$. Un carré est positif, donc
+        $(x+2)^{2}+3\ge 3>0$ : le trinôme ne s'annule jamais, il \res{ne se factorise
+        pas}.
+  \item $2x^{2}+x-3$
+        \begin{calculs}
+        C &= 2\left(x^{2}+\frac{1}{2}x\right)-3\\
+        C &= 2\left[\left(x+\frac{1}{4}\right)^{2}-\frac{1}{16}\right]-3\\
+        C &= 2\left(x+\frac{1}{4}\right)^{2}-\frac{1}{8}-3\\
+        C &= \res{2\left(x+\frac{1}{4}\right)^{2}-\frac{25}{8}}
+        \end{calculs}
+        Puis :
+        \begin{calculs}
+        C &= 2\left[\left(x+\frac{1}{4}\right)^{2}-\left(\frac{5}{4}\right)^{2}\right]\\
+        C &= 2\left(x+\frac{1}{4}-\frac{5}{4}\right)\left(x+\frac{1}{4}+\frac{5}{4}\right)\\
+        C &= 2(x-1)\left(x+\frac{3}{2}\right)\\
+        C &= \res{(x-1)(2x+3)}
+        \end{calculs}
+  \item $-x^{2}-2x-3=-\left[(x+1)^{2}-1\right]-3=\res{-(x+1)^{2}-2}$. Comme
+        $-(x+1)^{2}\le 0$, on a $-(x+1)^{2}-2\le -2<0$ : \res{pas de factorisation}.
+\end{expr}
+\rem{En C, on met d'abord $2$ en facteur dans la forme canonique :
+     $-\frac{25}{8}=2\times\left(-\frac{25}{16}\right)$, et
+     $\frac{25}{16}=\left(\frac{5}{4}\right)^{2}$.}
+\end{exo}
+
+\partie{Équations du second degré}
+
+\begin{exo}[Factoriser plutôt que calculer $\Delta$]
+\begin{questions}[label=\arabic*)]
+  \item $9x^{2}-4=(3x-2)(3x+2)$ : $S=\res{\left\{-\frac{2}{3}\,;\frac{2}{3}\right\}}$
+  \item $x^{2}-6x=x(x-6)$ : $S=\res{\{0\,;6\}}$
+  \item $2x^{2}-18=2(x-3)(x+3)$ : $S=\res{\{-3\,;3\}}$
+  \item $x^{2}-5=(x-\sqrt{5})(x+\sqrt{5})$ : $S=\res{\{-\sqrt{5}\,;\sqrt{5}\}}$
+  \item $3x-2=0$ ou $x+5=0$ : $S=\res{\left\{-5\,;\frac{2}{3}\right\}}$
+  \item $x^{2}-10x+25=(x-5)^{2}$ : $S=\res{\{5\}}$
+\end{questions}
+\rem{Facteur commun, identité remarquable, produit déjà factorisé : calculer $\Delta$
+     ferait perdre du temps.}
+\end{exo}
+
+\begin{exo}[Avec le discriminant]
+\begin{questions}[label=\arabic*)]
+  \item $\Delta=1+48=49>0$ : $x_{1}=\frac{-1-7}{2}=-4$ et $x_{2}=\frac{-1+7}{2}=3$.
+        $\;S=\res{\{-4\,;3\}}$
+  \item $\Delta=9-20=-11<0$ : $S=\res{\varnothing}$
+  \item $\Delta=36-36=0$ : racine double $x_{0}=-\frac{6}{2\times(-1)}=3$.
+        $\;S=\res{\{3\}}$
+  \item $\Delta=16+84=100$ : $t=\frac{4\pm 10}{2}$. $\;S=\res{\{-3\,;7\}}$
+  \item On ordonne : $-3y^{2}-y+2=0$, donc $a=-3$, $b=-1$ et $c=2$.
+        $\Delta=1+24=25$ : $y=\frac{1\pm 5}{-6}$.
+        $\;S=\res{\left\{-1\,;\frac{2}{3}\right\}}$
+  \item $\Delta=25+8=33>0$ : $x=\frac{-5\pm\sqrt{33}}{-4}=\frac{5\mp\sqrt{33}}{4}$.
+        $\;S=\res{\left\{\frac{5-\sqrt{33}}{4}\,;\frac{5+\sqrt{33}}{4}\right\}}$
+\end{questions}
+\rem{En 3), le trinôme vaut $-(x-3)^{2}$. En 5), on range l'équation dans l'ordre
+     $ay^{2}+by+c$ avant de lire $a$, $b$, $c$ : l'erreur de signe est fréquente.}
+\end{exo}
+
+\begin{exo}[Des racines carrées dans les coefficients]
+\begin{questions}[label=\arabic*)]
+  \item \begin{calculs}
+        \Delta &= \left(-2\sqrt{5}\right)^{2}-4\times 1\times(-4)\\
+        \Delta &= 20+16\\
+        \Delta &= 36=6^{2}
+        \end{calculs}
+        $x=\frac{2\sqrt{5}\pm 6}{2}=\sqrt{5}\pm 3$.
+        $\;S=\res{\left\{\sqrt{5}-3\,;\sqrt{5}+3\right\}}$
+  \item \begin{calculs}
+        \Delta &= 16-4\sqrt{3}\times\sqrt{3}\\
+        \Delta &= 16-12=4
+        \end{calculs}
+        $t=\frac{4\pm 2}{2\sqrt{3}}$, soit
+        $\frac{6}{2\sqrt{3}}=\sqrt{3}$ et $\frac{2}{2\sqrt{3}}=\frac{\sqrt{3}}{3}$.
+        $\;S=\res{\left\{\frac{\sqrt{3}}{3}\,;\sqrt{3}\right\}}$
+  \item \begin{calculs}
+        \Delta &= (1+\sqrt{2})^{2}-4\sqrt{2}\\
+        \Delta &= 1+2\sqrt{2}+2-4\sqrt{2}\\
+        \Delta &= 3-2\sqrt{2}=(\sqrt{2}-1)^{2}
+        \end{calculs}
+        $x=\frac{1+\sqrt{2}\pm(\sqrt{2}-1)}{2}$. $\;S=\res{\{1\,;\sqrt{2}\}}$
+  \item $-x^{2}+4x-5=0$ : $\Delta=16-20=-4<0$. $\;S=\res{\varnothing}$
+  \item $x^{3}+2x^{2}-15x=x\left(x^{2}+2x-15\right)$ : $x=0$, ou
+        $x^{2}+2x-15=0$ ($\Delta=64$, racines $3$ et $-5$).
+        $\;S=\res{\{-5\,;0\,;3\}}$
+  \item $(3x+2)^{2}\ge 0$, donc $(3x+2)^{2}+1\ge 1>0$. $\;S=\res{\varnothing}$
+\end{questions}
+\rem{En 3), plus rapide : $1$ est racine, car $1-(1+\sqrt{2})+\sqrt{2}=0$ ; le produit des
+     racines vaut $\sqrt{2}$ (partie IV). En 5) et 6), pas de discriminant sur
+     l'expression entière : on factorise, ou on raisonne sur le signe.}
+\end{exo}
+
+\begin{exo}[Une parabole et une droite]
+\begin{minipage}[c]{0.56\linewidth}
+\begin{questions}[label=\arabic*)]
+  \item Voir la figure.
+  \item $x^{2}-2x-3=0 \iff x^{2}=2x+3$ : les solutions sont les abscisses des points
+        communs à la parabole et à la droite. Il y en a \res{deux} ; on lit $-1$ et $3$.
+  \item $\Delta=4+12=16$, donc $x=\frac{2\pm 4}{2}$. $\;S=\res{\{-1\,;3\}}$\\
+        On vérifie : $(-1)^{2}=1=2\times(-1)+3$ et $3^{2}=9=2\times 3+3$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}
+\begin{axis}[repere,x=0.45cm,y=0.45cm,
+    xmin=-2.5,xmax=4,ymin=-0.8,ymax=10,
+    xtick={-2,...,3},ytick={1,...,9}]
+  \addplot[courbe,domain=-2.4:3.15]{x^2};
+  \addplot[coulCourbeB,line width=1pt,domain=-1.9:3.4]{2*x+3};
+  \addplot[croix] coordinates {(-1,1)(3,9)};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Un programme Python]
+\begin{questions}[label=\arabic*)]
+  \item \texttt{d} est le discriminant $\Delta$. Si \texttt{d < 0}, la fonction renvoie
+        une liste vide (aucune solution) ; si \texttt{d == 0}, la seule racine
+        $-\frac{b}{2a}$ ; sinon, les deux racines.
+  \item On retrouve l'exercice 6 : \texttt{[-4.0, 3.0]} ; \texttt{[]} ; \texttt{[3.0]} ;
+        \texttt{[-3.0, 7.0]} ; avec $(-3\,;-1\,;2)$ : \texttt{[0.666..., -1.0]} ; avec
+        $(-2\,;5\,;1)$ : \texttt{[2.686..., -0.186...]}, valeurs approchées de
+        $\frac{5+\sqrt{33}}{4}$ et de $\frac{5-\sqrt{33}}{4}$.
+  \item Ici $\Delta=9>0$ et le programme divise par $2a=0$ : \res{erreur de division par
+        zéro}. Avec $a=0$, l'équation n'est pas du second degré et les formules ne
+        s'appliquent pas. Pourtant $3x-12=0 \iff x=\res{4}$.
+  \item \texttt{racines(1, 6, 9)} renvoie \texttt{[-3.0]} : $\Delta=0$ exactement. Pour
+        $0{,}2(x+3)^{2}$ on attendait aussi $-3$, mais le programme renvoie
+        \res{\texttt{[]}} : les nombres à virgule sont enregistrés en valeur
+        \emph{approchée}, \texttt{d} vaut environ $-2{,}2\times 10^{-16}$ au lieu de $0$,
+        et le test \texttt{d < 0} est vrai.
+\end{questions}
+\rem{Le résultat exact peut dépendre de la machine ; l'essentiel est de comprendre qu'un
+     test d'égalité sur des nombres à virgule calculés est fragile.}
+\end{exo}
+
+\partie{Factorisation du trinôme}
+
+\begin{exo}[Factoriser un trinôme]
+\begin{questions}[label=\arabic*)]
+  \item $\Delta=9+40=49$, racines $\frac{-3\pm 7}{2}$, soit $2$ et $-5$ :
+        $f(x)=\res{(x-2)(x+5)}$
+  \item $\Delta=100-36=64$, racines $\frac{10\pm 8}{6}$, soit $3$ et $\frac{1}{3}$ :
+        $g(x)=3(x-3)\left(x-\frac{1}{3}\right)=\res{(x-3)(3x-1)}$
+  \item $\Delta=9+40=49$, racines $\frac{-3\pm 7}{-4}$, soit $-1$ et $\frac{5}{2}$ :
+        $h(x)=-2(x+1)\left(x-\frac{5}{2}\right)=\res{-(x+1)(2x-5)}$
+  \item $3$ est racine évidente ($-3+1+2=0$). On met $a=-\frac{1}{3}$ en facteur :
+        $k(x)=-\frac{1}{3}\left(x^{2}-x-6\right)$, donc $S=1$ et l'autre racine est
+        $1-3=-2$ : $k(x)=\res{-\frac{1}{3}(x-3)(x+2)}$
+\end{questions}
+\rem{On n'oublie pas le facteur $a$ ; contrôle par le terme constant : en 3),
+     $-2\times(-1)\times\frac{5}{2}=5$.}
+\end{exo}
+
+\begin{exo}[Factoriser, ou prouver que c'est impossible]
+\begin{expr}[label={\Alph*\,:}]
+  \item $\Delta=4-8=-4<0$ : \res{ne se factorise pas}.
+  \item Identité remarquable : $x^{2}+8x+16=\res{(x+4)^{2}}$
+  \item $\Delta=25-24=1$, racines $\frac{5\pm 1}{6}$, soit $1$ et $\frac{2}{3}$ :
+        $3(x-1)\left(x-\frac{2}{3}\right)=\res{(x-1)(3x-2)}$
+  \item $\Delta=16-28=-12<0$ : \res{ne se factorise pas}.
+  \item Identité remarquable : $9x^{2}+12x+4=\res{(3x+2)^{2}}$
+  \item $-1$ est racine évidente ($2-3+1=0$) ; $S=-\frac{3}{2}$, donc l'autre racine est
+        $-\frac{3}{2}+1=-\frac{1}{2}$ :
+        $2(x+1)\left(x+\frac{1}{2}\right)=\res{(x+1)(2x+1)}$
+\end{expr}
+\end{exo}
+
+\begin{exo}[Simplifier un quotient]
+\begin{questions}[label=\arabic*)]
+  \item $x+3=0 \iff x=-3$ : $D=\R\setminus\{-3\}$. Le numérateur a pour racines $2$
+        (racine évidente) et $-1-2=-3$ : $x^{2}+x-6=(x-2)(x+3)$. Pour $x\ne -3$ :
+        $A(x)=\dfrac{(x-2)(x+3)}{x+3}=\res{x-2}$.
+  \item $x^{2}-1=(x-1)(x+1)$ : $D=\R\setminus\{-1\,;1\}$. Le numérateur a pour racines
+        $-1$ (racine évidente) et $-\frac{1}{3}+1=\frac{2}{3}$ :
+        $3x^{2}+x-2=3(x+1)\left(x-\frac{2}{3}\right)=(x+1)(3x-2)$.
+        Pour $x\in D$ : $B(x)=\dfrac{(x+1)(3x-2)}{(x-1)(x+1)}=\res{\dfrac{3x-2}{x-1}}$.
+\end{questions}
+\rem{L'égalité simplifiée n'est vraie que sur $D$ : en 1), $A(-3)$ n'existe pas, alors
+     que $x-2$ vaut $-5$ en $-3$.}
+\end{exo}
+
+\partie{Somme et produit des racines}
+
+\begin{exo}[Une racine connue (1)]
+\begin{questions}[label=\arabic*)]
+  \item $(-2)^{2}+5\times(-2)+6$ vaut $4-10+6=0$ : \res{$-2$ est solution}.
+  \item $a=1$, donc $x^{2}+5x+6=x^{2}-Sx+P$ : $S=\res{-5}$ et $P=\res{6}$.
+  \item L'autre solution est $S-(-2)=-5+2=\res{-3}$ ; contrôle :
+        $(-2)\times(-3)=6=P$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Une racine connue (2)]
+\begin{questions}[label=\arabic*)]
+  \item $3^{2}-7\times 3+12$ vaut $9-21+12=0$ : \res{$3$ est solution}.
+  \item $S=\res{7}$ et $P=\res{12}$.
+  \item L'autre solution est $7-3=\res{4}$ ; contrôle : $3\times 4=12$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Racine évidente, puis somme]
+\begin{questions}[label=\arabic*)]
+  \item $1-6+5=0$ : $x_{1}=1$ ; $S=6$, donc $x_{2}=\res{5}$.
+  \item $4+1-5=0$ : $x_{1}=1$ ; $S=-\frac{1}{4}$, donc
+        $x_{2}=-\frac{1}{4}-1=\res{-\frac{5}{4}}$.
+  \item $7-9+2=0$ : $x_{1}=1$ ; $S=\frac{9}{7}$, donc
+        $x_{2}=\frac{9}{7}-1=\res{\frac{2}{7}}$.
+  \item $3-8+5=0$ en $x=-1$ : $x_{1}=-1$ ; $S=-\frac{8}{3}$, donc
+        $x_{2}=-\frac{8}{3}+1=\res{-\frac{5}{3}}$.
+\end{questions}
+\rem{Si $a+b+c=0$, alors $1$ est racine ; si $a-b+c=0$, c'est $-1$.}
+\end{exo}
+
+\begin{exo}[Sans discriminant]
+\begin{questions}[label=\arabic*)]
+  \item $x_{1}=1$ ($1-10+9=0$), $S=10$ : $S=\res{\{1\,;9\}}$
+  \item $x_{1}=-1$ ($-2-3+5=0$), $S=-\frac{3}{-2}=\frac{3}{2}$, donc
+        $x_{2}=\frac{3}{2}+1=\frac{5}{2}$ : $S=\res{\left\{-1\,;\frac{5}{2}\right\}}$
+  \item $x_{1}=2$ ($4+8-12=0$), $S=-4$ : $S=\res{\{-6\,;2\}}$
+  \item $x_{1}=-1$ ($1-7+6=0$), $S=-7$ : $S=\res{\{-6\,;-1\}}$
+  \item $x_{1}=3$ ($9-27+18=0$), $S=9$ : $S=\res{\{3\,;6\}}$
+  \item $x_{1}=\sqrt{2}$ ($2+2-4=0$), $S=-\sqrt{2}$, donc
+        $x_{2}=-\sqrt{2}-\sqrt{2}=-2\sqrt{2}$ :
+        $S=\res{\left\{-2\sqrt{2}\,;\sqrt{2}\right\}}$
+\end{questions}
+\rem{En 6), le $\sqrt{2}$ de l'équation invite à essayer $\sqrt{2}$ et $-\sqrt{2}$.
+     Contrôle par le produit : $\sqrt{2}\times\left(-2\sqrt{2}\right)=-4=\frac{c}{a}$.
+}
+\end{exo}
+
+\begin{exo}[Calculer sans résoudre]
+\begin{questions}[label=\arabic*)]
+  \item $\Delta=81-32=49>0$ : il y a bien deux racines.
+        $S=-\frac{b}{a}=\res{\frac{9}{2}}$ et $P=\frac{c}{a}=\res{2}$.
+  \item \begin{calculs}
+        \dfrac{1}{x_{1}}+\dfrac{1}{x_{2}} &= \dfrac{x_{1}+x_{2}}{x_{1}x_{2}}=\dfrac{S}{P}\\
+        \dfrac{1}{x_{1}}+\dfrac{1}{x_{2}} &= \dfrac{9}{2}\times\dfrac{1}{2}\\
+        \dfrac{1}{x_{1}}+\dfrac{1}{x_{2}} &= \res{\dfrac{9}{4}}
+        \end{calculs}
+  \item $S^{2}=x_{1}^{2}+2x_{1}x_{2}+x_{2}^{2}$, donc :
+        \begin{calculs}
+        x_{1}^{2}+x_{2}^{2} &= S^{2}-2P\\
+        x_{1}^{2}+x_{2}^{2} &= \frac{81}{4}-\frac{16}{4}\\
+        x_{1}^{2}+x_{2}^{2} &= \res{\frac{65}{4}}
+        \end{calculs}
+\end{questions}
+\rem{Contrôle : les racines sont $\frac{1}{2}$ et $4$ ; $2+\frac{1}{4}=\frac{9}{4}$ et
+     $\frac{1}{4}+16=\frac{65}{4}$.}
+\end{exo}
+
+\begin{exo}[Signe des racines]
+On vérifie d'abord que $\Delta>0$. Si $P<0$, les racines sont de signes contraires ; si
+$P>0$, elles ont le même signe, celui de $S$.
+\begin{questions}[label=\arabic*)]
+  \item $\Delta=81-56=25>0$ ; $P=14>0$ et $S=9>0$ : \res{deux racines positives} ($2$
+        et $7$).
+  \item $\Delta=4+60=64>0$ ; $P=-15<0$ : \res{deux racines de signes contraires} ($-5$
+        et $3$).
+  \item $\Delta=100-36=64>0$ ; $P=\frac{3}{3}=1>0$ et $S=-\frac{10}{3}<0$ : \res{deux
+        racines négatives} ($-3$ et $-\frac{1}{3}$).
+\end{questions}
+\end{exo}
+
+\partie{Signe du trinôme et inéquations}
+
+\begin{exo}[Tableau de signes]
+\begin{expr}[label={\Alph*\,:}]
+  \item Racines $2$ et $4$ ($4-12+8=0$, $S=6$), $a=1>0$ :\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=3,espcl=1.8]{$x$/0.8,$x^{2}-6x+8$/0.8}%
+            {$-\infty$,$2$,$4$,$+\infty$}
+          \tkzTabLine{,+,z,-,z,+,}
+        \end{tikzpicture}
+  \item $-3x^{2}+9x-6=-3\left(x^{2}-3x+2\right)$ : racines $1$ et $2$, $a=-3<0$ :\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=3,espcl=1.8]{$x$/0.8,$-3x^{2}+9x-6$/0.8}%
+            {$-\infty$,$1$,$2$,$+\infty$}
+          \tkzTabLine{,-,z,+,z,-,}
+        \end{tikzpicture}
+  \item $\Delta=16-24=-8<0$ : toujours du signe de $a=1>0$.\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=3,espcl=3.6]{$x$/0.8,$x^{2}-4x+6$/0.8}%
+            {$-\infty$,$+\infty$}
+          \tkzTabLine{,+,}
+        \end{tikzpicture}
+  \item $-x^{2}-4x-4=-(x+2)^{2}$ : $\Delta=0$, racine double $-2$, $a<0$ :\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=3,espcl=1.8]{$x$/0.8,$-x^{2}-4x-4$/0.8}%
+            {$-\infty$,$-2$,$+\infty$}
+          \tkzTabLine{,-,z,-,}
+        \end{tikzpicture}
+\end{expr}
+\end{exo}
+
+\begin{exo}[Inéquations du second degré]
+\begin{questions}[label=\arabic*)]
+  \item $\Delta=49-40=9$, racines $\frac{7\pm 3}{2}$, soit $2$ et $5$ ; $a>0$ : positif à
+        l'extérieur. $\;S=\res{\left]-\infty\,;2\right[\cup\left]5\,;+\infty\right[}$
+  \item Racines $4$ (racine évidente) et $-2-4=-6$ ; $a>0$ : négatif entre les racines.
+        $\;S=\res{\left]-6\,;4\right[}$
+  \item $\Delta=1+120=121$, racines $\frac{1\pm 11}{2}$, soit $-5$ et $6$ ; $a>0$ :
+        $\;S=\res{\left[-5\,;6\right]}$ (crochets fermés : $\le$).
+  \item $\Delta=9-16=-7<0$ : le trinôme est toujours strictement positif.
+        $\;S=\res{\varnothing}$
+  \item $2x^{2}-12x+18=2(x-3)^{2}$, strictement positif sauf en $3$ :
+        $\;S=\res{\R\setminus\{3\}}$
+  \item $\Delta=4+24=28$ et $\sqrt{28}=2\sqrt{7}$ : racines
+        $\frac{-2\pm 2\sqrt{7}}{-6}$, soit $\frac{1-\sqrt{7}}{3}$ et
+        $\frac{1+\sqrt{7}}{3}$ ; $a=-3<0$ : positif entre les racines.
+        $\;S=\res{\left]\frac{1-\sqrt{7}}{3}\,;\frac{1+\sqrt{7}}{3}\right[}$
+\end{questions}
+\rem{En 4) et 5), on ne conclut pas trop vite « pas de racine, donc pas de solution » :
+     c'est le signe de $a$ qui décide.}
+\end{exo}
+
+\begin{exo}[Position d'une parabole et d'une droite]
+\begin{questions}[label=\arabic*)]
+  \item \begin{calculs}
+        f(x)=4x+2 &\iff x^{2}+2x+3-4x-2=0\\
+                  &\iff x^{2}-2x+1=0\\
+                  &\iff (x-1)^{2}=0
+        \end{calculs}
+        \res{Un seul point commun}, d'abscisse $1$ et d'ordonnée $4\times 1+2=6$.
+  \item $f(x)-(4x+2)=(x-1)^{2}$ : \res{positif ou nul}, nul seulement en $1$.
+  \item $f(x)\ge 4x+2$ pour tout réel $x$ : \res{$\Cf_{f}$ est au-dessus de
+        $\mathcal{D}_{g}$} ; elles se touchent au point $(1\,;6)$.
+\end{questions}
+\rem{La droite est tangente à la parabole en $(1\,;6)$ : c'est le cas $\Delta=0$.}
+\end{exo}
+
+\partie{Représentation graphique}
+
+\begin{exo}[Sommet, racines, allure]
+\begin{expr}[label={\Alph*\,:}]
+  \item $a=1>0$ : \res{vers le haut}. $\alpha=-2$ et $\beta=4-8+3=-1$ :
+        \res{$S(-2\,;-1)$}. $\Delta=4$ : racines \res{$-3$ et $-1$}.
+  \item $a=-1<0$ : \res{vers le bas}. $\alpha=-\frac{4}{-2}=2$ et $\beta=-4+8-3=1$ :
+        \res{$S(2\,;1)$}. $\Delta=4$ : racines \res{$1$ et $3$}.
+  \item $a=1>0$ : \res{vers le haut}. $\alpha=2$ et $\beta=4-8+5=1$ :
+        \res{$S(2\,;1)$}. $\Delta=-4<0$ : \res{aucune racine}.
+  \item $a=-2<0$ : \res{vers le bas}. $\alpha=-\frac{-4}{-4}=-1$ et $\beta=-2+4=2$ :
+        \res{$S(-1\,;2)$}. $-2x^{2}-4x=-2x(x+2)$ : racines \res{$-2$ et $0$}.
+\end{expr}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[repere,x=0.42cm,y=0.42cm,
+    xmin=-4.8,xmax=0.8,ymin=-1.8,ymax=3.8,
+    xtick={-4,...,-1},ytick={-1,...,3},title={\scriptsize A},title style={yshift=-4pt}]
+  \addplot[courbe,domain=-4.1:0.1]{x^2+4*x+3};
+  \addplot[croix] coordinates {(-3,0)(-1,0)(-2,-1)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[repere,x=0.42cm,y=0.42cm,
+    xmin=-0.8,xmax=4.8,ymin=-3.8,ymax=1.8,
+    xtick={1,...,4},ytick={-3,...,1},title={\scriptsize B},title style={yshift=-4pt}]
+  \addplot[courbe,domain=-0.1:4.1]{-x^2+4*x-3};
+  \addplot[croix] coordinates {(1,0)(3,0)(2,1)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[repere,x=0.42cm,y=0.42cm,
+    xmin=-0.8,xmax=4.8,ymin=-0.8,ymax=6.3,
+    xtick={1,...,4},ytick={1,...,6},title={\scriptsize C},title style={yshift=-4pt}]
+  \addplot[courbe,domain=-0.2:4.2]{x^2-4*x+5};
+  \addplot[croix] coordinates {(2,1)(0,5)(4,5)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[repere,x=0.42cm,y=0.42cm,
+    xmin=-2.8,xmax=1.3,ymin=-3,ymax=2.8,
+    xtick={-2,...,1},ytick={-2,...,2},title={\scriptsize D},title style={yshift=-4pt}]
+  \addplot[courbe,domain=-2.55:0.55]{-2*x^2-4*x};
+  \addplot[croix] coordinates {(-2,0)(0,0)(-1,2)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\rem{En C, sans racine, on place le sommet, puis $(0\,;5)$ et son symétrique $(4\,;5)$
+     par rapport à la droite $x=2$.}
+\end{exo}
+
+\begin{exo}[Utiliser la symétrie]
+\begin{minipage}[c]{0.6\linewidth}
+\begin{questions}[label=\arabic*)]
+  \item \begin{calculs}
+        \alpha &= \frac{6}{2}=\res{3}\\
+        \beta &= f(3)=9-18+8\\
+        \beta &= \res{-1}
+        \end{calculs}
+        $2$ est racine évidente ($4-12+8=0$) et $S=6$ : racines \res{$2$ et $4$}.
+  \item $f(0)=\res{8}$. Le symétrique de $(0\,;8)$ par rapport à la droite $x=3$ a pour
+        abscisse $3+3=6$ : c'est \res{$(6\,;8)$} ; en effet $f(6)=36-36+8=8$.
+  \item Voir la figure : $S(3\,;-1)$, $(2\,;0)$, $(4\,;0)$, $(0\,;8)$ et $(6\,;8)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}
+\begin{axis}[repere,x=0.38cm,y=0.38cm,
+    xmin=-0.8,xmax=7.5,ymin=-1.8,ymax=9.3,
+    xtick={1,...,7},ytick={-1,...,8}]
+  \addplot[courbe,domain=-0.1:6.1]{x^2-6*x+8};
+  \addplot[croix] coordinates {(2,0)(4,0)(3,-1)(0,8)(6,8)};
+  \addplot[dashed,black!50] coordinates {(3,-1.8)(3,9.3)};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Retrouver un trinôme]
+\begin{questions}[label=\arabic*)]
+  \item $\frac{-1+3}{2}=1$ : \res{l'abscisse du sommet est bien le milieu} des racines.
+  \item Le sommet est sur la parabole : $a(1+1)(1-3)=-8$, soit $-4a=-8$, donc
+        $a=\res{2}$.
+  \item $2(x+1)(x-3)=2\left(x^{2}-2x-3\right)=\res{2x^{2}-4x-6}$ ; contrôle :
+        $2-4-6=-8$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Le jet d'une fontaine]
+\begin{questions}[label=\arabic*)]
+  \item La parabole coupe l'axe des abscisses en $1$ et en $5$ : $x_{1}=\res{1}$ et
+        $x_{2}=\res{5}$. Le jet sort du bassin à $1$ m de l'origine et y retombe à
+        $5$ m.
+  \item Le sommet est le point $(\res{3}\,;\res{2})$ : $\alpha=3$ et $\beta=2$.
+        $\beta$ est la \res{hauteur maximale du jet}, $2$ m.
+  \item $\frac{1+5}{2}=3=\alpha$.
+  \item La parabole est tournée vers le bas (le trinôme a un maximum) : $a$ est
+        \res{strictement négatif}.
+\end{questions}
+\rem{On lit les racines sur l'axe des abscisses, le sommet au point le plus haut ; le
+     sens de la parabole donne le signe de $a$.}
+\end{exo}
+
+\begin{exo}[À chaque parabole sa fonction]
+On utilise le signe de $a$ (orientation), celui de $\Delta$ (nombre de points sur l'axe
+des abscisses), le point $(0\,;c)$ et le sommet.
+\begin{questions}[label=\alph*)]
+  \item $f_{1}$ : $a<0$ et $\Delta=4-8=-4<0$ : vers le bas, entièrement sous l'axe,
+        sommet $(-1\,;-1)$ : c'est \res{$\mathcal{C}_{3}$}.
+  \item $f_{2}$ : $a>0$ et $\Delta=4-8=-4<0$ : vers le haut, entièrement au-dessus de
+        l'axe, sommet $(1\,;1)$ : c'est \res{$\mathcal{C}_{2}$}.
+  \item $f_{3}$ : $a>0$ et $\Delta=25-16=9$ : vers le haut, coupe l'axe en $-2$ et
+        $-\frac{1}{2}$ : c'est \res{$\mathcal{C}_{5}$}.
+  \item $f_{4}$ : $a<0$ et $\Delta=9+16=25$ : vers le bas, coupe l'axe en $-\frac{1}{2}$
+        et $2$ : c'est \res{$\mathcal{C}_{1}$}.
+  \item $f_{5}(x)=\left(x-\frac{1}{2}\right)^{2}$ : $\Delta=0$, vers le haut, touche
+        l'axe en $\frac{1}{2}$ : c'est \res{$\mathcal{C}_{4}$}.
+\end{questions}
+\rem{Trois paraboles passent par $(0\,;2)$ : ce sont l'orientation et les racines qui
+     les distinguent.}
+\end{exo}
+
+\partie{Variations de la fonction trinôme}
+
+\begin{exo}[Variations et forme canonique]
+\begin{questions}[label=\arabic*)]
+  \item $a=3>0$, $\alpha=2$ et $\beta=1$ : minimum $\res{1}$ en $2$.\hfill
+        \begin{tikzpicture}[scale=0.75,baseline=(current bounding box.center)]
+          \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$f(x)$/1.4}{$-\infty$,$2$,$+\infty$}
+          \tkzTabVar{+/{},-/$1$,+/{}}
+        \end{tikzpicture}
+  \item $a=-2<0$, $\alpha=-3$ et $\beta=4$ : maximum $\res{4}$ en $-3$.\hfill
+        \begin{tikzpicture}[scale=0.75,baseline=(current bounding box.center)]
+          \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$g(x)$/1.4}{$-\infty$,$-3$,$+\infty$}
+          \tkzTabVar{-/{},+/$4$,-/{}}
+        \end{tikzpicture}
+  \item $h(x)=x^{2}+6x$ : $a=1>0$. Racines $-6$ et $0$, donc $\alpha=\frac{-6+0}{2}=-3$,
+        et $\beta=h(-3)$, soit $\beta=-3\times 3=-9$ : minimum $\res{-9}$ en $-3$.\hfill
+        \begin{tikzpicture}[scale=0.75,baseline=(current bounding box.center)]
+          \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$h(x)$/1.4}{$-\infty$,$-3$,$+\infty$}
+          \tkzTabVar{+/{},-/$-9$,+/{}}
+        \end{tikzpicture}
+\end{questions}
+\rem{Dans $a(x-\alpha)^{2}+\beta$, attention au signe : $(x+3)^{2}=(x-(-3))^{2}$ donne
+     $\alpha=-3$.}
+\end{exo}
+
+\begin{exo}[Variations par $\alpha$ et $\beta$]
+\begin{expr}[label={\Alph*\,:}]
+  \item $\alpha=-3$, $\beta=9-18+7=-2$, $a>0$ : \res{décroissante puis croissante},
+        minimum $-2$ en $-3$.
+  \item $\alpha=-\frac{4}{-2}=2$, $\beta=-4+8+5=9$, $a<0$ : \res{croissante puis
+        décroissante}, maximum $9$ en $2$.
+  \item $\alpha=\frac{12}{6}=2$, $\beta=12-24+5=-7$, $a>0$ : \res{décroissante puis
+        croissante}, minimum $-7$ en $2$.
+  \item $\alpha=-\frac{-2}{2\times\left(-\frac{1}{2}\right)}=-2$,
+        $\beta=-2+4=2$, $a<0$ : \res{croissante puis décroissante}, maximum $2$ en $-2$.
+\end{expr}
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+  \tkzTabInit[lgt=1.2,espcl=1.6]{$x$/0.8,$A$/1.4}{$-\infty$,$-3$,$+\infty$}
+  \tkzTabVar{+/{},-/$-2$,+/{}}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[scale=0.7]
+  \tkzTabInit[lgt=1.2,espcl=1.6]{$x$/0.8,$B$/1.4}{$-\infty$,$2$,$+\infty$}
+  \tkzTabVar{-/{},+/$9$,-/{}}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[scale=0.7]
+  \tkzTabInit[lgt=1.2,espcl=1.6]{$x$/0.8,$C$/1.4}{$-\infty$,$2$,$+\infty$}
+  \tkzTabVar{+/{},-/$-7$,+/{}}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[scale=0.7]
+  \tkzTabInit[lgt=1.2,espcl=1.6]{$x$/0.8,$D$/1.4}{$-\infty$,$-2$,$+\infty$}
+  \tkzTabVar{-/{},+/$2$,-/{}}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un maximum]
+\begin{questions}[label=\arabic*)]
+  \item \begin{calculs}
+        f(x) &= -3\left(x^{2}-4x\right)-10\\
+        f(x) &= -3\left[(x-2)^{2}-4\right]-10\\
+        f(x) &= \res{-3(x-2)^{2}+2}
+        \end{calculs}
+  \item $-3(x-2)^{2}\le 0$, donc $f(x)\le 2$ pour tout réel $x$ ; et $f(2)=2$ : le
+        maximum de $f$ est \res{$2$}, atteint pour \res{$x=2$}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Étude complète d'un trinôme]
+\begin{questions}[label=\arabic*)]
+  \item $-1$ est racine évidente ($-1-2+3=0$) et $S=-\frac{2}{-1}=2$ : racines \res{$-1$
+        et $3$}, donc $f(x)=\res{-(x+1)(x-3)}$.
+  \item \begin{calculs}
+        \alpha &= -\frac{2}{-2}=\res{1}\\
+        \beta &= f(1)=-1+2+3\\
+        \beta &= \res{4}
+        \end{calculs}
+        $a<0$ :\\[2pt]
+        \begin{tikzpicture}[scale=0.75]
+          \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$f(x)$/1.4}{$-\infty$,$1$,$+\infty$}
+          \tkzTabVar{-/{},+/$4$,-/{}}
+        \end{tikzpicture}
+  \item $\frac{-1+3}{2}=1=\alpha$.
+  \item \begin{minipage}[t]{0.5\linewidth}
+          \vspace{-4pt}
+          \begin{tikzpicture}[scale=0.8]
+            \tkzTabInit[lgt=1.6,espcl=1.6]{$x$/0.8,$f(x)$/0.8}%
+              {$-\infty$,$-1$,$3$,$+\infty$}
+            \tkzTabLine{,-,z,+,z,-,}
+          \end{tikzpicture}
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.44\linewidth}\centering
+          \vspace{-4pt}
+          \begin{tikzpicture}
+          \begin{axis}[repere,x=0.45cm,y=0.45cm,
+              xmin=-1.8,xmax=3.8,ymin=-2.2,ymax=4.8,
+              xtick={-1,...,3},ytick={-2,...,4}]
+            \addplot[courbe,domain=-1.4:3.4]{-x^2+2*x+3};
+            \addplot[croix] coordinates {(-1,0)(3,0)(1,4)(0,3)(2,3)};
+          \end{axis}
+          \end{tikzpicture}
+        \end{minipage}
+\end{questions}
+\end{exo}
+
+\partie{Équations se ramenant au second degré}
+
+\begin{exo}[Développer, puis résoudre]
+\begin{questions}[label=\arabic*)]
+  \item $x^{2}-3x-4=6 \iff x^{2}-3x-10=0$ ; $\Delta=49$, $x=\frac{3\pm 7}{2}$.
+        $\;S=\res{\{-2\,;5\}}$
+  \item \begin{calculs}
+        (3x+1)^{2}=16 &\iff 3x+1=4 \text{ ou } 3x+1=-4\\
+                      &\iff x=1 \text{ ou } x=-\frac{5}{3}
+        \end{calculs}
+        $S=\res{\left\{-\frac{5}{3}\,;1\right\}}$
+  \item $x^{2}-4x+3=0$ : $x_{1}=1$ ($1-4+3=0$), $S=4$, donc $x_{2}=3$.
+        $\;S=\res{\{1\,;3\}}$
+  \item \begin{calculs}
+        4x^{2}+12x+9=x^{2}+6x+9 &\iff 3x^{2}+6x=0\\
+                                &\iff 3x(x+2)=0
+        \end{calculs}
+        $S=\res{\{-2\,;0\}}$
+  \item $x^{2}-6x+9=x+3 \iff x^{2}-7x+6=0$ : racines $1$ et $6$.
+        $\;S=\res{\{1\,;6\}}$
+  \item $x^{2}-16=6x+11 \iff x^{2}-6x-27=0$ ; $\Delta=144$, $x=\frac{6\pm 12}{2}$.
+        $\;S=\res{\{-3\,;9\}}$
+\end{questions}
+\rem{En 2), pas besoin de développer : $A^{2}=16 \iff A=4$ ou $A=-4$. En 4), le terme
+     constant disparaît : facteur commun, pas de discriminant.}
+\end{exo}
+
+\begin{exo}[Un seul quotient]
+\begin{questions}[label=\arabic*)]
+  \item $D=\R\setminus\{0\}$. $12=x^{2}+x \iff x^{2}+x-12=0$ ; $\Delta=49$ : racines
+        $-4$ et $3$, dans $D$. $\;S=\res{\{-4\,;3\}}$
+  \item $D=\R\setminus\{1\}$. $6=x^{2}-x \iff x^{2}-x-6=0$ ; $\Delta=25$ : racines $-2$
+        et $3$, dans $D$. $\;S=\res{\{-2\,;3\}}$
+  \item $D=\R\setminus\{0\}$. $x+10=x^{2}-2x \iff x^{2}-3x-10=0$ ; $\Delta=49$ : racines
+        $-2$ et $5$, dans $D$. $\;S=\res{\{-2\,;5\}}$
+  \item $D=\R\setminus\{0\}$. $x^{2}+8=6x \iff x^{2}-6x+8=0$ : racines $2$ et $4$, dans
+        $D$. $\;S=\res{\{2\,;4\}}$
+\end{questions}
+\end{exo}
+
+\begin{exo}[Équations avec quotients]
+\begin{questions}[label=\arabic*)]
+  \item $D=\R\setminus\{3\}$. $x^{2}-6x+9=(2x-5)(x-3) \iff x^{2}-5x+6=0$ : racines $2$
+        et $3$, mais $3\notin D$. $\;S=\res{\{2\}}$
+  \item $D=\R\setminus\{0\,;3\}$. On multiplie par $x(x-3)$ :
+        \begin{calculs}
+        2(x-3)+2x=x(x-3) &\iff 4x-6=x^{2}-3x\\
+                         &\iff x^{2}-7x+6=0
+        \end{calculs}
+        Racines $1$ et $6$, dans $D$. $\;S=\res{\{1\,;6\}}$
+  \item $D=\R\setminus\{-2\,;3\}$. On multiplie par $2(x+2)(x-3)$ :
+        \begin{calculs}
+        2(x-3)-4(x+2)=3(x+2)(x-3) &\iff -2x-14=3x^{2}-3x-18\\
+                                  &\iff 3x^{2}-x-4=0
+        \end{calculs}
+        $\Delta=1+48=49$ : $x=\frac{1\pm 7}{6}$, soit $\frac{4}{3}$ et $-1$, dans $D$.
+        $\;S=\res{\left\{-1\,;\frac{4}{3}\right\}}$
+  \item $D=\R\setminus\{-2\}$.
+        \begin{calculs}
+        2x^{2}+9x+10=(x+3)(x+2) &\iff x^{2}+4x+4=0\\
+                                &\iff (x+2)^{2}=0
+        \end{calculs}
+        La seule valeur est $-2$, qui n'est pas dans $D$. $\;S=\res{\varnothing}$
+\end{questions}
+\rem{En 1), plus rapide : $\frac{(x-3)^{2}}{x-3}=x-3$ sur $D$, donc
+     $x-3=2x-5 \iff x=2$. Contrôle en 3) avec $\frac{4}{3}$ :
+     $\frac{3}{10}+\frac{6}{5}=\frac{3}{2}$.}
+\end{exo}
+
+\partie{Inéquations se ramenant au second degré}
+
+\begin{exo}[Développer, puis résoudre]
+\begin{questions}[label=\arabic*)]
+  \item $x^{2}+4x+3\le 2x+6 \iff x^{2}+2x-3\le 0$ : racines $-3$ et $1$, $a>0$.
+        $\;S=\res{\left[-3\,;1\right]}$
+  \item \begin{calculs}
+        9x^{2}+6x+1<x^{2}+6x+9 &\iff 8x^{2}-8<0\\
+                               &\iff 8(x-1)(x+1)<0
+        \end{calculs}
+        $S=\res{\left]-1\,;1\right[}$
+  \item $x^{2}-4x-5\ge 0$ : racines $-1$ et $5$, $a>0$.
+        $\;S=\res{\left]-\infty\,;-1\right]\cup\left[5\,;+\infty\right[}$
+  \item $x^{2}+4x+4>9 \iff x^{2}+4x-5>0$ : racines $-5$ et $1$.
+        $\;S=\res{\left]-\infty\,;-5\right[\cup\left]1\,;+\infty\right[}$
+\end{questions}
+\end{exo}
+
+\begin{exo}[Signe d'un quotient]
+\begin{questions}[label=\arabic*)]
+  \item $D=\R\setminus\{-1\}$.\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=2,espcl=1.8]{$x$/0.8,$2x-6$/0.8,$x+1$/0.8,$\frac{2x-6}{x+1}$/1.1}%
+            {$-\infty$,$-1$,$3$,$+\infty$}
+          \tkzTabLine{,-,t,-,z,+,}
+          \tkzTabLine{,-,z,+,t,+,}
+          \tkzTabLine{,+,d,-,z,+,}
+        \end{tikzpicture}\\
+        $S=\res{\left]-1\,;3\right]}$ ($-1$ exclue : valeur interdite).
+  \item $D=\R\setminus\{-2\}$ ; $x^{2}-1$ a pour racines $-1$ et $1$.\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=2,espcl=1.8]{$x$/0.8,$x^{2}-1$/0.8,$x+2$/0.8,$\frac{x^{2}-1}{x+2}$/1.1}%
+            {$-\infty$,$-2$,$-1$,$1$,$+\infty$}
+          \tkzTabLine{,+,t,+,z,-,z,+,}
+          \tkzTabLine{,-,z,+,t,+,t,+,}
+          \tkzTabLine{,-,d,+,z,-,z,+,}
+        \end{tikzpicture}\\
+        $S=\res{\left]-2\,;-1\right]\cup\left[1\,;+\infty\right[}$
+  \item Dénominateur : racines $1$ (racine évidente) et $4-1=3$, donc
+        $D=\R\setminus\{1\,;3\}$. Numérateur : racines $2$ (racine évidente) et $-1-2=-3$.\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=2.6,espcl=1.6]{$x$/0.8,$x^{2}+x-6$/0.8,$x^{2}-4x+3$/0.8,%
+            $\frac{x^{2}+x-6}{x^{2}-4x+3}$/1.1}%
+            {$-\infty$,$-3$,$1$,$2$,$3$,$+\infty$}
+          \tkzTabLine{,+,z,-,t,-,z,+,t,+,}
+          \tkzTabLine{,+,t,+,z,-,t,-,z,+,}
+          \tkzTabLine{,+,z,-,d,+,z,-,d,+,}
+        \end{tikzpicture}\\
+        $S=\res{\left]-\infty\,;-3\right[\cup\left]1\,;2\right[\cup\left]3\,;+\infty\right[}$
+  \item $D=\R\setminus\{2\}$ ; le numérateur a pour racines $1$ et $4$.\\[2pt]
+        \begin{tikzpicture}[scale=0.8]
+          \tkzTabInit[lgt=2,espcl=1.8]{$x$/0.8,$x^{2}-5x+4$/0.8,$x-2$/0.8,$\frac{x^{2}-5x+4}{x-2}$/1.1}%
+            {$-\infty$,$1$,$2$,$4$,$+\infty$}
+          \tkzTabLine{,+,z,-,t,-,z,+,}
+          \tkzTabLine{,-,t,-,z,+,t,+,}
+          \tkzTabLine{,-,z,+,d,-,z,+,}
+        \end{tikzpicture}\\
+        $S=\res{\left]-\infty\,;1\right[\cup\left]2\,;4\right[}$
+\end{questions}
+\end{exo}
+
+\begin{exo}[Tout dans un membre]
+$D=\R\setminus\{2\}$. On ramène tout dans un membre :
+\begin{calculs}
+\frac{x+2}{2-x}-(3x+1)\ge 0 &\iff \frac{x+2-(3x+1)(2-x)}{2-x}\ge 0\\
+                            &\iff \frac{3x^{2}-4x}{2-x}\ge 0\\
+                            &\iff \frac{x(3x-4)}{2-x}\ge 0
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=2.4,espcl=1.8]{$x$/0.8,$x$/0.8,$3x-4$/0.8,$2-x$/0.8,%
+    $\frac{x(3x-4)}{2-x}$/1.1}%
+    {$-\infty$,$0$,$\frac{4}{3}$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,t,+,z,-,}
+  \tkzTabLine{,+,z,-,z,+,d,-,}
+\end{tikzpicture}
+\end{center}
+$S=\res{\left]-\infty\,;0\right]\cup\left[\frac{4}{3}\,;2\right[}$
+\rem{Erreur classique : multiplier par $2-x$ sans connaître son signe. Contrôle avec
+     $x=3$, hors de $S$ : $\frac{5}{-1}=-5$, qui n'est pas $\ge 10$.}
+\end{exo}
+
+\partie{Problèmes}
+
+\begin{exo}[Le nombre mystère]
+Soit $x\ge 0$ le nombre : $x^{2}-3x=40 \iff x^{2}-3x-40=0$.
+$\Delta=9+160=169$ et $\sqrt{169}=13$, donc $x=\frac{3\pm 13}{2}$, soit $8$ ou $-5$.
+Le nombre est positif : c'est \res{$8$} ($64-24=40$).
+\end{exo}
+
+\begin{exo}[Une voile d'ombrage]
+Soit $x>0$ le plus petit côté de l'angle droit, en m ; l'autre mesure $x+2$.
+$\frac{x(x+2)}{2}=12 \iff x^{2}+2x-24=0$ ; $\Delta=4+96=100$, donc
+$x=\frac{-2\pm 10}{2}$, soit $4$ ou $-6$. Comme $x>0$ : \res{$4$ m et $6$ m}
+($\frac{4\times 6}{2}=12$).
+\end{exo}
+
+\begin{exo}[Agrandir une photo]
+Soit $c>0$ le côté de départ, en cm : $(c+12)^{2}=4c^{2} \iff 3c^{2}-24c-144=0 \iff
+c^{2}-8c-48=0$ ; $\Delta=64+192=256$, donc $c=\frac{8\pm 16}{2}$, soit $12$ ou $-4$. Le
+côté mesurait \res{$12$ cm} ($24^{2}=576=4\times 144$).
+\rem{Plus rapide : $(c+12)^{2}=(2c)^{2}$ avec des longueurs positives, donc $c+12=2c$.}
+\end{exo}
+
+\begin{exo}[La bordure d'une tablette]
+Soit $x>0$ la largeur de la bordure, en cm. La tablette mesure $24+2x$ sur $16+2x$ :
+\begin{calculs}
+(24+2x)(16+2x)=560 &\iff 4x^{2}+80x+384=560\\
+                   &\iff x^{2}+20x-44=0
+\end{calculs}
+$\Delta=400+176=576$ et $\sqrt{576}=24$, donc $x=\frac{-20\pm 24}{2}$, soit $2$ ou $-22$.
+La bordure mesure \res{$2$ cm} de large ($28\times 20=560$).
+\rem{La bordure s'ajoute des \emph{deux} côtés : $24+2x$, et non $24+x$.}
+\end{exo}
+
+\begin{exo}[Des vélos reconditionnés]
+\begin{questions}[label=\arabic*)]
+  \item $B(5)=-250+2000-3000=\res{-1250}$ : perte de $1250$ euros.
+        $B(12)=-1440+4800-3000=\res{360}$ : bénéfice de $360$ euros.
+  \item $B(x)=-10\left(x^{2}-40x+300\right)$ ; $\Delta=1600-1200=400$, racines
+        $\frac{40\pm 20}{2}$, soit $10$ et $30$. Comme $a=-10<0$, $B(x)>0$ entre les
+        racines : $S=\res{\left]10\,;30\right[}$. L'atelier est bénéficiaire de \res{$11$ à
+        $29$ vélos} vendus.
+  \item $\alpha=-\frac{400}{2\times(-10)}=20$ et $B(20)=-4000+8000-3000=1000$ : bénéfice
+        maximal de \res{$1000$ euros} pour \res{$20$ vélos}.
+\end{questions}
+\rem{$20$ est le milieu des racines $10$ et $30$.}
+\end{exo}
+
+\end{document}

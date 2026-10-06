@@ -1,0 +1,1132 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1\signet{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \\[2pt]{\small\itshape Version élève}
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{2}{Fonctions}
+\niveaucours{1\textsuperscript{re} spécialité mathématiques}
+\titrecours[Rappels et compléments]{FONCTIONS}{Cours --- Première spécialité}
+
+\begin{document}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, théorèmes), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\smallskip
+Sur cette feuille, seuls les \textbf{énoncés} des exemples figurent : la résolution,
+signalée par la mention \emph{(au tableau)}, est à rédiger dans le cahier.
+
+\end{remarquebox}
+
+\partiecours{Images et antécédents}
+
+\begin{definitionbox}[Définition 1 --- Fonction, image, antécédent]
+Une \textbf{fonction} $f$ associe à chaque nombre $x$ d'un ensemble $D$ \textbf{un seul}
+nombre, noté $f(x)$ : c'est l'\textbf{image} de $x$ par $f$. On écrit
+$f : x\longmapsto f(x)$.
+
+\smallskip
+Si $f(x)=y$, on dit que $x$ est \textbf{un antécédent} de $y$ par $f$.
+
+\smallskip
+La \textbf{courbe} $\Cf$ de $f$ est formée des points de coordonnées
+$\bigl(x\,;f(x)\bigr)$ : un point $M(a\,;b)$ est sur $\Cf$ lorsque $b=f(a)$. On dit que
+$y=f(x)$ est une \textbf{équation} de $\Cf$.
+\end{definitionbox}
+
+\begin{remarquebox}[À retenir]
+\begin{itemize}
+  \item Un nombre a \textbf{une seule} image ; il peut avoir \textbf{aucun}, \textbf{un}
+        ou \textbf{plusieurs} antécédents.
+  \item Sur la courbe, on lit les images sur l'axe des \textbf{ordonnées} et les
+        antécédents sur l'axe des \textbf{abscisses}.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 1 --- Calculer une image, chercher un antécédent]
+\etapeexemples
+Calculer l'image demandée, puis chercher les antécédents demandés.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=3x-4$ : image de $-2$ ; antécédents de $11$.
+  \item $g(x)=x^{2}+2$ : image de $-3$ ; antécédents de $6$, puis de $1$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item $h(x)=-2x+7$ : calculer $h(3)$ et $h(-4)$, puis chercher les antécédents de $13$.
+  \item $k(x)=x^{2}-5$ : calculer $k(-1)$, puis chercher les antécédents de $4$ et de
+        $-6$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Lire une image, des antécédents sur une courbe]
+\etapeexemples
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+La courbe ci-contre est celle d'une fonction $f$ définie sur $\intff{-3}{4}$.
+\begin{questions}[label=\alph*)]
+  \item Lire $f(-1)$ et $f(0)$.
+  \item Lire les antécédents de $0$, puis ceux de $3$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-4}{-3}{5}{3}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,-2)
+    .. controls (-2.667,-1.333) and (-2.333,-0.667) .. (-2,0)
+    .. controls (-1.667,0.667) and (-1.333,2) .. (-1,2)
+    .. controls (-0.667,2) and (-0.333,1.333) .. (0,1)
+    .. controls (0.333,0.667) and (0.667,0.333) .. (1,0)
+    .. controls (1.333,-0.333) and (1.667,-1) .. (2,-1)
+    .. controls (2.333,-1) and (2.667,-0.5) .. (3,0)
+    .. controls (3.333,0.5) and (3.667,1.333) .. (4,2);
+  \path[coulCourbe] (-3,-2) node[croix]{} (4,2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (4.3,1.1) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Lire les images de $-3$, de $2$ et de $4$.
+  \item Lire les antécédents de $2$.
+  \item Combien de solutions l'équation $f(x)=1$ a-t-elle ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 1 à 5}
+
+\partiecours{Ensemble de définition}
+
+\begin{definitionbox}[Définition 2 --- Ensemble de définition]
+L'\textbf{ensemble de définition} de $f$ est l'ensemble des nombres $x$ qui ont une
+image par $f$. Quand l'énoncé ne le donne pas, c'est l'ensemble de \textbf{tous} les
+nombres pour lesquels on peut calculer $f(x)$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Les deux calculs impossibles]
+\begin{itemize}
+  \item \textbf{Diviser par $0$.} Dans un quotient, les valeurs de $x$ qui annulent le
+        \textbf{dénominateur} sont des \textbf{valeurs interdites}.\\
+        Exemple : $x\mapsto\dfrac{1}{x}$ est définie sur $\R\setminus\ens{0}$, noté
+        $\Rs$.
+  \item \textbf{Prendre la racine carrée d'un nombre négatif.} Pour $\sqrt{A}$, il faut
+        $A\ge 0$.\\
+        Exemple : $x\mapsto\sqrt{x}$ est définie sur $\intfo{0}{+\infty}$.
+\end{itemize}
+Sans quotient ni racine carrée (par exemple $x\mapsto 2x^{2}-x+3$), la fonction est
+définie sur $\R$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Ensemble de définition d'un quotient]
+\etapeexemples
+Déterminer l'ensemble de définition de chaque fonction, puis les antécédents demandés.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\dfrac{1}{x-2}$ : antécédents de $1$, puis de $0$.
+  \item $g(x)=\dfrac{5}{x^{2}+4}$ : antécédents de $1$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Déterminer l'ensemble de définition de chaque fonction $h$, $k$, $m$ :
+        \[
+          h(x)=\frac{7}{x+5} \qquad k(x)=\frac{x-1}{3x-6} \qquad m(x)=\frac{2}{x^{2}+3}
+        \]
+  \item $p(x)=\dfrac{4}{x+1}$ : ensemble de définition ; calculer $p(1)$ et $p(3)$ ;
+        antécédents de $-4$ et de $0$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 4 --- Ensemble de définition avec une racine carrée]
+\etapeexemples
+Déterminer l'ensemble de définition de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\sqrt{x+3}$ ; calculer ensuite, si possible, $f(1)$ et $f(-7)$.
+  \item $g(x)=\sqrt{8-2x}$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Déterminer l'ensemble de définition de chaque fonction $h$, $k$, $m$ :
+        \[
+          h(x)=\sqrt{x-6} \qquad k(x)=\sqrt{3x+9} \qquad m(x)=\sqrt{10-5x}
+        \]
+  \item $p(x)=\sqrt{x+4}$ : ensemble de définition ; calculer $p(0)$ et $p(5)$ ;
+        antécédents de $4$ et de $-2$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 6 à 9}
+
+\partiecours{Comparaison de deux fonctions}
+
+\begin{definitionbox}[Définition 3 --- Position relative de deux courbes]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+Soient $f$ et $g$ deux fonctions définies sur un intervalle $I$. Pour un même $x$, les
+points $M\bigl(x\,;f(x)\bigr)$ de $\Cf$ et $N\bigl(x\,;g(x)\bigr)$ de $\Cg$ sont sur la
+même verticale :
+\begin{itemize}
+  \item si $f(x)>g(x)$, $M$ est \textbf{au-dessus} de $N$ ;
+  \item si $f(x)<g(x)$, $M$ est \textbf{au-dessous} de $N$ ;
+  \item si $f(x)=g(x)$, $M$ et $N$ sont confondus : les courbes se
+        \textbf{coupent}.
+\end{itemize}
+Étudier la \textbf{position relative} de $\Cf$ et $\Cg$, c'est trouver où $\Cf$ est
+au-dessus de $\Cg$, et où elle est au-dessous.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[scale=0.9,>={Stealth[length=2mm]}]
+  \draw[->,thick] (-0.3,0) -- (4.2,0) node[below left,font=\scriptsize]{$x$};
+  \draw[->,thick] (0,-0.3) -- (0,3.6) node[below left,font=\scriptsize]{$y$};
+  \draw[coulCourbe,line width=1.1pt,samples=60,domain=0.2:3.9]
+    plot (\x,{0.35*(\x-1.6)*(\x-1.6)+1.3});
+  \draw[coulCourbeC,line width=1.1pt] (0.2,0.65) -- (3.9,1.575);
+  \node[font=\footnotesize,coulCourbe] at (0.45,2.75) {$\Cf$};
+  \node[font=\footnotesize,coulCourbeC] at (1.0,0.55) {$\Cg$};
+  \def\xm{3.3}
+  \pgfmathsetmacro{\ym}{0.35*(\xm-1.6)*(\xm-1.6)+1.3}
+  \pgfmathsetmacro{\yn}{0.25*\xm+0.6}
+  \draw[dashed,thin] (\xm,0) -- (\xm,\yn);
+  \draw[<->,thick,coulMeth] (\xm+0.12,\yn) -- (\xm+0.12,\ym);
+  \path (\xm,\ym) node[croix]{} node[left,font=\scriptsize]{$M$};
+  \path (\xm,\yn) node[croix]{} node[below left,font=\scriptsize]{$N$};
+  \node[below,font=\scriptsize] at (\xm,-0.03) {$x$};
+  \node[right,font=\scriptsize,coulMeth] at (\xm+0.15,{(\ym+\yn)/2}) {$f(x)-g(x)$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Deux façons de comparer]
+\begin{itemize}
+  \item \textbf{Sur le graphique} : les solutions de $f(x)=g(x)$ sont les abscisses des
+        points d'intersection de $\Cf$ et $\Cg$ ; celles de $f(x)>g(x)$, les abscisses
+        des points où $\Cf$ est strictement au-dessus de $\Cg$.
+  \item \textbf{Par le calcul} : $f(x)>g(x)$ revient à $f(x)-g(x)>0$, c'est-à-dire
+        « $f(x)-g(x)$ est \textbf{positif} ». Comparer $f(x)$ et $g(x)$, c'est donc
+        étudier le \textbf{signe de la différence} $f(x)-g(x)$ :
+        \begin{itemize}
+          \item là où $f(x)-g(x)>0$ (positif), $\Cf$ est au-dessus de $\Cg$ ;
+          \item là où $f(x)-g(x)<0$ (négatif), $\Cf$ est au-dessous de $\Cg$ ;
+          \item là où $f(x)-g(x)=0$, les courbes se coupent.
+        \end{itemize}
+\end{itemize}
+Le graphique permet de \textbf{conjecturer} ; le calcul \textbf{démontre}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Comparer deux fonctions sur un graphique]
+\etapeexemples
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+Les courbes ci-contre sont celles de $f(x)=x^{2}-2x-1$ et de $g(x)=x-1$, sur
+$\intff{-1}{4}$. Résoudre graphiquement :
+\begin{questions}[label=\alph*)]
+  \item l'équation $f(x)=g(x)$ ;
+  \item l'inéquation $f(x)<g(x)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-2}{-3}{5}{7}
+  \gradx{-1,1,2,3,4} \grady{-2,-1,1,2,3,4,5,6}
+  \draw[coulCourbe,line width=1.1pt,domain=-1:4,samples=60] plot (\x,{\x*\x-2*\x-1});
+  \draw[coulCourbeC,line width=1.1pt] (-1,-2) -- (4,3);
+  \node[coulCourbe,font=\footnotesize] at (3.2,6.3) {$\Cf$};
+  \node[coulCourbeC,font=\footnotesize] at (4.5,2.1) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Résoudre graphiquement $f(x)\ge g(x)$.
+  \item Résoudre graphiquement $f(x)=2$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 6 --- Position relative par le signe de $f(x)-g(x)$]
+\etapeexemples
+Étudier la position relative de $\Cf$ et $\Cg$ sur $\R$.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=x^{2}+5$ et $g(x)=4x+1$.
+  \item $f(x)=x^{2}-2x-1$ et $g(x)=x-1$ (les fonctions de la méthode 5).
+\end{questions}
+
+\etape{À vous de jouer}
+Étudier la position relative de $\Cf$ et $\Cg$, sur $\R$ :
+\begin{questions}
+  \item $f(x)=2x+3$ et $g(x)=5x-6$.
+  \item $f(x)=x^{2}+1$ et $g(x)=-2x$.
+  \item $f(x)=x^{2}+3x$ et $g(x)=3x+16$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 10 à 13}
+
+\partiecours{Sens de variation}
+
+\begin{definitionbox}[Définition 4 --- Fonction croissante, décroissante]
+\begin{minipage}[t]{0.60\linewidth}\raggedright
+\vspace{0pt}
+Soit $f$ une fonction définie sur un intervalle $I$.
+\begin{itemize}
+  \item $f$ est \textbf{croissante} sur $I$ si, pour tous $a$ et $b$ de $I$ tels que
+        $a<b$, on a $f(a)\le f(b)$ : $f$ \textbf{conserve} l'ordre.
+  \item $f$ est \textbf{décroissante} sur $I$ si, pour tous $a$ et $b$ de $I$ tels que
+        $a<b$, on a $f(a)\ge f(b)$ : $f$ \textbf{inverse} l'ordre.
+\end{itemize}
+Avec $f(a)<f(b)$ (ou $f(a)>f(b)$), on dit \textbf{strictement} croissante (ou
+décroissante).
+
+\smallskip
+Le \textbf{maximum} de $f$ sur $I$ est la plus grande valeur prise par $f(x)$ ; le
+\textbf{minimum}, la plus petite. Un \textbf{tableau de variations} résume tout cela.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[scale=0.85]
+  \draw[-{Stealth[length=2mm]},thick] (-0.3,0) -- (2.9,0);
+  \draw[-{Stealth[length=2mm]},thick] (0,-0.3) -- (0,2.1);
+  \draw[coulCourbe,line width=1.1pt,samples=60,domain=0.15:2.55]
+       plot (\x,{0.32*\x*\x*\x-0.95*\x*\x+1.15*\x+0.05});
+  \def\xa{1.35}\def\xb{2.05}
+  \pgfmathsetmacro{\ya}{0.32*\xa*\xa*\xa-0.95*\xa*\xa+1.15*\xa+0.05}
+  \pgfmathsetmacro{\yb}{0.32*\xb*\xb*\xb-0.95*\xb*\xb+1.15*\xb+0.05}
+  \draw[dashed,thin] (0,\ya)--(\xa,\ya)--(\xa,0);
+  \draw[dashed,thin] (0,\yb)--(\xb,\yb)--(\xb,0);
+  \path (\xa,\ya) node[croix]{}; \path (\xb,\yb) node[croix]{};
+  \node[left,font=\scriptsize] at (0,\ya) {$f(a)$};
+  \node[left,font=\scriptsize] at (0,\yb) {$f(b)$};
+  \node[below,font=\scriptsize] at (\xa,0) {$a$};
+  \node[below,font=\scriptsize] at (\xb,0) {$b$};
+  \node[font=\scriptsize,coulDef,anchor=west] at (0.2,2.3) {croissante};
+\end{tikzpicture}
+
+\vspace{6pt}
+\begin{tikzpicture}[scale=0.85]
+  \draw[-{Stealth[length=2mm]},thick] (-0.3,0) -- (2.9,0);
+  \draw[-{Stealth[length=2mm]},thick] (0,-0.3) -- (0,2.1);
+  \draw[coulCourbe,line width=1.1pt,samples=60,domain=0.1:2.55]
+       plot (\x,{1.85-0.32*\x*\x*\x+0.95*\x*\x-1.15*\x});
+  \def\xa{1.35}\def\xb{2.05}
+  \pgfmathsetmacro{\ya}{1.85-0.32*\xa*\xa*\xa+0.95*\xa*\xa-1.15*\xa}
+  \pgfmathsetmacro{\yb}{1.85-0.32*\xb*\xb*\xb+0.95*\xb*\xb-1.15*\xb}
+  \draw[dashed,thin] (0,\ya)--(\xa,\ya)--(\xa,0);
+  \draw[dashed,thin] (0,\yb)--(\xb,\yb)--(\xb,0);
+  \path (\xa,\ya) node[croix]{}; \path (\xb,\yb) node[croix]{};
+  \node[left,font=\scriptsize] at (0,\ya) {$f(a)$};
+  \node[left,font=\scriptsize] at (0,\yb) {$f(b)$};
+  \node[below,font=\scriptsize] at (\xa,0) {$a$};
+  \node[below,font=\scriptsize] at (\xb,0) {$b$};
+  \node[font=\scriptsize,coulDef,anchor=west] at (0.2,2.3) {décroissante};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 7 --- Démontrer un sens de variation avec la définition]
+\etapeexemples
+Démontrer, avec la définition, le sens de variation de la fonction $f(x)=-2x+5$ sur $\R$.
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Démontrer de la même façon le sens de variation de $g(x)=4x-3$ sur $\R$.
+  \item Même travail pour $h(x)=-\dfrac{1}{3}x+2$.
+  \item Que peut-on conjecturer pour une fonction $x\mapsto mx+p$, selon le signe de $m$ ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 14 à 17}
+
+\partiecours{Fonction carré}
+
+\begin{definitionbox}[Définition 5 --- Fonction carré]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+La \textbf{fonction carré} est la fonction $x\longmapsto x^{2}$, définie sur $\R$.
+
+\smallskip
+Sa courbe est une \textbf{parabole} de sommet l'origine. Elle est symétrique par
+rapport à l'axe des ordonnées, car $(-x)^{2}=x^{2}$ : on dit que la fonction carré est
+\textbf{paire}.
+
+\smallskip
+\textbf{Équation $x^{2}=k$} : si $k>0$, deux solutions, $-\sqrt{k}$ et $\sqrt{k}$ ; si
+$k=0$, une solution, $0$ ; si $k<0$, aucune solution.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-1}{4}{9}
+  \gradx{-3,-2,-1,1,2,3} \grady{1,2,3,4,5,6,7,8,9}
+  \draw[coulCourbe,line width=1.1pt,domain=-3.05:3.05,samples=60] plot (\x,{\x*\x});
+  \path (-3,9) node[croix]{} (-2,4) node[croix]{} (-1,1) node[croix]{} (0,0) node[croix]{}
+        (1,1) node[croix]{} (2,4) node[croix]{} (3,9) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 3 --- Variations de la fonction carré]
+\begin{minipage}[t]{0.50\linewidth}\raggedright
+\vspace{0pt}
+La fonction carré est strictement \textbf{décroissante} sur $\intof{-\infty}{0}$ et
+strictement \textbf{croissante} sur $\intfo{0}{+\infty}$. Son minimum est $0$, atteint
+en $0$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=2.4,deltacl=0.6]{$x$/1,$x^{2}$/2}{$-\infty$,$0$,$+\infty$}
+  \tkzTabVar{+/,-/$0$,+/}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{Démonstration}\autableau
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Comparer ou encadrer des carrés]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Comparer $(-2{,}7)^{2}$ et $(-2{,}3)^{2}$ sans les calculer.
+  \item Encadrer $x^{2}$ sachant que $-4\le x\le -1$, puis sachant que $-2\le x\le 3$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Comparer sans calculatrice $1{,}8^{2}$ et $1{,}6^{2}$, puis $(-0{,}4)^{2}$ et
+        $(-0{,}9)^{2}$.
+  \item Encadrer $x^{2}$ sachant que $2\le x\le 5$ ; puis $-3\le x\le -2$ ; puis
+        $-1\le x\le 4$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 18 à 20}
+
+\partiecours{Fonction cube}
+
+\begin{definitionbox}[Définition 6 --- Fonction cube]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+La \textbf{fonction cube} est la fonction $x\longmapsto x^{3}$, définie sur $\R$.
+
+\smallskip
+Elle est strictement \textbf{croissante} sur $\R$ : elle conserve toujours l'ordre.
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=4,deltacl=0.6]{$x$/1,$x^{3}$/2}{$-\infty$,$+\infty$}
+  \tkzTabVar{-/,+/}
+\end{tikzpicture}
+\end{center}
+Sa courbe est symétrique par rapport à l'origine $O$, car $(-x)^{3}=-x^{3}$ : on dit
+que la fonction cube est \textbf{impaire}.
+
+\smallskip
+\textbf{Équation $x^{3}=k$} : elle a toujours \textbf{une seule} solution, la
+\textbf{racine cubique} de $k$, notée $\sqrt[3]{k}$ : le nombre dont le cube vaut $k$.
+Exemples : $\sqrt[3]{27}=3$ ; $\sqrt[3]{-8}=-2$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-3}{-4}{3}{4}
+  \gradx{-2,-1,1,2} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt,domain=-1.58:1.58,samples=60] plot (\x,{\x*\x*\x});
+  \path (-1,-1) node[croix]{} (0,0) node[croix]{} (1,1) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 9 --- Résoudre $x^{3}=k$, comparer, encadrer des cubes]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Résoudre $x^{3}=-8$, puis $2x^{3}+3=57$.
+  \item Encadrer $x^{3}$ sachant que $-1\le x\le 2$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Résoudre $x^{3}=64$, puis $x^{3}+125=0$.
+  \item Encadrer $x^{3}$ sachant que $-3\le x\le 1$.
+  \item Comparer sans calculatrice $(-1{,}3)^{3}$ et $(-1{,}1)^{3}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 21 à 23}
+
+\partiecours{Fonction inverse}
+
+\begin{definitionbox}[Définition 7 --- Fonction inverse]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+La \textbf{fonction inverse} est la fonction $x\longmapsto\dfrac{1}{x}$, définie sur
+$\Rs$ ($0$ est une valeur interdite).
+
+\smallskip
+Elle est strictement \textbf{décroissante} sur $\intoo{-\infty}{0}$, et strictement
+\textbf{décroissante} sur $\intoo{0}{+\infty}$. La double barre rappelle que $0$ n'a pas
+d'image.
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=2.4,deltacl=0.6]{$x$/1,$\dfrac{1}{x}$/2}{$-\infty$,$0$,$+\infty$}
+  \tkzTabVar{+/,-D+//,-/}
+\end{tikzpicture}
+\end{center}
+Sa courbe est une \textbf{hyperbole}, symétrique par rapport à l'origine : la fonction
+inverse est \textbf{impaire}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,1,2,3} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt,domain=0.27:3.9,samples=80] plot (\x,{1/\x});
+  \draw[coulCourbe,line width=1.1pt,domain=-3.9:-0.27,samples=80] plot (\x,{1/\x});
+  \path (1,1) node[croix]{} (-1,-1) node[croix]{} (2,0.5) node[croix]{}
+        (-2,-0.5) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 10 --- Résoudre $\dfrac{1}{x}=k$, comparer, encadrer des inverses]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Résoudre $\dfrac{1}{x}=5$.
+  \item Encadrer $\dfrac{1}{x}$ sachant que $2\le x\le 4$, puis sachant que
+        $-5\le x\le -1$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Résoudre $\dfrac{1}{x}=-4$, puis $\dfrac{3}{x}=6$.
+  \item Encadrer $\dfrac{1}{x}$ sachant que $1\le x\le 5$, puis $-4\le x\le -2$.
+  \item Comparer sans calculatrice $\dfrac{1}{0{,}7}$ et $\dfrac{1}{0{,}9}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 24 à 26}
+
+\partiecours{Fonction racine carrée}
+
+\begin{definitionbox}[Définition 8 --- Fonction racine carrée]
+\begin{minipage}[t]{0.50\linewidth}\raggedright
+\vspace{0pt}
+La \textbf{fonction racine carrée} est la fonction $x\longmapsto\sqrt{x}$, définie sur
+$\intfo{0}{+\infty}$. Pour $x\ge 0$, $\sqrt{x}$ est le nombre \textbf{positif} dont le
+carré vaut $x$.
+
+\smallskip
+Elle est strictement \textbf{croissante} sur $\intfo{0}{+\infty}$.
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=3.4,deltacl=0.6]{$x$/1,$\sqrt{x}$/2}{$0$,$+\infty$}
+  \tkzTabVar{-/$0$,+/}
+\end{tikzpicture}
+\end{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-1}{-1}{10}{4}
+  \gradx{1,2,3,4,5,6,7,8,9} \grady{1,2,3}
+  \draw[coulCourbe,line width=1.1pt,domain=0:9.8,samples=100] plot (\x,{sqrt(\x)});
+  \path (0,0) node[croix]{} (1,1) node[croix]{} (4,2) node[croix]{} (9,3) node[croix]{};
+\end{tikzpicture}
+
+\smallskip
+\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \repere{0}{0}{3}{3}
+  \gradx{1,2} \grady{1,2}
+  \draw[coulCourbeB,line width=1.1pt,domain=0:1.73,samples=50] plot (\x,{\x*\x});
+  \draw[coulCourbeC,line width=1.1pt] (0,0) -- (3,3);
+  \draw[coulCourbe,line width=1.1pt,domain=0:3,samples=80] plot (\x,{sqrt(\x)});
+  \node[coulCourbeB,font=\footnotesize] at (1.35,2.8) {$x^{2}$};
+  \node[coulCourbeC,font=\footnotesize] at (2.75,2.35) {$x$};
+  \node[coulCourbe,font=\footnotesize] at (2.75,1.4) {$\sqrt{x}$};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{Comparer $x^{2}$, $x$ et $\sqrt{x}$} (figure ci-dessus) : sur $\intff{0}{1}$,
+$x^{2}\le x\le\sqrt{x}$ ; sur $\intfo{1}{+\infty}$, $\sqrt{x}\le x\le x^{2}$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 11 --- Résoudre une équation avec une racine carrée]
+\etapeexemples
+Résoudre l'équation $\sqrt{x}=x-2$. On admet que $x^{2}-5x+4=(x-1)(x-4)$.
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Résoudre $\sqrt{3x+4}=x$ ; on admet que $x^{2}-3x-4=(x-4)(x+1)$.
+  \item Résoudre $\sqrt{x+20}=x$ ; on admet que $x^{2}-x-20=(x-5)(x+4)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 27 à 29}
+
+\partiecours{Fonction valeur absolue}
+
+\begin{definitionbox}[Définition 9 --- Valeur absolue]
+La \textbf{valeur absolue} d'un nombre $x$, notée $|x|$, est sa distance à $0$ :
+\[
+  |x|=x \;\text{ si } x\ge 0 \qquad\text{et}\qquad |x|=-x \;\text{ si } x<0.
+\]
+Exemples : $|6|=6$ ; $|-6|=6$ ; $|0|=0$. Une valeur absolue est toujours positive.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 4 --- Valeur absolue et distance]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+\begin{itemize}
+  \item La \textbf{distance} entre deux nombres $a$ et $b$ est $|b-a|$.\\
+        Exemple : entre $-3$ et $5$, la distance est $|5-(-3)|=8$.
+  \item Pour tout réel $a$, $\sqrt{a^{2}}=|a|$.
+  \item Si $r>0$, $|A|=r$ équivaut à $A=r$ ou $A=-r$. Si $r<0$, $|A|=r$ n'a pas de
+        solution.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{4pt}
+\begin{tikzpicture}[>={Stealth[length=2mm]}]
+  \draw[thick] (-0.4,0) -- (4.2,0);
+  \path (0.5,0) node[croix]{} node[below,font=\small] {$a$};
+  \path (3.3,0) node[croix]{} node[below,font=\small] {$b$};
+  \draw[<->,thick] (0.5,0.5) -- (3.3,0.5);
+  \node[above,font=\small] at (1.9,0.5) {$|b-a|$};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 5 --- Fonction valeur absolue]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+La fonction $x\longmapsto|x|$ est définie sur $\R$. Elle est strictement
+\textbf{décroissante} sur $\intof{-\infty}{0}$ et strictement \textbf{croissante} sur
+$\intfo{0}{+\infty}$.
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=2.4,deltacl=0.6]{$x$/1,$|x|$/2}{$-\infty$,$0$,$+\infty$}
+  \tkzTabVar{+/,-/$0$,+/}
+\end{tikzpicture}
+\end{center}
+Sa courbe est un « V » formé de deux demi-droites, symétrique par rapport à l'axe des
+ordonnées : la fonction est \textbf{paire}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-4}{-1}{4}{4}
+  \gradx{-3,-2,-1,1,2,3} \grady{1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-3.6,3.6) -- (0,0) -- (3.6,3.6);
+  \path (-3,3) node[croix]{} (-2,2) node[croix]{} (-1,1) node[croix]{} (0,0) node[croix]{}
+        (1,1) node[croix]{} (2,2) node[croix]{} (3,3) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 12 --- Étudier $x\mapsto|x-k|$ et résoudre $|x-k|=r$]
+\etapeexemples
+Soit $f(x)=|x+1|$. Dresser un tableau de valeurs pour $x$ entier de $-5$ à $3$, tracer
+la courbe de $f$, dresser son tableau de variations, puis résoudre $f(x)=4$.
+
+\etape{À vous de jouer}
+Soit $g(x)=|x-4|$.
+\begin{questions}
+  \item Comment la courbe de $g$ se déduit-elle de celle de la valeur absolue ?
+  \item Dresser le tableau de variations de $g$ et donner son minimum.
+  \item Résoudre $g(x)=2$, puis $g(x)=-1$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 30 à 32}
+
+\partiecours{Fonctions affines}
+
+\begin{definitionbox}[Définition 10 --- Fonction affine]
+Une \textbf{fonction affine} est une fonction définie sur $\R$ par $f(x)=ax+b$, où $a$ et
+$b$ sont deux nombres. Sa courbe est une \textbf{droite} d'équation réduite $y=ax+b$ :
+\begin{itemize}
+  \item $b$ est l'\textbf{ordonnée à l'origine} : la droite coupe l'axe des ordonnées au
+        point $(0\,;b)$ ;
+  \item $a$ est le \textbf{coefficient directeur} (la pente) : quand $x$ augmente de
+        $1$, $y$ varie de $a$.
+\end{itemize}
+Si $a=0$, la fonction est \textbf{constante} et la droite est horizontale. Si $b=0$, la
+fonction est \textbf{linéaire} et la droite passe par l'origine.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Variations et signe de $ax+b$ ($a\ne 0$)]
+\begin{minipage}[t]{0.48\linewidth}\centering
+\vspace{0pt}
+\textbf{Si $a>0$} : $f$ est strictement croissante.
+
+\smallskip
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=2.4,espcl=2.2,deltacl=0.6]{$x$/1,$f(x)$/1.6,signe de $ax+b$/1}%
+    {$-\infty$,$-\frac{b}{a}$,$+\infty$}
+  \tkzTabVar{-/,R/,+/}
+  \tkzTabLine{,-,z,+,}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\centering
+\vspace{0pt}
+\textbf{Si $a<0$} : $f$ est strictement décroissante.
+
+\smallskip
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=2.4,espcl=2.2,deltacl=0.6]{$x$/1,$f(x)$/1.6,signe de $ax+b$/1}%
+    {$-\infty$,$-\frac{b}{a}$,$+\infty$}
+  \tkzTabVar{+/,R/,-/}
+  \tkzTabLine{,+,z,-,}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+$ax+b$ s'annule en $x=-\dfrac{b}{a}$ ; il a le signe de $a$ à droite de cette valeur.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 13 --- Équation réduite d'une droite passant par deux points]
+\etapeexemples
+Déterminer l'équation réduite de la droite $(AB)$, avec $A(-2\,;-1)$ et $B(2\,;7)$.
+
+\etape{À vous de jouer}
+Déterminer l'équation réduite de la droite passant par :
+\begin{questions}
+  \item $C(1\,;4)$ et $D(3\,;-2)$ ;
+  \item $E(-4\,;0)$ et $F(2\,;3)$ ;
+  \item $G(1\,;5)$ et $H(6\,;5)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 33 à 35}
+
+\partiecours{Prolongement : vers la dérivation}
+
+\begin{definitionbox}[Définition 11 --- Taux de variation]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+\vspace{0pt}
+Soient $a$ et $b$ deux nombres \textbf{distincts} où $f$ est définie. Le \textbf{taux de
+variation} de $f$ entre $a$ et $b$ est
+\[
+  T=\frac{f(b)-f(a)}{b-a}.
+\]
+C'est le \textbf{coefficient directeur} de la droite $(AB)$, avec
+$A\bigl(a\,;f(a)\bigr)$ et $B\bigl(b\,;f(b)\bigr)$ : cette droite, qui coupe la courbe
+en $A$ et en $B$, est une \textbf{sécante}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[scale=0.9]
+  \draw[-{Stealth[length=2mm]},thick] (-0.3,0) -- (4.3,0) node[below left,font=\scriptsize]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-0.3) -- (0,3.3) node[below left,font=\scriptsize]{$y$};
+  \draw[coulCourbe,line width=1.1pt,samples=80,domain=0.25:3.9]
+       plot (\x,{0.30*\x*\x*\x-1.35*\x*\x+1.85*\x+0.55});
+  \def\xa{1.0}\def\xb{3.2}
+  \pgfmathsetmacro{\ya}{0.30*\xa*\xa*\xa-1.35*\xa*\xa+1.85*\xa+0.55}
+  \pgfmathsetmacro{\yb}{0.30*\xb*\xb*\xb-1.35*\xb*\xb+1.85*\xb+0.55}
+  \pgfmathsetmacro{\pente}{(\yb-\ya)/(\xb-\xa)}
+  \draw[coulMeth,line width=0.9pt]
+       (0.35,{\ya+\pente*(0.35-\xa)}) -- (3.95,{\ya+\pente*(3.95-\xa)});
+  \draw[dashed,thin] (\xa,0) -- (\xa,\ya);
+  \draw[dashed,thin] (\xb,0) -- (\xb,\yb);
+  \path (\xa,\ya) node[croix]{} node[above left,font=\scriptsize]{$A$};
+  \path (\xb,\yb) node[croix]{} node[above left,font=\scriptsize]{$B$};
+  \node[below,font=\scriptsize] at (\xa,-0.03) {$a$};
+  \node[below,font=\scriptsize] at (\xb,-0.03) {$b$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 7 --- Taux de variation et sens de variation]
+Si, entre deux nombres distincts quelconques d'un intervalle $I$, le taux de variation de
+$f$ est toujours \textbf{positif}, $f$ est croissante sur $I$ ; s'il est toujours
+\textbf{négatif}, $f$ est décroissante sur $I$.
+
+\smallskip
+En effet, $T>0$ signifie que $f(b)-f(a)$ et $b-a$ ont le même signe : si $a<b$, alors
+$f(a)<f(b)$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 14 --- Calculer un taux de variation]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item $f(x)=x^{2}-x$ : calculer le taux de variation de $f$ entre $1$ et $3$.
+  \item Calculer le taux de variation de la fonction carré entre deux nombres distincts
+        $a$ et $b$, puis en déduire ses variations.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item $g(x)=2x^{2}$ : taux de variation entre $-1$ et $2$.
+  \item $h(x)=\dfrac{1}{x}$ : taux de variation entre $1$ et $4$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{remarquebox}[Et ensuite ?]
+Quand $b$ se rapproche de $a$, le point $B$ glisse sur la courbe vers $A$ : la sécante
+$(AB)$ se rapproche de la \textbf{tangente} en $A$, et le taux de variation d'un nombre
+appelé \textbf{nombre dérivé} de $f$ en $a$. C'est l'objet du chapitre suivant.
+\end{remarquebox}
+
+\afaire{exercices 36 à 38}
+
+\end{document}

@@ -1,0 +1,603 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\begin{document}
+\titrefiche{1\textsuperscript{re} spécialité --- Calcul littéral}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Réduire, développer, identités remarquables}
+
+\exo[Réduire et distribuer]
+Réduire, ou développer puis réduire :
+\begin{multicols}{2}
+\begin{expr}
+  \item $3x+8+6x$
+  \item $4x^{2}-9x^{2}+2x^{2}$
+  \item $6(3x-2)$
+  \item $2x(5x-4)$
+  \item $9(x-1)-4x$
+  \item $-5x+3(2x+7)$
+  \item $-(4-3x)$
+  \item $-2x(1-4x)$
+\end{expr}
+\end{multicols}
+
+\exo[Double distributivité et identités remarquables]
+Développer et réduire :
+\begin{multicols}{2}
+\begin{expr}
+  \item $(2x+3)(4x+1)$
+  \item $(3x-4)(-2x+5)$
+  \item $(5x+2)^{2}$
+  \item $(4-3x)^{2}$
+  \item $(3x+5)(3x-5)$
+  \item $\left(x-\dfrac{1}{3}\right)^{2}$
+  \item $3(x+2)(1-x)$
+\end{expr}
+\end{multicols}
+
+\exo[Développer, réduire, ordonner]
+Développer, réduire, puis ordonner selon les puissances décroissantes de $x$ :
+\begin{expr}
+  \item $(4x+1)(2x+3)-(5x-2)(x+4)$
+  \item $(2x-5)^{2}-(3x+1)(x-2)$
+  \item $\left(x^{2}-x+2\right)(3x+1)-(x+1)(x-1)^{2}$
+  \item $(x+2)\left(x^{2}-2x+4\right)$
+  \item $3x(2-x)-(x-4)(2x+3)$
+\end{expr}
+
+\partiefiche{Substituer une valeur}
+
+\exo[Calculer une image]
+\begin{enumerate}[label=\arabic*),topsep=0pt]
+  \item Soit $P(x)=3x^{2}-4x-2$. Calculer :
+    \begin{enumerate}[label=\alph*)]
+      \item $P(1)$ \quad et \quad $P(-1)$
+      \item $P\!\left(\dfrac{1}{2}\right)$ \quad et \quad $P\!\left(-\dfrac{2}{3}\right)$
+    \end{enumerate}
+  \item Soient $A=(x+2)(x-5)$ et $B=x^{2}+3x-10$.
+    \begin{enumerate}[label=\alph*)]
+      \item Calculer $A$ et $B$ pour $x=0$.
+      \item Calculer $A$ et $B$ pour $x=1$.
+      \item Peut-on affirmer que $A=B$ pour tout réel $x$ ?
+    \end{enumerate}
+\end{enumerate}
+
+\exo[Substituer une racine carrée]
+Pour chaque polynôme $P$, calculer la valeur exacte de $P(a)$, sous la forme la plus
+simple :
+\begin{enumerate}[label=\alph*)]
+  \item $P(x)=x^{2}-5$ \quad et \quad $a=\sqrt{5}$
+  \item $P(x)=2x^{2}+3x-1$ \quad et \quad $a=\sqrt{2}$
+  \item $P(x)=(3x+1)(x-2)$ \quad et \quad $a=\sqrt{3}$
+  \item $P(x)=(2x-1)^{2}+4x$ \quad et \quad $a=\sqrt{5}$
+  \item $P(x)=x^{2}-2x+3$ \quad et \quad $a=1+\sqrt{2}$
+\end{enumerate}
+
+\exo[Racines carrées dans un quotient]
+\begin{enumerate}[label=\arabic*),topsep=0pt]
+  \item Soit $f(x)=\dfrac{x+1}{x-3}$.
+    \begin{enumerate}[label=\alph*)]
+      \item Donner la valeur interdite de $f$.
+      \item Calculer $f(5)$ et $f\!\left(\dfrac{1}{2}\right)$.
+      \item Calculer $f\!\left(\sqrt{5}\right)$, sans racine carrée au dénominateur.
+    \end{enumerate}
+  \item Soit $g(x)=\dfrac{x-2}{x+1}$. Calculer $g\!\left(\sqrt{3}\right)$, sans racine
+    carrée au dénominateur.
+  \item Soit $h(x)=\dfrac{x+3}{x-2}$. Calculer $h\!\left(2+\sqrt{3}\right)$.
+    \textit{Le dénominateur est ici une racine seule : on multiplie le numérateur et le
+    dénominateur par cette racine.}
+\end{enumerate}
+
+\partiefiche{Factoriser une expression}
+
+\exo[Facteur commun]
+Factoriser :
+\begin{multicols}{2}
+\begin{expr}
+  \item $5x+20$
+  \item $7x^{2}+3x$
+  \item $18x^{2}-12x$
+  \item $x^{2}+x$
+  \item $4x^{2}-x$
+  \item $2x+x(x+5)$
+\end{expr}
+\end{multicols}
+
+\exo[Identités remarquables et facteur commun]
+Factoriser :
+\begin{expr}
+  \item $9x^{2}+30x+25$
+  \item $49x^{2}-36$
+  \item $(3x+1)(2x-5)+(3x+1)(x+7)$
+  \item $(4x-1)(x+6)-(4x-1)(3x-2)$
+  \item $(3x+2)^{2}-(x-4)^{2}$
+  \item $36-(x+2)^{2}$
+\end{expr}
+
+\exo[Faire apparaître un facteur commun]
+Factoriser. \textit{Pour A, B et C, factoriser d'abord une partie de l'expression.}
+\begin{expr}
+  \item $9x^{2}-16-(3x+4)(x-2)$
+  \item $x^{2}-25-(x+5)(2x-3)$
+  \item $(x+3)(4x-1)-\left(x^{2}-9\right)$
+  \item $x^{2}-7$ \quad \textit{(écrire $7=\left(\sqrt{7}\right)^{2}$)}
+  \item $x^{2}+2\sqrt{5}\,x+5$
+\end{expr}
+
+\partiefiche{Équations}
+
+\exo[Équations du premier degré]
+Résoudre dans $\R$ :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $4x-9=3x+2$
+  \item $6x-5=x+20$
+  \item $3x+4=3x-1$
+  \item $3(x-2)=2(-x+7)$
+  \item $x-(2-5x)=4x+9$
+  \item $4(x-1)+3(x+5)=0$
+\end{enumerate}
+\end{multicols}
+
+\exo[Produit nul et carrés]
+Résoudre dans $\R$ :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $(x-6)(4+x)=0$
+  \item $5x(3x-7)=0$
+  \item $(2x+9)^{2}=0$
+  \item $x^{2}=13$
+  \item $3x^{2}-21=0$
+  \item $(3x+1)^{2}=25$
+\end{enumerate}
+\end{multicols}
+
+\exo[Mise en équation]
+\textit{Pour chaque problème : choisir l'inconnue, écrire l'équation, la résoudre,
+vérifier, puis conclure par une phrase.}
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{La boulangerie.} Un matin, une boulangerie a vendu $150$ viennoiseries :
+    des croissants, des pains au chocolat et des chaussons aux pommes. Elle a vendu deux
+    fois plus de pains au chocolat que de croissants, et $10$ chaussons de moins que de
+    croissants. Combien de viennoiseries de chaque sorte a-t-elle vendues ?
+  \item \textbf{Du carré au rectangle.} Un carré a pour côté $x$ (en cm). On allonge l'un
+    de ses côtés de $6$ cm et on raccourcit l'autre de $4$ cm : le rectangle obtenu a la
+    même aire que le carré. Trouver $x$, puis les dimensions du rectangle.
+\end{enumerate}
+
+\partiefiche{Fractions rationnelles}
+
+\exo[Les quatre opérations]
+Donner la valeur interdite, puis écrire chaque expression sous la forme d'un seul
+quotient :
+\begin{multicols}{2}
+\begin{expr}
+  \item $\dfrac{3}{4}+\dfrac{5}{x}$
+  \item $\dfrac{3}{4}-\dfrac{5}{x}$
+  \item $\dfrac{3}{4}\times\dfrac{5}{x}$
+  \item $\dfrac{3}{4}\div\dfrac{5}{x}$
+\end{expr}
+\end{multicols}
+
+\exo[Valeurs interdites]
+Donner les valeurs interdites, puis simplifier quand c'est possible :
+\begin{multicols}{2}
+\begin{expr}
+  \item $\dfrac{x+5}{x-4}$
+  \item $\dfrac{6}{x(x-2)}$
+  \item $\dfrac{x-4}{2x+5}$
+  \item $\dfrac{x^{2}-16}{x-4}$
+  \item $\dfrac{5}{x^{2}+4}$
+  \item $\dfrac{2x+1}{7-x}$
+\end{expr}
+\end{multicols}
+
+\exo[Réduire au même dénominateur]
+Écrire sous la forme d'un seul quotient, en donnant les valeurs interdites :
+\begin{multicols}{2}
+\begin{expr}
+  \item $2+\dfrac{7}{x+3}$
+  \item $4+\dfrac{x-2}{x+1}$
+  \item $\dfrac{x}{x-1}-\dfrac{2x}{x+3}$
+  \item $\dfrac{4}{x+1}-\dfrac{3}{2x-3}$
+  \item $3x-\dfrac{2x+1}{x-2}$
+  \item $\dfrac{2x}{x-4}-\dfrac{x+3}{3x-12}$
+\end{expr}
+\end{multicols}
+
+\exo[Simplifier, multiplier, diviser]
+Donner les valeurs interdites, puis simplifier :
+\begin{expr}
+  \item $\dfrac{4(x+1)^{2}}{8(x+1)}$
+  \item $\dfrac{25-x^{2}}{x-5}$
+  \item $\dfrac{x+2}{x-2}-\dfrac{x-2}{x+2}$
+  \item $\dfrac{x^{2}-1}{x+4}\times\dfrac{x^{2}-16}{x+1}$
+  \item $\dfrac{x^{2}-4}{x^{2}+3x}\div\dfrac{x+2}{x+3}$
+  \item $\dfrac{2x+1}{x^{2}-9}$
+\end{expr}
+
+\partiefiche{Équations quotient}
+
+\exo[Quotient nul]
+Donner les valeurs interdites, puis résoudre dans $\R$ :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $\dfrac{4x-12}{x+2}=0$
+  \item $\dfrac{3x+6}{5x^{2}}=0$
+  \item $\dfrac{(x-3)(2x+5)}{x+1}=0$
+  \item $\dfrac{7-2x}{x^{2}+3}=0$
+\end{enumerate}
+\end{multicols}
+
+\exo[Se ramener à un quotient nul]
+Donner les valeurs interdites, se ramener à un quotient égal à $0$, puis résoudre :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $\dfrac{3x+2}{x+4}=2$
+  \item $\dfrac{-3x}{x+2}=1$
+  \item $\dfrac{1}{x}+\dfrac{1}{3}=1$
+  \item $\dfrac{5}{x-6}+1=0$
+  \item $3-\dfrac{8-x}{x+2}=0$
+  \item $\dfrac{x^{2}-16}{x-4}=0$
+\end{enumerate}
+\end{multicols}
+
+\exo[Égalité de deux quotients]
+Donner les valeurs interdites, puis résoudre dans $\R$ :
+\begin{enumerate}[label=\alph*)]
+  \item $\dfrac{5}{x+2}=\dfrac{3}{x}$
+  \item $\dfrac{2x+1}{x}=\dfrac{2x+5}{x+1}$
+  \item $\dfrac{3x-2}{x+1}=\dfrac{3x+1}{x-2}$
+  \item $\dfrac{x+4}{x-2}-3=\dfrac{8-x}{x-2}$
+  \item $\dfrac{x+5}{x-1}=\dfrac{3}{x-1}$
+  \item $1-\dfrac{x+1}{x-1}=\dfrac{4}{3-x}$
+\end{enumerate}
+
+\partiefiche{Inéquations et tableaux de signes}
+
+\exo[Inéquations du premier degré]
+Résoudre dans $\R$ ; donner l'ensemble des solutions sous forme d'intervalle :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $3x+12>0$
+  \item $4x-1<9-x$
+  \item $3(x-1)\ge 7-2x$
+  \item $\dfrac{2-5x}{3}>0$
+  \item $3(x+2)<3x+4$
+  \item $\dfrac{x-3}{2}-\dfrac{1-x}{4}>0$
+\end{enumerate}
+\end{multicols}
+
+\exo[Tableaux de signes]
+Dresser le tableau de signes de chaque expression :
+\begin{multicols}{2}
+\begin{expr}
+  \item $(x-5)(x+1)$
+  \item $(3-x)(2x+1)$
+  \item $x^{2}-16$
+  \item $2x(x-3)(4x+1)$
+  \item $\dfrac{x+4}{1-x}$
+  \item $\dfrac{x(x-2)}{2x+3}$
+\end{expr}
+\end{multicols}
+
+\exo[Inéquations produit et quotient]
+Résoudre dans $\R$, en donnant d'abord les valeurs interdites :
+\begin{enumerate}[label=\alph*)]
+  \item $\left(9x^{2}-4\right)(x-2)\ge 0$
+  \item $\dfrac{5-2x}{x^{2}-4}\le 0$
+  \item $\dfrac{x^{2}-9}{3x+1}\ge 0$
+  \item $\dfrac{x+3}{2-x}\le 1$
+  \item $\dfrac{2-x}{x+4}>3$
+  \item $\dfrac{x+1}{x+2}\le\dfrac{x-1}{x+3}$
+\end{enumerate}
+
+\partiefiche{Composition de polynômes}
+
+\exo[Premières compositions]
+Pour chaque couple $P$, $Q$, écrire $(P\circ Q)(x)$ sous forme développée, réduite et
+ordonnée :
+\begin{enumerate}[label=\alph*)]
+  \item $P(x)=3x+2$ \ et \ $Q(x)=2x+1$
+  \item $P(x)=2x+1$ \ et \ $Q(x)=3x+2$
+  \item $P(x)=3x-2$ \ et \ $Q(x)=2x^{2}+x-4$
+\end{enumerate}
+\smallskip
+Que remarque-t-on en comparant a) et b) ?
+
+\exo[Composer et calculer]
+\begin{enumerate}[label=\arabic*),topsep=0pt]
+  \item $P(x)=x^{2}+2x-1$ et $Q(x)=3x-1$ : écrire $(P\circ Q)(x)$.
+  \item $P(x)=x^{2}-x$ et $Q(x)=x^{2}+1$ : écrire $(P\circ Q)(x)$.
+  \item $P(x)=x^{2}-3$ et $Q(x)=x+4$.
+    \begin{enumerate}[label=\alph*)]
+      \item Écrire $(P\circ Q)(x)$, puis en déduire $(P\circ Q)(-2)$.
+      \item Retrouver ce résultat en calculant $Q(-2)$, puis son image par $P$.
+    \end{enumerate}
+\end{enumerate}
+
+\exo[Composer dans les deux sens]
+\begin{enumerate}[label=\arabic*),topsep=0pt]
+  \item $P(x)=x^{2}+1$ et $Q(x)=x^{2}-2x$.
+    \begin{enumerate}[label=\alph*)]
+      \item Écrire $(P\circ Q)(x)$ et $(Q\circ P)(x)$.
+      \item Quel est le degré de $P$, de $Q$, de $P\circ Q$ ?
+    \end{enumerate}
+  \item $P(x)=2x^{2}-x$ et $Q(x)=\sqrt{2}\,x+1$ : écrire $(P\circ Q)(x)$.
+\end{enumerate}
+
+\vfill
+
+\end{multicols}
+\end{document}

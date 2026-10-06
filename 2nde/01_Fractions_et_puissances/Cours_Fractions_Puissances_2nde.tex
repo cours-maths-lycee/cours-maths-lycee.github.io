@@ -1,0 +1,1201 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1\signet{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{1}{Fractions et puissances}
+\niveaucours{Seconde}
+\titrecours{FRACTIONS ET PUISSANCES}{Cours --- Seconde}
+
+\begin{document}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Nombres relatifs et priorités}
+
+\begin{definitionbox}[Définition 1 --- Les sens du signe moins]
+Le signe $-$ a trois sens :
+\begin{itemize}
+  \item une \textbf{soustraction} : $9-2$ se lit \og neuf moins deux\fg{} ;
+  \item un \textbf{nombre négatif} : $-6$ se lit \og moins six\fg{} ;
+  \item l'\textbf{opposé} : $-(-4)$ se lit \og l'opposé de moins quatre\fg{}, et vaut $4$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Règles des signes]
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Somme}
+\begin{itemize}
+  \item deux nombres de même signe : on ajoute leurs distances à zéro et on garde le
+        signe : $-5-3=-8$ ;
+  \item de signes contraires : on soustrait les distances à zéro, le signe est celui
+        du plus éloigné de zéro : $-5+3=-2$.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Produit et quotient}
+\begin{itemize}
+  \item deux nombres de même signe : le résultat est positif :
+        $(-5)\times(-3)=15$ ;
+  \item de signes contraires : le résultat est négatif : $(-6)\div 3=-2$.
+\end{itemize}
+\end{minipage}
+
+\smallskip
+Soustraire un nombre, c'est ajouter son opposé : $4-(-7)=4+7$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Calculer avec des nombres relatifs]
+\etapeexemples
+Calculer :
+\begin{questions}[label=\alph*)]
+  \item $A=-7-9$
+  \item $B=15-(-6)$
+  \item $C=3\times(-8)$
+  \item $D=\dfrac{-(-18)}{-6}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= -7-9 &\qquad& \rem{deux nombres négatifs : on ajoute $7$ et $9$}\\
+A &= -16 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= 15-(-6) &\qquad& \rem{on recopie}\\
+B &= 15+6 &\qquad& \rem{soustraire $-6$, c'est ajouter $6$}\\
+B &= 21 &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= 3\times(-8) &\qquad& \rem{signes contraires : le produit est négatif}\\
+C &= -24 &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D &= \dfrac{-(-18)}{-6} &\qquad& \rem{on recopie}\\
+D &= \dfrac{18}{-6} &\qquad& \rem{l'opposé de $-18$ est $18$}\\
+D &= -3 &\qquad& \rem{signes contraires : le quotient est négatif}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer :
+\[
+  E=-5-12 \qquad F=8-(-14) \qquad G=-4\times(-9) \qquad H=\dfrac{-(-35)}{-7}
+  \qquad I=-6-(-10)
+\]
+\reponse{$E=-17$ ;\; $F=22$ ;\; $G=36$ ;\; $H=-5$ ;\; $I=-6+10=4$.}
+\end{methodebox}
+
+\begin{proprietebox}[Propriété 2 --- Priorités de calcul]
+On effectue, dans cet ordre :
+\begin{enumerate}[label=\arabic*.]
+  \item les calculs entre \textbf{parenthèses}, en commençant par les plus intérieures ;
+  \item les \textbf{puissances} ;
+  \item les \textbf{multiplications et divisions}, de gauche à droite ;
+  \item les \textbf{additions et soustractions}, de gauche à droite.
+\end{enumerate}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 2 --- Respecter les priorités de calcul]
+\etapeexemples
+Calculer, en écrivant une étape par ligne :
+\begin{questions}[label=\alph*)]
+  \item $A=6^{2}-5\times(-3)$
+  \item $B=-8-2^{4}$
+  \item $C=7+(-10+4)\times 3$
+  \item $D=-24\div(-4)\times 3^{2}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= 6^{2}-5\times(-3) &\qquad& \rem{on recopie}\\
+A &= 36-(-15) &\qquad& \rem{la puissance, puis le produit}\\
+A &= 51 &\qquad& \rem{soustraire $-15$, c'est ajouter $15$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= -8-2^{4} &\qquad& \rem{la puissance passe avant la soustraction}\\
+B &= -8-16 &\qquad& \rem{$2^{4}=2\times 2\times 2\times 2=16$}\\
+B &= -24 &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= 7+(-10+4)\times 3 &\qquad& \rem{la parenthèse d'abord}\\
+C &= 7+(-6)\times 3 &\qquad& \rem{puis le produit}\\
+C &= 7-18 &&\\
+C &= -11 &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D &= -24\div(-4)\times 3^{2} &\qquad& \rem{la puissance d'abord}\\
+D &= -24\div(-4)\times 9 &\qquad& \rem{division et produit : de gauche à droite}\\
+D &= 6\times 9 &\qquad& \rem{$(-24)\div(-4)=6$}\\
+D &= 54 &&
+\end{calculs}
+\end{correction}
+
+\begin{remarquebox}[Erreur à éviter]
+Dans $D$, on ne commence pas par $(-4)\times 9$ : la division et la multiplication ont
+la même priorité, on les fait dans l'ordre où elles sont écrites.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Calculer :
+\[
+  E=4^{2}-2\times(-7) \qquad F=-12-3^{2} \qquad G=9+(-6+1)\times 2 \qquad
+  H=-30\div(-5)\times 2^{3}
+\]
+\reponse{$E=16+14=30$ ;\; $F=-12-9=-21$ ;\; $G=9-10=-1$ ;\; $H=6\times 8=48$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 3}
+
+\partiecours{Additionner et soustraire des fractions}
+
+\begin{proprietebox}[Propriété 3 --- Le signe d'une fraction]
+Pour $b\ne 0$ : \quad $\dfrac{-a}{b}=\dfrac{a}{-b}=-\dfrac{a}{b}$ \quad et \quad
+$\dfrac{-a}{-b}=\dfrac{a}{b}$.
+
+\smallskip
+On écrit le signe moins d'une fraction au numérateur ou devant le trait de fraction,
+jamais au dénominateur. Un signe moins devant une fraction s'applique à \textbf{tout}
+le numérateur : on le met entre parenthèses.
+\end{proprietebox}
+
+\begin{exemplebox}[Exemple]
+\begin{calculs}
+3-\dfrac{x-1}{5} &= \dfrac{3\fois{5}}{1\fois{5}}-\dfrac{x-1}{5} &\qquad& \rem{$3=\frac31$, écrit avec le dénominateur $5$}\\
+3-\dfrac{x-1}{5} &= \dfrac{15}{5}-\dfrac{x-1}{5} &&\\
+3-\dfrac{x-1}{5} &= \dfrac{15-(x-1)}{5} &\qquad& \rem{parenthèses : le moins porte sur $x$ et sur $-1$}\\
+3-\dfrac{x-1}{5} &= \dfrac{16-x}{5} &\qquad& \rem{$-(x-1)=-x+1$}
+\end{calculs}
+\end{exemplebox}
+
+\begin{proprietebox}[Propriété 4 --- Somme de fractions]
+Pour additionner (ou soustraire) des fractions, on les écrit avec le \textbf{même
+dénominateur}, puis on additionne (ou on soustrait) les numérateurs ; le dénominateur
+ne change pas :
+\[
+  \dfrac{a}{d}+\dfrac{b}{d}=\dfrac{a+b}{d} \qquad\qquad \dfrac{a}{d}-\dfrac{b}{d}=\dfrac{a-b}{d}
+\]
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Additionner et soustraire des fractions]
+\etapeexemples
+Calculer et donner le résultat sous forme simplifiée :
+\begin{questions}[label=\alph*)]
+  \item $A=\dfrac{-7}{-6}+\dfrac{-3}{12}$
+  \item $B=\dfrac{4}{5}-\dfrac{-2}{3}$
+  \item $C=\dfrac{1}{3}-\dfrac{1}{6}+\dfrac{1}{9}-\dfrac{1}{18}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \dfrac{-7}{-6}+\dfrac{-3}{12} &\qquad& \rem{on recopie}\\
+A &= \dfrac{7}{6}-\dfrac{3}{12} &\qquad& \rem{on simplifie les signes $-$}\\
+A &= \dfrac{7\fois{2}}{6\fois{2}}-\dfrac{3}{12} &\qquad& \rem{$12$ est un multiple de $6$}\\
+A &= \dfrac{14}{12}-\dfrac{3}{12} &&\\
+A &= \dfrac{11}{12} &\qquad& \rem{on soustrait les numérateurs}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= \dfrac{4}{5}-\dfrac{-2}{3} &\qquad& \rem{on recopie}\\
+B &= \dfrac{4}{5}+\dfrac{2}{3} &\qquad& \rem{soustraire $-\frac23$, c'est ajouter $\frac23$}\\
+B &= \dfrac{4\fois{3}}{5\fois{3}}+\dfrac{2\fois{5}}{3\fois{5}} &\qquad& \rem{dénominateur commun : $5\times 3=15$}\\
+B &= \dfrac{12}{15}+\dfrac{10}{15} &&\\
+B &= \dfrac{22}{15} &\qquad& \rem{$22$ et $15$ n'ont pas de diviseur commun}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= \dfrac{1}{3}-\dfrac{1}{6}+\dfrac{1}{9}-\dfrac{1}{18} &\qquad& \rem{$18$ est un multiple de $3$, $6$ et $9$}\\
+C &= \dfrac{1\fois{6}}{3\fois{6}}-\dfrac{1\fois{3}}{6\fois{3}}+\dfrac{1\fois{2}}{9\fois{2}}-\dfrac{1}{18} &\qquad& \rem{tout sur $18$}\\
+C &= \dfrac{6}{18}-\dfrac{3}{18}+\dfrac{2}{18}-\dfrac{1}{18} &&\\
+C &= \dfrac{4}{18} &\qquad& \rem{$6-3+2-1=4$}\\
+C &= \dfrac{2}{9} &\qquad& \rem{on simplifie par $2$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer et donner le résultat sous forme simplifiée :
+\[
+  D=\dfrac{-2}{-3}+\dfrac{-5}{6} \qquad
+  E=\dfrac{5}{6}-\dfrac{-3}{4} \qquad
+  F=\dfrac{1}{2}-\dfrac{1}{4}+\dfrac{1}{10} \qquad
+  G=4-\dfrac{7}{3}
+\]
+\reponse{$D=\frac46-\frac56=-\frac16$ ;\; $E=\frac{10}{12}+\frac{9}{12}=\frac{19}{12}$ ;\;
+$F=\frac{10}{20}-\frac{5}{20}+\frac{2}{20}=\frac{7}{20}$ ;\; $G=\frac{12}{3}-\frac73=\frac53$.}
+\end{methodebox}
+
+\afaire{exercices 4 à 7}
+
+\partiecours{Multiplier et diviser des fractions}
+
+\begin{proprietebox}[Propriété 5 --- Produit et quotient]
+Pour $b$, $c$ et $d$ non nuls :
+\[
+  \dfrac{a}{b}\times\dfrac{c}{d}=\dfrac{a\times c}{b\times d}
+  \qquad\qquad
+  \dfrac{a}{b}\div\dfrac{c}{d}=\dfrac{a}{b}\times\dfrac{d}{c}
+\]
+Diviser par une fraction, c'est multiplier par son \textbf{inverse}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Multiplier et diviser des fractions]
+\etapeexemples
+Calculer et donner le résultat sous forme simplifiée :
+\begin{questions}[label=\alph*)]
+  \item $A=\dfrac{3}{-4}\times\dfrac{-5}{7}$
+  \item $B=6\times\dfrac{4}{5}$
+  \item $C=\dfrac{5}{6}\div\dfrac{-10}{9}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \dfrac{3}{-4}\times\dfrac{-5}{7} &\qquad& \rem{deux signes moins : le résultat est positif}\\
+A &= \dfrac{3\times 5}{4\times 7} &\qquad& \rem{numérateurs entre eux, dénominateurs entre eux}\\
+A &= \dfrac{15}{28} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= \dfrac{6}{1}\times\dfrac{4}{5} &\qquad& \rem{un entier est une fraction de dénominateur $1$}\\
+B &= \dfrac{24}{5} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= \dfrac{5}{6}\times\dfrac{9}{-10} &\qquad& \rem{on multiplie par l'inverse de $\frac{-10}{9}$}\\
+C &= -\dfrac{5\times 3\times 3}{2\times 3\times 2\times 5} &\qquad& \rem{un seul signe moins ; on décompose sans effectuer}\\
+C &= -\dfrac{\barre{5}\times\barre{3}\times 3}{2\times\barre{3}\times 2\times\barre{5}} &\qquad& \rem{on barre $5$ et $3$, en haut et en bas}\\
+C &= -\dfrac{3}{4} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer et donner le résultat sous forme simplifiée :
+\[
+  D=\dfrac{2}{-7}\times\dfrac{-3}{5} \qquad
+  E=4\times\dfrac{2}{9} \qquad
+  F=\dfrac{3}{10}\div\dfrac{-9}{5} \qquad
+  G=\dfrac{-4}{9}\div 8
+\]
+\reponse{$D=\frac{6}{35}$ ;\; $E=\frac89$ ;\; $F=\frac{3}{10}\times\frac{5}{-9}=-\frac16$ ;\;
+$G=\frac{-4}{9}\times\frac18=-\frac{1}{18}$.}
+\end{methodebox}
+
+\begin{remarquebox}[Simplifier : seulement des produits]
+Dans un quotient de \textbf{produits}, on peut barrer un même facteur en haut et en
+bas. Jamais dans une \textbf{somme} : dans $\frac{-2+9}{5+9}$, on ne barre pas les $9$.
+Quand on barre tout le numérateur, il reste $1$, et non $0$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 5 --- Simplifier avant de calculer]
+\etapeexemples
+Simplifier, puis calculer :
+\begin{questions}[label=\alph*)]
+  \item $A=\dfrac{-9\times 10}{6\times 25}$
+  \item $B=\dfrac{3\times(-4)\times(-5)}{(-6)\times 7}$
+  \item $C=\dfrac{-2+9}{5+9}$
+  \item $D=\dfrac{28}{15}\times\dfrac{25}{14}$
+  \item $E=\dfrac{6\times 5}{10\times 9}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= -\dfrac{9\times 10}{6\times 25} &\qquad& \rem{un seul signe moins : le résultat est négatif}\\
+A &= -\dfrac{3\times 3\times 2\times 5}{2\times 3\times 5\times 5} &\qquad& \rem{on décompose chaque nombre}\\
+A &= -\dfrac{3\times\barre{3}\times\barre{2}\times\barre{5}}{\barre{2}\times\barre{3}\times\barre{5}\times 5} &\qquad& \rem{on barre $3$, $2$ et un $5$}\\
+A &= -\dfrac{3}{5} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= -\dfrac{3\times 4\times 5}{6\times 7} &\qquad& \rem{trois signes moins : le résultat est négatif}\\
+B &= -\dfrac{3\times 2\times 2\times 5}{2\times 3\times 7} &\qquad& \rem{$4=2\times 2$ et $6=2\times 3$}\\
+B &= -\dfrac{\barre{3}\times\barre{2}\times 2\times 5}{\barre{2}\times\barre{3}\times 7} &\qquad& \rem{on barre $3$ et un $2$}\\
+B &= -\dfrac{10}{7} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= \dfrac{-2+9}{5+9} &\qquad& \rem{ce sont des sommes : on calcule d'abord}\\
+C &= \dfrac{7}{14} &&\\
+C &= \dfrac{1}{2} &\qquad& \rem{on simplifie par $7$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D &= \dfrac{28\times 25}{15\times 14} &\qquad& \rem{on n'effectue pas les produits}\\
+D &= \dfrac{2\times 14\times 5\times 5}{3\times 5\times 14} &\qquad& \rem{on décompose}\\
+D &= \dfrac{2\times\barre{14}\times\barre{5}\times 5}{3\times\barre{5}\times\barre{14}} &\qquad& \rem{on barre $14$ et un $5$}\\
+D &= \dfrac{10}{3} &\qquad& \rem{puis on calcule}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+E &= \dfrac{6\times 5}{10\times 9} &\qquad& \rem{on recopie}\\
+E &= \dfrac{1\times 2\times 3\times 5}{2\times 5\times 3\times 3} &\qquad& \rem{tout le numérateur va être barré : on écrit le facteur $1$}\\
+E &= \dfrac{1\times\barre{2}\times\barre{3}\times\barre{5}}{\barre{2}\times\barre{5}\times\barre{3}\times 3} &\qquad& \rem{il reste $1$ en haut, et non $0$}\\
+E &= \dfrac{1}{3} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Simplifier, puis calculer :
+\[
+  F=\dfrac{-8\times 15}{12\times 10} \qquad
+  G=\dfrac{6+4}{5+4} \qquad
+  H=\dfrac{5\times(-2)\times 3}{3\times 5} \qquad
+  I=\dfrac{21}{20}\times\dfrac{8}{35} \qquad
+  J=\dfrac{18}{35}\times\dfrac{14}{27}\times\dfrac{5}{4}
+\]
+\reponse{$F=-\frac{2\times 4\times 3\times 5}{3\times 4\times 2\times 5}=-1$ ;\;
+$G=\frac{10}{9}$ (une somme : on ne barre pas) ;\; $H=-2$ ;\;
+$I=\frac{3\times 7\times 2\times 4}{4\times 5\times 5\times 7}=\frac{6}{25}$ ;\; $J=\frac13$.}
+\end{methodebox}
+
+\afaire{exercices 8 à 11}
+
+\partiecours{Fractions et priorités de calcul}
+
+\begin{proprietebox}[Propriété 6 --- Fraction de fractions]
+Pour $b$, $c$ et $d$ non nuls : \quad
+$\dfrac{\;\dfrac{a}{b}\;}{\;\dfrac{c}{d}\;}=\dfrac{a}{b}\div\dfrac{c}{d}=\dfrac{a}{b}\times\dfrac{d}{c}$.
+
+\smallskip
+Quand le numérateur ou le dénominateur est un calcul, on le calcule à part, puis on
+divise.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Mener un calcul avec des fractions]
+\etapeexemples
+Calculer et donner le résultat sous forme simplifiée :
+\begin{questions}[label=\alph*)]
+  \item $A=\dfrac{5}{6}-\dfrac{-2}{3}\times\dfrac{3}{2^{2}}$
+  \item $B=\dfrac{-5}{\;3+\dfrac{3}{2^{2}}\;}$
+  \item $C=\left(\dfrac{1}{2}+\dfrac{1}{3}\right)\div\left(\dfrac{3}{4}-\dfrac{1}{6}\right)$
+  \item $D=\dfrac{1}{2}+\dfrac{1}{3}\div\dfrac{3}{4}-\dfrac{1}{6}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \dfrac{5}{6}-\dfrac{-2}{3}\times\dfrac{3}{4} &\qquad& \rem{la puissance : $2^{2}=4$}\\
+A &= \dfrac{5}{6}-\dfrac{-6}{12} &\qquad& \rem{puis le produit}\\
+A &= \dfrac{5}{6}+\dfrac{1}{2} &\qquad& \rem{$\frac{-6}{12}=-\frac12$ ; soustraire un négatif, c'est ajouter}\\
+A &= \dfrac{5}{6}+\dfrac{1\fois{3}}{2\fois{3}} &&\\
+A &= \dfrac{5}{6}+\dfrac{3}{6} &&\\
+A &= \dfrac{8}{6} &&\\
+A &= \dfrac{4}{3} &\qquad& \rem{on simplifie par $2$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+3+\dfrac{3}{2^{2}} &= \dfrac{3\fois{4}}{1\fois{4}}+\dfrac{3}{4} &\qquad& \rem{le dénominateur d'abord, à part}\\
+3+\dfrac{3}{2^{2}} &= \dfrac{12}{4}+\dfrac{3}{4} &&\\
+3+\dfrac{3}{2^{2}} &= \dfrac{15}{4} &&\\
+B &= -5\times\dfrac{4}{15} &\qquad& \rem{diviser par $\frac{15}{4}$, c'est multiplier par $\frac{4}{15}$}\\
+B &= -\dfrac{5\times 4}{3\times 5} &&\\
+B &= -\dfrac{\barre{5}\times 4}{3\times\barre{5}} &\qquad& \rem{on barre le $5$}\\
+B &= -\dfrac{4}{3} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= \left(\dfrac{1\fois{3}}{2\fois{3}}+\dfrac{1\fois{2}}{3\fois{2}}\right)\div\left(\dfrac{3\fois{3}}{4\fois{3}}-\dfrac{1\fois{2}}{6\fois{2}}\right) &\qquad& \rem{chaque parenthèse à part}\\
+C &= \left(\dfrac{3}{6}+\dfrac{2}{6}\right)\div\left(\dfrac{9}{12}-\dfrac{2}{12}\right) &&\\
+C &= \dfrac{5}{6}\div\dfrac{7}{12} &&\\
+C &= \dfrac{5}{6}\times\dfrac{12}{7} &\qquad& \rem{on multiplie par l'inverse}\\
+C &= \dfrac{5\times 2\times 6}{6\times 7} &&\\
+C &= \dfrac{5\times 2\times\barre{6}}{\barre{6}\times 7} &\qquad& \rem{on barre le $6$}\\
+C &= \dfrac{10}{7} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D &= \dfrac{1}{2}+\dfrac{1}{3}\times\dfrac{4}{3}-\dfrac{1}{6} &\qquad& \rem{sans parenthèses, la division passe en premier}\\
+D &= \dfrac{1}{2}+\dfrac{4}{9}-\dfrac{1}{6} &&\\
+D &= \dfrac{1\fois{9}}{2\fois{9}}+\dfrac{4\fois{2}}{9\fois{2}}-\dfrac{1\fois{3}}{6\fois{3}} &\qquad& \rem{dénominateur commun $18$}\\
+D &= \dfrac{9}{18}+\dfrac{8}{18}-\dfrac{3}{18} &&\\
+D &= \dfrac{14}{18} &&\\
+D &= \dfrac{7}{9} &\qquad& \rem{mêmes nombres que $C$, autre résultat}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer et donner le résultat sous forme simplifiée :
+\[
+  E=\left(2+\dfrac{1}{3}-\dfrac{3}{4}\right)\times\left(\dfrac{1}{2}-\dfrac{2}{3}\right)
+  \qquad
+  F=\dfrac{\;\dfrac{1}{3}+\dfrac{1}{4}\;}{\;\dfrac{5}{6}-\dfrac{1}{4}+\dfrac{1}{3}\;}
+\]
+\[
+  G=-\dfrac{3}{7}\times\left[\left(\dfrac{1}{2}+\dfrac{5}{4}\right)-\left(\dfrac{1}{3}-\dfrac{1}{6}\right)\right]
+  \qquad
+  H=\left(\dfrac{-3}{4}+\dfrac{1}{2}\right)\div\left(\dfrac{2}{3}+\dfrac{5}{-6}\right)
+\]
+\reponse{$E=\frac{19}{12}\times\left(-\frac16\right)=-\frac{19}{72}$ ;\;
+$F=\frac{7}{12}\div\frac{11}{12}=\frac{7}{11}$ ;\;
+$G=-\frac37\times\frac{19}{12}=-\frac{19}{28}$ ;\;
+$H=\left(-\frac14\right)\div\left(-\frac16\right)=\frac32$.}
+\end{methodebox}
+
+\afaire{exercices 12 à 14}
+
+\partiecours{Produit en croix}
+
+\begin{proprietebox}[Propriété 7 --- Produit en croix]
+Pour $b\ne 0$ et $d\ne 0$ : \quad si $\dfrac{a}{b}=\dfrac{c}{d}$, alors
+$a\times d=b\times c$.
+\end{proprietebox}
+
+\begin{remarquebox}[Pourquoi ?]
+On écrit les deux fractions avec le dénominateur commun $b\times d$ :
+$\dfrac{a\times d}{b\times d}=\dfrac{c\times b}{d\times b}$. Deux fractions égales de même
+dénominateur ont le même numérateur : $a\times d=b\times c$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 7 --- Résoudre une équation par le produit en croix]
+\etapeexemples
+Résoudre les équations suivantes :
+\begin{questions}[label=\alph*)]
+  \item $\dfrac{x}{3}=\dfrac{5}{4}$
+  \item $\dfrac{x}{4}=\dfrac{x+3}{6}$
+  \item $\dfrac{x+3}{2}=\dfrac{2x-1}{3}$
+  \item $\dfrac{2x+1}{4}=\dfrac{3x-2}{-2}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+4\times x &= 3\times 5 &\qquad& \rem{produit en croix}\\
+4x &= 15 &&\\
+x &= \dfrac{15}{4} &\qquad& \rem{on divise par $4$ ; la fraction reste telle quelle}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+6x &= 4(x+3) &\qquad& \rem{parenthèses indispensables autour de $x+3$}\\
+6x &= 4x+12 &\qquad& \rem{on développe}\\
+6x-4x &= 12 &\qquad& \rem{les $x$ à gauche, les nombres à droite}\\
+2x &= 12 &&\\
+x &= 6 &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+3(x+3) &= 2(2x-1) &\qquad& \rem{produit en croix}\\
+3x+9 &= 4x-2 &\qquad& \rem{on développe les deux membres}\\
+9+2 &= 4x-3x &\qquad& \rem{les $x$ du côté où il y en a le plus}\\
+x &= 11 &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+-2(2x+1) &= 4(3x-2) &\qquad& \rem{le $-2$ garde son signe}\\
+-4x-2 &= 12x-8 &&\\
+-2+8 &= 12x+4x &&\\
+6 &= 16x &&\\
+x &= \dfrac{6}{16} &&\\
+x &= \dfrac{3}{8} &\qquad& \rem{on simplifie par $2$}
+\end{calculs}
+\end{correction}
+
+\begin{remarquebox}[Vérifier une solution]
+On remplace $x$ par la valeur trouvée dans chaque membre. Pour b) :
+$\frac{6}{4}=\frac32$ et $\frac{6+3}{6}=\frac96=\frac32$ ; les deux membres sont égaux,
+donc $6$ est bien la solution.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Résoudre, puis vérifier :
+\[
+  \text{e) } \dfrac{3}{7}=\dfrac{x}{14} \qquad
+  \text{f) } \dfrac{3x}{4}=\dfrac{7-x}{2} \qquad
+  \text{g) } \dfrac{2x+1}{3}=\dfrac{x+4}{2} \qquad
+  \text{h) } \dfrac{3x-2}{4}=\dfrac{5-x}{8} \qquad
+  \text{i) } \dfrac{5x+2}{3}=\dfrac{4-x}{-2}
+\]
+\reponse{e) $7x=42$, $x=6$ ;\; f) $6x=28-4x$, $x=\frac{14}{5}$ ;\; g) $4x+2=3x+12$,
+$x=10$ ;\; h) $24x-16=20-4x$, $x=\frac{36}{28}=\frac97$ ;\; i) $-10x-4=12-3x$,
+$x=-\frac{16}{7}$.}
+\end{methodebox}
+
+\afaire{exercices 15 à 17}
+
+\begin{methodebox}[Méthode 8 --- Résoudre une équation à plusieurs fractions]
+Quand un membre contient une somme de fractions, le produit en croix ne s'applique
+pas : on multiplie \textbf{chaque terme} des deux membres par un dénominateur commun.
+\etapeexemples
+Résoudre les équations suivantes :
+\begin{questions}[label=\alph*)]
+  \item $x+\dfrac{x}{3}=12$
+  \item $\dfrac{t}{4}-\dfrac{t+1}{6}=1$
+  \item $\dfrac{z-1}{2}-\dfrac{z-3}{6}=\dfrac{2z+1}{9}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+3\times x+3\times\dfrac{x}{3} &= 3\times 12 &\qquad& \rem{on multiplie chaque terme par $3$, $x$ compris}\\
+3x+x &= 36 &&\\
+4x &= 36 &&\\
+x &= 9 &\qquad& \rem{vérification : $9+\frac93=9+3=12$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+3t-2(t+1) &= 12 &\qquad& \rem{chaque terme $\times 12$ ; parenthèses à cause du moins}\\
+3t-2t-2 &= 12 &&\\
+t &= 14 &\qquad& \rem{vérification : $\frac{14}{4}-\frac{15}{6}=3{,}5-2{,}5=1$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+9(z-1)-3(z-3) &= 2(2z+1) &\qquad& \rem{chaque terme $\times 18$ : $18\div 2=9$, $18\div 6=3$, $18\div 9=2$}\\
+9z-9-3z+9 &= 4z+2 &\qquad& \rem{attention : $-3\times(-3)=+9$}\\
+6z &= 4z+2 &&\\
+2z &= 2 &&\\
+z &= 1 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Résoudre :
+\[
+  \text{d) } \dfrac{x}{3}-\dfrac{x}{5}=4 \qquad
+  \text{e) } \dfrac{3t-1}{2}+\dfrac{t-3}{4}=t \qquad
+  \text{f) } \dfrac{y}{2}+\dfrac{2y}{3}=\dfrac{y}{4}+11
+\]
+\[
+  \text{g) } \dfrac{y+6}{4}=\dfrac{y-2}{3}-\dfrac{y}{6} \qquad
+  \text{h) } \dfrac{3z+1}{4}-\dfrac{5z-2}{3}=\dfrac{1-13z}{12}
+\]
+\reponse{d) ($\times 15$) $5x-3x=60$, $x=30$ ;\; e) ($\times 4$) $7t-5=4t$, $t=\frac53$ ;\;
+f) ($\times 12$) $14y=3y+132$, $y=12$ ;\; g) ($\times 12$) $3y+18=2y-8$, $y=-26$ ;\;
+h) ($\times 12$) $-11z+11=1-13z$, $z=-5$.}
+\end{methodebox}
+
+\afaire{exercices 18 et 19}
+
+\partiecours{Fractions et problèmes}
+
+\begin{proprietebox}[Propriété 8 --- Fraction d'une quantité]
+Prendre les $\dfrac{a}{b}$ \textbf{de} quelque chose, c'est \textbf{multiplier} par
+$\dfrac{a}{b}$ : les $\dfrac23$ de $60$ font $\dfrac23\times 60=40$.
+
+\smallskip
+Une fraction prise \og du reste\fg{} porte sur ce qui reste, pas sur le total : on
+calcule d'abord ce reste.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Résoudre un problème de fractions]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Un train de $360$ places part de Lille avec les trois quarts de ses places
+        occupées. À Arras, des voyageurs occupent les deux tiers des places restées
+        libres. Combien de places sont encore libres ?
+  \item Malo a un forfait mobile de $60$~Go. Il en utilise le quart pour les vidéos,
+        puis les deux cinquièmes de ce qui reste pour les réseaux sociaux. Quelle
+        fraction du forfait lui reste-t-il ? Combien de gigaoctets cela fait-il ?
+  \item Une boutique en ligne vend les deux tiers de son stock de casques audio le
+        premier jour des soldes, puis les trois cinquièmes du reste le deuxième jour. Il
+        reste alors $20$ casques. Combien en a-t-elle vendu ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\text{occupées à Lille} &= \dfrac34\times 360=270 &\qquad& \rem{les $\frac34$ de $360$}\\
+\text{libres} &= 360-270=90 &&\\
+\text{occupées à Arras} &= \dfrac23\times 90=60 &\qquad& \rem{les $\frac23$ du reste, pas du total}\\
+\text{encore libres} &= 90-60=30 &&
+\end{calculs}
+\explique{Il reste $30$ places libres.}{on relit la question avant de conclure}
+\cas{b)}
+\begin{calculs}
+\text{reste après les vidéos} &= 1-\dfrac14=\dfrac34 &\qquad& \rem{le forfait entier vaut $1$}\\
+\text{réseaux sociaux} &= \dfrac25\times\dfrac34 &\qquad& \rem{les $\frac25$ du reste}\\
+\text{réseaux sociaux} &= \dfrac{6}{20}=\dfrac{3}{10} &&\\
+\text{reste} &= \dfrac{3\fois{5}}{4\fois{5}}-\dfrac{3\fois{2}}{10\fois{2}} &\qquad& \rem{$\frac34-\frac{3}{10}$ sur le dénominateur $20$}\\
+\text{reste} &= \dfrac{15}{20}-\dfrac{6}{20} &&\\
+\text{reste} &= \dfrac{9}{20} &&\\
+\text{reste en Go} &= \dfrac{9}{20}\times 60=27 &&
+\end{calculs}
+\explique{Il reste à Malo les $\frac{9}{20}$ du forfait, soit $27$~Go.}{vérification :
+$15+18+27=60$}
+\cas{c)}
+\begin{calculs}
+\text{reste après le premier jour} &= 1-\dfrac23=\dfrac13 &\qquad& \rem{on travaille sur des fractions du stock}\\
+\text{vendu le deuxième jour} &= \dfrac35\times\dfrac13=\dfrac15 &&\\
+\text{reste le soir} &= \dfrac{1\fois{5}}{3\fois{5}}-\dfrac{1\fois{3}}{5\fois{3}} &\qquad& \rem{$\frac13-\frac15$ sur le dénominateur $15$}\\
+\text{reste le soir} &= \dfrac{5}{15}-\dfrac{3}{15} &&\\
+\text{reste le soir} &= \dfrac{2}{15} &&
+\end{calculs}
+\explique{Les $\frac{2}{15}$ du stock font $20$ casques, donc $\frac{1}{15}$ en fait
+$10$ et le stock est de $15\times 10=150$ casques.}{on remonte au total}
+\explique{La boutique en a vendu $150-20=130$.}{la question porte sur les ventes}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Une cuve de $240$~L est remplie aux cinq sixièmes. On en vide les trois quarts.
+        Combien de litres reste-t-il dans la cuve ?
+  \item Sami dépense le quart de ses économies pour un téléphone, puis les deux tiers de
+        ce qui reste pour un vélo. Il lui reste $75$~€. Combien avait-il économisé ?
+\end{questions}
+\reponse{1\textdegree) $\frac56\times 240=200$~L ; on en vide $\frac34\times 200=150$~L ;
+il reste $50$~L.\; 2\textdegree) Reste $\frac34$, vélo $\frac23\times\frac34=\frac12$,
+il reste $\frac34-\frac12=\frac14$ des économies : $75\times 4=300$~€.}
+\end{methodebox}
+
+\afaire{exercices 20 à 23}
+
+\partiecours{Puissances}
+
+\begin{definitionbox}[Définition 2 --- Puissance d'un nombre]
+Pour un nombre $a$ et un entier $n\ge 1$ :
+\[
+  a^{n}=\underbrace{a\times a\times\dots\times a}_{n\text{ facteurs}}
+  \qquad a^{0}=1 \qquad
+  a^{-n}=\dfrac{1}{a^{n}} \quad (a\ne 0)
+\]
+Un exposant positif compte des multiplications, un exposant négatif des divisions :
+$5^{-2}=\dfrac{1}{5\times 5}=\dfrac{1}{25}$.
+
+\smallskip
+En particulier, $a^{-1}=\dfrac1a$ : $a^{-1}$ est l'\textbf{inverse} de $a$.
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 3 --- Puissances de 10]
+$10^{n}=1\underbrace{0\dots0}_{n\text{ zéros}}$ \qquad et \qquad
+$10^{-n}=\dfrac{1}{10^{n}}=0{,}\underbrace{0\dots0}_{n-1\text{ zéros}}1$
+\qquad ($n$ chiffres après la virgule).
+
+\smallskip
+Exemples : $10^{6}=1~000~000$ \quad ; \quad $10^{-4}=0{,}0001$.
+\end{definitionbox}
+
+\begin{remarquebox}[Signe d'une puissance]
+Un nombre négatif élevé à une puissance \textbf{paire} donne un résultat positif ; à
+une puissance \textbf{impaire}, un résultat négatif : $(-2)^{4}=16$, $(-2)^{3}=-8$.
+Attention aux parenthèses : $(-3)^{2}=9$, mais $-3^{2}=-(3\times 3)=-9$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer avec des puissances]
+\etapeexemples
+Calculer :
+\begin{questions}[label=\alph*)]
+  \item $A=(3^{2}-4)\times(-1)^{7}$
+  \item $B=(-2)^{3}+(-3)^{2}\times(-2)$
+  \item $C=-3^{2}+(-3)^{2}-(-3)^{3}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= (9-4)\times(-1) &\qquad& \rem{$3^{2}=9$ ; exposant $7$ impair : $(-1)^{7}=-1$}\\
+A &= 5\times(-1) &&\\
+A &= -5 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= -8+9\times(-2) &\qquad& \rem{$(-2)^{3}=-8$ (impair) ; $(-3)^{2}=9$ (pair)}\\
+B &= -8-18 &\qquad& \rem{le produit avant la somme}\\
+B &= -26 &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= -9+9-(-27) &\qquad& \rem{$-3^{2}=-9$ : sans parenthèses, le carré ne porte que sur $3$}\\
+C &= -9+9+27 &&\\
+C &= 27 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer :
+\[
+  D=(2^{3}-5)\times(-1)^{6} \qquad E=(-1)^{9}+(-2)^{4}\times(-3) \qquad
+  F=(-6)^{2}-6^{2}+(-2)^{3}
+\]
+\reponse{$D=3\times 1=3$ ;\; $E=-1+16\times(-3)=-49$ ;\; $F=36-36-8=-8$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 11 --- Passer d'un exposant négatif à une fraction]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Écrire sous forme de fraction : $A=(-3)^{-2}$ et $B=-4^{-2}$.
+  \item Écrire sous la forme $a^{n}$ : $C=\dfrac{1}{9}$, \;
+        $D=\dfrac{1}{2\times 2\times 2\times 2\times 2\times 2\times 2}$ et
+        $E=\dfrac{1}{(-4)\times(-4)\times(-4)}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \dfrac{1}{(-3)^{2}} &\qquad& \rem{$a^{-n}=\frac{1}{a^{n}}$}\\
+A &= \dfrac{1}{9} &\qquad& \rem{exposant pair : $(-3)^{2}=9$}\\
+B &= -\dfrac{1}{4^{2}} &\qquad& \rem{sans parenthèses, l'exposant ne porte que sur $4$}\\
+B &= -\dfrac{1}{16} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+C &= \dfrac{1}{9^{1}}=9^{-1} &\qquad& \rem{l'inverse de $9$}\\
+D &= \dfrac{1}{2^{7}}=2^{-7} &\qquad& \rem{$7$ facteurs égaux à $2$}\\
+E &= \dfrac{1}{(-4)^{3}}=(-4)^{-3} &\qquad& \rem{on garde les parenthèses : le moins fait partie du nombre}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Écrire sous forme de fraction : \quad $F=(-2)^{-3}$ \qquad $G=-3^{-2}$ \qquad
+        $H=\left(\dfrac{1}{5}\right)^{-1}$
+  \item Écrire sous la forme $a^{n}$ : \quad $I=\dfrac{1}{6}$ \qquad
+        $J=\dfrac{1}{5\times 5\times 5\times 5}$ \qquad $K=\dfrac{1}{(-7)\times(-7)}$
+\end{questions}
+\reponse{1\textdegree) $F=\frac{1}{-8}=-\frac18$ ;\; $G=-\frac19$ ;\; $H=5$.\;
+2\textdegree) $I=6^{-1}$ ;\; $J=5^{-4}$ ;\; $K=(-7)^{-2}$.}
+\end{methodebox}
+
+\afaire{exercices 24 à 29}
+
+\partiecours{Règles de calcul sur les puissances}
+
+\begin{proprietebox}[Propriété 9 --- Règles de calcul]
+Pour $a$ et $b$ non nuls, $n$ et $p$ entiers relatifs :
+\[
+\renewcommand{\arraystretch}{2.2}
+\begin{array}{lll}
+  a^{n}\times a^{p}=a^{n+p} & \quad & \text{exemple : } 5^{4}\times 5^{-6}=5^{4+(-6)}=5^{-2}\\
+  \dfrac{a^{n}}{a^{p}}=a^{n-p} & & \text{exemple : } \dfrac{(-2)^{9}}{(-2)^{4}}=(-2)^{9-4}=(-2)^{5}\\
+  \left(a^{n}\right)^{p}=a^{n\times p} & & \text{exemple : } \left(4^{3}\right)^{5}=4^{3\times 5}=4^{15}\\
+  (a\times b)^{n}=a^{n}\times b^{n} & & \text{exemple : } (3x)^{2}=3^{2}\times x^{2}=9x^{2}\\
+  \left(\dfrac{a}{b}\right)^{n}=\dfrac{a^{n}}{b^{n}} & & \text{exemple : } \left(\dfrac{3}{5}\right)^{2}=\dfrac{3^{2}}{5^{2}}=\dfrac{9}{25}
+\end{array}
+\]
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 12 --- Simplifier avec les règles sur les puissances]
+\etapeexemples
+Simplifier, puis calculer :
+\begin{questions}[label=\alph*)]
+  \item $A=\dfrac{(2^{2})^{-3}\times 3}{(2\times 3)^{-2}}$
+  \item $B=\dfrac{3^{4}\times 10^{-5}\times(3^{2})^{3}\times(10^{-1})^{2}}{3^{8}\times 10^{-4}}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \dfrac{2^{-6}\times 3^{1}}{2^{-2}\times 3^{-2}} &\qquad& \rem{$(2^{2})^{-3}=2^{-6}$ ; $(2\times 3)^{-2}=2^{-2}\times 3^{-2}$}\\
+A &= 2^{-6-(-2)}\times 3^{1-(-2)} &\qquad& \rem{chaque base à part ; on soustrait les exposants}\\
+A &= 2^{-4}\times 3^{3} &\qquad& \rem{$-6+2=-4$ et $1+2=3$}\\
+A &= \dfrac{27}{16} &\qquad& \rem{$2^{-4}=\frac{1}{16}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= \dfrac{3^{4}\times 3^{6}\times 10^{-5}\times 10^{-2}}{3^{8}\times 10^{-4}} &\qquad& \rem{$(3^{2})^{3}=3^{6}$ ; $(10^{-1})^{2}=10^{-2}$}\\
+B &= \dfrac{3^{10}\times 10^{-7}}{3^{8}\times 10^{-4}} &\qquad& \rem{on ajoute les exposants des produits}\\
+B &= 3^{2}\times 10^{-3} &\qquad& \rem{$10-8=2$ et $-7-(-4)=-3$}\\
+B &= 9\times 10^{-3} &\qquad& \rem{soit $0{,}009$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Simplifier, puis calculer :
+\[
+  C=\dfrac{(3^{2})^{-2}\times 2}{(3\times 2)^{-3}} \qquad
+  D=\dfrac{2^{5}\times 10^{-4}}{2^{3}\times 10^{-6}} \qquad
+  E=\dfrac{a^{4}\times(a^{-3})^{2}}{(a^{2})^{3}} \quad (a\ne 0)
+\]
+\reponse{$C=3^{-1}\times 2^{4}=\frac{16}{3}$ ;\;
+$D=2^{2}\times 10^{2}=400$ ;\; $E=\frac{a^{4}\times a^{-6}}{a^{6}}=a^{-8}$.}
+\end{methodebox}
+
+\afaire{exercices 30 à 34}
+
+\partiecours{Notation scientifique}
+
+\begin{definitionbox}[Définition 4 --- Notation scientifique]
+La \textbf{notation scientifique} d'un nombre décimal non nul est son écriture
+$a\times 10^{n}$, où $a$ a \textbf{un seul chiffre non nul avant la virgule} et $n$
+est un entier relatif.
+
+\smallskip
+Exemples : $27~800=2{,}78\times 10^{4}$ \quad ; \quad
+$-40~500~000=-4{,}05\times 10^{7}$ \quad ; \quad $0{,}000~000~63=6{,}3\times 10^{-7}$.
+\end{definitionbox}
+
+\begin{remarquebox}[Pour ne pas se tromper d'exposant]
+Le produit $a\times 10^{n}$ ne doit pas changer de valeur : quand la virgule de $a$
+recule de $k$ rangs (le nombre devient plus petit), l'exposant augmente de $k$ ; quand
+elle avance, l'exposant diminue.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 13 --- Écrire un nombre en notation scientifique]
+\etapeexemples
+Donner la notation scientifique de :
+\begin{questions}[label=\alph*)]
+  \item $A=5~600~000$ \quad et \quad $B=0{,}000~47$
+  \item $C=318{,}2\times 10^{-6}$
+  \item $D=\dfrac{4\times 10^{2}\times 9\times 10^{5}}{60\times 10^{3}}$
+  \item $E=6\times 10^{3}+47\times 10^{-2}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= 5{,}6\times 10^{6} &\qquad& \rem{la virgule recule de $6$ rangs}\\
+B &= 4{,}7\times 10^{-4} &\qquad& \rem{la virgule avance de $4$ rangs}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+C &= 3{,}182\times 10^{2}\times 10^{-6} &\qquad& \rem{$318{,}2=3{,}182\times 10^{2}$}\\
+C &= 3{,}182\times 10^{-4} &\qquad& \rem{$2+(-6)=-4$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+D &= \dfrac{4\times 9}{60}\times\dfrac{10^{2}\times 10^{5}}{10^{3}} &\qquad& \rem{les nombres d'un côté, les puissances de 10 de l'autre}\\
+D &= 0{,}6\times 10^{4} &\qquad& \rem{$\frac{36}{60}=0{,}6$ et $2+5-3=4$}\\
+D &= 6\times 10^{-1}\times 10^{4} &&\\
+D &= 6\times 10^{3} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+E &= 6~000+0{,}47 &\qquad& \rem{une somme : on revient à l'écriture décimale}\\
+E &= 6~000{,}47 &&\\
+E &= 6{,}000~47\times 10^{3} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Donner la notation scientifique de :
+\[
+  F=3~470~000 \qquad G=0{,}000~902 \qquad H=72{,}6\times 10^{-5} \qquad
+  I=\dfrac{8\times 10^{5}\times 3\times 10^{-3}}{6\times 10^{4}}
+\]
+\reponse{$F=3{,}47\times 10^{6}$ ;\; $G=9{,}02\times 10^{-4}$ ;\;
+$H=7{,}26\times 10^{-4}$ ;\; $I=4\times 10^{5-3-4}=4\times 10^{-2}$.}
+\end{methodebox}
+
+\afaire{exercices 35 à 39}
+
+\end{document}

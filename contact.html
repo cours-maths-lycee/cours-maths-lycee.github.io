@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — Mathématiques au lycée</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bandeau"><a href="index.html">Mathématiques au lycée</a>
+<nav><a href="index.html">Par chapitre</a><a href="methodes.html">Par méthode</a></nav></header>
+<main>
+<h1>Contact</h1>
+<p class="intro">Une erreur dans un document, une question, une suggestion ? Écrivez-moi.</p>
+<form id="contact" class="contact" action="https://api.web3forms.com/submit" method="POST">
+<input type="hidden" name="access_key" value="18346df1-7cdb-4962-9ec4-49daebe9137a">
+<input type="hidden" name="subject" value="Message du site Mathématiques au lycée">
+<input type="hidden" name="from_name" value="Mathématiques au lycée">
+<input type="checkbox" name="botcheck" class="piege" tabindex="-1" autocomplete="off">
+<label>Nom<input type="text" name="name" required autocomplete="name"></label>
+<label>Adresse électronique<input type="email" name="email" required autocomplete="email"></label>
+<label>Vous êtes
+<select name="profil"><option>Élève</option><option>Enseignant ou enseignante</option>
+<option>Parent</option><option>Autre</option></select></label>
+<label>Message<textarea name="message" rows="7" required></textarea></label>
+<button type="submit" class="bouton">Envoyer</button>
+<p id="etat" class="aide" role="status"></p>
+<p class="aide">Votre adresse ne sert qu'à vous répondre ; elle n'est ni conservée sur ce
+site ni transmise à qui que ce soit.</p>
+</form>
+</main>
+<footer>© <a href="auteur.html">Luc Destombe</a> — documents sous licence
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr">CC BY-NC-SA 4.0</a> :
+libre usage et modification, sans usage commercial, en citant l'auteur et en partageant
+dans les mêmes conditions.</footer>
+<script>
+document.getElementById('contact').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var f = e.target, etat = document.getElementById('etat'), b = f.querySelector('button');
+  b.disabled = true; etat.textContent = 'Envoi en cours…';
+  fetch(f.action, {method: 'POST', body: new FormData(f), headers: {Accept: 'application/json'}})
+    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (r.success) { f.reset(); etat.textContent = 'Merci, votre message est bien parti.'; }
+      else { etat.textContent = "L'envoi a échoué : " + (r.message || 'erreur inconnue') + '.'; }
+    })
+    .catch(function () { etat.textContent = "L'envoi a échoué : vérifiez votre connexion."; })
+    .finally(function () { b.disabled = false; });
+});
+</script>
+<script data-goatcounter="https://maths-destombe.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script>
+document.addEventListener('click', function (e) {
+  var a = e.target.closest('a[href]');
+  if (!a || !/\.(pdf|tex)(#|$)/i.test(a.getAttribute('href'))) return;
+  var nom = a.getAttribute('href').split('#')[0];
+  if (window.goatcounter && window.goatcounter.count)
+    window.goatcounter.count({path: nom.split('/').pop(), title: nom, event: true});
+});
+</script>
+</body>
+</html>

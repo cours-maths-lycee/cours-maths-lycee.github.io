@@ -1,0 +1,1243 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1\signet{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{4}{Suites numériques}
+\niveaucours{1\textsuperscript{re} STI2D}
+\titrecours{SUITES NUMÉRIQUES}{Cours --- Première STI2D}
+
+\begin{document}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\newcommand{\reperesuite}[4]{%
+  \draw[grille,step=1] (-1,#2) grid (#1,#3);
+  \draw[-{Stealth[length=2mm]},thick] (-1,0)--({#1+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#3+0.4})
+    node[below left=-1pt,font=\footnotesize]{$#4$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Définition d'une suite}
+
+\begin{exemplebox}[Pour commencer]
+Écrivons les nombres pairs à partir de $2$ : $2$ ; $4$ ; $6$ ; $8$ ; $10$ ; \ldots{}
+On leur donne un numéro, en commençant \textbf{à $0$} :
+\[
+  u_{0}=2 \qquad u_{1}=4 \qquad u_{2}=6 \qquad u_{3}=8 \qquad u_{4}=10 \qquad \ldots
+\]
+Cette liste numérotée s'appelle une \textbf{suite}.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 1 --- Suite numérique]
+Une \textbf{suite} $(u_{n})$ associe un nombre $u_{n}$ à chaque entier $n=0$, $1$, $2$,
+$3$\ldots
+\begin{itemize}
+  \item Les nombres $u_{0}$, $u_{1}$, $u_{2}$\ldots{} sont les \textbf{termes} de la
+        suite.
+  \item L'entier $n$ est le \textbf{rang} du terme $u_{n}$ (on lit « $u$ indice $n$ »).
+\end{itemize}
+\end{definitionbox}
+
+\begin{remarquebox}[Rang et position]
+Le premier terme est $u_{0}$, le deuxième $u_{1}$\ldots{} : le $12^{\text{e}}$ terme est
+$u_{11}$. Le rang vaut toujours la position moins $1$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 1 --- Lire les termes d'une suite donnée par une liste]
+\etapeexemples
+Chaque liste donne les premiers termes d'une suite $(u_{n})$, numérotée à partir de
+$u_{0}$. Trouver comment on passe d'un terme au suivant, puis répondre.
+\begin{questions}[label=\alph*)]
+  \item $6$ ; $11$ ; $16$ ; $21$ ; \ldots{} \quad Donner $u_{0}$, $u_{4}$ et $u_{7}$.
+  \item $3$ ; $6$ ; $12$ ; $24$ ; \ldots{} \quad Donner les deux termes suivants, puis
+        $u_{5}$.
+  \item $2$ ; $2$ ; $4$ ; $6$ ; $10$ ; \ldots{} \quad Donner $u_{3}$ et $u_{6}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On ajoute $5$ : $6$ ; $11$ ; $16$ ; $21$ ; $26$ ; $31$ ; $36$ ; $41$.}{on
+prolonge la liste jusqu'au rang demandé}
+\explique{$u_{0}=6$ ; \ $u_{4}=26$ ; \ $u_{7}=41$.}{$u_{7}$ est le $8^{\text{e}}$
+nombre de la liste}
+\cas{b)}
+\explique{On multiplie par $2$ : les deux termes suivants sont $48$ et $96$.}{}
+\explique{$u_{5}=96$.}{$u_{0}=3$, donc $96$ est $u_{5}$}
+\cas{c)}
+\explique{Chaque terme est la somme des deux précédents : $2$ ; $2$ ; $4$ ; $6$ ; $10$ ;
+$16$ ; $26$.}{$4=2+2$, $6=2+4$, $10=4+6$\ldots}
+\explique{$u_{3}=6$ ; \ $u_{6}=26$.}{on compte à partir de $u_{0}$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque suite, donner les deux termes suivants, puis $u_{2}$ et $u_{7}$ :
+\[
+  4\ ;\ 10\ ;\ 16\ ;\ 22\ ;\ \ldots \qquad
+  1\ ;\ 4\ ;\ 16\ ;\ 64\ ;\ \ldots \qquad
+  1\ ;\ 4\ ;\ 9\ ;\ 16\ ;\ 25\ ;\ \ldots
+\]
+\reponse{$28$ et $34$, $u_{2}=16$, $u_{7}=46$ ;\; $256$ et $1\,024$, $u_{2}=16$,
+$u_{7}=16\,384$ ;\; $36$ et $49$ (les carrés), $u_{2}=9$, $u_{7}=64$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Suites définies explicitement}
+
+\begin{exemplebox}[Pour commencer]
+Louer un vélo électrique coûte $6$~€, plus $3$~€ par heure. Pour $n$ heures, on paie
+$p_{n}=6+3n$ euros. Pour $4$ heures : $p_{4}=6+3\times 4=18$~€.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 2 --- Suite définie explicitement]
+Une suite est définie \textbf{explicitement} quand une formule donne $u_{n}$ directement
+à partir de $n$, comme une fonction : $u_{n}=f(n)$. On calcule alors \textbf{n'importe
+quel terme} en remplaçant $n$ par son rang.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Calculer des termes d'une suite définie explicitement]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit $u_{n}=4n-3$. Calculer les quatre premiers termes, puis $u_{50}$.
+  \item Soit $v_{n}=2n^{2}+1$. Calculer les quatre premiers termes, puis $v_{10}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{0} &= 4\times 0-3 &\qquad& \rem{on remplace $n$ par $0$}\\
+u_{0} &= -3 &&\\
+u_{1} &= 4\times 1-3=1 &&\\
+u_{2} &= 4\times 2-3=5 &&\\
+u_{3} &= 4\times 3-3=9 &&\\
+u_{50} &= 4\times 50-3=197 &\qquad& \rem{directement, sans les termes d'avant}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v_{0} &= 2\times 0^{2}+1=1 &\qquad& \rem{la puissance d'abord}\\
+v_{1} &= 2\times 1^{2}+1=3 &&\\
+v_{2} &= 2\times 2^{2}+1=9 &\qquad& \rem{$2\times 4+1$}\\
+v_{3} &= 2\times 3^{2}+1=19 &&\\
+v_{10} &= 2\times 10^{2}+1=201 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque suite, calculer les termes de rang $0$, $1$, $2$ et $10$ :
+\[
+  a_{n}=6n-1 \qquad b_{n}=n^{2}-3n \qquad c_{n}=\dfrac{2}{n+1}
+\]
+\reponse{$a$ : $-1$ ; $5$ ; $11$ ; $a_{10}=59$ ;\; $b$ : $0$ ; $-2$ ; $-2$ ;
+$b_{10}=70$ ;\; $c$ : $2$ ; $1$ ; $\frac{2}{3}$ ; $c_{10}=\frac{2}{11}$.}
+\end{methodebox}
+
+\begin{remarquebox}[Ne pas confondre $u_{n+1}$ et $u_{n}+1$]
+$u_{n+1}$ est le terme \textbf{suivant} : on remplace $n$ par $n+1$ dans la formule.
+Avec $u_{n}=3n$ :
+\[
+  u_{n+1}=3(n+1)=3n+3 \qquad\text{alors que}\qquad u_{n}+1=3n+1
+\]
+\end{remarquebox}
+
+\afaire{exercices 5 à 9}
+
+\partiecours{Suites définies par récurrence}
+
+\begin{exemplebox}[Pour commencer]
+Tom a $30$~€ dans sa tirelire et y ajoute $12$~€ chaque semaine. On note $u_{n}$ la
+somme après $n$ semaines : $u_{0}=30$, et $u_{n+1}=u_{n}+12$.
+\[
+  u_{1}=30+12=42 \qquad u_{2}=42+12=54 \qquad u_{3}=54+12=66
+\]
+Chaque semaine se calcule avec la semaine d'avant.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 3 --- Suite définie par récurrence]
+Une suite est définie \textbf{par récurrence} quand on connaît :
+\begin{itemize}
+  \item son \textbf{premier terme} $u_{0}$ ;
+  \item une \textbf{relation} qui donne chaque terme à partir du \textbf{précédent} :
+        $u_{n+1}$ en fonction de $u_{n}$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 3 --- Calculer des termes d'une suite définie par récurrence]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit $u_{0}=2$ et $u_{n+1}=4u_{n}$. Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Soit $v_{0}=4$ et $v_{n+1}=3v_{n}-5$. Calculer $v_{1}$, $v_{2}$ et $v_{3}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 4\times u_{0} &\qquad& \rem{on remplace $n$ par $0$ dans la relation}\\
+u_{1} &= 4\times 2=8 &\qquad& \rem{on remplace $u_{0}$ par sa valeur}\\
+u_{2} &= 4\times 8=32 &\qquad& \rem{$u_{2}=4\times u_{1}$}\\
+u_{3} &= 4\times 32=128 &\qquad& \rem{$u_{3}=4\times u_{2}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v_{1} &= 3\times 4-5=7 &\qquad& \rem{$v_{1}=3v_{0}-5$}\\
+v_{2} &= 3\times 7-5=16 &\qquad& \rem{$v_{2}=3v_{1}-5$ : toujours le terme d'avant}\\
+v_{3} &= 3\times 16-5=43 &\qquad& \rem{$v_{3}=3v_{2}-5$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer les trois termes qui suivent le premier :
+\[
+  w_{0}=-1 \text{ et } w_{n+1}=w_{n}^{2}+1 \qquad\qquad
+  t_{0}=4 \text{ et } t_{n+1}=-t_{n}+3+n
+\]
+\reponse{$w_{1}=2$, $w_{2}=5$, $w_{3}=26$ ;\; $t_{1}=-4+3+0=-1$, $t_{2}=1+3+1=5$,
+$t_{3}=-5+3+2=0$ ($n$ change à chaque étape).}
+\end{methodebox}
+
+\begin{remarquebox}
+Pour $u_{15}$, il faut d'abord $u_{14}$, donc $u_{13}$\ldots{} : pour un rang élevé,
+on confie les calculs à un programme (partie suivante).
+\end{remarquebox}
+
+\afaire{exercices 10 à 15}
+
+\partiecours{Programmer une suite définie par récurrence}
+
+\begin{proprietebox}[Le programme type]
+Pour une suite donnée par $u_{0}$ et une relation $u_{n+1}=\ldots$, la fonction
+\texttt{suite(n)} renvoie $u_{n}$ :
+\begin{itemize}
+  \item la variable \texttt{u} reçoit le premier terme ;
+  \item la boucle \texttt{for} refait $n$ fois le calcul du terme suivant ;
+  \item à la sortie de la boucle, \texttt{u} vaut $u_{n}$ : \texttt{return u} le renvoie.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Calculer un terme de rang élevé avec Python]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit $u_{0}=4$ et $u_{n+1}=3u_{n}-5$. Écrire le programme, puis calculer
+        $u_{12}$.
+  \item Une cuve contient $800$~L d'eau. Chaque jour, on en utilise $20\,\%$, puis on
+        ajoute $100$~L. Combien d'eau contient-elle au bout de $10$ jours ?
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\noindent
+\begin{minipage}[t]{0.42\linewidth}\vspace{0pt}
+\begin{python}
+def suite(n):
+    u = 4
+    for i in range(n):
+        u = 3*u - 5
+    return u
+\end{python}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\raggedright
+{\small\itshape\color{black!60}la ligne \texttt{u = 4} donne $u_{0}$ ; dans la boucle, le
+nouveau \texttt{u} est $u_{n+1}$, l'ancien est $u_{n}$}
+\end{minipage}
+\explique{Dans la console, \texttt{suite(12)} affiche \texttt{797164} : $u_{12}=797\,164$.}{%
+contrôle : \texttt{suite(1)} affiche \texttt{7}, comme $3\times 4-5$}
+\cas{b)}
+\explique{$u_{0}=800$ et $u_{n+1}=0{,}8\,u_{n}+100$.}{utiliser $20\,\%$, c'est en garder
+$80\,\%$ : on multiplie par $0{,}8$}
+\begin{python}
+def cuve(n):
+    u = 800
+    for i in range(n):
+        u = 0.8*u + 100
+    return u
+\end{python}
+\explique{\texttt{cuve(10)} affiche \texttt{532.21...} : il reste environ $532$~L.}{on
+arrondit au litre}
+\end{correction}
+
+\etape{À vous de jouer}
+Écrire le programme de la suite définie par $u_{0}=3$ et $u_{n+1}=2u_{n}-1$, puis donner
+$u_{10}$.
+\reponse{Ligne de la boucle : \texttt{u = 2*u - 1} ; \texttt{suite(10)} affiche
+$2\,049$.}
+\end{methodebox}
+
+\begin{remarquebox}[Quand la relation contient $n$]
+Dans la boucle, \texttt{i} joue le rôle de $n$ : $t_{n+1}=-t_{n}+3+n$ s'écrit
+\texttt{u = -u + 3 + i}.
+\end{remarquebox}
+
+\afaire{exercices 16 à 19}
+
+\partiecours{Représentation graphique d'une suite}
+
+\begin{definitionbox}[Définition 4 --- Représentation graphique]
+On représente une suite $(u_{n})$ par les points de coordonnées $(n\,;u_{n})$ : le rang
+en abscisse, le terme en ordonnée. Les points \textbf{ne se relient pas} : il n'y a pas
+de terme entre deux rangs (pas de rang $2{,}5$).
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 5 --- Représenter graphiquement une suite]
+\etapeexemples
+Dresser le tableau des six premiers termes, puis les représenter.
+\begin{questions}[label=\alph*)]
+  \item $u_{n}=n^{2}-5n+4$
+  \item $w_{0}=2$ et $w_{n+1}=-w_{n}+1$
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\noindent
+\begin{minipage}[t]{0.58\linewidth}\raggedright\vspace{0pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$u_{n}$ & $4$ & $0$ & $-2$ & $-2$ & $0$ & $4$\\
+\hline
+\end{tabular}
+
+\medskip
+Par exemple $u_{2}=2^{2}-5\times 2+4=-2$ : on place une croix en $(2\,;-2)$. Les
+croix ne sont pas reliées.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \reperesuite{6}{-3}{5}{u_{n}}
+  \gradx{1,2,3,4,5} \grady{-2,-1,1,2,3,4}
+  \foreach \p in {(0,4),(1,0),(2,-2),(3,-2),(4,0),(5,4)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}\par\nopagebreak
+\noindent
+\begin{minipage}[t]{0.58\linewidth}\raggedright\vspace{0pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$w_{n}$ & $2$ & $-1$ & $2$ & $-1$ & $2$ & $-1$\\
+\hline
+\end{tabular}
+
+\medskip
+$w_{1}=-2+1=-1$, puis $w_{2}=1+1=2$ : les termes alternent entre $2$ et $-1$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \reperesuite{6}{-2}{3}{w_{n}}
+  \gradx{1,2,3,4,5} \grady{-1,1,2}
+  \foreach \p in {(0,2),(1,-1),(2,2),(3,-1),(4,2),(5,-1)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+Représenter les termes $a_{0}$ à $a_{5}$ de la suite $a_{n}=6-n$, puis les termes
+$b_{0}$ à $b_{4}$ de la suite définie par $b_{0}=16$ et $b_{n+1}=\dfrac{b_{n}}{2}$.
+\reponse{$a$ : $6$ ; $5$ ; $4$ ; $3$ ; $2$ ; $1$ (points alignés) ;\; $b$ : $16$ ; $8$ ;
+$4$ ; $2$ ; $1$ (les points descendent de moins en moins vite).}
+\end{methodebox}
+
+\afaire{exercices 20 à 23}
+
+\partiecours{Sens de variation d'une suite}
+
+\begin{definitionbox}[Définition 5 --- Suite croissante, décroissante]
+\begin{itemize}
+  \item $(u_{n})$ est \textbf{croissante} si chaque terme est supérieur ou égal au
+        précédent : $u_{n+1}\ge u_{n}$ pour tout $n$.
+  \item $(u_{n})$ est \textbf{décroissante} si chaque terme est inférieur ou égal au
+        précédent : $u_{n+1}\le u_{n}$ pour tout $n$.
+  \item $(u_{n})$ est \textbf{constante} si $u_{n+1}=u_{n}$ pour tout $n$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{center}
+\begin{minipage}[t]{0.4\linewidth}
+\centering {\small Croissante : les points montent}\\[2pt]
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \reperesuite{5}{-1}{6}{u_{n}}
+  \gradx{1,2,3,4} \grady{1,2,3,4,5}
+  \foreach \p in {(0,1),(1,2),(2,2),(3,4),(4,5)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}\qquad
+\begin{minipage}[t]{0.4\linewidth}
+\centering {\small Décroissante : les points descendent}\\[2pt]
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \reperesuite{5}{-1}{6}{u_{n}}
+  \gradx{1,2,3,4} \grady{1,2,3,4,5}
+  \foreach \p in {(0,5),(1,3),(2,2),(3,1),(4,1)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{center}
+
+\besoinplace{6\baselineskip}
+\begin{remarquebox}
+Une suite peut n'être \textbf{ni croissante, ni décroissante} : la suite $(w_{n})$ de la
+méthode 5, qui alterne entre $2$ et $-1$, en est un exemple. Les premiers termes ou le
+graphique donnent une idée du sens de variation, sans le \textbf{prouver}.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 6 --- Étudier le sens de variation avec $u_{n+1}-u_{n}$]
+\etapeexemples
+Étudier le sens de variation de chaque suite.
+\begin{questions}[label=\alph*)]
+  \item $u_{n+1}=u_{n}-4$
+  \item $w_{n}=7-2n$
+  \item $v_{n}=n^{2}+4n$
+  \item $t_{0}=1$ et $t_{n+1}=t_{n}+n^{2}+2$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{n+1}-u_{n} &= -4 &\qquad& \rem{on lit la différence dans la relation}
+\end{calculs}
+\explique{$u_{n+1}-u_{n}<0$ : la suite $(u_{n})$ est décroissante.}{différence
+négative : chaque terme est plus petit que le précédent}
+\cas{b)}
+\begin{calculs}
+w_{n+1} &= 7-2(n+1) &\qquad& \rem{on remplace $n$ par $n+1$}\\
+w_{n+1} &= 5-2n &&
+\end{calculs}
+\begin{calculs}
+w_{n+1}-w_{n} &= 5-2n-(7-2n) &\qquad& \rem{parenthèses autour de $w_{n}$}\\
+w_{n+1}-w_{n} &= -2 &&
+\end{calculs}
+\explique{$w_{n+1}-w_{n}<0$ : la suite $(w_{n})$ est décroissante.}{}
+\cas{c)}
+\begin{calculs}
+v_{n+1} &= (n+1)^{2}+4(n+1) &\qquad& \rem{on remplace $n$ par $n+1$}\\
+v_{n+1} &= n^{2}+2n+1+4n+4 &\qquad& \rem{identité remarquable}\\
+v_{n+1} &= n^{2}+6n+5 &&
+\end{calculs}
+\begin{calculs}
+v_{n+1}-v_{n} &= n^{2}+6n+5-\left(n^{2}+4n\right) &&\\
+v_{n+1}-v_{n} &= 2n+5 &&
+\end{calculs}
+\explique{Comme $n\ge 0$, on a $2n+5\ge 5$.}{le signe de la différence dépend de $n$}
+\explique{Donc $v_{n+1}-v_{n}>0$ : la suite $(v_{n})$ est croissante.}{}
+\cas{d)}
+\begin{calculs}
+t_{n+1}-t_{n} &= n^{2}+2 &\qquad& \rem{les $t_{n}$ se simplifient}
+\end{calculs}
+\explique{Un carré est positif, donc $n^{2}+2\ge 2$ : la suite $(t_{n})$ est
+croissante.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Étudier le sens de variation de chaque suite :
+\[
+  a_{n}=3n+5 \qquad b_{n+1}=b_{n}-n-1 \qquad c_{n}=n^{2}+3 \qquad d_{n}=8-2n^{2}
+\]
+\reponse{$a_{n+1}-a_{n}=3>0$ : croissante ;\; $b_{n+1}-b_{n}=-n-1<0$ : décroissante ;\;
+$c_{n+1}-c_{n}=2n+1>0$ : croissante ;\; $d_{n+1}-d_{n}=-4n-2<0$ : décroissante.}
+\end{methodebox}
+
+\afaire{exercices 24 à 27}
+
+\partiecours{Suites arithmétiques}
+
+\begin{exemplebox}[Pour commencer]
+\begin{itemize}
+  \item On part de $2$ et on ajoute $6$ à chaque étape : $2$ ; $8$ ; $14$ ; $20$ ;
+        \ldots{} Donc $u_{0}=2$ et $u_{n+1}=u_{n}+6$.
+  \item On part de $10$ et on enlève $3$ à chaque étape : $10$ ; $7$ ; $4$ ; $1$ ;
+        \ldots{} Donc $v_{0}=10$ et $v_{n+1}=v_{n}-3$.
+\end{itemize}
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 6 --- Suite arithmétique]
+Une suite $(u_{n})$ est \textbf{arithmétique} quand on passe d'un terme au suivant en
+\textbf{ajoutant toujours le même nombre} $r$ :
+\[
+  \boxed{u_{n+1}=u_{n}+r} \qquad\text{pour tout entier } n
+\]
+Ce nombre $r$ est la \textbf{raison} de la suite ; il est négatif quand on enlève.
+\end{definitionbox}
+
+\begin{center}
+\begin{tikzpicture}[x=1.7cm]
+\foreach \i in {0,1,2,3} \node (a\i) at (\i,0) {$u_{\i}$};
+\node at (4,0) {$\cdots$};
+\foreach \i/\j in {0/1,1/2,2/3}
+  \draw[-{Stealth},coulMeth,thick] (a\i.north) to[bend left=50]
+    node[above,font=\small]{$+r$} (a\j.north);
+\end{tikzpicture}
+\end{center}
+
+\begin{methodebox}[Méthode 7 --- Traduire une situation par une suite arithmétique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ est arithmétique, de premier terme $u_{0}=-5$ et de raison $4$. Écrire
+        la relation de récurrence, puis calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Louer une nacelle élévatrice coûte $40$~€ de forfait, puis $15$~€ par heure. On
+        note $p_{n}$ le prix pour $n$ heures. Donner $p_{0}$, la relation entre
+        $p_{n+1}$ et $p_{n}$, puis $p_{3}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$u_{n+1}=u_{n}+4$.}{on ajoute la raison}
+\begin{calculs}
+u_{1} &= -5+4=-1 &&\\
+u_{2} &= -1+4=3 &&\\
+u_{3} &= 3+4=7 &&
+\end{calculs}
+\cas{b)}
+\explique{$p_{0}=40$ et $p_{n+1}=p_{n}+15$.}{départ : le forfait ; chaque heure ajoute
+$15$~€}
+\explique{$(p_{n})$ est arithmétique de raison $15$ : $p_{1}=55$, $p_{2}=70$,
+$p_{3}=85$.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $(b_{n})$ est arithmétique, avec $b_{0}=12$ et $r=-1{,}5$. Calculer $b_{1}$,
+        $b_{2}$ et $b_{3}$.
+  \item Le réservoir d'un groupe électrogène contient $30$~L ; le groupe consomme
+        $2{,}5$~L par heure. On note $h_{n}$ le volume restant après $n$ heures. Donner
+        $h_{0}$, la relation entre $h_{n+1}$ et $h_{n}$, puis $h_{4}$.
+\end{questions}
+\reponse{a) $10{,}5$ ; $9$ ; $7{,}5$ ;\; b) $h_{0}=30$, $h_{n+1}=h_{n}-2{,}5$ (raison
+$-2{,}5$), $h_{4}=20$~L.}
+\end{methodebox}
+
+\afaire{exercices 28 à 31}
+
+\partiecours{Reconnaître une suite arithmétique}
+
+\begin{proprietebox}[Propriété 1 --- Le test de la différence]
+La suite $(u_{n})$ est arithmétique quand la différence entre un terme et le précédent
+est \textbf{toujours la même} :
+\[
+  u_{n+1}-u_{n}=r \qquad\text{(un nombre, sans $n$)}
+\]
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Montrer qu'une suite est arithmétique, ou ne l'est pas]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Les nombres $5$ ; $9$ ; $13$ ; $17$ peuvent-ils être les premiers termes d'une
+        suite arithmétique ? Et $3$ ; $6$ ; $12$ ; $24$ ?
+  \item Soit $u_{n}=4n-1$. Montrer que $(u_{n})$ est arithmétique.
+  \item Soit $v_{n}=n^{2}+2$. La suite $(v_{n})$ est-elle arithmétique ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$9-5=4$ ; $13-9=4$ ; $17-13=4$ : oui, de raison $4$.}{on calcule
+\textbf{toutes} les différences}
+\explique{$6-3=3$ mais $12-6=6$ : non.}{deux différences distinctes suffisent pour dire
+non}
+\cas{b)}
+\begin{calculs}
+u_{n+1} &= 4(n+1)-1 &\qquad& \rem{on remplace $n$ par $n+1$}\\
+u_{n+1} &= 4n+3 &&
+\end{calculs}
+\begin{calculs}
+u_{n+1}-u_{n} &= 4n+3-(4n-1) &&\\
+u_{n+1}-u_{n} &= 4 &\qquad& \rem{un nombre, sans $n$}
+\end{calculs}
+\explique{$(u_{n})$ est arithmétique, de raison $r=4$ et de premier terme $u_{0}=-1$.}{}
+\cas{c)}
+\explique{$v_{0}=2$, $v_{1}=3$, $v_{2}=6$ ; or $v_{1}-v_{0}=1$ et $v_{2}-v_{1}=3$.}{les
+premiers termes suffisent pour dire non}
+\explique{Les différences ne sont pas égales : $(v_{n})$ n'est pas arithmétique.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque suite, dire si elle est arithmétique ; si oui, donner sa raison et son
+premier terme :
+\[
+  a_{n}=9-3n \qquad b_{n}=3n^{2} \qquad c_{n}=\dfrac{n+3}{2}
+\]
+\reponse{$a_{n+1}-a_{n}=-3$ : oui, $r=-3$, $a_{0}=9$ ;\; $b$ : $0$ ; $3$ ; $12$,
+différences $3$ et $9$ : non ;\; $c_{n+1}-c_{n}=\frac{1}{2}$ : oui, $r=\frac{1}{2}$,
+$c_{0}=\frac{3}{2}$.}
+\end{methodebox}
+
+\afaire{exercices 32 à 34}
+
+\partiecours{Terme général et variations d'une suite arithmétique}
+
+\noindent
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+\begin{proprietebox}[Propriété 2 --- Terme général]
+Si $(u_{n})$ est arithmétique, de premier terme $u_{0}$ et de raison $r$, alors pour
+tout entier $n$ :
+\[
+  \boxed{u_{n}=u_{0}+n\times r}
+\]
+\end{proprietebox}
+De $u_{0}$ à $u_{n}$, on ajoute $n$ fois la raison.
+
+\smallskip
+Les points du graphique sont \textbf{alignés}, sur la droite d'équation $y=u_{0}+rx$ :
+c'est une \textbf{croissance linéaire}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+{\small $u_{0}=2$ et $r=1$}\\[2pt]
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \reperesuite{5}{-1}{7}{u_{n}}
+  \gradx{1,2,3,4} \grady{1,2,3,4,5,6}
+  \draw[coulCourbe,dashed] (-0.5,1.5)--(4.5,6.5);
+  \foreach \p in {(0,2),(1,3),(2,4),(3,5),(4,6)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+
+\begin{remarquebox}[Si la suite commence à $u_{1}$]
+De $u_{1}$ à $u_{n}$, on ajoute $(n-1)$ fois la raison : $u_{n}=u_{1}+(n-1)\times r$.
+\end{remarquebox}
+
+\begin{proprietebox}[Propriété 3 --- Sens de variation]
+Soit $(u_{n})$ une suite arithmétique de raison $r$.
+\begin{itemize}
+  \item Si $r>0$, la suite est \textbf{croissante}.
+  \item Si $r=0$, la suite est \textbf{constante}.
+  \item Si $r<0$, la suite est \textbf{décroissante}.
+\end{itemize}
+\end{proprietebox}
+
+\demo{$u_{n+1}-u_{n}=r$ : la différence a le signe de $r$ (méthode 6).}
+
+\begin{methodebox}[Méthode 9 --- Utiliser le terme général d'une suite arithmétique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ est arithmétique, avec $u_{0}=9$ et $r=-3$. Exprimer $u_{n}$ en
+        fonction de $n$, calculer $u_{40}$, puis donner le sens de variation.
+  \item Soit $V_{n}=-4n+10$. Montrer que $(V_{n})$ est arithmétique, calculer
+        $V_{100}$, puis donner le sens de variation.
+  \item Un atelier produit $4\,800$ pièces en janvier, puis $120$ pièces de plus chaque
+        mois. On note $u_{1}=4\,800$ la production de janvier. Combien de pièces
+        produit-il en décembre ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{n} &= 9+n\times(-3) &\qquad& \rem{$u_{n}=u_{0}+n\times r$}\\
+u_{n} &= 9-3n &&\\
+u_{40} &= 9-3\times 40 &\qquad& \rem{on remplace $n$ par $40$}\\
+u_{40} &= -111 &&
+\end{calculs}
+\explique{$r=-3<0$ : la suite $(u_{n})$ est décroissante.}{signe de la raison}
+\cas{b)}
+\explique{$V_{n}=10+n\times(-4)$ : arithmétique, de premier terme $V_{0}=10$ et de raison
+$r=-4$.}{on reconnaît la forme $u_{0}+n\times r$}
+\begin{calculs}
+V_{100} &= -4\times 100+10 &&\\
+V_{100} &= -390 &&
+\end{calculs}
+\explique{$r=-4<0$ : la suite $(V_{n})$ est décroissante.}{}
+\cas{c)}
+\explique{On ajoute $120$ chaque mois : $(u_{n})$ est arithmétique, de raison $120$.
+Décembre correspond à $n=12$.}{janvier, c'est $u_{1}$}
+\begin{calculs}
+u_{n} &= 4\,800+(n-1)\times 120 &\qquad& \rem{la suite commence à $u_{1}$}\\
+u_{12} &= 4\,800+11\times 120 &&\\
+u_{12} &= 6\,120 &&
+\end{calculs}
+\explique{En décembre, l'atelier produit $6\,120$ pièces.}{une phrase pour conclure}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $(a_{n})$ est arithmétique, avec $a_{0}=-8$ et $r=5$. Exprimer $a_{n}$,
+        calculer $a_{20}$, puis donner le sens de variation.
+  \item Le groupe électrogène de la méthode 7 : $h_{0}=30$ et $r=-2{,}5$. Exprimer
+        $h_{n}$, puis trouver au bout de combien d'heures le réservoir est vide.
+\end{questions}
+\reponse{a) $a_{n}=-8+5n$, $a_{20}=92$, croissante ($r>0$) ;\; b) $h_{n}=30-2{,}5n$ ;
+$h_{n}=0$ pour $2{,}5n=30$, soit $n=12$ : au bout de $12$~heures.}
+\end{methodebox}
+
+\afaire{exercices 35 à 39}
+
+\partiecours{Suites géométriques}
+
+\begin{exemplebox}[Pour commencer]
+\begin{itemize}
+  \item On part de $3$ et on multiplie par $2$ à chaque étape : $3$ ; $6$ ; $12$ ;
+        $24$ ; \ldots{} Donc $u_{0}=3$ et $u_{n+1}=2\times u_{n}$.
+  \item On part de $40$ et on multiplie par $0{,}5$ (on divise par $2$) : $40$ ;
+        $20$ ; $10$ ; $5$ ; \ldots{} Donc $v_{0}=40$ et $v_{n+1}=0{,}5\times v_{n}$.
+\end{itemize}
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 7 --- Suite géométrique]
+Une suite $(u_{n})$ est \textbf{géométrique} quand on passe d'un terme au suivant en
+\textbf{multipliant toujours par le même nombre} $q$, strictement positif :
+\[
+  \boxed{u_{n+1}=q\times u_{n}} \qquad\text{pour tout entier } n
+\]
+Ce nombre $q$ est la \textbf{raison} de la suite.
+\end{definitionbox}
+
+\begin{center}
+\begin{tikzpicture}[x=1.7cm]
+\foreach \i in {0,1,2,3} \node (a\i) at (\i,0) {$u_{\i}$};
+\node at (4,0) {$\cdots$};
+\foreach \i/\j in {0/1,1/2,2/3}
+  \draw[-{Stealth},coulMeth,thick] (a\i.north) to[bend left=50]
+    node[above,font=\small]{$\times q$} (a\j.north);
+\end{tikzpicture}
+\end{center}
+
+\begin{proprietebox}[Propriété 4 --- Évolution en pourcentage]
+\begin{itemize}
+  \item Augmenter de $t\,\%$, c'est multiplier par $1+\dfrac{t}{100}$.
+  \item Diminuer de $t\,\%$, c'est multiplier par $1-\dfrac{t}{100}$.
+\end{itemize}
+Une quantité qui varie chaque année du \textbf{même pourcentage} forme donc une suite
+géométrique, dont la raison est ce coefficient multiplicateur.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Traduire une évolution en pourcentage par une suite géométrique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Donner le coefficient multiplicateur de chaque évolution : $+3\,\%$ ; $-8\,\%$ ;
+        $+25\,\%$ ; $-40\,\%$.
+  \item On place $800$~€ à $3\,\%$ par an ; $u_{n}$ est le capital après $n$ années.
+        Donner $u_{0}$ et la relation de récurrence, puis calculer $u_{1}$ et $u_{2}$.
+  \item Un village de $2\,000$ habitants perd $4\,\%$ de sa population chaque année ;
+        $P_{n}$ est la population après $n$ années. Calculer $P_{1}$ et $P_{2}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$1+0{,}03=1{,}03$ ; \ $1-0{,}08=0{,}92$ ; \ $1+0{,}25=1{,}25$ ; \
+$1-0{,}4=0{,}6$.}{$t\,\%=\frac{t}{100}$ : $3\,\%=0{,}03$}
+\cas{b)}
+\explique{$u_{0}=800$ et $u_{n+1}=1{,}03\times u_{n}$ : géométrique, de raison
+$1{,}03$.}{$+3\,\%$ : on multiplie par $1{,}03$}
+\begin{calculs}
+u_{1} &= 1{,}03\times 800=824 &&\\
+u_{2} &= 1{,}03\times 824=848{,}72 &\qquad& \rem{les intérêts portent aussi sur les intérêts}
+\end{calculs}
+\cas{c)}
+\explique{$P_{0}=2\,000$ et $P_{n+1}=0{,}96\times P_{n}$ : géométrique, de raison
+$0{,}96$.}{$-4\,\%$ : on multiplie par $0{,}96$}
+\begin{calculs}
+P_{1} &= 0{,}96\times 2\,000=1\,920 &&\\
+P_{2} &= 0{,}96\times 1\,920=1\,843{,}2 &\qquad& \rem{soit environ $1\,843$ habitants}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Donner le coefficient multiplicateur : $+12\,\%$ ; $-6\,\%$ ; $+50\,\%$.
+  \item Un vélo électrique acheté $1\,500$~€ perd $20\,\%$ de sa valeur chaque année ;
+        $v_{n}$ est sa valeur après $n$ années. Donner $v_{0}$, la relation entre
+        $v_{n+1}$ et $v_{n}$, puis $v_{1}$ et $v_{2}$.
+\end{questions}
+\reponse{a) $1{,}12$ ; $0{,}94$ ; $1{,}5$ ;\; b) $v_{0}=1\,500$,
+$v_{n+1}=0{,}8\times v_{n}$, $v_{1}=1\,200$~€, $v_{2}=960$~€.}
+\end{methodebox}
+
+\afaire{exercices 40 à 43}
+
+\partiecours{Reconnaître une suite géométrique}
+
+\begin{proprietebox}[Propriété 5 --- Le test du quotient]
+La suite $(u_{n})$, dont aucun terme n'est nul, est géométrique quand le quotient d'un
+terme par le précédent est \textbf{toujours le même} :
+\[
+  \dfrac{u_{n+1}}{u_{n}}=q \qquad\text{(un nombre, sans $n$)}
+\]
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Montrer qu'une suite est géométrique, ou ne l'est pas]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Les nombres $2$ ; $6$ ; $18$ ; $54$ peuvent-ils être les premiers termes d'une
+        suite géométrique ? Et $4$ ; $8$ ; $16$ ; $30$ ?
+  \item Soit $u_{n}=3\times 5^{n}$. Montrer que $(u_{n})$ est géométrique.
+  \item Soit $v_{n}=3n+2$. La suite $(v_{n})$ est-elle géométrique ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\dfrac{6}{2}=3$ ; $\dfrac{18}{6}=3$ ; $\dfrac{54}{18}=3$ : oui, de raison
+$3$.}{on calcule \textbf{tous} les quotients}
+\explique{$\dfrac{8}{4}=2$ ; $\dfrac{16}{8}=2$ ; mais $\dfrac{30}{16}\ne 2$ : non.}{%
+$16\times 2=32$, pas $30$}
+\cas{b)}
+\begin{calculs}
+u_{n+1} &= 3\times 5^{n+1} &\qquad& \rem{on remplace $n$ par $n+1$}\\
+u_{n+1} &= 3\times 5^{n}\times 5 &\qquad& \rem{$5^{n+1}=5^{n}\times 5$}\\
+u_{n+1} &= 5\times u_{n} &\qquad& \rem{on reconnaît $u_{n}=3\times 5^{n}$}
+\end{calculs}
+\explique{$(u_{n})$ est géométrique, de raison $q=5$ et de premier terme
+$u_{0}=3\times 5^{0}=3$.}{$5^{0}=1$}
+\cas{c)}
+\explique{$v_{0}=2$, $v_{1}=5$, $v_{2}=8$ ; or $\dfrac{v_{1}}{v_{0}}=\dfrac{5}{2}$ et
+$\dfrac{v_{2}}{v_{1}}=\dfrac{8}{5}$.}{les premiers termes suffisent pour dire non}
+\explique{Les quotients ne sont pas égaux : $(v_{n})$ n'est pas géométrique.}{elle est
+arithmétique, de raison $3$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque suite, dire si elle est géométrique ; si oui, donner sa raison :
+\[
+  64\ ;\ 16\ ;\ 4\ ;\ 1 \qquad a_{n}=6\times 0{,}5^{n} \qquad b_{n}=n^{2}+1
+\]
+\reponse{Quotients tous égaux à $\frac{1}{4}$ : oui, $q=\frac{1}{4}$ ;\;
+$a_{n+1}=0{,}5\times a_{n}$ : oui, $q=0{,}5$ et $a_{0}=6$ ;\; $b$ : $1$ ; $2$ ; $5$,
+quotients $2$ et $2{,}5$ : non.}
+\end{methodebox}
+
+\afaire{exercices 44 à 47}
+
+\partiecours{Terme général et variations d'une suite géométrique}
+
+\noindent
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\vspace{0pt}
+\begin{proprietebox}[Propriété 6 --- Terme général]
+Si $(u_{n})$ est géométrique, de premier terme $u_{0}$ et de raison $q$, alors pour tout
+entier $n$ :
+\[
+  \boxed{u_{n}=u_{0}\times q^{n}}
+\]
+\end{proprietebox}
+De $u_{0}$ à $u_{n}$, on multiplie $n$ fois par $q$.
+
+\smallskip
+Les points ne sont pas alignés : pour $q>1$, ils montent de plus en plus vite. C'est une
+\textbf{croissance exponentielle}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+{\small $u_{0}=1$ et $q=2$}\\[2pt]
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \reperesuite{4}{-1}{9}{u_{n}}
+  \gradx{1,2,3} \grady{1,2,4,8}
+  \foreach \p in {(0,1),(1,2),(2,4),(3,8)} \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+
+\begin{remarquebox}[Si la suite commence à $u_{1}$]
+On multiplie $(n-1)$ fois par $q$ : $u_{n}=u_{1}\times q^{n-1}$.
+\end{remarquebox}
+
+\begin{proprietebox}[Propriété 7 --- Sens de variation]
+Soit $(u_{n})$ une suite géométrique de raison $q>0$ et de premier terme $u_{0}>0$.
+\begin{itemize}
+  \item Si $q>1$, la suite est \textbf{croissante}.
+  \item Si $q=1$, la suite est \textbf{constante}.
+  \item Si $0<q<1$, la suite est \textbf{décroissante}, et ses termes se rapprochent de
+        $0$.
+\end{itemize}
+\end{proprietebox}
+
+\demo{$u_{n+1}-u_{n}=q\times u_{n}-u_{n}=u_{n}\times(q-1)$ ; les termes $u_{n}$ sont
+positifs, donc la différence a le signe de $q-1$.}
+
+\begin{methodebox}[Méthode 12 --- Utiliser le terme général d'une suite géométrique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Le placement de la méthode 10 : $u_{0}=800$ et $q=1{,}03$. Exprimer $u_{n}$ en
+        fonction de $n$, calculer $u_{10}$, puis donner le sens de variation.
+  \item Le village de la méthode 10 : $P_{0}=2\,000$ et $q=0{,}96$. Quelle sera sa
+        population dans $10$ ans ?
+  \item Au bout de combien d'années le capital du a) aura-t-il doublé ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{n} &= 800\times 1{,}03^{n} &\qquad& \rem{$u_{n}=u_{0}\times q^{n}$}\\
+u_{10} &= 800\times 1{,}03^{10} &\qquad& \rem{à la calculatrice}\\
+u_{10} &\approx 1\,075{,}13 &&
+\end{calculs}
+\explique{Après $10$ ans, le capital vaut environ $1\,075{,}13$~€.}{arrondi au centime}
+\explique{$q=1{,}03>1$ : la suite est croissante.}{on compare $q$ à $1$}
+\cas{b)}
+\begin{calculs}
+P_{n} &= 2\,000\times 0{,}96^{n} &&\\
+P_{10} &= 2\,000\times 0{,}96^{10} &&\\
+P_{10} &\approx 1\,329{,}7 &&
+\end{calculs}
+\explique{Environ $1\,330$ habitants ; $0<q<1$ : la population diminue.}{on arrondit à
+l'unité : des habitants}
+\cas{c)}
+\explique{On cherche le premier $n$ tel que $u_{n}\ge 1\,600$, dans le tableau de valeurs
+de $800\times 1{,}03^{x}$.}{doubler : atteindre $2\times 800$}
+\explique{$u_{23}\approx 1\,578{,}87<1\,600$ \ et \ $u_{24}\approx 1\,626{,}24\ge
+1\,600$.}{on lit les deux lignes autour du seuil}
+\explique{Le capital aura doublé au bout de $24$ ans.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $(a_{n})$ est géométrique, avec $a_{0}=5$ et $q=2$. Exprimer $a_{n}$, calculer
+        $a_{6}$, puis donner le sens de variation.
+  \item $(b_{n})$ est géométrique, avec $b_{0}=729$ et $q=\dfrac{1}{3}$. Calculer $b_{5}$
+        et donner le sens de variation.
+  \item Le vélo de la méthode 10 : $v_{n}=1\,500\times 0{,}8^{n}$. Au bout de combien
+        d'années vaut-il moins de $500$~€ ?
+\end{questions}
+\reponse{a) $a_{n}=5\times 2^{n}$, $a_{6}=320$, croissante ;\; b) $b_{5}=3$,
+décroissante ;\; c) $v_{4}=614{,}40$ et $v_{5}\approx 491{,}52$ : au bout de $5$~ans.}
+\end{methodebox}
+
+\afaire{exercices 48 à 52}
+
+\begin{remarquebox}[Bilan : arithmétique ou géométrique ?]
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|}
+\hline
+ & \textbf{Arithmétique} (raison $r$) & \textbf{Géométrique} (raison $q>0$)\\
+\hline
+D'un terme au suivant & on ajoute $r$ : $u_{n+1}=u_{n}+r$ & on multiplie par $q$ :
+  $u_{n+1}=q\times u_{n}$\\
+Terme général & $u_{n}=u_{0}+n\times r$ & $u_{n}=u_{0}\times q^{n}$\\
+Croissante si & $r>0$ & $q>1$ (avec $u_{0}>0$)\\
+Décroissante si & $r<0$ & $0<q<1$ (avec $u_{0}>0$)\\
+Graphique & points alignés : \textbf{croissance linéaire} & \textbf{croissance exponentielle} (si $q>1$)\\
+\hline
+\end{tabular}
+\end{center}
+\end{remarquebox}
+
+\end{document}

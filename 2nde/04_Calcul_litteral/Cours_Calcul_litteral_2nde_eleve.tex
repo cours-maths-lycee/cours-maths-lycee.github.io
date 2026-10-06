@@ -1,0 +1,958 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{vecteur #1}}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1\signet{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \\[2pt]{\small\itshape Version élève}
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{4}{Calcul littéral}
+\niveaucours{Seconde}
+\titrecours{CALCUL LITTÉRAL}{Cours --- Seconde}
+
+\begin{document}
+
+\providecommand{\ou}{\quad\text{ou}\quad}
+\ShorthandsOff
+\tikzset{
+  fig/.style={line width=0.8pt,black!75},
+  zoneA/.style={fill=coulCourbe!15,draw=coulCourbe,line width=0.8pt},
+  zoneB/.style={fill=coulCourbeB!12,draw=coulCourbeB,line width=0.8pt},
+}
+\ShorthandsOn
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul. En calcul littéral, on écrit toutes
+les étapes : une ligne sautée est la première cause d'erreur de signe.
+
+\smallskip
+Sur cette feuille, seuls les \textbf{énoncés} des exemples figurent : la résolution,
+signalée par la mention \emph{(au tableau)}, est à rédiger dans le cahier.
+
+\end{remarquebox}
+
+\partiecours{Réduire, substituer}
+
+\begin{definitionbox}[Définition 1 --- Termes semblables]
+Dans une \textbf{expression littérale}, des lettres remplacent des nombres. On n'écrit
+pas le $\times$ devant une lettre ou une parenthèse : $5\times x=5x$ ; de plus $1x=x$ et
+$x\times x=x^{2}$.
+
+\smallskip
+Des termes \textbf{semblables} ont la même partie littérale : $4x$ et $-9x$ sont
+semblables ; $3x^{2}$ et $3x$ ne le sont pas.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Réduire]
+\textbf{Réduire une somme}, c'est regrouper les termes semblables en additionnant leurs
+nombres : ${6a+1+4a=10a+1}$. \textbf{Réduire un produit}, c'est multiplier les nombres entre
+eux et les lettres entre elles : ${3x\times(-2x)=-6x^{2}}$.
+
+\smallskip
+On peut \textbf{toujours} réduire un produit. On ne peut \textbf{pas toujours} réduire une
+somme : $5+2x$ n'a pas de termes semblables, elle reste ainsi.
+\end{proprietebox}
+
+\begin{remarquebox}[Trois pièges]
+$5+2x$ ne se réduit pas ; $5x+2x=7x$, mais $5x\times 2x=10x^{2}$ ; $x^{2}+x^{2}=2x^{2}$, et
+non $x^{4}$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 1 --- Réduire une expression]
+\etapeexemples
+Réduire :
+\begin{questions}[label=\alph*)]
+  \item $A=4x+7-9x+3$
+  \item $B=2x^{2}+5x-x^{2}-3x$
+  \item $C=5x\times(-2x)$
+\end{questions}
+
+\etape{À vous de jouer}
+Réduire, si possible :
+\[
+  D=7a-5+2a-8 \qquad E=-4y^{2}+5y-3y^{2}-5y+2 \qquad F=4x\times 7x
+\]
+\[
+  G=-5\times(-3x) \qquad H=5+2x \qquad K=x^{2}+5x^{2}
+\]
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Substituer]
+\textbf{Substituer}, c'est remplacer la lettre par une valeur : on l'écrit \textbf{entre
+parenthèses}, on rétablit les $\times$, puis on calcule avec les priorités.
+\etapeexemples
+Calculer $B=2x^{2}-5x+3$ pour $x=4$, pour $x=-1$, puis pour $x=\frac12$.
+
+\begin{remarquebox}[Tester une égalité]
+Pour $x=0$ : $(x+3)^{2}=9$ et $x^{2}+9=9$. Pour $x=1$ : $(x+3)^{2}=16$ mais $x^{2}+9=10$.
+Un seul contre-exemple suffit : les deux expressions ne sont \textbf{pas} égales. Des tests
+réussis ne prouvent rien : pour prouver une égalité, on \textbf{développe}.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Calculer $E=-x^{2}+4x-2$ pour $x=3$, puis pour $x=-2$.
+  \item Calculer $F=3a-2b$ pour $a=-2$ et $b=5$.
+  \item Les expressions $(x+5)^{2}$ et $x^{2}+25$ sont-elles égales ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Développer}
+
+\begin{proprietebox}[Propriété 2 --- Distributivité]
+\textbf{Développer}, c'est transformer un produit en une somme. Pour tous nombres
+$k$, $a$, $b$, $c$, $d$ :
+\[
+  k(a+b)=ka+kb \qquad k(a-b)=ka-kb \qquad (a+b)(c+d)=ac+ad+bc+bd
+\]
+Un signe $-$ devant une parenthèse change le signe de chaque terme : $-(a-b)=-a+b$. Pour
+soustraire un produit, on le développe d'abord \textbf{entre crochets}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Développer et réduire]
+\etapeexemples
+Développer et réduire :
+\begin{questions}[label=\alph*)]
+  \item $A=-4(3x-2)$
+  \item $B=(2x+5)\times 3$
+  \item $C=7-(2x-3)$
+  \item $D=3x(2x-5)+4x$
+  \item $E=(3x+2)(x-5)$
+  \item $F=4x^{2}-(3x-2)(x+4)$
+  \item $G=3(x+2)(x-4)$
+\end{questions}
+
+\etape{À vous de jouer}
+Développer et réduire :
+\[
+  H=-6(2x-3) \qquad K=(3x+5)\times 4 \qquad L=9-(5x-2) \qquad M=2x(4x+3)-5x
+\]
+\[
+  N=(2x-3)(5x+1) \qquad P=3x-(x-4)(2x+3) \qquad Q=2(x-3)(x+5)
+\]
+\[
+  R=(3x+1)(x+2)-(x-4)(2x+1)
+\]
+
+\end{methodebox}
+
+\afaire{exercices 5 à 9}
+
+\partiecours{Identités remarquables}
+
+\begin{proprietebox}[Propriété 3 --- Identités remarquables]
+Pour tous nombres $a$ et $b$ :
+\begin{itemize}
+  \item 1\textsuperscript{re} identité remarquable : \quad $(a+b)^{2}=a^{2}+2ab+b^{2}$ ;
+  \item 2\textsuperscript{e} identité remarquable : \quad $(a-b)^{2}=a^{2}-2ab+b^{2}$ ;
+  \item 3\textsuperscript{e} identité remarquable : \quad $(a+b)(a-b)=a^{2}-b^{2}$.
+\end{itemize}
+\demo{$(a+b)^{2}=(a+b)(a+b)=a^{2}+ab+ba+b^{2}$, soit $a^{2}+2ab+b^{2}$ ; les deux autres
+se démontrent de même.}
+\end{proprietebox}
+
+\begin{remarquebox}[L'erreur la plus fréquente]
+$(a+b)^{2}\ne a^{2}+b^{2}$ : on oublie le \textbf{double produit} $2ab$. Par exemple
+$(2+5)^{2}=49$, alors que $2^{2}+5^{2}=29$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 4 --- Développer avec une identité remarquable]
+\etapeexemples
+Développer :
+\begin{questions}[label=\alph*)]
+  \item $(x-4)^{2}$
+  \item $(5x+2)^{2}$
+  \item $(3x-1)(3x+1)$
+\end{questions}
+
+\etape{À vous de jouer}
+Développer et réduire :
+\[
+  A=(x+7)^{2} \qquad B=(4x-3)^{2} \qquad C=(2-5x)^{2} \qquad D=(6x+5)(6x-5) \qquad
+  E=(3x+2)^{2}-(x-2)(x+2)
+\]
+
+\end{methodebox}
+
+\afaire{exercices 10 à 13}
+
+\partiecours{Factoriser}
+
+\begin{definitionbox}[Définition 2 --- Factoriser]
+\textbf{Factoriser}, c'est transformer une somme en un produit : c'est l'inverse de
+développer. Le facteur présent dans chaque terme est le \textbf{facteur commun} :
+\[
+  \underbrace{\;k\,a+k\,b\;}_{\text{forme développée}}
+  \;\underset{\text{développer}}{\overset{\text{factoriser}}{\rightleftarrows}}\;
+  \underbrace{\;k\,(a+b)\;}_{\text{forme factorisée}}
+\]
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 5 --- Factoriser avec un facteur commun]
+On repère le facteur commun (un nombre, $x$ ou une parenthèse entière), au besoin en
+décomposant chaque terme (les tables de multiplication à l'envers), puis on écrit ce qui
+reste de chaque terme entre crochets, avec son signe.
+\etapeexemples
+Factoriser :
+\begin{questions}[label=\alph*)]
+  \item $A=15x+20$
+  \item $B=7x^{2}-2x$
+  \item $C=(3x+2)(x-1)+(3x+2)(2x+5)$
+  \item $D=(x+4)(3x-2)-(x+4)(x-5)$
+\end{questions}
+
+\begin{remarquebox}
+On factorise le plus possible : $8x^{2}-12x=x(8x-12)$ est juste mais incomplet ; on
+écrit $8x^{2}-12x=4x(2x-3)$.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Factoriser :
+\[
+  E=6\times x-6\times 5 \qquad F=10a-15b \qquad G=9x^{2}+4x \qquad H=10x^{2}-15x
+\]
+\[
+  K=(3x-2)(x+4)+(3x-2)(2x-5) \qquad L=(x-3)(4x+1)-(x-3)(x-4)
+\]
+
+\end{methodebox}
+
+\afaire{exercices 14 à 16}
+
+\partiecours{Factoriser avec une identité remarquable}
+
+\begin{proprietebox}[Propriété 4 --- Les identités, de droite à gauche]
+\[
+  a^{2}+2ab+b^{2}=(a+b)^{2} \qquad a^{2}-2ab+b^{2}=(a-b)^{2} \qquad a^{2}-b^{2}=(a+b)(a-b)
+\]
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Reconnaître une identité remarquable]
+Deux carrés séparés par un $-$ : c'est $a^{2}-b^{2}$. Trois termes dont deux carrés : on
+trouve d'abord $a$ et $b$, puis on \textbf{contrôle le double produit} $2ab$.
+\etapeexemples
+Factoriser :
+\begin{questions}[label=\alph*)]
+  \item $A=x^{2}-36$
+  \item $B=9x^{2}-49$
+  \item $C=16x^{2}+24x+9$
+  \item $D=25x^{2}-20x+4$
+\end{questions}
+
+\begin{remarquebox}[Ce qui ne se factorise pas]
+Une somme de deux carrés comme $4x^{2}+25$ ; ou $4x^{2}-10x+25$ : $(2x)^{2}$ et $5^{2}$,
+mais $2\times 2x\times 5=20x\ne 10x$.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Factoriser, si possible :
+\[
+  E=49x^{2}-1 \qquad F=4-25x^{2} \qquad G=x^{2}+10x+25 \qquad H=9x^{2}-12x+4 \qquad
+  K=16x^{2}+9 \qquad L=25-30x+9x^{2}
+\]
+
+\end{methodebox}
+
+\afaire{exercices 17 à 19}
+
+\partiecours{Factorisations avancées}
+
+\begin{proprietebox}[Propriété 5 --- Faire apparaître le facteur commun]
+\begin{itemize}
+  \item Une identité sur des expressions : $(\ldots)^{2}-(\ldots)^{2}$, avec $a$ et $b$
+        entre crochets.
+  \item Le \og 1\fg{} caché : $(x+4)=1\times(x+4)$ ; il reste $1$ dans le crochet, pas $0$.
+  \item Des facteurs opposés : $3-x=-(x-3)$.
+  \item Une identité dans un seul morceau : $x^{2}-16=(x+4)(x-4)$ fait apparaître $(x+4)$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Choisir une stratégie de factorisation]
+\etapeexemples
+Factoriser :
+\begin{questions}[label=\alph*)]
+  \item $A=(x+5)^{2}-16$
+  \item $B=3(x+1)(x+4)-(x+4)$
+  \item $C=(2x+1)(x-3)+x(3-x)$
+  \item $D=x^{2}-16+(x+4)(3x-1)$
+\end{questions}
+
+\etape{À vous de jouer}
+Factoriser :
+\[
+  E=(2x+3)^{2}-(x-1)^{2} \qquad F=(x+2)^{2}+(x+2)(3x-5) \qquad G=(6x-4)(x+2)+(3x-2)(x-1)
+\]
+\[
+  H=(4x-1)-3(4x-1)^{2} \qquad K=9x^{2}-1-(3x-1)(x+2)
+\]
+
+\end{methodebox}
+
+\afaire{exercices 20 à 23}
+
+\partiecours{Fractions rationnelles}
+
+\begin{definitionbox}[Définition 3 --- Fraction rationnelle, valeur interdite]
+Une \textbf{fraction rationnelle} est un quotient d'expressions dont le dénominateur
+contient la lettre : $\dfrac{x-1}{x+3}$, \ $\dfrac{2}{5-x}$. Une valeur de $x$ qui
+\textbf{annule le dénominateur} est \textbf{interdite} : pour $\dfrac{x-1}{x+3}$, c'est
+$-3$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Mêmes règles que les fractions de nombres]
+Pour $b$ et $d$ non nuls : \quad
+$\dfrac{a}{b}+\dfrac{c}{d}=\dfrac{a\times d}{b\times d}+\dfrac{c\times b}{d\times b}$.
+On ne simplifie que des facteurs : $\dfrac{x+5}{5}\ne x$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Écrire avec une seule fraction]
+On donne les valeurs interdites, on met au même dénominateur, puis on réduit le
+numérateur seulement.
+\etapeexemples
+Écrire avec une seule fraction :
+\begin{questions}[label=\alph*)]
+  \item $A=2+\dfrac{3x}{x+2}$, pour $x\ne -2$
+  \item $B=\dfrac{1}{x}-\dfrac{1}{x+2}$, pour $x\ne 0$ et $x\ne -2$
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Donner la valeur interdite de $\dfrac{3x-1}{x+4}$, puis celles de
+        $\dfrac{5}{(x-2)(x+3)}$.
+  \item Écrire avec une seule fraction : \quad $C=\dfrac{3}{x}+\dfrac12$ \qquad
+        $D=\dfrac{3}{x-2}-\dfrac{2}{x+1}$ \qquad $E=x-\dfrac{4}{x}$
+  \item \textbf{Bonus.} À l'aide de $B$, calculer
+        $\dfrac{2}{1\times 3}+\dfrac{2}{3\times 5}+\dfrac{2}{5\times 7}+\cdots
+        +\dfrac{2}{99\times 101}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 24 à 27}
+
+\partiecours{Équations du premier degré}
+
+\begin{definitionbox}[Définition 4 --- Équation, solution]
+Une \textbf{équation} est une égalité qui contient un nombre inconnu. Une
+\textbf{solution} est une valeur de l'inconnue qui rend l'égalité vraie. Résoudre, c'est
+trouver toutes les solutions ; on les écrit dans l'ensemble $S$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 7 --- Règles de résolution]
+On garde les mêmes solutions en ajoutant (ou soustrayant) un même nombre aux deux
+membres, et en multipliant (ou divisant) les deux membres par un même nombre
+\textbf{non nul}. On se ramène à $ax=b$ :
+\begin{itemize}
+  \item si $a\ne 0$ : $S=\ens{\dfrac{b}{a}}$ ;
+  \item si $a=0$ et $b\ne 0$ ($0x=b$ est toujours faux) : $S=\varnothing$ ;
+  \item si $a=0$ et $b=0$ ($0x=0$ est toujours vrai) : $S=\R$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Résoudre une équation du premier degré]
+On supprime les parenthèses, puis les fractions (on multiplie \textbf{chaque terme} par
+le dénominateur commun), on regroupe les $x$ d'un côté et les nombres de l'autre, puis on
+divise par le coefficient de $x$.
+\etapeexemples
+Résoudre :
+\begin{questions}[label=\alph*)]
+  \item $4x-5=9-2(3-x)$
+  \item $\dfrac{x}{3}+\dfrac12=\dfrac{x-1}{6}+3$
+  \item $3(x+2)+1-5x=2(4-x)+3$
+\end{questions}
+
+\begin{remarquebox}[Égalité de deux fractions]
+Pour $\dfrac{a}{b}=\dfrac{c}{d}$, le produit en croix (chapitre 1) donne directement
+$a\times d=b\times c$.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Résoudre :
+\[
+  \text{1\textdegree) } 5x-4=2x+14 \qquad \text{2\textdegree) } 2(x-3)-(x+5)=4x-2 \qquad
+  \text{3\textdegree) } \dfrac76-\dfrac{x}{4}=\dfrac13
+\]
+\[
+  \text{4\textdegree) } \dfrac{x+2}{3}=\dfrac{3x-1}{4} \qquad
+  \text{5\textdegree) } 2(3x+5)-4x=12-2(1-x)
+\]
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 10 --- Inconnue au dénominateur]
+On donne les valeurs interdites, on fait un produit en croix, on résout, puis on vérifie
+que la solution n'est pas interdite.
+\etapeexemples
+Résoudre $\dfrac{3x-2}{x-2}=\dfrac52$.
+
+\etape{À vous de jouer}
+Résoudre \quad $\dfrac{3x+1}{x+2}=2$ \quad puis \quad $\dfrac{4}{x+3}=\dfrac{1}{x}$.
+
+\end{methodebox}
+
+\afaire{exercices 28 à 33}
+
+\partiecours{Équations produits}
+
+\begin{proprietebox}[Propriété 8 --- Produit nul]
+Un produit est nul si et seulement si l'un au moins de ses facteurs est nul :
+$A\times B=0$ équivaut à $A=0$ ou $B=0$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Résoudre une équation produit, ou s'y ramener]
+On met tout dans le membre de gauche ($\ldots=0$), on factorise, puis on écrit
+\og facteur $=0$\fg{} pour chaque facteur.
+\etapeexemples
+Résoudre :
+\begin{questions}[label=\alph*)]
+  \item $(x+3)(3x-7)=0$
+  \item $4x^{2}-6x=0$
+  \item $(x+2)(3x-1)=(x+2)(x+5)$
+  \item $(2x-1)^{2}-9=0$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre :
+\[
+  \text{1\textdegree) } (4x-3)(5-2x)=0 \qquad \text{2\textdegree) } 2x^{2}+8x=0 \qquad
+  \text{3\textdegree) } (x+4)(3x-2)-(1-x)(3x-2)=0 \qquad
+  \text{4\textdegree) } (x-2)(2x+1)=3(2x+1)
+\]
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 12 --- Choisir la forme adaptée]
+Pour calculer une image : la forme où le calcul est le plus simple ; pour $f(x)=0$ : la
+forme factorisée ; pour $f(x)=k$ : la forme où les nombres s'éliminent.
+\etapeexemples
+Soit $f(x)=(x+1)^{2}-9$.
+\begin{questions}[label=\alph*)]
+  \item Développer, puis factoriser $f(x)$.
+  \item Calculer $f(0)$, puis résoudre $f(x)=0$, $f(x)=-8$ et $f(x)=-9$.
+\end{questions}
+
+\etape{À vous de jouer}
+Soit $g(x)=(2x-1)^{2}-16$.
+\begin{questions}
+  \item Développer, puis factoriser $g(x)$.
+  \item Avec la forme adaptée : calculer $g(0)$ ; résoudre $g(x)=0$, $g(x)=-15$ et
+        $g(x)=-16$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 34 à 38}
+
+\partiecours{Équations $x^{2}=a$ et équations quotients}
+
+\begin{proprietebox}[Propriété 9 --- Deux cas particuliers]
+\begin{itemize}
+  \item \textbf{$x^{2}=a$} : pas de solution si $a<0$ (un carré est positif) ; la seule
+        solution $0$ si $a=0$ ; deux solutions $\sqrt{a}$ et $-\sqrt{a}$ si $a>0$.
+  \item \textbf{$\dfrac{A}{B}=0$} équivaut à $A=0$ et $B\ne 0$ : un quotient est nul si et
+        seulement si son numérateur est nul et son dénominateur est non nul.
+\end{itemize}
+\end{proprietebox}
+
+\begin{remarquebox}[Pourquoi deux solutions ?]
+$5^{2}=25$ et $(-5)^{2}=25$ : deux nombres opposés ont le même carré. En factorisant :
+$x^{2}-25=(x-5)(x+5)$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 13 --- Résoudre $x^{2}=a$]
+\etapeexemples
+Résoudre :
+\begin{questions}[label=\alph*)]
+  \item $x^{2}=25$
+  \item $x^{2}=-3$
+  \item $3x^{2}-15=0$
+  \item $(x-1)^{2}=16$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre :
+\[
+  x^{2}=64 \qquad x^{2}+9=0 \qquad 2x^{2}=72 \qquad (x+2)^{2}=9
+\]
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 14 --- Résoudre une équation quotient $A/B=0$]
+On cherche d'abord la valeur interdite ($B=0$), puis on résout $A=0$, et on retire la
+valeur interdite des solutions.
+\etapeexemples
+Résoudre :
+\begin{questions}[label=\alph*)]
+  \item $\dfrac{2x-5}{x+3}=0$
+  \item $\dfrac{x^{2}-16}{x-4}=0$
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre :
+\[
+  \frac{(3x-1)(x+5)}{x-2}=0 \qquad \frac{x^{2}-1}{x+1}=0
+\]
+
+\end{methodebox}
+
+\afaire{exercices 39 à 41}
+
+\partiecours{Mise en équation}
+
+\begin{methodebox}[Méthode 15 --- Résoudre un problème par une équation]
+On choisit l'inconnue et on l'annonce (\og Soit $x$ \ldots\fg{}), on traduit l'énoncé par
+une équation, on la résout, puis on conclut par une phrase, après avoir vérifié que le
+résultat a un sens.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Trois amies vendent des gâteaux pour financer une sortie. Léa récolte $30$~€ de
+        plus que Nina, et Inès le double de Léa. À elles trois, elles récoltent $330$~€.
+        Combien chacune a-t-elle récolté ?
+  \item Une salle d'escalade propose deux tarifs : $12$~€ l'entrée, ou un abonnement de
+        $40$~€ puis $7$~€ l'entrée. Pour combien d'entrées les deux tarifs coûtent-ils
+        autant ?
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item La somme de trois entiers consécutifs vaut $258$. Quels sont-ils ?
+  \item Un classeur coûte $2$~€ de plus qu'un cahier. Quatre cahiers et trois classeurs
+        coûtent $27$~€. Quel est le prix d'un cahier ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 42 à 44}
+
+\partiecours{Problèmes de géométrie}
+
+\begin{methodebox}[Méthode 16 --- Mettre en équation un problème de géométrie]
+On place $x$ sur la figure et on précise ses valeurs possibles, on exprime les longueurs,
+puis les aires ou les périmètres, on écrit l'équation et on la résout ; souvent, les
+$x^{2}$ s'éliminent. On vérifie enfin que la solution est possible.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Un rectangle a pour longueur $10$~cm et pour largeur $x$~cm ; un carré a pour côté
+        $x+3$~cm. Pour quelle valeur de $x$ ont-ils le même périmètre ?
+  \item Le rectangle $ABCD$ a pour dimensions $AB=3$~cm et $BC=6$~cm. Le point $M$ est sur
+        $[AB]$ avec $AM=x$ ($x\ne 0$). On construit le carré $AMNP$ et le rectangle
+        $NQCR$ (figure). Où placer $M$ pour que le carré et le rectangle aient la même
+        aire ?
+\end{questions}
+\begin{center}
+\begin{tikzpicture}[scale=0.55]
+  \def\x{2}
+  \draw[zoneA] (0,0) rectangle (\x,\x);
+  \draw[zoneB] (\x,\x) rectangle (3,6);
+  \draw[fig] (0,0) rectangle (3,6);
+  \draw[fig,dashed] (\x,0) -- (\x,\x) -- (3,\x) (0,\x) -- (\x,\x);
+  \node[below left,font=\small] at (0,0) {$A$};
+  \node[below,font=\small] at (\x,0) {$M$};
+  \node[below right,font=\small] at (3,0) {$B$};
+  \node[right,font=\small] at (3,\x) {$Q$};
+  \node[above right,font=\small] at (3,6) {$C$};
+  \node[above,font=\small] at (\x,6) {$R$};
+  \node[above left,font=\small] at (0,6) {$D$};
+  \node[left,font=\small] at (0,\x) {$P$};
+  \node[below left,font=\small] at (\x,\x) {$N$};
+  \draw[|-|] (0,-0.9) -- node[below,font=\small]{$x$} (\x,-0.9);
+\end{tikzpicture}
+\end{center}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item La longueur d'un rectangle dépasse sa largeur de $5$~cm, et son périmètre vaut
+        $42$~cm. Quelles sont ses dimensions ?
+  \item Quand on augmente de $2$~cm le côté d'un carré, son aire augmente de $32$~cm$^{2}$.
+        Quelle est l'aire du carré de départ ?
+  \item Un rectangle a pour dimensions $x+8$ et $x$ ; un carré a pour côté $x+3$ (en cm,
+        $x>0$). a) Pour quelle valeur de $x$ ont-ils la même aire ? b) Peuvent-ils avoir le
+        même périmètre ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 45 à 50}
+
+\partiecours{Isoler une grandeur}
+
+\begin{definitionbox}[Définition 5 --- Isoler une grandeur]
+Une formule relie plusieurs grandeurs. \textbf{Isoler} une grandeur, c'est réécrire la
+formule sous la forme \og grandeur $=\ldots$\fg{} : on résout une équation dont
+l'inconnue est cette grandeur, les autres lettres jouant le rôle de nombres connus.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 17 --- Isoler une grandeur]
+On ajoute, on soustrait, on multiplie ou on divise les deux membres par une même quantité
+non nulle ; pour deux fractions égales, le produit en croix est souvent le plus rapide ;
+pour une grandeur positive au carré, on finit par une racine carrée.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Puissance $P=\dfrac{W}{t}$ : isoler $W$, puis $t$.
+  \item $\dfrac{h}{H}=\dfrac{\ell}{L}$ : isoler $L$.
+  \item Périmètre d'un triangle isocèle $P=2a+b$ : isoler $a$.
+  \item Volume d'un cône $V=\dfrac13\pi r^{2}h$ : isoler le rayon $r$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Loi d'Ohm $U=RI$ : isoler $I$, puis $R$.
+  \item Périmètre d'un cercle $C=2\pi r$ : isoler $r$.
+  \item Masse volumique $\rho=\dfrac{m}{V}$ : isoler $m$, puis $V$.
+  \item Aire d'un trapèze $\mathcal{A}=\dfrac{(B+b)\times h}{2}$ : isoler $h$.
+  \item Conversion des températures $F=\dfrac95C+32$ : isoler $C$.
+  \item Énergie cinétique $E=\dfrac12mv^{2}$ : isoler $v$ (avec $v>0$).
+  \item On a $3x-2y+5z=12$. Exprimer $x$ en fonction de $y$ et $z$, puis calculer $x$ pour
+        $y=3$ et $z=0$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 51 à 54 ; pour préparer le devoir commun : exercices 55 à 60}
+
+\end{document}
