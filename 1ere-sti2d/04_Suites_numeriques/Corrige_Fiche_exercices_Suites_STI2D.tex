@@ -1,0 +1,948 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\entete{Chapitre 4 --- Suites numériques --- Corrigé des exercices}{1\textsuperscript{re} STI2D}
+
+\tcbuselibrary{listings}
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,before skip=3pt,after skip=3pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\newcommand{\reperesuite}[4]{%
+  \draw[grille,step=1] (-1,#2) grid (#1,#3);
+  \draw[-{Stealth[length=2mm]},thick] (-1,0)--({#1+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#3+0.4})
+    node[below left=-1pt,font=\footnotesize]{$#4$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\providecommand{\justif}[1]{\quad\text{\small\itshape\color{coulPart}#1}}
+\clubpenalty=10000
+\widowpenalty=10000
+
+\begin{document}
+
+\entetecorrige{CORRIGÉ --- SUITES NUMÉRIQUES}
+  {Chapitre 4 : fiche d'exercices --- Première STI2D}
+  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
+   fréquentes et les contrôles à faire. Les termes d'une suite définie par
+   récurrence se calculent \textbf{dans l'ordre}, chacun à partir du précédent.}
+
+\partie{Définition d'une suite}
+
+\begin{exo}[Suites logiques]
+\begin{reponses}
+  \item On ajoute $5$ : \res{30\ ;\ 35\ ;\ 40}
+  \item On ajoute $7$ : \res{37\ ;\ 44\ ;\ 51}
+  \item On enlève $4$ : \res{14\ ;\ 10\ ;\ 6}
+  \item On multiplie par $3$ : \res{243\ ;\ 729\ ;\ 2\,187}
+  \item Les cubes $1^{3}$, $2^{3}$, $3^{3}$\ldots{} : \res{216\ ;\ 343\ ;\ 512}
+  \item Chaque nombre est la somme des deux précédents : \res{29\ ;\ 47\ ;\ 76}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Rang et position]
+On ajoute $6$ : $7$ ; $13$ ; $19$ ; $25$ ; $31$ ; $37$ ; $43$ ; $49$ ; $55$.
+\begin{questions}
+  \item $u_{1}=\res{13}$ et $u_{3}=\res{25}$.
+  \item Le $5^{\text{e}}$ terme est de rang \res{4} : $u_{4}=\res{31}$.
+  \item $u_{8}=\res{55}$, le \res{9^{\text{e}}} nombre de la liste.
+\end{questions}
+\rem{Le rang vaut la position moins $1$, puisqu'on commence à $u_{0}$.}
+\end{exo}
+
+\begin{exo}[Lire un tableau]
+\begin{questions}
+  \item $u_{3}=\res{3}$ ; le $3^{\text{e}}$ terme est $u_{2}=\res{7}$.
+  \item $u_{n}=-1$ pour \res{n=4}.
+  \item On enlève $4$ à chaque fois : $u_{6}=-5-4=\res{-9}$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Les tribunes d'un stade]
+\begin{questions}
+  \item On ajoute $4$ sièges par rangée : $u_{1}=\res{34}$ ; $u_{2}=\res{38}$ ;
+        $u_{3}=\res{42}$ ; $u_{4}=\res{46}$.
+  \item La $10^{\text{e}}$ rangée correspond à $u_{9}$ : on ajoute $9$ fois $4$ sièges
+        à $u_{0}$, soit $30+36=\res{66}$ sièges.
+  \item De $30$ à $70$, on ajoute $40$ sièges, soit $10$ fois $4$ : $u_{10}=70$. C'est
+        la \res{11^{\text{e}}} rangée.
+\end{questions}
+\rem{Piège du décalage : $u_{10}$ est la $11^{\text{e}}$ rangée.}
+\end{exo}
+
+\partie{Suites définies explicitement}
+
+\begin{exo}[Des entiers]
+\begin{calculs}
+u_{0} &= 5\times 0-8=-8\\
+u_{1} &= 5\times 1-8=-3\\
+u_{2} &= 5\times 2-8=2\\
+u_{3} &= 5\times 3-8=7\\
+u_{4} &= 5\times 4-8=12\\
+u_{20} &= 5\times 20-8=\res{92}\\
+u_{100} &= 5\times 100-8=\res{492}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Pour chaque formule]
+\begin{reponses}
+  \item $1$ ; $3$ ; $9$ ; $27$ et $a_{10}=3^{10}=\res{59\,049}$
+  \item $0$ ; $2$ ; $6$ ; $12$ et $b_{10}=100+10=\res{110}$
+  \item $4$ ; $1$ ; $-2$ ; $-5$ et $c_{10}=-30+4=\res{-26}$
+  \item $0$ ; $-3$ ; $-4$ ; $-3$ et $d_{10}=100-40=\res{60}$
+  \item $-1$ ; $-\frac{1}{2}$ ; $1$ ; $\frac{7}{2}$ et $e_{10}=50-1=\res{49}$
+  \item $9$ ; $4$ ; $1$ ; $0$ et $f_{10}=7^{2}=\res{49}$
+\end{reponses}
+\rem{Priorités : la puissance avant la multiplication, $\frac{1}{2}\times 3^{2}=\frac{9}{2}$.}
+\end{exo}
+
+\begin{exo}[Fractions et signes]
+\begin{questions}
+  \item $u_{0}=\res{\tfrac{1}{2}}$ ; $u_{1}=\res{\tfrac{2}{3}}$ ;
+        $u_{2}=\res{\tfrac{3}{4}}$ ; $u_{3}=\res{\tfrac{4}{5}}$ ;
+        $u_{8}=\res{\tfrac{9}{10}}$.
+  \item $v_{1}=-1$ ; $v_{2}=1$ ; $v_{3}=-1$ ; $v_{4}=1$.\\
+        Rang pair : $1$ ; rang impair : $-1$. Donc $v_{40}=\res{1}$ ; $v_{65}=\res{-1}$ ;
+        $v_{100}=\res{1}$.
+\end{questions}
+\end{exo}
+
+\begin{exo}[$u_{n+1}$ ou $u_{n}+1$ ?]
+\begin{reponses}
+  \item $u_{n+1}=3(n+1)+2=\res{3n+5}$ ; $u_{n}+1=\res{3n+3}$
+  \item $u_{n+1}=5-4(n+1)=\res{1-4n}$ ; $u_{n}+1=\res{6-4n}$
+  \item $u_{n+1}=(n+1)^{2}-2=\res{n^{2}+2n-1}$ ; $u_{n}+1=\res{n^{2}-1}$
+\end{reponses}
+\rem{$u_{n+1}$ : on remplace $n$ par $n+1$, entre parenthèses.}
+\end{exo}
+
+\begin{exo}[La borne de recharge]
+\begin{questions}
+  \item \res{p_{n}=2+3n}
+  \item $p_{5}=2+15=\res{17}$~€ ; $p_{8}=2+24=\res{26}$~€.
+  \item $2+3n=23$, soit $3n=21$ et $n=7$ : \res{7\text{ heures}}.
+\end{questions}
+\end{exo}
+
+\partie{Suites définies par récurrence}
+
+\begin{exo}[Tripler et enlever]
+\begin{calculs}
+u_{1} &= 3\times 2-2=\res{4}\\
+u_{2} &= 3\times 4-2=\res{10}\\
+u_{3} &= 3\times 10-2=\res{28}\\
+u_{4} &= 3\times 28-2=\res{82}\\
+u_{5} &= 3\times 82-2=\res{244}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Des relatifs]
+\begin{reponses}
+  \item $u_{1}=-8+3=-5$ ; $u_{2}=10+3=13$ ; $u_{3}=-26+3=-23$ ; $u_{4}=46+3=49$.\\
+        \res{-5\ ;\ 13\ ;\ -23\ ;\ 49}
+  \item $v_{1}=1-3=-2$ ; $v_{2}=4-3=1$, puis on recommence.\\
+        \res{-2\ ;\ 1\ ;\ -2\ ;\ 1}
+  \item $w_{1}=6-(-4)=10$ ; $w_{2}=6-10=-4$, puis on recommence.\\
+        \res{10\ ;\ -4\ ;\ 10\ ;\ -4}
+\end{reponses}
+\rem{$-2\times(-4)=8$ : parenthèses autour d'un terme négatif.}
+\end{exo}
+
+\begin{exo}[Sans tout calculer ?]
+\begin{questions}
+  \item $a_{1}=3$ ; $a_{2}=-3$ ; $a_{3}=3$ ; $a_{4}=-3$ ; $a_{5}=3$.\\
+        Rang pair : $-3$ ; rang impair : $3$. Donc $a_{40}=\res{-3}$ et
+        $a_{77}=\res{3}$.
+  \item $9$ ; $13$ ; $17$ ; $21$ ; $25$. Il faudrait \res{50} calculs, un par terme.
+\end{questions}
+\rem{Une formule explicite donnerait $b_{50}$ en un seul calcul (partie IX).}
+\end{exo}
+
+\begin{exo}[Avec des fractions]
+\begin{calculs}
+u_{1} &= \frac{10}{50}=\frac{1}{5}\\
+u_{2} &= 10\div\frac{1}{5}=10\times 5=50\\
+u_{3} &= \frac{10}{50}=\frac{1}{5}\\
+u_{4} &= 50
+\end{calculs}
+Les termes \res{\text{alternent entre } 50 \text{ et } \tfrac{1}{5}}.
+\rem{Diviser par $\frac{1}{5}$, c'est multiplier par $5$.}
+\end{exo}
+
+\begin{exo}[Quand la relation contient $n$]
+\begin{calculs}
+u_{1} &= u_{0}-2\times 0+5=2+5=\res{7} &&\justif{$n=0$}\\
+u_{2} &= u_{1}-2\times 1+5=7+3=\res{10} &&\justif{$n=1$}\\
+u_{3} &= u_{2}-2\times 2+5=10+1=\res{11} &&\justif{$n=2$}\\
+u_{4} &= u_{3}-2\times 3+5=11-1=\res{10} &&\justif{$n=3$}
+\end{calculs}
+\rem{Pour calculer $u_{n+1}$, on remplace $n$ par le rang du terme \emph{précédent}.}
+\end{exo}
+
+\begin{exo}[Une culture de levures]
+\begin{questions}
+  \item $b_{0}=\res{300}$ et \res{b_{n+1}=2b_{n}-80}.
+  \item $b_{1}=600-80=\res{520}$ ; $b_{2}=1\,040-80=\res{960}$ ;
+        $b_{3}=1\,920-80=\res{1\,840}$ (en milliers).
+\end{questions}
+\end{exo}
+
+\partie{Programmer une suite définie par récurrence}
+
+\begin{exo}[Que renvoie ce programme ?]
+\begin{questions}
+  \item \res{u_{0}=3} et \res{u_{n+1}=3u_{n}-4}.
+  \item \begin{calculs}
+        u_{1} &= 3\times 3-4=5\\
+        u_{2} &= 3\times 5-4=11\\
+        u_{3} &= 3\times 11-4=29\\
+        u_{4} &= 3\times 29-4=83\\
+        u_{5} &= 3\times 83-4=245
+        \end{calculs}
+        \texttt{suite(1)} renvoie \res{5}, \texttt{suite(2)} renvoie \res{11},
+        \texttt{suite(5)} renvoie \res{245}.
+\end{questions}
+\rem{La boucle tourne $n$ fois : \texttt{suite(5)} applique $5$ fois la relation à partir
+de $u_{0}$.}
+\end{exo}
+
+\begin{exo}[Même travail]
+$u_{0}=160$ et $u_{n+1}=0{,}5\,u_{n}+2$.
+\begin{calculs}
+u_{1} &= 0{,}5\times 160+2=82\\
+u_{2} &= 0{,}5\times 82+2=43\\
+u_{3} &= 0{,}5\times 43+2=23{,}5\\
+u_{4} &= 0{,}5\times 23{,}5+2=13{,}75\\
+u_{5} &= 0{,}5\times 13{,}75+2=8{,}875\\
+u_{6} &= 0{,}5\times 8{,}875+2=6{,}4375
+\end{calculs}
+\texttt{suite(1)} renvoie \res{82}, \texttt{suite(2)} renvoie \res{43},
+\texttt{suite(6)} renvoie \res{6{,}4375}.
+\rem{Python affiche \texttt{82.0} : avec \texttt{0.5}, le résultat est un nombre
+décimal.}
+\end{exo}
+
+\begin{exo}[Compléter le programme]
+\begin{questions}
+  \item \begin{calculs}
+        u_{1} &= 1+2\times 2=5\\
+        u_{2} &= 1+2\times 5=11\\
+        u_{3} &= 1+2\times 11=\res{23}
+        \end{calculs}
+  \item On range $u_{0}$ dans \texttt{u}, puis on traduit la relation :
+\begin{python}
+def suite(n):
+    u = 2
+    for i in range(n):
+        u = 1 + 2*u
+    return u
+\end{python}
+        \texttt{suite(10)} affiche \texttt{3071} : $u_{10}=\res{3\,071}$.
+  \item Seules la valeur de départ et la ligne de la boucle changent :
+\begin{python}
+def suite(n):
+    u = 1
+    for i in range(n):
+        u = 6 - 2*u
+    return u
+\end{python}
+        $v_{1}=\res{4}$ ; $v_{5}=\res{34}$ ; $v_{10}=\res{-1\,022}$.
+\end{questions}
+\rem{On contrôle le programme sur un terme calculé à la main : \texttt{suite(3)} doit
+afficher $23$.}
+\end{exo}
+
+\begin{exo}[Les abonnés d'une salle de sport]
+\begin{questions}
+  \item $60\,\%$ des abonnés restent, puis $600$ arrivent :
+        \begin{calculs}
+        a_{1} &= 0{,}6\times 1\,200+600=\res{1\,320}\\
+        a_{2} &= 0{,}6\times 1\,320+600=\res{1\,392}
+        \end{calculs}
+  \item \res{a_{n+1}=0{,}6\,a_{n}+600}
+  \item Sur le modèle de la fonction \texttt{suite(n)} du cours :
+\begin{python}
+def abonnes(n):
+    a = 1200
+    for i in range(n):
+        a = 0.6*a + 600
+    return a
+\end{python}
+  \item 2039 correspond à $n=15$ : \texttt{abonnes(15)} affiche
+        \texttt{1499.85\ldots}, soit environ \res{1\,500} abonnés.
+  \item Le nombre d'abonnés semble se stabiliser vers \res{1\,500}.
+\end{questions}
+\rem{{\color{black!55}Non exigé : avec $1\,500$ abonnés, $0{,}6\times 1\,500+600=1\,500$,
+le nombre ne change plus.}}
+\end{exo}
+
+\partie{Représentation graphique d'une suite}
+
+\begin{exo}[Placer les points]
+\noindent
+\begin{minipage}[t]{0.52\linewidth}\raggedright\vspace{0pt}
+1\textdegree) $u_{n}=n^{2}-6n+5$ :
+
+\smallskip
+{\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$u_{n}$ & $5$ & $0$ & $-3$ & $-4$ & $-3$ & $0$ & $5$\\
+\hline
+\end{tabular}}
+
+\smallskip
+Par exemple : $u_{3}=9-18+5=-4$.
+
+\smallskip
+2\textdegree) On place les points $(n\,;u_{n})$, sans les relier.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \reperesuite{7}{-5}{6}{u_{n}}
+  \gradx{1,2,3,4,5,6} \grady{-4,-3,-2,-1,1,2,3,4,5}
+  \foreach \p in {(0,5),(1,0),(2,-3),(3,-4),(4,-3),(5,0),(6,5)}
+    \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\rem{Les points ne sont pas reliés : il n'y a pas de rang $1{,}5$.}
+\end{exo}
+
+\begin{exo}[Une suite qui alterne]
+\noindent
+\begin{minipage}[t]{0.52\linewidth}\raggedright\vspace{0pt}
+\begin{calculs}
+u_{1} &= -4+2=-2\\
+u_{2} &= -(-2)+2=4
+\end{calculs}
+
+\smallskip
+Puis on recommence : $u_{3}=-2$ ; $u_{4}=4$ ; $u_{5}=-2$ ; $u_{6}=4$.
+
+\smallskip
+Les termes \res{\text{alternent entre } 4 \text{ et } -2}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \reperesuite{7}{-3}{5}{u_{n}}
+  \gradx{1,2,3,4,5,6} \grady{-2,-1,1,2,3,4}
+  \foreach \p in {(0,4),(1,-2),(2,4),(3,-2),(4,4),(5,-2),(6,4)}
+    \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Une suite qui se rapproche]
+\noindent
+\begin{minipage}[t]{0.52\linewidth}\raggedright\vspace{0pt}
+\begin{calculs}
+u_{1} &= \frac{-6+10}{2}=2\\
+u_{2} &= \frac{2+10}{2}=6\\
+u_{3} &= \frac{6+10}{2}=8\\
+u_{4} &= \frac{8+10}{2}=9
+\end{calculs}
+
+\smallskip
+Les termes semblent se rapprocher de \res{10}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.26cm,y=0.26cm]
+  \reperesuite{5}{-7}{11}{u_{n}}
+  \gradx{1,2,3,4} \grady{-6,-4,-2,2,4,6,8,10}
+  \draw[coulPart,dashed] (-1,10)--(5,10);
+  \foreach \p in {(0,-6),(1,2),(2,6),(3,8),(4,9)}
+    \path[coulCourbe] \p node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\rem{Chaque terme est à mi-chemin entre le précédent et $10$ : l'écart à $10$ est divisé
+par $2$ à chaque étape.}
+\end{exo}
+
+\begin{exo}[Lire un graphique]
+\begin{questions}
+  \item $u_{0}=\res{8}$ ; $u_{1}=\res{6}$ ; $u_{2}=\res{4}$ ; $u_{3}=\res{2}$ ;
+        $u_{4}=\res{0}$.
+  \item On \res{\text{enlève } 2} à chaque fois.
+  \item $u_{5}=\res{-2}$ et $u_{6}=\res{-4}$.
+\end{questions}
+\end{exo}
+
+\partie{Sens de variation d'une suite}
+
+\begin{exo}[Conjecturer]
+\begin{reponses}
+  \item Les termes augmentent : \res{\text{croissante}}.
+  \item Les termes diminuent : \res{\text{décroissante}}.
+  \item Ils montent puis descendent : \res{\text{ni l'une ni l'autre}}.
+  \item Les termes augmentent : \res{\text{croissante}}.
+\end{reponses}
+\rem{Quelques termes ne prouvent rien : c'est une conjecture.}
+\end{exo}
+
+\begin{exo}[Suites définies par récurrence]
+\begin{reponses}
+  \item $u_{n+1}-u_{n}=-6<0$ : \res{\text{décroissante}}.
+  \item $u_{n+1}-u_{n}=n^{2}+1$ ; un carré est positif, donc $n^{2}+1\ge 1>0$ :
+        \res{\text{croissante}}.
+  \item $u_{n+1}-u_{n}=-2n^{2}\le 0$ : \res{\text{décroissante}}.
+  \item $u_{n+1}-u_{n}=5n+3$ ; comme $n\ge 0$, on a $5n+3\ge 3>0$ :
+        \res{\text{croissante}}.
+\end{reponses}
+\rem{Avec une relation de récurrence, la différence se lit directement : les $u_{n}$
+se simplifient.}
+\end{exo}
+
+\begin{exo}[Suites définies explicitement]
+\begin{reponses}
+  \item $u_{n+1}=4n-5$ et $u_{n+1}-u_{n}=4n-5-(4n-9)=4>0$ : \res{\text{croissante}}.
+  \item $u_{n+1}=3-3n$ et $u_{n+1}-u_{n}=3-3n-(6-3n)=-3<0$ :
+        \res{\text{décroissante}}.
+  \item $u_{n+1}=2(n+1)^{2}-5=2n^{2}+4n-3$.\\
+        $u_{n+1}-u_{n}=4n+2$ ; comme $n\ge 0$, on a $4n+2\ge 2>0$ :
+        \res{\text{croissante}}.
+  \item $u_{n+1}=(n+1)^{2}+6(n+1)=n^{2}+8n+7$.\\
+        $u_{n+1}-u_{n}=2n+7$ ; comme $n\ge 0$, on a $2n+7\ge 7>0$ :
+        \res{\text{croissante}}.
+\end{reponses}
+\rem{On soustrait $u_{n}$ \textbf{entre parenthèses} : $-(6-3n)=-6+3n$.}
+\end{exo}
+
+\begin{exo}[Conjecture, puis preuve]
+\begin{questions}
+  \item $5$ ; $8$ ; $9$ ; $8$ ; $5$ ; $0$ : à partir de $u_{2}$, la suite
+        \res{\text{semble décroissante}}.
+  \item $u_{n+1}=-(n+1)^{2}+4(n+1)+5=-n^{2}+2n+8$.\\
+        $u_{n+1}-u_{n}=-n^{2}+2n+8-\left(-n^{2}+4n+5\right)=\res{3-2n}$.
+  \item Pour $n\ge 2$, on a $2n\ge 4$, donc $3-2n\le -1<0$ : la suite
+        \res{\text{est décroissante à partir du rang } 2}.
+\end{questions}
+\rem{$-(n+1)^{2}=-\left(n^{2}+2n+1\right)$ : le signe moins porte sur les trois termes.}
+\end{exo}
+
+\partie{Suites arithmétiques}
+
+\begin{exo}[Premiers termes]
+\begin{reponses}
+  \item $u_{n+1}=u_{n}+6$ : \res{10\ ;\ 16\ ;\ 22}
+  \item $u_{n+1}=u_{n}-5$ : \res{7\ ;\ 2\ ;\ -3}
+  \item $u_{n+1}=u_{n}+0{,}5$ : \res{-2{,}5\ ;\ -2\ ;\ -1{,}5}
+  \item $u_{n+1}=u_{n}+\frac{1}{2}$ : \res{\tfrac{3}{4}\ ;\ \tfrac{5}{4}\ ;\ \tfrac{7}{4}}
+\end{reponses}
+\rem{En d), $\frac{1}{2}=\frac{2}{4}$ : on ajoute $\frac{2}{4}$ à chaque fois.}
+\end{exo}
+
+\begin{exo}[Arithmétique ou pas ?]
+\begin{reponses}
+  \item On ajoute $15$ : \res{\text{oui, } u_{0}=650 \text{ et } r=15}.
+  \item On multiplie par $1{,}1$ : \res{\text{non}} (c'est une suite géométrique).
+  \item On enlève $4$ : \res{\text{oui, } u_{0}=60 \text{ et } r=-4}.
+  \item On multiplie par $0{,}75$ : \res{\text{non}}.
+\end{reponses}
+\rem{« Ajouter le même nombre » : arithmétique ; « le même pourcentage » : ce n'est pas
+arithmétique.}
+\end{exo}
+
+\begin{exo}[Le food truck]
+\begin{questions}
+  \item Chaque semaine, on ajoute $5$ repas : $u_{n+1}=u_{n}+5$. La suite est
+        \res{\text{arithmétique de raison } 5}.
+  \item $u_{2}=40+5=\res{45}$ repas.\\
+        $u_{6}$ : de $u_{1}$ à $u_{6}$, on ajoute $5$ fois $5$, soit
+        $40+25=\res{65}$ repas.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Une application]
+\begin{questions}
+  \item $v_{1}=\res{2\,500}$ ; $v_{2}=\res{2\,900}$ ; $v_{3}=\res{3\,300}$ ;
+        $v_{4}=\res{3\,700}$.
+  \item On ajoute $400$ chaque mois : \res{\text{arithmétique de raison } 400}.
+\end{questions}
+\end{exo}
+
+\partie{Reconnaître une suite arithmétique}
+
+\begin{exo}[À partir des termes]
+\begin{reponses}
+  \item Différences $5$ ; $5$ ; $5$ : \res{\text{oui, } r=5}
+  \item Différences $-6$ ; $-6$ ; $-6$ : \res{\text{oui, } r=-6}
+  \item Différences $1$ puis $2$ : \res{\text{non}}
+  \item Différences $0{,}75$ ; $0{,}75$ ; $0{,}75$ : \res{\text{oui, } r=0{,}75}
+  \item Différences $-24$ ; $-24$ ; $-24$ : \res{\text{oui, } r=-24}
+  \item Différences $2$ puis $4$ : \res{\text{non}}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Démontrer]
+\begin{questions}
+  \item $u_{0}=-2$ ; $u_{1}=3$ ; $u_{2}=8$ ; $u_{3}=13$.
+  \item $u_{n+1}=5(n+1)-2=\res{5n+3}$.
+  \item $u_{n+1}-u_{n}=5n+3-(5n-2)=5$ : un nombre, sans $n$.\\
+        \res{(u_{n}) \text{ est arithmétique, } u_{0}=-2 \text{ et } r=5}
+\end{questions}
+\end{exo}
+
+\begin{exo}[Pour chaque suite]
+\begin{reponses}
+  \item $a_{n+1}-a_{n}=4$ : \res{\text{oui, } r=4 \text{ et } a_{0}=0}
+  \item $b_{n+1}-b_{n}=-3$ : \res{\text{oui, } r=-3 \text{ et } b_{0}=2}
+  \item $0$ ; $2$ ; $6$, différences $2$ et $4$ : \res{\text{non}}
+  \item $d_{n+1}-d_{n}=\frac{1}{3}$ : \res{\text{oui, } r=\tfrac{1}{3} \text{ et } d_{0}=0}
+  \item $2$ ; $1$ ; $-2$, différences $-1$ et $-3$ : \res{\text{non}}
+  \item $f_{n}=n^{2}+4n+4-n^{2}=4n+4$, donc $f_{n+1}-f_{n}=4$ :
+        \res{\text{oui, } r=4 \text{ et } f_{0}=4}
+  \item $1$ ; $2$ ; $5$, différences $1$ et $3$ : \res{\text{non}}
+\end{reponses}
+\rem{En f), on développe d'abord : l'expression se simplifie en $4n+4$.}
+\end{exo}
+
+\partie{Terme général et variations d'une suite arithmétique}
+
+\begin{exo}[Calculer un terme éloigné]
+\begin{reponses}
+  \item $u_{n}=8-3n$ ; $u_{9}=8-27=\res{-19}$ ; $r<0$ : \res{\text{décroissante}}
+  \item $u_{n}=2+6n$ ; $u_{100}=2+600=\res{602}$ ; $r>0$ : \res{\text{croissante}}
+  \item $u_{n}=-5+\frac{5}{2}n$ ; $u_{6}=-5+15=\res{10}$ ; $r>0$ :
+        \res{\text{croissante}}
+  \item $u_{n}=4-\frac{2}{3}n$ ; $u_{9}=4-6=\res{-2}$ ; $r<0$ :
+        \res{\text{décroissante}}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Quand on ne part pas de $u_{0}$]
+\begin{reponses}
+  \item $u_{n}=3+(n-1)\times 4=\res{4n-1}$ ; $u_{10}=\res{39}$.
+  \item $u_{21}=-6+20\times 0{,}5=\res{4}$.
+  \item De $u_{0}$ à $u_{4}$, on ajoute $4$ fois $3$ : $u_{0}=10-12=\res{-2}$.\\
+        $u_{12}=-2+12\times 3=\res{34}$.
+\end{reponses}
+\rem{De $u_{1}$ à $u_{21}$, on ajoute $20$ fois la raison, pas $21$.}
+\end{exo}
+
+\begin{exo}[Une application (suite)]
+\begin{questions}
+  \item \res{v_{n}=2\,500+(n-1)\times 400}
+  \item $v_{12}=2\,500+11\times 400=\res{6\,900}$ utilisateurs.
+  \item $r=400>0$ : \res{(v_{n}) \text{ est croissante}}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[Économiser pour un scooter]
+\begin{questions}
+  \item $u_{2}=\res{1\,175}$ ; $u_{3}=\res{1\,250}$ ; $u_{4}=\res{1\,325}$.
+  \item \res{u_{n}=1\,100+(n-1)\times 75} ; $u_{7}=1\,100+6\times 75=\res{1\,550}$.
+  \item $1\,100+(n-1)\times 75=2\,000$, soit $(n-1)\times 75=900$, $n-1=12$ et $n=13$.\\
+        $u_{13}$ : $12$ mois après le $1^{\text{er}}$ mars, donc
+        \res{\text{le } 1^{\text{er}} \text{ mars de l'année suivante}}.
+\end{questions}
+\end{exo}
+
+\begin{exo}[La production d'une usine]
+\begin{questions}
+  \item \res{p_{n}=4\,500+(n-1)\times 500}
+  \item 2027 : $n=4$, $p_{4}=4\,500+1\,500=\res{6\,000}$ pièces.\\
+        2040 : $n=17$, $p_{17}=4\,500+8\,000=\res{12\,500}$ pièces.
+  \item Tripler : $3\times 4\,500=13\,500$. $(n-1)\times 500=9\,000$, soit $n-1=18$ et
+        $n=19$ : \res{\text{en } 2042}.
+\end{questions}
+\rem{L'année $2023+n$ correspond au rang $n$ : $p_{1}$ est 2024.}
+\end{exo}
+
+\partie{Suites géométriques}
+
+\begin{exo}[Coefficient multiplicateur]
+\begin{reponses}
+  \item \res{1{,}04}
+  \item \res{0{,}96}
+  \item \res{1{,}3}
+  \item \res{0{,}7}
+  \item \res{1{,}65}
+  \item \res{0{,}88}
+  \item \res{3}
+  \item \res{0{,}55}
+\end{reponses}
+\rem{Augmenter de $200\,\%$, c'est multiplier par $1+2=3$.}
+\end{exo}
+
+\begin{exo}[Dans l'autre sens]
+\begin{reponses}
+  \item \res{-4\,\%}
+  \item \res{+7\,\%}
+  \item \res{-75\,\%}
+  \item \res{+60\,\%}
+  \item \res{+200\,\%}
+  \item \res{-2\,\%}
+  \item \res{+3{,}5\,\%}
+  \item \res{-18\,\%}
+\end{reponses}
+\rem{$q>1$ : augmentation de $(q-1)\times 100\,\%$ ; $q<1$ : diminution de
+$(1-q)\times 100\,\%$.}
+\end{exo}
+
+\begin{exo}[Premiers termes]
+\begin{reponses}
+  \item \res{15\ ;\ 45\ ;\ 135}
+  \item \res{48\ ;\ 24\ ;\ 12}
+  \item \res{2\,100\ ;\ 2\,205\ ;\ 2\,315{,}25}
+  \item \res{27\ ;\ 9\ ;\ 3}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Deux situations]
+\begin{reponses}
+  \item $u_{0}=3\,000$ et $u_{n+1}=1{,}02\times u_{n}$.\\
+        $u_{1}=\res{3\,060}$~€ ; $u_{2}=\res{3\,121{,}20}$~€.
+  \item $u_{0}=40\,000$ et $u_{n+1}=0{,}97\times u_{n}$.\\
+        $u_{1}=\res{38\,800}$ ; $u_{2}=\res{37\,636}$ habitants.
+\end{reponses}
+\end{exo}
+
+\partie{Reconnaître une suite géométrique}
+
+\begin{exo}[À partir des termes]
+\begin{reponses}
+  \item Quotients $2$ ; $2$ ; $2$ : \res{\text{oui, } q=2}
+  \item $\frac{12}{3}=4$ ; $\frac{48}{12}=4$ ; mais $\frac{180}{48}=3{,}75$ :
+        \res{\text{non}}
+  \item Quotients $\frac{1}{4}$ : \res{\text{oui, } q=\tfrac{1}{4}}
+  \item $\frac{8}{4}=2$ mais $\frac{12}{8}=1{,}5$ : \res{\text{non}}
+  \item Quotients $1{,}1$ : \res{\text{oui, } q=1{,}1}
+  \item Quotients $0{,}2$ : \res{\text{oui, } q=0{,}2}
+\end{reponses}
+\rem{En b), $48\times 4=192$, pas $180$ : un seul quotient différent suffit pour dire non.}
+\end{exo}
+
+\begin{exo}[Démontrer]
+\begin{questions}
+  \item $u_{0}=2$ ; $u_{1}=6$ ; $u_{2}=18$ ; $u_{3}=54$.
+  \item $u_{n+1}=\res{2\times 3^{n+1}}$.
+  \item $u_{n+1}=2\times 3^{n}\times 3=3\times u_{n}$.\\
+        \res{(u_{n}) \text{ est géométrique, } u_{0}=2 \text{ et } q=3}
+\end{questions}
+\end{exo}
+
+\begin{exo}[Pour chaque suite]
+\begin{reponses}
+  \item $a_{n+1}=5^{n}\times 5=5\times a_{n}$ : \res{\text{oui, } q=5 \text{ et } a_{0}=1}
+  \item $3$ ; $4$ ; $7$, quotients $\frac{4}{3}$ et $\frac{7}{4}$ : \res{\text{non}}
+  \item $c_{n+1}=0{,}5\times c_{n}$ : \res{\text{oui, } q=0{,}5 \text{ et } c_{0}=8}
+  \item $1$ ; $4$ ; $7$, quotients $4$ et $\frac{7}{4}$ : \res{\text{non}}
+  \item $1$ ; $3$ ; $11$, quotients $3$ et $\frac{11}{3}$ : \res{\text{non}}
+\end{reponses}
+\rem{En d), la suite est arithmétique (raison $3$), pas géométrique.}
+\end{exo}
+
+\begin{exo}[La valeur d'une machine]
+\begin{questions}
+  \item $\frac{10\,800}{12\,000}=0{,}9$ ; $\frac{9\,720}{10\,800}=0{,}9$ ;
+        $\frac{8\,748}{9\,720}=0{,}9$ : \res{\text{géométrique, } q=0{,}9}.
+  \item $q=1-0{,}1$ : \res{\text{elle perd } 10\,\% \text{ par an}}.
+  \item $v_{4}=0{,}9\times 8\,748=\res{7\,873{,}20}$~€.
+\end{questions}
+\end{exo}
+
+\partie{Terme général et variations d'une suite géométrique}
+
+\begin{exo}[Calculer un terme éloigné]
+\begin{reponses}
+  \item $u_{n}=3\times 2^{n}$ ; $u_{10}=3\times 1\,024=\res{3\,072}$ ; $q>1$ :
+        \res{\text{croissante}}
+  \item $u_{n}=6\times\left(\frac{1}{2}\right)^{n}$ ; $u_{5}=\frac{6}{32}=\res{\tfrac{3}{16}}$ ;
+        $0<q<1$ : \res{\text{décroissante}}
+  \item $u_{n}=2\,000\times 0{,}8^{n}$ ; $u_{5}=\res{655{,}36}$ ; $0<q<1$ :
+        \res{\text{décroissante}}
+  \item $u_{n}=8\times 1^{n}=8$ ; $u_{30}=\res{8}$ ; $q=1$ : \res{\text{constante}}
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Quand on ne part pas de $u_{0}$]
+\begin{reponses}
+  \item $u_{n}=\res{4\times 3^{n-1}}$ ; $u_{6}=4\times 3^{5}=\res{972}$.
+  \item On multiplie par $2$ : $u_{3}=\res{10}$ ; $u_{4}=\res{20}$ ; $u_{5}=\res{40}$.
+\end{reponses}
+\rem{De $u_{1}$ à $u_{6}$, on multiplie $5$ fois par $q$ : l'exposant est $n-1$.}
+\end{exo}
+
+\begin{exo}[Un placement]
+\begin{questions}
+  \item $C_{1}=1{,}05\times 5\,000=\res{5\,250}$~€ ;
+        $C_{2}=1{,}05\times 5\,250=\res{5\,512{,}50}$~€.
+  \item Géométrique de raison $1{,}05$ : \res{C_{n}=5\,000\times 1{,}05^{n}}.
+  \item $C_{10}=5\,000\times 1{,}05^{10}\approx\res{8\,144{,}47}$~€.
+  \item Tableau de valeurs : $C_{14}\approx 9\,899{,}66<10\,000$ et
+        $C_{15}\approx 10\,394{,}64\ge 10\,000$.\\
+        \res{\text{au bout de } 15 \text{ ans}}
+\end{questions}
+\end{exo}
+
+\begin{exo}[La ville (suite)]
+\begin{questions}
+  \item \res{u_{n}=40\,000\times 0{,}97^{n}} ; $0<q<1$ :
+        \res{\text{décroissante}}.
+  \item $u_{10}\approx\res{29\,497}$ habitants.
+  \item Tableau de valeurs : $u_{4}\approx 35\,412$ et $u_{5}\approx 34\,349<35\,000$.\\
+        \res{\text{au bout de } 5 \text{ ans}}
+\end{questions}
+\rem{Une population s'arrondit à l'unité.}
+\end{exo}
+
+\begin{exo}[La batterie d'un drone]
+\begin{questions}
+  \item On multiplie par $0{,}98$ à chaque vol : géométrique de raison $0{,}98$, qui
+        commence à $d_{1}$.\\
+        \res{d_{n}=30\times 0{,}98^{n-1}}
+  \item $d_{5}=30\times 0{,}98^{4}\approx\res{27{,}67}$ minutes.
+  \item Tableau de valeurs : $d_{12}\approx 24{,}02$ et $d_{13}\approx 23{,}54<24$.\\
+        \res{\text{à partir du } 13^{\text{e}} \text{ vol}}
+\end{questions}
+\rem{La suite commence à $d_{1}$ : l'exposant est $n-1$.}
+\end{exo}
+
+\end{document}
