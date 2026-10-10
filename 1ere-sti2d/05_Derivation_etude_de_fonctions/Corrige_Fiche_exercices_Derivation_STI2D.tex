@@ -1,0 +1,976 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[10pt,a4paper,twocolumn]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\RequirePackage{cuted}
+\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\newcommand{\entetecorrige}[3]{%
+  \begin{strip}
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
+      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}
+  \if\relax\detokenize{#3}\relax\else
+
+  \vspace{2pt}
+  \noindent
+  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
+      left=7pt,right=7pt,top=4pt,bottom=4pt]
+  {\small #3}
+  \end{tcolorbox}
+  \vspace{6pt}
+  \fi
+  \end{strip}}
+
+\newcounter{partie}
+\newcommand{\partiebandeau}[1]{%
+  \besoinplace{8\baselineskip}\vspace{6pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=4pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
+\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
+
+\newcommand{\res}[1]{%
+  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
+    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
+\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
+\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
+\newlist{reponses}{enumerate}{1}
+\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.6cm}
+\raggedbottom
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 5 --- Dérivation et étude de fonctions --- Corrigé des exercices}{1\textsuperscript{re} STI2D}
+\clubpenalty=10000
+\widowpenalty=10000
+
+\begin{document}
+
+\entetecorrige{CORRIGÉ --- DÉRIVATION ET ÉTUDE DE FONCTIONS}
+  {Chapitre 5 : fiche d'exercices --- Première STI2D}
+  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
+   fréquentes. Pour dériver, on écrit d'abord $u$, $u'$ (et $v$, $v'$), puis la
+   formule, puis on remplace.}
+
+\partie{Fonctions affines et droites}
+
+\begin{exo}[Coefficient directeur]
+\begin{reponses}
+  \item $m=\dfrac{8-2}{3-1}=\res{3}$
+  \item $m=\dfrac{-2-4}{2-(-1)}=\res{-2}$ \quad ($\frac{-6}{3}$)
+  \item $m=\dfrac{-1-(-3)}{4-0}=\res{\dfrac{1}{2}}$ \quad ($\frac{2}{4}$)
+  \item $m=\dfrac{5-5}{1-(-3)}=\res{0}$ : la droite est horizontale.
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Équation d'une droite]
+a) $m=\dfrac{4-1}{2-1}=3$. La droite passe par $A(1\,;1)$ :
+\begin{calculs}
+3\times 1+p &= 1\\
+p &= -2
+\end{calculs}
+$\res{y=3x-2}$\par\smallskip
+b) $m=\dfrac{1-5}{1-(-1)}=-2$ ; avec $A$ : $-2\times(-1)+p=5$, donc $p=3$ :
+$\res{y=-2x+3}$\par\smallskip
+c) $m=\dfrac{5-(-3)}{2-(-2)}=2$ ; avec $A$ : $2\times(-2)+p=-3$, donc $p=1$ :
+$\res{y=2x+1}$\par\smallskip
+d) $m=\dfrac{2-0}{6-2}=\dfrac{1}{2}$ ; avec $A$ : $\frac{1}{2}\times 2+p=0$, donc
+$p=-1$ : $\res{y=\frac{1}{2}x-1}$
+\rem{On trouve $m$ d'abord, puis $p$ avec un des deux points.}
+\end{exo}
+
+\begin{exo}[Une fonction affine par deux images]
+1\textdegree) $f(x)=mx+p$ passe par $(2\,;7)$ et $(-1\,;-2)$ :
+$m=\dfrac{7-(-2)}{2-(-1)}=3$.
+\begin{calculs}
+3\times 2+p &= 7\\
+p &= 1
+\end{calculs}
+$\res{f(x)=3x+1}$ et $f(10)=30+1=\res{31}$.\par\smallskip
+2\textdegree) $m=\dfrac{0-8}{1-(-3)}=-2$ ; $-2\times 1+p=0$, donc $p=2$ :
+$\res{g(x)=-2x+2}$ et $g(5)=-10+2=\res{-8}$.
+\end{exo}
+
+\begin{exo}[Lire des équations]
+On lit $p$ sur l'axe des ordonnées, puis on avance de $1$ et on regarde de combien on
+monte.
+\begin{reponses}
+  \item $(d_{1})$ : $p=-1$, on monte de $2$ : $\res{y=2x-1}$
+  \item $(d_{2})$ : $p=3$, on descend de $1$ : $\res{y=-x+3}$
+  \item $(d_{3})$ : $p=-2$, en avançant de $2$ on monte de $1$ :
+  $\res{y=\frac{1}{2}x-2}$
+\end{reponses}
+\end{exo}
+
+\partie{Nombre dérivé}
+
+\begin{exo}[Nombre dérivé en $1$]
+a) $f(1)=1+2-1=\res{2}$
+\begin{calculs}
+f(1+h) &= (1+h)^{2}+2(1+h)-1\\
+f(1+h) &= 1+2h+h^{2}+2+2h-1\\
+f(1+h) &= \res{h^{2}+4h+2}
+\end{calculs}
+b)
+\begin{calculs}
+T(h) &= \frac{h^{2}+4h+2-2}{h}\\
+T(h) &= \frac{\barre{h}\,(h+4)}{\barre{h}}\\
+T(h) &= \res{h+4}
+\end{calculs}
+c) Quand $h$ se rapproche de $0$, $h+4$ se rapproche de $4$ : $\res{f'(1)=4}$.
+\end{exo}
+
+\begin{exo}[Nombre dérivé en $2$]
+$g(2)=8-6=2$.
+\begin{calculs}
+g(2+h) &= 2(2+h)^{2}-3(2+h)\\
+g(2+h) &= 8+8h+2h^{2}-6-3h\\
+g(2+h) &= 2h^{2}+5h+2\\[3pt]
+T(h) &= \frac{2h^{2}+5h}{h}\\
+T(h) &= 2h+5
+\end{calculs}
+$\res{g'(2)=5}$
+\rem{$2(2+h)^{2}=2(4+4h+h^{2})$ : on développe le carré avant de multiplier par $2$.}
+\end{exo}
+
+\begin{exo}[Avec un coefficient négatif]
+$k(1)=-1+5=4$.
+\begin{calculs}
+k(1+h) &= -(1+h)^{2}+5(1+h)\\
+k(1+h) &= -1-2h-h^{2}+5+5h\\
+k(1+h) &= -h^{2}+3h+4\\[3pt]
+T(h) &= \frac{-h^{2}+3h}{h}\\
+T(h) &= -h+3
+\end{calculs}
+$\res{k'(1)=3}$
+\rem{$-(1+h)^{2}$ : le signe $-$ porte sur les trois termes du développement.}
+\end{exo}
+
+\begin{exo}[À la calculatrice]
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$h$ & $1$ & $0{,}1$ & $0{,}01$\\
+\hline
+$T(h)$ & $9$ & $8{,}1$ & $8{,}01$\\
+\hline
+\end{tabular}
+\end{center}
+Par exemple $T(0{,}1)=\dfrac{16{,}81-16}{0{,}1}=8{,}1$. Le tableau suggère
+$\res{f'(4)=8}$.
+\end{exo}
+
+\partie{Tangente à une courbe}
+
+\begin{exo}[Lire des nombres dérivés]
+On part du point, on avance de $1$ et on lit de combien la tangente monte.
+\deux{$f'(-3)=\res{-2}$}{$f'(-1)=\res{0}$ (horizontale)}
+\deux{$f'(1)=\res{2}$}{$f'(4)=\res{-2}$}
+\end{exo}
+
+\begin{exo}[Tracer des tangentes]
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+\small
+$A$ : on avance de $1$, on monte de $2$.\par
+$B$ : on avance de $1$, on descend de $1$.\par
+$C$ : on avance de $2$, on monte de $1$.\par
+$D$ : tangente horizontale.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-3}{5}{4}
+  \begin{scope}
+  \clip (-4,-3) rectangle (5,4);
+  \draw[coulCourbe,thick] (-2,-3)--(1.5,4);
+  \draw[coulCourbeB,thick] (0,4)--(4.5,-0.5);
+  \draw[coulCourbeC,thick] (-4,-2)--(5,2.5);
+  \draw[coulExo,thick] (1.5,-2)--(4.5,-2);
+  \end{scope}
+  \pt{0,1}{left}{A}
+  \pt{1,3}{right}{B}
+  \pt{-2,-1}{below}{C}
+  \pt{3,-2}{below}{D}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Retrouver l'allure d'une courbe]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+\small
+On trace d'abord un petit morceau de chaque tangente, puis la courbe, qui les
+\og touche\fg{} en $A$, $B$, $C$ et $D$ : un maximum en $B$, un minimum en $D$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{3}
+  \draw[coulCourbeB,thick] (-3.4,-3.2)--(-2.6,-0.8);
+  \draw[coulCourbeB,thick] (-1.7,2)--(-0.3,2);
+  \draw[coulCourbeB,thick] (0.5,1)--(1.5,-1);
+  \draw[coulCourbeB,thick] (2.3,-2)--(3.7,-2);
+  \draw[coulCourbe,line width=1pt]
+    (-3,-2) .. controls (-2.333,0) and (-1.667,2) .. (-1,2)
+            .. controls (-0.333,2) and (0.333,1.333) .. (1,0)
+            .. controls (1.667,-1.333) and (2.333,-2) .. (3,-2);
+  \pt{-3,-2}{left}{A}
+  \pt{-1,2}{above}{B}
+  \pt{1,0}{above right}{C}
+  \pt{3,-2}{below}{D}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Équation de la tangente}
+
+\begin{exo}[Avec un nombre dérivé admis]
+a) $f(4)=16-12+2=6$.
+\begin{calculs}
+y &= f'(4)\,(x-4)+f(4)\\
+y &= 5(x-4)+6\\
+y &= 5x-20+6\\
+y &= \res{5x-14}
+\end{calculs}
+b) $f(1)=1-3+2=0$.
+\begin{calculs}
+y &= -1(x-1)+0\\
+y &= \res{-x+1}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Quatre tangentes]
+On remplace dans $y=f'(a)\,(x-a)+f(a)$.
+\begin{reponses}
+  \item $y=1(x-2)+3$, soit $\res{y=x+1}$
+  \item $y=-2(x+1)+4$, soit $\res{y=-2x+2}$
+  \item $y=0(x-3)-1$, soit $\res{y=-1}$ (horizontale)
+  \item $y=-3(x-0)+5$, soit $\res{y=-3x+5}$
+\end{reponses}
+\rem{b) $x-a=x-(-1)=x+1$ : attention au signe.}
+\end{exo}
+
+\begin{exo}[Du taux de variation à la tangente]
+a) $f(2)=-4+6+1=\res{3}$
+\begin{calculs}
+f(2+h) &= -(2+h)^{2}+3(2+h)+1\\
+f(2+h) &= -4-4h-h^{2}+6+3h+1\\
+f(2+h) &= \res{-h^{2}-h+3}
+\end{calculs}
+b)
+\begin{calculs}
+T(h) &= \frac{-h^{2}-h+3-3}{h}\\
+T(h) &= \frac{\barre{h}\,(-h-1)}{\barre{h}}\\
+T(h) &= -h-1
+\end{calculs}
+Quand $h$ se rapproche de $0$ : $\res{f'(2)=-1}$.\par\smallskip
+c)
+\begin{calculs}
+y &= -1(x-2)+3\\
+y &= \res{-x+5}
+\end{calculs}
+\end{exo}
+
+\partie{Approximation affine}
+
+\begin{exo}[Le carré de $3{,}02$]
+a) $3{,}02$ est proche de $3$ : on remplace $x$ par $3{,}02$ dans $6x-9$.
+\begin{calculs}
+f(3{,}02) &\approx 6\times 3{,}02-9\\
+f(3{,}02) &\approx \res{9{,}12}
+\end{calculs}
+Valeur exacte : $3{,}02^{2}=9{,}1204$ ; écart de $0{,}0004$.\par\smallskip
+b) $f(2{,}99)\approx 6\times 2{,}99-9=\res{8{,}94}$ ; exacte : $8{,}9401$.
+\end{exo}
+
+\begin{exo}[Une fonction inverse]
+a) $f(2)=\dfrac{1}{2-1}=1$.
+\begin{calculs}
+y &= -1(x-2)+1\\
+y &= \res{-x+3}
+\end{calculs}
+b) $f(2{,}1)\approx -2{,}1+3=\res{0{,}9}$\par\smallskip
+c) $f(2{,}1)=\dfrac{1}{1{,}1}\approx 0{,}909$ : écart d'environ $0{,}009$.
+\end{exo}
+
+\begin{exo}[Une plaque qui se dilate]
+a) $A(10)=100$.
+\begin{calculs}
+y &= 20(x-10)+100\\
+y &= \res{20x-100}
+\end{calculs}
+b) $A(10{,}1)\approx 20\times 10{,}1-100=\res{102\text{ cm}^{2}}$\par\smallskip
+c) $10{,}1^{2}=102{,}01$~cm$^{2}$ : l'approximation ne se trompe que de
+$0{,}01$~cm$^{2}$.
+\end{exo}
+
+\partie{Fonction dérivée d'une fonction polynôme}
+
+\begin{exo}[Dériver]
+\deux{a) $f'(x)=\res{7}$}{e) $m'(x)=\res{-10x+10}$}
+\deux{b) $g'(x)=\res{-4}$}{f) $p'(x)=\res{3x^{2}+8x-1}$}
+\deux{c) $h'(x)=\res{2x+6}$}{g) $q'(x)=\res{8x^{3}-6x}$}
+\deux{d) $k'(x)=\res{6x-1}$}{h) $r'(x)=\res{-5x^{4}+6x^{2}}$}
+\rem{Un nombre seul (le $-5$ de $7x-5$) a pour dérivée $0$.}
+\end{exo}
+
+\begin{exo}[Degré 3 et plus]
+\begin{reponses}
+  \item $f'(x)=4\times 3x^{2}-6\times 2x+5=\res{12x^{2}-12x+5}$
+  \item $g'(x)=\res{6x^{5}-4x^{3}}$
+  \item $h'(x)=\res{-10x^{4}+3x^{2}-7}$
+  \item $k'(x)=\res{-12x^{3}}$
+  \item $m'(x)=\frac{1}{3}\times 3x^{2}-2=\res{x^{2}-2}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Entraînement]
+\deux{a) $f'(x)=\res{6}$}{e) $m'(x)=\res{-12x^{3}+6}$}
+\deux{b) $g'(x)=\res{-2x+4}$}{f) $p'(x)=\res{10x^{4}-10x}$}
+\deux{c) $h'(x)=\res{15x^{2}-4x}$}{g) $q'(x)=\res{x+3}$}
+\deux{d) $k'(x)=\res{4x^{3}+3x^{2}+2x+1}$}{}
+\deux{h) $r'(x)=\res{x^{3}-1}$}{}
+\rem{g) $\frac{1}{2}\times 2x=x$ ; h) $\frac{1}{4}\times 4x^{3}=x^{3}$.}
+\end{exo}
+
+\begin{exo}[Développer d'abord]
+\begin{reponses}
+  \item $A(x)=x^{2}+3x-4$, donc $A'(x)=\res{2x+3}$
+  \item $B(x)=2x^{2}-5x-3$, donc $B'(x)=\res{4x-5}$
+  \item $C(x)=x^{2}+4x+4$, donc $C'(x)=\res{2x+4}$
+  \item $D(x)=x^{3}-5x$, donc $D'(x)=\res{3x^{2}-5}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Dérivée et tangentes]
+a) $f'(x)=\res{3x^{2}-2}$\par\smallskip
+b) $f(1)=1-2+1=0$ et $f'(1)=3-2=1$.
+\begin{calculs}
+y &= 1(x-1)+0\\
+y &= \res{x-1}
+\end{calculs}
+c) $f(0)=1$ et $f'(0)=-2$ : $y=-2(x-0)+1$, soit $\res{y=-2x+1}$.
+\end{exo}
+
+\partie{Autres fonctions dérivées}
+
+\begin{exo}[Inverse, cosinus, sinus]
+\deux{a) $f'(x)=\res{-\dfrac{4}{x^{2}}}$}{b) $g'(x)=\res{\dfrac{7}{x^{2}}}$}
+\deux{c) $h'(x)=\res{-\sin x+3}$}{d) $k'(x)=\res{5\cos x}$}
+\deux{e) $m'(x)=\res{-2\sin x-3\cos x}$}{}
+\deux{f) $p'(x)=\res{4x^{3}+\dfrac{1}{x^{2}}}$}{g) $q'(x)=\res{-\dfrac{6}{x^{2}}+4x}$}
+\deux{h) $r'(x)=\res{-\cos x+3x^{2}}$}{}
+\rem{Seule la dérivée de $\cos x$ porte un signe $-$ : $(\cos x)'=-\sin x$.}
+\end{exo}
+
+\begin{exo}[Entraînement]
+\deux{a) $f'(x)=\res{-\dfrac{3}{x^{2}}+1}$}{b) $g'(x)=\res{-4\sin x+2x}$}
+\deux{c) $h'(x)=\res{-2\cos x}$}{d) $k'(x)=\res{3x^{2}+\dfrac{5}{x^{2}}}$}
+\deux{e) $m'(x)=\res{\cos x+\sin x}$}{f) $p'(x)=\res{-\dfrac{1}{x^{2}}+3\sin x}$}
+\rem{e) $-\cos x$ a pour dérivée $-(-\sin x)=\sin x$.}
+\end{exo}
+
+\begin{exo}[Tangentes à la courbe de $\frac{2}{x}$]
+a) $f'(x)=2\times\left(-\dfrac{1}{x^{2}}\right)=\res{-\dfrac{2}{x^{2}}}$\par\smallskip
+b) $f(1)=2$ et $f'(1)=-2$.
+\begin{calculs}
+y &= -2(x-1)+2\\
+y &= \res{-2x+4}
+\end{calculs}
+c) $f(2)=1$ et $f'(2)=-\dfrac{2}{4}=-\dfrac{1}{2}$.
+\begin{calculs}
+y &= -\tfrac{1}{2}(x-2)+1\\
+y &= \res{-\tfrac{1}{2}x+2}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Sinus et cosinus près de $0$]
+a) $f'(x)=\cos x$, donc $f'(0)=\cos 0=1$ ; $f(0)=\sin 0=0$.
+\begin{calculs}
+y &= 1(x-0)+0\\
+y &= \res{x}
+\end{calculs}
+b) $\sin(0{,}1)\approx\res{0{,}1}$ ; la calculatrice donne $0{,}0998\ldots$\par\smallskip
+c) $g'(x)=-\sin x$, donc $g'(0)=\res{0}$ : la tangente est \res{\text{horizontale}},
+d'équation $y=1$ (car $g(0)=1$).
+\end{exo}
+
+\partie{Dérivée d'un produit, d'un carré}
+
+\begin{exo}[Des carrés]
+On écrit $u$ et $u'$, puis $2\times u'\times u$.
+\begin{reponses}
+  \item $u=4x+1$, $u'=4$ : $f'(x)=2\times 4\times(4x+1)=\res{32x+8}$
+  \item $u=2-5x$, $u'=-5$ : $g'(x)=2\times(-5)(2-5x)=\res{50x-20}$
+  \item $u=x^{2}+3$, $u'=2x$ : $h'(x)=2\times 2x(x^{2}+3)=\res{4x^{3}+12x}$
+  \item $u=x^{3}-1$, $u'=3x^{2}$ : $k'(x)=2\times 3x^{2}(x^{3}-1)=\res{6x^{5}-6x^{2}}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Des produits]
+a) $u=x+2$, $u'=1$ ; $v=3x-1$, $v'=3$.
+\begin{calculs}
+f'(x) &= 1\times(3x-1)+(x+2)\times 3\\
+f'(x) &= 3x-1+3x+6\\
+f'(x) &= \res{6x+5}
+\end{calculs}
+b) $u'=2$ ; $v'=2x$.
+\begin{calculs}
+g'(x) &= 2(x^{2}+1)+(2x-3)\times 2x\\
+g'(x) &= 2x^{2}+2+4x^{2}-6x\\
+g'(x) &= \res{6x^{2}-6x+2}
+\end{calculs}
+c) $u=x^{2}$, $u'=2x$ ; $v=4x+5$, $v'=4$ :
+$h'(x)=2x(4x+5)+4x^{2}=\res{12x^{2}+10x}$\par\smallskip
+d) $u'=2x-1$ ; $v'=2x$.
+\begin{calculs}
+k'(x) &= (2x-1)(x^{2}+2)+(x^{2}-x)\times 2x\\
+k'(x) &= 2x^{3}+4x-x^{2}-2+2x^{3}-2x^{2}\\
+k'(x) &= \res{4x^{3}-3x^{2}+4x-2}
+\end{calculs}
+e) $u=x$, $u'=1$ ; $v=\sin x$, $v'=\cos x$ : $m'(x)=\res{\sin x+x\cos x}$
+\end{exo}
+
+\begin{exo}[Entraînement]
+\begin{reponses}
+  \item $f'(x)=3(x-2)+(3x+1)\times 1=\res{6x-5}$
+  \item $g'(x)=2\times 1\times(x+5)=\res{2x+10}$
+  \item $h'(x)=2x(2x+3)+(x^{2}-4)\times 2=\res{6x^{2}+6x-8}$
+  \item $k'(x)=2\times(-2x)(3-x^{2})=\res{4x^{3}-12x}$
+  \item $m'(x)=\res{2x\cos x-x^{2}\sin x}$
+  \item $p'(x)=2(x^{3}+x)+(2x-1)(3x^{2}+1)=\res{8x^{3}-3x^{2}+4x-1}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Deux façons de faire]
+a) $u=x+3$, $u'=1$ ; $v=2x-1$, $v'=2$.
+\begin{calculs}
+f'(x) &= 1\times(2x-1)+(x+3)\times 2\\
+f'(x) &= \res{4x+5}
+\end{calculs}
+b) $f(x)=2x^{2}-x+6x-3=2x^{2}+5x-3$, donc $f'(x)=\res{4x+5}$.\par\smallskip
+c) Les deux résultats sont \textbf{égaux} : développer permet de vérifier.
+\rem{La dérivée d'un produit n'est pas le produit des dérivées : $1\times 2=2$ serait
+faux.}
+\end{exo}
+
+\partie{Dérivée de l'inverse, d'un quotient}
+
+\begin{exo}[Des inverses]
+On écrit $v$ et $v'$, puis $-\dfrac{v'}{v^{2}}$.
+\begin{reponses}
+  \item $v'=3$ : $f'(x)=\res{-\dfrac{3}{(3x+2)^{2}}}$
+  \item $v'=-4$ : $g'(x)=-\dfrac{-4}{(1-4x)^{2}}=\res{\dfrac{4}{(1-4x)^{2}}}$
+  \item $v'=2x$ : $h'(x)=\res{-\dfrac{2x}{(x^{2}+1)^{2}}}$
+  \item $k(x)=5\times\dfrac{1}{2x-1}$, $v'=2$ : $k'(x)=\res{-\dfrac{10}{(2x-1)^{2}}}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Des quotients]
+a) $u=x+4$, $u'=1$ ; $v=x-1$, $v'=1$.
+\begin{calculs}
+f'(x) &= \frac{1\times(x-1)-(x+4)\times 1}{(x-1)^{2}}\\
+f'(x) &= \frac{x-1-x-4}{(x-1)^{2}}\\
+f'(x) &= \res{\frac{-5}{(x-1)^{2}}}
+\end{calculs}
+b) $g'(x)=\dfrac{2(x+2)-(2x-1)}{(x+2)^{2}}=\res{\dfrac{5}{(x+2)^{2}}}$\par\smallskip
+c) $h'(x)=\dfrac{3(x+1)-3x}{(x+1)^{2}}=\res{\dfrac{3}{(x+1)^{2}}}$\par\smallskip
+d) $u'=2x$ ; $v'=1$.
+\begin{calculs}
+k'(x) &= \frac{2x(x-2)-(x^{2}+1)}{(x-2)^{2}}\\
+k'(x) &= \frac{2x^{2}-4x-x^{2}-1}{(x-2)^{2}}\\
+k'(x) &= \res{\frac{x^{2}-4x-1}{(x-2)^{2}}}
+\end{calculs}
+\rem{Des parenthèses autour de $u(x)$ : le $-$ porte sur tout le terme.}
+\end{exo}
+
+\begin{exo}[Entraînement]
+\begin{reponses}
+  \item $f'(x)=\res{-\dfrac{1}{(x+5)^{2}}}$
+  \item $g'(x)=3\times\left(-\dfrac{4}{(4x-1)^{2}}\right)=\res{-\dfrac{12}{(4x-1)^{2}}}$
+  \item $h'(x)=\dfrac{(x+2)-(x-3)}{(x+2)^{2}}=\res{\dfrac{5}{(x+2)^{2}}}$
+  \item $k'(x)=\dfrac{8x-12-8x-2}{(2x-3)^{2}}=\res{\dfrac{-14}{(2x-3)^{2}}}$
+  \quad (numérateur : $4(2x-3)-(4x+1)\times 2$)
+  \item $m'(x)=2\times\left(-\dfrac{2x}{(x^{2}+4)^{2}}\right)=\res{-\dfrac{4x}{(x^{2}+4)^{2}}}$
+  \item $p'(x)=\dfrac{2x(x+1)-x^{2}}{(x+1)^{2}}=\res{\dfrac{x^{2}+2x}{(x+1)^{2}}}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Quotient et tangente]
+a) $u=2x+1$, $u'=2$ ; $v=x-1$, $v'=1$.
+\begin{calculs}
+f'(x) &= \frac{2(x-1)-(2x+1)\times 1}{(x-1)^{2}}\\
+f'(x) &= \frac{2x-2-2x-1}{(x-1)^{2}}\\
+f'(x) &= \res{\frac{-3}{(x-1)^{2}}}
+\end{calculs}
+b) $f(2)=\dfrac{5}{1}=5$ et $f'(2)=\dfrac{-3}{1}=-3$.
+\begin{calculs}
+y &= -3(x-2)+5\\
+y &= \res{-3x+11}
+\end{calculs}
+\end{exo}
+
+\partie{Fonctions composées}
+
+\begin{exo}[Des puissances]
+On écrit $u$, $u'$ et $n$, puis $n\times u'\times u^{n-1}$.
+\begin{reponses}
+  \item $u'=3$, $n=4$ : $f'(x)=\res{12(3x-2)^{3}}$
+  \item $u'=2x$, $n=3$ : $g'(x)=\res{6x(x^{2}+1)^{2}}$
+  \item $u'=-2$, $n=5$ : $h'(x)=\res{-10(1-2x)^{4}}$
+  \item $u'=3x^{2}+1$, $n=2$ : $k'(x)=\res{2(3x^{2}+1)(x^{3}+x)}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Cosinus et sinus composés]
+\begin{reponses}
+  \item $u=4x$, $u'=4$ : $f'(x)=\res{-4\sin(4x)}$
+  \item $u'=2$ : $g'(x)=\res{2\cos(2x+3)}$
+  \item $u'=5$ : $h'(x)=3\times(-5)\sin(5x-1)=\res{-15\sin(5x-1)}$
+  \item $u'=100$ : $k'(t)=2\times 100\cos(100t)=\res{200\cos(100t)}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Entraînement]
+\begin{reponses}
+  \item $f'(x)=3\times 5(5x+2)^{2}=\res{15(5x+2)^{2}}$
+  \item $g'(x)=\res{4(2x-3)(x^{2}-3x)^{3}}$
+  \item $h'(x)=\res{-3\sin(3x-2)}$
+  \item $u=x^{2}$, $u'=2x$ : $k'(x)=4\times 2x\cos(x^{2})=\res{8x\cos(x^{2})}$
+  \item $m'(t)=5\times(-100)\sin(100t+1)=\res{-500\sin(100t+1)}$
+  \item $u'=-1$ : $p'(x)=\res{-6(2-x)^{5}}$
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Un piston]
+a) $u=2t$, $u'=2$ : $p'(t)=6\times(-2)\sin(2t)=\res{-12\sin(2t)}$\par\smallskip
+b) $p'(0)=-12\sin 0=\res{0\text{ cm/s}}$ : au départ, le piston est immobile.\par\smallskip
+c) $\sin(2t)$ est entre $-1$ et $1$, donc $p'(t)$ est entre $-12$ et $12$ : au plus
+$\res{12\text{ cm/s}}$.
+\end{exo}
+
+\begin{exo}[Dérivées en vrac]
+\begin{reponses}
+  \item Somme : $f'(x)=\res{12x^{3}+\dfrac{2}{x^{2}}}$
+  \item Produit : $g'(x)=2x(x-3)+(x^{2}+1)=\res{3x^{2}-6x+1}$
+  \item Puissance : $h'(x)=3\times 2(2x+5)^{2}=\res{6(2x+5)^{2}}$
+  \item Inverse : $k'(x)=4\times\left(-\dfrac{2x}{(x^{2}+3)^{2}}\right)=\res{-\dfrac{8x}{(x^{2}+3)^{2}}}$
+  \item Quotient : $m'(x)=\dfrac{(x^{2}+1)-(x-1)\times 2x}{(x^{2}+1)^{2}}
+  =\res{\dfrac{-x^{2}+2x+1}{(x^{2}+1)^{2}}}$
+  \item Produit : $p'(x)=\res{\cos x-x\sin x}$
+\end{reponses}
+\end{exo}
+
+\partie{Dérivée et sens de variation}
+
+\begin{exo}[Du signe de $f'$ aux variations]
+$f'(x)<0$ : $f$ décroît ; $f'(x)>0$ : $f$ croît.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-4$,$-1$,$3$,$5$}
+  \tkzTabLine{,-,z,+,z,-,}
+  \tkzTabVar{+/$2$,-/$-3$,+/$4$,-/$1$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un trinôme]
+a) $f'(x)=\res{2x-6}$ ; $2x-6=0$ pour $x=3$. Affine de coefficient $2>0$ : négatif
+avant $3$, positif après.\par\smallskip
+b) $f(0)=5$ ; $f(3)=9-18+5=-4$ ; $f(6)=36-36+5=5$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$3$,$6$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$5$,-/$-4$,+/$5$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un polynôme de degré 3]
+a) $f'(x)=\res{3x^{2}-6x}$\par\smallskip
+b) $a=3$, $b=-6$, $c=0$.
+\begin{calculs}
+\Delta &= (-6)^{2}-4\times 3\times 0\\
+\Delta &= 36\\
+x_{1} &= \frac{6-6}{6} = 0\\
+x_{2} &= \frac{6+6}{6} = 2
+\end{calculs}
+Du signe de $a=3>0$ à l'extérieur des racines.\par\smallskip
+c) $f(-1)=-1-3+1=-3$ ; $f(0)=1$ ; $f(2)=8-12+1=-3$ ; $f(3)=27-27+1=1$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-1$,$0$,$2$,$3$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$-3$,+/$1$,-/$-3$,+/$1$}
+\end{tikzpicture}
+\end{center}
+\rem{Plus rapide : $3x^{2}-6x=3x(x-2)$, racines $0$ et $2$.}
+\end{exo}
+
+\begin{exo}[Un coefficient négatif]
+a) $g'(x)=\res{-6x^{2}+6x+12}$\par\smallskip
+b)
+\begin{calculs}
+\Delta &= 6^{2}-4\times(-6)\times 12\\
+\Delta &= 324\\
+x_{1} &= \frac{-6+18}{-12} = -1\\
+x_{2} &= \frac{-6-18}{-12} = 2
+\end{calculs}
+Du signe de $a=-6<0$ (négatif) à l'extérieur des racines, positif entre elles.
+\par\smallskip
+c) $g(-2)=16+12-24-5=-1$ ; $g(-1)=2+3-12-5=-12$ ; $g(2)=-16+12+24-5=15$ ;
+$g(3)=-54+27+36-5=4$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-2$,$-1$,$2$,$3$}
+  \tkzTabLine{,-,z,+,z,-,}
+  \tkzTabVar{+/$-1$,-/$-12$,+/$15$,-/$4$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un quotient]
+a) $u=2x+1$, $u'=2$ ; $v=x+1$, $v'=1$.
+\begin{calculs}
+f'(x) &= \frac{2(x+1)-(2x+1)\times 1}{(x+1)^{2}}\\
+f'(x) &= \frac{2x+2-2x-1}{(x+1)^{2}}\\
+f'(x) &= \frac{1}{(x+1)^{2}}
+\end{calculs}
+b) Un carré est positif : $f'(x)>0$, donc $f$ est \res{\text{croissante}} sur
+$\intff{0}{4}$. $f(0)=1$ et $f(4)=\dfrac{9}{5}$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=2.4]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$4$}
+  \tkzTabLine{,+,}
+  \tkzTabVar{-/$1$,+/$\frac{9}{5}$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Étude complète et tracé]
+a) $f'(x)=\res{3x^{2}-3}$ ; $\Delta=0-4\times 3\times(-3)=36$, racines
+$\dfrac{0\pm 6}{6}$ : $-1$ et $1$. Positif à l'extérieur ($a=3>0$).\par\smallskip
+b) $f(-2)=-2$ ; $f(-1)=2$ ; $f(1)=-2$ ; $f(2)=2$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-2$,$-1$,$1$,$2$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$-2$,+/$2$,-/$-2$,+/$2$}
+\end{tikzpicture}
+\end{center}
+c) $f(0)=0$ et $f'(0)=-3$ : $\res{y=-3x}$.\par\smallskip
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+d) Valeurs : \par
+$f(-2)=-2$ ; $f(-1)=2$ ;\par
+$f(0)=0$ ; $f(1)=-2$ ;\par
+$f(2)=2$.\par\smallskip
+e) Tangentes horizontales en $-1$ et en $1$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-3}{-4}{3}{4}
+  \draw[coulCourbeB,thick] (-1.3,3.9)--(1.3,-3.9);
+  \draw[coulCourbe,line width=1pt,domain=-2:2,samples=50] plot (\x,{\x*\x*\x-3*\x});
+  \path[coulCourbe] (-2,-2) node[croix]{} (-1,2) node[croix]{} (0,0) node[croix]{}
+    (1,-2) node[croix]{} (2,2) node[croix]{};
+  \node[coulCourbeB,font=\footnotesize] at (-1.8,3.4) {$T$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Problèmes concrets : maximum et minimum}
+
+\begin{exo}[Un coût minimal]
+a) $C'(q)=\res{2q-30}$\par\smallskip
+b) $2q-30=0$ pour $q=15$ ; coefficient $2>0$ : négatif puis positif.
+$C(0)=300$ ; $C(15)=225-450+300=75$ ; $C(25)=625-750+300=175$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=2]{$q$/0.8,$C'(q)$/0.8,$C(q)$/1.6}{$0$,$15$,$25$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$300$,-/$75$,+/$175$}
+\end{tikzpicture}
+\end{center}
+c) Coût minimal de $\res{75\text{ €}}$ pour $q=15$, soit \res{150} pièces.
+\rem{$q$ compte des dizaines : $15$ dizaines font $150$ pièces.}
+\end{exo}
+
+\begin{exo}[La boîte la plus grande]
+a) $(12-2x)^{2}=144-48x+4x^{2}$, donc
+$V(x)=x(4x^{2}-48x+144)=4x^{3}-48x^{2}+144x$.\par\smallskip
+b) $V'(x)=\res{12x^{2}-96x+144}$\par\smallskip
+c)
+\begin{calculs}
+\Delta &= 96^{2}-4\times 12\times 144\\
+\Delta &= 2\,304\\
+x_{1} &= \frac{96-48}{24} = 2\\
+x_{2} &= \frac{96+48}{24} = 6
+\end{calculs}
+$a=12>0$ : positif sur $\intff{0}{2}$, négatif sur $\intff{2}{6}$.\par\smallskip
+d) $V(0)=0$ ; $V(2)=2\times 8^{2}=128$ ; $V(6)=0$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$V'(x)$/0.8,$V(x)$/1.6}{$0$,$2$,$6$}
+  \tkzTabLine{,+,z,-,z}
+  \tkzTabVar{-/$0$,+/$128$,-/$0$}
+\end{tikzpicture}
+\end{center}
+e) Volume maximal de $\res{128\text{ cm}^{3}}$ pour $\res{x=2\text{ cm}}$.
+\end{exo}
+
+\begin{exo}[Le tambour d'une machine à laver]
+a) $N'(t)=-0{,}5\times 2t+20=\res{-t+20}$\par\smallskip
+b) Le tambour s'arrête quand sa vitesse est nulle : $-t+20=0$, soit
+$\res{t=20\text{ s}}$.\par\smallskip
+c) $N(20)=-0{,}5\times 400+400=\res{200}$ tours.
+\rem{Entre $0$ et $20$~s, $N'(t)>0$ : le nombre de tours augmente, le tambour tourne.}
+\end{exo}
+
+\partie{Résoudre une équation $f(x)=k$}
+
+\begin{exo}[Nombre de solutions]
+Sur chaque intervalle où $f$ varie dans un seul sens, on regarde si $k$ est entre les
+deux valeurs extrêmes.
+\begin{reponses}
+  \item $f(x)=0$ : \res{3} solutions, dans $\intoo{-3}{0}$, $\intoo{0}{2}$ et
+  $\intoo{2}{4}$.
+  \item $f(x)=3$ : \res{2} solutions, dans $\intoo{-3}{0}$ et $\intoo{0}{2}$ (sur
+  $\intff{2}{4}$, $f$ ne dépasse pas $1$).
+  \item $f(x)=-3$ : \res{2} solutions, dans $\intoo{0}{2}$ et $\intoo{2}{4}$ (sur
+  $\intff{-3}{0}$, $f$ reste au-dessus de $-2$).
+  \item $f(x)=6$ : \res{0} solution ($6$ est plus grand que le maximum $5$).
+\end{reponses}
+\end{exo}
+
+\begin{exo}[Une seule solution]
+a) $f'(x)=3x^{2}+1$ : un carré est positif, donc $f'(x)>0$ et $f$ est strictement
+croissante.\par\smallskip
+b) $f(0)=-3$ et $f(2)=8+2-3=7$ : $0$ est entre $-3$ et $7$, donc l'équation a une
+seule solution $\alpha$.\par\smallskip
+c) $f(1)=-1$ et $f(2)=7$, donc $1<\alpha<2$ ; $f(1{,}2)=-0{,}072$ et
+$f(1{,}3)=0{,}497$, donc $\res{1{,}2<\alpha<1{,}3}$.
+\end{exo}
+
+\begin{exo}[Trois solutions]
+a) $g'(x)=\res{3x^{2}-12}$ ; $\Delta=0-4\times 3\times(-12)=144$, racines
+$\dfrac{0\pm 12}{6}$ : $-2$ et $2$. Positif à l'extérieur ($a=3>0$).\par\smallskip
+b) $g(-4)=-16$ ; $g(-2)=16$ ; $g(2)=-16$ ; $g(4)=16$.
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-4$,$-2$,$2$,$4$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$-16$,+/$16$,-/$-16$,+/$16$}
+\end{tikzpicture}
+\end{center}
+c) Sur chacun des trois intervalles, $g$ varie dans un seul sens entre $-16$ et $16$,
+et $5$ est entre les deux : \res{3} solutions.\par\smallskip
+d) La plus grande est dans $\intoo{2}{4}$ : $g(3)=-9$ et $g(4)=16$, donc
+$3<\alpha<4$ ; $g(3{,}6)=3{,}456$ et $g(3{,}7)=6{,}253$ encadrent $5$, donc
+$\res{3{,}6<\alpha<3{,}7}$.
+\end{exo}
+
+\end{document}

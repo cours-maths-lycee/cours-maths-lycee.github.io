@@ -1,0 +1,663 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\raggedcolumns
+\newcommand{\qcm}[4]{\par\hspace*{0.6em}\makebox[0.48\linewidth][l]{a) #1}b) #2
+  \par\hspace*{0.6em}\makebox[0.48\linewidth][l]{c) #3}d) #4}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} mathématiques spécifiques --- Calcul littéral et second
+degré}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Développer}
+
+\exo[Distributivité simple]
+Développer et réduire.
+\trois{$A=5(x+3)$}{$B=4(2x-7)$}{$C=-3(x+6)$}
+\trois{$D=-2(4-5x)$}{$E=7(3-x)$}{$F=-(x-9)$}
+
+\exo[Un facteur en $x$]
+Développer et réduire.
+\trois{$A=x(x+8)$}{$B=2x(3x-1)$}{$C=-x(x-4)$}
+\deux{$D=-4x(2x+5)$}{$E=3x(5-2x)$}
+
+\exo[Double distributivité]
+Développer et réduire.
+\deux{$A=(x+2)(x+5)$}{$B=(x-3)(x+4)$}
+\deux{$C=(x-6)(x-1)$}{$D=(2x+1)(x+3)$}
+\deux{$E=(3x-2)(x+2)$}{$F=(x+5)(4-x)$}
+
+\exo[Vrai ou faux ?]
+Pour chaque égalité, dire si elle est vraie pour tout nombre $x$ ; corriger celles
+qui sont fausses.
+\begin{enumerate}[label=\alph*)]
+  \item $3(x+4)=3x+4$
+  \item $-2(x-5)=-2x+10$
+  \item $x(x+1)=x^{2}+x$
+  \item $(x+1)(x+2)=x^{2}+2$
+  \item $-(3-x)=-3-x$
+\end{enumerate}
+
+\partiefiche{Identités remarquables}
+
+\exo[Le carré d'une somme]
+Développer et réduire.
+\deux{$A=(x+4)^{2}$}{$B=(x+1)^{2}$}
+\deux{$C=(2x+3)^{2}$}{$D=(3x+5)^{2}$}
+
+\exo[Le carré d'une différence]
+Développer et réduire.
+\deux{$A=(x-3)^{2}$}{$B=(x-10)^{2}$}
+\deux{$C=(2x-1)^{2}$}{$D=(5x-2)^{2}$}
+
+\exo[Somme par différence]
+Développer et réduire.
+\deux{$A=(x+6)(x-6)$}{$B=(x-1)(x+1)$}
+\deux{$C=(3x+2)(3x-2)$}{$D=(4x-5)(4x+5)$}
+
+\exo[La bonne réponse]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item $(x-7)^{2}$ est égal à :
+        \qcm{$x^{2}-49$}{$x^{2}-14x+49$}{$x^{2}+49$}{$x^{2}-7x+49$}
+  \item $(3x+1)^{2}$ est égal à :
+        \qcm{$9x^{2}+1$}{$3x^{2}+6x+1$}{$9x^{2}+6x+1$}{$9x^{2}+3x+1$}
+  \item $x^{2}-16$ est le développement de :
+        \qcm{$(x-4)^{2}$}{$(x-4)(x+4)$}{$(x-16)(x+1)$}{$(x-8)(x+2)$}
+  \item $(2x-5)(2x+5)$ est égal à :
+        \qcm{$4x^{2}-25$}{$2x^{2}-25$}{$4x^{2}-20x+25$}{$4x^{2}+25$}
+\end{enumerate}
+
+\partiefiche{Équations du premier degré}
+
+\exo[Premières équations]
+Résoudre.
+\deux{a)~$x+7=12$}{b)~$4x=-20$}
+\deux{c)~$3x-5=10$}{d)~$5x+2=3x+10$}
+\deux{e)~$8x-1=2x+11$}{f)~$2x+9=6x-3$}
+
+\exo[Avec des parenthèses]
+Résoudre.
+\deux{a)~$3(x+2)=21$}{b)~$2(x-4)=x+1$}
+\deux{c)~$5(x+1)=2(x+7)$}{d)~$-(x-6)=2x$}
+\deux{e)~$4(2x-1)=3(x+7)$}{}
+
+\exo[L'inconnue au dénominateur]
+Résoudre (le nombre $x$ n'est pas nul).
+\[
+  \text{a) }\dfrac{12}{x}=3 \qquad \text{b) }\dfrac{30}{x}=6 \qquad
+  \text{c) }\dfrac{8}{x}=-2 \qquad \text{d) }\dfrac{21}{x}=7
+\]
+e)~Une cagnotte de $120$~€ est partagée également entre $x$ amis : chacun reçoit
+$15$~€. Écrire une équation, puis trouver $x$.
+
+\exo[Deux formules pour la piscine]
+Une piscine propose l'entrée à $6$~€, ou une carte annuelle à $40$~€ avec laquelle
+chaque entrée coûte $4$~€. On note $x$ le nombre d'entrées dans l'année.
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer le prix payé pour $10$ entrées avec chaque formule.
+  \item Exprimer en fonction de $x$ le prix payé avec chaque formule.
+  \item Pour combien d'entrées les deux formules coûtent-elles autant ?
+  \item Quelle formule choisir pour $25$ entrées ?
+\end{enumerate}
+
+\partiefiche{Équations $x^{2}=a$}
+
+\exo[Résoudre $x^{2}=a$]
+Résoudre.
+\trois{a)~$x^{2}=16$}{b)~$x^{2}=1$}{c)~$x^{2}=0$}
+\trois{d)~$x^{2}=3$}{e)~$x^{2}=-25$}{f)~$x^{2}=144$}
+
+\exo[Isoler $x^{2}$ d'abord]
+Résoudre.
+\trois{a)~$x^{2}-9=0$}{b)~$x^{2}+4=40$}{c)~$2x^{2}=98$}
+\trois{d)~$5x^{2}-20=0$}{e)~$x^{2}+10=1$}{f)~$4x^{2}-1=99$}
+
+\exo[Des carrés]
+\begin{enumerate}[label=\arabic*.]
+  \item Un potager carré a une aire de $81~\text{m}^{2}$. Quelle est la longueur de
+        son côté ?
+  \item Une photo carrée a une aire de $100~\text{cm}^{2}$. Quelle est la longueur de
+        son côté ?
+  \item Quels sont les nombres dont le carré vaut $49$ ?
+\end{enumerate}
+
+\partiefiche{Équations produit}
+
+\exo[Produit nul]
+Résoudre.
+\deux{a)~$(x-1)(x+7)=0$}{b)~$(x+2)(x+5)=0$}
+\deux{c)~$(x-3)(x-8)=0$}{d)~$x(x+4)=0$}
+
+\exo[Des coefficients devant $x$]
+Résoudre.
+\deux{a)~$(2x-4)(x+3)=0$}{b)~$(3x+9)(x-5)=0$}
+\deux{c)~$(5x-15)(2x+8)=0$}{d)~$(-x+6)(4x-8)=0$}
+\deux{e)~$(-2x+10)(3x+3)=0$}{}
+
+\exo[Factoriser par $x$ d'abord]
+Résoudre en factorisant par $x$.
+\trois{a)~$x^{2}-4x=0$}{b)~$x^{2}+6x=0$}{c)~$3x^{2}-9x=0$}
+\deux{d)~$2x^{2}+10x=0$}{e)~$x^{2}=7x$ (tout passer à gauche)}
+
+\partiefiche{Fonction polynôme du second degré}
+
+\exo[Reconnaître, lire $a$, $b$ et $c$]
+Pour chaque fonction, dire si elle est du second degré et, si oui, donner $a$, $b$
+et $c$.
+\deux{$f(x)=2x^{2}+5x-1$}{$g(x)=-x^{2}+3$}
+\deux{$h(x)=7x-2$}{$k(x)=4x-x^{2}$}
+\deux{$m(x)=x^{2}$}{$p(x)=6-2x+3x^{2}$}
+
+\exo[Calculer des images]
+\begin{enumerate}[label=\arabic*.]
+  \item Soit $f(x)=x^{2}-3x+2$. Calculer $f(0)$, $f(1)$, $f(-1)$, $f(3)$ et $f(-2)$.
+  \item Soit $g(x)=-2x^{2}+x+5$. Calculer $g(0)$, $g(2)$ et $g(-1)$.
+\end{enumerate}
+
+\exo[Sur la courbe ou non ?]
+Soit $f(x)=x^{2}+2x-3$. Pour chaque point $A(1\,;0)$, $B(-1\,;-2)$, $C(2\,;5)$,
+$D(-3\,;0)$ et $E(0\,;3)$, dire s'il est sur la courbe de $f$.
+
+\exo[Distance d'arrêt]
+La distance d'arrêt d'une voiture, en mètres, est modélisée par $d(v)=v^{2}+3v$, où
+$v$ est la vitesse en dizaines de km/h (pour $50$~km/h, $v=5$).
+\begin{enumerate}[label=\arabic*.]
+  \item Expliquer pourquoi $d$ est une fonction du second degré ; donner $a$, $b$ et
+        $c$.
+  \item Calculer $d(3)$, $d(5)$ et $d(9)$. Interpréter $d(5)$.
+  \item Calculer $d(6)$. Quand la vitesse double de $30$ à $60$~km/h, la distance
+        d'arrêt double-t-elle ?
+\end{enumerate}
+
+\partiefiche{Forme factorisée et racines}
+
+\exo[Vérifier une forme factorisée]
+Pour chaque fonction, vérifier l'égalité en développant la forme factorisée.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x^{2}+2x-8=(x-2)(x+4)$
+  \item $g(x)=3x^{2}-3x-18=3(x+2)(x-3)$
+  \item $h(x)=-x^{2}+6x-5=-(x-1)(x-5)$
+  \item $k(x)=2x^{2}-8=2(x-2)(x+2)$
+\end{enumerate}
+
+\exo[Lire les racines]
+Donner les racines de chaque fonction.
+\deux{$f(x)=(x-3)(x+1)$}{$g(x)=2(x+5)(x-2)$}
+\deux{$h(x)=-(x-4)(x-6)$}{$k(x)=5x(x-7)$}
+\deux{$m(x)=-3(x+2)(x+8)$}{}
+
+\exo[Points sur les axes]
+Soit $f(x)=x^{2}-x-6$.
+\begin{enumerate}[label=\arabic*.]
+  \item Vérifier que $f(x)=(x+2)(x-3)$.
+  \item En déduire les racines de $f$.
+  \item Donner les points où la courbe de $f$ coupe l'axe des abscisses.
+  \item Calculer $f(0)$. Où la courbe coupe-t-elle l'axe des ordonnées ?
+\end{enumerate}
+
+\partiefiche{Représentation graphique}
+
+\exo[Tableau de valeurs et tracé]
+Pour chaque fonction, compléter le tableau de valeurs, tracer la courbe dans un
+repère, puis lire son sommet et son axe de symétrie.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x^{2}-4x+3$
+\end{enumerate}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|*{7}{c|}}
+\hline
+$x$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$f(x)$ & & & & & & & \\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\alph*),start=2]
+  \item $g(x)=-x^{2}+2x+3$
+\end{enumerate}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|*{7}{c|}}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$g(x)$ & & & & & & & \\
+\hline
+\end{tabular}
+\end{center}
+
+\exo[Associer une fonction à sa courbe]
+Associer chaque fonction à sa courbe, en justifiant.
+\deux{$f(x)=x^{2}-3$}{$g(x)=-x^{2}+4$}
+\deux{$h(x)=2x^{2}$}{$k(x)=-x^{2}-1$}
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-5}{4}{5}
+  \gradx{-3,-2,-1,1,2,3} \grady{-4,-2,2,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:3,samples=60] plot (\x,{-\x*\x+4});
+  \draw[coulCourbeB,line width=1.1pt,domain=-1.58:1.58,samples=60] plot (\x,{2*\x*\x});
+  \draw[coulCourbeC,line width=1.1pt,domain=-2.8:2.8,samples=60] plot (\x,{\x*\x-3});
+  \draw[black!70,line width=1.1pt,domain=-2:2,samples=60] plot (\x,{-\x*\x-1});
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-3.4,-4.3) {$\mathcal{C}_{1}$};
+  \node[coulCourbeB,font=\footnotesize,fill=white,inner sep=1pt] at (2.1,4.6) {$\mathcal{C}_{2}$};
+  \node[coulCourbeC,font=\footnotesize,fill=white,inner sep=1pt] at (3.4,4.3) {$\mathcal{C}_{3}$};
+  \node[black!70,font=\footnotesize,fill=white,inner sep=1pt] at (-2.6,-3.3) {$\mathcal{C}_{4}$};
+\end{tikzpicture}
+\end{center}
+
+\exo[Lire une parabole]
+La courbe de $f(x)=x^{2}+2x-3$ est tracée ci-dessous.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-5}{-5}{3}{6}
+  \gradx{-4,-3,-2,-1,1,2} \grady{-4,-3,-2,-1,1,2,3,4,5}
+  \draw[coulCourbe,line width=1.1pt,domain=-4:2,samples=60] plot (\x,{\x*\x+2*\x-3});
+  \node[coulCourbe,font=\footnotesize] at (2.4,4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*.]
+  \item La parabole est-elle tournée vers le haut ou vers le bas ? Est-ce cohérent
+        avec l'expression de $f$ ?
+  \item Lire les coordonnées du sommet et l'axe de symétrie.
+  \item Lire les racines de $f$.
+  \item Résoudre graphiquement $f(x)=-3$.
+  \item Calculer $f(0)$ et retrouver ce point sur la courbe.
+\end{enumerate}
+
+\partiefiche{Tableaux de variations}
+
+\exo[Sommet et tableau de variations]
+Pour chaque fonction, donner le sommet de la parabole, puis le tableau de
+variations.
+\deux{a)~$f(x)=(x-2)(x-6)$}{b)~$g(x)=-2(x+1)(x-3)$}
+\deux{c)~$h(x)=3(x+4)(x+2)$}{d)~$k(x)=-(x-5)(x+1)$}
+
+\exo[Factoriser d'abord]
+Pour chaque fonction, trouver les racines, puis le sommet et le tableau de
+variations.
+\deux{a)~$f(x)=x^{2}-6x$}{b)~$g(x)=-x^{2}+10x$}
+\deux{c)~$h(x)=2x^{2}+8x$}{d)~$k(x)=x^{2}-9$}
+
+\exo[Maximum ou minimum ?]
+\begin{enumerate}[label=\arabic*.]
+  \item Pour chaque fonction $f$, $g$ et $h$, dire si elle admet un maximum ou un
+        minimum, et le donner :
+        \par $f(x)=4(x-1)(x-3)$ \quad $g(x)=-(x+3)(x-1)$ \quad $h(x)=-5x(x-2)$.
+  \item Calculer $f(0)$ et $f(4)$, puis dresser le tableau de variations de $f$
+        entre $0$ et $4$.
+\end{enumerate}
+
+\partiefiche{Problèmes type épreuve anticipée}
+
+\exo[Un food truck]
+Un food truck vend entre $0$ et $120$ repas par jour. On note $x$ le nombre de
+repas, en dizaines ($x$ entre $0$ et $12$). Le bénéfice de la journée, en dizaines
+d'euros, est $B(x)=-x^{2}+12x-20$.
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer $B(0)$. Interpréter ce résultat dans le contexte de l'exercice.
+  \item Vérifier que $B(x)=-(x-2)(x-10)$.
+  \item Pour combien de repas le bénéfice est-il nul ?
+  \item Dresser le tableau de variations de $B$ entre $0$ et $12$.
+  \item Quel est le bénéfice maximal ? Pour combien de repas ?
+\end{enumerate}
+
+\exo[Une balle lancée d'une falaise]
+On lance une balle du haut d'une falaise. Sa hauteur au-dessus de la mer, en
+mètres, au bout de $t$ secondes est $h(t)=-5t^{2}+10t+15$.
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer $h(0)$. Interpréter.
+  \item Vérifier que $h(t)=-5(t+1)(t-3)$.
+  \item Au bout de combien de temps la balle touche-t-elle l'eau ?
+  \item Dresser le tableau de variations de $h$ entre $0$ et $3$.
+  \item Quelle hauteur maximale la balle atteint-elle ? À quel instant ?
+\end{enumerate}
+
+\exo[Le plus grand enclos]
+Avec $40$~m de grillage, on entoure un enclos rectangulaire. On note $x$ la longueur
+d'un côté, en mètres ($x$ entre $0$ et $20$).
+\begin{enumerate}[label=\arabic*.]
+  \item Si $x=5$, quelle est la longueur de l'autre côté ? Quelle est l'aire ?
+  \item Justifier que l'autre côté mesure $20-x$ et que l'aire est
+        $A(x)=x(20-x)$.
+  \item Développer $A(x)$, puis donner les racines de $A$.
+  \item Dresser le tableau de variations de $A$ entre $0$ et $20$.
+  \item Quelles dimensions donnent la plus grande aire ? Quelle est-elle ?
+\end{enumerate}
+
+\partiefichesansnum{Exercices type épreuve anticipée}
+
+\exo[Automatismes (QCM)]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item La solution de l'équation $6x+1=2x+9$ est :
+        \qcm{$1$}{$2$}{$4$}{$10$}
+  \item $(x+3)^{2}$ est égal à :
+        \qcm{$x^{2}+9$}{$x^{2}+6x+9$}{$x^{2}+3x+9$}{$x^{2}+6x+6$}
+  \item L'ensemble des solutions de $x^{2}=7$ est :
+        \qcm{$\ens{7}$}{$\ens{-\sqrt{7}\,;\sqrt{7}}$}{$\ens{\sqrt{7}}$}{$\ens{-3{,}5\,;3{,}5}$}
+  \item L'ensemble des solutions de $(3x-6)(x+4)=0$ est :
+        \qcm{$\ens{-2\,;4}$}{$\ens{-4\,;2}$}{$\ens{-4\,;3}$}{$\ens{-4\,;6}$}
+  \item Le point d'abscisse $2$ de la courbe d'équation $y=x^{2}-3x+1$ est :
+        \qcm{$(2\,;-1)$}{$(2\,;3)$}{$(2\,;11)$}{$(2\,;-3)$}
+  \item La fonction $f(x)=-2(x-1)(x-5)$ admet :
+        \qcm{un minimum en $3$}{un maximum en $3$}{un maximum en $1$}{un minimum en $5$}
+\end{enumerate}
+
+\exo[Une épidémie de grippe]
+Dans une ville, le nombre de malades de la grippe, en centaines, $x$ semaines après
+le début de l'épidémie ($x$ entre $0$ et $8$), est modélisé par $f(x)=-x^{2}+8x$.
+\begin{center}
+\begin{tikzpicture}[x=0.6cm,y=0.2cm]
+  \draw[grille,xstep=1,ystep=2] (0,0) grid (9,18);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(9.4,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,19.2) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \foreach \i in {1,...,8} {\draw (\i,0.3)--(\i,-0.3) node[below,font=\scriptsize,inner sep=1.5pt]{$\i$};}
+  \foreach \v in {2,4,...,16} {\draw (0.07,\v)--(-0.07,\v) node[left,font=\scriptsize,inner sep=1.5pt]{$\v$};}
+  \draw[coulCourbe,line width=1.1pt,domain=0:8,samples=60] plot (\x,{-\x*\x+8*\x});
+  \node[coulCourbe,font=\footnotesize] at (7.6,11) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*.]
+  \item Lire $f(2)$ sur le graphique et interpréter.
+  \item Déterminer graphiquement la semaine du pic de l'épidémie et le nombre de
+        malades cette semaine-là.
+  \item Calculer $f(1)$. Interpréter ce résultat dans le contexte de l'exercice.
+  \item Vérifier que $f(x)=-x(x-8)$. Au bout de combien de semaines l'épidémie
+        s'arrête-t-elle ?
+  \item Dresser le tableau de variations de $f$ entre $0$ et $8$ et retrouver par le
+        calcul le nombre de malades au pic.
+\end{enumerate}
+
+\exo[Le prix d'une place de théâtre]
+Une troupe de théâtre fixe le prix d'une place à $x$ euros ($x$ entre $0$ et $20$).
+Elle prévoit alors $200-10x$ spectateurs.
+\begin{enumerate}[label=\arabic*.]
+  \item Pour une place à $8$~€, combien de spectateurs la troupe prévoit-elle ? Quelle
+        est la recette ?
+  \item Quel prix donne $150$ spectateurs ?
+  \item Justifier que la recette est $R(x)=x(200-10x)$, puis que
+        $R(x)=-10x^{2}+200x$.
+  \item Donner les racines de $R$ et les interpréter.
+  \item Dresser le tableau de variations de $R$ entre $0$ et $20$.
+  \item Quel prix donne la plus grande recette ? Quelle est-elle ?
+\end{enumerate}
+
+\end{multicols}
+\end{document}

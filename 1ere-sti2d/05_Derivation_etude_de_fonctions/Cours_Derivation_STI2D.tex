@@ -1,0 +1,1330 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{5}{Dérivation et étude de fonctions}
+\niveaucours{1\textsuperscript{re} STI2D}
+\titrecours{DÉRIVATION ET ÉTUDE DE FONCTIONS}{Cours --- Première STI2D}
+
+\begin{document}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Fonctions affines et droites}
+
+\begin{definitionbox}[Rappel --- Fonction affine, coefficient directeur]
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+Une fonction affine s'écrit $f(x)=mx+p$. Sa courbe est la droite d'équation
+${y=mx+p}$.
+\begin{itemize}
+  \item $p$ est l'\textbf{ordonnée à l'origine} : la droite coupe l'axe des
+  ordonnées en $p$.
+  \item $m$ est le \textbf{coefficient directeur} (la \textbf{pente}) : quand on
+  avance de $1$, on monte de $m$ (on descend si $m<0$).
+\end{itemize}
+Si la droite passe par $A(x_{A}\,;y_{A})$ et $B(x_{B}\,;y_{B})$ :
+\[
+  m=\frac{y_{B}-y_{A}}{x_{B}-x_{A}}
+  \qquad\text{(ce qu'on monte, divisé par ce qu'on avance).}
+\]
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-1}{-2}{4}{5}
+  \gradx{1,2,3} \grady{-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt] (-0.5,-2)--(3,5);
+  \draw[coulExo,thick,->] (1,1)--(2,1)
+    node[midway,below,font=\footnotesize]{$1$};
+  \draw[coulExo,thick,->] (2,1)--(2,3)
+    node[midway,right,font=\footnotesize]{$2$};
+  \pt{1,1}{above left}{A}
+  \pt{2,3}{above left}{B}
+\end{tikzpicture}\par
+{\footnotesize on avance de $1$, on monte de $2$ : $m=2$}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Trouver l'équation d'une droite passant par deux points]
+\etapeexemples
+Déterminer l'équation réduite de la droite $(AB)$ dans chaque cas.
+\begin{questions}[label=\alph*)]
+  \item $A(1\,;3)$ et $B(3\,;7)$.
+  \item $A(-2\,;5)$ et $B(2\,;-3)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &\qquad& \rem{on écrit la formule}\\
+m &= \frac{7-3}{3-1} && \rem{on remplace par les coordonnées}\\
+m &= 2 && \rem{$\frac{4}{2}=2$}
+\end{calculs}
+\explique{L'équation est de la forme $y=2x+p$. La droite passe par $A(1\,;3)$ :}{on
+cherche maintenant $p$}
+\begin{calculs}
+2\times 1+p &= 3 &\qquad& \rem{on remplace $x$ par $1$ et $y$ par $3$}\\
+p &= 3-2 &&\\
+p &= 1 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $y=2x+1$.}{on remplace $m$ et $p$}
+\cas{b)}
+\begin{calculs}
+m &= \frac{-3-5}{2-(-2)} &\qquad& \rem{attention aux signes}\\
+m &= \frac{-8}{4} &&\\
+m &= -2 &&
+\end{calculs}
+\explique{L'équation est de la forme $y=-2x+p$. La droite passe par $A(-2\,;5)$ :}{}
+\begin{calculs}
+-2\times(-2)+p &= 5 &\qquad& \rem{on remplace $x$ par $-2$ et $y$ par $5$}\\
+4+p &= 5 &&\\
+p &= 1 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $y=-2x+1$.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Déterminer l'équation réduite de la droite $(EF)$ dans chaque cas.
+\begin{questions}[label=\alph*)]
+  \item $E(1\,;1)$ et $F(3\,;7)$.
+  \item $E(-1\,;4)$ et $F(3\,;-4)$.
+\end{questions}
+\reponse{a) $y=3x-2$ ;\; b) $y=-2x+2$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Nombre dérivé}
+
+\begin{definitionbox}[Définition 1 --- Taux de variation, nombre dérivé]
+$A$ et $M$ sont les points de $\Cf$ d'abscisses $a$ et $a+h$.
+\begin{itemize}
+  \item Le \textbf{taux de variation} de $f$ entre $a$ et $a+h$ est
+  $T(h)=\dfrac{f(a+h)-f(a)}{h}$ : c'est le coefficient directeur de la droite $(AM)$.
+  \item Quand $h$ se rapproche de $0$, $M$ glisse vers $A$ et la droite $(AM)$ se
+  rapproche de la \textbf{tangente} en $A$. Son coefficient directeur se rapproche
+  d'un nombre : c'est le \textbf{nombre dérivé} de $f$ en $a$, noté $f'(a)$
+  (\og $f$ prime de $a$\fg). On écrit
+  \[f'(a)=\lim_{h\to 0}\frac{f(a+h)-f(a)}{h}\]
+  (\og limite quand $h$ tend vers $0$\fg).
+\end{itemize}
+\begin{center}
+\begin{minipage}[t]{0.46\linewidth}\centering
+{\small $h$ grand : $(AM)$ s'écarte de la courbe}\par\smallskip
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{-1}{6}{5}
+  \gradx{2/a,4/a+h}
+  \draw[coulCourbe,line width=1.1pt,domain=0:4.45,samples=40] plot (\x,{\x*\x/4});
+  \draw[coulCourbeB,thick] (0.5,-1.25)--(4.667,5) node[left,font=\footnotesize]{$(AM)$};
+  \draw[dashed] (2,1)--(4,1) node[midway,below,font=\footnotesize]{$h$};
+  \draw[dashed] (4,1)--(4,4);
+  \node[right,font=\footnotesize,align=left] at (4,2.5) {$f(a+h)$\\$-f(a)$};
+  \draw[dashed] (2,0)--(2,1) (4,0)--(4,1);
+  \pt{2,1}{above left}{A}
+  \pt{4,4}{above left}{M}
+  \node[coulCourbe,font=\footnotesize] at (4.9,4.3) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}\centering
+{\small $h$ petit : $(AM)$ presque confondue avec la tangente}\par\smallskip
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{-1}{6}{5}
+  \gradx{2/a}
+  \draw[coulCourbe,line width=1.1pt,domain=0:4.45,samples=40] plot (\x,{\x*\x/4});
+  \draw[coulExo,thick] (0,-1)--(5.5,4.5) node[below right,font=\footnotesize]{tangente};
+  \draw[coulCourbeB,thick] (0.5,-0.688)--(4.6,3.925)
+    node[below right=2pt,font=\footnotesize]{$(AM)$};
+  \draw[dashed] (2,0)--(2,1) (2.5,0)--(2.5,1.5625);
+  \pt{2,1}{above left}{A}
+  \pt{2.5,1.5625}{above left}{M}
+  \node[coulCourbe,font=\footnotesize] at (3.4,4.4) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\end{center}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Calculer un nombre dérivé avec le taux de variation]
+\etapeexemples
+Soit $f(x)=x^{2}-4x+1$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $f(3)$, puis $f(3+h)$.
+  \item Simplifier le taux de variation $T(h)=\dfrac{f(3+h)-f(3)}{h}$.
+  \item En déduire $f'(3)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f(3) &= 3^{2}-4\times 3+1 &\qquad& \rem{on remplace $x$ par $3$}\\
+f(3) &= -2 &&\\[4pt]
+f(3+h) &= (3+h)^{2}-4(3+h)+1 && \rem{on remplace $x$ par $(3+h)$}\\
+f(3+h) &= 9+6h+h^{2}-12-4h+1 && \rem{$(a+b)^{2}=a^{2}+2ab+b^{2}$, puis on développe}\\
+f(3+h) &= h^{2}+2h-2 && \rem{on réduit}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+T(h) &= \frac{f(3+h)-f(3)}{h} &\qquad& \rem{la formule, avec $a=3$}\\
+T(h) &= \frac{h^{2}+2h-2-(-2)}{h} && \rem{on remplace}\\
+T(h) &= \frac{h^{2}+2h}{h} && \rem{$-2+2=0$}\\
+T(h) &= \frac{\barre{h}\,(h+2)}{\barre{h}} && \rem{on factorise par
+$h$, puis on simplifie}\\
+T(h) &= h+2 &&
+\end{calculs}
+\cas{c)}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=h+2$ se rapproche de $2$.
+Donc ${f'(3)=2}$.}{on remplace $h$ par $0$ dans le résultat simplifié}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g(x)=x^{2}+x-3$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $g(1)$, puis $g(1+h)$.
+  \item Simplifier le taux de variation $T(h)=\dfrac{g(1+h)-g(1)}{h}$.
+  \item En déduire $g'(1)$.
+\end{questions}
+\reponse{a) $g(1)=-1$ et $g(1+h)=h^{2}+3h-1$ ;\; b) $T(h)=h+3$ ;\; c) $g'(1)=3$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Tangente à une courbe}
+
+\begin{definitionbox}[Définition 2 --- Tangente]
+La \textbf{tangente} à $\Cf$ au point $A$ d'abscisse $a$ est la droite qui
+\begin{itemize}
+  \item passe par $A\big(a\,;f(a)\big)$ ;
+  \item a pour coefficient directeur le nombre dérivé $f'(a)$.
+\end{itemize}
+Près de $A$, elle \og colle\fg{} à la courbe. Sur un graphique, $f'(a)$ se lit donc
+comme la pente de la tangente : à partir de $A$, on avance de $1$ et on monte de
+$f'(a)$. Une tangente horizontale correspond à $f'(a)=0$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 3 --- Lire un nombre dérivé, tracer une tangente]
+\etapeexemples
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+On a tracé la courbe $\Cf$ d'une fonction $f$ et ses tangentes aux points
+$A$, $B$ et $C$.
+\begin{questions}[label=\alph*)]
+  \item Lire $f'(-3)$, $f'(-1)$ et $f'(1)$.
+  \item On sait que $f'(4)=2$. Tracer la tangente à $\Cf$ au point $D(4\,;0)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-4}{-3}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,0) .. controls (-2.333,2) and (-1.667,3) .. (-1,3)
+           .. controls (-0.333,3) and (0.333,2.333) .. (1,1)
+           .. controls (1.667,-0.333) and (2.333,-1) .. (3,-1)
+           .. controls (3.333,-1) and (3.667,-0.667) .. (4,0);
+  \draw[coulCourbeB,thick] (-3.8,-2.4)--(-2.2,2.4);
+  \draw[coulCourbeB,thick] (-2.5,3)--(0.5,3);
+  \draw[coulCourbeB,thick] (-0.2,3.4)--(2.2,-1.4);
+  \pt{-3,0}{above left}{A}
+  \pt{-1,3}{above}{B}
+  \pt{1,1}{above right}{C}
+  \pt{4,0}{above right}{D}
+  \node[coulCourbe,font=\footnotesize] at (2.3,-1.8) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{En $A$ : on avance de $1$, on monte de $3$. Donc $f'(-3)=3$.}{la tangente
+passe par $(-2\,;3)$}
+\explique{En $B$ : la tangente est horizontale. Donc $f'(-1)=0$.}{on ne monte pas}
+\explique{En $C$ : on avance de $1$, on descend de $2$. Donc $f'(1)=-2$.}{la tangente
+passe par $(2\,;-1)$ ; on descend : nombre négatif}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On part de $D(4\,;0)$, on avance de $1$ et on monte de $2$ : on arrive en
+$(5\,;2)$. On trace la droite qui passe par ces deux points (en reculant de $1$ et en
+descendant de $2$, on arrive en $(3\,;-2)$).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{0}{-3}{5}{3}
+  \gradx{1,2,3,4} \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt]
+    (1,1) .. controls (1.667,-0.333) and (2.333,-1) .. (3,-1)
+          .. controls (3.333,-1) and (3.667,-0.667) .. (4,0);
+  \draw[coulCourbeB,thick] (2.8,-2.4)--(5.2,2.4);
+  \draw[coulExo,thick,->] (4,0)--(5,0);
+  \draw[coulExo,thick,->] (5,0)--(5,2);
+  \pt{4,0}{above left}{D}
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+On a tracé la courbe $\Cg$ d'une fonction $g$ et ses tangentes aux points
+$P$, $Q$ et $R$.
+\begin{questions}[label=\alph*)]
+  \item Lire $g'(-2)$, $g'(0)$ et $g'(4)$.
+  \item On sait que $g'(-4)=-2$. Tracer la tangente à $\Cg$ au point $S(-4\,;4)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-5}{-3}{5}{5}
+  \gradx{-4,-3,-2,-1,1,2,3,4} \grady{-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,4) .. controls (-3.333,2.667) and (-2.667,1) .. (-2,1)
+           .. controls (-1.333,1) and (-0.667,1.333) .. (0,2)
+           .. controls (0.667,2.667) and (1.333,3) .. (2,3)
+           .. controls (2.667,3) and (3.333,2) .. (4,0);
+  \draw[coulCourbeB,thick] (-3.5,1)--(-0.5,1);
+  \draw[coulCourbeB,thick] (-1.5,0.5)--(1.5,3.5);
+  \draw[coulCourbeB,thick] (3.3,2.1)--(4.7,-2.1);
+  \pt{-4,4}{left}{S}
+  \pt{-2,1}{below}{P}
+  \pt{0,2}{below right}{Q}
+  \pt{4,0}{above right}{R}
+  \node[coulCourbe,font=\footnotesize] at (2,3.6) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $g'(-2)=0$ ; $g'(0)=1$ ; $g'(4)=-3$ ;\; b) la tangente passe par
+$S(-4\,;4)$ et par $(-3\,;2)$.}
+\end{methodebox}
+
+\afaire{exercices 9 à 11}
+
+\partiecours{Équation de la tangente}
+
+\begin{proprietebox}[Propriété 1 --- Équation de la tangente]
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+La tangente à $\Cf$ au point $A\big(a\,;f(a)\big)$ a pour équation
+\[
+  y=f'(a)\,(x-a)+f(a).
+\]
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{-1}{5}{4}
+  \gradx{2/a} \grady{1/f(a)}
+  \draw[coulCourbe,line width=1.1pt,domain=0:4,samples=40] plot (\x,{\x*\x/4});
+  \draw[coulCourbeB,thick] (0,-1)--(4.5,3.5);
+  \draw[dashed] (2,0)--(2,1)--(0,1);
+  \draw[coulExo,thick,->] (2,1)--(3,1) node[midway,below,font=\footnotesize]{$1$};
+  \draw[coulExo,thick,->] (3,1)--(3,2) node[midway,right,font=\footnotesize]{$f'(a)$};
+  \pt{2,1}{above left}{A}
+  \node[coulCourbe,font=\footnotesize] at (3.3,3.6) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{D'où vient cette formule ?} La tangente est une droite de coefficient
+directeur $f'(a)$ : son équation s'écrit $y=f'(a)\,x+p$. Elle passe par
+$A\big(a\,;f(a)\big)$, ce qui donne $p$ (comme à la méthode 1) :
+\begin{calculs}
+f'(a)\times a+p &= f(a) &\qquad& \rem{on remplace $x$ par $a$ et $y$ par $f(a)$}\\
+p &= f(a)-f'(a)\times a && \rem{on isole $p$}
+\end{calculs}
+On remplace $p$ dans $y=f'(a)\,x+p$ :
+\begin{calculs}
+y &= f'(a)\,x+f(a)-f'(a)\times a &\qquad& \rem{on remplace $p$}\\
+y &= f'(a)\,(x-a)+f(a) && \rem{on factorise $f'(a)\,x-f'(a)\times a$ par $f'(a)$}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Déterminer l'équation d'une tangente]
+\etapeexemples
+Soit $f(x)=x^{2}-4x+1$. On admet que $f'(1)=-2$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $f(1)$.
+  \item Déterminer l'équation réduite de la tangente à $\Cf$ au point d'abscisse $1$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f(1) &= 1^{2}-4\times 1+1 &\qquad& \rem{on remplace $x$ par $1$}\\
+f(1) &= -2 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+y &= f'(1)\,(x-1)+f(1) &\qquad& \rem{la formule, avec $a=1$}\\
+y &= -2(x-1)+(-2) && \rem{$f'(1)=-2$ et $f(1)=-2$}\\
+y &= -2x+2-2 && \rem{on développe}\\
+y &= -2x && \rem{on réduit}
+\end{calculs}
+\explique{La tangente au point d'abscisse $1$ a pour équation $y=-2x$.}{on conclut par
+une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g(x)=x^{2}+x-3$. On admet que $g'(2)=5$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $g(2)$.
+  \item Déterminer l'équation réduite de la tangente à $\Cg$ au point d'abscisse $2$.
+\end{questions}
+\reponse{a) $g(2)=3$ ;\; b) $y=5x-7$.}
+\end{methodebox}
+
+\afaire{exercices 12 à 14}
+
+\partiecours{Approximation affine}
+
+\begin{proprietebox}[Propriété 2 --- La tangente remplace la courbe]
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+Près du point d'abscisse $a$, la courbe et sa tangente sont presque confondues : pour
+$x$ proche de $a$, la fonction est \textbf{à peu près égale à sa tangente}. On calcule
+donc avec l'\textbf{équation de la tangente} (propriété 1) au lieu de la fonction :
+\[
+  f(x)\approx \underbrace{f'(a)\,(x-a)+f(a)}_{\text{le $y$ de la tangente}}.
+\]
+C'est l'\textbf{approximation affine} de $f$ près de $a$ ; le signe $\approx$ se lit
+\og à peu près égal à\fg.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{-1}{4}{4}
+  \gradx{2/a}
+  \draw[coulCourbe,line width=1.1pt,domain=0:4,samples=40] plot (\x,{\x*\x/4});
+  \draw[coulCourbeB,thick] (0,-1)--(4,3);
+  \draw[coulExo,thick] (2,1) circle (0.45);
+  \pt{2,1}{above left}{A}
+  \node[coulCourbe,font=\footnotesize] at (3.3,3.6) {$\Cf$};
+\end{tikzpicture}\par
+{\footnotesize dans le cercle : presque confondues}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Calculer une valeur approchée avec la tangente]
+\etapeexemples
+Soit $f(x)=x^{2}-4x+1$. Sa tangente au point d'abscisse $1$ a pour équation $y=-2x$
+(méthode 4).
+\begin{questions}[label=\alph*)]
+  \item Avec la tangente, donner une valeur approchée de $f(1{,}1)$.
+  \item Calculer $f(1{,}1)$ et comparer.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f(1{,}1) &\approx -2\times 1{,}1 &\qquad& \rem{$1{,}1$ est proche de $1$ : on remplace
+$x$ par $1{,}1$ dans l'équation de la tangente}\\
+f(1{,}1) &\approx -2{,}2 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+f(1{,}1) &= 1{,}1^{2}-4\times 1{,}1+1 &\qquad& \rem{on remplace $x$ par $1{,}1$ dans
+$f(x)$}\\
+f(1{,}1) &= 1{,}21-4{,}4+1 &&\\
+f(1{,}1) &= -2{,}19 &&
+\end{calculs}
+\explique{L'écart entre $-2{,}2$ et $-2{,}19$ n'est que de $0{,}01$ : l'approximation
+est bonne.}{plus $x$ est proche de $1$, meilleure elle est}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g(x)=x^{2}+x-3$. Sa tangente au point d'abscisse $2$ a pour équation $y=5x-7$.
+\begin{questions}[label=\alph*)]
+  \item Avec la tangente, donner une valeur approchée de $g(2{,}1)$.
+  \item Calculer $g(2{,}1)$ et comparer.
+\end{questions}
+\reponse{a) $g(2{,}1)\approx 3{,}5$ ;\; b) $g(2{,}1)=3{,}51$ : écart de $0{,}01$.}
+\end{methodebox}
+
+\afaire{exercices 15 à 17}
+
+\partiecours{Fonction dérivée d'une fonction polynôme}
+
+\begin{definitionbox}[Définition 3 --- Fonction dérivée]
+La \textbf{fonction dérivée} de $f$, notée $f'$, associe à chaque nombre $x$ le nombre
+dérivé $f'(x)$. Plus besoin de taux de variation : on la calcule avec des formules.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 3 --- Dérivées des polynômes]
+\begin{center}
+\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{14pt}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Fonction} $f(x)$ & \textbf{Dérivée} $f'(x)$\\
+\hline
+$k$ (un nombre) & $0$\\
+\hline
+$x$ & $1$\\
+\hline
+$mx+p$ & $m$\\
+\hline
+$x^{2}$ & $2x$\\
+\hline
+$x^{3}$ & $3x^{2}$\\
+\hline
+$x^{n}$ \quad ($n=4$, $5$, $6$\dots) & $n\,x^{n-1}$\\
+\hline
+\end{tabular}
+\end{center}
+Pour $x^{n}$, l'exposant passe devant et on lui retire $1$ : $x^{5}$ a pour dérivée
+$5x^{4}$.
+On dérive \textbf{terme par terme}, et un nombre qui multiplie reste devant :
+$\big(5x^{2}\big)'=5\times 2x=10x$.
+\end{proprietebox}
+
+\begin{remarquebox}
+Avec ces formules, $f(x)=x^{2}-4x+1$ donne $f'(x)=2x-4$ : on retrouve $f'(3)=2$
+(méthode 2) et $f'(1)=-2$ (méthode 4), sans aucun taux de variation.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 6 --- Dériver une fonction polynôme]
+\etapeexemples
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=3x^{2}-5x+4$
+  \item $g(x)=2x^{3}+x^{2}-7x+1$
+  \item $h(x)=2x^{4}-x^{3}+6x$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3\times 2x-5+0 &\qquad& \rem{$x^{2}$ devient $2x$ ; $-5x$ devient $-5$ ; $4$
+devient $0$}\\
+f'(x) &= 6x-5 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= 2\times 3x^{2}+2x-7+0 &\qquad& \rem{$x^{3}$ devient $3x^{2}$, terme par terme}\\
+g'(x) &= 6x^{2}+2x-7 &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 2\times 4x^{3}-3x^{2}+6 &\qquad& \rem{$x^{4}$ devient $4x^{3}$ ; $6x$ devient $6$}\\
+h'(x) &= 8x^{3}-3x^{2}+6 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $k(x)=4x^{2}+3x-2$
+  \item $m(x)=x^{3}-5x^{2}+2$
+  \item $p(x)=x^{5}+4x^{3}-2x$
+\end{questions}
+\reponse{a) $k'(x)=8x+3$ ;\; b) $m'(x)=3x^{2}-10x$ ;\; c) $p'(x)=5x^{4}+12x^{2}-2$.}
+\end{methodebox}
+
+\afaire{exercices 18 à 22}
+
+\partiecours{Autres fonctions dérivées}
+
+\begin{proprietebox}[Propriété 4 --- Inverse, cosinus et sinus]
+\begin{center}
+\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{14pt}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Fonction} $f(x)$ & \textbf{Dérivée} $f'(x)$\\
+\hline
+$\dfrac{1}{x}$ \quad (pour $x\neq 0$) & $-\dfrac{1}{x^{2}}$\\
+\hline
+$\cos x$ & $-\sin x$\\
+\hline
+$\sin x$ & $\cos x$\\
+\hline
+\end{tabular}
+\end{center}
+Pour $\cos x$ et $\sin x$, $x$ est un angle en radians (chapitre 7). Attention au
+signe $-$ : seule la dérivée de $\cos x$ en a un.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Dériver avec l'inverse, le cosinus et le sinus]
+\etapeexemples
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\dfrac{5}{x}$
+  \item $g(x)=4x+\dfrac{2}{x}$
+  \item $h(x)=3\sin x+x^{2}$
+  \item $k(x)=2\cos x-x^{3}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 5\times\left(-\frac{1}{x^{2}}\right) &\qquad& \rem{$\frac{5}{x}=5\times\frac{1}{x}$ :
+le $5$ reste devant}\\
+f'(x) &= -\frac{5}{x^{2}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= 4+2\times\left(-\frac{1}{x^{2}}\right) &\qquad& \rem{terme par terme}\\
+g'(x) &= 4-\frac{2}{x^{2}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 3\cos x+2x &\qquad& \rem{$\sin x$ devient $\cos x$, le $3$ reste devant}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 2\times(-\sin x)-3x^{2} &\qquad& \rem{$\cos x$ devient $-\sin x$}\\
+k'(x) &= -2\sin x-3x^{2} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $m(x)=-\dfrac{3}{x}$
+  \item $p(x)=x^{2}-\dfrac{6}{x}$
+  \item $q(x)=4\sin x-x$
+  \item $r(x)=5\cos x+2x^{2}$
+\end{questions}
+\reponse{a) $m'(x)=\dfrac{3}{x^{2}}$ ;\; b) $p'(x)=2x+\dfrac{6}{x^{2}}$ ;\;
+c) $q'(x)=4\cos x-1$ ;\; d) $r'(x)=-5\sin x+4x$.}
+\end{methodebox}
+
+\afaire{exercices 23 à 26}
+
+\partiecours{Dérivée d'un produit, d'un carré}
+
+\begin{proprietebox}[Propriété 5 --- Produit et carré]
+$u$ et $v$ sont deux fonctions, de dérivées $u'$ et $v'$.
+\begin{center}
+\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{14pt}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Fonction} & \textbf{Dérivée}\\
+\hline
+$u\times v$ & $u'\times v+u\times v'$\\
+\hline
+$u^{2}$ & $2\times u'\times u$\\
+\hline
+\end{tabular}
+\end{center}
+Attention : la dérivée d'un produit n'est pas le produit des dérivées.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Dériver un produit, un carré]
+\etapeexemples
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=(2x+1)(x^{2}-3)$
+  \item $g(x)=(3x-2)^{2}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u(x) &= 2x+1 &\qquad& \rem{donc $u'(x)=2$}\\
+v(x) &= x^{2}-3 && \rem{donc $v'(x)=2x$}\\[4pt]
+f'(x) &= u'(x)\,v(x)+u(x)\,v'(x) && \rem{la formule du produit}\\
+f'(x) &= 2(x^{2}-3)+(2x+1)\times 2x && \rem{on remplace}\\
+f'(x) &= 2x^{2}-6+4x^{2}+2x && \rem{on développe}\\
+f'(x) &= 6x^{2}+2x-6 && \rem{on réduit}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= 3x-2 &\qquad& \rem{donc $u'(x)=3$}\\[4pt]
+g'(x) &= 2\times u'(x)\times u(x) && \rem{la formule du carré}\\
+g'(x) &= 2\times 3\times(3x-2) && \rem{on remplace}\\
+g'(x) &= 18x-12 && \rem{on développe $6(3x-2)$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $k(x)=(x+4)(2x^{2}-1)$
+  \item $m(x)=(5x+1)^{2}$
+\end{questions}
+\reponse{a) $k'(x)=6x^{2}+16x-1$ ;\; b) $m'(x)=50x+10$.}
+\end{methodebox}
+
+\afaire{exercices 27 à 30}
+
+\partiecours{Dérivée de l'inverse, d'un quotient}
+
+\begin{proprietebox}[Propriété 6 --- Inverse et quotient]
+$u$ et $v$ sont deux fonctions, de dérivées $u'$ et $v'$, et $v(x)\neq 0$.
+\begin{center}
+\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{14pt}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Fonction} & \textbf{Dérivée}\\
+\hline
+$\dfrac{1}{v}$ & $-\dfrac{v'}{v^{2}}$\\
+\hline
+$\dfrac{u}{v}$ & $\dfrac{u'\times v-u\times v'}{v^{2}}$\\
+\hline
+\end{tabular}
+\end{center}
+Le dénominateur $v^{2}$ reste écrit au carré : on ne le développe pas.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Dériver un inverse, un quotient]
+\etapeexemples
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\dfrac{1}{2x-3}$
+  \item $g(x)=\dfrac{3x+1}{x-2}$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+v(x) &= 2x-3 &\qquad& \rem{donc $v'(x)=2$}\\[4pt]
+f'(x) &= -\frac{v'(x)}{v(x)^{2}} && \rem{la formule de l'inverse}\\
+f'(x) &= -\frac{2}{(2x-3)^{2}} && \rem{on remplace}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= 3x+1 &\qquad& \rem{donc $u'(x)=3$}\\
+v(x) &= x-2 && \rem{donc $v'(x)=1$}\\[4pt]
+g'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} && \rem{la formule du quotient}\\
+g'(x) &= \frac{3(x-2)-(3x+1)\times 1}{(x-2)^{2}} && \rem{parenthèses autour de
+$u(x)$ : le $-$ porte sur tout}\\
+g'(x) &= \frac{3x-6-3x-1}{(x-2)^{2}} && \rem{on développe le numérateur}\\
+g'(x) &= \frac{-7}{(x-2)^{2}} && \rem{on réduit}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $k(x)=\dfrac{1}{4x+1}$
+  \item $m(x)=\dfrac{2x-5}{x+3}$
+\end{questions}
+\reponse{a) $k'(x)=-\dfrac{4}{(4x+1)^{2}}$ ;\; b) $m'(x)=\dfrac{11}{(x+3)^{2}}$.}
+\end{methodebox}
+
+\afaire{exercices 31 à 34}
+
+\partiecours{Fonctions composées}
+
+\begin{proprietebox}[Propriété 7 --- Tableau de référence des fonctions composées]
+$u$ est une fonction de dérivée $u'$ (par exemple $u(x)=x^{2}+3x$, ou $u(x)=3x+1$).
+\begin{center}
+\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{14pt}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Fonction} & \textbf{Dérivée}\\
+\hline
+$u^{n}$ & $n\times u'\times u^{n-1}$\\
+\hline
+$\cos(u)$ & $-u'\times\sin(u)$\\
+\hline
+$\sin(u)$ & $u'\times\cos(u)$\\
+\hline
+\end{tabular}
+\end{center}
+On dérive comme si $u$ était $x$, puis on \textbf{multiplie par $u'$}. Cas fréquent
+en électricité : $\cos(\omega t+\varphi)$ a pour dérivée $-\omega\sin(\omega t+\varphi)$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Dériver une fonction composée]
+\etapeexemples
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=(x^{2}+3x)^{4}$
+  \item $g(x)=\cos(3x+1)$
+  \item $h(x)=5\sin(2x-1)$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u(x) &= x^{2}+3x &\qquad& \rem{donc $u'(x)=2x+3$ ; ici $n=4$}\\[4pt]
+f'(x) &= 4\times u'(x)\times u(x)^{3} && \rem{la formule de $u^{n}$}\\
+f'(x) &= 4(2x+3)(x^{2}+3x)^{3} && \rem{on remplace ; on ne développe pas}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= 3x+1 &\qquad& \rem{donc $u'(x)=3$}\\[4pt]
+g'(x) &= -u'(x)\times\sin\big(u(x)\big) && \rem{la formule de $\cos(u)$}\\
+g'(x) &= -3\sin(3x+1) && \rem{on remplace}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= 2x-1 &\qquad& \rem{donc $u'(x)=2$}\\[4pt]
+h'(x) &= 5\times 2\cos(2x-1) && \rem{la formule de $\sin(u)$ ; le $5$ reste devant}\\
+h'(x) &= 10\cos(2x-1) &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer la dérivée de chaque fonction.
+\begin{questions}[label=\alph*)]
+  \item $k(x)=(x^{2}-5x)^{3}$
+  \item $m(x)=\cos(5x-2)$
+  \item $p(x)=2\sin(3x+5)$
+\end{questions}
+\reponse{a) $k'(x)=3(2x-5)(x^{2}-5x)^{2}$ ;\; b) $m'(x)=-5\sin(5x-2)$ ;\;
+c) $p'(x)=6\cos(3x+5)$.}
+\end{methodebox}
+
+\afaire{exercices 35 à 39}
+
+\besoinplace{14\baselineskip}
+\partiecours{Dérivée et sens de variation}
+
+\begin{proprietebox}[Propriété 8 --- Signe de la dérivée et variations]
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+Sur un intervalle :
+\begin{itemize}
+  \item si $f'(x)>0$, alors $f$ est \textbf{croissante} ;
+  \item si $f'(x)<0$, alors $f$ est \textbf{décroissante}.
+\end{itemize}
+(Elle le reste si $f'$ s'annule seulement en quelques points.)
+Pour trouver les variations de $f$, on étudie donc le \textbf{signe} de $f'(x)$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{0}{4}{3}
+  \gradx{1,2,3} \grady{1,2}
+  \draw[coulCourbe,line width=1.1pt,domain=0:4,samples=40] plot (\x,{(\x-2)*(\x-2)/2});
+  \draw[coulCourbeB,thick] (0.3,1.2)--(1.7,-0.2);
+  \draw[coulCourbeB,thick] (2.3,-0.2)--(3.7,1.2);
+\end{tikzpicture}\par
+{\footnotesize à gauche : tangentes qui descendent, $f$ décroît ;\\
+à droite : tangentes qui montent, $f$ croît}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Étudier les variations d'une fonction]
+\etapeexemples
+Soit $f(x)=x^{3}-3x^{2}-9x+2$ sur l'intervalle $\intff{-2}{4}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $f'(x)$.
+  \item Étudier le signe de $f'(x)$.
+  \item Dresser le tableau de variations de $f$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3x^{2}-3\times 2x-9 &\qquad& \rem{terme par terme}\\
+f'(x) &= 3x^{2}-6x-9 &&
+\end{calculs}
+\cas{b)}
+\explique{$f'(x)$ est un trinôme : $a=3$, $b=-6$ et $c=-9$.}{on cherche ses racines
+(chapitre 3)}
+\begin{calculs}
+\Delta &= b^{2}-4ac &\qquad& \rem{le discriminant}\\
+\Delta &= (-6)^{2}-4\times 3\times(-9) &&\\
+\Delta &= 144 && \rem{$36+108$ ; $\Delta>0$ : deux racines}\\[4pt]
+x_{1} &= \frac{6-12}{6} = -1 && \rem{$\frac{-b-\sqrt{\Delta}}{2a}$, avec $\sqrt{144}=12$}\\
+x_{2} &= \frac{6+12}{6} = 3 && \rem{$\frac{-b+\sqrt{\Delta}}{2a}$}
+\end{calculs}
+\explique{$f'(x)$ est du signe de $a=3$, donc positif, à l'extérieur des racines, et
+négatif entre elles.}{signe d'un trinôme}
+\cas{c)}
+\explique{On calcule les images des bornes et des racines :}{elles complètent le
+tableau}
+\begin{calculs}
+f(-2) &= -8-12+18+2 = 0 &\qquad&\\
+f(-1) &= -1-3+9+2 = 7 &&\\
+f(3) &= 27-27-27+2 = -25 &&\\
+f(4) &= 64-48-36+2 = -18 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.4]{$x$/1,$f'(x)$/1,$f(x)$/2}{$-2$,$-1$,$3$,$4$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$0$,+/$7$,-/$-25$,+/$-18$}
+\end{tikzpicture}
+\end{center}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g(x)=-x^{3}+6x^{2}-9x+1$ sur l'intervalle $\intff{0}{4}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $g'(x)$.
+  \item Étudier le signe de $g'(x)$.
+  \item Dresser le tableau de variations de $g$.
+\end{questions}
+\reponse{a) $g'(x)=-3x^{2}+12x-9$ ;\; b) racines $1$ et $3$ ; $g'(x)$ négatif sur
+$\intff{0}{1}$ et sur $\intff{3}{4}$, positif sur $\intff{1}{3}$ ;\;
+c) $g$ décroît de $1$ à $-3$, croît de $-3$ à $1$, puis décroît de $1$ à $-3$.}
+\end{methodebox}
+
+\afaire{exercices 40 à 45}
+
+\partiecours{Problèmes concrets : maximum et minimum}
+
+\begin{proprietebox}[Propriété 9 --- Extremum]
+Si $f'(x)$ s'annule en $c$ \textbf{en changeant de signe}, alors $f$ admet en $c$ un
+extremum (la tangente y est horizontale) :
+\begin{center}
+\begin{minipage}{0.47\linewidth}\centering
+{\small $+$ puis $-$ : un \textbf{maximum}}\par\smallskip
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.6,espcl=2]{$x$/1,$f'(x)$/1,$f(x)$/2}{,$c$,}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/,+/$f(c)$,-/}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.47\linewidth}\centering
+{\small $-$ puis $+$ : un \textbf{minimum}}\par\smallskip
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.6,espcl=2]{$x$/1,$f'(x)$/1,$f(x)$/2}{,$c$,}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/,-/$f(c)$,+/}
+\end{tikzpicture}
+\end{minipage}
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 12 --- Trouver le maximum dans un problème]
+\etapeexemples
+Un générateur débite un courant d'intensité $I$ (en ampères), entre $0$ et $6$~A.
+La puissance qu'il fournit, en watts, vaut $P(I)=12I-2I^{2}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $P'(I)$.
+  \item Dresser le tableau de variations de $P$ sur $\intff{0}{6}$.
+  \item Pour quelle intensité la puissance est-elle maximale ? Que vaut-elle ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P'(I) &= 12-2\times 2I &\qquad& \rem{la variable s'appelle $I$ au lieu de $x$}\\
+P'(I) &= 12-4I &&
+\end{calculs}
+\cas{b)}
+\explique{On cherche quand $P'(I)$ s'annule :}{}
+\begin{calculs}
+12-4I &= 0 &\qquad&\\
+-4I &= -12 &&\\
+I &= 3 && \rem{$\frac{-12}{-4}=3$}
+\end{calculs}
+\explique{$12-4I$ est affine, de coefficient directeur $-4<0$ : positif avant $3$,
+négatif après.}{signe d'une expression affine}
+\begin{calculs}
+P(0) &= 0 &\qquad&\\
+P(3) &= 36-18 = 18 && \rem{$12\times 3-2\times 3^{2}$}\\
+P(6) &= 72-72 = 0 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$I$/1,$P'(I)$/1,$P(I)$/2}{$0$,$3$,$6$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$0$,+/$18$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\cas{c)}
+\explique{La puissance est maximale pour une intensité de $3$~A ; elle vaut alors
+$18$~W.}{$P'$ s'annule en $3$ en passant de $+$ à $-$ : un maximum}
+\end{correction}
+
+\etape{À vous de jouer}
+On lance un ballon vers le haut. Au bout de $t$ secondes (entre $0$ et $4$~s), il est
+à la hauteur $h(t)=-5t^{2}+20t+2$, en mètres.
+\begin{questions}[label=\alph*)]
+  \item Calculer $h'(t)$.
+  \item Dresser le tableau de variations de $h$ sur $\intff{0}{4}$.
+  \item À quel instant le ballon est-il le plus haut ? À quelle hauteur ?
+\end{questions}
+\reponse{a) $h'(t)=-10t+20$ ;\; b) $h$ croît de $2$ à $22$ sur $\intff{0}{2}$, puis
+décroît de $22$ à $2$ ;\; c) au bout de $2$~s, à $22$~m.}
+\end{methodebox}
+
+\afaire{exercices 46 à 48}
+
+\partiecours{Résoudre une équation $f(x)=k$}
+
+\begin{proprietebox}[Propriété 10 --- Théorème des valeurs intermédiaires]
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+Si $f$ est dérivable et \textbf{strictement croissante} (ou strictement
+décroissante) sur $\intff{a}{b}$, et si $k$ est \textbf{compris entre $f(a)$ et
+$f(b)$}, alors l'équation $f(x)=k$ a \textbf{une seule solution} $\alpha$ dans
+$\intff{a}{b}$.
+
+\smallskip
+La courbe monte sans sauter de $f(a)$ à $f(b)$ : elle traverse une seule fois la
+droite d'équation $y=k$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{0}{6}{5}
+  \gradx{1/a,3.83/\alpha,5/b}
+  \grady{0.5/f(a),2.5/k,4.5/f(b)}
+  \draw[coulCourbe,line width=1.1pt,domain=1:5,samples=40] plot (\x,{0.5+(\x-1)*(\x-1)/4});
+  \draw[coulExo,thick] (0,2.5)--(5.3,2.5);
+  \draw[dashed] (3.83,0)--(3.83,2.5);
+  \path[coulExo] (3.83,2.5) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 13 --- Montrer qu'une équation a une seule solution, l'encadrer]
+\etapeexemples
+Soit $f(x)=x^{3}+2x-5$ sur l'intervalle $\intff{0}{3}$.
+\begin{questions}[label=\alph*)]
+  \item Montrer que $f$ est strictement croissante sur $\intff{0}{3}$.
+  \item Montrer que l'équation $f(x)=0$ a une seule solution $\alpha$ dans
+  $\intff{0}{3}$.
+  \item Avec le tableau de valeurs de la calculatrice, encadrer $\alpha$ entre deux
+  nombres à un chiffre après la virgule.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3x^{2}+2 &\qquad& \rem{terme par terme}
+\end{calculs}
+\explique{Un carré est positif, donc $3x^{2}+2>0$ : $f$ est strictement croissante sur
+$\intff{0}{3}$.}{$f'(x)>0$ : $f$ croît}
+\cas{b)}
+\begin{calculs}
+f(0) &= -5 &\qquad& \rem{les images des bornes}\\
+f(3) &= 27+6-5 = 28 &&
+\end{calculs}
+\explique{$f$ est strictement croissante et $0$ est compris entre $-5$ et $28$ :
+l'équation $f(x)=0$ a une seule solution $\alpha$ dans $\intff{0}{3}$.}{théorème des
+valeurs intermédiaires}
+\cas{c)}
+\explique{Tableau de valeurs avec un pas de $1$ : $f(1)=-2$ et $f(2)=7$. Donc
+$1<\alpha<2$.}{$f(x)$ passe de négatif à positif}
+\explique{Pas de $0{,}1$ à partir de $1$ : $f(1{,}3)=-0{,}203$ et $f(1{,}4)=0{,}544$.
+Donc ${1{,}3<\alpha<1{,}4}$.}{on recommence entre $1$ et $2$}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g(x)=x^{3}+3x-2$ sur l'intervalle $\intff{0}{2}$.
+\begin{questions}[label=\alph*)]
+  \item Montrer que $g$ est strictement croissante sur $\intff{0}{2}$.
+  \item Montrer que l'équation $g(x)=0$ a une seule solution $\alpha$ dans
+  $\intff{0}{2}$.
+  \item Avec le tableau de valeurs de la calculatrice, encadrer $\alpha$ entre deux
+  nombres à un chiffre après la virgule.
+\end{questions}
+\reponse{a) $g'(x)=3x^{2}+3>0$ ;\; b) $g(0)=-2$ et $g(2)=12$ ;\;
+c) $0{,}5<\alpha<0{,}6$.}
+\end{methodebox}
+
+\afaire{exercices 49 à 51}
+
+\end{document}
