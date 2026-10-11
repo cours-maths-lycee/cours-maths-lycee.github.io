@@ -5,4 +5,6 @@ première), par Luc Destombe, sous licence CC BY-NC-SA 4.0.
 
 Site : https://cours-maths-lycee.github.io/
 
+Licences : voir le fichier LICENSE.
+
 Ce dépôt est produit automatiquement : ne pas le modifier à la main.
