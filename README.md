@@ -1,9 +1,9 @@
-# Mathématiques au lycée
+# Faire des maths
 
 Cours, fiches d'exercices et corrigés de mathématiques au lycée (seconde,
 première), par Luc Destombe, sous licence CC BY-NC-SA 4.0.
 
-Site : https://cours-maths-lycee.github.io/
+Site : https://faire-des-maths.fr/
 
 Licences : voir le fichier LICENSE.
 
