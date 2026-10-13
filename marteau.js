@@ -3,7 +3,8 @@
    Titre de l'exercice (affichage seul) : <span class="marteau-etat" data-exo="ID"></span>
    Réglages facultatifs, avant le script :
      window.MARTEAU_CONFIG = {durees: {frappe: 150, …}, accelere: 0.5, texte: "Fait", reduit: false};
-     window.MARTEAU_API = "https://…" (compteur global, phase 2 ; null par défaut). */
+     window.MARTEAU_API = "https://script.google.com/…/exec" : total de tous les élèves
+     (scripts/site/compteurs_google.gs) ; sans lui, nombre propre à l'appareil (démo). */
 (function () {
   'use strict';
   var CFG = window.MARTEAU_CONFIG || {};
@@ -27,28 +28,53 @@
     memoire[id] = n;
     try { localStorage.setItem(CLE + id, String(n)); } catch (e) {}
   }
-  function url(chemin) { return API.replace(/\/$/, '') + chemin; }
+  // jeton tiré au hasard, propre au navigateur : le serveur ne compte qu'un clic
+  // par exercice et par jeton toutes les 10 minutes (il ne l'enregistre pas)
+  var jeton;
+  function lireJeton() {
+    if (jeton) return jeton;
+    try { jeton = localStorage.getItem(CLE + 'jeton'); } catch (e) {}
+    if (!jeton) {
+      jeton = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      try { localStorage.setItem(CLE + 'jeton', jeton); } catch (e) {}
+    }
+    return jeton;
+  }
+  var charge = false;
   var Donnees = {
-    // nombre affiché : total de tous les visiteurs si le serveur a répondu, sinon le sien
-    lireCompteur: function (id) { return API && id in totaux ? totaux[id] : personnel(id); },
+    // nombre affiché : total de tous les élèves (serveur, scripts/site/compteurs_google.gs) ;
+    // sans serveur (démo), le nombre de l'appareil ; null tant que le serveur n'a pas répondu
+    lireCompteur: function (id) {
+      if (!API) return personnel(id);
+      return charge ? totaux[id] || 0 : null;
+    },
     personnel: personnel,
     incrementer: function (id) {
       var n = personnel(id) + 1;
       ecrire(id, n);
       if (API) {
-        if (id in totaux) totaux[id]++;
+        // même règle que le serveur : un clic compté par exercice toutes les 10 minutes
+        var maintenant = Date.now(), dernier = 0;
+        try { dernier = +localStorage.getItem(CLE + 't:' + id) || 0; } catch (e) {}
+        if (maintenant - dernier < 600000) return n;
+        try { localStorage.setItem(CLE + 't:' + id, String(maintenant)); } catch (e) {}
+        if (charge) totaux[id] = (totaux[id] || 0) + 1;
         try {
-          fetch(url('/hit'), { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id }), keepalive: true }).catch(function () {});
+          var corps = new URLSearchParams({ id: id, jeton: lireJeton() });
+          fetch(API, { method: 'POST', body: corps, keepalive: true }).catch(function () {});
         } catch (e) {}
       }
       return n;
     },
     chargerTotaux: function (ids) {
       if (!API || !ids.length) return Promise.resolve();
-      return fetch(url('/compteurs?ids=' + ids.map(encodeURIComponent).join(',')))
+      return fetch(API)
         .then(function (r) { return r.ok ? r.json() : {}; })
-        .then(function (j) { for (var id in j) if (typeof j[id] === 'number') totaux[id] = j[id]; })
+        .then(function (j) {
+          if (!j || !j.ids) return;
+          for (var id in j.ids) if (typeof j.ids[id] === 'number') totaux[id] = j.ids[id];
+          charge = true;
+        })
         .catch(function () {});
     }
   };
@@ -170,12 +196,13 @@
       e.f = fait ? [1, 1, 1, 1] : [0, 0, 0, 0]; e.plein = fait; e.g = 0; e.a = 38;
       e.dessiner();
       var nombre = el.querySelector('.mt-nombre');
-      nombre.textContent = n;
+      nombre.textContent = n === null ? '' : n;
+      var total = n === null ? '' : (API ? ' ; fait ' + n + ' fois sur le site' : ' ; fait ' + n + ' fois');
       if (el.tagName === 'BUTTON') {
-        el.setAttribute('aria-label', fait ? 'Exercice fait ' + Donnees.personnel(id) +
-          ' fois, cliquer pour l\'ajouter encore' : 'Marquer l\'exercice comme fait');
+        el.setAttribute('aria-label', (fait ? 'Exercice déjà fait, cliquer pour l’ajouter encore'
+          : 'Marquer l’exercice comme fait') + total);
       } else {
-        el.setAttribute('aria-label', fait ? 'Exercice fait ' + n + ' fois' : 'Exercice pas encore fait');
+        el.setAttribute('aria-label', (fait ? 'Exercice déjà fait' : 'Exercice pas encore fait') + total);
       }
       if (effet === 'pop') {
         anime(nombre, [{ transform: 'scale(1)' }, { transform: 'scale(1.4)' }, { transform: 'scale(1)' }],
@@ -214,7 +241,7 @@
     } finally {
       var n = Donnees.incrementer(id);
       afficher(id, sobre ? 'fondu' : 'pop');
-      annoncer('Exercice fait ' + n + ' fois.');
+      annoncer('Exercice compté comme fait.');
       btn.mtEnCours = false;
     }
   }

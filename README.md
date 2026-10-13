@@ -32,6 +32,8 @@ Les documents sont conçus par l'auteur avec l'aide d'une IA générative, puis 
 
 - `<niveau>/<chapitre>/` : PDF, sources .tex, pages HTML et figures ;
 - `index.html`, `methodes.html` : entrées par chapitre et par méthode ;
+- `marteau.js` : bouton « exercice fait » des exercices (totaux de tous les
+  élèves, sans donnée personnelle) ;
 - `katex/`, `count.js` : composants tiers (voir LICENSE).
 
 Ce dépôt est produit automatiquement à partir des sources de l'auteur : ne
