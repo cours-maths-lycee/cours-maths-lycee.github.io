@@ -191,19 +191,49 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
       det.classList.toggle('eleve-verrou', bloque);
       s.textContent = s.dataset.texte + (bloque && r !== null ? ' — disponible dans ' + duree(r) : '');
       var msg = det.previousElementSibling;
-      if (msg && msg.classList.contains('eleve-attente') && !(bloque && r !== null)) msg.remove();
+      if (msg && msg.classList.contains('eleve-attente') && !(bloque && r !== null) &&
+          !(msg.dataset.autre && restant(msg.dataset.autre))) msg.remove();
     });
   }
-  function attendre(det, id) {
+  function boiteMessage(det) {
     var msg = det.previousElementSibling;
     if (!msg || !msg.classList.contains('eleve-attente')) {
       msg = document.createElement('p');
       msg.className = 'eleve-attente';
       det.before(msg);
     }
-    msg.textContent = 'Cherchez d’abord l’exercice dans votre cahier : la correction s’ouvrira ' +
-      '5 minutes après votre premier clic sur « Corrigé ».';
+    return msg;
+  }
+  function attendre(det, id) {
+    var msg = boiteMessage(det);
+    delete msg.dataset.autre;
+    msg.textContent = 'Cherchez d’abord l’exercice dans votre cahier : la correction ' +
+      's’ouvrira 5 minutes après votre premier clic sur « Corrigé ».';
     majCorriges();
+  }
+  // un seul compte à rebours à la fois : l'exercice en attente, ou null
+  function enCours(id) {
+    for (var x in etat.ouverts) {
+      if (x === id || fait(x)) continue;
+      var r = restant(x);
+      if (r) return {id: x, reste: r};
+    }
+    return null;
+  }
+  function refuser(det, autre) {
+    var msg = boiteMessage(det), cible = document.querySelector('.marteau[data-exo="' + autre.id + '"]');
+    var section = cible && cible.closest('section.exo');
+    var titre = section && section.querySelector('.num-exo');
+    msg.textContent = 'Une seule correction à la fois : le compte à rebours de ' +
+      (titre ? 'l’' + titre.textContent.toLowerCase() : 'un autre exercice') + ' est en cours (encore ' +
+      duree(autre.reste) + '). Terminez-le d’abord.';
+    if (section && section.id) {
+      var a = document.createElement('a');
+      a.href = '#' + section.id;
+      a.textContent = ' Y aller';
+      msg.appendChild(a);
+    }
+    msg.dataset.autre = autre.id;
   }
   document.addEventListener('click', function (ev) {
     var s = ev.target.closest && ev.target.closest('summary');
@@ -213,10 +243,20 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     if (!id || !verrouille(id)) return;
     ev.preventDefault();
     if (!etat.ouverts[id]) {
+      var autre = enCours(id);
+      if (autre) { refuser(det, autre); return; }
       etat.ouverts[id] = Date.now();
       ecrire(etat);
       poster({id: id, action: 'ouvrir'}).then(function (j) {
         if (j && j.ok && j.ouvert) { etat.ouverts[id] = j.ouvert; ecrire(etat); majCorriges(); }
+        else if (j && j.erreur === 'autre compte à rebours') {
+          // le serveur fait foi (autre appareil, autre onglet)
+          delete etat.ouverts[id];
+          if (j.ouvert) etat.ouverts[j.autre] = j.ouvert;
+          ecrire(etat);
+          majCorriges();
+          refuser(det, {id: j.autre, reste: j.reste * 1000});
+        }
       }).catch(function () {});
     }
     attendre(det, id);
