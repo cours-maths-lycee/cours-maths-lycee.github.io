@@ -4,7 +4,9 @@
    Réglages facultatifs, avant le script :
      window.MARTEAU_CONFIG = {durees: {frappe: 150, …}, accelere: 0.5, texte: "Fait", reduit: false};
      window.MARTEAU_API = "https://script.google.com/…/exec" : total de tous les élèves
-     (scripts/site/compteurs_google.gs) ; sans lui, nombre propre à l'appareil (démo). */
+     (scripts/site/compteurs_google.gs) ; sans lui, nombre propre à l'appareil (démo).
+   Mode élève (window.FDM_ELEVE, scripts/site/eleve.js) : « fait » = compté pour
+   l'élève par le serveur, une seule fois par exercice. */
 (function () {
   'use strict';
   var CFG = window.MARTEAU_CONFIG || {};
@@ -19,7 +21,9 @@
 
   // ---------- données : lireCompteur(id), incrementer(id) ----------
   var memoire = {}, totaux = {};
+  function eleve() { return window.FDM_ELEVE; }
   function personnel(id) {
+    if (eleve()) return eleve().fait(id) ? 1 : 0;
     var n = memoire[id] || 0;
     try { var v = parseInt(localStorage.getItem(CLE + id), 10); if (v > n) n = v; } catch (e) {}
     return n;
@@ -185,6 +189,18 @@
     }
     annonce.textContent = texte;
   }
+  // message visible sous le bouton (mode élève)
+  function message(btn, texte) {
+    var m = btn.nextElementSibling;
+    if (!m || !m.classList.contains('marteau-message')) {
+      if (!texte) return;
+      m = document.createElement('p');
+      m.className = 'marteau-message';
+      btn.after(m);
+    }
+    m.textContent = texte;
+    if (texte) annoncer(texte);
+  }
   function elements(id) {
     return [].filter.call(document.querySelectorAll('.marteau[data-exo], .marteau-etat[data-exo]'),
       function (el) { return el.dataset.exo === id && el.mt; });
@@ -229,9 +245,38 @@
     return CFG.reduit === true && window.matchMedia &&
       matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
+  async function clicEleve(btn, E) {
+    var id = btn.dataset.exo, sobre = reduit();
+    if (E.fait(id)) {
+      message(btn, 'Exercice déjà compté : choisissez-en un autre.');
+      return;
+    }
+    var envoi = E.envoyerFait(id);
+    try {
+      if (sobre) await new Promise(function (r) { setTimeout(r, 300); });
+      else await animer(btn, false);
+    } catch (e) {}
+    var j = await envoi;
+    if (j.ok && j.compte) {
+      if (typeof j.total === 'number') totaux[id] = j.total;
+      afficher(id, sobre ? 'fondu' : 'pop');
+      message(btn, 'Exercice compté. Vous en êtes à ' + j.nombre + '.');
+    } else {
+      afficher(id);
+      if (j.deja) message(btn, 'Exercice déjà compté : choisissez-en un autre.');
+      else if (j.attente) message(btn, 'Pas encore : un exercice compte 5 minutes au moins après ' +
+        'l’ouverture de sa correction (encore ' + Math.ceil(j.attente / 60) + ' min environ).');
+      else if (j.erreur === 'code inconnu') message(btn, 'Lien personnel non reconnu : exercice non compté.');
+      else message(btn, 'Pas de connexion au serveur : exercice non compté, réessayez dans un moment.');
+    }
+  }
   async function clic(btn) {
     if (btn.mtEnCours) return;
     btn.mtEnCours = true;
+    if (eleve()) {
+      try { await clicEleve(btn, eleve()); } finally { btn.mtEnCours = false; }
+      return;
+    }
     var id = btn.dataset.exo, sobre = reduit();
     try {
       if (sobre) await new Promise(function (r) { setTimeout(r, 300); }); // pas de double compte
@@ -246,6 +291,8 @@
     }
   }
 
+  var tous = [];
+  document.addEventListener('fdm-eleve', function () { tous.forEach(function (id) { afficher(id); }); });
   function init(racine) {
     var ids = [];
     (racine || document).querySelectorAll('.marteau[data-exo], .marteau-etat[data-exo]')
@@ -259,6 +306,7 @@
         if (bouton) el.addEventListener('click', function () { clic(el); });
         else el.setAttribute('role', 'img');
         if (ids.indexOf(el.dataset.exo) < 0) ids.push(el.dataset.exo);
+        if (tous.indexOf(el.dataset.exo) < 0) tous.push(el.dataset.exo);
       });
     ids.forEach(function (id) { afficher(id); });
     Donnees.chargerTotaux(ids).then(function () { ids.forEach(function (id) { afficher(id); }); });
