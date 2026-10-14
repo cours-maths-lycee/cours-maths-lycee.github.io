@@ -1,8 +1,9 @@
-var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aBm9Ru_Q-sIKm3kxSIETlIhYPdYRLTqVQKpBnKKpeSkP5qzy-l6kKetmIPLoo/exec", "paliers": [10, 20, 50]};
+var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aBm9Ru_Q-sIKm3kxSIETlIhYPdYRLTqVQKpBnKKpeSkP5qzy-l6kKetmIPLoo/exec", "paliers": {"premiers": [10, 20], "pas": 50}};
 /* Mode élève du site « Faire des maths » (chargé par toutes les pages, sans defer,
    avant marteau.js).
    publier.py écrit avant ce fichier : var FDM_ELEVE_CONFIG = {api: <web app
-   Google Apps Script, scripts/site/compteurs_google.gs>, paliers: [10, 20, 50]}.
+   Google Apps Script, scripts/site/compteurs_google.gs>, paliers: {premiers: [10, 20],
+   pas: 50}} (bonus à 10 et 20 exercices, puis tous les 50 : 50, 100, 150…).
    Lien personnel envoyé par l'ENT (scripts/eleves.py) :
      https://faire-des-maths.fr/#eleve=K7F3QXPM&prenom=L%C3%A9a
    Le fragment (#…) n'est jamais envoyé au serveur du site ni au compteur de
@@ -13,13 +14,17 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
    - corrigé d'un exercice pas encore compté : verrouillé 5 minutes à partir du
      premier clic sur « Corrigé » (heure notée par le serveur, qui ne compte
      l'exercice qu'après ce délai) ;
-   - bouton marteau (marteau.js) : l'exercice est compté une seule fois.
-   window.FDM_ELEVE : {prenom, fait(id), nombre(), envoyerFait(id)} ; l'événement
+   - bouton marteau (marteau.js) : l'exercice est compté une seule fois ; le
+     serveur donne un mot-code, à recopier sur le cahier à côté du numéro de
+     l'exercice.
+   window.FDM_ELEVE : {prenom, fait(id), mot(id), nombre(), envoyerFait(id)} ; l'événement
    « fdm-eleve » (document) signale une mise à jour. */
 (function () {
   'use strict';
   var CFG = window.FDM_ELEVE_CONFIG || {};
-  var API = CFG.api, PALIERS = CFG.paliers || [];
+  var API = CFG.api, PALIERS = CFG.paliers || null;
+  var AIDE = document.currentScript ? new URL('mode-emploi.html#mode-eleve', document.currentScript.src).href
+    : null;
   var CLE = 'fdm-eleve:v1';
   var ATTENTE = 300;   // secondes ; le serveur donne la valeur qui fait foi
   window.FDM_ELEVE = null;
@@ -46,6 +51,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
   if (!API || !etat || !etat.code) return;
   etat.faits = etat.faits || [];
   etat.ouverts = etat.ouverts || {};
+  etat.mots = etat.mots || {};
 
   function fait(id) { return etat.faits.indexOf(id) >= 0; }
   function signaler() {
@@ -66,6 +72,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
       if (j && j.ok) {
         if ((j.compte || j.deja) && !fait(id)) etat.faits.push(id);
         if (j.ouvert) etat.ouverts[id] = j.ouvert;
+        if (j.mot) etat.mots[id] = j.mot;
         if (typeof j.nombre === 'number') etat.nombre = j.nombre;
         signaler();
       } else if (j && j.erreur === 'code inconnu') {
@@ -83,6 +90,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
         etat.faits = j.faits || [];
         etat.nombre = etat.faits.length;
         for (var id in j.ouverts || {}) etat.ouverts[id] = j.ouverts[id];
+        etat.mots = j.mots || {};
         if (j.attente) ATTENTE = j.attente;
         signaler();
       })
@@ -93,6 +101,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
   window.FDM_ELEVE = {
     prenom: etat.prenom,
     fait: fait,
+    mot: function (id) { return etat.mots[id] || ''; },
     nombre: function () { return etat.faits.length; },
     envoyerFait: envoyerFait
   };
@@ -103,6 +112,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     ' padding:.5rem max(16px,calc((100vw - 900px)/2));background:var(--accent-fond);color:var(--texte);',
     ' border-bottom:1px solid var(--trait);font:.95rem/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}',
     '.eleve-bandeau strong{color:var(--accent)}',
+    '.eleve-bandeau a{color:var(--accent);white-space:nowrap}',
     '.eleve-bandeau button{font:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--trait);',
     ' border-radius:5px;background:transparent;color:var(--doux);padding:.15rem .6rem}',
     '.eleve-attente{margin:.4rem 0;padding:.45rem .7rem;border-left:3px solid var(--accent);',
@@ -124,13 +134,19 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     if (entete) entete.after(bandeau); else document.body.prepend(bandeau);
     return bandeau;
   }
+  // palier de bonus suivant : les premiers, puis tous les « pas » exercices
+  function palierSuivant(n) {
+    if (!PALIERS) return 0;
+    var p = (PALIERS.premiers || []).filter(function (x) { return x > n; })[0];
+    return p || (PALIERS.pas ? (Math.floor(n / PALIERS.pas) + 1) * PALIERS.pas : 0);
+  }
   function nb(n, mot) { return n + ' ' + mot + (n > 1 ? 's' : ''); }
   function majBandeau() {
     var b = placerBandeau(), n = etat.faits.length, suite = '';
-    var prochain = PALIERS.filter(function (p) { return p > n; })[0];
+    var prochain = palierSuivant(n);
     if (prochain) suite = ' — encore ' + nb(prochain - n, 'exercice') + ' pour le prochain bonus';
-    else if (PALIERS.length) suite = ' — tous les bonus sont atteints, bravo !';
-    b.innerHTML = '<span>Bonjour <strong></strong> ! <span class="eleve-nombre"></span></span>' +
+    b.innerHTML = '<span>Bonjour <strong></strong> ! <span class="eleve-nombre"></span>' +
+      (AIDE ? ' <a href="' + AIDE + '">Comment ça marche ?</a>' : '') + '</span>' +
       '<button type="button">Ce n’est pas moi</button>';
     b.querySelector('strong').textContent = etat.prenom || '';
     b.querySelector('.eleve-nombre').textContent = (n ? nb(n, 'exercice') + ' compté' + (n > 1 ? 's' : '')

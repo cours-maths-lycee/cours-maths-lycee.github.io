@@ -6,14 +6,16 @@
      window.MARTEAU_API = "https://script.google.com/…/exec" : total de tous les élèves
      (scripts/site/compteurs_google.gs) ; sans lui, nombre propre à l'appareil (démo).
    Mode élève (window.FDM_ELEVE, scripts/site/eleve.js) : « fait » = compté pour
-   l'élève par le serveur, une seule fois par exercice. */
+   l'élève par le serveur, une seule fois par exercice ; une fois compté, le carré
+   s'ouvre par la droite et le mot-code sort de la boîte (à recopier sur le cahier). */
 (function () {
   'use strict';
   var CFG = window.MARTEAU_CONFIG || {};
   // durées en ms (version complète ; × accelere quand l'exercice a déjà été fait)
   var DUREES = Object.assign({
     armer: 120, frappe: 150, impact: 110, remontee: 190,
-    rotation: 260, remplissage: 320, etincelles: 320, pop: 300, plusun: 700
+    rotation: 260, remplissage: 320, etincelles: 320, pop: 300, plusun: 700,
+    ouverture: 380, defilement: 650
   }, CFG.durees);
   var ACCELERE = CFG.accelere || 0.5;
   var API = window.MARTEAU_API || null;
@@ -101,7 +103,11 @@
   }
   var SVG = '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">' +
     '<g class="mt-etincelles"><path d="M20 30L15 27M19 34L14 35M44 30L49 27M45 34L50 35"/></g>' +
-    '<g class="mt-forme"><path/></g><g class="mt-outil">' +
+    '<g class="mt-forme"><path/></g>' +
+    // boîte ouverte (mode élève) : carré de la forme finie, côté droit en porte
+    '<g class="mt-boite"><rect class="mt-boite-fond" x="23" y="31" width="18" height="18"/>' +
+    '<path class="mt-boite-corps" d="M41 31H23V49H41"/>' +
+    '<path class="mt-porte" d="M41 31V49"/></g><g class="mt-outil">' +
     '<rect class="mt-manche" x="38" y="24.6" width="22" height="3" rx="1.5"/>' +
     '<rect class="mt-tete" x="25" y="20" width="14" height="11" rx="2"/>' +
     '<rect class="mt-lisere" x="25" y="20" width="3" height="11" rx="1"/></g></svg>';
@@ -201,6 +207,48 @@
     m.textContent = texte;
     if (texte) annoncer(texte);
   }
+  // ---------- boîte ouverte et mot-code (mode élève) ----------
+  var PORTE = -115;   // angle d'ouverture du côté droit, autour du coin haut droit
+  function poserCode(btn, mot) {
+    var c = btn.querySelector('.mt-code');
+    if (!c) {
+      c = document.createElement('span');
+      c.className = 'mt-code';
+      c.appendChild(document.createElement('span'));
+      btn.querySelector('.mt-icone').after(c);
+    }
+    c.firstChild.textContent = 'code : ' + mot;
+    return c;
+  }
+  function boite(btn, v) {
+    var svg = btn.querySelector('svg');
+    svg.querySelector('.mt-porte').setAttribute('transform', 'rotate(' + (PORTE * v).toFixed(1) + ' 41 31)');
+    svg.querySelector('.mt-boite-fond').style.opacity = 1 - v;
+    svg.querySelector('.mt-outil').style.opacity = 1 - v;
+  }
+  function boiteOuverte(btn, mot) {
+    if (mot) {
+      poserCode(btn, mot);
+      boite(btn, 1);
+      btn.classList.add('mt-ouvert');
+    } else {
+      btn.classList.remove('mt-ouvert');
+      var c = btn.querySelector('.mt-code');
+      if (c) c.remove();
+      btn.querySelector('.mt-outil').style.opacity = '';
+    }
+  }
+  async function ouvrirBoite(btn, mot) {
+    var c = poserCode(btn, mot), texte = c.firstChild;
+    texte.style.transform = 'translateX(-105%)';
+    boite(btn, 0);
+    btn.classList.add('mt-ouvert');
+    await tween(DUREES.ouverture, easeOut, function (v) { boite(btn, v); });
+    await anime(texte, [{ transform: 'translateX(-105%)' }, { transform: 'translateX(0)' }],
+      DUREES.defilement, 'cubic-bezier(.2,.75,.3,1)');
+    texte.style.transform = '';
+  }
+
   function elements(id) {
     return [].filter.call(document.querySelectorAll('.marteau[data-exo], .marteau-etat[data-exo]'),
       function (el) { return el.dataset.exo === id && el.mt; });
@@ -214,7 +262,12 @@
       var nombre = el.querySelector('.mt-nombre');
       nombre.textContent = n === null ? '' : n;
       var total = n === null ? '' : (API ? ' ; fait ' + n + ' fois sur le site' : ' ; fait ' + n + ' fois');
-      if (el.tagName === 'BUTTON') {
+      var mot = eleve() && fait ? eleve().mot(id) : '';
+      if (el.tagName === 'BUTTON' && eleve()) {
+        boiteOuverte(el, mot);
+        el.setAttribute('aria-label', fait ? 'Exercice compté' + (mot ? ', code : ' + mot : '')
+          : 'Marquer l’exercice comme fait et vérifié');
+      } else if (el.tagName === 'BUTTON') {
         el.setAttribute('aria-label', (fait ? 'Exercice déjà fait, cliquer pour l’ajouter encore'
           : 'Marquer l’exercice comme fait') + total);
       } else {
@@ -245,10 +298,13 @@
     return CFG.reduit === true && window.matchMedia &&
       matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
+  function deja(mot) {
+    return 'Exercice déjà compté' + (mot ? ' (code : ' + mot + ')' : '') + ' : choisissez-en un autre.';
+  }
   async function clicEleve(btn, E) {
     var id = btn.dataset.exo, sobre = reduit();
     if (E.fait(id)) {
-      message(btn, 'Exercice déjà compté : choisissez-en un autre.');
+      message(btn, deja(E.mot(id)));
       return;
     }
     var envoi = E.envoyerFait(id);
@@ -259,11 +315,16 @@
     var j = await envoi;
     if (j.ok && j.compte) {
       if (typeof j.total === 'number') totaux[id] = j.total;
-      afficher(id, sobre ? 'fondu' : 'pop');
-      message(btn, 'Exercice compté. Vous en êtes à ' + j.nombre + '.');
+      if (j.mot && !sobre) {
+        try { await ouvrirBoite(btn, j.mot); } catch (e) {}
+      }
+      afficher(id);
+      message(btn, 'Exercice compté : vous en êtes à ' + j.nombre + '.' +
+        (j.mot ? ' Recopiez le code « ' + j.mot + ' » sur votre cahier, à côté du numéro de l’exercice.'
+          : ''));
     } else {
       afficher(id);
-      if (j.deja) message(btn, 'Exercice déjà compté : choisissez-en un autre.');
+      if (j.deja) message(btn, deja(j.mot));
       else if (j.attente) message(btn, 'Pas encore : un exercice compte 5 minutes au moins après ' +
         'l’ouverture de sa correction (encore ' + Math.ceil(j.attente / 60) + ' min environ).');
       else if (j.erreur === 'code inconnu') message(btn, 'Lien personnel non reconnu : exercice non compté.');
