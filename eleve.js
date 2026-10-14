@@ -52,6 +52,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
   etat.faits = etat.faits || [];
   etat.ouverts = etat.ouverts || {};
   etat.mots = etat.mots || {};
+  etat.places = etat.places || {};   // exercice en attente : {adresse, titre} (lien de retour)
 
   function fait(id) { return etat.faits.indexOf(id) >= 0; }
   function signaler() {
@@ -220,17 +221,24 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     }
     return null;
   }
+  // titre (« Exercice 4 ») et adresse (page#exercice-4) de l'exercice d'un corrigé
+  function place(det) {
+    var section = det.closest('section.exo'), num = section && section.querySelector('.num-exo');
+    return {titre: num ? num.textContent.trim() : '', page: document.title.split(' — ').pop().replace(', cours de maths', ''),
+            adresse: location.pathname + (section && section.id ? '#' + section.id : '')};
+  }
   function refuser(det, autre) {
     var msg = boiteMessage(det), cible = document.querySelector('.marteau[data-exo="' + autre.id + '"]');
-    var section = cible && cible.closest('section.exo');
-    var titre = section && section.querySelector('.num-exo');
-    msg.textContent = 'Une seule correction à la fois : le compte à rebours de ' +
-      (titre ? 'l’' + titre.textContent.toLowerCase() : 'un autre exercice') + ' est en cours (encore ' +
-      duree(autre.reste) + '). Terminez-le d’abord.';
-    if (section && section.id) {
+    var ici = cible && cible.closest('details.corrige') ? place(cible.closest('details.corrige')) : null;
+    var p = ici || etat.places[autre.id] || null;
+    var nom = p && p.titre ? 'de l’' + p.titre.charAt(0).toLowerCase() + p.titre.slice(1) +
+      (!ici && p.page ? ' (' + p.page + ')' : '') : 'd’un autre exercice';
+    msg.textContent = 'Une seule correction à la fois : le compte à rebours ' + nom + ' est en cours (encore ' +
+      duree(autre.reste) + '). Terminez-le d’abord. ';
+    if (p && p.adresse) {
       var a = document.createElement('a');
-      a.href = '#' + section.id;
-      a.textContent = ' Y aller';
+      a.href = p.adresse;
+      a.textContent = 'Revenir à l’exercice en cours';
       msg.appendChild(a);
     }
     msg.dataset.autre = autre.id;
@@ -246,6 +254,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
       var autre = enCours(id);
       if (autre) { refuser(det, autre); return; }
       etat.ouverts[id] = Date.now();
+      etat.places[id] = place(det);
       ecrire(etat);
       poster({id: id, action: 'ouvrir'}).then(function (j) {
         if (j && j.ok && j.ouvert) { etat.ouverts[id] = j.ouvert; ecrire(etat); majCorriges(); }
