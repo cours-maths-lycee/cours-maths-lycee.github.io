@@ -325,10 +325,6 @@
     } else {
       afficher(id);
       if (j.deja) message(btn, deja(j.mot));
-      else if (j.autre) message(btn, 'Une seule correction à la fois : terminez d’abord l’exercice ' +
-        'dont le compte à rebours est en cours (encore ' + Math.ceil(j.attente / 60) + ' min environ).');
-      else if (j.attente) message(btn, 'Pas encore : un exercice compte 5 minutes au moins après ' +
-        'l’ouverture de sa correction (encore ' + Math.ceil(j.attente / 60) + ' min environ).');
       else if (j.erreur === 'code inconnu') message(btn, 'Lien personnel non reconnu : exercice non compté.');
       else message(btn, 'Pas de connexion au serveur : exercice non compté, réessayez dans un moment.');
     }

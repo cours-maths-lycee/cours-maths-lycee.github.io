@@ -1,19 +1,19 @@
-var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aBm9Ru_Q-sIKm3kxSIETlIhYPdYRLTqVQKpBnKKpeSkP5qzy-l6kKetmIPLoo/exec", "paliers": {"premiers": [10, 20], "pas": 50}};
+var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aBm9Ru_Q-sIKm3kxSIETlIhYPdYRLTqVQKpBnKKpeSkP5qzy-l6kKetmIPLoo/exec", "bonus": 10};
 /* Mode élève du site « Faire des maths » (chargé par toutes les pages, sans defer,
    avant marteau.js).
    publier.py écrit avant ce fichier : var FDM_ELEVE_CONFIG = {api: <web app
-   Google Apps Script, scripts/site/compteurs_google.gs>, paliers: {premiers: [10, 20],
-   pas: 50}} (bonus à 10 et 20 exercices, puis tous les 50 : 50, 100, 150…).
+   Google Apps Script, scripts/site/compteurs_google.gs>, bonus: 10} (un bonus tous les
+   10 exercices comptés).
    Lien personnel envoyé par l'ENT (scripts/eleves.py) :
      https://faire-des-maths.fr/#eleve=K7F3QXPM&prenom=L%C3%A9a
    Le fragment (#…) n'est jamais envoyé au serveur du site ni au compteur de
    visites ; il est gardé dans le navigateur (localStorage), puis retiré de
    l'adresse. Le serveur des compteurs ne connaît que le code, jamais le prénom.
    Mode actif :
-   - bandeau « Bonjour Léa » et nombre d'exercices comptés ;
-   - corrigé d'un exercice pas encore compté : verrouillé 5 minutes à partir du
-     premier clic sur « Corrigé » (heure notée par le serveur, qui ne compte
-     l'exercice qu'après ce délai) ;
+   - bandeau « Bonjour Léa », nombre d'exercices comptés, bonus obtenus et prochain
+     bonus ;
+   - corrigés libres : l'élève les ouvre quand il veut (confiance ; le professeur
+     vérifie le cahier) ;
    - bouton marteau (marteau.js) : l'exercice est compté une seule fois ; le
      serveur donne un mot-code, à recopier sur le cahier à côté du numéro de
      l'exercice.
@@ -22,11 +22,10 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
 (function () {
   'use strict';
   var CFG = window.FDM_ELEVE_CONFIG || {};
-  var API = CFG.api, PALIERS = CFG.paliers || null;
+  var API = CFG.api, BONUS = CFG.bonus || 0;
   var AIDE = document.currentScript ? new URL('mode-emploi.html#mode-eleve', document.currentScript.src).href
     : null;
   var CLE = 'fdm-eleve:v1';
-  var ATTENTE = 300;   // secondes ; le serveur donne la valeur qui fait foi
   window.FDM_ELEVE = null;
 
   function lire() { try { return JSON.parse(localStorage.getItem(CLE)); } catch (e) { return null; } }
@@ -42,23 +41,21 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     if (code) {
       var avant = lire();
       ecrire({code: code, prenom: (q.get('prenom') || '').slice(0, 40),
-              faits: avant && avant.code === code ? avant.faits : [],
-              ouverts: avant && avant.code === code ? avant.ouverts : {}});
+              faits: avant && avant.code === code ? avant.faits : []});
     }
     history.replaceState(null, '', location.pathname + location.search);
   }
   var etat = lire();
   if (!API || !etat || !etat.code) return;
   etat.faits = etat.faits || [];
-  etat.ouverts = etat.ouverts || {};
   etat.mots = etat.mots || {};
-  etat.places = etat.places || {};   // exercice en attente : {adresse, titre} (lien de retour)
+  delete etat.ouverts;   // anciennes versions : corrigés verrouillés 5 minutes
+  delete etat.places;
 
   function fait(id) { return etat.faits.indexOf(id) >= 0; }
   function signaler() {
     ecrire(etat);
     majBandeau();
-    majCorriges();
     document.dispatchEvent(new CustomEvent('fdm-eleve'));
   }
 
@@ -72,7 +69,6 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     return poster({id: id}).then(function (j) {
       if (j && j.ok) {
         if ((j.compte || j.deja) && !fait(id)) etat.faits.push(id);
-        if (j.ouvert) etat.ouverts[id] = j.ouvert;
         if (j.mot) etat.mots[id] = j.mot;
         if (typeof j.nombre === 'number') etat.nombre = j.nombre;
         signaler();
@@ -90,9 +86,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
         if (!j.ok) { if (j.erreur === 'code inconnu') { oublier(); bandeauInconnu(); } return; }
         etat.faits = j.faits || [];
         etat.nombre = etat.faits.length;
-        for (var id in j.ouverts || {}) etat.ouverts[id] = j.ouverts[id];
         etat.mots = j.mots || {};
-        if (j.attente) ATTENTE = j.attente;
         signaler();
       })
       .catch(function () {});
@@ -116,9 +110,6 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     '.eleve-bandeau a{color:var(--accent);white-space:nowrap}',
     '.eleve-bandeau button{font:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--trait);',
     ' border-radius:5px;background:transparent;color:var(--doux);padding:.15rem .6rem}',
-    '.eleve-attente{margin:.4rem 0;padding:.45rem .7rem;border-left:3px solid var(--accent);',
-    ' background:var(--accent-fond);font:.95rem/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}',
-    'details.corrige.eleve-verrou>summary{opacity:.75}',
     '.marteau-message{margin:.2rem 0 .4rem;color:var(--doux);',
     ' font:.9rem/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}'
   ].join('\n');
@@ -135,17 +126,16 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     if (entete) entete.after(bandeau); else document.body.prepend(bandeau);
     return bandeau;
   }
-  // palier de bonus suivant : les premiers, puis tous les « pas » exercices
-  function palierSuivant(n) {
-    if (!PALIERS) return 0;
-    var p = (PALIERS.premiers || []).filter(function (x) { return x > n; })[0];
-    return p || (PALIERS.pas ? (Math.floor(n / PALIERS.pas) + 1) * PALIERS.pas : 0);
-  }
   function nb(n, mot) { return n + ' ' + mot + (n > 1 ? 's' : ''); }
+  // un bonus tous les BONUS exercices : bonus obtenus, puis exercices avant le prochain
+  function texteBonus(n) {
+    if (!BONUS) return '';
+    var k = Math.floor(n / BONUS);
+    return ' — ' + (k ? k + ' bonus obtenu' + (k > 1 ? 's' : '') + ', encore '
+      : 'encore ') + nb(BONUS - n % BONUS, 'exercice') + ' pour le prochain bonus';
+  }
   function majBandeau() {
-    var b = placerBandeau(), n = etat.faits.length, suite = '';
-    var prochain = palierSuivant(n);
-    if (prochain) suite = ' — encore ' + nb(prochain - n, 'exercice') + ' pour le prochain bonus';
+    var b = placerBandeau(), n = etat.faits.length, suite = texteBonus(n);
     b.innerHTML = '<span>Bonjour <strong></strong> ! <span class="eleve-nombre"></span>' +
       (AIDE ? ' <a href="' + AIDE + '">Comment ça marche ?</a>' : '') + '</span>' +
       '<button type="button">Ce n’est pas moi</button>';
@@ -164,126 +154,8 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
       'l’ENT, ou demandez-en un nouveau à votre professeur.';
   }
 
-  // ---------- corrigés verrouillés 5 minutes ----------
-  function idDe(det) {
-    var b = det.querySelector('.marteau[data-exo]');
-    return b ? b.dataset.exo : null;
-  }
-  // ms restantes avant l'ouverture permise ; null : pas encore commencé
-  function restant(id) {
-    var o = etat.ouverts[id];
-    return o ? Math.max(0, ATTENTE * 1000 - (Date.now() - o)) : null;
-  }
-  function verrouille(id) {
-    if (fait(id)) return false;
-    var r = restant(id);
-    return r === null || r > 0;
-  }
-  function duree(ms) {
-    var s = Math.ceil(ms / 1000), m = Math.floor(s / 60);
-    return (m ? m + ' min ' : '') + (s % 60 < 10 && m ? '0' : '') + (s % 60) + ' s';
-  }
-  function majCorriges() {
-    document.querySelectorAll('details.corrige').forEach(function (det) {
-      var id = idDe(det), s = det.querySelector('summary');
-      if (!id || !s) return;
-      if (!s.dataset.texte) s.dataset.texte = s.textContent;
-      var r = restant(id), bloque = verrouille(id);
-      det.classList.toggle('eleve-verrou', bloque);
-      s.textContent = s.dataset.texte + (bloque && r !== null ? ' — disponible dans ' + duree(r) : '');
-      var msg = det.previousElementSibling;
-      if (msg && msg.classList.contains('eleve-attente') && !(bloque && r !== null) &&
-          !(msg.dataset.autre && restant(msg.dataset.autre))) msg.remove();
-    });
-  }
-  function boiteMessage(det) {
-    var msg = det.previousElementSibling;
-    if (!msg || !msg.classList.contains('eleve-attente')) {
-      msg = document.createElement('p');
-      msg.className = 'eleve-attente';
-      det.before(msg);
-    }
-    return msg;
-  }
-  function attendre(det, id) {
-    var msg = boiteMessage(det);
-    delete msg.dataset.autre;
-    msg.textContent = 'Cherchez d’abord l’exercice dans votre cahier : la correction ' +
-      's’ouvrira 5 minutes après votre premier clic sur « Corrigé ».';
-    majCorriges();
-  }
-  // un seul compte à rebours à la fois : l'exercice en attente, ou null
-  function enCours(id) {
-    for (var x in etat.ouverts) {
-      if (x === id || fait(x)) continue;
-      var r = restant(x);
-      if (r) return {id: x, reste: r};
-    }
-    return null;
-  }
-  // titre (« Exercice 4 ») et adresse (page#exercice-4) de l'exercice d'un corrigé
-  function place(det) {
-    var section = det.closest('section.exo'), num = section && section.querySelector('.num-exo');
-    return {titre: num ? num.textContent.trim() : '', page: document.title.split(' — ').pop().replace(', cours de maths', ''),
-            adresse: location.pathname + (section && section.id ? '#' + section.id : '')};
-  }
-  function refuser(det, autre) {
-    var msg = boiteMessage(det), cible = document.querySelector('.marteau[data-exo="' + autre.id + '"]');
-    var ici = cible && cible.closest('details.corrige') ? place(cible.closest('details.corrige')) : null;
-    var p = ici || etat.places[autre.id] || null;
-    var nom = p && p.titre ? 'de l’' + p.titre.charAt(0).toLowerCase() + p.titre.slice(1) +
-      (!ici && p.page ? ' (' + p.page + ')' : '') : 'd’un autre exercice';
-    msg.textContent = 'Une seule correction à la fois : le compte à rebours ' + nom + ' est en cours (encore ' +
-      duree(autre.reste) + '). Terminez-le d’abord. ';
-    if (p && p.adresse) {
-      var a = document.createElement('a');
-      a.href = p.adresse;
-      a.textContent = 'Revenir à l’exercice en cours';
-      msg.appendChild(a);
-    }
-    msg.dataset.autre = autre.id;
-  }
-  document.addEventListener('click', function (ev) {
-    var s = ev.target.closest && ev.target.closest('summary');
-    var det = s && s.parentElement;
-    if (!det || !det.matches('details.corrige')) return;
-    var id = idDe(det);
-    if (!id || !verrouille(id)) return;
-    ev.preventDefault();
-    if (!etat.ouverts[id]) {
-      var autre = enCours(id);
-      if (autre) { refuser(det, autre); return; }
-      etat.ouverts[id] = Date.now();
-      etat.places[id] = place(det);
-      ecrire(etat);
-      poster({id: id, action: 'ouvrir'}).then(function (j) {
-        if (j && j.ok && j.ouvert) { etat.ouverts[id] = j.ouvert; ecrire(etat); majCorriges(); }
-        else if (j && j.erreur === 'autre compte à rebours') {
-          // le serveur fait foi (autre appareil, autre onglet)
-          delete etat.ouverts[id];
-          if (j.ouvert) etat.ouverts[j.autre] = j.ouvert;
-          ecrire(etat);
-          majCorriges();
-          refuser(det, {id: j.autre, reste: j.reste * 1000});
-        }
-      }).catch(function () {});
-    }
-    attendre(det, id);
-  }, true);
-  // autres ouvertures (« tout ouvrir », lien #corrige-N) : refermé tant que verrouillé
-  document.addEventListener('toggle', function (ev) {
-    var det = ev.target;
-    if (!det.open || !det.matches || !det.matches('details.corrige')) return;
-    var id = idDe(det);
-    if (id && verrouille(id)) det.open = false;
-  }, true);
-  setInterval(function () {
-    if (document.querySelector('details.corrige.eleve-verrou')) majCorriges();
-  }, 1000);
-
   function demarrer() {
     majBandeau();
-    majCorriges();
     synchroniser();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer);
