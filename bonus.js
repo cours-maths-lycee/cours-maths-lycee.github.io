@@ -1,5 +1,5 @@
 /* Animation du bonus (mode élève) : la nuit tombe ; un point scintillant apparaît et
-   trace une courbe célèbre tirée au hasard, en laissant une traînée qui scintille ; la
+   trace une courbe célèbre tirée au hasard, en laissant une traînée de points qui scintillent ; la
    courbe se consume tout entière en pluie d'étincelles ; « BONUS N°k » scintille et
    se consume à son tour ; le jour revient. Tout en SVG, sans dépendance.
      FDM_BONUS.jouer({numero: 1, courbe: 'cardioide', vitesse: 1, nom: true, reduit: false})
@@ -215,7 +215,8 @@
     '.fdm-bonus-passer{position:absolute;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));' +
     'text-align:center;font:13px system-ui,-apple-system,"Segoe UI",sans-serif;color:#8d96b8;' +
     'opacity:0;transition:opacity 1.2s}' +
-    '@keyframes fdm-scintille{0%,100%{opacity:.12}50%{opacity:.85}}';
+    '@keyframes fdm-scintille{0%,100%{opacity:.12}50%{opacity:.85}}' +
+    '@keyframes fdm-point{0%,100%{opacity:.25}50%{opacity:1}}';
   function styler() {
     if (document.getElementById('fdm-bonus-style')) return;
     var s = document.createElement('style');
@@ -319,6 +320,9 @@
     defs.innerHTML =
       '<radialGradient id="fdm-halo"><stop offset="0" stop-color="#fff" stop-opacity="1"/>' +
       '<stop offset=".22" stop-color="#ffeab0" stop-opacity=".85"/>' +
+      '<stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="fdm-point"><stop offset="0" stop-color="#fff"/>' +
+      '<stop offset=".35" stop-color="#ffe7a0" stop-opacity=".9"/>' +
       '<stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="fdm-or" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe6"/>' +
       '<stop offset=".5" stop-color="#ffd86b"/><stop offset="1" stop-color="#f2a43a"/></linearGradient>' +
@@ -469,18 +473,6 @@
 
       // 2. un point scintillant apparaît lentement
       var sous = ajuster(courbe.f(), 500, 450, 760, 640), geo = mesurer(sous);
-      sous.forEach(function (pts, k) {
-        var d = versD(pts), c = geo.chemins[k];
-        c.traits = [
-          el('path', {d: d, stroke: '#ffb347', 'stroke-width': (10 * px).toFixed(2), opacity: 0.16}, S.gCourbe),
-          el('path', {d: d, stroke: '#ffd77a', 'stroke-width': (4.5 * px).toFixed(2), opacity: 0.45}, S.gCourbe),
-          el('path', {d: d, stroke: '#fff8e1', 'stroke-width': (1.6 * px).toFixed(2)}, S.gCourbe)];
-        c.Lr = c.traits[2].getTotalLength() || c.L;
-        c.traits.forEach(function (t) {
-          t.setAttribute('stroke-dasharray', c.Lr.toFixed(1) + ' ' + (c.Lr + 20).toFixed(1));
-          t.setAttribute('visibility', 'hidden');
-        });
-      });
       if (o.nom !== false) S.gNom.textContent = courbe.nom;
       var pos = situer(geo, 0), echelleT = 0.2;
       function placer(op) {
@@ -499,25 +491,17 @@
       });
       if (passer) return finir();
 
-      // 3. le point trace la courbe ; la traînée reste et scintille
-      var s = 0, scintille = true;
-      taches.push(function (dt) {
-        if (!scintille) return true;
-        S.gCourbe.setAttribute('opacity', (0.88 + 0.07 * sin(temps * 13) + 0.05 * sin(temps * 31 + 1)).toFixed(3));
-        for (var i = nombre(38, dt); i > 0 && s > 0; i--) {
-          var q = situer(geo, Math.random() * s);
-          S.eclats.ajouter(q[0], q[1], hasard(4, 10), hasard(0.4, 1));
-        }
-        return false;
-      });
+      // 3. le point trace la courbe ; la traînée : des points lumineux très rapprochés,
+      // qui scintillent chacun à son rythme (animation CSS, sans calcul à chaque image)
+      var s = 0, pose = 0, pas = Math.max(2.6 * px, geo.total / 5000);
       function dessiner() {
-        geo.chemins.forEach(function (c) {
-          var u = Math.max(0, Math.min(1, (s - c.debut) / (c.L || 1)));
-          c.traits.forEach(function (t) {
-            t.setAttribute('visibility', u > 0 ? 'visible' : 'hidden');
-            t.setAttribute('stroke-dashoffset', (c.Lr * (1 - u)).toFixed(1));
-          });
-        });
+        for (; pose <= s; pose += pas) {
+          var q = situer(geo, pose), dj = 0.8 * px;
+          el('circle', {cx: (q[0] + hasard(-dj, dj)).toFixed(1), cy: (q[1] + hasard(-dj, dj)).toFixed(1),
+                        r: (hasard(2.2, 3.8) * px).toFixed(2), fill: 'url(#fdm-point)',
+                        style: 'animation:fdm-point ' + hasard(0.35, 1.1).toFixed(2) + 's ease-in-out -' +
+                               hasard(0, 1.1).toFixed(2) + 's infinite'}, S.gCourbe);
+        }
       }
       await etape(courbe.duree || 6500, function (p, dt) {
         s = geo.total * (0.5 - 0.5 * cos(PI * p));
@@ -538,7 +522,6 @@
       if (passer) return finir();
 
       // 4. la courbe se consume en tombant
-      scintille = false;
       var ech = [], N = 650;
       for (var i = 0; i < N; i++) ech.push(situer(geo, geo.total * (i + Math.random()) / N));
       var nomO = parseFloat(S.gNom.getAttribute('opacity')) || 0;
