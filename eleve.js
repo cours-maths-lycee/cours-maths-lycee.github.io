@@ -17,7 +17,8 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
    - bouton marteau (marteau.js) : l'exercice est compté une seule fois ; le
      serveur donne un mot-code, à recopier sur le cahier à côté du numéro de
      l'exercice.
-   window.FDM_ELEVE : {prenom, fait(id), mot(id), nombre(), envoyerFait(id)} ; l'événement
+   window.FDM_ELEVE : {prenom, fait(id), mot(id), nombre(), envoyerFait(id), bonus} (bonus :
+   exercices par bonus, 0 sans bonus) ; l'événement
    « fdm-eleve » (document) signale une mise à jour. */
 (function () {
   'use strict';
@@ -98,7 +99,8 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     fait: fait,
     mot: function (id) { return etat.mots[id] || ''; },
     nombre: function () { return etat.faits.length; },
-    envoyerFait: envoyerFait
+    envoyerFait: envoyerFait,
+    bonus: BONUS
   };
 
   // ---------- bandeau ----------

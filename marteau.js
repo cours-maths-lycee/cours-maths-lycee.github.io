@@ -7,7 +7,9 @@
      (scripts/site/compteurs_google.gs) ; sans lui, nombre propre à l'appareil (démo).
    Mode élève (window.FDM_ELEVE, scripts/site/eleve.js) : « fait » = compté pour
    l'élève par le serveur, une seule fois par exercice ; une fois compté, le carré
-   s'ouvre par la droite et le mot-code sort de la boîte (à recopier sur le cahier). */
+   s'ouvre par la droite et le mot-code sort de la boîte (à recopier sur le cahier) ;
+   l'exercice qui donne un bonus lance ensuite l'animation du bonus (bonus.js, chargé
+   à ce moment-là, à côté de marteau.js). */
 (function () {
   'use strict';
   var CFG = window.MARTEAU_CONFIG || {};
@@ -20,6 +22,18 @@
   var ACCELERE = CFG.accelere || 0.5;
   var API = window.MARTEAU_API || null;
   var CLE = 'fdm-marteau:v1:';
+  var ICI = document.currentScript ? document.currentScript.src : '';
+
+  // animation du bonus (bonus.js) : script chargé au premier bonus seulement
+  function jouerBonus(numero, sobre) {
+    var lancer = function () { window.FDM_BONUS.jouer({numero: numero, reduit: sobre}); };
+    if (window.FDM_BONUS) return lancer();
+    if (!ICI) return;
+    var s = document.createElement('script');
+    s.src = new URL('bonus.js', ICI).href;
+    s.onload = lancer;
+    document.head.appendChild(s);
+  }
 
   // ---------- données : lireCompteur(id), incrementer(id) ----------
   var memoire = {}, totaux = {};
@@ -319,9 +333,13 @@
         try { await ouvrirBoite(btn, j.mot); } catch (e) {}
       }
       afficher(id);
+      var bonus = E.bonus && j.nombre % E.bonus === 0 ? j.nombre / E.bonus : 0;
       message(btn, 'Exercice compté : vous en êtes à ' + j.nombre + '.' +
         (j.mot ? ' Recopiez le code « ' + j.mot + ' » sur votre cahier, à côté du numéro de l’exercice.'
-          : ''));
+          : '') +
+        (bonus ? ' Bonus n°' + bonus + ' obtenu !' : ''));
+      // le temps de voir le code, puis la nuit tombe
+      if (bonus) setTimeout(function () { jouerBonus(bonus, sobre); }, 1500);
     } else {
       afficher(id);
       if (j.deja) message(btn, deja(j.mot));

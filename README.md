@@ -34,6 +34,7 @@ Les documents sont conçus par l'auteur avec l'aide d'une IA générative, puis 
 - `index.html`, `methodes.html` : entrées par chapitre et par méthode ;
 - `marteau.js` : bouton « exercice fait » des exercices (totaux de tous les
   élèves, sans donnée personnelle) ;
+- `bonus.js` : animation d'un bonus obtenu en mode élève ;
 - `eleve.js` : mode élève (lien personnel envoyé par le professeur ; le
   serveur des compteurs ne connaît qu'un code, jamais le nom de l'élève) ;
 - `katex/`, `count.js` : composants tiers (voir LICENSE).
