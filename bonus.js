@@ -115,9 +115,10 @@
     {id: 'lissajous', nom: 'Courbe de Lissajous', f: function () {
       var c = auHasard([[3, 2], [5, 4], [3, 4], [5, 6]]);
       return [param(function (t) { return [cos(c[0] * t), sin(c[1] * t)]; }, 0, TAU, 1600)]; }},
-    {id: 'papillon', nom: 'Papillon de Temple H. Fay', duree: 10000, f: function () {
+    // deux tours seulement : sur les douze, les points s'espaçaient et le tracé filait trop vite
+    {id: 'papillon', nom: 'Papillon de Temple H. Fay', duree: 8000, f: function () {
       return [polaire(function (t) {
-        return Math.exp(sin(t)) - 2 * cos(4 * t) + Math.pow(sin((2 * t - PI) / 24), 5); }, 0, 24 * PI, 8000)]; }},
+        return Math.exp(sin(t)) - 2 * cos(4 * t) + Math.pow(sin((2 * t - PI) / 24), 5); }, 0, 4 * PI, 1600)]; }},
     {id: 'strophoide', nom: 'Strophoïde droite', f: function () {
       return [param(function (t) { var d = t * t + 1; return [(t * t - 1) / d, t * (t * t - 1) / d]; }, -2.4, 2.4, 900)]; }},
     {id: 'cornu', nom: 'Spirale de Cornu', duree: 7500, f: function () { return [cornu()]; }},
@@ -215,8 +216,7 @@
     '.fdm-bonus-passer{position:absolute;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));' +
     'text-align:center;font:13px system-ui,-apple-system,"Segoe UI",sans-serif;color:#8d96b8;' +
     'opacity:0;transition:opacity 1.2s}' +
-    '@keyframes fdm-scintille{0%,100%{opacity:.12}50%{opacity:.85}}' +
-    '@keyframes fdm-point{0%,100%{opacity:.25}50%{opacity:1}}';
+    '@keyframes fdm-scintille{0%,100%{opacity:.12}50%{opacity:.85}}';
   function styler() {
     if (document.getElementById('fdm-bonus-style')) return;
     var s = document.createElement('style');
@@ -321,14 +321,10 @@
       '<radialGradient id="fdm-halo"><stop offset="0" stop-color="#fff" stop-opacity="1"/>' +
       '<stop offset=".22" stop-color="#ffeab0" stop-opacity=".85"/>' +
       '<stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>' +
-      '<radialGradient id="fdm-point"><stop offset="0" stop-color="#fff"/>' +
-      '<stop offset=".35" stop-color="#ffe7a0" stop-opacity=".9"/>' +
-      '<stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="fdm-or" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe6"/>' +
       '<stop offset=".5" stop-color="#ffd86b"/><stop offset="1" stop-color="#f2a43a"/></linearGradient>' +
       '<filter id="fdm-lueur" x="-20%" y="-60%" width="140%" height="220%">' +
-      '<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="f"/>' +
-      '<feMerge><feMergeNode in="f"/><feMergeNode in="f"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '<feGaussianBlur in="SourceGraphic" stdDeviation="11"/></filter>' +
       '<g id="fdm-etoile"><circle r="1" fill="url(#fdm-halo)" opacity=".7"/>' +
       '<path d="M0-1L.16-.16L1 0L.16.16L0 1L-.16.16L-1 0L-.16-.16Z" fill="#fffaf0"/></g>';
     // ciel étoilé, très discret
@@ -449,10 +445,25 @@
     var texte = 'BONUS N°' + numero, mesure = document.createElement('canvas').getContext('2d');
     mesure.font = '700 150px ' + POLICE;
     var taille = Math.min(150, 150 * 880 / mesure.measureText(texte).width), yTexte = 500 + taille * 0.35;
-    var mot = el('text', {x: 500, y: yTexte.toFixed(1), 'text-anchor': 'middle', 'font-family': POLICE,
-                          'font-weight': 700, 'font-size': taille.toFixed(1), fill: 'url(#fdm-or)',
-                          stroke: '#fff4cc', 'stroke-width': 1.2, filter: 'url(#fdm-lueur)', opacity: 0}, S.gTexte);
-    mot.textContent = texte;
+    // la lueur est une copie floutée placée derrière le mot, resté sans filtre : un élément
+    // filtré est calculé en basse résolution sur les écrans denses, et le mot sortait flou
+    var mot = el('g', {opacity: 0}, S.gTexte);
+    // le mot est cerné d'un trait sombre, sinon son bord se fond dans la lueur
+    [true, false].forEach(function (lueur) {
+      var e = el('text', {x: 500, y: yTexte.toFixed(1), 'text-anchor': 'middle', 'font-family': POLICE,
+                          'font-weight': 700, 'font-size': taille.toFixed(1)}, mot);
+      if (lueur) {
+        e.setAttribute('fill', '#ffb347');
+        e.setAttribute('opacity', 0.75);
+        e.setAttribute('filter', 'url(#fdm-lueur)');
+      } else {
+        e.setAttribute('fill', 'url(#fdm-or)');
+        e.setAttribute('stroke', '#7a3f0c');
+        e.setAttribute('stroke-width', 1.5);
+        e.setAttribute('paint-order', 'stroke');
+      }
+      e.textContent = texte;
+    });
     var echT = pointsTexte(texte, '700 ' + taille.toFixed(1) + 'px ' + POLICE, 500, yTexte, reduit ? 0 : 900);
 
     function motScintille(ms, montee) {
@@ -492,16 +503,51 @@
       if (passer) return finir();
 
       // 3. le point trace la courbe ; la traînée : des points lumineux très rapprochés,
-      // qui scintillent chacun à son rythme (animation CSS, sans calcul à chaque image)
-      var s = 0, pose = 0, pas = Math.max(2.6 * px, geo.total / 5000);
+      // fixes, réunis en chemins par paquets ; le scintillement vient d'une quarantaine
+      // d'éclats qui s'allument et s'éteignent tour à tour sur des points déjà posés
+      // (faire scintiller toute la traînée la faisait repeindre à chaque image : moins
+      // de 20 images par seconde sur téléphone, et sur ordinateur pour les longues courbes)
+      var s = 0, pose = 0, pas = Math.max(3 * px, geo.total / 3000), poses = [], chemin = null, d = '', n = 0;
+      var traine = el('g', {fill: '#fff6dc', stroke: '#ffb347', 'stroke-opacity': 0.35,
+                            'stroke-width': (2.4 * px).toFixed(2), opacity: 0.7}, S.gCourbe);
+      var gEclats = el('g', {fill: '#fff'}, S.gCourbe), brillants = [];
+      for (var b = 0; b < 40; b++)
+        brillants.push({e: el('circle', {r: (hasard(1.8, 2.8) * px).toFixed(2), opacity: 0}, gEclats),
+                        age: 0, vie: hasard(0, 0.6)});
+      taches.push(function (dt) {
+        if (!gEclats.isConnected) return true;
+        brillants.forEach(function (B) {
+          B.age += dt;
+          if (B.age >= B.vie) {                  // éteint : il se rallume ailleurs sur la traînée
+            if (!poses.length) return;
+            var q = auHasard(poses);
+            B.e.setAttribute('cx', q[0]);
+            B.e.setAttribute('cy', q[1]);
+            B.age = 0;
+            B.vie = hasard(0.35, 1.1);
+          }
+          B.e.setAttribute('opacity', sin(PI * B.age / B.vie).toFixed(2));
+        });
+        return false;
+      });
       function dessiner() {
+        var neuf = false;
         for (; pose <= s; pose += pas) {
-          var q = situer(geo, pose), dj = 0.8 * px;
-          el('circle', {cx: (q[0] + hasard(-dj, dj)).toFixed(1), cy: (q[1] + hasard(-dj, dj)).toFixed(1),
-                        r: (hasard(2.2, 3.8) * px).toFixed(2), fill: 'url(#fdm-point)',
-                        style: 'animation:fdm-point ' + hasard(0.35, 1.1).toFixed(2) + 's ease-in-out -' +
-                               hasard(0, 1.1).toFixed(2) + 's infinite'}, S.gCourbe);
+          var q = situer(geo, pose), dj = 0.8 * px, r = hasard(1.2, 2) * px, R = r.toFixed(2),
+              x = q[0] + hasard(-dj, dj), y = q[1] + hasard(-dj, dj);
+          if (!chemin || n >= 200) {               // paquet plein : il est figé, on en ouvre un autre
+            if (chemin) chemin.setAttribute('d', d);
+            chemin = el('path', {}, traine);
+            d = '';
+            n = 0;
+          }
+          d += 'M' + (x - r).toFixed(1) + ' ' + y.toFixed(1) + 'a' + R + ' ' + R + ' 0 1 0 ' + (2 * r).toFixed(2) +
+               ' 0a' + R + ' ' + R + ' 0 1 0 ' + (-2 * r).toFixed(2) + ' 0';
+          n++;
+          poses.push([x.toFixed(1), y.toFixed(1)]);
+          neuf = true;
         }
+        if (neuf) chemin.setAttribute('d', d);
       }
       await etape(courbe.duree || 6500, function (p, dt) {
         s = geo.total * (0.5 - 0.5 * cos(PI * p));

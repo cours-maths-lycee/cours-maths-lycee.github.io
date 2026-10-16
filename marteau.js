@@ -369,7 +369,13 @@
   }
 
   var tous = [];
-  document.addEventListener('fdm-eleve', function () { tous.forEach(function (id) { afficher(id); }); });
+  // mise à jour venue du serveur : un bouton en pleine animation attend la fin de ses coups
+  // de marteau (clicEleve l'affiche ensuite), sinon le mot-code sortirait trop tôt
+  document.addEventListener('fdm-eleve', function () {
+    tous.forEach(function (id) {
+      if (!elements(id).some(function (el) { return el.mtEnCours; })) afficher(id);
+    });
+  });
   function init(racine) {
     var ids = [];
     (racine || document).querySelectorAll('.marteau[data-exo], .marteau-etat[data-exo]')
