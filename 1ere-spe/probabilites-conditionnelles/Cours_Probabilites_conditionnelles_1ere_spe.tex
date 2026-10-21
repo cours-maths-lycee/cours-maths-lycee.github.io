@@ -1,0 +1,1798 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{6}{Probabilités conditionnelles}
+\niveaucours{1\textsuperscript{re} spécialité mathématiques}
+\titrecours{PROBABILITÉS CONDITIONNELLES}{Cours --- Première spécialité}
+
+\begin{document}
+
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt},
+  nom/.style={font=\footnotesize,inner sep=1.5pt,sloped},
+  arbA/.style={},arbnA/.style={},arbAB/.style={},arbAnB/.style={},arbnAB/.style={},
+  arbnAnB/.style={},chemin/.style={coulExo,line width=1.4pt}}
+\newcommand{\arbcontraires}[2]{\def\arbnA{#1}\def\arbnB{#2}}
+\newcommand{\arbfeuilles}[4]{\def\arbfAB{#1}\def\arbfAnB{#2}\def\arbfnAB{#3}\def\arbfnAnB{#4}}
+\newcommand{\arbsansfeuilles}{\def\arbpasfeuilles{}}
+\newcommand{\arbvaleurs}{\def\arbseules{}\arbsansfeuilles}
+\newcommand{\arblab}[2]{\ifx\arbseules\undefined
+  $#1\if\relax\detokenize{#2}\relax\else=#2\fi$\else$#2$\fi}
+\newcommand{\arbfeuille}[2]{%
+  \node[right,font=\footnotesize] at (#1.east) {$#2\ifx\arbtmp\empty\else=\arbtmp\fi$};}
+\newcommand{\arbre}[8]{%
+  \ifx\arbnA\undefined\def\arbNA{\overline{#1}}\else\let\arbNA\arbnA\fi
+  \ifx\arbnB\undefined\def\arbNB{\overline{#2}}\else\let\arbNB\arbnB\fi
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (3.4,1.2) {$#1$};
+  \node[evt] (nA) at (3.4,-1.2) {$\arbNA$};
+  \node[evt] (AB) at (7.2,1.9) {$#2$};
+  \node[evt] (AnB) at (7.2,0.5) {$\arbNB$};
+  \node[evt] (nAB) at (7.2,-0.5) {$#2$};
+  \node[evt] (nAnB) at (7.2,-1.9) {$\arbNB$};
+  \draw[arbA] (O.center) -- node[nom,above]{\arblab{P(#1)}{#3}} (A);
+  \draw[arbnA] (O.center) -- node[nom,below]{\arblab{P(\arbNA)}{#4}} (nA);
+  \draw[arbAB] (A) -- node[nom,above]{\arblab{P_{#1}(#2)}{#5}} (AB);
+  \draw[arbAnB] (A) -- node[nom,below]{\arblab{P_{#1}(\arbNB)}{#6}} (AnB);
+  \draw[arbnAB] (nA) -- node[nom,above]{\arblab{P_{\arbNA}(#2)}{#7}} (nAB);
+  \draw[arbnAnB] (nA) -- node[nom,below]{\arblab{P_{\arbNA}(\arbNB)}{#8}} (nAnB);
+  \ifx\arbpasfeuilles\undefined
+    \ifx\arbfAB\undefined\arbfeuilles{}{}{}{}\fi
+    \let\arbtmp\arbfAB\arbfeuille{AB}{P(#1\cap #2)}
+    \let\arbtmp\arbfAnB\arbfeuille{AnB}{P(#1\cap\arbNB)}
+    \let\arbtmp\arbfnAB\arbfeuille{nAB}{P(\arbNA\cap #2)}
+    \let\arbtmp\arbfnAnB\arbfeuille{nAnB}{P(\arbNA\cap\arbNB)}
+  \fi}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\arbremachines}[3]{%
+  \node (O) at (0,0) {};
+  \foreach \p/\q/\r [count=\i] in {#3}{%
+    \pgfmathsetmacro{\y}{4.6-2.3*\i}
+    \node[evt] (M\i) at (3.4,\y) {$#1_{\i}$};
+    \ifnum\i=3 \tikzset{arbpos/.style={below}}\else\tikzset{arbpos/.style={above}}\fi
+    \draw (O.center) -- node[nom,arbpos]{$P(#1_{\i})=\p$} (M\i);
+    \node[evt] (D\i) at (7.2,\y+0.6) {$#2$};
+    \node[evt] (nD\i) at (7.2,\y-0.6) {$\overline{#2}$};
+    \draw (M\i) -- node[nom,above]{$P_{#1_{\i}}(#2)=\q$} (D\i);
+    \draw (M\i) -- node[nom,below]{$P_{#1_{\i}}(\overline{#2})={\color{coulExo}\r}$} (nD\i);
+    \node[right,font=\footnotesize] at (D\i.east) {$P(#1_{\i}\cap #2)$};
+    \node[right,font=\footnotesize] at (nD\i.east) {$P(#1_{\i}\cap\overline{#2})$};}}
+\newcommand{\arbretrois}[2]{%
+  \node (O) at (0,0) {};
+  \foreach \a/\ya/\na/\pa in {1/1.8/S/#1,0/-1.8/\overline{S}/#2}{%
+    \node[evt] (N\a) at (2.2,\ya) {$\na$};
+    \draw (O.center) -- node[proba]{$\pa$} (N\a);
+    \foreach \b/\db/\nb/\pb in {1/0.9/S/#1,0/-0.9/\overline{S}/#2}{%
+      \pgfmathsetmacro{\yb}{\ya+\db}
+      \node[evt] (N\a\b) at (4.4,\yb) {$\nb$};
+      \draw (N\a) -- node[proba]{$\pb$} (N\a\b);
+      \foreach \c/\dc/\nc/\pc in {1/0.45/S/#1,0/-0.45/\overline{S}/#2}{%
+        \pgfmathsetmacro{\yc}{\yb+\dc}
+        \node[evt] (N\a\b\c) at (7,\yc) {$\nc$};
+        \draw (N\a\b) -- node[proba]{$\pc$} (N\a\b\c);}}}}
+\newcommand{\vennfond}{%
+  \draw (-0.85,-0.75) rectangle (1.65,0.75);
+  \node[font=\footnotesize] at (-0.65,0.53) {$\Omega$};}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, théorèmes), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Vocabulaire des probabilités (rappels de seconde)}
+
+\begin{definitionbox}[Définition 1 --- Expérience aléatoire, issues, événements]
+\begin{itemize}
+  \item Une \textbf{expérience aléatoire} a plusieurs résultats possibles, appelés
+    \textbf{issues}, et on ne peut pas prévoir lequel sortira.
+  \item L'ensemble de toutes les issues est l'\textbf{univers}, noté $\Omega$.
+    Pour un dé à six faces : $\Omega=\ens{1\,;2\,;3\,;4\,;5\,;6}$.
+  \item Un \textbf{événement} est un ensemble d'issues. Pour le dé, \og obtenir un
+    nombre pair\fg{} est l'événement $A=\ens{2\,;4\,;6}$.
+  \item $\Omega$ est l'événement \textbf{certain} ; l'ensemble vide $\varnothing$ est
+    l'événement \textbf{impossible}.
+\end{itemize}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Contraire, intersection, réunion]
+Soit $A$ et $B$ deux événements.
+\begin{itemize}
+  \item Le \textbf{contraire} de $A$, noté $\overline{A}$ (\og non $A$\fg), contient
+    les issues qui ne sont pas dans $A$.
+  \item L'\textbf{intersection} $A\cap B$ (\og $A$ \textbf{et} $B$\fg) contient les
+    issues qui sont à la fois dans $A$ et dans $B$.
+  \item La \textbf{réunion} $A\cup B$ (\og $A$ \textbf{ou} $B$\fg) contient les issues
+    qui sont dans $A$, dans $B$ ou dans les deux : au moins l'un des deux est réalisé.
+  \item $A$ et $B$ sont \textbf{incompatibles} quand $A\cap B=\varnothing$ : ils ne
+    peuvent pas se produire ensemble.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}
+  \vennfond
+  \fill[coulMeth!30] (-0.85,-0.75) rectangle (1.65,0.75);
+  \fill[white] (0.4,0) circle (0.55);
+  \draw (-0.85,-0.75) rectangle (1.65,0.75) (0.4,0) circle (0.55);
+  \node[font=\footnotesize] at (0.4,0) {$A$};
+  \node[font=\footnotesize] at (1.3,-0.4) {$\overline{A}$};
+  \node[below,font=\footnotesize] at (0.4,-0.75) {contraire};
+\end{tikzpicture}\hspace{0.8cm}
+\begin{tikzpicture}
+  \vennfond
+  \begin{scope}\clip (0,0) circle (0.55); \fill[coulMeth!30] (0.8,0) circle (0.55);\end{scope}
+  \draw (0,0) circle (0.55) (0.8,0) circle (0.55);
+  \node[font=\footnotesize] at (-0.25,0) {$A$};
+  \node[font=\footnotesize] at (1.05,0) {$B$};
+  \node[font=\footnotesize] (I) at (0.4,-1.05) {$A\cap B$};
+  \draw[->,>=stealth] (I.north) -- (0.4,0);
+\end{tikzpicture}\hspace{0.8cm}
+\begin{tikzpicture}
+  \vennfond
+  \fill[coulMeth!30] (0,0) circle (0.55) (0.8,0) circle (0.55);
+  \draw (0,0) circle (0.55) (0.8,0) circle (0.55);
+  \node[font=\footnotesize] at (-0.25,0.15) {$A$};
+  \node[font=\footnotesize] at (1.05,0.15) {$B$};
+  \node[font=\footnotesize] (U) at (0.4,-1.05) {$A\cup B$};
+  \draw[->,>=stealth] (U.north) -- (-0.15,-0.2);
+  \draw[->,>=stealth] (U.north) -- (0.4,-0.1);
+  \draw[->,>=stealth] (U.north) -- (0.95,-0.2);
+\end{tikzpicture}\hspace{0.8cm}
+\begin{tikzpicture}
+  \vennfond
+  \draw (-0.15,0) circle (0.45) (0.95,0) circle (0.45);
+  \node[font=\footnotesize] at (-0.15,0) {$A$};
+  \node[font=\footnotesize] at (0.95,0) {$B$};
+  \node[below,font=\footnotesize] at (0.4,-0.75) {incompatibles : $A\cap B=\varnothing$};
+\end{tikzpicture}
+\end{center}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Calculer une probabilité]
+\begin{itemize}
+  \item Pour tout événement $A$ : $0\le P(A)\le 1$, avec $P(\Omega)=1$ et
+    $P(\varnothing)=0$. La probabilité de $A$ est la somme des probabilités de ses issues.
+  \item \textbf{Équiprobabilité} : quand toutes les issues ont la même probabilité
+    (tirage \og au hasard\fg, dé équilibré),
+    \[
+      P(A)=\frac{\text{nombre d'issues de }A}{\text{nombre d'issues de }\Omega}.
+    \]
+  \item $P(\overline{A})=1-P(A)$.
+  \item $P(A\cup B)=P(A)+P(B)-P(A\cap B)$ : on retire $P(A\cap B)$, compté deux fois.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Décrire des événements et calculer leurs probabilités]
+\etapeexemples
+Une application de quiz choisit au hasard une question parmi $20$, numérotées de $1$
+à $20$. On note $A$ : \og le numéro est pair\fg{} et $B$ : \og le numéro est un multiple
+de $5$\fg.
+\begin{questions}[label=\alph*)]
+  \item Écrire $A$, $B$, $A\cap B$ et $A\cup B$ sous forme d'ensembles.
+  \item Calculer $P(A)$, $P(B)$ et $P(A\cap B)$.
+  \item Calculer $P(A\cup B)$ avec la formule, puis vérifier en comptant.
+  \item Décrire $\overline{A}$ par une phrase et calculer $P(\overline{A})$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \{2\,;4\,;6\,;8\,;10\,;12\,;14\,;16\,;18\,;20\} &\qquad& \rem{les numéros pairs}\\
+B &= \{5\,;10\,;15\,;20\} && \rem{les multiples de $5$}\\
+A\cap B &= \{10\,;20\} && \rem{pairs \emph{et} multiples de $5$}\\
+A\cup B &= \{2\,;4\,;5\,;6\,;8\,;10\,;12\,;14\,;15\,;16\,;18\,;20\} && \rem{au moins
+l'un des deux}
+\end{calculs}
+\cas{b)}
+\explique{$\Omega=\ens{1\,;2\,;\dots\,;20}$ : $20$ issues équiprobables.}{question
+choisie au hasard}
+\begin{calculs}
+P(A) &= \dfrac{10}{20} = \dfrac{1\times\barre{10}}{2\times\barre{10}} &\qquad&
+\rem{$10$ issues favorables sur $20$}\\
+P(A) &= \dfrac{1}{2} &&\\[4pt]
+P(B) &= \dfrac{4}{20} = \dfrac{1\times\barre{4}}{5\times\barre{4}} && \rem{$4$ issues
+favorables}\\
+P(B) &= \dfrac{1}{5} &&\\[4pt]
+P(A\cap B) &= \dfrac{2}{20} = \dfrac{1\times\barre{2}}{10\times\barre{2}} && \rem{$2$
+issues favorables}\\
+P(A\cap B) &= \dfrac{1}{10} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &\qquad& \rem{formule de la réunion}\\
+P(A\cup B) &= \dfrac{10}{20}+\dfrac{4}{20}-\dfrac{2}{20} && \rem{on garde le
+dénominateur $20$}\\
+P(A\cup B) &= \dfrac{12}{20} = \dfrac{3\times\barre{4}}{5\times\barre{4}} &&\\
+P(A\cup B) &= \dfrac{3}{5} &&
+\end{calculs}
+\explique{En comptant : $A\cup B$ a $12$ issues, et $\frac{12}{20}=\frac{3}{5}$.}{on
+retrouve le même résultat}
+\cas{d)}
+\explique{$\overline{A}$ : \og le numéro est impair\fg.}{le contraire de \og pair\fg}
+\begin{calculs}
+P(\overline{A}) &= 1-P(A) &\qquad& \rem{probabilité du contraire}\\
+P(\overline{A}) &= 1-\dfrac{1}{2} = \dfrac{1}{2} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Au départ d'une course, on tire au hasard un dossard parmi $30$, numérotés de $1$ à
+$30$. On note $A$ : \og le numéro est un multiple de $3$\fg{} et $B$ : \og le numéro
+est un multiple de $5$\fg.
+\begin{questions}[label=\alph*)]
+  \item Écrire $A$, $B$, $A\cap B$ et $A\cup B$ sous forme d'ensembles.
+  \item Calculer $P(A)$, $P(B)$ et $P(A\cap B)$.
+  \item Calculer $P(A\cup B)$ avec la formule, puis vérifier en comptant.
+  \item Décrire $\overline{A}$ par une phrase et calculer $P(\overline{A})$.
+\end{questions}
+\reponse{a) $A\cap B=\ens{15\,;30}$ ; $A\cup B$ a $14$ issues.\; b) $P(A)=\dfrac{1}{3}$ ;
+$P(B)=\dfrac{1}{5}$ ; $P(A\cap B)=\dfrac{1}{15}$.\; c) $P(A\cup B)=\dfrac{7}{15}$.\;
+d) $P(\overline{A})=\dfrac{2}{3}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Calculer avec les formules, sans compter les issues]
+\etapeexemples
+On choisit au hasard un client d'un site de vente en ligne. On note $A$ : \og le
+client a acheté un livre\fg{} et $B$ : \og le client a acheté un jeu\fg. On sait que
+$P(A)=0{,}35$, $P(B)=0{,}25$ et $P(A\cap B)=0{,}1$.
+\begin{questions}[label=\alph*)]
+  \item Décrire par une phrase les événements $A\cap B$ et $A\cup B$.
+  \item Calculer $P(A\cup B)$.
+  \item Calculer la probabilité que le client n'ait acheté ni livre ni jeu.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$A\cap B$ : \og le client a acheté un livre et un jeu\fg.}{les deux à la fois}
+\explique{$A\cup B$ : \og le client a acheté un livre ou un jeu\fg.}{au moins l'un des deux}
+\cas{b)}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &\qquad& \rem{formule de la réunion}\\
+P(A\cup B) &= 0{,}35+0{,}25-0{,}1 &&\\
+P(A\cup B) &= 0{,}5 &&
+\end{calculs}
+\cas{c)}
+\explique{\og Ni livre ni jeu\fg{} est le contraire de $A\cup B$.}{pas même l'un des deux}
+\begin{calculs}
+P\big(\overline{A\cup B}\big) &= 1-P(A\cup B) &\qquad& \rem{probabilité du contraire}\\
+P\big(\overline{A\cup B}\big) &= 1-0{,}5 = 0{,}5 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+On choisit au hasard un utilisateur d'un téléphone. On note $A$ : \og il est abonné à
+une plateforme de musique\fg{} et $B$ : \og il est abonné à une plateforme de vidéo\fg.
+On sait que $P(A)=0{,}6$, $P(B)=0{,}3$ et $P(A\cap B)=0{,}2$.
+\begin{questions}[label=\alph*)]
+  \item Décrire par une phrase les événements $A\cap B$ et $A\cup B$.
+  \item Calculer $P(A\cup B)$.
+  \item Calculer la probabilité que l'utilisateur ne soit abonné à aucune des deux.
+\end{questions}
+\reponse{b) $P(A\cup B)=0{,}7$.\; c) $0{,}3$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Probabilités conditionnelles et tableaux}
+
+\begin{definitionbox}[Définition 3 --- Probabilité de $B$ sachant $A$]
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+Soit $A$ un événement de probabilité non nulle. La \textbf{probabilité de $B$ sachant
+$A$}, notée $P_{A}(B)$, est la probabilité que $B$ se réalise quand on sait que $A$
+est réalisé : on ne regarde plus que les issues de $A$.
+
+\smallskip
+En situation d'équiprobabilité (tableau d'effectifs) :
+\[
+  P_{A}(B)=\frac{\text{effectif de }A\cap B}{\text{effectif de }A}.
+\]
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}
+  \vennfond
+  \begin{scope}\clip (0,0) circle (0.55); \fill[coulMeth!30] (0.8,0) circle (0.55);\end{scope}
+  \draw[coulMeth,line width=1.4pt] (0,0) circle (0.55);
+  \draw (0.8,0) circle (0.55);
+  \node[font=\footnotesize] at (-0.25,0) {$A$};
+  \node[font=\footnotesize] at (1.05,0) {$B$};
+  \node[below,font=\footnotesize,align=center] at (0.4,-0.75) {$A$ devient\\ l'univers};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{remarquebox}[Lire l'énoncé : « et » ou « parmi » ?]
+\begin{itemize}
+  \item \og $18\,\%$ des élèves sont en seconde \textbf{et} viennent en bus\fg{} : on
+    parle de tous les élèves, c'est $P(S\cap T)=0{,}18$.
+  \item \og \textbf{Parmi} les élèves de seconde, $60\,\%$ viennent en bus\fg{} (ou
+    \og \textbf{sachant} qu'il est en seconde\fg, \og \textbf{si} l'élève est en
+    seconde\fg) : on ne parle que des élèves de seconde, c'est $P_{S}(T)=0{,}6$.
+  \item En général, $P_{A}(B)$, $P_{B}(A)$ et $P(A\cap B)$ sont trois nombres différents.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer une probabilité conditionnelle dans un tableau]
+\etapeexemples
+On a demandé aux $400$ élèves d'un lycée s'ils viennent en bus.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Bus & Autre moyen & Total\\\hline
+Seconde & $120$ & $80$ & $200$\\\hline
+Première & $90$ & $110$ & $200$\\\hline
+Total & $210$ & $190$ & $400$\\\hline
+\end{tabular}
+\end{center}
+On choisit un élève au hasard. On note $S$ : \og l'élève est en seconde\fg{} et
+$T$ : \og l'élève vient en bus\fg.
+\begin{questions}[label=\alph*)]
+  \item Calculer $P(S)$, $P(T)$ et $P(S\cap T)$.
+  \item L'élève choisi est en seconde. Calculer la probabilité qu'il vienne en bus.
+  \item L'élève choisi vient en bus. Calculer la probabilité qu'il soit en seconde.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P(S) &= \dfrac{200}{400} = \dfrac{1\times\barre{200}}{2\times\barre{200}} &\qquad&
+\rem{$200$ élèves de seconde sur $400$}\\
+P(S) &= \dfrac{1}{2} &&\\[4pt]
+P(T) &= \dfrac{210}{400} = \dfrac{21\times\barre{10}}{40\times\barre{10}} && \rem{total
+de la colonne Bus}\\
+P(T) &= \dfrac{21}{40} &&\\[4pt]
+P(S\cap T) &= \dfrac{120}{400} = \dfrac{3\times\barre{40}}{10\times\barre{40}} &&
+\rem{en seconde \emph{et} en bus : une case}\\
+P(S\cap T) &= \dfrac{3}{10} &&
+\end{calculs}
+\cas{b)}
+\explique{On cherche $P_{S}(T)$ : on ne regarde que la ligne Seconde ($200$ élèves).}{on
+\emph{sait} que l'élève est en seconde}
+\begin{calculs}
+P_{S}(T) &= \dfrac{120}{200} = \dfrac{3\times\barre{40}}{5\times\barre{40}} &\qquad&
+\rem{$120$ viennent en bus parmi les $200$}\\
+P_{S}(T) &= \dfrac{3}{5} &&
+\end{calculs}
+\explique{$60\,\%$ des élèves de seconde viennent en bus.}{on interprète}
+\cas{c)}
+\explique{On cherche $P_{T}(S)$ : on ne regarde que la colonne Bus ($210$ élèves).}{on
+\emph{sait} que l'élève vient en bus}
+\begin{calculs}
+P_{T}(S) &= \dfrac{120}{210} = \dfrac{4\times\barre{30}}{7\times\barre{30}} &\qquad&
+\rem{$120$ secondes parmi les $210$}\\
+P_{T}(S) &= \dfrac{4}{7} &&
+\end{calculs}
+\explique{$P(S\cap T)$, $P_{S}(T)$ et $P_{T}(S)$ sont trois nombres différents.}{le
+total dont on part change}
+\end{correction}
+
+\etape{À vous de jouer}
+Un cinéma a compté ses $250$ spectateurs d'une séance.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Pop-corn & Sans pop-corn & Total\\\hline
+Enfant & $60$ & $40$ & $100$\\\hline
+Adulte & $45$ & $105$ & $150$\\\hline
+Total & $105$ & $145$ & $250$\\\hline
+\end{tabular}
+\end{center}
+On choisit un spectateur au hasard. On note $E$ : \og c'est un enfant\fg{} et
+$C$ : \og il a acheté du pop-corn\fg.
+\begin{questions}[label=\alph*)]
+  \item Calculer $P(E)$, $P(C)$ et $P(E\cap C)$.
+  \item Le spectateur choisi est un enfant. Calculer la probabilité qu'il ait acheté du
+    pop-corn.
+  \item Le spectateur choisi a acheté du pop-corn. Calculer la probabilité que ce soit
+    un enfant.
+\end{questions}
+\reponse{a) $P(E)=\dfrac{2}{5}$ ; $P(C)=\dfrac{21}{50}$ ; $P(E\cap C)=\dfrac{6}{25}$.\;
+b) $P_{E}(C)=\dfrac{3}{5}$.\; c) $P_{C}(E)=\dfrac{4}{7}$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Formule des probabilités conditionnelles}
+
+\begin{proprietebox}[Propriété 2 --- Formule des probabilités conditionnelles]
+Soit $A$ un événement tel que $P(A)\neq 0$ et $B$ un événement. Alors
+\[
+  P_{A}(B)=\frac{P(A\cap B)}{P(A)}
+  \qquad\text{et donc}\qquad
+  P(A\cap B)=P(A)\times P_{A}(B).
+\]
+De plus, $P_{A}(\overline{B})=1-P_{A}(B)$.
+\end{proprietebox}
+
+\demo{dans un tableau d'effectifs, on note $n(A)$ le nombre d'issues de $A$ et $N$ le
+nombre total d'issues.}
+\begin{calculs}
+P_{A}(B) &= \dfrac{n(A\cap B)}{n(A)} &\qquad& \rem{on compte dans $A$ seulement}\\
+P_{A}(B) &= \dfrac{n(A\cap B)\div N}{n(A)\div N} && \rem{on divise en haut et en bas
+par $N$}\\
+P_{A}(B) &= \dfrac{P(A\cap B)}{P(A)} && \rem{chaque quotient est une probabilité}
+\end{calculs}
+
+\begin{methodebox}[Méthode 4 --- Traduire un énoncé et utiliser la formule]
+\etapeexemples
+On choisit au hasard un abonné d'une plateforme de vidéos. On note $F$ : \og il a
+l'offre famille\fg{} et $T$ : \og il regarde sur une télévision\fg.
+\begin{itemize}
+  \item $40\,\%$ des abonnés ont l'offre famille ;
+  \item $12\,\%$ des abonnés ont l'offre famille et regardent sur une télévision ;
+  \item parmi les abonnés qui n'ont pas l'offre famille, $25\,\%$ regardent sur une
+    télévision.
+\end{itemize}
+\begin{questions}[label=\alph*)]
+  \item Traduire chaque donnée par une probabilité.
+  \item Calculer $P_{F}(T)$ et interpréter le résultat.
+  \item Calculer la probabilité que l'abonné n'ait pas l'offre famille et regarde sur
+    une télévision.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$P(F)=0{,}4$}{tous les abonnés}
+\explique{$P(F\cap T)=0{,}12$}{\og et\fg{} : intersection}
+\explique{$P_{\overline{F}}(T)=0{,}25$}{\og parmi ceux qui n'ont pas l'offre\fg{} :
+sachant $\overline{F}$}
+\cas{b)}
+\begin{calculs}
+P_{F}(T) &= \dfrac{P(F\cap T)}{P(F)} &\qquad& \rem{formule des probabilités
+conditionnelles}\\
+P_{F}(T) &= \dfrac{0{,}12}{0{,}4} &&\\
+P_{F}(T) &= 0{,}3 &&
+\end{calculs}
+\explique{$30\,\%$ des abonnés qui ont l'offre famille regardent sur une télévision.}{on
+interprète}
+\cas{c)}
+\explique{On cherche $P(\overline{F}\cap T)$.}{\og n'a pas l'offre \emph{et} regarde\fg}
+\begin{calculs}
+P(\overline{F}) &= 1-0{,}4 = 0{,}6 &\qquad& \rem{probabilité du contraire}\\
+P(\overline{F}\cap T) &= P(\overline{F})\times P_{\overline{F}}(T) &&
+\rem{formule, sous la forme d'un produit}\\
+P(\overline{F}\cap T) &= 0{,}6\times 0{,}25 &&\\
+P(\overline{F}\cap T) &= 0{,}15 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+On choisit au hasard un client d'une salle de sport. On note $A$ : \og il a un
+abonnement annuel\fg{} et $C$ : \og il prend des cours collectifs\fg.
+\begin{itemize}
+  \item $60\,\%$ des clients ont un abonnement annuel ;
+  \item $15\,\%$ des clients ont un abonnement annuel et prennent des cours collectifs ;
+  \item parmi les clients sans abonnement annuel, $30\,\%$ prennent des cours collectifs.
+\end{itemize}
+\begin{questions}[label=\alph*)]
+  \item Traduire chaque donnée par une probabilité.
+  \item Calculer $P_{A}(C)$ et interpréter le résultat.
+  \item Calculer la probabilité que le client n'ait pas d'abonnement annuel et prenne
+    des cours collectifs.
+\end{questions}
+\reponse{a) $P(A)=0{,}6$ ; $P(A\cap C)=0{,}15$ ; $P_{\overline{A}}(C)=0{,}3$.\;
+b) $P_{A}(C)=0{,}25$.\; c) $P(\overline{A}\cap C)=0{,}12$.}
+\end{methodebox}
+
+\afaire{exercices 9 à 12}
+
+\partiecours{Arbres pondérés}
+
+\begin{proprietebox}[Propriété 3 --- Règles de l'arbre pondéré]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+\begin{itemize}
+  \item Au premier niveau : $P(A)$ et $P(\overline{A})$.
+  \item Au second niveau : des probabilités \textbf{conditionnelles} (sachant
+    l'événement d'où part la branche).
+  \item \textbf{Règle du nœud} : les branches issues d'un même nœud ont une somme
+    égale à $1$.
+  \item \textbf{Règle du chemin} : la probabilité d'un chemin est le
+    \textbf{produit} des probabilités de ses branches ; c'est la probabilité de
+    l'intersection, par exemple $P(A\cap B)=P(A)\times P_{A}(B)$.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{A}{B}{}{}{}{}{}{}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Compléter un arbre et lire une intersection]
+\etapeexemples
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+On donne l'arbre pondéré ci-contre.
+\begin{questions}[label=\alph*)]
+  \item Écrire chaque nombre donné sous la forme d'une probabilité.
+  \item Compléter l'arbre.
+  \item Calculer $P(A\cap\overline{B})$ et $P(\overline{A}\cap B)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}
+  \arbvaleurs
+  \arbre{A}{B}{0{,}3}{\dots}{0{,}6}{\dots}{\dots}{0{,}25}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{$P(A)=0{,}3$ ; $P_{A}(B)=0{,}6$ ;
+$P_{\overline{A}}(\overline{B})=0{,}25$.}{au 2\textsuperscript{e} niveau : sachant
+l'événement d'où part la branche}
+\begin{minipage}[t]{0.44\linewidth}\vspace{0pt}\raggedright
+\cas{b)}
+\begin{calculs}
+P(\overline{A}) &= 1-0{,}3 = 0{,}7 &\quad& \rem{règle du nœud}\\
+P_{A}(\overline{B}) &= 1-0{,}6 = 0{,}4 &&\\
+P_{\overline{A}}(B) &= 1-0{,}25 = 0{,}75 &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}
+  \arbre{A}{B}{0{,}3}{\color{coulExo}0{,}7}{0{,}6}{\color{coulExo}0{,}4}
+    {\color{coulExo}0{,}75}{0{,}25}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}
+\begin{calculs}
+P(A\cap\overline{B}) &= P(A)\times P_{A}(\overline{B}) &\qquad& \rem{règle du chemin}\\
+P(A\cap\overline{B}) &= 0{,}3\times 0{,}4 = 0{,}12 &&\\[4pt]
+P(\overline{A}\cap B) &= P(\overline{A})\times P_{\overline{A}}(B) && \rem{autre chemin}\\
+P(\overline{A}\cap B) &= 0{,}7\times 0{,}75 = 0{,}525 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+On donne l'arbre pondéré ci-contre.
+\begin{questions}[label=\alph*)]
+  \item Écrire chaque nombre donné sous la forme d'une probabilité.
+  \item Compléter l'arbre.
+  \item Calculer $P(A\cap\overline{B})$ et $P(\overline{A}\cap B)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}
+  \arbvaleurs
+  \arbre{A}{B}{0{,}8}{\dots}{\dots}{0{,}1}{0{,}35}{\dots}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $P(A)=0{,}8$ ; $P_{A}(\overline{B})=0{,}1$ ; $P_{\overline{A}}(B)=0{,}35$.\;
+b) $P(\overline{A})=0{,}2$ ; $P_{A}(B)=0{,}9$ ; $P_{\overline{A}}(\overline{B})=0{,}65$.\;
+c) $P(A\cap\overline{B})=0{,}08$ ; $P(\overline{A}\cap B)=0{,}07$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 6 --- Construire un arbre à partir d'un énoncé]
+\etapeexemples
+Au self du lycée, $60\,\%$ des élèves choisissent le plat végétarien, les autres le
+plat avec viande. Parmi les élèves qui prennent le plat végétarien, $30\,\%$ prennent
+une salade de fruits en dessert ; parmi les autres, $45\,\%$. On choisit un élève au
+hasard. On note $V$ : \og il prend le plat végétarien\fg{} et $F$ : \og il prend une
+salade de fruits\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré qui décrit la situation.
+  \item Calculer $P(V\cap F)$ et interpréter le résultat.
+  \item Calculer $P(\overline{V}\cap\overline{F})$ et interpréter le résultat.
+\end{questions}
+\begin{correction}
+\begin{minipage}[t]{0.44\linewidth}\vspace{0pt}\raggedright
+\cas{a)}
+\par On reporte $P(V)=0{,}6$ au premier niveau, puis $P_{V}(F)=0{,}3$ et
+$P_{\overline{V}}(F)=0{,}45$ au second : \og parmi\fg{} donne une probabilité
+conditionnelle.
+\par\smallskip On complète chaque nœud (somme $1$) : $1-0{,}6$, $1-0{,}3$, $1-0{,}45$,
+en couleur.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}
+  \arbre{V}{F}{0{,}6}{\color{coulExo}0{,}4}{0{,}3}{\color{coulExo}0{,}7}
+    {0{,}45}{\color{coulExo}0{,}55}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(V\cap F) &= P(V)\times P_{V}(F) &\qquad& \rem{règle du chemin}\\
+P(V\cap F) &= 0{,}6\times 0{,}3 = 0{,}18 &&
+\end{calculs}
+\explique{$18\,\%$ des élèves prennent le plat végétarien et une salade de
+fruits.}{on interprète}
+\cas{c)}
+\begin{calculs}
+P(\overline{V}\cap\overline{F}) &= P(\overline{V})\times P_{\overline{V}}(\overline{F})
+&\qquad& \rem{chemin du bas}\\
+P(\overline{V}\cap\overline{F}) &= 0{,}4\times 0{,}55 = 0{,}22 &&
+\end{calculs}
+\explique{$22\,\%$ des élèves prennent le plat avec viande et pas de salade de
+fruits.}{on interprète}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un club de football, $25\,\%$ des licenciés sont des filles. Parmi les filles,
+$40\,\%$ jouent en compétition ; parmi les garçons, $60\,\%$. On choisit un licencié au
+hasard. On note $F$ : \og c'est une fille\fg{} et $C$ : \og il joue en compétition\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré qui décrit la situation.
+  \item Calculer $P(F\cap C)$ et interpréter le résultat.
+  \item Calculer $P(\overline{F}\cap\overline{C})$ et interpréter le résultat.
+\end{questions}
+\reponse{a) $P(F)=0{,}25$ ; $P_{F}(C)=0{,}4$ ; $P_{\overline{F}}(C)=0{,}6$.\;
+b) $P(F\cap C)=0{,}1$.\; c) $P(\overline{F}\cap\overline{C})=0{,}3$.}
+\end{methodebox}
+
+\afaire{exercices 13 à 16}
+
+\partiecours{Formule des probabilités totales}
+
+\begin{proprietebox}[Propriété 4 --- Formule des probabilités totales]
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+La probabilité d'un événement $B$ est la \textbf{somme des probabilités des chemins}
+qui mènent à $B$ :
+\[
+  P(B)=P(A\cap B)+P(\overline{A}\cap B).
+\]
+Plus généralement, si $A_{1}$, $A_{2}$, $A_{3}$ sont incompatibles deux à deux et
+couvrent tout $\Omega$ (chaque issue est dans un et un seul), alors
+\[
+  P(B)=P(A_{1}\cap B)+P(A_{2}\cap B)+P(A_{3}\cap B).
+\]
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}[arbA/.style={chemin},arbAB/.style={chemin},arbnA/.style={chemin},
+    arbnAB/.style={chemin}]
+  \arbsansfeuilles
+  \arbre{A}{B}{}{}{}{}{}{}
+  \feuille{AB}{\color{coulExo}$P(A\cap B)$}
+  \feuille{AnB}{$P(A\cap\overline{B})$}
+  \feuille{nAB}{\color{coulExo}$P(\overline{A}\cap B)$}
+  \feuille{nAnB}{$P(\overline{A}\cap\overline{B})$}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer $P(B)$, puis une probabilité \og inversée\fg]
+\etapeexemples
+\textbf{Exemple 1.} Une messagerie reçoit $20\,\%$ de messages indésirables
+(\og spams\fg). Son filtre envoie dans le dossier \og Indésirables\fg{} $90\,\%$ des
+spams et $5\,\%$ des autres messages. On choisit un message au hasard. On note $S$ :
+\og c'est un spam\fg{} et $I$ : \og il est envoyé dans les Indésirables\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré.
+  \item Montrer que $P(I)=0{,}22$.
+  \item Un message est dans les Indésirables. Calculer la probabilité que ce soit un
+    spam (fraction irréductible), puis interpréter.
+\end{questions}
+\begin{correction}
+\begin{minipage}[t]{0.44\linewidth}\vspace{0pt}\raggedright
+\cas{a)}
+\par $P(S)=0{,}2$ ; $P_{S}(I)=0{,}9$ (\og $90\,\%$ des spams\fg) ;
+$P_{\overline{S}}(I)=0{,}05$ (\og $5\,\%$ des autres\fg).
+\par\smallskip En couleur : complété par la règle du nœud.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}
+  \arbre{S}{I}{0{,}2}{\color{coulExo}0{,}8}{0{,}9}{\color{coulExo}0{,}1}
+    {0{,}05}{\color{coulExo}0{,}95}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(I) &= P(S\cap I)+P(\overline{S}\cap I) &\qquad& \rem{deux chemins mènent à $I$}\\
+P(I) &= 0{,}2\times 0{,}9+0{,}8\times 0{,}05 && \rem{règle du chemin sur chacun}\\
+P(I) &= 0{,}18+0{,}04 &&\\
+P(I) &= 0{,}22 &&
+\end{calculs}
+\cas{c)}
+\explique{On cherche $P_{I}(S)$ : on \emph{sait} que le message est dans les
+Indésirables.}{probabilité \og inversée\fg{} : pas sur l'arbre}
+\begin{calculs}
+P_{I}(S) &= \dfrac{P(S\cap I)}{P(I)} &\qquad& \rem{formule des probabilités
+conditionnelles}\\
+P_{I}(S) &= \dfrac{0{,}18}{0{,}22} = \dfrac{18}{22} && \rem{on multiplie en haut et en
+bas par $100$}\\
+P_{I}(S) &= \dfrac{9\times\barre{2}}{11\times\barre{2}} = \dfrac{9}{11} &&
+\end{calculs}
+\explique{$\frac{9}{11}\approx 0{,}82$ : environ $82\,\%$ des messages des
+Indésirables sont des spams.}{on interprète}
+\end{correction}
+
+\medskip
+\textbf{Exemple 2.} Trois machines fabriquent des pièces : la machine $M_{1}$ en
+fabrique $50\,\%$, $M_{2}$ en fabrique $30\,\%$ et $M_{3}$ le reste. Une pièce est
+défectueuse dans $2\,\%$ des cas pour $M_{1}$, $3\,\%$ pour $M_{2}$ et $5\,\%$ pour
+$M_{3}$. On choisit une pièce au hasard ; $D$ : \og la pièce est défectueuse\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré.
+  \item Calculer $P(D)$.
+\end{questions}
+\begin{correction}
+\begin{minipage}[t]{0.44\linewidth}\vspace{0pt}\raggedright
+\cas{a)}
+\par Trois branches au premier niveau : $0{,}5$ ; $0{,}3$ et $1-0{,}5-0{,}3=0{,}2$
+(règle du nœud).
+\par\smallskip Au second niveau, les taux de défaut, puis leurs compléments à $1$, en
+couleur.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}
+  \arbremachines{M}{D}{0{,}5/0{,}02/0{,}98,0{,}3/0{,}03/0{,}97,
+    \color{coulExo}0{,}2/0{,}05/0{,}95}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(D) &= P(M_{1}\cap D)+P(M_{2}\cap D)+P(M_{3}\cap D) &\qquad& \rem{trois chemins
+mènent à $D$}\\
+P(D) &= 0{,}5\times 0{,}02+0{,}3\times 0{,}03+0{,}2\times 0{,}05 && \rem{règle du
+chemin}\\
+P(D) &= 0{,}01+0{,}009+0{,}01 &&\\
+P(D) &= 0{,}029 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\textbf{1.} Dans un groupe, $10\,\%$ des personnes sont malades. Un test rapide est
+positif pour $80\,\%$ des malades et pour $5\,\%$ des personnes qui ne sont pas
+malades. On choisit une personne au hasard ; $M$ : \og elle est malade\fg{} et
+$T$ : \og son test est positif\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré.
+  \item Montrer que $P(T)=0{,}125$.
+  \item Le test est positif. Calculer la probabilité que la personne soit malade
+    (fraction irréductible), puis interpréter.
+\end{questions}
+\textbf{2.} Un magasin en ligne confie $60\,\%$ de ses colis au transporteur $T_{1}$,
+$30\,\%$ à $T_{2}$ et le reste à $T_{3}$. Un colis arrive en retard dans $5\,\%$ des cas
+avec $T_{1}$, $10\,\%$ avec $T_{2}$ et $20\,\%$ avec $T_{3}$. On choisit un colis au
+hasard ; $R$ : \og il arrive en retard\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré.
+  \item Calculer $P(R)$.
+\end{questions}
+\reponse{1. b) $P(T)=0{,}08+0{,}045=0{,}125$.\; c) $P_{T}(M)=\dfrac{16}{25}=0{,}64$.\;
+2. b) $P(R)=0{,}03+0{,}03+0{,}02=0{,}08$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 8 --- Retrouver une probabilité inconnue $x$]
+\etapeexemples
+Dans un club de randonnée, $40\,\%$ des adhérents ont plus de $50$ ans. Parmi eux,
+$70\,\%$ participent à la sortie du dimanche. Au total, $52\,\%$ des adhérents
+participent à la sortie du dimanche. On choisit un adhérent au hasard ; $A$ : \og il a
+plus de $50$ ans\fg{} et $D$ : \og il participe à la sortie\fg. On note
+$x=P_{\overline{A}}(D)$.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré, avec $x$.
+  \item Montrer que $0{,}6x+0{,}28=0{,}52$.
+  \item Résoudre cette équation et interpréter la solution.
+\end{questions}
+\begin{correction}
+\begin{minipage}[t]{0.44\linewidth}\vspace{0pt}\raggedright
+\cas{a)}
+\par $P(A)=0{,}4$ ; $P_{A}(D)=0{,}7$ ; l'inconnue $x=P_{\overline{A}}(D)$ se place
+comme un nombre.
+\par\smallskip En couleur, la règle du nœud : la branche de $\overline{A}$ à
+$\overline{D}$ porte $1-x$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}
+  \arbre{A}{D}{0{,}4}{\color{coulExo}0{,}6}{0{,}7}{\color{coulExo}0{,}3}
+    {x}{\color{coulExo}1-x}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(D) &= P(A\cap D)+P(\overline{A}\cap D) &\qquad& \rem{probabilités totales}\\
+P(D) &= 0{,}4\times 0{,}7+0{,}6\times x &&\\
+P(D) &= 0{,}28+0{,}6x &&
+\end{calculs}
+\explique{Or $P(D)=0{,}52$, donc $0{,}6x+0{,}28=0{,}52$.}{donnée de l'énoncé}
+\cas{c)}
+\begin{calculs}
+0{,}6x+0{,}28 &= 0{,}52 &\qquad& \rem{l'équation}\\
+0{,}6x &= 0{,}24 && \rem{on retire $0{,}28$}\\
+x &= \dfrac{0{,}24}{0{,}6} = 0{,}4 && \rem{on divise par $0{,}6$}
+\end{calculs}
+\explique{$40\,\%$ des adhérents de $50$ ans ou moins participent à la sortie du
+dimanche.}{$x$ est $P_{\overline{A}}(D)$}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans une médiathèque, $25\,\%$ des inscrits ont moins de $18$ ans. Parmi eux, $60\,\%$
+empruntent des bandes dessinées. Au total, $51\,\%$ des inscrits empruntent des bandes
+dessinées. On choisit un inscrit au hasard ; $A$ : \og il a moins de $18$ ans\fg{} et
+$D$ : \og il emprunte des bandes dessinées\fg. On note $x=P_{\overline{A}}(D)$.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré, avec $x$.
+  \item Montrer que $0{,}75x+0{,}15=0{,}51$.
+  \item Résoudre cette équation et interpréter la solution.
+\end{questions}
+\reponse{c) $x=0{,}48$ : $48\,\%$ des inscrits de $18$ ans ou plus empruntent des bandes
+dessinées.}
+\end{methodebox}
+
+\afaire{exercices 17 à 20}
+
+\partiecours{Événements indépendants}
+
+\begin{definitionbox}[Définition 4 --- Événements indépendants]
+$B$ est \textbf{indépendant} de $A$ quand savoir que $A$ est réalisé ne change pas la
+probabilité de $B$ : $P_{A}(B)=P(B)$ (avec $P(A)\neq 0$). On remplace alors $P_{A}(B)$
+dans la formule des probabilités conditionnelles :
+\begin{calculs}
+P(A\cap B) &= P(A)\times P_{A}(B) &\qquad& \rem{propriété 2}\\
+P(A\cap B) &= P(A)\times P(B) && \rem{car $P_{A}(B)=P(B)$}
+\end{calculs}
+D'où la définition : deux événements $A$ et $B$ sont \textbf{indépendants} quand
+\[
+  P(A\cap B)=P(A)\times P(B).
+\]
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 5 --- Contraires d'événements indépendants]
+Si $A$ et $B$ sont indépendants, alors $\overline{A}$ et $B$ le sont aussi, de même que
+$A$ et $\overline{B}$, et $\overline{A}$ et $\overline{B}$.
+\end{proprietebox}
+
+\begin{remarquebox}[Indépendants ou incompatibles ?]
+Ce sont deux notions différentes. Incompatibles : $A$ et $B$ ne peuvent pas se produire
+ensemble, $P(A\cap B)=0$. Indépendants : l'un n'a pas d'influence sur l'autre,
+$P(A\cap B)=P(A)\times P(B)$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 9 --- Démontrer que deux événements sont, ou non, indépendants]
+\etapeexemples
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+\begin{questions}[label=\alph*)]
+  \item On lance un dé équilibré à $12$ faces, numérotées de $1$ à $12$. On note
+    $A$ : \og le nombre est pair\fg{} et $B$ : \og le nombre est un multiple de
+    $3$\fg. $A$ et $B$ sont-ils indépendants ?
+  \item On donne l'arbre ci-contre. $A$ et $B$ sont-ils indépendants ?
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{A}{B}{0{,}4}{0{,}6}{0{,}3}{0{,}7}{0{,}5}{0{,}5}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P(A) &= \dfrac{6}{12} = \dfrac{1\times\barre{6}}{2\times\barre{6}} &\qquad& \rem{$A=\{2\,;4\,;6\,;8\,;10\,;12\}$}\\
+P(A) &= \dfrac{1}{2} &&\\
+P(B) &= \dfrac{4}{12} = \dfrac{1\times\barre{4}}{3\times\barre{4}} && \rem{$B=\{3\,;6\,;9\,;12\}$}\\
+P(B) &= \dfrac{1}{3} &&\\
+P(A\cap B) &= \dfrac{2}{12} = \dfrac{1\times\barre{2}}{6\times\barre{2}} && \rem{$A\cap B=\{6\,;12\}$}\\
+P(A\cap B) &= \dfrac{1}{6} &&\\
+P(A)\times P(B) &= \dfrac{1}{2}\times\dfrac{1}{3} = \dfrac{1}{6} && \rem{on compare
+avec $P(A\cap B)$}
+\end{calculs}
+\explique{$P(A\cap B)=P(A)\times P(B)$ : $A$ et $B$ sont indépendants.}{on conclut}
+\cas{b)}
+\begin{calculs}
+P(B) &= 0{,}4\times 0{,}3+0{,}6\times 0{,}5 &\qquad& \rem{probabilités totales}\\
+P(B) &= 0{,}12+0{,}3 = 0{,}42 &&
+\end{calculs}
+\explique{$P_{A}(B)=0{,}3$ et $P(B)=0{,}42$ : $P_{A}(B)\neq P(B)$.}{on lit $P_{A}(B)$ sur
+l'arbre}
+\explique{$A$ et $B$ ne sont pas indépendants.}{on conclut}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.44\linewidth}\raggedright
+\begin{questions}[label=\alph*)]
+  \item On lance un dé équilibré à $10$ faces, numérotées de $1$ à $10$. On note
+    $A$ : \og le nombre est pair\fg{} et $B$ : \og le nombre est inférieur ou égal à
+    $4$\fg. $A$ et $B$ sont-ils indépendants ?
+  \item On donne l'arbre ci-contre. $A$ et $B$ sont-ils indépendants ?
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.54\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{A}{B}{0{,}6}{0{,}4}{0{,}25}{0{,}75}{0{,}25}{0{,}75}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $P(A\cap B)=\dfrac{1}{5}=P(A)\times P(B)$ : indépendants.\; b) $P(B)=0{,}25
+=P_{A}(B)$ : indépendants.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer avec deux événements indépendants]
+\etapeexemples
+Une maison a deux détecteurs de fumée qui fonctionnent indépendamment l'un de l'autre.
+Dans l'année, le premier tombe en panne avec une probabilité de $0{,}05$, le second
+avec une probabilité de $0{,}08$. On note $A$ et $B$ ces deux événements.
+\begin{questions}[label=\alph*)]
+  \item Calculer la probabilité que les deux détecteurs tombent en panne.
+  \item Calculer la probabilité qu'au moins un détecteur tombe en panne.
+  \item Calculer la probabilité qu'aucun ne tombe en panne.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P(A\cap B) &= P(A)\times P(B) &\qquad& \rem{$A$ et $B$ sont indépendants}\\
+P(A\cap B) &= 0{,}05\times 0{,}08 = 0{,}004 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &\qquad& \rem{\og au moins un\fg{} : réunion}\\
+P(A\cup B) &= 0{,}05+0{,}08-0{,}004 &&\\
+P(A\cup B) &= 0{,}126 &&
+\end{calculs}
+\cas{c)}
+\explique{\og Aucun\fg{} est $\overline{A}\cap\overline{B}$ ; $\overline{A}$ et
+$\overline{B}$ sont indépendants.}{propriété 5}
+\begin{calculs}
+P(\overline{A}\cap\overline{B}) &= 0{,}95\times 0{,}92 &\qquad& \rem{$1-0{,}05$ et
+$1-0{,}08$}\\
+P(\overline{A}\cap\overline{B}) &= 0{,}874 &&
+\end{calculs}
+\explique{On retrouve $1-0{,}126=0{,}874$ : \og aucun\fg{} est le contraire de \og au
+moins un\fg.}{autre façon}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour aller au lycée, Inès prend un bus puis un train, dont les retards sont
+indépendants. Le bus est en retard avec une probabilité de $0{,}1$, le train avec une
+probabilité de $0{,}2$. On note $A$ et $B$ ces deux événements.
+\begin{questions}[label=\alph*)]
+  \item Calculer la probabilité que le bus et le train soient en retard.
+  \item Calculer la probabilité qu'au moins l'un des deux soit en retard.
+  \item Calculer la probabilité qu'aucun ne soit en retard.
+\end{questions}
+\reponse{a) $0{,}02$.\; b) $0{,}28$.\; c) $0{,}72$.}
+\end{methodebox}
+
+\afaire{exercices 21 à 24}
+
+\partiecours{Trois façons de tirer deux objets}
+
+\begin{definitionbox}[Définition 5 --- Tirages avec remise, sans remise, simultanés]
+On tire deux boules dans une urne.
+\begin{itemize}
+  \item \textbf{Successifs avec remise} : on remet la première boule avant de tirer la
+    seconde. L'urne est la même aux deux tirages : les deux tirages sont
+    \textbf{indépendants}, et l'arbre porte les mêmes probabilités aux deux niveaux.
+  \item \textbf{Successifs sans remise} : la première boule reste dehors. Au second
+    tirage, il manque une boule : les probabilités du second niveau changent selon la
+    première boule (probabilités conditionnelles).
+  \item \textbf{Simultanés} : on prend les deux boules d'un coup, sans ordre. On liste
+    les paires possibles, toutes équiprobables ; on obtient les mêmes probabilités que
+    sans remise.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 11 --- Calculer une probabilité dans un tirage de deux boules]
+\etapeexemples
+Une urne contient $3$ boules rouges et $2$ boules vertes. On tire deux boules au hasard
+et on note $M$ : \og les deux boules ont la même couleur\fg. Calculer $P(M)$ quand :
+\begin{questions}[label=\alph*)]
+  \item on tire une boule, on la remet, puis on en tire une seconde ;
+  \item on tire une boule, on la garde, puis on en tire une seconde ;
+  \item on tire les deux boules en même temps.
+\end{questions}
+\begin{correction}
+\explique{On note $R_{1}$ : \og la première boule est rouge\fg, $R_{2}$ : \og la
+seconde boule est rouge\fg{} ; $V_{1}$ et $V_{2}$ de même.}{$\overline{R_{1}}=V_{1}$}
+\cas{a)}
+\explique{Avec remise, l'urne ne change pas : $\frac{3}{5}$ et $\frac{2}{5}$ aux deux
+niveaux.}{même urne}
+\begin{center}
+\begin{tikzpicture}
+  \arbcontraires{V_{1}}{V_{2}}
+  \arbre{R_{1}}{R_{2}}{\dfrac{3}{5}}{\dfrac{2}{5}}{\dfrac{3}{5}}{\dfrac{2}{5}}{\dfrac{3}{5}}{\dfrac{2}{5}}
+\end{tikzpicture}
+\end{center}
+\begin{calculs}
+P(M) &= P(R_{1}\cap R_{2})+P(V_{1}\cap V_{2}) &\qquad& \rem{deux chemins}\\
+P(M) &= \dfrac{3}{5}\times\dfrac{3}{5}+\dfrac{2}{5}\times\dfrac{2}{5} && \rem{règle du
+chemin}\\
+P(M) &= \dfrac{9}{25}+\dfrac{4}{25} &&\\
+P(M) &= \dfrac{13}{25} &&
+\end{calculs}
+\cas{b)}
+\explique{Sans remise, il reste $4$ boules : après une rouge, $2$ rouges et $2$ vertes ;
+après une verte, $3$ rouges et $1$ verte.}{le second niveau change}
+\begin{center}
+\begin{tikzpicture}
+  \arbcontraires{V_{1}}{V_{2}}
+  \arbre{R_{1}}{R_{2}}{\dfrac{3}{5}}{\dfrac{2}{5}}{\dfrac{2}{4}}{\dfrac{2}{4}}{\dfrac{3}{4}}{\dfrac{1}{4}}
+\end{tikzpicture}
+\end{center}
+\begin{calculs}
+P(M) &= P(R_{1}\cap R_{2})+P(V_{1}\cap V_{2}) &\qquad& \rem{deux chemins}\\
+P(M) &= \dfrac{3}{5}\times\dfrac{2}{4}+\dfrac{2}{5}\times\dfrac{1}{4} && \rem{règle du
+chemin}\\
+P(M) &= \dfrac{6}{20}+\dfrac{2}{20} &&\\
+P(M) &= \dfrac{8}{20} = \dfrac{2\times\barre{4}}{5\times\barre{4}} &&\\
+P(M) &= \dfrac{2}{5} &&
+\end{calculs}
+
+\cas{c)}
+\explique{On numérote les boules $R_{1}$, $R_{2}$, $R_{3}$, $V_{1}$, $V_{2}$ et on liste
+les paires :}{sans ordre : $\{R_{1};R_{2}\}=\{R_{2};R_{1}\}$}
+\begin{center}
+$\{R_{1};R_{2}\}$\quad $\{R_{1};R_{3}\}$\quad $\{R_{2};R_{3}\}$\quad $\{V_{1};V_{2}\}$\quad
+$\{R_{1};V_{1}\}$\quad $\{R_{1};V_{2}\}$\quad $\{R_{2};V_{1}\}$\quad $\{R_{2};V_{2}\}$\quad
+$\{R_{3};V_{1}\}$\quad $\{R_{3};V_{2}\}$
+\end{center}
+\begin{calculs}
+P(M) &= \dfrac{4}{10} = \dfrac{2\times\barre{2}}{5\times\barre{2}} &\qquad& \rem{$4$ paires de même couleur sur $10$}\\
+P(M) &= \dfrac{2}{5} &&
+\end{calculs}
+\explique{Même résultat que sans remise.}{simultané et sans remise se valent}
+\end{correction}
+
+\etape{À vous de jouer}
+Un sac contient $4$ jetons bleus et $2$ jetons jaunes. On tire deux jetons au hasard et
+on note $M$ : \og les deux jetons ont la même couleur\fg. Calculer $P(M)$ quand :
+\begin{questions}[label=\alph*)]
+  \item on tire un jeton, on le remet, puis on en tire un second ;
+  \item on tire un jeton, on le garde, puis on en tire un second ;
+  \item on tire les deux jetons en même temps.
+\end{questions}
+\reponse{a) $\dfrac{16}{36}+\dfrac{4}{36}=\dfrac{5}{9}$.\; b) $\dfrac{12}{30}+\dfrac{2}{30}
+=\dfrac{7}{15}$.\; c) $7$ paires de même couleur sur $15$ : $\dfrac{7}{15}$.}
+\end{methodebox}
+
+\afaire{exercices 25 à 27}
+
+\partiecours{Épreuve de Bernoulli}
+
+\begin{definitionbox}[Définition 6 --- Épreuve de Bernoulli]
+Une \textbf{épreuve de Bernoulli} est une expérience aléatoire à deux issues :
+\textbf{succès} $S$, de probabilité $p$, et \textbf{échec} $\overline{S}$, de probabilité
+$1-p$. Le nombre $p$ est le \textbf{paramètre} de l'épreuve.
+
+\smallskip
+Exemples : obtenir \og pile\fg{} avec une pièce équilibrée ($p=0{,}5$) ; obtenir $6$
+avec un dé équilibré ($p=\frac{1}{6}$) ; réussir un tir au but.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Répéter une épreuve de Bernoulli]
+Quand on répète la même épreuve de Bernoulli de façon \textbf{indépendante}, l'arbre
+porte $p$ sur chaque branche $S$ et $1-p$ sur chaque branche $\overline{S}$ ; la
+probabilité d'un chemin est le produit de ses branches.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 12 --- Répéter trois fois une épreuve de Bernoulli]
+\etapeexemples
+Une joueuse de basket réussit un lancer franc avec une probabilité de $0{,}8$. Elle
+tire trois lancers francs, de façon indépendante ; $S$ : \og le lancer est réussi\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré.
+  \item Calculer la probabilité qu'elle réussisse les trois lancers.
+  \item Calculer la probabilité qu'elle en réussisse exactement deux.
+  \item Calculer la probabilité qu'elle en réussisse au moins un.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{center}
+\begin{tikzpicture}
+  \arbretrois{0{,}8}{0{,}2}
+  \feuille{N111}{$P(SSS)=0{,}512$}
+  \feuille{N110}{$P(SS\overline{S})=0{,}128$}
+  \feuille{N101}{$P(S\overline{S}S)=0{,}128$}
+  \feuille{N011}{$P(\overline{S}SS)=0{,}128$}
+  \feuille{N100}{$P(S\overline{S}\,\overline{S})$}
+  \feuille{N010}{$P(\overline{S}S\overline{S})$}
+  \feuille{N001}{$P(\overline{S}\,\overline{S}S)$}
+  \feuille{N000}{$P(\overline{S}\,\overline{S}\,\overline{S})=0{,}008$}
+\end{tikzpicture}
+\end{center}
+\cas{b)}
+\begin{calculs}
+P(SSS) &= 0{,}8\times 0{,}8\times 0{,}8 &\qquad& \rem{règle du chemin}\\
+P(SSS) &= 0{,}512 &&
+\end{calculs}
+\cas{c)}
+\explique{Trois chemins ont exactement deux succès : $SS\overline{S}$,
+$S\overline{S}S$ et $\overline{S}SS$.}{l'échec est au 1\textsuperscript{er},
+2\textsuperscript{e} ou 3\textsuperscript{e} lancer}
+\begin{calculs}
+P(\text{2 succès}) &= 3\times(0{,}8\times 0{,}8\times 0{,}2) &\qquad& \rem{trois chemins
+de même probabilité}\\
+P(\text{2 succès}) &= 3\times 0{,}128 = 0{,}384 &&
+\end{calculs}
+\cas{d)}
+\explique{\og Au moins un succès\fg{} est le contraire de \og aucun succès\fg{}
+($\overline{S}\,\overline{S}\,\overline{S}$).}{un seul chemin à retirer}
+\begin{calculs}
+P(\text{au moins un}) &= 1-0{,}2\times 0{,}2\times 0{,}2 &\qquad& \rem{probabilité du
+contraire}\\
+P(\text{au moins un}) &= 1-0{,}008 = 0{,}992 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Une graine germe avec une probabilité de $0{,}9$. On plante trois graines, qui germent
+indépendamment les unes des autres ; $S$ : \og la graine germe\fg.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré.
+  \item Calculer la probabilité que les trois graines germent.
+  \item Calculer la probabilité qu'exactement deux graines germent.
+  \item Calculer la probabilité qu'au moins une graine germe.
+\end{questions}
+\reponse{b) $0{,}729$.\; c) $3\times 0{,}081=0{,}243$.\; d) $1-0{,}001=0{,}999$.}
+\end{methodebox}
+
+\afaire{exercices 28 à 30}
+
+\partiecours{Variable aléatoire}
+
+\begin{definitionbox}[Définition 7 --- Variable aléatoire]
+Une \textbf{variable aléatoire} $X$ associe un nombre réel à chaque issue d'une
+expérience aléatoire (un gain, un nombre de succès\dots).
+
+\smallskip
+$\{X=a\}$ est l'événement \og $X$ prend la valeur $a$\fg ; sa probabilité est notée
+$P(X=a)$. De même, $\{X\ge a\}$ est l'événement \og $X$ prend une valeur supérieure ou
+égale à $a$\fg.
+\end{definitionbox}
+
+\begin{remarquebox}[Une \og variable\fg{} qui est en fait une fonction]
+Le mot est trompeur : dans $f(x)$, $x$ est une variable ; ici, $X$ n'est pas une
+variable mais une \textbf{fonction}, qui à chaque issue associe un nombre :
+\[
+  \text{issue}\longmapsto X(\text{issue}).
+\]
+Sa valeur dépend du hasard, puisque l'issue n'est connue qu'après l'expérience.
+\end{remarquebox}
+
+\textbf{Exemple 1.} On lance deux fois une pièce ($P$ : pile, $F$ : face) et on note
+$X$ le nombre de \og pile\fg{} obtenus.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Issue & $PP$ & $PF$ & $FP$ & $FF$\\\hline
+Valeur de $X$ & $2$ & $1$ & $1$ & $0$\\\hline
+\end{tabular}
+\end{center}
+L'événement $\{X=1\}$ est $\ens{PF\,;FP}$ : $2$ issues sur $4$, donc $P(X=1)=\frac{1}{2}$.
+
+\medskip
+\textbf{Exemple 2.} On lance un dé : on gagne $3$\,€ si on obtient $6$, sinon on perd
+$1$\,€. On note $X$ le gain, en euros.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+Issue & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\\hline
+Valeur de $X$ & $-1$ & $-1$ & $-1$ & $-1$ & $-1$ & $3$\\\hline
+\end{tabular}
+\end{center}
+L'événement $\{X=-1\}$ est $\ens{1\,;2\,;3\,;4\,;5}$, donc $P(X=-1)=\frac{5}{6}$.
+
+\begin{methodebox}[Méthode 13 --- Calculer des probabilités avec une variable aléatoire]
+\etapeexemples
+On lance un dé équilibré à six faces. On gagne $5$\,€ si on obtient $6$, on gagne
+$1$\,€ si on obtient $4$ ou $5$, et on perd $2$\,€ sinon. On note $X$ le gain, en euros
+(une perte est un gain négatif).
+\begin{questions}[label=\alph*)]
+  \item Donner les valeurs prises par $X$.
+  \item Calculer $P(X=1)$ et $P(X=-2)$.
+  \item Calculer $P(X\ge 1)$.
+  \item Décrire par une phrase l'événement $\{X\le 1\}$ et calculer sa probabilité.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$X$ prend les valeurs $-2$ ; $1$ ; $5$.}{perte de $2$\,€, gain de $1$\,€ ou de
+$5$\,€}
+\cas{b)}
+\begin{calculs}
+P(X=1) &= \dfrac{2}{6} = \dfrac{1\times\barre{2}}{3\times\barre{2}} &\qquad& \rem{issues $4$ et $5$}\\
+P(X=1) &= \dfrac{1}{3} &&\\
+P(X=-2) &= \dfrac{3}{6} = \dfrac{1\times\barre{3}}{2\times\barre{3}} && \rem{issues $1$, $2$ et $3$}\\
+P(X=-2) &= \dfrac{1}{2} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(X\ge 1) &= P(X=1)+P(X=5) &\qquad& \rem{les valeurs $1$ et $5$}\\
+P(X\ge 1) &= \dfrac{2}{6}+\dfrac{1}{6} = \dfrac{3}{6} &&\\
+P(X\ge 1) &= \dfrac{1\times\barre{3}}{2\times\barre{3}} = \dfrac{1}{2} &&
+\end{calculs}
+\cas{d)}
+\explique{$\{X\le 1\}$ : \og on perd $2$\,€ ou on gagne $1$\,€\fg, c'est-à-dire \og on
+n'obtient pas $6$\fg.}{les valeurs $-2$ et $1$}
+\begin{calculs}
+P(X\le 1) &= 1-P(X=5) &\qquad& \rem{contraire de $\{X=5\}$}\\
+P(X\le 1) &= 1-\dfrac{1}{6} = \dfrac{5}{6} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Une roue est partagée en $8$ secteurs égaux : $1$ secteur fait gagner $10$\,€, $3$
+secteurs font gagner $2$\,€ et les $4$ autres font perdre $1$\,€. On fait tourner la
+roue et on note $X$ le gain, en euros.
+\begin{questions}[label=\alph*)]
+  \item Donner les valeurs prises par $X$.
+  \item Calculer $P(X=2)$ et $P(X=-1)$.
+  \item Calculer $P(X\ge 2)$.
+  \item Décrire par une phrase l'événement $\{X\le 2\}$ et calculer sa probabilité.
+\end{questions}
+\reponse{a) $-1$ ; $2$ ; $10$.\; b) $P(X=2)=\dfrac{3}{8}$ ; $P(X=-1)=\dfrac{1}{2}$.\;
+c) $\dfrac{1}{2}$.\; d) $\dfrac{7}{8}$.}
+\end{methodebox}
+
+\afaire{exercices 31 à 33}
+
+\partiecours{Loi de probabilité}
+
+\begin{definitionbox}[Définition 8 --- Loi de probabilité d'une variable aléatoire]
+La \textbf{loi de probabilité} d'une variable aléatoire $X$ est en fait un
+\textbf{tableau} : sur la première ligne, les valeurs que $X$ peut prendre ; sous chacune,
+sa probabilité d'apparition.
+
+\smallskip
+Si $X$ prend les valeurs $x_{1}$, $x_{2}$, \dots, $x_{n}$, on note
+$p_{i}=P(X=x_{i})$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_{i}$ & $x_{1}$ & $x_{2}$ & \dots & $x_{n}$\\\hline
+$P(X=x_{i})$ & $p_{1}$ & $p_{2}$ & \dots & $p_{n}$\\\hline
+\end{tabular}
+\end{center}
+La somme des probabilités vaut $1$ : $p_{1}+p_{2}+\dots+p_{n}=1$.
+
+\smallskip
+Exemple : nombre $X$ de \og pile\fg{} en deux lancers (partie précédente) ;
+$0$ pile pour $FF$, $1$ pour $PF$ et $FP$, $2$ pour $PP$.
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $0$ & $1$ & $2$\\\hline
+$P(X=x_{i})$ & $\dfrac{1}{4}$ & $\dfrac{2}{4}$ & $\dfrac{1}{4}$\\\hline
+\end{tabular}
+\end{center}
+
+\smallskip
+\textbf{Loi de Bernoulli de paramètre $p$} : $X$ vaut $1$ en cas de succès et $0$ en cas
+d'échec ; ${P(X=1)=p}$ et ${P(X=0)=1-p}$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 14 --- Déterminer la loi d'une variable aléatoire]
+\etapeexemples
+\textbf{Exemple 1.} Pour jouer à un jeu en ligne, on paie $2$\,€. Un sac virtuel
+contient $3$ jetons gagnants sur $10$. On tire un jeton, on le remet, puis on en tire
+un second. Chaque jeton gagnant rapporte $5$\,€. On note $X$ le gain algébrique : ce
+que l'on reçoit, moins les $2$\,€ payés.
+\begin{questions}[label=\alph*)]
+  \item Donner les valeurs prises par $X$.
+  \item Déterminer la loi de probabilité de $X$.
+\end{questions}
+\begin{correction}
+\explique{On note $G_{1}$ : \og le premier jeton est gagnant\fg{} et $G_{2}$ : \og le
+second jeton est gagnant\fg.}{deux tirages avec remise}
+\begin{minipage}[t]{0.44\linewidth}\vspace{0pt}\raggedright
+\cas{a)}
+\par On retire les $2$\,€ payés à ce que l'on reçoit :
+\par\smallskip $0$ jeton gagnant : $0-2=-2$ ;
+\par $1$ jeton gagnant : $5-2=3$ ;
+\par $2$ jetons gagnants : $10-2=8$.
+\par\smallskip $X$ prend les valeurs $-2$ ; $3$ ; $8$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\centering
+\begin{tikzpicture}
+  \arbfeuilles{0{,}09}{0{,}21}{0{,}21}{0{,}49}
+  \arbre{G_{1}}{G_{2}}{0{,}3}{0{,}7}{0{,}3}{0{,}7}{0{,}3}{0{,}7}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(X=8) &= 0{,}3\times 0{,}3 = 0{,}09 &\qquad& \rem{chemin $G_{1}\cap G_{2}$}\\
+P(X=3) &= 0{,}3\times 0{,}7+0{,}7\times 0{,}3 && \rem{chemins $G_{1}\cap\overline{G_{2}}$
+et $\overline{G_{1}}\cap G_{2}$}\\
+P(X=3) &= 0{,}21+0{,}21 = 0{,}42 &&\\
+P(X=-2) &= 0{,}7\times 0{,}7 = 0{,}49 && \rem{chemin $\overline{G_{1}}\cap\overline{G_{2}}$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $-2$ & $3$ & $8$\\\hline
+$P(X=x_{i})$ & $0{,}49$ & $0{,}42$ & $0{,}09$\\\hline
+\end{tabular}
+\end{center}
+\explique{Contrôle : $0{,}49+0{,}42+0{,}09=1$.}{la somme vaut $1$}
+\end{correction}
+
+\medskip
+\textbf{Exemple 2.} La loi d'une variable aléatoire $Y$ est donnée par le tableau
+ci-dessous. Calculer $a$, puis $P(Y\ge 1)$.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$y_{i}$ & $0$ & $1$ & $2$ & $3$\\\hline
+$P(Y=y_{i})$ & $0{,}1$ & $0{,}3$ & $a$ & $0{,}2$\\\hline
+\end{tabular}
+\end{center}
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\begin{calculs}
+0{,}1+0{,}3+a+0{,}2 &= 1 &\qquad& \rem{la somme des probabilités vaut $1$}\\
+0{,}6+a &= 1 &&\\
+a &= 0{,}4 &&\\[4pt]
+P(Y\ge 1) &= 1-P(Y=0) && \rem{contraire de $\{Y=0\}$}\\
+P(Y\ge 1) &= 1-0{,}1 = 0{,}9 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\textbf{1.} Pour jouer, on paie $5$\,€. Un sac contient $4$ jetons gagnants sur $10$.
+On tire un jeton, on le remet, puis on en tire un second. Chaque jeton gagnant rapporte
+$5$\,€. On note $X$ le gain algébrique.
+\begin{questions}[label=\alph*)]
+  \item Donner les valeurs prises par $X$.
+  \item Déterminer la loi de probabilité de $X$.
+\end{questions}
+\textbf{2.} La loi d'une variable aléatoire $Y$ est donnée ci-dessous. Calculer $a$, puis
+$P(Y\ge 0)$.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$y_{i}$ & $-1$ & $0$ & $2$ & $5$\\\hline
+$P(Y=y_{i})$ & $0{,}25$ & $a$ & $0{,}35$ & $0{,}1$\\\hline
+\end{tabular}
+\end{center}
+\reponse{1. a) $-5$ ; $0$ ; $5$.\; b) $P(X=-5)=0{,}36$ ; $P(X=0)=0{,}48$ ;
+$P(X=5)=0{,}16$.\; 2. $a=0{,}3$ ; $P(Y\ge 0)=0{,}75$.}
+\end{methodebox}
+
+\afaire{exercices 34 à 37}
+
+\partiecours{Espérance, variance, écart-type}
+
+\begin{definitionbox}[Définition 9 --- Espérance, variance, écart-type]
+Soit $X$ une variable aléatoire de loi $p_{i}=P(X=x_{i})$, pour $i$ de $1$ à $n$.
+\begin{itemize}
+  \item L'\textbf{espérance} de $X$ : $E(X)=p_{1}x_{1}+p_{2}x_{2}+\dots+p_{n}x_{n}$,
+    la somme des valeurs $x_{i}$ multipliées par leurs probabilités.
+  \item La \textbf{variance} de $X$ :
+    $V(X)=p_{1}\big(x_{1}-E(X)\big)^{2}+p_{2}\big(x_{2}-E(X)\big)^{2}+\dots
+    +p_{n}\big(x_{n}-E(X)\big)^{2}$, la somme des carrés des écarts $x_{i}-E(X)$
+    multipliés par leurs probabilités.
+  \item L'\textbf{écart-type} de $X$ : $\sigma(X)=\sqrt{V(X)}$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{remarquebox}[Ce que disent ces nombres]
+\begin{itemize}
+  \item $E(X)$ est la \textbf{moyenne} des valeurs de $X$ quand on répète l'expérience
+    un grand nombre de fois. Pour un gain : jeu \textbf{favorable} au joueur si
+    $E(X)>0$, \textbf{équitable} si $E(X)=0$, \textbf{défavorable} si $E(X)<0$.
+  \item $\sigma(X)$ mesure la \textbf{dispersion} des valeurs autour de $E(X)$ : plus
+    il est grand, plus les résultats sont variables (plus le jeu est risqué).
+  \item Loi de Bernoulli de paramètre $p$ : $E(X)=p\times 1+(1-p)\times 0=p$.
+  \item Calculatrice : en statistiques, les $x_{i}$ en valeurs et les $p_{i}$ en
+    effectifs ; la moyenne affichée est $E(X)$ et l'écart-type $\sigma(X)$.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 15 --- Calculer et interpréter une espérance]
+\etapeexemples
+On reprend le jeu de l'exemple 1 de la méthode 14 (mise de $2$\,€, chaque jeton gagnant
+rapporte $5$\,€) :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $-2$ & $3$ & $8$\\\hline
+$P(X=x_{i})$ & $0{,}49$ & $0{,}42$ & $0{,}09$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer $E(X)$.
+  \item Interpréter le résultat. Le jeu est-il favorable au joueur ?
+  \item L'organisateur remplace la mise de $2$\,€ par une mise de $m$ euros. Quelle mise
+    rend le jeu équitable ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+E(X) &= 0{,}49\times(-2)+0{,}42\times 3+0{,}09\times 8 &\qquad& \rem{somme des
+$p_{i}\,x_{i}$}\\
+E(X) &= -0{,}98+1{,}26+0{,}72 &&\\
+E(X) &= 1 &&
+\end{calculs}
+\cas{b)}
+\explique{Sur un grand nombre de parties, le joueur gagne en moyenne $1$\,€ par partie :
+le jeu lui est favorable.}{$E(X)>0$}
+\cas{c)}
+\explique{Les gains deviennent $-m$ ; $5-m$ ; $10-m$, avec les mêmes
+probabilités.}{on retire $m$ au lieu de $2$}
+\begin{calculs}
+E(X) &= 0{,}49\times(-m)+0{,}42\times(5-m)+0{,}09\times(10-m) &\qquad& \rem{même
+formule}\\
+E(X) &= -0{,}49m+2{,}1-0{,}42m+0{,}9-0{,}09m && \rem{on développe}\\
+E(X) &= 3-m && \rem{on réduit}
+\end{calculs}
+\explique{Le jeu est équitable quand $3-m=0$, soit pour une mise de $3$\,€.}{$E(X)=0$}
+\end{correction}
+
+\etape{À vous de jouer}
+On reprend le jeu de l'exercice 1 de la méthode 14 (mise de $5$\,€, chaque jeton
+gagnant rapporte $5$\,€) :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $-5$ & $0$ & $5$\\\hline
+$P(X=x_{i})$ & $0{,}36$ & $0{,}48$ & $0{,}16$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer $E(X)$.
+  \item Interpréter le résultat. Le jeu est-il favorable au joueur ?
+  \item L'organisateur remplace la mise de $5$\,€ par une mise de $m$ euros. Quelle mise
+    rend le jeu équitable ?
+\end{questions}
+\reponse{a) $E(X)=-1$.\; b) Le joueur perd en moyenne $1$\,€ par partie : jeu
+défavorable.\; c) $E(X)=4-m$ : mise de $4$\,€.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 16 --- Calculer une variance et un écart-type]
+\etapeexemples
+Pour le jeu de la méthode 15 (mise de $2$\,€), on a trouvé $E(X)=1$. Calculer $V(X)$,
+puis $\sigma(X)$ arrondi au centième.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\begin{calculs}
+V(X) &= 0{,}49\times(-2-1)^{2}+0{,}42\times(3-1)^{2}+0{,}09\times(8-1)^{2} &\qquad&
+\rem{écarts à $E(X)=1$, au carré}\\
+V(X) &= 0{,}49\times 9+0{,}42\times 4+0{,}09\times 49 &&\\
+V(X) &= 4{,}41+1{,}68+4{,}41 &&\\
+V(X) &= 10{,}5 &&\\[4pt]
+\sigma(X) &= \sqrt{10{,}5}\approx 3{,}24 && \rem{racine carrée de la variance}
+\end{calculs}
+\explique{Les gains s'écartent nettement de la moyenne de $1$\,€ : on peut perdre $2$\,€
+comme gagner $8$\,€.}{dispersion}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour le jeu de l'« À vous de jouer » de la méthode 15 (mise de $5$\,€), on a trouvé
+$E(X)=-1$. Calculer $V(X)$, puis $\sigma(X)$ arrondi au centième.
+\reponse{$V(X)=5{,}76+0{,}48+5{,}76=12$ ; $\sigma(X)=\sqrt{12}\approx 3{,}46$.}
+\end{methodebox}
+\afaire{exercices 38 à 45}
+
+\end{document}
