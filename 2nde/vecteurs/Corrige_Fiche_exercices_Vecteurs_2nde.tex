@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,576 +189,1399 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
-\entete{Chapitre 3 --- Vecteurs --- Corrigé des exercices}{Seconde}
+\entete{Chapitre 3 --- Vecteurs --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
 
-\let\deuxpaquet\deux
-\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
 \tikzset{
   vecteur/.style={-{Stealth[length=2.2mm]},line width=0.9pt,coulCourbe},
   vecteurB/.style={-{Stealth[length=2.2mm]},line width=0.9pt,coulCourbeB},
   vecteurC/.style={-{Stealth[length=2.2mm]},line width=0.9pt,coulCourbeC},
+  cherche/.style={-{Stealth[length=2.4mm]},line width=1.1pt,black},
   aide/.style={dashed,black!50,line width=0.5pt},
   fig/.style={line width=0.7pt,black!75},
+  figC/.style={line width=0.9pt,coulCourbeC},
+  nom/.style={midway,font=\footnotesize,inner sep=1.5pt},
 }
-\clubpenalty=10000
-\widowpenalty=10000
+
+\newcommand{\cotefig}[3][0.32]{\par\vspace{-0.55\baselineskip}\noindent
+  \begin{minipage}[t]{\dimexpr0.97\linewidth-#1\linewidth\relax}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering #3\end{minipage}\par}
+
+\newcommand{\figKLM}{%
+  \quadrillage{-0.4}{-0.4}{8.4}{2.4}
+  \draw[fig] (0,0)--(6,0) (2,2)--(8,2) (0,0)--(2,2) (3,0)--(5,2) (6,0)--(8,2);
+  \pt{0,0}{below}{K} \pt{3,0}{below}{L} \pt{6,0}{below}{M}
+  \pt{2,2}{above}{N} \pt{5,2}{above}{P} \pt{8,2}{above}{Q}}
+\newcommand{\triangleABC}{%
+  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
+  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{1,3}{above right}{C}}
+\newcommand{\triangleDEF}{%
+  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
+  \pt{0,0}{below left}{D} \pt{4,0}{below right}{E} \pt{1,3}{above}{F}}
+\newcommand{\figABCD}{%
+  \quadrillage{-0.4}{-0.4}{8.4}{5.4}
+  \pt{0,1}{below left}{A} \pt{4,1}{below}{B} \pt{6,3}{right}{C} \pt{1,4}{above left}{D}}
+\newcommand{\figABCDbis}{%
+  \quadrillage{-0.4}{-2.4}{8.4}{4.4}
+  \pt{0,1}{left}{A} \pt{4,0}{below}{B} \pt{5,3}{above right}{C} \pt{1,3}{above}{D}}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- VECTEURS}
-  {Chapitre 3 : fiche d'exercices --- Seconde}
-  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
-   fréquentes et les méthodes à retenir. Sur un quadrillage, on lit chaque vecteur comme
-   un déplacement : tant de carreaux à droite ou à gauche, tant vers le haut ou le bas.}
+\entetefiche{Chapitre 3 --- Vecteurs}{Seconde}
+
+{\small Sur un quadrillage, on lit chaque vecteur comme un \textbf{déplacement} : tant
+de carreaux à droite ou à gauche, tant vers le haut ou vers le bas. Sur les figures, le
+vecteur donné est en couleur ; un représentant reporté garde sa couleur et son nom ; le
+vecteur cherché est en noir.\par}
 
 \partie{Caractéristiques d'un vecteur}
 
 \begin{exo}[Égaux ou non]
-\deux{a) $\vect{KL}\res{=}\vect{NP}$}{b) $\vect{KN}\res{=}\vect{LP}$}
-\deux{c) $\vect{KP}\res{=}\vect{LQ}$}{d) $\vect{NL}\res{\neq}\vect{KN}$}
-\deux{e) $\vect{KM}\res{=}\vect{NQ}$}{f) $\vect{PQ}\res{\neq}\vect{PN}$}
-\rem{f) Même direction, même norme, mais sens contraires : $\vect{PN}=-\vect{PQ}$.}
+\explique{Pour chaque égalité, on trace les deux flèches, de la première lettre vers la
+seconde, puis on compare leurs déplacements.}{méthode 1 : même déplacement, vecteurs
+égaux}
+\cas{a)}
+\cotefig{%
+\explique{$\vect{KL}$ : $3$ carreaux à droite.}{de $K$ vers $L$}
+\explique{$\vect{NP}$ : $3$ carreaux à droite.}{de $N$ vers $P$}
+\explique{Même déplacement, donc $\vect{KL}\mathrel{\res{=}}\vect{NP}$.}{même direction, même sens,
+même norme}}
+{\begin{tikzpicture}[scale=0.42]\figKLM
+  \draw[vecteur] (0,0)--(3,0) node[nom,above]{$\vect{KL}$};
+  \draw[vecteurB] (2,2)--(5,2) node[nom,below]{$\vect{NP}$};
+\end{tikzpicture}}
+\cas{b)}
+\cotefig{%
+\explique{$\vect{KN}$ : $2$ carreaux à droite et $2$ vers le haut.}{de $K$ vers $N$}
+\explique{$\vect{LP}$ : $2$ carreaux à droite et $2$ vers le haut.}{de $L$ vers $P$}
+\explique{Donc $\vect{KN}\mathrel{\res{=}}\vect{LP}$.}{même déplacement}}
+{\begin{tikzpicture}[scale=0.42]\figKLM
+  \draw[vecteur] (0,0)--(2,2) node[nom,above left]{$\vect{KN}$};
+  \draw[vecteurB] (3,0)--(5,2) node[nom,right]{$\vect{LP}$};
+\end{tikzpicture}}
+\cas{c)}
+\cotefig{%
+\explique{$\vect{KP}$ : $5$ carreaux à droite et $2$ vers le haut.}{de $K$ vers $P$}
+\explique{$\vect{LQ}$ : $5$ carreaux à droite et $2$ vers le haut.}{de $L$ vers $Q$}
+\explique{Donc $\vect{KP}\mathrel{\res{=}}\vect{LQ}$.}{même déplacement}}
+{\begin{tikzpicture}[scale=0.42]\figKLM
+  \draw[vecteur] (0,0)--(5,2) node[nom,above left]{$\vect{KP}$};
+  \draw[vecteurB] (3,0)--(8,2) node[nom,below right]{$\vect{LQ}$};
+\end{tikzpicture}}
+\cas{d)}
+\cotefig{%
+\explique{$\vect{NL}$ : $1$ carreau à droite et $2$ vers le bas.}{de $N$ vers $L$}
+\explique{$\vect{KN}$ : $2$ carreaux à droite et $2$ vers le haut.}{de $K$ vers $N$}
+\explique{Les déplacements sont différents, donc $\vect{NL}\mathrel{\res{\neq}}\vect{KN}$.}{les
+directions ne sont même pas les mêmes}}
+{\begin{tikzpicture}[scale=0.42]\figKLM
+  \draw[vecteur] (2,2)--(3,0) node[nom,right]{$\vect{NL}$};
+  \draw[vecteurB] (0,0)--(2,2) node[nom,above left]{$\vect{KN}$};
+\end{tikzpicture}}
+\cas{e)}
+\cotefig{%
+\explique{$\vect{KM}$ : $6$ carreaux à droite.}{de $K$ vers $M$}
+\explique{$\vect{NQ}$ : $6$ carreaux à droite.}{de $N$ vers $Q$}
+\explique{Donc $\vect{KM}\mathrel{\res{=}}\vect{NQ}$.}{même déplacement}}
+{\begin{tikzpicture}[scale=0.42]\figKLM
+  \draw[vecteur] (0,0)--(6,0) node[nom,above]{$\vect{KM}$};
+  \draw[vecteurB] (2,2)--(8,2) node[nom,below]{$\vect{NQ}$};
+\end{tikzpicture}}
+\cas{f)}
+\cotefig{%
+\explique{$\vect{PQ}$ : $3$ carreaux à droite.}{de $P$ vers $Q$}
+\explique{$\vect{PN}$ : $3$ carreaux à gauche.}{de $P$ vers $N$}
+\explique{Donc $\vect{PQ}\mathrel{\res{\neq}}\vect{PN}$.}{les sens sont contraires}}
+{\begin{tikzpicture}[scale=0.42]\figKLM
+  \draw[vecteur] (5,2)--(8,2) node[nom,below]{$\vect{PQ}$};
+  \draw[vecteurB] (5,2)--(2,2) node[nom,below]{$\vect{PN}$};
+\end{tikzpicture}}
+\rem{f) Même direction, même norme, mais sens contraires : $\vect{PN}$ et $\vect{PQ}$ sont
+opposés, $\vect{PN}=-\vect{PQ}$. Deux flèches de même longueur sur une même droite ne
+suffisent pas : il faut regarder où est la pointe.}
 \end{exo}
 
 \begin{exo}[Lire sur la figure]
-1) $\vect{KN}=\res{\vect{LP}}=\vect{MQ}$ ; \quad $\vect{LM}=\res{\vect{KL}}=\vect{NP}=\vect{PQ}$.\par
-2) Opposés à $\vect{KN}$ : $\res{\vect{NK}}$, $\vect{PL}$, $\vect{QM}$ ; à $\vect{KL}$ :
-$\res{\vect{LK}}$, $\vect{PN}$, $\vect{QP}$\dots\par
-3) Par exemple : $\vect{KL}$ et $\vect{KM}$ ; \; $\vect{KL}$ et $\vect{PN}$ ; \;
-$\vect{KM}$ et $\vect{LK}$.
+\explique{On garde la figure de l'exercice 1 et on lit chaque déplacement.}{$K$, $L$, $M$
+en bas ; $N$, $P$, $Q$ en haut, $3$ carreaux entre deux points voisins}
+\cas{1)}
+\explique{$\vect{KN}$ fait $2$ carreaux à droite et $2$ vers le haut ; $\vect{LP}$ et
+$\vect{MQ}$ aussi. Donc $\vect{KN}=\res{\vect{LP}}$ (ou $\vect{MQ}$).}{les côtés obliques
+des parallélogrammes}
+\explique{$\vect{LM}$ fait $3$ carreaux à droite ; $\vect{KL}$, $\vect{NP}$ et $\vect{PQ}$
+aussi. Donc $\vect{LM}=\res{\vect{KL}}$ (ou $\vect{NP}$, $\vect{PQ}$).}{un seul exemple
+suffit}
+\cas{2)}
+\explique{Un vecteur opposé à $\vect{KN}$ fait $2$ carreaux à gauche et $2$ vers le bas :
+$\res{\vect{NK}}$, ou $\vect{PL}$, ou $\vect{QM}$.}{on échange les deux lettres : le sens
+change}
+\explique{Un vecteur opposé à $\vect{KL}$ fait $3$ carreaux à gauche : $\res{\vect{LK}}$,
+ou $\vect{ML}$, $\vect{PN}$, $\vect{QP}$.}{même direction, même norme, sens contraire}
+\cas{3)}
+\explique{Même direction et même sens, mais pas égaux : $\res{\vect{KL}}$ et
+$\res{\vect{KM}}$.}{tous deux vers la droite, mais $3$ et $6$ carreaux : normes
+différentes}
+\explique{Même norme, mais pas égaux : $\res{\vect{KL}}$ et $\res{\vect{PN}}$.}{tous deux
+de $3$ carreaux, mais de sens contraires}
+\explique{Même direction et sens contraires, mais pas opposés : $\res{\vect{KM}}$ et
+$\res{\vect{LK}}$.}{$6$ carreaux à droite, $3$ à gauche : normes différentes}
+\rem{Deux vecteurs égaux ont les trois caractéristiques en commun ; il suffit qu'une seule
+diffère pour qu'ils ne le soient plus. Ici, d'autres réponses conviennent.}
 \end{exo}
 
 \begin{exo}[Construire un représentant]
-\begin{center}
-\begin{tikzpicture}[scale=0.55]
-  \draw[vecteur] (0,3)--(3,3) node[midway,above,font=\small]{$\vec{u}$};
-  \draw[vecteurB] (0,2)--(6,2) node[midway,above,font=\small]{1)};
-  \draw[vecteurB] (3,1)--(0,1) node[midway,above,font=\small]{2)};
-  \draw[vecteurB] (1.5,0)--(0,0) node[midway,above,font=\small]{3)};
-  \draw[vecteurB] (4,0)--(5.8,-2.4) node[midway,right,font=\small]{4)};
-\end{tikzpicture}
-\end{center}
-\rem{1) et 3) : on mesure la longueur demandée sur la même direction. 4) Toute flèche
-de $3$~cm dans une autre direction convient.}
+\explique{On trace d'abord $\vec{u}$ : une flèche de $3$~cm. Puis on construit chaque
+$\vec{v}$ en partant de ses trois caractéristiques.}{figures réduites de moitié}
+\cas{1)}
+\cotefig{%
+\explique{On trace une flèche parallèle à $\vec{u}$, pointée du même côté, et deux fois
+plus longue : $6$~cm.}{même direction, même sens, norme $6$~cm}}
+{\begin{tikzpicture}[scale=0.5]
+  \draw[vecteur] (0,1)--(3,1) node[nom,above]{$\vec{u}$};
+  \draw[cherche] (0,0)--(6,0) node[nom,below]{$\vec{v}$};
+\end{tikzpicture}}
+\cas{2)}
+\cotefig{%
+\explique{On trace une flèche parallèle à $\vec{u}$, de $3$~cm, pointée de l'autre
+côté.}{c'est un représentant de $-\vec{u}$}}
+{\begin{tikzpicture}[scale=0.5]
+  \draw[vecteur] (0,1)--(3,1) node[nom,above]{$\vec{u}$};
+  \draw[cherche] (3,0)--(0,0) node[nom,below]{$\vec{v}$};
+\end{tikzpicture}}
+\cas{3)}
+\cotefig{%
+\explique{On trace une flèche parallèle à $\vec{u}$, pointée de l'autre côté, de
+$1{,}5$~cm.}{sens contraire, deux fois plus courte}}
+{\begin{tikzpicture}[scale=0.5]
+  \draw[vecteur] (0,1)--(3,1) node[nom,above]{$\vec{u}$};
+  \draw[cherche] (1.5,0)--(0,0) node[nom,below]{$\vec{v}$};
+\end{tikzpicture}}
+\cas{4)}
+\cotefig{%
+\explique{On trace une flèche de $3$~cm qui n'est pas parallèle à $\vec{u}$.}{toute autre
+direction convient}}
+{\begin{tikzpicture}[scale=0.5]
+  \draw[vecteur] (0,1)--(3,1) node[nom,above]{$\vec{u}$};
+  \draw[cherche] (3.6,2)--(5.4,-0.4) node[nom,right]{$\vec{v}$};
+\end{tikzpicture}}
+\rem{La direction est celle de la droite qui porte la flèche ; le sens dit de quel côté
+est la pointe. Une même direction a deux sens : ne pas confondre les deux mots.}
 \end{exo}
 
 \begin{exo}[Vrai ou faux]
-1) \res{\text{Vrai}} : $EFGH$ est un parallélogramme, donc $\vect{GF}=\vect{HE}$, et la
-translation de vecteur $\vect{HE}$ envoie $H$ sur $E$.\par
-2) \res{\text{Vrai}} : $HGKL$ est un parallélogramme, donc $(GK)\parallel(HL)$.\par
-3) \res{\text{Faux}} : $\vect{GK}=\vect{HL}$, donc $\vect{KG}=-\vect{HL}$ : les vecteurs
-sont opposés.\par
-4) \res{\text{Vrai}} : $\vect{EF}=\vect{HG}$ et $\vect{HG}=\vect{LK}$.
+\cotefig[0.28]{%
+\explique{On fait une figure : $EFGH$, puis $HGKL$ construit sur le côté
+$[HG]$.}{le côté commun est $[HG]$}
+\explique{Dans un parallélogramme, deux côtés opposés sont parallèles et de même
+longueur.}{propriété du collège}}
+{\begin{tikzpicture}[scale=0.5]
+  \draw[fig] (0,0)--(3,0)--(4,2)--(1,2)--cycle;
+  \draw[fig] (1,2)--(4,2)--(5,4)--(2,4)--cycle;
+  \pt{0,0}{below left}{E} \pt{3,0}{below right}{F} \pt{4,2}{right}{G}
+  \pt{1,2}{left}{H} \pt{5,4}{above right}{K} \pt{2,4}{above left}{L}
+\end{tikzpicture}}
+\cas{1)}
+\explique{L'image de $H$ par la translation de vecteur $\vect{GF}$ est le point $H'$ tel
+que $\vect{HH'}=\vect{GF}$.}{définition de l'image d'un point}
+\explique{Dans $EFGH$, les côtés $[GF]$ et $[HE]$ sont parallèles et de même longueur ; de
+$G$ vers $F$ et de $H$ vers $E$, on descend dans le même sens. Donc
+$\vect{HE}=\vect{GF}$.}{même direction, même norme, même sens}
+\explique{Donc $H'=E$ : l'affirmation est \res{vraie}.}{}
+\cas{2)}
+\explique{Dans $HGKL$, les côtés $[GK]$ et $[HL]$ sont parallèles.}{côtés opposés}
+\explique{Donc $\vect{KG}$ et $\vect{HL}$ ont la même direction : l'affirmation est
+\res{vraie}.}{la direction est celle de la droite}
+\cas{3)}
+\explique{$\vect{KG}$ descend de $K$ vers $G$ ; $\vect{HL}$ monte de $H$ vers $L$.}{on
+regarde le sens}
+\explique{Les sens sont contraires : $\vect{KG}=-\vect{HL}$. L'affirmation est
+\res{fausse}.}{même direction, même norme, sens contraires : opposés}
+\cas{4)}
+\explique{Dans $EFGH$ : $[EF]$ et $[HG]$ sont parallèles, de même longueur, parcourus dans
+le même sens, donc $\vect{EF}=\vect{HG}$.}{côtés opposés de $EFGH$}
+\explique{Dans $HGKL$ : de même, $\vect{HG}=\vect{LK}$.}{côtés opposés de $HGKL$}
+\explique{Donc $\vect{EF}=\vect{LK}$ : l'affirmation est \res{vraie}.}{deux vecteurs égaux
+à un même troisième sont égaux}
+\rem{Erreur fréquente (3) : conclure à l'égalité dès que les flèches sont parallèles et de
+même longueur. Le sens compte : on vérifie où est la pointe.}
 \end{exo}
 
 \begin{exo}[Dans un parallélogramme]
-1) $\vect{RS}=\res{\vect{UT}}$ ; \; $\vect{TU}=\res{\vect{SR}}$ ; \; $\vect{RU}=\res{\vect{ST}}$.\par
-2) $\vect{RO}=\res{\vect{OT}}$ ; \; $\vect{UO}=\res{\vect{OS}}$ ; \; $\vect{SO}=\res{\vect{OU}}$.
-\rem{Les diagonales $[RT]$ et $[SU]$ se coupent en leur milieu $O$.}
+\cotefig[0.28]{%
+\explique{Dans le parallélogramme $RSTU$, les côtés opposés $[RS]$ et $[UT]$, $[RU]$ et
+$[ST]$ sont parallèles et de même longueur.}{on fait le tour $R$, $S$, $T$, $U$}
+\explique{Ses diagonales $[RT]$ et $[SU]$ se coupent en leur milieu $O$.}{propriété du
+collège}}
+{\begin{tikzpicture}[scale=0.5]
+  \draw[fig] (0,0)--(4,0)--(5,2)--(1,2)--cycle;
+  \draw[aide] (0,0)--(5,2) (4,0)--(1,2);
+  \pt{0,0}{below left}{R} \pt{4,0}{below right}{S} \pt{5,2}{above right}{T}
+  \pt{1,2}{above left}{U} \pt{2.5,1}{below}{O}
+\end{tikzpicture}}
+\cas{1)}
+\explique{$\vect{RS}=\res{\vect{UT}}$.}{côté opposé, parcouru dans le même sens}
+\explique{$\vect{TU}=\res{\vect{SR}}$.}{de $T$ vers $U$ : on va vers la gauche, comme de $S$
+vers $R$}
+\explique{$\vect{RU}=\res{\vect{ST}}$.}{les deux autres côtés opposés}
+\cas{2)}
+\explique{$O$ est le milieu de $[RT]$ : de $R$ à $O$, puis de $O$ à $T$, on fait le même
+déplacement. Donc $\vect{RO}=\vect{O\res{T}}$.}{on continue dans la même direction}
+\explique{De même, $O$ est le milieu de $[US]$ : $\vect{UO}=\vect{O\res{S}}$.}{}
+\explique{Et $\vect{SO}=\vect{O\res{U}}$.}{}
+\rem{Erreur fréquente : $\vect{RO}=\vect{OR}$. On revient alors en arrière : $\vect{OR}$
+est l'opposé de $\vect{RO}$.}
 \end{exo}
 
 \partie{Translation}
 
 \begin{exo}[Représentants d'origine donnée]
-\begin{center}
-\begin{tikzpicture}[scale=0.5]
-  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{D} \pt{4,0}{below right}{E} \pt{1,3}{above}{F}
-  \pt{6,2}{left}{P}
-  \draw[vecteur] (6,2)--(10,2) node[midway,above,font=\scriptsize]{$\vect{DE}$};
-  \draw[vecteurB] (6,2)--(3,5) node[midway,left,font=\scriptsize]{$\vect{EF}$};
-  \draw[vecteurC] (6,2)--(5,-1) node[midway,left,font=\scriptsize]{$\vect{FD}$};
-\end{tikzpicture}
-\end{center}
-\rem{Chaque flèche part de $P$, avec la direction, le sens et la longueur du côté.}
+\cotefig[0.4]{%
+\explique{On trace un triangle $DEF$ et un point $P$ hors du triangle.}{figure au choix}
+\explique{Pour $\vect{DE}$ : depuis $P$, on trace une flèche parallèle à $(DE)$, de même
+longueur que $DE$, pointée dans le même sens.}{même direction, même norme, même sens}
+\explique{De même pour $\vect{EF}$ et pour $\vect{FD}$, toujours depuis $P$.}{les trois
+flèches partent de $P$}
+\explique{Sur un quadrillage, on compte les carreaux : $\vect{DE}$ fait $4$ carreaux à
+droite, $\vect{EF}$ $3$ à gauche et $3$ vers le haut, $\vect{FD}$ $1$ à gauche et $3$
+vers le bas.}{pour vérifier}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-0.4}{-1.4}{10.4}{5.4}
+  \triangleDEF
+  \pt{6,2}{right}{P}
+  \draw[vecteur] (6,2)--(10,2) node[nom,above]{$\vect{DE}$};
+  \draw[vecteurB] (6,2)--(3,5) node[nom,above right]{$\vect{EF}$};
+  \draw[vecteurC] (6,2)--(5,-1) node[nom,left]{$\vect{FD}$};
+\end{tikzpicture}}
+\rem{Sans quadrillage : on trace la parallèle au côté passant par $P$ et on y reporte sa
+longueur au compas, du bon côté.}
 \end{exo}
 
 \begin{exo}[Quatre points à placer]
-\begin{center}
-\begin{tikzpicture}[scale=0.42]
-  \quadrillage{-3.4}{-3.4}{5.4}{3.4}
-  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{1,3}{above}{C}
-  \draw[vecteur] (4,0)--(5,3); \pt{5,3}{above right}{M}
-  \draw[vecteur] (3,-3)--(4,0); \pt{3,-3}{below}{N}
-  \draw[vecteurB] (-3,3)--(1,3); \pt{-3,3}{above}{P}
-  \draw[vecteurC] (0,0)--(3,-3);
-\end{tikzpicture}
-\end{center}
-\rem{$Q$ est confondu avec $N$ : $\vect{AQ}=\vect{CB}$ et $\vect{NB}=\vect{AC}$ donnent le
-même point. $ABMC$, $ANBC$ et $APCB$ sont des parallélogrammes.}
+\explique{On trace un triangle $ABC$ sur le quadrillage et on lit les déplacements :
+$\vect{AC}$, $1$ carreau à droite et $3$ vers le haut ; $\vect{AB}$, $4$ à droite ;
+$\vect{CB}$, $3$ à droite et $3$ vers le bas.}{méthode 2 : on reporte le déplacement}
+\cas{Le point $M$ : $\vect{BM}=\vect{AC}$}
+\cotefig{%
+\explique{$B$ est l'origine : depuis $B$, on avance de $1$ à droite et $3$ vers le
+haut.}{on reporte $\vect{AC}$ depuis $B$}
+\explique{On arrive en $M$.}{}}
+{\begin{tikzpicture}[scale=0.38]
+  \quadrillage{-0.4}{-0.4}{5.4}{3.4}
+  \triangleABC
+  \draw[vecteur] (0,0)--(1,3) node[nom,left]{$\vect{AC}$};
+  \draw[vecteur] (4,0)--(5,3) node[nom,right]{$\vect{AC}$};
+  \pt{5,3}{above}{M}
+\end{tikzpicture}}
+\cas{Le point $N$ : $\vect{NB}=\vect{AC}$}
+\cotefig{%
+\explique{Cette fois, $B$ est l'\emph{extrémité} : la flèche doit arriver en $B$.}{$N$ est
+l'origine}
+\explique{Depuis $B$, on recule : $1$ à gauche et $3$ vers le bas. On arrive en $N$.}{on
+fait le déplacement à l'envers}}
+{\begin{tikzpicture}[scale=0.38]
+  \quadrillage{-0.4}{-3.4}{5.4}{3.4}
+  \triangleABC
+  \draw[vecteur] (0,0)--(1,3) node[nom,left]{$\vect{AC}$};
+  \draw[vecteur] (3,-3)--(4,0) node[nom,right]{$\vect{AC}$};
+  \pt{3,-3}{below}{N}
+\end{tikzpicture}}
+\cas{Le point $P$ : $\vect{PC}=\vect{AB}$}
+\cotefig{%
+\explique{$C$ est l'extrémité : depuis $C$, on recule de $4$ carreaux vers la gauche. On
+arrive en $P$.}{$P$ est l'origine}}
+{\begin{tikzpicture}[scale=0.38]
+  \quadrillage{-3.4}{-0.4}{4.4}{3.4}
+  \triangleABC
+  \draw[vecteurB] (0,0)--(4,0) node[nom,below]{$\vect{AB}$};
+  \draw[vecteurB] (-3,3)--(1,3) node[nom,above]{$\vect{AB}$};
+  \pt{-3,3}{left}{P}
+\end{tikzpicture}}
+\cas{Le point $Q$ : $\vect{AQ}=\vect{CB}$}
+\cotefig{%
+\explique{$A$ est l'origine : depuis $A$, on avance de $3$ à droite et $3$ vers le bas.
+On arrive en $Q$.}{on reporte $\vect{CB}$ depuis $A$}}
+{\begin{tikzpicture}[scale=0.38]
+  \quadrillage{-0.4}{-3.4}{4.4}{3.4}
+  \triangleABC
+  \draw[vecteurC] (1,3)--(4,0) node[nom,above right]{$\vect{CB}$};
+  \draw[vecteurC] (0,0)--(3,-3) node[nom,below left]{$\vect{CB}$};
+  \pt{3,-3}{below}{Q}
+\end{tikzpicture}}
+\rem{Les points $Q$ et $N$ sont confondus : tous deux sont à $3$ carreaux à droite et $3$
+vers le bas de $A$. Erreur fréquente : pour $N$ et $P$, partir du point connu en
+avançant, alors qu'il est l'extrémité. On regarde toujours où est le point connu dans
+l'égalité.}
 \end{exo}
 
 \begin{exo}[Origine ou extrémité]
-\begin{center}
-\begin{tikzpicture}[scale=0.5]
-  \draw[vecteur] (0,3)--(2,4) node[midway,above,font=\small]{$\vec{u}$};
-  \pt{0,0}{below left}{E} \draw[vecteurB] (0,0)--(2,1);
-  \pt{6,3}{above right}{F} \draw[vecteurB] (4,2)--(6,3);
-  \pt{7,0}{below right}{G} \draw[vecteurB] (5,-1)--(7,0);
-\end{tikzpicture}
-\end{center}
-\rem{Pour un représentant d'extrémité $F$, on part de $F$ en reculant du déplacement de
-$\vec{u}$, puis on trace la flèche vers $F$.}
+\cotefig[0.36]{%
+\explique{$\vec{u}$ fait $2$ carreaux à droite et $1$ vers le haut.}{on lit le
+déplacement}
+\explique{Origine $E$ : depuis $E$, on avance de $2$ à droite et $1$ vers le haut, et on
+trace la flèche.}{la flèche part de $E$}
+\explique{Extrémité $F$ : depuis $F$, on recule de $2$ à gauche et $1$ vers le bas ; puis on
+trace la flèche de ce point vers $F$.}{la pointe est en $F$}
+\explique{Extrémité $G$ : même geste depuis $G$.}{la pointe est en $G$}}
+{\begin{tikzpicture}[scale=0.45]
+  \quadrillage{-0.4}{-1.4}{7.4}{4.4}
+  \draw[vecteur] (0,3)--(2,4) node[nom,above left]{$\vec{u}$};
+  \pt{0,0}{below left}{E} \draw[vecteur] (0,0)--(2,1) node[nom,above left]{$\vec{u}$};
+  \pt{6,3}{above right}{F} \draw[vecteur] (4,2)--(6,3) node[nom,above left]{$\vec{u}$};
+  \pt{7,0}{right}{G} \draw[vecteur] (5,-1)--(7,0) node[nom,above left]{$\vec{u}$};
+\end{tikzpicture}}
+\rem{Les trois flèches sont trois représentants du même vecteur $\vec{u}$ : même
+direction, même sens, même longueur. Seule leur position change.}
 \end{exo}
 
 \begin{exo}[Image d'un triangle]
-On reporte le vecteur $\vect{BC}$ depuis $A$, $B$ et $C$ ; l'image de $B$ est $C$.
-Les triangles $ABC$ et $A'B'C'$ sont \res{\text{superposables}} : une translation
-conserve les longueurs ($A'B'=5$~cm, $B'C'=4$~cm, $A'C'=3$~cm).
+\cotefig[0.36]{%
+\explique{On construit le triangle à la règle et au compas : $[AB]$ de $5$~cm, puis un arc
+de rayon $3$~cm autour de $A$ et un arc de rayon $4$~cm autour de $B$ ; ils se coupent
+en $C$.}{figure ci-contre, réduite}
+\explique{Depuis $A$, on reporte $\vect{BC}$ : on obtient $A'$.}{$\vect{AA'}=\vect{BC}$}
+\explique{Depuis $B$, on reporte $\vect{BC}$ : on arrive en $C$, donc $B'=C$.}{$\vect{BB'}=\vect{BC}$}
+\explique{Depuis $C$, on reporte $\vect{BC}$ : on obtient $C'$.}{$\vect{CC'}=\vect{BC}$}
+\explique{On relie $A'$, $B'$ et $C'$.}{dans le même ordre que $A$, $B$, $C$}}
+{\begin{tikzpicture}[scale=0.5]
+  \quadrillage{-4.4}{-0.4}{4.4}{3.4}
+  \draw[fig] (0,3)--(4,0)--(0,0)--cycle;
+  \draw[figC] (-4,3)--(0,0)--(-4,0)--cycle;
+  \draw[vecteurB] (4,0)--(0,0) node[nom,below]{$\vect{BC}$};
+  \draw[vecteurB] (0,3)--(-4,3) node[nom,above]{$\vect{BC}$};
+  \draw[vecteurB] (0,0)--(-4,0) node[nom,below]{$\vect{BC}$};
+  \pt{0,3}{above right}{A} \pt{4,0}{below right}{B} \pt{0,0}{above right}{C}
+  \pt{-4,3}{above left}{A'} \pt{-4,0}{below left}{C'}
+  \node[font=\small,below] at (0,-0.2) {$B'$};
+\end{tikzpicture}}
+\explique{Les triangles $ABC$ et $A'B'C'$ sont \res{superposables} : $A'B'=5$~cm,
+$B'C'=4$~cm et $A'C'=3$~cm.}{une translation conserve les longueurs (propriété 1)}
+\rem{Le triangle glisse sans tourner : chaque côté de $A'B'C'$ est parallèle au côté
+correspondant de $ABC$.}
 \end{exo}
 
 \begin{exo}[Neuf points]
-1) Égaux à $\vect{AB}$ : \res{\vect{BC}\,;\vect{DE}\,;\vect{EF}\,;\vect{GH}\,;\vect{HI}}\par
-2) Égaux à $\vect{AE}$ : \res{\vect{BF}\,;\vect{DH}\,;\vect{EI}}\par
-3) Par exemple \res{\vect{BA}} et \res{\vect{CB}}.
+\explique{Les points sont espacés de $2$ carreaux : $A$, $B$, $C$ en haut, $D$, $E$, $F$ au
+milieu, $G$, $H$, $I$ en bas.}{on lit tout en carreaux}
+\cas{1)}
+\explique{$\vect{AB}$ : $2$ carreaux à droite. On cherche toutes les flèches qui joignent
+deux points voisins sur une même ligne, de gauche à droite.}{même déplacement}
+\explique{Les vecteurs égaux à $\vect{AB}$ sont $\res{\vect{BC}}$, $\res{\vect{DE}}$,
+$\res{\vect{EF}}$, $\res{\vect{GH}}$ et $\res{\vect{HI}}$.}{cinq vecteurs}
+\cas{2)}
+\explique{$\vect{AE}$ : $2$ carreaux à droite et $2$ vers le bas. Depuis chaque point, on
+regarde si ce déplacement arrive sur un autre point.}{$C$, $F$, $G$, $H$, $I$ sortent de
+la figure}
+\explique{$\vect{AE}=\res{\vect{BF}}$, $\vect{AE}=\res{\vect{DH}}$ et
+$\vect{AE}=\res{\vect{EI}}$.}{trois vecteurs}
+\cas{3)}
+\explique{Un vecteur opposé à $\vect{AB}$ fait $2$ carreaux à gauche : par exemple
+$\res{\vect{BA}}$ et $\res{\vect{CB}}$.}{on lit de droite à gauche}
+\rem{Erreur fréquente : oublier $\vect{EF}$ ou $\vect{HI}$ en 1). On procède avec ordre,
+ligne par ligne, pour n'en oublier aucun.}
 \end{exo}
 
 \partie{Parallélogramme et égalité de vecteurs}
 
 \begin{exo}[Deux parallélogrammes]
-\begin{center}
-\begin{tikzpicture}[scale=0.45]
+\cotefig[0.3]{%
+\explique{On trace $[EF]$, puis $EFGH$ d'un côté et $EFIJ$ de l'autre.}{$E$ et $F$ sont
+communs}}
+{\begin{tikzpicture}[scale=0.5]
   \draw[fig] (0,0)--(3,0)--(4,2)--(1,2)--cycle;
   \draw[fig] (0,0)--(3,0)--(2,-2)--(-1,-2)--cycle;
   \draw[aide] (4,2)--(2,-2) (1,2)--(-1,-2);
-  \draw[vecteur] (0,0)--(3,0) node[midway,above,font=\scriptsize]{$\vect{EF}$};
-  \draw[vecteurB] (1,2)--(4,2) node[midway,above,font=\scriptsize]{$\vect{HG}$};
-  \draw[vecteurC] (-1,-2)--(2,-2) node[midway,below,font=\scriptsize]{$\vect{JI}$};
+  \draw[vecteur] (0,0)--(3,0) node[nom,above]{$\vect{EF}$};
+  \draw[vecteur] (1,2)--(4,2) node[nom,above]{$\vect{HG}$};
+  \draw[vecteur] (-1,-2)--(2,-2) node[nom,below]{$\vect{JI}$};
   \pt{0,0}{left}{E} \pt{3,0}{right}{F} \pt{4,2}{above right}{G} \pt{1,2}{above left}{H}
   \pt{2,-2}{below right}{I} \pt{-1,-2}{below left}{J}
-\end{tikzpicture}
-\end{center}
-1) $EFGH$ est un parallélogramme, donc $\vect{EF}=\res{\vect{HG}}$ ; $EFIJ$ en est un,
-donc $\vect{EF}=\res{\vect{JI}}$.\par
-2) Ainsi $\vect{HG}=\vect{JI}$ ; d'après le théorème 1, \res{HGIJ} est un
-parallélogramme.
-\rem{$\vect{AB}=\vect{DC}$ donne $ABCD$ : ici $\vect{HG}=\vect{JI}$ donne $HGIJ$.}
+\end{tikzpicture}}
+\cas{1)}
+\explique{$EFGH$ est un parallélogramme, donc $\vect{EF}=\res{\vect{HG}}$.}{théorème 1 :
+$ABCD$ parallélogramme donne $\vect{AB}=\vect{DC}$}
+\explique{$EFIJ$ est un parallélogramme, donc $\vect{EF}=\res{\vect{JI}}$.}{même théorème,
+avec $E$, $F$, $I$, $J$}
+\cas{2)}
+\explique{$\vect{HG}=\vect{EF}$ et $\vect{EF}=\vect{JI}$, donc $\vect{HG}=\vect{JI}$.}{on
+enchaîne les égalités de 1)}
+\explique{D'après le théorème 1, \res{$HGIJ$ est un parallélogramme}.}{$\vect{AB}=\vect{DC}$
+donne $ABCD$ : ici $A=H$, $B=G$, $C=I$, $D=J$}
+\rem{Pour nommer le parallélogramme, on lit les lettres dans l'ordre :
+$\vect{HG}=\vect{JI}$ donne $H$, $G$, puis $I$, $J$ (la seconde flèche lue de la pointe
+vers l'origine). On vérifie sur la figure qu'on fait bien le tour.}
 \end{exo}
 
 \begin{exo}[Autour d'un triangle]
-\begin{minipage}[t]{0.5\linewidth}\raggedright
-1) $\vect{DE}=\vect{FM}$ : d'après le théorème 1, \res{DEMF} est un
-parallélogramme.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.46\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[scale=0.38]
+\explique{On trace un triangle $DEF$ sur le quadrillage : $\vect{DE}$ fait $4$ carreaux à
+droite ; $\vect{FE}$, $3$ à droite et $3$ vers le bas.}{pour compter les carreaux}
+\cas{1)}
+\cotefig{%
+\explique{Depuis $F$, on reporte $\vect{DE}$ : $4$ carreaux à droite. C'est
+$M$.}{$F$ est l'origine de $\vect{FM}$}
+\explique{On obtient le parallélogramme \res{$DEMF$} : on joint $D$, $E$, $M$, $F$ dans cet
+ordre.}{le tour de la figure}
+\explique{On a construit $M$ tel que $\vect{DE}=\vect{FM}$.}{la construction}
+\explique{D'après le théorème 1, $DEMF$ est un parallélogramme.}{$\vect{AB}=\vect{DC}$
+donne $ABCD$}}
+{\begin{tikzpicture}[scale=0.42]
   \quadrillage{-0.4}{-0.4}{5.4}{3.4}
-  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{D} \pt{4,0}{below right}{E} \pt{1,3}{above}{F}
-  \draw[aide] (4,0)--(5,3);
-  \draw[vecteur] (1,3)--(5,3); \pt{5,3}{above right}{M}
-\end{tikzpicture}
-\end{minipage}\par\smallskip
-\begin{minipage}[t]{0.5\linewidth}\raggedright
-2) $\vect{DE}=\vect{NF}$ : \res{DEFN} est un parallélogramme (théorème 1).
-\end{minipage}\hfill
-\begin{minipage}[t]{0.46\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[scale=0.38]
+  \triangleDEF
+  \draw[figC] (4,0)--(5,3);
+  \draw[vecteur] (0,0)--(4,0) node[nom,above]{$\vect{DE}$};
+  \draw[vecteur] (1,3)--(5,3) node[nom,above]{$\vect{DE}$};
+  \pt{5,3}{above right}{M}
+\end{tikzpicture}}
+\cas{2)}
+\cotefig{%
+\explique{Ici $F$ est l'extrémité : depuis $F$, on recule de $4$ carreaux vers la gauche.
+C'est $N$.}{$\vect{NF}$ arrive en $F$}
+\explique{On obtient le parallélogramme \res{$DEFN$}.}{le tour de la figure}
+\explique{On a construit $N$ tel que $\vect{DE}=\vect{NF}$.}{la construction}
+\explique{D'après le théorème 1, $DEFN$ est un parallélogramme.}{$\vect{AB}=\vect{DC}$
+donne $ABCD$}}
+{\begin{tikzpicture}[scale=0.42]
   \quadrillage{-3.4}{-0.4}{4.4}{3.4}
-  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{D} \pt{4,0}{below right}{E} \pt{1,3}{above}{F}
-  \draw[aide] (0,0)--(-3,3);
-  \draw[vecteur] (-3,3)--(1,3); \pt{-3,3}{above}{N}
-\end{tikzpicture}
-\end{minipage}\par\smallskip
-\begin{minipage}[t]{0.5\linewidth}\raggedright
-3) $\vect{DK}=\vect{FE}$, soit $\vect{FE}=\vect{DK}$ : \res{FEKD} est un
-parallélogramme (théorème 1).
-\end{minipage}\hfill
-\begin{minipage}[t]{0.46\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[scale=0.38]
+  \triangleDEF
+  \draw[figC] (0,0)--(-3,3);
+  \draw[vecteur] (0,0)--(4,0) node[nom,below]{$\vect{DE}$};
+  \draw[vecteur] (-3,3)--(1,3) node[nom,above]{$\vect{DE}$};
+  \pt{-3,3}{above left}{N}
+\end{tikzpicture}}
+\cas{3)}
+\cotefig{%
+\explique{L'image $K$ de $D$ vérifie $\vect{DK}=\vect{FE}$ : depuis $D$, on avance de $3$ à
+droite et $3$ vers le bas.}{définition de l'image}
+\explique{On obtient le parallélogramme \res{$FEKD$}.}{le tour de la figure}
+\explique{On a construit $K$ tel que $\vect{FE}=\vect{DK}$.}{la construction}
+\explique{D'après le théorème 1, $FEKD$ est un parallélogramme.}{$\vect{AB}=\vect{DC}$
+donne $ABCD$, avec $A=F$, $B=E$}}
+{\begin{tikzpicture}[scale=0.42]
   \quadrillage{-0.4}{-3.4}{4.4}{3.4}
-  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{D} \pt{4,0}{below right}{E} \pt{1,3}{above}{F}
-  \draw[aide] (4,0)--(3,-3);
-  \draw[vecteurB] (0,0)--(3,-3); \pt{3,-3}{below}{K}
-\end{tikzpicture}
-\end{minipage}\par\smallskip
-4) C'est \res{M} : $DEMF$ est un parallélogramme, donc $\vect{ME}=\vect{FD}$.
+  \triangleDEF
+  \draw[figC] (4,0)--(3,-3);
+  \draw[vecteurB] (1,3)--(4,0) node[nom,above right]{$\vect{FE}$};
+  \draw[vecteurB] (0,0)--(3,-3) node[nom,below left]{$\vect{FE}$};
+  \pt{3,-3}{below}{K}
+\end{tikzpicture}}
+\cas{4)}
+\cotefig{%
+\explique{On cherche le point $X$ tel que $\vect{XE}=\vect{FD}$ : depuis $E$, on recule du
+déplacement de $\vect{FD}$ ; on arrive en $M$.}{$E$ est l'extrémité}
+\explique{Justification : $DEMF$ est un parallélogramme ; en faisant le tour depuis $M$
+dans l'autre sens, c'est $MEDF$.}{le même quadrilatère, lu autrement}
+\explique{D'après le théorème 1, $\vect{ME}=\vect{FD}$ : le point cherché est
+\res{$M$}.}{$\vect{AB}=\vect{DC}$ avec $A=M$, $B=E$, $C=D$, $D=F$}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-0.4}{-0.4}{5.4}{3.4}
+  \triangleDEF
+  \draw[figC] (4,0)--(5,3)--(1,3);
+  \draw[vecteurC] (1,3)--(0,0) node[nom,left]{$\vect{FD}$};
+  \draw[vecteurC] (5,3)--(4,0) node[nom,right]{$\vect{FD}$};
+  \pt{5,3}{above right}{M}
+\end{tikzpicture}}
+\rem{Erreur fréquente en 2) : reporter $\vect{DE}$ en partant de $F$. Dans $\vect{NF}$, $F$
+est la pointe de la flèche : on part de $F$ en reculant.}
 \end{exo}
 
 \begin{exo}[Un parallélogramme de plus]
-\begin{center}
-\begin{tikzpicture}[scale=0.45]
+\cas{1) et 2)}
+\cotefig{%
+\explique{On trace le parallélogramme $RSTU$.}{1) : figure au choix}
+\explique{$RSUV$ parallélogramme équivaut à $\vect{RS}=\vect{VU}$.}{théorème 1 : il
+faut $\vect{AB}=\vect{DC}$}
+\explique{$U$ est l'extrémité : depuis $U$, on recule du déplacement de $\vect{RS}$, ici $3$
+carreaux vers la gauche. C'est $V$.}{on reporte $\vect{RS}$ pour qu'il arrive en $U$}
+\explique{On trace $RSUV$ en joignant $R$, $S$, $U$, $V$.}{le tour de la figure}}
+{\begin{tikzpicture}[scale=0.45]
+  \quadrillage{-2.4}{-0.4}{4.4}{2.4}
   \draw[fig] (0,0)--(3,0)--(4,2)--(1,2)--cycle;
-  \draw[fig,coulCourbeC] (0,0)--(3,0)--(1,2)--(-2,2)--cycle;
+  \draw[figC] (3,0)--(1,2) (0,0)--(-2,2);
+  \draw[vecteur] (0,0)--(3,0) node[nom,below]{$\vect{RS}$};
+  \draw[vecteur] (-2,2)--(1,2) node[nom,above]{$\vect{RS}$};
   \pt{0,0}{below left}{R} \pt{3,0}{below right}{S} \pt{4,2}{above right}{T}
   \pt{1,2}{above}{U} \pt{-2,2}{above left}{V}
-\end{tikzpicture}
-\end{center}
-2) $\vect{VU}=\vect{RS}$ : depuis $U$, on recule du déplacement de $\vect{RS}$.\par
-3) $RSTU$ est un parallélogramme, donc $\vect{RS}=\res{\vect{UT}}$ ; $RSUV$ en est un,
-donc $\vect{RS}=\res{\vect{VU}}$.
+\end{tikzpicture}}
+\cas{3)}
+\explique{$RSTU$ est un parallélogramme, donc $\vect{RS}=\res{\vect{UT}}$.}{théorème 1}
+\explique{$RSUV$ est un parallélogramme, donc $\vect{RS}=\res{\vect{VU}}$.}{théorème 1}
+\rem{$U$ est le milieu de $[VT]$ : $\vect{VU}=\vect{UT}$. On le démontrera dans la partie V
+(exercice 21).}
 \end{exo}
 
 \begin{exo}[Vrai ou faux]
-1) \res{\text{Faux}} : c'est $\vect{CF}=\vect{DE}$ (le vecteur va de $C$ vers son
-image).\par
-2) \res{\text{Vrai}} : $\vect{KL}=\vect{NM}$ donne le parallélogramme $KLMN$
-(théorème 1).\par
-3) \res{\text{Vrai}} : $\vect{AD}=\vect{BC}$, donc la translation envoie $B$ sur $C$.
+\cas{1)}
+\explique{$F$ est l'image de $C$ par la translation de vecteur $\vect{DE}$, donc
+$\vect{CF}=\vect{DE}$.}{le vecteur va du point à son image}
+\explique{$\vect{FC}$ est l'opposé de $\vect{CF}$ : $\vect{FC}=-\vect{DE}$, et non
+$\vect{DE}$.}{on a échangé les lettres}
+\explique{L'affirmation est \res{fausse} (sauf si $D=E$).}{}
+\cas{2)}
+\explique{$\vect{KL}=\vect{NM}$ est de la forme $\vect{AB}=\vect{DC}$ avec $A=K$, $B=L$,
+$C=M$, $D=N$.}{on identifie les lettres}
+\explique{D'après le théorème 1, $KLMN$ est un parallélogramme : l'affirmation est
+\res{vraie}.}{éventuellement aplati, si les points sont alignés}
+\cas{3)}
+\explique{$ABCD$ est un parallélogramme ; lu dans l'autre sens, c'est $ADCB$, donc
+$\vect{AD}=\vect{BC}$.}{théorème 1 avec $A$, $D$, $C$, $B$}
+\explique{L'image de $B$ est le point $B'$ tel que $\vect{BB'}=\vect{AD}$, soit
+$\vect{BB'}=\vect{BC}$. Donc $B'=C$ : l'affirmation est \res{vraie}.}{définition de
+l'image}
+\rem{Une figure à main levée aide à décider ; pour justifier, on cite le théorème 1 ou la
+définition de la translation.}
 \end{exo}
 
 \partie{Somme de deux vecteurs}
 
 \begin{exo}[Origine imposée]
-\begin{center}
-\begin{tikzpicture}[scale=0.42]
+\explique{Pour tracer $\vec{w}=\vec{u}+\vec{v}$ depuis $T$, on trace un représentant de
+$\vec{u}$ d'origine $T$, puis un représentant de $\vec{v}$ à la suite.}{méthode 4 : l'un à
+la suite de l'autre}
+\cas{Figure de gauche}
+\cotefig{%
+\explique{$\vec{u}$ : $1$ carreau à droite et $2$ vers le haut ; on le trace depuis
+$T$.}{on lit, puis on reporte}
+\explique{$\vec{v}$ : $2$ carreaux à droite et $1$ vers le bas ; on le trace à la suite de
+$\vec{u}$.}{origine de $\vec{v}$ sur la pointe de $\vec{u}$}
+\explique{$\vec{w}$ va du départ de $\vec{u}$ (en $T$) à l'arrivée de $\vec{v}$ : $3$
+carreaux à droite et $1$ vers le haut.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.5]
   \quadrillage{-0.4}{-0.4}{5.4}{4.4}
+  \draw[vecteur] (0,2)--(1,4) node[nom,left]{$\vec{u}$};
+  \draw[vecteurB] (3,4)--(5,3) node[nom,above right]{$\vec{v}$};
+  \draw[vecteur] (1,1)--(2,3) node[nom,left]{$\vec{u}$};
+  \draw[vecteurB] (2,3)--(4,2) node[nom,above right]{$\vec{v}$};
+  \draw[cherche] (1,1)--(4,2) node[nom,below right]{$\vec{w}$};
   \pt{1,1}{below left}{T}
-  \draw[vecteur] (0,2)--(1,4); \draw[vecteurB] (3,4)--(5,3);
-  \draw[aide] (1,1)--(2,3)--(4,2); \draw[vecteurC] (1,1)--(4,2);
-\end{tikzpicture}
-\hspace{4pt}
-\begin{tikzpicture}[scale=0.42]
+\end{tikzpicture}}
+\cas{Figure de droite}
+\cotefig{%
+\explique{$\vec{u}$ : $2$ carreaux à droite et $1$ vers le bas ; on le trace depuis
+$T$.}{on lit, puis on reporte}
+\explique{$\vec{v}$ : $1$ carreau à gauche et $2$ vers le bas ; on le trace à la suite de
+$\vec{u}$.}{origine de $\vec{v}$ sur la pointe de $\vec{u}$}
+\explique{$\vec{w}$ va de $T$ à l'arrivée de $\vec{v}$ : $1$ carreau à droite et $3$ vers le
+bas.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.5]
   \quadrillage{-0.4}{-0.4}{5.4}{4.4}
+  \draw[vecteur] (0,4)--(2,3) node[nom,below left]{$\vec{u}$};
+  \draw[vecteurB] (2,2)--(1,0) node[nom,left]{$\vec{v}$};
+  \draw[vecteur] (3,4)--(5,3) node[nom,above right]{$\vec{u}$};
+  \draw[vecteurB] (5,3)--(4,1) node[nom,right]{$\vec{v}$};
+  \draw[cherche] (3,4)--(4,1) node[nom,left]{$\vec{w}$};
   \pt{3,4}{above}{T}
-  \draw[vecteur] (0,4)--(2,3); \draw[vecteurB] (2,2)--(1,0);
-  \draw[aide] (3,4)--(5,3)--(4,1); \draw[vecteurC] (3,4)--(4,1);
-\end{tikzpicture}
-\end{center}
-\rem{Gauche : $\vec{w}$ fait $3$ à droite et $1$ vers le haut ; droite : $1$ à droite et
-$3$ vers le bas.}
+\end{tikzpicture}}
+\rem{On peut vérifier par le calcul des carreaux : à gauche, $1+2=3$ à droite et $2-1=1$
+vers le haut. Erreur fréquente : tracer $\vec{u}$ et $\vec{v}$ depuis $T$ tous les deux ; il
+faut les mettre bout à bout.}
 \end{exo}
 
 \begin{exo}[Trois points à construire]
-\begin{minipage}[t]{0.42\linewidth}\raggedright
-$\vect{BC}+\vect{CA}=\vect{BA}$ : \res{D=A}.\par
-On reporte $\vect{BC}$ à la suite de $\vect{BA}$, depuis $A$ : $E$ ; $BAEC$ est un
-parallélogramme.\par
-$\vect{CF}=\vect{CB}+\vect{AB}$ : on met bout à bout.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.55\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[scale=0.38]
-  \quadrillage{-3.4}{-3.4}{8.4}{3.4}
+\explique{On trace un triangle $ABC$ sur le quadrillage. Pour chaque point, on met les deux
+vecteurs bout à bout depuis l'origine imposée.}{méthode 4}
+\cas{Le point $D$ : $\vect{BD}=\vect{BC}+\vect{CA}$}
+\cotefig{%
+\explique{$\vect{BC}$ et $\vect{CA}$ sont déjà bout à bout : de $B$ on va en $C$, puis de $C$
+en $A$.}{la pointe du premier est l'origine du second}
+\explique{La somme va du départ, $B$, à l'arrivée, $A$ : $\vect{BD}=\vect{BA}$, donc
+\res{$D=A$}.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
   \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{1,3}{above right}{C}
-  \draw[aide] (0,0)--(-3,3)--(1,3);
+  \draw[vecteurB] (4,0)--(1,3) node[nom,above right]{$\vect{BC}$};
+  \draw[vecteurC] (1,3)--(0,0) node[nom,left]{$\vect{CA}$};
+  \draw[cherche] (4,0)--(0,0) node[nom,below]{$\vect{BD}$};
+  \pt{0,0}{left}{A} \pt{4,0}{right}{B} \pt{1,3}{above}{C}
+  \node[font=\small,below left] at (0,-0.4) {$D$};
+\end{tikzpicture}}
+\cas{Le point $E$ : $\vect{BE}=\vect{BA}+\vect{BC}$}
+\cotefig{%
+\explique{On trace $\vect{BA}$, puis un représentant de $\vect{BC}$ à la suite, depuis $A$
+: $3$ carreaux à gauche et $3$ vers le haut.}{l'un à la suite de l'autre}
+\explique{$\vect{BE}$ va de $B$ à l'arrivée de ce représentant : c'est le point
+$E$.}{départ, arrivée}
+\explique{$BAEC$ est un parallélogramme : $\vect{BC}=\vect{AE}$.}{les deux vecteurs ont la
+même origine $B$ : la somme suit la diagonale}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-3.4}{-0.4}{4.4}{3.4}
+  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
+  \draw[aide] (-3,3)--(1,3);
+  \draw[vecteur] (4,0)--(0,0) node[nom,below]{$\vect{BA}$};
+  \draw[vecteurB] (0,0)--(-3,3) node[nom,below left]{$\vect{BC}$};
+  \draw[cherche] (4,0)--(-3,3) node[nom,above,pos=0.35]{$\vect{BE}$};
+  \pt{0,0}{below}{A} \pt{4,0}{below right}{B} \pt{1,3}{above right}{C}
   \pt{-3,3}{above}{E}
-  \draw[vecteurB] (1,3)--(4,0); \draw[vecteurB] (4,0)--(8,0);
-  \pt{8,0}{below}{F}
-\end{tikzpicture}
-\end{minipage}
+\end{tikzpicture}}
+\cas{Le point $F$ : $\vect{CF}=\vect{CB}+\vect{AB}$}
+\cotefig{%
+\explique{On trace $\vect{CB}$, puis un représentant de $\vect{AB}$ à la suite, depuis $B$
+: $4$ carreaux à droite.}{l'un à la suite de l'autre}
+\explique{$\vect{CF}$ va de $C$ à l'arrivée de ce représentant : c'est le point
+$F$.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-0.4}{-0.4}{8.4}{3.4}
+  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
+  \draw[vecteurC] (1,3)--(4,0) node[nom,left]{$\vect{CB}$};
+  \draw[vecteur] (4,0)--(8,0) node[nom,below]{$\vect{AB}$};
+  \draw[cherche] (1,3)--(8,0) node[nom,above right]{$\vect{CF}$};
+  \pt{0,0}{below left}{A} \pt{4,0}{below}{B} \pt{1,3}{above}{C} \pt{8,0}{below}{F}
+\end{tikzpicture}}
+\rem{Pour $D$, aucun tracé n'est nécessaire : quand la seconde lettre du premier vecteur
+est la première du second, la somme se lit directement.}
 \end{exo}
 
 \begin{exo}[Somme et différence sur un quadrillage]
-\begin{center}
+\explique{$\vect{AM}=\vec{u}+\vec{v}$ : on trace $\vec{v}$ à la suite de $\vec{u}$.
+$\vect{AN}=\vec{u}-\vec{v}=\vec{u}+(-\vec{v})$ : on trace $-\vec{v}$ à la suite de
+$\vec{u}$.}{méthode 4 : la différence est la somme avec l'opposé}
+\cas{Figure de gauche}
+\cotefig[0.46]{%
+\explique{$\vec{u}$ : $3$ à droite et $1$ vers le haut ; $\vec{v}$ : $1$ à droite et $2$
+vers le haut.}{on lit les déplacements}
+\explique{Point $M$ : depuis la pointe de $\vec{u}$, on trace $\vec{v}$ ; $M$ est à
+l'arrivée.}{$\vec{u}+\vec{v}$ : $4$ à droite, $3$ vers le haut}
+\explique{Point $N$ : depuis la pointe de $\vec{u}$, on trace $-\vec{v}$ ($1$ à gauche et $2$
+vers le bas) ; $N$ est à l'arrivée.}{$\vec{u}-\vec{v}$ : $2$ à droite, $1$ vers le bas}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-0.4}{-0.4}{5.4}{4.4}
+  \draw[vecteur] (1,1)--(4,2) node[nom,below right]{$\vec{u}$};
+  \draw[vecteurB] (1,1)--(2,3) node[nom,left]{$\vec{v}$};
+  \draw[vecteurB] (4,2)--(5,4) node[nom,right]{$\vec{v}$};
+  \draw[cherche] (1,1)--(5,4) node[nom,above left]{$\vect{AM}$};
+  \pt{1,1}{below left}{A} \pt{5,4}{above}{M}
+\end{tikzpicture}\hspace{4pt}%
 \begin{tikzpicture}[scale=0.42]
   \quadrillage{-0.4}{-0.4}{5.4}{4.4}
-  \pt{1,1}{below left}{A}
-  \draw[vecteur] (1,1)--(4,2); \draw[vecteurB] (1,1)--(2,3);
-  \draw[aide] (4,2)--(5,4); \draw[vecteurC] (1,1)--(5,4); \pt{5,4}{above}{M}
-  \draw[aide] (4,2)--(3,0); \draw[vecteurC] (1,1)--(3,0); \pt{3,0}{below}{N}
-\end{tikzpicture}
-\hspace{4pt}
+  \draw[vecteur] (1,1)--(4,2) node[nom,above left]{$\vec{u}$};
+  \draw[vecteurB] (1,1)--(2,3) node[nom,left]{$\vec{v}$};
+  \draw[vecteurB] (4,2)--(3,0) node[nom,right]{$-\vec{v}$};
+  \draw[cherche] (1,1)--(3,0) node[nom,below left]{$\vect{AN}$};
+  \pt{1,1}{left}{A} \pt{3,0}{below}{N}
+\end{tikzpicture}}
+\cas{Figure de droite}
+\cotefig[0.46]{%
+\explique{$\vec{u}$ : $3$ à droite ; $\vec{v}$ : $2$ vers le bas.}{on lit les
+déplacements}
+\explique{Point $M$ : depuis la pointe de $\vec{u}$, on trace $\vec{v}$, $2$ vers le bas ;
+$M$ est à l'arrivée.}{$\vec{u}+\vec{v}$ : $3$ à droite, $2$ vers le bas}
+\explique{Point $N$ : depuis la pointe de $\vec{u}$, on trace $-\vec{v}$, $2$ vers le haut ;
+$N$ est à l'arrivée.}{$\vec{u}-\vec{v}$ : $3$ à droite, $2$ vers le haut}}
+{\begin{tikzpicture}[scale=0.42]
+  \quadrillage{-0.4}{-0.4}{5.4}{4.4}
+  \draw[vecteur] (1,2)--(4,2) node[nom,above]{$\vec{u}$};
+  \draw[vecteurB] (1,2)--(1,0) node[nom,left]{$\vec{v}$};
+  \draw[vecteurB] (4,2)--(4,0) node[nom,right]{$\vec{v}$};
+  \draw[cherche] (1,2)--(4,0) node[nom,below left]{$\vect{AM}$};
+  \pt{1,2}{left}{A} \pt{4,0}{below}{M}
+\end{tikzpicture}\hspace{4pt}%
 \begin{tikzpicture}[scale=0.42]
   \quadrillage{-0.4}{-0.4}{5.4}{4.4}
-  \pt{1,2}{left}{A}
-  \draw[vecteur] (1,2)--(4,2); \draw[vecteurB] (1,2)--(1,0);
-  \draw[aide] (4,2)--(4,0); \draw[vecteurC] (1,2)--(4,0); \pt{4,0}{below}{M}
-  \draw[aide] (4,2)--(4,4); \draw[vecteurC] (1,2)--(4,4); \pt{4,4}{above}{N}
-\end{tikzpicture}
-\end{center}
-\rem{Gauche : $\vec{u}+\vec{v}$ fait $4$ à droite et $3$ vers le haut ;
-$\vec{u}-\vec{v}$, $2$ à droite et $1$ vers le bas.}
+  \draw[vecteur] (1,2)--(4,2) node[nom,below]{$\vec{u}$};
+  \draw[vecteurB] (1,2)--(1,0) node[nom,left]{$\vec{v}$};
+  \draw[vecteurB] (4,2)--(4,4) node[nom,right]{$-\vec{v}$};
+  \draw[cherche] (1,2)--(4,4) node[nom,above left]{$\vect{AN}$};
+  \pt{1,2}{left}{A} \pt{4,4}{above}{N}
+\end{tikzpicture}}
+\rem{Erreur fréquente : relier les pointes de $\vec{u}$ et de $\vec{v}$, tracés tous deux
+depuis $A$. On reporte toujours le second vecteur à la suite du premier.}
 \end{exo}
 
 \begin{exo}[Quand c'est l'origine qui manque]
-\begin{center}
-\begin{tikzpicture}[scale=0.42]
+\explique{Le point connu $A$ est l'\emph{extrémité} : la flèche doit arriver en $A$. On
+part donc de $A$ et on fait les déplacements à l'envers.}{$N$ est l'origine}
+\cas{1)}
+\cotefig{%
+\explique{$\vec{u}$ : $1$ à droite et $2$ vers le haut ; $\vec{v}$ : $2$ à droite et $1$
+vers le bas.}{on lit les déplacements}
+\explique{Depuis $A$, on recule de $\vec{v}$ ($2$ à gauche et $1$ vers le haut), puis de
+$\vec{u}$ ($1$ à gauche et $2$ vers le bas) : on arrive en $N$.}{on remonte la chaîne
+depuis la fin}
+\explique{Vérification : depuis $N$, $\vec{u}$ puis $\vec{v}$ arrivent bien en $A$.}{les
+vecteurs bout à bout de $N$ à $A$}}
+{\begin{tikzpicture}[scale=0.5]
   \quadrillage{-0.4}{-0.4}{5.4}{4.4}
-  \pt{4,2}{below right}{A}
-  \draw[vecteur] (0,1)--(1,3); \draw[vecteurB] (2,4)--(4,3);
-  \draw[vecteurC] (1,1)--(4,2); \pt{1,1}{below}{N}
-\end{tikzpicture}
-\hspace{4pt}
-\begin{tikzpicture}[scale=0.42]
+  \draw[vecteur] (0,1)--(1,3) node[nom,left]{$\vec{u}$};
+  \draw[vecteurB] (2,4)--(4,3) node[nom,above right]{$\vec{v}$};
+  \draw[vecteur] (1,1)--(2,3) node[nom,left]{$\vec{u}$};
+  \draw[vecteurB] (2,3)--(4,2) node[nom,above right]{$\vec{v}$};
+  \draw[cherche] (1,1)--(4,2) node[nom,below right]{$\vect{NA}$};
+  \pt{4,2}{right}{A} \pt{1,1}{below left}{N}
+\end{tikzpicture}}
+\cas{2)}
+\cotefig{%
+\explique{$\vec{u}$ : $2$ à droite et $1$ vers le haut ; $-\vec{v}$ : $1$ à gauche et $2$
+vers le bas.}{$\vec{u}-\vec{v}=\vec{u}+(-\vec{v})$}
+\explique{Depuis $A$, on recule de $-\vec{v}$ ($1$ à droite et $2$ vers le haut), puis de
+$\vec{u}$ ($2$ à gauche et $1$ vers le bas) : on arrive en $N$.}{on remonte la chaîne}
+\explique{Vérification : depuis $N$, $\vec{u}$ puis $-\vec{v}$ arrivent bien en $A$.}{}}
+{\begin{tikzpicture}[scale=0.5]
   \quadrillage{-0.4}{-0.4}{5.4}{4.4}
-  \pt{2,2}{below right}{A}
-  \draw[vecteur] (0,3)--(2,4); \draw[vecteurB] (4,0)--(5,2);
-  \draw[vecteurC] (1,3)--(2,2); \pt{1,3}{above left}{N}
-\end{tikzpicture}
-\end{center}
-\rem{On construit le vecteur à partir de $A$ \emph{en reculant} : $N$ est à l'autre bout.
-Gauche : $\vec{u}+\vec{v}$ fait $3$ à droite et $1$ vers le haut, donc $N$ est $3$
-carreaux à gauche et $1$ plus bas que $A$. Droite : $\vec{u}-\vec{v}$ fait $1$ à droite
-et $1$ vers le bas.}
+  \draw[vecteur] (0,3)--(2,4) node[nom,above left]{$\vec{u}$};
+  \draw[vecteurB] (4,0)--(5,2) node[nom,right]{$\vec{v}$};
+  \draw[vecteur] (1,3)--(3,4) node[nom,above]{$\vec{u}$};
+  \draw[vecteurB] (3,4)--(2,2) node[nom,right]{$-\vec{v}$};
+  \draw[cherche] (1,3)--(2,2) node[nom,below left]{$\vect{NA}$};
+  \pt{2,2}{below right}{A} \pt{1,3}{left}{N}
+\end{tikzpicture}}
+\rem{Autre façon : on construit d'abord le représentant de la somme (ou de la différence)
+d'origine $A$, puis $N$ est le point obtenu en reculant de ce déplacement depuis $A$. À
+gauche, $\vec{u}+\vec{v}$ fait $3$ à droite et $1$ vers le haut, donc $N$ est $3$ carreaux
+à gauche et $1$ plus bas que $A$.}
 \end{exo}
 
 \begin{exo}[Avec des longueurs]
-1) On reporte $\vect{AC}$ à la suite de $\vect{AB}$, depuis $B$ : on arrive en $D$.\par
-2) $\vect{BC}-\vect{BA}=\vect{AB}+\vect{BC}$, soit $\vect{AC}$ : on reporte $\vect{AC}$ depuis $B$.\par
-3) Par construction, $\vect{BD}=\vect{AC}$ : \res{ABDC \text{ est un parallélogramme}}
-(théorème 1) ; ses côtés mesurent $6$~cm et $5$~cm.
+\explique{On trace $[AB]$ de $6$~cm ; $C$ est à l'intersection d'un arc de rayon $5$~cm
+centré en $A$ et d'un arc de rayon $4$~cm centré en $B$.}{figures réduites de moitié}
+\cas{1)}
+\cotefig[0.4]{%
+\explique{On trace un représentant de $\vect{AC}$ à la suite de $\vect{AB}$, depuis $B$ :
+parallèle à $(AC)$, de longueur $5$~cm, dans le même sens. Il arrive en
+$D$.}{l'un à la suite de l'autre}
+\explique{$\vect{AD}$ va du départ de $\vect{AB}$ à l'arrivée de ce
+représentant.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.42]
+  \draw[aide] (0,0) ++(25:5) arc (25:60:5) (6,0) ++(105:4) arc (105:145:4);
+  \draw[fig] (0,0)--(6,0)--(3.75,3.307)--cycle;
+  \draw[vecteur] (0,0)--(6,0) node[nom,below]{$\vect{AB}$};
+  \draw[vecteurB] (6,0)--(9.75,3.307) node[nom,right]{$\vect{AC}$};
+  \draw[cherche] (0,0)--(9.75,3.307) node[nom,above,pos=0.6]{$\vect{AD}$};
+  \pt{0,0}{below left}{A} \pt{6,0}{below right}{B} \pt{3.75,3.307}{above}{C}
+  \pt{9.75,3.307}{above right}{D}
+\end{tikzpicture}}
+\cas{2)}
+\cotefig[0.4]{%
+\explique{$\vect{BC}-\vect{BA}=\vect{BC}+\vect{AB}$.}{l'opposé de $\vect{BA}$ est
+$\vect{AB}$}
+\explique{On trace $\vect{BC}$, puis un représentant de $\vect{AB}$ à la suite, depuis $C$ :
+parallèle à $(AB)$, $6$~cm, vers la droite. Il arrive en $E$.}{l'un à la suite de
+l'autre}
+\explique{On constate que \res{$E$ est confondu avec $D$}.}{à expliquer}
+\explique{En effet, $\vect{BC}+\vect{AB}=\vect{AB}+\vect{BC}$ : bout à bout, de $A$ à $C$.
+Donc $\vect{BE}=\vect{AC}$, comme $\vect{BD}$.}{l'ordre ne compte pas}}
+{\begin{tikzpicture}[scale=0.42]
+  \draw[fig] (0,0)--(6,0)--(3.75,3.307)--cycle;
+  \draw[vecteurB] (6,0)--(3.75,3.307) node[nom,left]{$\vect{BC}$};
+  \draw[vecteur] (3.75,3.307)--(9.75,3.307) node[nom,above]{$\vect{AB}$};
+  \draw[cherche] (6,0)--(9.75,3.307) node[nom,right]{$\vect{BE}$};
+  \pt{0,0}{below left}{A} \pt{6,0}{below right}{B} \pt{3.75,3.307}{above left}{C}
+  \pt{9.75,3.307}{above right}{E}
+\end{tikzpicture}}
+\cas{3)}
+\explique{Par construction, $\vect{BD}=\vect{AC}$, soit $\vect{AC}=\vect{BD}$.}{la
+construction de 1)}
+\explique{D'après le théorème 1, $ACDB$ est un parallélogramme, c'est-à-dire
+\res{$ABDC$}.}{$\vect{AB}=\vect{DC}$ donne $ABCD$, avec $A$, $C$, $D$, $B$}
+\explique{Ses côtés mesurent $6$~cm et $5$~cm, et ce n'est pas un rectangle.}{$AB$ et $AC$ ne
+sont pas perpendiculaires}
+\rem{Deux vecteurs de même origine $A$ : leur somme suit la diagonale $[AD]$ du
+parallélogramme construit sur eux.}
 \end{exo}
 
 \begin{exo}[Trois vecteurs]
-\begin{center}
-\begin{tikzpicture}[scale=0.42]
-  \quadrillage{-0.4}{-1.4}{8.4}{4.4}
+\explique{$\vec{u}$ : $1$ à droite et $1$ vers le haut ; $\vec{v}$ : $2$ à droite et $1$
+vers le bas ; $\vec{w}$ : $1$ à gauche et $2$ vers le haut.}{on lit les trois
+déplacements}
+\cas{1)}
+\cotefig[0.42]{%
+\explique{Depuis $A$, on trace $\vec{u}$ ; à sa suite, on trace $\vec{v}$. $\vec{r}$ va de
+$A$ à l'arrivée de $\vec{v}$ : $3$ carreaux à droite.}{$\vec{r}=\vec{u}+\vec{v}$}
+\explique{À la suite du même $\vec{u}$, on trace $\vec{w}$. $\vec{s}$ va de $A$ à l'arrivée
+de $\vec{w}$ : $3$ carreaux vers le haut.}{$\vec{s}=\vec{u}+\vec{w}$}}
+{\begin{tikzpicture}[scale=0.45]
+  \quadrillage{-0.4}{-0.4}{8.4}{4.4}
+  \draw[vecteur] (2,3)--(3,4) node[nom,above left]{$\vec{u}$};
+  \draw[vecteurB] (4,4)--(6,3) node[nom,above right]{$\vec{v}$};
+  \draw[vecteurC] (8,1)--(7,3) node[nom,right]{$\vec{w}$};
+  \draw[vecteur] (1,1)--(2,2) node[nom,below right]{$\vec{u}$};
+  \draw[vecteurB] (2,2)--(4,1) node[nom,above right]{$\vec{v}$};
+  \draw[vecteurC] (2,2)--(1,4) node[nom,right]{$\vec{w}$};
+  \draw[cherche] (1,1)--(4,1) node[nom,below]{$\vec{r}$};
+  \draw[cherche] (1,1)--(1,4) node[nom,left]{$\vec{s}$};
   \pt{1,1}{below left}{A} \pt{5,0}{below}{B}
-  \draw[vecteur] (2,3)--(3,4) node[midway,left,font=\footnotesize]{$\vec{u}$};
-  \draw[vecteurB] (4,4)--(6,3) node[midway,above right,font=\footnotesize]{$\vec{v}$};
-  \draw[vecteurC] (8,1)--(7,3) node[midway,right,font=\footnotesize]{$\vec{w}$};
-  \draw[aide] (1,1)--(2,2)--(4,1);
-  \draw[vecteur,black] (1,1)--(4,1) node[midway,below,font=\footnotesize]{$\vec{r}$};
-  \draw[aide] (2,2)--(1,4);
-  \draw[vecteur,black] (1,1)--(1,4) node[midway,left,font=\footnotesize]{$\vec{s}$};
-  \draw[aide] (5,0)--(7,-1)--(6,1);
-  \draw[vecteur,black] (5,0)--(6,1) node[midway,left,font=\footnotesize]{$\vec{t}$};
-\end{tikzpicture}
-\end{center}
-\rem{$\vec{r}=\vec{u}+\vec{v}$ : $3$ à droite ; $\vec{s}=\vec{u}+\vec{w}$ : $3$ vers le
-haut ; $\vec{t}=\vec{v}+\vec{w}$ : $1$ à droite et $1$ vers le haut.}
+\end{tikzpicture}}
+\cas{2)}
+\cotefig[0.42]{%
+\explique{Depuis $B$, on trace $\vec{v}$, puis $\vec{w}$ à sa suite. $\vec{t}$ va de $B$ à
+l'arrivée de $\vec{w}$ : $1$ carreau à droite et $1$ vers le haut.}{$\vec{t}=\vec{v}+\vec{w}$}}
+{\begin{tikzpicture}[scale=0.45]
+  \quadrillage{-0.4}{-1.4}{8.4}{4.4}
+  \draw[vecteur] (2,3)--(3,4) node[nom,above left]{$\vec{u}$};
+  \draw[vecteurB] (4,4)--(6,3) node[nom,above right]{$\vec{v}$};
+  \draw[vecteurC] (8,1)--(7,3) node[nom,right]{$\vec{w}$};
+  \draw[vecteurB] (5,0)--(7,-1) node[nom,below left]{$\vec{v}$};
+  \draw[vecteurC] (7,-1)--(6,1) node[nom,right]{$\vec{w}$};
+  \draw[cherche] (5,0)--(6,1) node[nom,left]{$\vec{t}$};
+  \pt{1,1}{below left}{A} \pt{5,0}{below left}{B}
+\end{tikzpicture}}
+\rem{Vérification par les carreaux : $\vec{t}$, $2-1=1$ à droite et $-1+2=1$ vers le haut.
+On remarque que $\vec{t}=\vec{u}$.}
 \end{exo}
 
 \partie{Milieu d'un segment}
 
 \begin{exo}[Un milieu à démontrer]
-\begin{center}
-\begin{tikzpicture}[scale=0.45]
+\cas{1) et 2)}
+\cotefig[0.36]{%
+\explique{On trace le parallélogramme $KLMN$.}{1) : figure au choix}
+\explique{$KLPM$ parallélogramme équivaut à $\vect{KL}=\vect{MP}$ : depuis $M$, on reporte
+$\vect{KL}$ ; c'est $P$.}{théorème 1 : $\vect{AB}=\vect{DC}$}
+\explique{On trace $KLPM$ en joignant $K$, $L$, $P$, $M$.}{le tour de la figure}}
+{\begin{tikzpicture}[scale=0.5]
+  \quadrillage{-0.4}{-0.4}{7.4}{2.4}
   \draw[fig] (0,0)--(3,0)--(4,2)--(1,2)--cycle;
-  \draw[fig,coulCourbeC] (0,0)--(3,0)--(7,2)--(4,2)--cycle;
+  \draw[figC] (3,0)--(7,2)--(4,2);
+  \draw[vecteur] (0,0)--(3,0) node[nom,below]{$\vect{KL}$};
+  \draw[vecteur] (4,2)--(7,2) node[nom,above]{$\vect{KL}$};
   \pt{0,0}{below left}{K} \pt{3,0}{below}{L} \pt{4,2}{above}{M}
   \pt{1,2}{above left}{N} \pt{7,2}{above right}{P}
-\end{tikzpicture}
-\end{center}
-$KLMN$ est un parallélogramme, donc $\vect{KL}=\vect{NM}$. $KLPM$ en est un, donc
-$\vect{KL}=\vect{MP}$. Ainsi $\vect{NM}=\vect{MP}$ : \res{M \text{ est le milieu de }
-[NP]} (théorème 2).
+\end{tikzpicture}}
+\cas{3)}
+\explique{$KLMN$ est un parallélogramme, donc $\vect{NM}=\vect{KL}$.}{côtés opposés
+(théorème 1)}
+\explique{$KLPM$ est un parallélogramme, donc $\vect{KL}=\vect{MP}$.}{côtés opposés
+(théorème 1)}
+\explique{Ainsi $\vect{NM}=\vect{MP}$ : \res{$M$ est le milieu de $[NP]$}.}{théorème 2 :
+$\vect{XM}=\vect{MY}$}
+\rem{Le vecteur $\vect{KL}$ sert de relais entre les deux parallélogrammes. On vise
+$\vect{NM}=\vect{MP}$ : le point $M$ est l'extrémité du premier vecteur et l'origine du
+second.}
 \end{exo}
 
 \begin{exo}[Une différence, un parallélogramme]
-\begin{minipage}[t]{0.5\linewidth}\raggedright
-1) $\vect{AC}-\vect{AB}=\vect{BA}+\vect{AC}$, soit $\vect{BC}$. Donc $\vect{AD}=\vect{BC}$ :
-\res{ADCB} est un parallélogramme, et ses diagonales $[AC]$ et $[DB]$ ont le même
-milieu.\par
-2) $\vect{CE}=\vect{CB}+\vect{BA}=\vect{CA}$ : \res{E=A}.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.46\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[scale=0.4]
+\cas{1)}
+\cotefig{%
+\explique{On trace un triangle $ABC$ sur le quadrillage.}{figure au choix}
+\explique{$\vect{AC}-\vect{AB}=\vect{AC}+\vect{BA}$.}{la différence est la somme avec
+l'opposé : $-\vect{AB}=\vect{BA}$}
+\explique{On trace $\vect{AC}$, puis un représentant de $\vect{BA}$ à la suite, depuis $C$ :
+$4$ carreaux à gauche. Il arrive en $D$.}{l'un à la suite de l'autre}
+\explique{Autre lecture : $\vect{BA}+\vect{AC}$, bout à bout, va de $B$ à $C$. Donc
+$\vect{AD}=\vect{BC}$.}{l'ordre ne compte pas}
+\explique{D'après le théorème 1, \res{$ADCB$ est un parallélogramme}.}{$\vect{AB}=\vect{DC}$
+avec $A$, $D$, $C$, $B$}
+\explique{$[AC]$ et $[DB]$ sont ses diagonales : \res{elles ont le même milieu}.}{les
+diagonales d'un parallélogramme se coupent en leur milieu}}
+{\begin{tikzpicture}[scale=0.45]
   \quadrillage{-3.4}{-0.4}{4.4}{3.4}
   \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
+  \draw[figC] (0,0)--(-3,3);
+  \draw[aide] (-3,3)--(4,0);
+  \draw[vecteur] (0,0)--(1,3) node[nom,right]{$\vect{AC}$};
+  \draw[vecteurB] (1,3)--(-3,3) node[nom,above]{$\vect{BA}$};
+  \draw[cherche] (0,0)--(-3,3) node[nom,below left]{$\vect{AD}$};
   \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{1,3}{above right}{C}
-  \draw[vecteurB] (0,0)--(-3,3); \pt{-3,3}{above}{D}
-  \draw[aide] (-3,3)--(1,3) (-3,3)--(4,0) (0,0)--(1,3);
-\end{tikzpicture}
-\end{minipage}
+  \pt{-3,3}{above left}{D}
+\end{tikzpicture}}
+\cas{2)}
+\cotefig{%
+\explique{$\vect{BA}+\vect{CB}=\vect{CB}+\vect{BA}$.}{l'ordre ne compte pas}
+\explique{$\vect{CB}$ et $\vect{BA}$ sont bout à bout : de $C$ à $B$, puis de $B$ à $A$.
+Donc $\vect{CE}=\vect{CA}$.}{départ $C$, arrivée $A$}
+\explique{On constate que \res{$E$ est confondu avec $A$}.}{}}
+{\begin{tikzpicture}[scale=0.45]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
+  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
+  \draw[vecteurC] (1,3)--(4,0) node[nom,above right]{$\vect{CB}$};
+  \draw[vecteur] (4,0)--(0,0) node[nom,below]{$\vect{BA}$};
+  \draw[cherche] (1,3)--(0,0) node[nom,left]{$\vect{CE}$};
+  \pt{0,0}{above left}{A} \pt{4,0}{below right}{B} \pt{1,3}{above}{C}
+  \node[font=\small,below left] at (0,-0.1) {$E$};
+\end{tikzpicture}}
+\rem{Erreur fréquente en 1) : tracer $\vect{AC}$ et $\vect{AB}$ depuis $A$ et relier leurs
+pointes. Pour une différence, on met l'\emph{opposé} à la suite.}
 \end{exo}
 
 \begin{exo}[Trois points à construire]
-1) $\vect{AM}=\vect{BC}$ ($ABCM$ est un parallélogramme).\par
-2) $\vect{CM}=\vect{CB}+\vect{AB}$ : bout à bout depuis $C$.\par
-3) $\vect{AC}+\vect{BA}-\vect{CB}=\vect{BA}+\vect{AC}+\vect{BC}$, soit $\vect{BC}+\vect{BC}$, donc
-\res{\vect{BM}=2\vect{BC}}.
-\begin{center}
-\begin{tikzpicture}[scale=0.36]
-  \quadrillage{-3.4}{-3.4}{8.4}{6.4}
-  \draw[fig] (0,0)--(4,0)--(1,3)--cycle;
-  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{1,3}{right}{C}
-  \pt{-3,3}{left}{M_1}
-  \draw[aide] (1,3)--(4,0)--(8,0); \draw[vecteurB] (1,3)--(8,0); \pt{8,0}{below right}{M_2}
-  \draw[vecteurC] (4,0)--(-2,6); \pt{-2,6}{above}{M_3}
-\end{tikzpicture}
-\end{center}
-\rem{Les indices $1$, $2$, $3$ distinguent les points des trois questions.}
+\cas{1)}
+\cotefig{%
+\explique{On garde le même triangle $ABC$ ; chaque question donne un point $M$
+différent.}{trois figures}
+\explique{$\vect{AC}-\vect{AB}=\vect{AC}+\vect{BA}$, soit $\vect{BA}+\vect{AC}$ : bout à
+bout, de $B$ à $C$.}{l'opposé de $\vect{AB}$ est $\vect{BA}$}
+\explique{Donc $\vect{AM}=\vect{BC}$ : depuis $A$, on reporte $\vect{BC}$, $3$ à gauche et
+$3$ vers le haut.}{$ABCM$ est un parallélogramme}
+\explique{C'est le point $D$ de l'exercice 22.}{même égalité}}
+{\begin{tikzpicture}[scale=0.4]
+  \quadrillage{-3.4}{-0.4}{4.4}{3.4}
+  \triangleABC
+  \draw[vecteurB] (4,0)--(1,3) node[nom,right]{$\vect{BC}$};
+  \draw[vecteurB] (0,0)--(-3,3) node[nom,below left]{$\vect{BC}$};
+  \pt{-3,3}{above}{M}
+\end{tikzpicture}}
+\cas{2)}
+\cotefig{%
+\explique{$\vect{CB}-\vect{BA}=\vect{CB}+\vect{AB}$.}{l'opposé de $\vect{BA}$ est
+$\vect{AB}$}
+\explique{On trace $\vect{CB}$, puis un représentant de $\vect{AB}$ à la suite, depuis $B$
+: $4$ à droite. Il arrive en $M$.}{l'un à la suite de l'autre}}
+{\begin{tikzpicture}[scale=0.4]
+  \quadrillage{-0.4}{-0.4}{8.4}{3.4}
+  \triangleABC
+  \draw[vecteurC] (1,3)--(4,0) node[nom,left]{$\vect{CB}$};
+  \draw[vecteur] (4,0)--(8,0) node[nom,below]{$\vect{AB}$};
+  \draw[cherche] (1,3)--(8,0) node[nom,above right]{$\vect{CM}$};
+  \pt{8,0}{below}{M}
+\end{tikzpicture}}
+\cas{3)}
+\cotefig{%
+\explique{$-\vect{CB}=\vect{BC}$ ; on range les deux premiers vecteurs :
+$\vect{AC}+\vect{BA}=\vect{BA}+\vect{AC}$.}{l'ordre ne compte pas}
+\explique{$\vect{BA}+\vect{AC}$ va de $B$ à $C$ : c'est $\vect{BC}$.}{bout à bout}
+\explique{Donc $\vect{BM}=\vect{BC}+\vect{BC}$ : depuis $B$, on reporte $\vect{BC}$ deux
+fois de suite, soit $6$ à gauche et $6$ vers le haut.}{l'un à la suite de l'autre}}
+{\begin{tikzpicture}[scale=0.4]
+  \quadrillage{-2.4}{-0.4}{4.4}{6.4}
+  \triangleABC
+  \draw[cherche] (4,0)--(-2,6) node[nom,above right,pos=0.7]{$\vect{BM}$};
+  \draw[vecteurB] (4,0)--(1,3) node[nom,below left]{$\vect{BC}$};
+  \draw[vecteurB] (1,3)--(-2,6) node[nom,below left]{$\vect{BC}$};
+  \pt{-2,6}{left}{M}
+\end{tikzpicture}}
+\rem{En 3), $\vect{BM}$ est caché sous les deux représentants de $\vect{BC}$ : il va de $B$
+à $M$. Erreur fréquente : oublier de changer $-\vect{CB}$ en $\vect{BC}$ avant de
+construire.}
 \end{exo}
 
 \begin{exo}[Symétrie centrale]
-1) $G$ est le milieu de $[EE']$ et de $[FF']$ : les diagonales $[FF']$ et $[EE']$ de
-$FEF'E'$ ont le même milieu, donc \res{FEF'E' \text{ est un parallélogramme}}.\par
-2) a) Dans ce parallélogramme, $\vect{FE}=\vect{E'F'}$.\par
-b) Deux vecteurs égaux ont la même norme : \res{E'F'=EF}.\par
-c) La symétrie centrale \res{\text{conserve les longueurs}}.
+\cotefig[0.32]{%
+\explique{$E'$ est le symétrique de $E$ par rapport à $G$ : $G$ est le milieu de $[EE']$.
+De même, $G$ est le milieu de $[FF']$.}{définition de la symétrie centrale}}
+{\begin{tikzpicture}[scale=0.45]
+  \draw[fig] (2,4)--(0,1)--(4,0)--(6,3)--cycle;
+  \draw[aide] (0,1)--(6,3) (2,4)--(4,0);
+  \draw[vecteur] (2,4)--(0,1) node[nom,left]{$\vect{FE}$};
+  \draw[vecteurB] (6,3)--(4,0) node[nom,right]{$\vect{E'F'}$};
+  \pt{0,1}{left}{E} \pt{6,3}{right}{E'} \pt{2,4}{above}{F} \pt{4,0}{below}{F'}
+  \pt{3,2}{above}{G}
+\end{tikzpicture}}
+\cas{1)}
+\explique{Dans le quadrilatère $FEF'E'$, les diagonales sont $[FF']$ et $[EE']$.}{on fait
+le tour $F$, $E$, $F'$, $E'$}
+\explique{Elles ont le même milieu $G$.}{par définition de $E'$ et de $F'$}
+\explique{Donc \res{$FEF'E'$ est un parallélogramme}.}{un quadrilatère dont les diagonales
+ont le même milieu est un parallélogramme}
+\cas{2) a)}
+\explique{$FEF'E'$ est un parallélogramme, donc $\vect{FE}=\vect{E'F'}$.}{théorème 1 :
+$ABCD$ donne $\vect{AB}=\vect{DC}$}
+\cas{2) b)}
+\explique{Deux vecteurs égaux ont la même norme : \res{$E'F'=EF$}.}{même longueur}
+\cas{2) c)}
+\explique{$[E'F']$ est l'image de $[EF]$ par la symétrie de centre $G$, et elle a la même
+longueur : \res{la symétrie centrale conserve les longueurs}.}{$E$ et $F$ sont deux points
+quelconques}
+\rem{En 2) a), on lit bien $\vect{FE}=\vect{E'F'}$, et non $\vect{EF}=\vect{E'F'}$ : sur la
+figure, $\vect{E'F'}$ est l'opposé de $\vect{EF}$. Une symétrie centrale change le sens
+des vecteurs.}
 \end{exo}
 
 \partie{Multiplier un vecteur par un réel}
 
 \begin{exo}[Multiples d'un vecteur]
-\begin{center}
-\begin{tikzpicture}[scale=0.42]
+\explique{$\vec{a}$ : $1$ carreau à droite et $1$ vers le bas. On multiplie les deux nombres
+de carreaux par $k$ ; si $k<0$, on change le sens.}{méthode 6}
+\cotefig[0.4]{%
+\explique{$2\vec{a}$ : $2$ à droite et $2$ vers le bas.}{même sens, deux fois plus long}
+\explique{$-\vec{a}$ : $1$ à gauche et $1$ vers le haut.}{sens contraire, même longueur}
+\explique{$3\vec{a}$ : $3$ à droite et $3$ vers le bas.}{même sens, trois fois plus long}
+\explique{$-2\vec{a}$ : $2$ à gauche et $2$ vers le haut.}{sens contraire, deux fois plus
+long}}
+{\begin{tikzpicture}[scale=0.4]
   \quadrillage{-0.4}{-0.4}{7.4}{5.4}
-  \pt{3,3}{left}{O}
-  \draw[vecteurB] (3,3)--(6,0) node[pos=0.85,right,font=\scriptsize]{$3\vec{a}$};
-  \draw[vecteur] (3,3)--(5,1) node[pos=0.7,left,font=\scriptsize]{$2\vec{a}$};
-  \draw[vecteurC] (3,3)--(1,5) node[pos=0.8,right,font=\scriptsize]{$-2\vec{a}$};
-  \draw[vecteurC] (3,3)--(2,4) node[pos=0.6,left,font=\scriptsize]{$-\vec{a}$};
-\end{tikzpicture}
-\end{center}
-\rem{$\vec{a}$ fait $1$ à droite et $1$ vers le bas ; $-2\vec{a}$ fait $2$ à gauche et $2$
-vers le haut.}
+  \draw[cherche] (3,3)--(5,1) node[nom,below left]{$2\vec{a}$};
+  \draw[vecteur] (3,3)--(4,2) node[nom,above right]{$\vec{a}$};
+  \draw[cherche] (3,3)--(2,4) node[nom,below left]{$-\vec{a}$};
+  \pt{3,3}{above right}{O}
+\end{tikzpicture}\hspace{4pt}%
+\begin{tikzpicture}[scale=0.4]
+  \quadrillage{-0.4}{-0.4}{7.4}{5.4}
+  \draw[cherche] (3,3)--(6,0) node[nom,below left]{$3\vec{a}$};
+  \draw[vecteur] (3,3)--(4,2) node[nom,above right]{$\vec{a}$};
+  \draw[cherche] (3,3)--(1,5) node[nom,below left]{$-2\vec{a}$};
+  \pt{3,3}{above right}{O}
+\end{tikzpicture}}
+\rem{Tous ces vecteurs sont sur une même droite, celle de $\vec{a}$ : ils ont la même
+direction. Deux figures pour que les flèches ne se cachent pas.}
 \end{exo}
 
 \begin{exo}[Avec des coefficients]
-\begin{center}
-\begin{tikzpicture}[scale=0.32]
+\explique{On trace un triangle $ABC$ sur le quadrillage : $\vect{AC}$ fait $2$ à droite et
+$2$ vers le haut ; $\vect{CB}$, $2$ à droite et $2$ vers le bas ; $\vect{BA}$, $4$ à
+gauche.}{des nombres de carreaux pairs, pour les moitiés}
+\cas{Le point $M$}
+\cotefig[0.3]{%
+\explique{$3\vect{AC}$ : $6$ à droite et $6$ vers le haut, depuis $A$.}{même sens, trois
+fois plus long}
+\explique{$M$ est sur la demi-droite $[AC)$, avec $AM=3AC$.}{}}
+{\begin{tikzpicture}[scale=0.32]
+  \quadrillage{-0.4}{-0.4}{6.4}{6.4}
   \draw[fig] (0,0)--(4,0)--(2,2)--cycle;
-  \pt{0,0}{below left}{A} \pt{4,0}{below}{B} \pt{2,2}{left}{C}
-  \draw[vecteur] (0,0)--(6,6); \pt{6,6}{above}{M}
-  \draw[vecteurB] (2,2)--(3,1); \pt{3,1}{right}{N}
-  \draw[vecteurC] (4,0)--(6,0); \pt{6,0}{below right}{P}
-\end{tikzpicture}
-\end{center}
-\rem{$M$ est sur la demi-droite $[AC)$ avec $AM=3AC$ ; $N$ est le milieu de $[CB]$ ;
-$P$ est sur la droite $(AB)$, au-delà de $B$, avec $BP=\frac12AB$.}
+  \draw[cherche] (0,0)--(6,6) node[nom,above left]{$3\vect{AC}$};
+  \draw[vecteur] (0,0)--(2,2) node[nom,below right]{$\vect{AC}$};
+  \pt{0,0}{below left}{A} \pt{4,0}{below}{B} \pt{2,2}{right}{C} \pt{6,6}{above}{M}
+\end{tikzpicture}}
+\cas{Le point $N$}
+\cotefig[0.3]{%
+\explique{$\tfrac12\vect{CB}$ : $1$ à droite et $1$ vers le bas, depuis $C$.}{même sens,
+deux fois plus court}
+\explique{$N$ est le milieu de $[CB]$.}{$\vect{CN}=\tfrac12\vect{CB}$}}
+{\begin{tikzpicture}[scale=0.55]
+  \quadrillage{-0.4}{-0.4}{4.4}{2.4}
+  \draw[fig] (0,0)--(4,0)--(2,2)--cycle;
+  \draw[vecteurC] (2,2)--(4,0) node[nom,above right]{$\vect{CB}$};
+  \draw[cherche] (2,2)--(3,1) node[nom,below left]{$\tfrac12\vect{CB}$};
+  \pt{0,0}{below left}{A} \pt{4,0}{below}{B} \pt{2,2}{above}{C} \pt{3,1}{right}{N}
+\end{tikzpicture}}
+\cas{Le point $P$}
+\cotefig[0.3]{%
+\explique{$\vect{BA}$ fait $4$ carreaux vers la gauche ; $-\tfrac12\vect{BA}$ fait donc $2$
+carreaux vers la droite, depuis $B$.}{sens contraire, deux fois plus court}
+\explique{$P$ est sur la droite $(AB)$, au-delà de $B$, avec $BP=\tfrac12AB$.}{}}
+{\begin{tikzpicture}[scale=0.45]
+  \quadrillage{-0.4}{-0.4}{6.4}{2.4}
+  \draw[fig] (0,0)--(4,0)--(2,2)--cycle;
+  \draw[vecteur] (4,0)--(0,0) node[nom,above]{$\vect{BA}$};
+  \draw[cherche] (4,0)--(6,0) node[nom,above]{$-\tfrac12\vect{BA}$};
+  \pt{0,0}{below left}{A} \pt{4,0}{below}{B} \pt{2,2}{above}{C} \pt{6,0}{below}{P}
+\end{tikzpicture}}
+\rem{Sans quadrillage, on mesure : pour $N$, on prend le milieu de $[CB]$ ; pour $P$, on
+reporte au compas la moitié de $AB$ au-delà de $B$. Erreur fréquente pour $P$ : aller vers
+$A$, en oubliant que le signe moins change le sens de $\vect{BA}$.}
 \end{exo}
 
 \begin{exo}[Sur un quadrillage]
-\begin{center}
-\begin{tikzpicture}[scale=0.45]
-  \quadrillage{-0.4}{-0.4}{8.4}{5.4}
-  \pt{0,1}{below left}{A} \pt{4,1}{below}{B} \pt{6,3}{right}{C} \pt{1,4}{above left}{D}
-  \draw[vecteur] (0,1)--(4,5) node[pos=0.5,left,font=\scriptsize]{1)};
-  \draw[vecteur] (4,1)--(7,2) node[pos=0.6,below,font=\scriptsize]{2)};
-  \draw[vecteurB] (1,4)--(2,3) node[pos=0.5,below left,font=\scriptsize]{3)};
-  \draw[vecteurB] (6,3)--(5,4) node[pos=0.5,above,font=\scriptsize]{4)};
-  \draw[vecteurC] (1,4)--(3,2) node[pos=0.8,right,font=\scriptsize]{5)};
-\end{tikzpicture}
-\end{center}
-\rem{$\vect{BC}$ : $2$ à droite, $2$ vers le haut ; $\vect{AC}$ : $6$ à droite, $2$ vers le
-haut ; $\vect{BD}$ : $3$ à gauche, $3$ vers le haut ; $\vect{AB}-\vect{BC}$ : $2$ à
-droite, $2$ vers le bas.}
+\explique{On lit les déplacements : $\vect{BC}$, $2$ à droite et $2$ vers le haut ;
+$\vect{AC}$, $6$ à droite et $2$ vers le haut ; $\vect{BD}$, $3$ à gauche et $3$ vers le
+haut ; $\vect{AB}$, $4$ à droite.}{méthode 6 : on multiplie les nombres de carreaux}
+\cas{1)}
+\cotefig[0.36]{%
+\explique{$2\vect{BC}$ : $4$ à droite et $4$ vers le haut, depuis $A$.}{même sens, deux
+fois plus long}}
+{\begin{tikzpicture}[scale=0.36]\figABCD
+  \draw[vecteurB] (4,1)--(6,3) node[nom,right]{$\vect{BC}$};
+  \draw[cherche] (0,1)--(4,5) node[nom,above left]{$2\vect{BC}$};
+\end{tikzpicture}}
+\cas{2)}
+\cotefig[0.36]{%
+\explique{$0{,}5\,\vect{AC}$ : $3$ à droite et $1$ vers le haut, depuis $B$.}{même sens,
+deux fois plus court}}
+{\begin{tikzpicture}[scale=0.36]\figABCD
+  \draw[vecteur] (0,1)--(6,3) node[nom,above left]{$\vect{AC}$};
+  \draw[cherche] (4,1)--(7,2) node[nom,below right]{$0{,}5\,\vect{AC}$};
+\end{tikzpicture}}
+\cas{3)}
+\cotefig[0.36]{%
+\explique{$-\tfrac13\vect{BD}$ : $1$ à droite et $1$ vers le bas, depuis $D$.}{sens
+contraire, trois fois plus court}}
+{\begin{tikzpicture}[scale=0.36]\figABCD
+  \draw[vecteurC] (4,1)--(1,4) node[nom,below left]{$\vect{BD}$};
+  \draw[cherche] (1,4)--(2,3) node[nom,above right]{$-\tfrac13\vect{BD}$};
+\end{tikzpicture}}
+\cas{4)}
+\cotefig[0.36]{%
+\explique{$\tfrac13\vect{BD}$ : $1$ à gauche et $1$ vers le haut, depuis $C$.}{même sens,
+trois fois plus court}}
+{\begin{tikzpicture}[scale=0.36]\figABCD
+  \draw[vecteurC] (4,1)--(1,4) node[nom,below left]{$\vect{BD}$};
+  \draw[cherche] (6,3)--(5,4) node[nom,above right]{$\tfrac13\vect{BD}$};
+\end{tikzpicture}}
+\cas{5)}
+\cotefig[0.36]{%
+\explique{$\vect{AB}-\vect{BC}=\vect{AB}+(-\vect{BC})$ : depuis $D$, on trace $\vect{AB}$
+($4$ à droite), puis $-\vect{BC}$ à la suite ($2$ à gauche et $2$ vers le bas).}{méthode 4
+: l'opposé à la suite}
+\explique{Le vecteur cherché va de $D$ à l'arrivée : $2$ à droite et $2$ vers le
+bas.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.36]\figABCD
+  \draw[vecteur] (1,4)--(5,4) node[nom,above]{$\vect{AB}$};
+  \draw[vecteurB] (5,4)--(3,2) node[nom,right]{$-\vect{BC}$};
+  \draw[cherche] (1,4)--(3,2) node[nom,below left]{$\vect{AB}-\vect{BC}$};
+\end{tikzpicture}}
+\rem{Le signe moins ne change que le sens : il ne raccourcit pas le vecteur. On vérifie que
+chaque extrémité tombe sur un nœud du quadrillage, comme l'annonce l'énoncé.}
 \end{exo}
 
 \partie{Relation de Chasles}
 
 \begin{exo}[Un seul vecteur, si c'est possible]
-\deux{a) \res{\vect{BG}}}{b) impossible}
-\deux{c) $\vect{KT}+\vect{TU}=\res{\vect{KU}}$}{d) \res{\vect{FS}}}
-\deux{e) \res{\vec{0}}}{f) impossible}
-\rem{b) Même origine $D$ : Chasles ne s'applique pas. f) $B$ et
-$C$ sont différents.}
+\explique{La relation de Chasles s'applique quand la lettre d'arrivée du premier vecteur
+est la lettre de départ du second ; on peut d'abord échanger l'ordre.}{théorème 3 :
+$\vect{AB}+\vect{BC}=\vect{AC}$}
+\cas{a)}
+\begin{calculs}
+\vect{BE}+\vect{EG} &= \res{\vect{BG}} &&\justif{déjà rangés : $B\to E\to G$}
+\end{calculs}
+\cas{b)}
+\explique{$\vect{DA}+\vect{DC}$ : \res{impossible}.}{les deux vecteurs partent de $D$ :
+aucune lettre ne relie l'arrivée de l'un au départ de l'autre}
+\cas{c)}
+\begin{calculs}
+\vect{TU}+\vect{KT} &= \vect{KT}+\vect{TU} &&\justif{on range : $K\to T\to U$}\\
+\vect{TU}+\vect{KT} &= \res{\vect{KU}} &&\justif{Chasles}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\vect{FH}+\vect{HS} &= \res{\vect{FS}} &&\justif{déjà rangés : $F\to H\to S$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\vect{PQ}+\vect{QP} &= \vect{PP} &&\justif{aller de $P$ à $Q$, puis revenir en $P$}\\
+\vect{PQ}+\vect{QP} &= \res{\vec{0}} &&\justif{on est revenu au point de départ}
+\end{calculs}
+\cas{f)}
+\explique{$\vect{AB}+\vect{CE}$ : \res{impossible}.}{l'arrivée $B$ n'est pas le départ $C$,
+et $E$ n'est pas $A$}
+\rem{En b), la somme existe bien (méthode 4), mais elle ne s'écrit pas avec les lettres de
+l'énoncé : il faudrait construire un nouveau point.}
 \end{exo}
 
 \begin{exo}[Simplifier]
+\explique{On remplace chaque $-\vect{XY}$ par $\vect{YX}$, puis on range les vecteurs pour
+que l'extrémité de chacun soit l'origine du suivant.}{méthode 7}
+\cas{$\vec{u}$}
 \begin{calculs}
-\vec{u}&=\vect{BC}+\vect{CA}+\vect{AB}=\vect{BB}\\
-\vec{u}&=\res{\vec{0}}\\
-\vec{v}&=\vect{CA}+\vect{BC}+\vect{AC}\\
-\vec{v}&=\vect{BC}+\vect{CA}+\vect{AC}=\res{\vect{BC}}\\
-\vec{w}&=\vect{MC}+\vect{AM}+\vect{CB}\\
-\vec{w}&=\vect{AM}+\vect{MC}+\vect{CB}=\res{\vect{AB}}
+\vec{u} &= \vect{BC}+\vect{CA}+\vect{AB} &&\justif{déjà rangés : $B\to C\to A\to B$}\\
+\vec{u} &= \vect{BB} &&\justif{on revient au point de départ}\\
+\vec{u} &= \res{\vec{0}} &&
 \end{calculs}
-\rem{$\vect{CA}+\vect{AC}=\vect{CC}=\vec{0}$.}
+\cas{$\vec{v}$}
+\begin{calculs}
+\vec{v} &= \vect{CA}-\vect{CB}+\vect{AC} &&\justif{on recopie}\\
+\vec{v} &= \vect{CA}+\vect{BC}+\vect{AC} &&\justif{$-\vect{CB}=\vect{BC}$}\\
+\vec{v} &= \vect{BC}+\vect{CA}+\vect{AC} &&\justif{on range : $B\to C\to A\to C$}\\
+\vec{v} &= \vect{BA}+\vect{AC} &&\justif{Chasles : $\vect{BC}+\vect{CA}=\vect{BA}$}\\
+\vec{v} &= \res{\vect{BC}} &&\justif{Chasles}
+\end{calculs}
+\cas{$\vec{w}$}
+\begin{calculs}
+\vec{w} &= \vect{MC}-\vect{MA}+\vect{CB} &&\justif{on recopie}\\
+\vec{w} &= \vect{MC}+\vect{AM}+\vect{CB} &&\justif{$-\vect{MA}=\vect{AM}$}\\
+\vec{w} &= \vect{AM}+\vect{MC}+\vect{CB} &&\justif{on range : $A\to M\to C\to B$}\\
+\vec{w} &= \res{\vect{AB}} &&\justif{Chasles, deux fois}
+\end{calculs}
+\rem{Le point $M$ disparaît : on passe par $M$ pour aller de $A$ à $C$. Erreur fréquente :
+garder $-\vect{MA}$ et tenter Chasles avec un signe moins ; on change d'abord le signe en
+inversant les lettres.}
 \end{exo}
 
 \begin{exo}[Compléter]
-1) $\vect{A\res{C}}$ \quad 2) $\vect{\res{B}A}$ \quad 3) $\vect{A\res{B}}$ \quad
-4) $\vect{BC}+\vect{CD}+\vect{DA}=\res{\vect{BA}}$
+\explique{On cherche la lettre qui fait un chemin : l'arrivée d'un vecteur est le départ du
+suivant.}{Chasles : $\vect{AB}+\vect{BC}=\vect{AC}$}
+\cas{1)}
+\explique{$\vect{BC}=\vect{BA}+\vect{A\res{C}}$.}{de $B$ à $A$, puis de $A$ à $C$ : on va de
+$B$ à $C$}
+\cas{2)}
+\explique{$\vect{CB}+\vect{\res{B}A}=\vect{CA}$.}{le second vecteur part de $B$, où
+arrive le premier}
+\cas{3)}
+\explique{$\vect{A\res{B}}+\vect{CA}=\vect{CB}$.}{rangé : $\vect{CA}+\vect{AB}=\vect{CB}$}
+\cas{4)}
+\begin{calculs}
+\vect{BC}+\vect{DA}+\vect{CD} &= \vect{BC}+\vect{CD}+\vect{DA} &&\justif{on range : $B\to C\to D\to A$}\\
+\vect{BC}+\vect{DA}+\vect{CD} &= \res{\vect{BA}} &&\justif{Chasles}
+\end{calculs}
+\rem{En 3), on commence par ranger : le vecteur $\vect{CA}$ part de $C$, comme le résultat
+$\vect{CB}$ ; il vient donc en premier.}
 \end{exo}
 
 \begin{exo}[Peut-on réduire ?]
-\deux{a) \res{\vect{MP}}}{b) non (même origine)}
-\deux{c) \res{\vect{RS}}}{d) $\vect{SR}+\vect{RO}=\res{\vect{SO}}$}
-\deux{e) \res{\vec{0}}}{f) $\vect{AK}+\vect{KB}=\res{\vect{AB}}$}
+\cas{a)}
+\begin{calculs}
+\vect{MN}+\vect{NP} &= \res{\vect{MP}} &&\justif{oui : $M\to N\to P$}
+\end{calculs}
+\cas{b)}
+\explique{$\vect{MN}+\vect{MP}$ : \res{non}.}{même origine $M$ : la somme suit la diagonale
+d'un parallélogramme, mais ne s'écrit pas avec ces lettres}
+\cas{c)}
+\begin{calculs}
+\vect{RO}+\vect{OS} &= \res{\vect{RS}} &&\justif{oui : $R\to O\to S$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\vect{RO}+\vect{SR} &= \vect{SR}+\vect{RO} &&\justif{oui, après avoir rangé : $S\to R\to O$}\\
+\vect{RO}+\vect{SR} &= \res{\vect{SO}} &&\justif{Chasles}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\vect{GH}+\vect{HG} &= \vect{GG} &&\justif{oui : aller-retour}\\
+\vect{GH}+\vect{HG} &= \res{\vec{0}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+\vect{KB}+\vect{AK} &= \vect{AK}+\vect{KB} &&\justif{oui, après avoir rangé : $A\to K\to B$}\\
+\vect{KB}+\vect{AK} &= \res{\vect{AB}} &&\justif{Chasles}
+\end{calculs}
+\rem{Avant de répondre « non », on essaie toujours d'échanger les deux vecteurs (d et f).}
 \end{exo}
 
 \begin{exo}[Une égalité à démontrer]
+\explique{On part du membre de gauche et on le transforme jusqu'à obtenir celui de
+droite.}{on ne part pas du résultat}
 \begin{calculs}
-\vect{OB}-\vect{OA}+\vect{BC}&=\vect{AO}+\vect{OB}+\vect{BC}\\
-\vect{OB}-\vect{OA}+\vect{BC}&=\res{\vect{AC}}
+\vect{OB}-\vect{OA}+\vect{BC} &= \vect{OB}+\vect{AO}+\vect{BC} &&\justif{$-\vect{OA}=\vect{AO}$}\\
+\vect{OB}-\vect{OA}+\vect{BC} &= \vect{AO}+\vect{OB}+\vect{BC} &&\justif{on range : $A\to O\to B\to C$}\\
+\vect{OB}-\vect{OA}+\vect{BC} &= \vect{AC} &&\justif{Chasles, deux fois}
 \end{calculs}
-\rem{$-\vect{OA}=\vect{AO}$, puis on range : $A\to O\to B\to C$.}
+\explique{L'égalité \res{$\vect{OB}-\vect{OA}+\vect{BC}=\vect{AC}$} est démontrée, pour tous
+points $O$, $A$, $B$, $C$.}{aucune figure particulière n'a servi}
 \end{exo}
 
 \begin{exo}[Exprimer avec deux vecteurs]
-1) a)
+\explique{On fait apparaître les vecteurs demandés avec Chasles (on passe par le point
+utile), puis on calcule comme en calcul littéral.}{$k(\vec{u}+\vec{v})=k\vec{u}+k\vec{v}$}
+\cas{1) a)}
 \begin{calculs}
-\vec{u}&=\vect{CA}+\vect{AB}\\
-\vec{u}&=\res{\vect{AB}-\vect{AC}}
+\vec{u} &= \vect{CB} &&\justif{on recopie}\\
+\vec{u} &= \vect{CA}+\vect{AB} &&\justif{Chasles : on passe par $A$}\\
+\vec{u} &= -\vect{AC}+\vect{AB} &&\justif{$\vect{CA}=-\vect{AC}$}\\
+\vec{u} &= \res{\vect{AB}-\vect{AC}} &&
 \end{calculs}
-b)
+\cas{1) b)}
 \begin{calculs}
-\vec{u}&=3(\vect{AB}-\vect{AC})-\vect{AB}\\
-\vec{u}&=\res{2\vect{AB}-3\vect{AC}}
+\vec{u} &= 3\vect{CB}+\vect{BA} &&\justif{on recopie}\\
+\vec{u} &= 3\bigl(\vect{AB}-\vect{AC}\bigr)-\vect{AB} &&\justif{d'après a) ; $\vect{BA}=-\vect{AB}$}\\
+\vec{u} &= 3\vect{AB}-3\vect{AC}-\vect{AB} &&\justif{on développe}\\
+\vec{u} &= \res{2\vect{AB}-3\vect{AC}} &&\justif{on réduit : $3-1=2$}
 \end{calculs}
-2) a)
+\cas{2) a)}
 \begin{calculs}
-\vec{v}&=\vect{BC}+\vect{CA}+\vect{CA}\\
-\vec{v}&=\res{\vect{BC}+2\vect{CA}}
+\vec{v} &= \vect{BA}+\vect{CA} &&\justif{on recopie}\\
+\vec{v} &= \vect{BC}+\vect{CA}+\vect{CA} &&\justif{Chasles : $\vect{BA}=\vect{BC}+\vect{CA}$}\\
+\vec{v} &= \res{\vect{BC}+2\vect{CA}} &&\justif{on réduit}
 \end{calculs}
-b) $\vect{AB}=\vect{AC}+\vect{CB}=-\vect{CA}-\vect{BC}$ et $\vect{AC}=-\vect{CA}$ :
+\cas{2) b)}
 \begin{calculs}
-\vec{v}&=-\vect{CA}-\vect{BC}+2\vect{BC}-\vect{CA}\\
-\vec{v}&=\res{\vect{BC}-2\vect{CA}}
+\vec{v} &= \vect{AB}+2\vect{BC}+\vect{AC} &&\justif{on recopie}\\
+\vec{v} &= \vect{AB}+\vect{BC}+\vect{BC}+\vect{AC} &&\justif{$2\vect{BC}=\vect{BC}+\vect{BC}$}\\
+\vec{v} &= \vect{AC}+\vect{BC}+\vect{AC} &&\justif{Chasles : $\vect{AB}+\vect{BC}=\vect{AC}$}\\
+\vec{v} &= \vect{BC}+2\vect{AC} &&\justif{on réduit}\\
+\vec{v} &= \res{\vect{BC}-2\vect{CA}} &&\justif{$\vect{AC}=-\vect{CA}$}
 \end{calculs}
+\rem{On repère d'abord les deux vecteurs autorisés, puis on passe par le point commun : en
+1), tout part de $A$ ; en 2), on passe par $C$. On peut vérifier 1) b) sur une figure en
+construisant les deux membres depuis un même point.}
 \end{exo}
 
 \begin{exo}[Différences sur un quadrillage]
-\begin{center}
-\begin{tikzpicture}[scale=0.42]
-  \quadrillage{-0.4}{-2.4}{8.4}{4.4}
-  \pt{0,1}{left}{A} \pt{4,0}{below}{B} \pt{5,3}{above right}{C} \pt{1,3}{above}{D}
-  \draw[vecteur] (0,1)--(1,4) node[pos=0.6,left,font=\scriptsize]{a)};
-  \draw[vecteurB] (0,1)--(4,0) node[pos=0.5,above,font=\scriptsize]{b)};
-  \draw[vecteurC] (0,1)--(3,-2) node[pos=0.5,left,font=\scriptsize]{c)};
-  \draw[vecteur] (0,1)--(8,0) node[pos=0.85,below,font=\scriptsize]{d)};
-\end{tikzpicture}
-\end{center}
-\rem{a) $\vect{BC}$ ; b) $\vect{AD}+\vect{DB}=\vect{AB}$ : on arrive en $B$ ;
-c) $\vect{DB}$ ; d) $\vect{AC}+\vect{DB}$ : $8$ à droite et $1$ vers le bas.}
+\explique{Pour chaque différence, on change le signe en inversant les lettres, puis on
+range avec Chasles quand c'est possible : le vecteur cherché devient un vecteur de la
+figure, qu'on reporte depuis $A$.}{méthode 7, puis méthode 2}
+\cas{a)}
+\cotefig[0.36]{%
+\begin{calculs}
+\vect{AC}-\vect{AB} &= \vect{AC}+\vect{BA} &&\justif{$-\vect{AB}=\vect{BA}$}\\
+\vect{AC}-\vect{AB} &= \vect{BA}+\vect{AC} &&\justif{on range}\\
+\vect{AC}-\vect{AB} &= \vect{BC} &&\justif{Chasles}
+\end{calculs}
+\explique{$\vect{BC}$ : $1$ à droite et $3$ vers le haut ; on le reporte depuis
+$A$.}{}}
+{\begin{tikzpicture}[scale=0.34]\figABCDbis
+  \draw[vecteurB] (4,0)--(5,3) node[nom,right]{$\vect{BC}$};
+  \draw[cherche] (0,1)--(1,4) node[nom,left]{$\vect{BC}$};
+\end{tikzpicture}}
+\cas{b)}
+\cotefig[0.36]{%
+\begin{calculs}
+\vect{AD}-\vect{BD} &= \vect{AD}+\vect{DB} &&\justif{$-\vect{BD}=\vect{DB}$}\\
+\vect{AD}-\vect{BD} &= \vect{AB} &&\justif{Chasles : $A\to D\to B$}
+\end{calculs}
+\explique{Le représentant d'origine $A$ est $\vect{AB}$ lui-même : la flèche arrive en
+$B$.}{rien à reporter}}
+{\begin{tikzpicture}[scale=0.34]\figABCDbis
+  \draw[cherche] (0,1)--(4,0) node[nom,below left]{$\vect{AB}$};
+\end{tikzpicture}}
+\cas{c)}
+\cotefig[0.36]{%
+\begin{calculs}
+\vect{AB}-\vect{AD} &= \vect{AB}+\vect{DA} &&\justif{$-\vect{AD}=\vect{DA}$}\\
+\vect{AB}-\vect{AD} &= \vect{DA}+\vect{AB} &&\justif{on range}\\
+\vect{AB}-\vect{AD} &= \vect{DB} &&\justif{Chasles}
+\end{calculs}
+\explique{$\vect{DB}$ : $3$ à droite et $3$ vers le bas ; on le reporte depuis
+$A$.}{on sort du quadrillage : on le prolonge}}
+{\begin{tikzpicture}[scale=0.34]\figABCDbis
+  \draw[vecteurC] (1,3)--(4,0) node[nom,above right]{$\vect{DB}$};
+  \draw[cherche] (0,1)--(3,-2) node[nom,below left]{$\vect{DB}$};
+\end{tikzpicture}}
+\cas{d)}
+\cotefig[0.36]{%
+\begin{calculs}
+\vect{AC}-\vect{BD} &= \vect{AC}+\vect{DB} &&\justif{$-\vect{BD}=\vect{DB}$}
+\end{calculs}
+\explique{Chasles ne s'applique pas : $C$ n'est pas $D$. On construit : depuis $C$, on trace
+$\vect{DB}$ à la suite de $\vect{AC}$.}{méthode 4 : l'un à la suite de l'autre}
+\explique{Le vecteur cherché va de $A$ à l'arrivée : $8$ à droite et $1$ vers le
+bas.}{départ, arrivée}}
+{\begin{tikzpicture}[scale=0.34]\figABCDbis
+  \draw[vecteur] (0,1)--(5,3) node[nom,above left]{$\vect{AC}$};
+  \draw[vecteurC] (5,3)--(8,0) node[nom,above right]{$\vect{DB}$};
+  \draw[cherche] (0,1)--(8,0) node[nom,below,pos=0.75]{$\vect{AC}-\vect{BD}$};
+\end{tikzpicture}}
+\rem{Erreur fréquente en b) : chercher à tracer quelque chose, alors que le calcul donne
+directement un vecteur d'origine $A$. Le calcul d'abord, la construction ensuite.}
 \end{exo}
 
 \end{document}

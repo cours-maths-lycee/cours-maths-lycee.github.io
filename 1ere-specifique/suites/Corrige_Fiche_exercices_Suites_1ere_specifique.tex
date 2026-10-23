@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,588 +189,1612 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
-\entete{Ch 1 --- Suites numériques --- Corrigé des exercices}{1\textsuperscript{re} mathématiques spécifiques}
+\entete{Chapitre 1 --- Suites numériques --- corrigé}{1\textsuperscript{re} mathématiques spécifiques}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
 
-\newcommand{\reperesuite}[4]{%
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\newcommand{\etiq}[1]{\textbf{\color{coulExo}#1}~}
+
+\newcommand{\reperesuite}[5]{%
   \quadrillage{0}{#2}{#1}{#3}
-  \draw[->,>=Stealth,black!70] (0,0) -- (#1+0.6,0) node[below,font=\tiny] {$n$};
-  \draw[->,>=Stealth,black!70] (0,#2) -- (0,#3+0.6);
-  \foreach \i in {1,...,#1} {\node[below,font=\tiny,inner sep=1.5pt] at (\i,0) {$\i$};}
-  \foreach \v in {#4} {\node[left,font=\tiny,inner sep=1.5pt] at (0,\v) {$\v$};}}
+  \draw[->,>=Stealth,black!70] (0,0) -- (#1+0.6,0) node[below,font=\footnotesize] {$n$};
+  \draw[->,>=Stealth,black!70] (0,#2) -- (0,#3+0.6) node[left,font=\footnotesize] {$#5$};
+  \foreach \i in {1,...,#1} {\node[below,font=\scriptsize,inner sep=1.5pt] at (\i,0) {$\i$};}
+  \foreach \v in {#4} {\node[left,font=\scriptsize,inner sep=1.5pt] at (0,\v) {$\v$};}
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- SUITES NUMÉRIQUES}{Ch 1 : Fiche d'exercices --- 1\textsuperscript{re} mathématiques spécifiques}
-{Les remarques en italique signalent les erreurs les plus fréquentes et les méthodes à
-retenir. Les résultats sont encadrés. Tous les calculs se font sans calculatrice.}
+\entetefiche{Chapitre 1 --- Suites numériques}{1\textsuperscript{re} mathématiques spécifiques}
 
 \partie{Notion de suite}
 
 \begin{exo}[Calculer les premiers termes]
-\rem{Les cinq premiers termes sont ceux de rang $0$ à $4$.}
-\calc{u_{n}=4n-5 : \res{-5\,;\,-1\,;\,3\,;\,7\,;\,11}}
-\calc{v_{n}=n^{2}+1 : \res{1\,;\,2\,;\,5\,;\,10\,;\,17}}
-\calc{w_{n}=3^{n} : \res{1\,;\,3\,;\,9\,;\,27\,;\,81}}
-\rem{$3^{0}=1$, et non $0$.}
+\explique{Les cinq premiers termes sont ceux de rang $0$ ; $1$ ; $2$ ; $3$ et $4$.}{le
+premier terme est $u_{0}$, pas $u_{1}$}
+\cas{$u_{n}=4n-5$}
+\begin{calculs}
+u_{0} &= 4\times 0-5 &&\justif{on remplace $n$ par $0$}\\
+u_{0} &= \res{-5} &&\\
+u_{1} &= 4\times 1-5 = \res{-1} &&\justif{on remplace $n$ par $1$}\\
+u_{2} &= 4\times 2-5 = \res{3} &&\\
+u_{3} &= 4\times 3-5 = \res{7} &&\\
+u_{4} &= 4\times 4-5 = \res{11} &&\justif{d'un terme au suivant, on ajoute $4$}
+\end{calculs}
+\cas{$v_{n}=n^{2}+1$}
+\begin{calculs}
+v_{0} &= 0^{2}+1 = \res{1} &&\justif{$0^{2}=0\times 0=0$}\\
+v_{1} &= 1^{2}+1 = \res{2} &&\justif{$1^{2}=1\times 1=1$}\\
+v_{2} &= 2^{2}+1 = \res{5} &&\justif{le carré d'abord : $2^{2}=2\times 2=4$}\\
+v_{3} &= 3^{2}+1 = \res{10} &&\justif{$3^{2}=9$}\\
+v_{4} &= 4^{2}+1 = \res{17} &&\justif{$4^{2}=16$}
+\end{calculs}
+\cas{$w_{n}=3^{n}$}
+\begin{calculs}
+w_{0} &= 3^{0} = \res{1} &&\justif{un nombre à la puissance $0$ vaut $1$}\\
+w_{1} &= 3^{1} = \res{3} &&\\
+w_{2} &= 3^{2} = \res{9} &&\justif{$3\times 3$}\\
+w_{3} &= 3^{3} = \res{27} &&\justif{$3\times 3\times 3$}\\
+w_{4} &= 3^{4} = \res{81} &&\justif{$27\times 3$}
+\end{calculs}
+\rem{Erreurs fréquentes : $3^{0}=0$ (c'est $1$) ; $3^{2}=6$ (c'est $3\times 3=9$, pas
+$3\times 2$).}
 \end{exo}
 
 \begin{exo}[Calculer un terme]
-\begin{reponses}
-  \item $u_{9}=6\times 9+5=\res{59}$
-  \item $v_{4}=3\times 16-8+1=\res{41}$
-  \item $w_{0}=\res{0}$ ; $w_{1}=\res{1}$ ; $w_{2}=\res{\frac{4}{3}}$ ;
-        $w_{3}=\frac{6}{4}=\res{1{,}5}$
-  \item $t_{3}=20-9=\res{11}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{9} &= 6\times 9+5 &&\justif{on remplace $n$ par $9$}\\
+u_{9} &= 54+5 &&\justif{la multiplication d'abord}\\
+u_{9} &= \res{59} &&
+\end{calculs}
+\explique{On n'a pas besoin de $u_{0}$, $u_{1}$\ldots{} $u_{8}$.}{la formule donne
+directement n'importe quel terme}
+\cas{b)}
+\begin{calculs}
+v_{4} &= 3\times 4^{2}-2\times 4+1 &&\justif{on remplace chaque $n$ par $4$}\\
+v_{4} &= 3\times 16-2\times 4+1 &&\justif{le carré d'abord : $4^{2}=16$}\\
+v_{4} &= 48-8+1 &&\justif{puis les multiplications}\\
+v_{4} &= \res{41} &&
+\end{calculs}
+\rem{Erreur fréquente : calculer $(3\times 4)^{2}=144$. Le carré ne porte que sur $n$ :
+on calcule $4^{2}$, puis on multiplie par $3$.}
+\cas{c)}
+\begin{calculs}
+w_{0} &= \dfrac{2\times 0}{0+1} = \dfrac{0}{1} &&\justif{on remplace $n$ par $0$, en
+haut et en bas}\\
+w_{0} &= \res{0} &&\\
+w_{1} &= \dfrac{2\times 1}{1+1} = \dfrac{2}{2} &&\\
+w_{1} &= \res{1} &&\\
+w_{2} &= \dfrac{2\times 2}{2+1} = \res{\dfrac{4}{3}} &&\justif{la fraction ne se simplifie
+pas}\\
+w_{3} &= \dfrac{2\times 3}{3+1} = \dfrac{6}{4} &&\\
+w_{3} &= \dfrac{3\times\barre{2}}{2\times\barre{2}} = \dfrac{3}{2} &&\justif{on simplifie
+par $2$}\\
+w_{3} &= \res{1{,}5} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+t_{3} &= 20-3^{2} &&\justif{on remplace $n$ par $3$}\\
+t_{3} &= 20-9 &&\justif{$3^{2}=9$}\\
+t_{3} &= \res{11} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Des suites dans la vie courante]
-\begin{reponses}
-  \item $u_{n}=30+3{,}5n$ ; \; $u_{12}=30+42=\res{72\text{ €}}$
-  \item $u_{n}=1+0{,}25n$ ; \; $u_{40}=1+10=\res{11\text{ €}}$
-  \item $u_{n}=9\,000-600n$ ; \; $u_{6}=9\,000-3\,600=\res{5\,400\text{ m}^{3}}$
-\end{reponses}
+\explique{Dans chaque situation, on cherche le montant de départ, puis ce qui s'ajoute
+(ou se retire) à chaque entrée, minute ou mois : $u_{n}$ vaut le départ, plus (ou
+moins) $n$ fois ce montant.}{on peut tester avec un petit nombre : $2$ entrées coûtent
+$30+2\times 3{,}5$}
+\cas{a)}
+\begin{calculs}
+u_{n} &= \res{30+3{,}5n} &&\justif{la carte, plus $n$ entrées à $3{,}50$~€}\\
+u_{12} &= 30+3{,}5\times 12 &&\justif{on remplace $n$ par $12$}\\
+u_{12} &= 30+42 &&\justif{$3{,}5\times 12=36+6$}\\
+u_{12} &= \res{72} &&
+\end{calculs}
+\explique{Pour $12$ entrées dans l'année, on paie $72$~€, carte comprise.}{on répond
+dans le contexte}
+\cas{b)}
+\begin{calculs}
+u_{n} &= \res{1+0{,}25n} &&\justif{$1$~€ au départ, plus $0{,}25$~€ par minute}\\
+u_{40} &= 1+0{,}25\times 40 &&\justif{on remplace $n$ par $40$}\\
+u_{40} &= 1+10 &&\justif{$0{,}25\times 40$ : le quart de $40$}\\
+u_{40} &= \res{11} &&
+\end{calculs}
+\explique{Un trajet de $40$ minutes coûte $11$~€.}{}
+\cas{c)}
+\begin{calculs}
+u_{n} &= \res{9\,000-600n} &&\justif{la réserve baisse : on retire $600$ par mois}\\
+u_{6} &= 9\,000-600\times 6 &&\justif{on remplace $n$ par $6$}\\
+u_{6} &= 9\,000-3\,600 &&\\
+u_{6} &= \res{5\,400} &&
+\end{calculs}
+\explique{Au bout de $6$ mois, la réserve est de $5\,400$~m$^{3}$.}{}
+\rem{Une baisse se traduit par un signe $-$ devant le terme en $n$.}
 \end{exo}
 
 \begin{exo}[Ne pas confondre]
-\begin{reponses}
-  \item $u_{4}=\res{13}$ ; \; $u_{4}+1=\res{14}$ ; \; $u_{5}=\res{15}$.
-  \item On remplace $n$ par $n+1$ : $u_{n+1}=2(n+1)+5=\res{2n+7}$
-\end{reponses}
-\rem{$u_{n+1}$ est le terme suivant ; $u_{n}+1$ est le terme augmenté de $1$.}
+\cas{a)}
+\begin{calculs}
+u_{4} &= 2\times 4+5 = \res{13} &&\justif{on remplace $n$ par $4$}\\
+u_{4}+1 &= 13+1 = \res{14} &&\justif{on ajoute $1$ au terme $u_{4}$}\\
+u_{5} &= 2\times 5+5 = \res{15} &&\justif{le terme suivant : on remplace $n$ par $5$}
+\end{calculs}
+\explique{$u_{4}+1=14$, alors que $u_{5}=15$ : ce ne sont pas les mêmes nombres.}{$u_{n}+1$ :
+le terme augmenté de $1$ ; $u_{n+1}$ : le terme suivant}
+\cas{b)}
+\begin{calculs}
+u_{n+1} &= 2(n+1)+5 &&\justif{on remplace $n$ par $n+1$, entre parenthèses}\\
+u_{n+1} &= 2n+2+5 &&\justif{on développe : $2\times n+2\times 1$}\\
+u_{n+1} &= \res{2n+7} &&
+\end{calculs}
+\explique{Contrôle avec $n=4$ : $2\times 4+7=15$, c'est bien $u_{5}$.}{on retrouve la
+question a)}
+\rem{Erreur fréquente : écrire $u_{n+1}=2n+5+1$. C'est $u_{n}+1$, et non le terme
+suivant.}
 \end{exo}
 
 \begin{exo}[Retrouver le rang]
-\begin{reponses}
-  \item $u_{0}=\res{80}$ ; $u_{1}=\res{76}$ ; $u_{10}=\res{40}$.
-  \item $80-4n=48 \iff 4n=32 \iff \res{n=8}$ ; \; $80-4n=0 \iff \res{n=20}$.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{0} &= 80-4\times 0 = \res{80} &&\justif{on remplace $n$ par $0$}\\
+u_{1} &= 80-4\times 1 = \res{76} &&\\
+u_{10} &= 80-4\times 10 = 80-40 &&\\
+u_{10} &= \res{40} &&
+\end{calculs}
+\cas{b)}
+\explique{On cherche $n$ tel que $u_{n}=48$ : on résout une équation dont l'inconnue est
+le rang $n$.}{on connaît le terme, on cherche son rang}
+\begin{calculs}
+80-4n &= 48 &&\justif{on traduit $u_{n}=48$}\\
+-4n &= -32 &&\justif{on retire $80$ des deux côtés}\\
+n &= 8 &&\justif{on divise par $-4$ : $\dfrac{-32}{-4}=8$}
+\end{calculs}
+\explique{$u_{n}=48$ pour \res{$n=8$}.}{contrôle : $u_{8}=80-32=48$}
+\begin{calculs}
+80-4n &= 0 &&\justif{on traduit $u_{n}=0$}\\
+-4n &= -80 &&\justif{on retire $80$}\\
+n &= 20 &&\justif{on divise par $-4$}
+\end{calculs}
+\explique{$u_{n}=0$ pour \res{$n=20$}.}{contrôle : $u_{20}=80-80=0$}
+\rem{Autre façon de voir : de $80$ à $48$, on a retiré $32$, c'est-à-dire $8$ fois $4$.}
 \end{exo}
 
 \partie{Suites définies par récurrence}
 
 \begin{exo}[Calculer les termes pas à pas]
-\begin{reponses}
-  \item $u_{1}=5$ ; $u_{2}=14$ ; $u_{3}=41$ ; $u_{4}=\res{122}$
-  \item $v_{1}=9$ ; $v_{2}=13$ ; $v_{3}=17$ ; $v_{4}=\res{21}$
-  \item $w_{1}=24$ ; $w_{2}=12$ ; $w_{3}=6$ ; $w_{4}=\res{3}$
-  \item $t_{1}=14$ ; $t_{2}=8$ ; $t_{3}=2$ ; $t_{4}=\res{-4}$
-\end{reponses}
+\explique{On part du premier terme et on applique la relation quatre fois : chaque terme
+se calcule avec celui d'avant, dans l'ordre.}{suite définie par récurrence}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 3u_{0}-1 &&\justif{la relation avec $n=0$}\\
+u_{1} &= 3\times 2-1 = \res{5} &&\justif{on remplace $u_{0}$ par $2$}\\
+u_{2} &= 3\times 5-1 = \res{14} &&\justif{$u_{2}=3u_{1}-1$}\\
+u_{3} &= 3\times 14-1 = \res{41} &&\justif{$u_{3}=3u_{2}-1$ ; $3\times 14=42$}\\
+u_{4} &= 3\times 41-1 = \res{122} &&\justif{$3\times 41=123$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v_{1} &= 5+4 = \res{9} &&\justif{$v_{1}=v_{0}+4$ : on ajoute $4$}\\
+v_{2} &= 9+4 = \res{13} &&\\
+v_{3} &= 13+4 = \res{17} &&\\
+v_{4} &= 17+4 = \res{21} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+w_{1} &= \dfrac{48}{2} = \res{24} &&\justif{$w_{1}=\dfrac{w_{0}}{2}$ : on prend la moitié}\\
+w_{2} &= \dfrac{24}{2} = \res{12} &&\\
+w_{3} &= \dfrac{12}{2} = \res{6} &&\\
+w_{4} &= \dfrac{6}{2} = \res{3} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+t_{1} &= 20-6 = \res{14} &&\justif{$t_{1}=t_{0}-6$ : on retire $6$}\\
+t_{2} &= 14-6 = \res{8} &&\\
+t_{3} &= 8-6 = \res{2} &&\\
+t_{4} &= 2-6 = \res{-4} &&\justif{on passe sous zéro}
+\end{calculs}
+\rem{On ne peut pas calculer $u_{4}$ directement : il faut $u_{3}$, donc $u_{2}$, donc
+$u_{1}$.}
 \end{exo}
 
 \begin{exo}[Avec des nombres négatifs]
-\begin{reponses}
-  \item $u_{1}=3-(-1)^{2}=\res{2}$ ; \; $u_{2}=3-4=\res{-1}$ ; \; $u_{3}=3-1=\res{2}$
-  \item $v_{1}=-3+2=\res{-1}$ ; \; $v_{2}=3+2=\res{5}$ ; \; $v_{3}=-15+2=\res{-13}$
-\end{reponses}
-\rem{$(-1)^{2}=1$ : le carré d'un nombre négatif est positif.}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 3-u_{0}^{2} &&\justif{la relation avec $n=0$}\\
+u_{1} &= 3-(-1)^{2} &&\justif{on remplace $u_{0}$ par $-1$, entre parenthèses}\\
+u_{1} &= 3-1 &&\justif{$(-1)^{2}=(-1)\times(-1)=1$}\\
+u_{1} &= \res{2} &&\\
+u_{2} &= 3-2^{2} = 3-4 &&\justif{$u_{2}=3-u_{1}^{2}$}\\
+u_{2} &= \res{-1} &&\\
+u_{3} &= 3-(-1)^{2} = 3-1 &&\justif{même calcul que pour $u_{1}$}\\
+u_{3} &= \res{2} &&
+\end{calculs}
+\explique{Les termes alternent : $2$ ; $-1$ ; $2$ ; $-1$\ldots}{dès qu'on retombe sur
+$-1$, tout recommence}
+\cas{b)}
+\begin{calculs}
+v_{1} &= -3v_{0}+2 &&\justif{la relation avec $n=0$}\\
+v_{1} &= -3\times 1+2 = \res{-1} &&\justif{on remplace $v_{0}$ par $1$}\\
+v_{2} &= -3\times(-1)+2 &&\justif{on remplace $v_{1}$ par $-1$, entre parenthèses}\\
+v_{2} &= 3+2 = \res{5} &&\justif{moins par moins donne plus}\\
+v_{3} &= -3\times 5+2 &&\\
+v_{3} &= -15+2 = \res{-13} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $-1^{2}$ au lieu de $(-1)^{2}$. Sans parenthèses,
+$-1^{2}$ se lit $-(1^{2})$, qui vaut $-1$. Un nombre négatif se remplace toujours entre
+parenthèses.}
 \end{exo}
 
 \begin{exo}[Traduire un énoncé]
-\begin{reponses}
-  \item $u_{0}=150$ et $\res{u_{n+1}=u_{n}+20}$ ; \; $u_{1}=170$ ; $u_{2}=190$.
-  \item $a_{0}=3$ et $\res{a_{n+1}=3a_{n}}$ ; \; $a_{1}=9$ ; $a_{2}=27$.
-  \item $c_{0}=400$ et $\res{c_{n+1}=c_{n}+20}$ ($-30+50$) ; \; $c_{1}=420$ ;
-        $c_{2}=440$.
-\end{reponses}
+\explique{Le premier terme est la valeur de départ ($n=0$) ; la relation dit ce qu'on
+fait pour passer d'une étape à la suivante.}{on cherche « ce qui se répète »}
+\cas{a)}
+\explique{$u_{0}=\res{150}$}{la somme au départ, après $0$ semaine}
+\explique{$u_{n+1}=\res{u_{n}+20}$}{d'une semaine à la suivante, on ajoute $20$~€}
+\begin{calculs}
+u_{1} &= 150+20 = \res{170} &&\\
+u_{2} &= 170+20 = \res{190} &&
+\end{calculs}
+\explique{Après $2$ semaines, la tirelire contient $190$~€.}{}
+\cas{b)}
+\explique{$a_{0}=\res{3}$}{la surface au départ}
+\explique{$a_{n+1}=\res{3a_{n}}$}{« tripler », c'est multiplier par $3$}
+\begin{calculs}
+a_{1} &= 3\times 3 = \res{9} &&\\
+a_{2} &= 3\times 9 = \res{27} &&
+\end{calculs}
+\explique{Après $2$ semaines, l'algue couvre $27$~m$^{2}$.}{}
+\cas{c)}
+\explique{$c_{0}=\res{400}$}{le nombre d'abonnés au départ}
+\explique{Chaque année : $30$ départs et $50$ arrivées, soit $50-30=20$ abonnés de
+plus.}{on fait le bilan de l'année}
+\explique{$c_{n+1}=\res{c_{n}+20}$}{}
+\begin{calculs}
+c_{1} &= 400+20 = \res{420} &&\\
+c_{2} &= 420+20 = \res{440} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $c_{n+1}=c_{n}-30$, en oubliant les arrivées. On regroupe
+départs et arrivées en une seule variation.}
 \end{exo}
 
 \begin{exo}[Retrouver la relation]
-\begin{reponses}
-  \item $u_{0}=4$ et $\res{u_{n+1}=u_{n}+5}$
-  \item $u_{0}=2$ et $\res{u_{n+1}=4u_{n}}$
-  \item $u_{0}=1$ et $\res{u_{n+1}=3u_{n}+1}$ \quad ($3\times 1+1=4$ ;
-        $3\times 4+1=13$\ldots)
-\end{reponses}
+\explique{On regarde comment passer d'un nombre au suivant : d'abord en ajoutant
+(différences), puis en multipliant (quotients).}{on vérifie sur tous les nombres de la
+liste}
+\cas{a)}
+\explique{$9-4=5$ ; \ $14-9=5$ ; \ $19-14=5$.}{on ajoute toujours $5$}
+\explique{$u_{0}=\res{4}$ et $u_{n+1}=\res{u_{n}+5}$.}{}
+\cas{b)}
+\explique{$8-2=6$ mais $32-8=24$.}{ce n'est pas une addition}
+\explique{$\dfrac{8}{2}=4$ ; \ $\dfrac{32}{8}=4$ ; \ $\dfrac{128}{32}=4$.}{on multiplie
+toujours par $4$}
+\explique{$u_{0}=\res{2}$ et $u_{n+1}=\res{4u_{n}}$.}{}
+\cas{c)}
+\explique{$4-1=3$ mais $13-4=9$ ; \ $\dfrac{4}{1}=4$ mais $4\times 4=16$, pas $13$.}{ni
+une addition seule, ni une multiplication seule}
+\explique{On essaie « multiplier par $3$, puis ajouter $1$ » : $3\times 1+1=4$ ; \
+$3\times 4+1=13$ ; \ $3\times 13+1=40$.}{indice : les écarts $3$ ; $9$ ; $27$ sont
+multipliés par $3$}
+\explique{$u_{0}=\res{1}$ et $u_{n+1}=\res{3u_{n}+1}$.}{la relation marche pour toute la
+liste}
+\rem{Toujours vérifier la relation trouvée sur tous les termes de la liste, pas seulement
+sur les deux premiers.}
 \end{exo}
 
 \begin{exo}[Revenir en arrière]
-En reculant d'un rang, on ajoute $6$ :
-$u_{2}=\res{17}$ ; \; $u_{1}=\res{23}$ ; \; $u_{0}=\res{29}$.
+\explique{$u_{n+1}=u_{n}-6$ : pour avancer d'un rang, on retire $6$. Pour reculer d'un
+rang, on fait l'inverse : on ajoute $6$.}{l'opération inverse de « $-6$ » est « $+6$ »}
+\begin{calculs}
+u_{3} &= u_{2}-6 &&\justif{la relation avec $n=2$}\\
+11 &= u_{2}-6 &&\justif{on remplace $u_{3}$ par $11$}\\
+u_{2} &= 11+6 = \res{17} &&\justif{on ajoute $6$ des deux côtés}\\
+u_{1} &= 17+6 = \res{23} &&\justif{même raisonnement, un rang plus bas}\\
+u_{0} &= 23+6 = \res{29} &&
+\end{calculs}
+\explique{Contrôle en avançant : $29$ ; $23$ ; $17$ ; $11$.}{on retire bien $6$ à chaque
+fois}
 \end{exo}
 
 \begin{exo}[Au tableur]
-\begin{reponses}
-  \item \res{\texttt{=B2+15}}
-  \item \res{\texttt{=0,9*B2+30}}
-  \item \res{\texttt{=5*A3-1}} \quad la ligne 3 contient le rang $n=1$ en A3.
-\end{reponses}
-\rem{Récurrence : on utilise la cellule du dessus. Formule explicite : on utilise le
-rang, dans la même ligne.}
+\explique{Les rangs sont en colonne A ($0$ en A2, $1$ en A3\ldots), les termes en colonne
+B (le premier terme en B2, le terme de rang $1$ en B3\ldots).}{la ligne 3 correspond au
+rang $n=1$}
+\cas{a)}
+\explique{$u_{1}=u_{0}+15$ : le terme de la ligne 3 s'obtient à partir de celui de la
+ligne 2, juste au-dessus.}{récurrence : on utilise la cellule du dessus}
+\explique{En B3 : \res{\texttt{=B2+15}}}{recopiée vers le bas, elle devient \texttt{=B3+15}
+en B4, et ainsi de suite}
+\cas{b)}
+\explique{$v_{1}=0{,}9\times v_{0}+30$, et $v_{0}$ est en B2.}{la multiplication s'écrit
+\texttt{*}}
+\explique{En B3 : \res{\texttt{=0,9*B2+30}}}{la virgule décimale reste une virgule}
+\cas{c)}
+\explique{$w_{n}=5n-1$ est une formule explicite : on a besoin du rang $n$, qui se trouve
+en colonne A, sur la même ligne.}{en A3 : le rang $1$}
+\explique{En B3 : \res{\texttt{=5*A3-1}}}{contrôle : $5\times 1-1=4$, c'est bien $w_{1}$}
+\rem{Erreurs fréquentes : oublier le signe \texttt{=} au début ; écrire \texttt{=5n-1} (le
+tableur ne connaît pas $n$, il connaît la cellule A3) ; écrire \texttt{5B2} au lieu de
+\texttt{5*B2}.}
 \end{exo}
 
 \partie{Représentation graphique d'une suite}
 
 \begin{exo}[Représenter une suite]
-\deux{$u$ : $9$ ; $7$ ; $5$ ; $3$ ; $1$ ; $-1$ ; $-3$}{}
-\deux{$v$ : $4$ ; $-2$ ; $4$ ; $-2$ ; $4$ ; $-2$ ; $4$}{}
-\begin{center}
-\begin{tikzpicture}[x=0.32cm,y=0.32cm]
-  \reperesuite{6}{-3}{9}{-2,2,4,6,8}
+\cas{a)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{calculs}
+u_{0} &= 9-2\times 0 = 9 &&\justif{on remplace $n$ par $0$}\\
+u_{1} &= 9-2\times 1 = 7 &&\justif{puis par $1$, et ainsi de suite}
+\end{calculs}
+\explique{Termes de rang $0$ à $6$ :}{on retire $2$ à chaque rang}
+\smallskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$u_{n}$ & $9$ & $7$ & $5$ & $3$ & $1$ & $-1$ & $-3$\\
+\hline
+\end{tabular}
+
+\smallskip
+\explique{On place les points $(n\,;u_{n})$, sans les relier.}{$n$ en abscisse, $u_{n}$
+en ordonnée}
+\explique{Les points sont alignés.}{on descend de $2$ à chaque pas}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \reperesuite{6}{-3}{9}{-2,2,4,6,8}{u_{n}}
   \foreach \n in {0,...,6} {\path[coulCourbe] (\n,9-2*\n) node[croix]{};}
-  \foreach \n/\v in {0/4,1/-2,2/4,3/-2,4/4,5/-2,6/4}
-    {\path[coulCourbeB] (\n,\v) node[croixdroite]{};}
 \end{tikzpicture}
-\end{center}
-\rem{$\times$ : $(u_{n})$, points alignés ; $+$ : $(v_{n})$, qui alterne entre $4$
-et $-2$.}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{calculs}
+v_{1} &= 2-v_{0} = 2-4 &&\justif{la relation avec $n=0$}\\
+v_{1} &= -2 &&\\
+v_{2} &= 2-(-2) = 2+2 &&\justif{moins par moins donne plus}\\
+v_{2} &= 4 &&\justif{on retrouve $v_{0}$ : tout recommence}
+\end{calculs}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$v_{n}$ & $4$ & $-2$ & $4$ & $-2$ & $4$ & $-2$ & $4$\\
+\hline
+\end{tabular}
+
+\smallskip
+\explique{On place les points $(n\,;v_{n})$, sans les relier.}{les termes alternent entre
+$4$ et $-2$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \reperesuite{6}{-2}{4}{-2,-1,1,2,3,4}{v_{n}}
+  \foreach \n/\v in {0/4,1/-2,2/4,3/-2,4/4,5/-2,6/4}
+    {\path[coulCourbe] (\n,\v) node[croix]{};}
+\end{tikzpicture}
+\end{minipage}
+\rem{On ne relie jamais les points : $n$ ne prend que des valeurs entières.}
 \end{exo}
 
 \begin{exo}[Lire un graphique]
-\begin{reponses}
-  \item $u_{0}=\res{1}$ ; \; $u_{4}=\res{5{,}5}$
-  \item $u_{n}=4$ pour \res{n=3}.
-  \item Les termes \res{\text{augmentent}}.
-\end{reponses}
+\cas{a)}
+\explique{$u_{0}=\res{1}$}{le point d'abscisse $0$ a pour ordonnée $1$}
+\explique{$u_{4}=\res{5{,}5}$}{le point d'abscisse $4$ est au milieu, entre les lignes $5$
+et $6$}
+\cas{b)}
+\explique{Le point d'ordonnée $4$ a pour abscisse $3$ : $u_{n}=4$ pour \res{$n=3$}.}{on
+lit dans l'autre sens : de l'ordonnée vers l'abscisse}
+\cas{c)}
+\explique{Chaque point est plus haut que le précédent : les termes \res{augmentent}.}{on
+lit de gauche à droite}
+\rem{Ne pas confondre le rang $n$ (abscisse, en bas) et le terme $u_{n}$ (ordonnée, à
+gauche).}
 \end{exo}
 
 \begin{exo}[Calculer puis représenter]
-\begin{minipage}[c]{0.5\linewidth}
-\begin{reponses}
-  \item $u_{1}=\frac{-6+10}{2}=\res{2}$ ; \\ $u_{2}=\res{6}$ ; $u_{3}=\res{8}$ ;
-        $u_{4}=\res{9}$
-  \item Voir le repère.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{1} &= \dfrac{u_{0}+10}{2} &&\justif{la relation avec $n=0$}\\
+u_{1} &= \dfrac{-6+10}{2} = \dfrac{4}{2} &&\justif{on remplace $u_{0}$ par $-6$}\\
+u_{1} &= \res{2} &&\\
+u_{2} &= \dfrac{2+10}{2} = \dfrac{12}{2} &&\justif{on ajoute $10$, puis on prend la
+moitié}\\
+u_{2} &= \res{6} &&\\
+u_{3} &= \dfrac{6+10}{2} = \dfrac{16}{2} &&\\
+u_{3} &= \res{8} &&\\
+u_{4} &= \dfrac{8+10}{2} = \dfrac{18}{2} &&\\
+u_{4} &= \res{9} &&
+\end{calculs}
+\cas{b)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$u_{n}$ & $-6$ & $2$ & $6$ & $8$ & $9$\\
+\hline
+\end{tabular}
+
+\smallskip
+\explique{On place les points $(n\,;u_{n})$, sans les relier.}{le premier point,
+$(0\,;-6)$, est sous l'axe des abscisses}
+\explique{Les termes augmentent, de moins en moins vite.}{écarts : $8$ ; $4$ ; $2$ ; $1$}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.46\linewidth}
-\centering
-\begin{tikzpicture}[x=0.26cm,y=0.26cm]
-  \reperesuite{4}{-6}{9}{-6,-4,-2,2,4,6,8}
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \reperesuite{4}{-6}{9}{-6,-4,-2,2,4,6,8}{u_{n}}
   \foreach \n/\v in {0/-6,1/2,2/6,3/8,4/9} {\path[coulCourbe] (\n,\v) node[croix]{};}
 \end{tikzpicture}
 \end{minipage}
 \end{exo}
 
 \begin{exo}[Une suite qui descend puis remonte]
-\begin{minipage}[c]{0.5\linewidth}
-\begin{reponses}
-  \item $w_{n}$ : $8$ ; $3$ ; $0$ ; $-1$ ; $0$ ; $3$ ; $8$
-  \item Voir le repère.
-  \item Les termes \res{\text{diminuent jusqu'au rang } 3}, puis
-        \res{\text{augmentent}}.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+w_{0} &= 0^{2}-6\times 0+8 = 8 &&\justif{on remplace chaque $n$ par $0$}\\
+w_{1} &= 1^{2}-6\times 1+8 = 1-6+8 &&\\
+w_{1} &= 3 &&\\
+w_{2} &= 2^{2}-6\times 2+8 = 4-12+8 &&\justif{le carré, puis la multiplication}\\
+w_{2} &= 0 &&\\
+w_{3} &= 3^{2}-6\times 3+8 = 9-18+8 &&\\
+w_{3} &= -1 &&\\
+w_{4} &= 4^{2}-6\times 4+8 = 16-24+8 &&\\
+w_{4} &= 0 &&\\
+w_{5} &= 5^{2}-6\times 5+8 = 25-30+8 &&\\
+w_{5} &= 3 &&\\
+w_{6} &= 6^{2}-6\times 6+8 = 36-36+8 &&\\
+w_{6} &= 8 &&
+\end{calculs}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$w_{n}$ & \res{$8$} & \res{$3$} & \res{$0$} & \res{$-1$} & \res{$0$} & \res{$3$} &
+\res{$8$}\\
+\hline
+\end{tabular}
+\cas{b)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place les points $(n\,;w_{n})$ du tableau, sans les relier.}{$n$ en
+abscisse, $w_{n}$ en ordonnée}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.46\linewidth}
-\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
-  \reperesuite{6}{-1}{8}{2,4,6,8}
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \reperesuite{6}{-1}{8}{2,4,6,8}{w_{n}}
   \foreach \n/\v in {0/8,1/3,2/0,3/-1,4/0,5/3,6/8} {\path[coulCourbe] (\n,\v) node[croix]{};}
 \end{tikzpicture}
 \end{minipage}
+\cas{c)}
+\explique{Les termes \res{diminuent} de $w_{0}=8$ jusqu'à $w_{3}=-1$, puis
+\res{augmentent} jusqu'à $w_{6}=8$.}{le point le plus bas est $(3\,;-1)$}
 \end{exo}
 
 \partie{Suites arithmétiques : définition}
 
 \begin{exo}[Reconnaître une suite arithmétique]
-\rem{On calcule les différences entre deux termes consécutifs.}
-\deux{a) \res{r=4}}{b) \res{r=-3}}
-\deux{c) non : $4$, puis $12$}{d) \res{r=0{,}5}}
-\deux{e) non : $1$, puis $3$}{}
+\explique{Pour chaque liste, on calcule les différences « terme suivant moins terme
+précédent ». Si elles sont toutes égales, la suite est arithmétique, et la raison est
+cette différence.}{propriété 1}
+\cas{a)}
+\explique{$10-6=4$ ; \ $14-10=4$ ; \ $18-14=4$.}{différences successives}
+\explique{Arithmétique, de raison \res{$r=4$}.}{les différences sont égales}
+\cas{b)}
+\explique{$9-12=-3$ ; \ $6-9=-3$ ; \ $3-6=-3$.}{}
+\explique{Arithmétique, de raison \res{$r=-3$}.}{les termes diminuent : la raison est
+négative}
+\cas{c)}
+\explique{$6-2=4$ mais $18-6=12$.}{}
+\explique{\res{Pas arithmétique}.}{les différences changent ; ici, on multiplie par $3$}
+\cas{d)}
+\explique{$2-1{,}5=0{,}5$ ; \ $2{,}5-2=0{,}5$ ; \ $3-2{,}5=0{,}5$.}{}
+\explique{Arithmétique, de raison \res{$r=0{,}5$}.}{une raison peut être décimale}
+\cas{e)}
+\explique{$1-0=1$ mais $4-1=3$.}{}
+\explique{\res{Pas arithmétique}.}{ce sont les carrés $0^{2}$ ; $1^{2}$ ; $2^{2}$ ;
+$3^{2}$}
+\rem{Erreur fréquente : calculer « précédent moins suivant » ($12-9=3$) et trouver une
+raison positive pour une suite qui diminue.}
 \end{exo}
 
 \begin{exo}[Modéliser]
-\begin{reponses}
-  \item $u_{0}=50\,000$ ; \; $u_{n+1}=u_{n}+4\,000$ ; \; \res{r=4\,000}
-  \item $u_{0}=6\,000$ ; \; $u_{n+1}=u_{n}-450$ ; \; \res{r=-450}
-  \item $u_{0}=200$ ; \; $u_{n+1}=u_{n}+15$ ; \; \res{r=15}
-\end{reponses}
+\explique{Dans chaque situation, on ajoute ou on retire la même quantité à chaque étape :
+la raison est cette quantité, positive pour une hausse, négative pour une baisse.}{même
+quantité à chaque étape : suite arithmétique}
+\cas{a)}
+\explique{$u_{0}=\res{50\,000}$}{les places vendues la première année}
+\explique{$u_{n+1}=\res{u_{n}+4\,000}$}{chaque année, $4\,000$ places de plus}
+\explique{Raison : \res{$r=4\,000$}.}{}
+\cas{b)}
+\explique{On note $u_{n}$ le stock, en cartons, après $n$ semaines.}{on nomme la suite}
+\explique{$u_{0}=\res{6\,000}$}{le stock au départ}
+\explique{$u_{n+1}=\res{u_{n}-450}$}{chaque semaine, $450$ cartons de moins}
+\explique{Raison : \res{$r=-450$}.}{retirer $450$, c'est ajouter $-450$}
+\cas{c)}
+\explique{On note $u_{n}$ la somme, en euros, après $n$ mois.}{}
+\explique{$u_{0}=\res{200}$}{la somme au départ}
+\explique{$u_{n+1}=\res{u_{n}+15}$}{chaque mois, $15$~€ de plus}
+\explique{Raison : \res{$r=15$}.}{}
 \end{exo}
 
 \begin{exo}[Arithmétique ou non ?]
-\begin{reponses}
-  \item $u_{n+1}-u_{n}=4-3n-(7-3n)=-3$ : constante, donc
-        \res{\text{arithmétique de raison } -3}.
-  \item $v_{0}=3$ ; $v_{1}=4$ ; $v_{2}=7$ : les différences $1$ et $3$ ne sont pas
-        égales, donc \res{\text{pas arithmétique}}.
-  \item $w_{n}=3n+6$ et $w_{n+1}-w_{n}=3$ : \res{\text{arithmétique de raison } 3}.
-\end{reponses}
+\cas{a)}
+\explique{On calcule d'abord $u_{n+1}$ : on remplace $n$ par $n+1$.}{comme à
+l'exercice 4}
+\begin{calculs}
+u_{n+1} &= 7-3(n+1) &&\justif{$n+1$ entre parenthèses}\\
+u_{n+1} &= 7-3n-3 &&\justif{on développe : $-3\times n$ et $-3\times 1$}\\
+u_{n+1} &= 4-3n &&\justif{$7-3=4$}\\
+u_{n+1}-u_{n} &= (4-3n)-(7-3n) &&\justif{on retire tout $u_{n}$ : parenthèses}\\
+u_{n+1}-u_{n} &= 4-3n-7+3n &&\justif{le $-$ devant la parenthèse change les signes}\\
+u_{n+1}-u_{n} &= -3 &&\justif{$-3n+3n=0$ et $4-7=-3$}
+\end{calculs}
+\explique{La différence vaut toujours $-3$ : la suite est \res{arithmétique, de raison
+$-3$}.}{la différence ne dépend pas de $n$}
+\cas{b)}
+\begin{calculs}
+v_{0} &= 0^{2}+3 = 3 &&\\
+v_{1} &= 1^{2}+3 = 4 &&\\
+v_{2} &= 2^{2}+3 = 7 &&
+\end{calculs}
+\explique{$v_{1}-v_{0}=1$ mais $v_{2}-v_{1}=3$ : la suite \res{n'est pas
+arithmétique}.}{un seul contre-exemple suffit}
+\cas{c)}
+\begin{calculs}
+w_{n} &= 3(n+2) &&\justif{on recopie la formule}\\
+w_{n} &= 3n+6 &&\justif{on développe}\\
+w_{n+1} &= 3(n+1)+6 &&\justif{on remplace $n$ par $n+1$}\\
+w_{n+1} &= 3n+3+6 &&\\
+w_{n+1} &= 3n+9 &&\\
+w_{n+1}-w_{n} &= (3n+9)-(3n+6) &&\\
+w_{n+1}-w_{n} &= 3n+9-3n-6 &&\justif{le $-$ change les signes}\\
+w_{n+1}-w_{n} &= 3 &&
+\end{calculs}
+\explique{La différence vaut toujours $3$ : la suite est \res{arithmétique, de raison
+$3$}.}{premier terme : $w_{0}=3\times 2=6$}
+\rem{Pour montrer qu'une suite est arithmétique, quelques termes ne suffisent pas : on
+calcule $u_{n+1}-u_{n}$ avec la lettre $n$. Pour montrer qu'elle ne l'est pas, un seul
+contre-exemple suffit.}
 \end{exo}
 
 \begin{exo}[Compléter]
-\begin{reponses}
-  \item $u_{1}=5$ ; $u_{2}=1$ ; $u_{3}=-3$ ; $u_{4}=\res{-7}$
-  \item $r=18-13=\res{5}$ ; \; $v_{4}=\res{23}$ ; $v_{1}=\res{8}$ ; $v_{0}=\res{3}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{1} &= u_{0}+r &&\justif{arithmétique : on ajoute la raison}\\
+u_{1} &= 9+(-4) = \res{5} &&\justif{ajouter $-4$, c'est retirer $4$}\\
+u_{2} &= 5-4 = \res{1} &&\\
+u_{3} &= 1-4 = \res{-3} &&\justif{on passe sous zéro}\\
+u_{4} &= -3-4 = \res{-7} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+r &= v_{3}-v_{2} &&\justif{différence de deux termes consécutifs}\\
+r &= 18-13 = \res{5} &&\\
+v_{4} &= v_{3}+5 = 18+5 &&\justif{on avance d'un rang : on ajoute $5$}\\
+v_{4} &= \res{23} &&\\
+v_{1} &= v_{2}-5 = 13-5 &&\justif{on recule d'un rang : on retire $5$}\\
+v_{1} &= \res{8} &&\\
+v_{0} &= v_{1}-5 = 8-5 &&\\
+v_{0} &= \res{3} &&
+\end{calculs}
+\explique{Contrôle : $3$ ; $8$ ; $13$ ; $18$ ; $23$.}{on ajoute bien $5$ à chaque fois}
 \end{exo}
 
 \partie{Suites arithmétiques : expression en fonction de $n$}
 
 \begin{exo}[Appliquer la formule]
-\begin{reponses}
-  \item $u_{n}=10-3n$ ; \; $u_{8}=10-24=\res{-14}$
-  \item $u_{n}=-4+5n$ ; \; $u_{12}=-4+60=\res{56}$
-  \item $u_{0}=600-40=560$ et $u_{n}=560+40n$ ; \; $u_{8}=\res{880}$
-  \item $u_{0}=-7-4=-11$ et $u_{n}=-11+4n$ ; \; $u_{5}=\res{9}$
-\end{reponses}
-\rem{Avec $u_{1}$, on recule d'un rang pour trouver $u_{0}$, puis
-$u_{n}=u_{0}+nr$.}
+\explique{On utilise $u_{n}=u_{0}+n\times r$ : il faut le premier terme $u_{0}$ et la
+raison $r$.}{propriété 2}
+\cas{a)}
+\begin{calculs}
+u_{n} &= u_{0}+n\times r &&\justif{premier terme $10$, raison $-3$}\\
+u_{n} &= 10+n\times(-3) &&\\
+u_{n} &= \res{10-3n} &&\justif{ajouter $-3n$, c'est retirer $3n$}\\
+u_{8} &= 10-3\times 8 &&\justif{on remplace $n$ par $8$}\\
+u_{8} &= 10-24 &&\\
+u_{8} &= \res{-14} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{n} &= u_{0}+n\times r &&\justif{premier terme $-4$, raison $5$}\\
+u_{n} &= \res{-4+5n} &&\\
+u_{12} &= -4+5\times 12 &&\justif{on remplace $n$ par $12$}\\
+u_{12} &= -4+60 &&\\
+u_{12} &= \res{56} &&
+\end{calculs}
+\cas{c)}
+\explique{Le premier terme donné est $u_{1}$, pas $u_{0}$ : on recule d'un rang.}{la
+formule part de $u_{0}$}
+\begin{calculs}
+u_{0} &= u_{1}-r &&\justif{on recule d'un rang : on retire la raison}\\
+u_{0} &= 600-40 = 560 &&\\
+u_{n} &= \res{560+40n} &&\justif{$u_{0}+n\times r$}\\
+u_{8} &= 560+40\times 8 &&\justif{on remplace $n$ par $8$}\\
+u_{8} &= 560+320 &&\\
+u_{8} &= \res{880} &&
+\end{calculs}
+\explique{Contrôle : $u_{1}=560+40=600$.}{on retrouve la donnée}
+\cas{d)}
+\begin{calculs}
+u_{0} &= u_{1}-r &&\justif{on recule d'un rang}\\
+u_{0} &= -7-4 = -11 &&\\
+u_{n} &= \res{-11+4n} &&\justif{$u_{0}+n\times r$}\\
+u_{5} &= -11+4\times 5 &&\\
+u_{5} &= -11+20 &&\\
+u_{5} &= \res{9} &&
+\end{calculs}
+\explique{Contrôle : $u_{1}=-11+4=-7$.}{on retrouve la donnée}
+\rem{Erreur fréquente : mettre $u_{1}$ à la place de $u_{0}$ dans la formule. En c), on
+trouverait $600+40\times 8=920$, ce qui est faux.}
 \end{exo}
 
 \begin{exo}[Une suite qui diminue]
-\begin{reponses}
-  \item $172-185=-13$ ; $159-172=-13$ ; $146-159=-13$ : les différences sont
-        égales, la suite est arithmétique, \res{r=-13}.
-  \item $u_{5}=146-13=\res{133}$ ; \; $u_{14}=u_{1}+13r$, soit
-        $u_{14}=185-169=\res{16}$
-\end{reponses}
+\cas{a)}
+\explique{$172-185=-13$ ; \ $159-172=-13$ ; \ $146-159=-13$.}{différences successives}
+\explique{Les différences sont égales : ce sont les termes d'une suite arithmétique, de
+raison \res{$r=-13$}.}{propriété 1}
+\cas{b)}
+\begin{calculs}
+u_{5} &= u_{4}+r &&\justif{on avance d'un rang}\\
+u_{5} &= 146-13 = \res{133} &&
+\end{calculs}
+\explique{Pour $u_{14}$, on ne calcule pas tous les termes : on exprime $u_{n}$ en
+fonction de $n$.}{il faudrait neuf calculs de plus}
+\begin{calculs}
+u_{0} &= u_{1}-r &&\justif{on recule d'un rang}\\
+u_{0} &= 185-(-13) = 185+13 &&\justif{retirer $-13$, c'est ajouter $13$}\\
+u_{0} &= 198 &&\\
+u_{n} &= 198-13n &&\justif{$u_{0}+n\times r$}\\
+u_{14} &= 198-13\times 14 &&\justif{on remplace $n$ par $14$}\\
+u_{14} &= 198-182 &&\justif{$13\times 14=130+52$}\\
+u_{14} &= \res{16} &&
+\end{calculs}
+\explique{Contrôle : $u_{1}=198-13=185$.}{on retrouve la donnée}
 \end{exo}
 
 \begin{exo}[Production d'un atelier]
-\begin{reponses}
-  \item Arithmétique de raison $250$ : \; \res{u_{n}=4\,000+250n}
-  \item 2013 : $u_{3}=\res{4\,750}$ ; \; 2030 : $u_{20}=4\,000+5\,000=\res{9\,000}$
-\end{reponses}
+\cas{a)}
+\explique{Chaque année, la production augmente de la même quantité, $250$ vélos : la suite
+$(u_{n})$ est \res{arithmétique}, de premier terme $u_{0}=4\,000$ et de raison
+$r=250$.}{$u_{0}$ : la production de 2010, car $2010+0=2010$}
+\begin{calculs}
+u_{n} &= u_{0}+n\times r &&\\
+u_{n} &= \res{4\,000+250n} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{3} &= 4\,000+250\times 3 &&\justif{2013 correspond à $n=3$, car $2010+3=2013$}\\
+u_{3} &= 4\,000+750 &&\\
+u_{3} &= \res{4\,750} &&
+\end{calculs}
+\explique{En 2013, l'atelier fabrique $4\,750$ vélos.}{}
+\begin{calculs}
+u_{20} &= 4\,000+250\times 20 &&\justif{2030 correspond à $n=20$}\\
+u_{20} &= 4\,000+5\,000 &&\justif{$250\times 20=250\times 2\times 10$}\\
+u_{20} &= \res{9\,000} &&
+\end{calculs}
+\explique{En 2030, l'atelier fabriquera $9\,000$ vélos.}{}
+\rem{Erreur fréquente : remplacer $n$ par l'année ($2013$) au lieu du nombre d'années
+écoulées depuis 2010 ($3$).}
 \end{exo}
 
 \begin{exo}[Lire la formule]
-\deux{a) $u_{0}=\res{5}$ ; $r=\res{4}$}{b) $v_{0}=\res{18}$ ; $r=\res{-1{,}5}$}
-\deux{c) $w_{0}=\res{0}$ ; $r=\res{6}$}{}
+\explique{Une suite arithmétique s'écrit $u_{n}=u_{0}+r\times n$ : le nombre seul est le
+premier terme, le nombre qui multiplie $n$ est la raison.}{on compare avec la formule}
+\cas{a)}
+\explique{$u_{0}=\res{5}$ et $r=\res{4}$.}{contrôle : $u_{0}=5+4\times 0=5$}
+\cas{b)}
+\explique{$v_{0}=\res{18}$ et $r=\res{-1{,}5}$.}{le signe $-$ fait partie de la raison}
+\cas{c)}
+\explique{$w_{n}=6n$ s'écrit $w_{n}=0+6n$ : $w_{0}=\res{0}$ et $r=\res{6}$.}{il n'y a pas
+de nombre seul : le premier terme vaut $0$}
 \end{exo}
 
 \begin{exo}[Un terme lointain]
-\begin{reponses}
-  \item $u_{100}=15+100\times 4=\res{415}$
-  \item $u_{50}=7+49\times 3=\res{154}$
-\end{reponses}
-\rem{Avec $u_{1}$, on ajoute la raison $49$ fois (et non $50$) pour atteindre
-$u_{50}$.}
+\cas{a)}
+\begin{calculs}
+u_{n} &= 15+4n &&\justif{$u_{0}+n\times r$ : premier terme $15$, raison $4$}\\
+u_{100} &= 15+4\times 100 &&\justif{on remplace $n$ par $100$}\\
+u_{100} &= 15+400 &&\\
+u_{100} &= \res{415} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{0} &= u_{1}-r &&\justif{le premier terme donné est $u_{1}$ : on recule d'un rang}\\
+u_{0} &= 7-3 = 4 &&\\
+u_{n} &= 4+3n &&\justif{$u_{0}+n\times r$}\\
+u_{50} &= 4+3\times 50 &&\\
+u_{50} &= 4+150 &&\\
+u_{50} &= \res{154} &&
+\end{calculs}
+\rem{Écrire $u_{50}=7+50\times 3=157$ est faux : de $u_{1}$ à $u_{50}$, on n'ajoute la
+raison que $49$ fois. Passer par $u_{0}$ évite le piège.}
 \end{exo}
 
 \partie{Suites arithmétiques : problème de seuil}
 
 \begin{exo}[Acheter un vélo électrique]
-\begin{reponses}
-  \item $u_{2}=960$ ; $u_{3}=1\,020$ ; $u_{4}=1\,080$
-  \item $u_{0}=900-60=840$, donc \res{u_{n}=840+60n}
-  \item $u_{7}=840+420=\res{1\,260}$
-  \item $840+60n\ge 1\,500 \iff 60n\ge 660 \iff \res{n\ge 11}$
-  \item $u_{11}$ est la somme au \res{\text{1\textsuperscript{er} novembre}}.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{2} &= 900+60 = \res{960} &&\justif{le 1\textsuperscript{er} février : on ajoute $60$}\\
+u_{3} &= 960+60 = \res{1\,020} &&\justif{le 1\textsuperscript{er} mars}\\
+u_{4} &= 1\,020+60 = \res{1\,080} &&\justif{le 1\textsuperscript{er} avril}
+\end{calculs}
+\cas{b)}
+\explique{Elle ajoute $60$~€ chaque mois : $(u_{n})$ est arithmétique, de raison
+$r=60$.}{même somme ajoutée chaque mois}
+\explique{Le premier terme donné est $u_{1}$ : on recule d'un rang pour trouver
+$u_{0}$.}{la formule part de $u_{0}$}
+\begin{calculs}
+u_{0} &= u_{1}-r &&\justif{on retire la raison}\\
+u_{0} &= 900-60 = 840 &&\\
+u_{n} &= u_{0}+n\times r &&\\
+u_{n} &= \res{840+60n} &&
+\end{calculs}
+\explique{Contrôle : $u_{1}=840+60=900$.}{on retrouve la donnée}
+\cas{c)}
+\begin{calculs}
+u_{7} &= 840+60\times 7 &&\justif{on remplace $n$ par $7$}\\
+u_{7} &= 840+420 &&\\
+u_{7} &= \res{1\,260} &&
+\end{calculs}
+\explique{Le 1\textsuperscript{er} juillet, elle aura $1\,260$~€.}{$u_{7}$ : le
+septième mois, juillet}
+\cas{d)}
+\begin{calculs}
+840+60n &\ge 1\,500 &&\justif{on traduit : au moins $1\,500$~€}\\
+60n &\ge 660 &&\justif{on retire $840$}\\
+n &\ge 11 &&\justif{on divise par $60$, positif : $\dfrac{660}{60}=11$}
+\end{calculs}
+\explique{Elle aura $1\,500$~€ pour \res{$n=11$}.}{contrôle : $u_{11}=840+660=1\,500$}
+\cas{e)}
+\explique{$u_{1}$ est la somme au 1\textsuperscript{er} janvier, $u_{2}$ au
+1\textsuperscript{er} février\ldots{} $u_{11}$ au 1\textsuperscript{er} du onzième mois,
+novembre.}{le rang $n$ est le numéro du mois}
+\explique{Elle pourra acheter son vélo \res{le 1\textsuperscript{er} novembre}.}{on
+répond par une date, comme demandé}
 \end{exo}
 
 \begin{exo}[Doubler la production]
-$4\,000+250n\ge 8\,000 \iff 250n\ge 4\,000 \iff n\ge 16$ : \res{\text{en } 2026}.
+\explique{En 2010, la production est $u_{0}=4\,000$ ; « doubler » veut dire atteindre
+$2\times 4\,000=8\,000$ vélos.}{on traduit la question}
+\begin{calculs}
+4\,000+250n &\ge 8\,000 &&\justif{au moins le double}\\
+250n &\ge 4\,000 &&\justif{on retire $4\,000$}\\
+n &\ge 16 &&\justif{on divise par $250$, positif : $250\times 16=4\,000$}
+\end{calculs}
+\explique{Le premier entier qui convient est $n=16$ : la production aura doublé \res{en
+2026}.}{$2010+16=2026$ ; contrôle : $u_{16}=4\,000+4\,000=8\,000$}
 \end{exo}
 
 \begin{exo}[Le recul d'une falaise]
-\begin{reponses}
-  \item \res{d_{n}=200-2n}
-  \item $-2n<-25 \iff n>12{,}5$ (on divise par $-2$ : le sens change) : $n=13$,
-        \res{\text{en } 2033}.
-\end{reponses}
+\cas{a)}
+\explique{La distance baisse de $2$~m par an : $(d_{n})$ est arithmétique, de premier
+terme $d_{0}=200$ et de raison $r=-2$.}{$d_{0}$ : la distance en 2020}
+\begin{calculs}
+d_{n} &= d_{0}+n\times r &&\\
+d_{n} &= 200+n\times(-2) &&\\
+d_{n} &= \res{200-2n} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+200-2n &< 175 &&\justif{on traduit : « à moins de $175$~m »}\\
+-2n &< -25 &&\justif{on retire $200$}\\
+n &> 12{,}5 &&\justif{on divise par $-2$, négatif : le sens change}
+\end{calculs}
+\explique{Le premier entier qui convient est $n=13$ : la maison sera à moins de $175$~m
+du bord à partir de \res{2033}.}{$2020+13=2033$ ; contrôle : $d_{12}=176$ et
+$d_{13}=174$}
+\rem{Erreur fréquente : oublier de changer le sens en divisant par $-2$. On trouverait
+$n<12{,}5$, absurde ici : la distance diminue, elle finit par passer sous $175$~m.}
 \end{exo}
 
 \begin{exo}[Résoudre des inéquations]
-\begin{reponses}
-  \item $5n>85 \iff n>17$ : \res{n=18}
-  \item $-30n<-240 \iff n>8$ : \res{n=9} \quad (on divise par $-30$ : le sens change)
-  \item $6n\ge 60 \iff n\ge 10$ : \res{n=10}
-\end{reponses}
-\rem{a) $n=17$ donne exactement $100$ : ce n'est pas « plus de $100$ ».}
+\explique{On résout comme une équation, puis on cherche le plus petit entier qui
+convient.}{diviser par un nombre négatif change le sens}
+\cas{a)}
+\begin{calculs}
+15+5n &> 100 &&\justif{on recopie l'inéquation}\\
+5n &> 85 &&\justif{on retire $15$}\\
+n &> 17 &&\justif{on divise par $5$, positif}
+\end{calculs}
+\explique{$17$ ne convient pas : le plus petit entier est \res{$n=18$}.}{« $>$ » :
+$15+5\times 17=100$, qui n'est pas plus grand que $100$}
+\cas{b)}
+\begin{calculs}
+240-30n &< 0 &&\\
+-30n &< -240 &&\justif{on retire $240$}\\
+n &> 8 &&\justif{on divise par $-30$, négatif : le sens change}
+\end{calculs}
+\explique{Le plus petit entier est \res{$n=9$}.}{$n=8$ donne exactement $0$, qui n'est pas
+négatif}
+\cas{c)}
+\begin{calculs}
+40+6n &\ge 100 &&\\
+6n &\ge 60 &&\justif{on retire $40$}\\
+n &\ge 10 &&\justif{on divise par $6$, positif}
+\end{calculs}
+\explique{Le plus petit entier est \res{$n=10$}.}{« $\ge$ » : $10$ convient, car
+$40+60=100$}
+\rem{Bien regarder le symbole : avec $>$ ou $<$, la valeur limite est exclue ; avec $\ge$
+ou $\le$, elle est comprise.}
 \end{exo}
 
 \partie{Suites arithmétiques : variations et représentation graphique}
 
 \begin{exo}[Sens de variation]
-\begin{reponses}
-  \item $r=8>0$ : \res{\text{croissante}}
-  \item $r=-0{,}4<0$ : \res{\text{décroissante}}
-  \item $r=-5<0$ : \res{\text{décroissante}}
-  \item $r=0{,}5>0$ : \res{\text{croissante}}
-\end{reponses}
+\explique{Il suffit de la raison : si $r>0$, la suite est croissante ; si $r<0$, elle est
+décroissante.}{propriété 3}
+\cas{a)}
+\explique{$u_{n}=3+8n$ : la raison est le nombre qui multiplie $n$, $r=\res{8}$.}{forme
+$u_{0}+r\times n$}
+\explique{$8>0$ : $(u_{n})$ est \res{croissante}.}{}
+\cas{b)}
+\explique{$v_{n}=20-0{,}4n$ : $r=\res{-0{,}4}$.}{le signe $-$ fait partie de la raison}
+\explique{$-0{,}4<0$ : $(v_{n})$ est \res{décroissante}.}{}
+\cas{c)}
+\explique{$t_{n}=-5n$ s'écrit $0-5n$ : $r=\res{-5}$.}{premier terme $0$}
+\explique{$-5<0$ : $(t_{n})$ est \res{décroissante}.}{}
+\cas{d)}
+\explique{$w_{n+1}=w_{n}+0{,}5$ : on ajoute $0{,}5$ à chaque étape, $r=\res{0{,}5}$.}{}
+\explique{$0{,}5>0$ : $(w_{n})$ est \res{croissante}.}{}
+\rem{Le premier terme, même négatif ($w_{0}=-6$), ne compte pas : seul le signe de la
+raison décide.}
 \end{exo}
 
 \begin{exo}[Lire un graphique]
-\begin{reponses}
-  \item $u_{0}=\res{8}$ ; d'un point au suivant, on descend de $1{,}5$ :
-        \res{r=-1{,}5}
-  \item \res{u_{n}=8-1{,}5n}
-  \item $u_{10}=8-15=\res{-7}$
-  \item $r<0$ : \res{\text{décroissante}}
-\end{reponses}
+\cas{a)}
+\explique{$u_{0}=\res{8}$}{le premier point, d'abscisse $0$, a pour ordonnée $8$}
+\explique{D'un point au suivant, on descend de $1{,}5$ : de $8$ à $6{,}5$, puis à $5$\ldots{}
+Donc \res{$r=-1{,}5$}.}{on descend : la raison est négative}
+\cas{b)}
+\begin{calculs}
+u_{n} &= u_{0}+n\times r &&\justif{premier terme $8$, raison $-1{,}5$}\\
+u_{n} &= 8+n\times(-1{,}5) &&\\
+u_{n} &= \res{8-1{,}5n} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u_{10} &= 8-1{,}5\times 10 &&\justif{on remplace $n$ par $10$}\\
+u_{10} &= 8-15 &&\\
+u_{10} &= \res{-7} &&
+\end{calculs}
+\cas{d)}
+\explique{$r=-1{,}5<0$ : la suite est \res{décroissante}.}{les points descendent}
 \end{exo}
 
 \begin{exo}[Représenter]
-\begin{minipage}[c]{0.5\linewidth}
-$u$ : $1$ ; $2{,}5$ ; $4$ ; $5{,}5$ ; $7$ \\
-$r=1{,}5$ : \res{\text{croissante}}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\cas{a)}
+\explique{$u_{0}=1$ ; puis on ajoute $1{,}5$ à chaque rang.}{$u_{n}=1+1{,}5n$ : raison
+$1{,}5$}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$u_{n}$ & $1$ & $2{,}5$ & $4$ & $5{,}5$ & $7$\\
+\hline
+\end{tabular}
 
-\smallskip
-$v$ : $8$ ; $6$ ; $4$ ; $2$ ; $0$ \\
-$r=-2$ : \res{\text{décroissante}}
+\explique{$r=1{,}5>0$ : $(u_{n})$ est \res{croissante}.}{croix $\times$ : les points
+montent}
+\cas{b)}
+\explique{$v_{0}=8$ ; puis on retire $2$ à chaque rang.}{raison $-2$}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$v_{n}$ & $8$ & $6$ & $4$ & $2$ & $0$\\
+\hline
+\end{tabular}
+
+\explique{$r=-2<0$ : $(v_{n})$ est \res{décroissante}.}{croix $+$ : les points
+descendent}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.46\linewidth}
-\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
-  \reperesuite{4}{0}{8}{2,4,6,8}
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \reperesuite{4}{0}{8}{1,2,3,4,5,6,7,8}{}
   \foreach \n/\v in {0/1,1/2.5,2/4,3/5.5,4/7} {\path[coulCourbe] (\n,\v) node[croix]{};}
   \foreach \n/\v in {0/8,1/6,2/4,3/2,4/0} {\path[coulCourbeB] (\n,\v) node[croixdroite]{};}
 \end{tikzpicture}
+
+{\small $\times$ : $(u_{n})$ \quad $+$ : $(v_{n})$}
 \end{minipage}
+\rem{Les points de chaque suite sont alignés : ce sont des suites arithmétiques. Au rang
+$2$, les deux suites valent $4$ : les points sont confondus.}
 \end{exo}
 
 \partie{Suites géométriques : définition}
 
 \begin{exo}[Coefficient multiplicateur]
-\rem{Augmenter de $t\,\%$ : $\times\left(1+\frac{t}{100}\right)$ ; diminuer :
-$\times\left(1-\frac{t}{100}\right)$.}
-\deux{a) \res{1{,}04} \quad b) \res{0{,}96}}{c) \res{1{,}3} \quad d) \res{0{,}7}}
-\deux{e) \res{1{,}6} \quad f) \res{0{,}75}}{g) \res{1{,}02} \quad h) \res{0{,}55}}
+\explique{Augmenter de $t\,\%$, c'est multiplier par $1+\dfrac{t}{100}$ ; diminuer de
+$t\,\%$, c'est multiplier par $1-\dfrac{t}{100}$.}{rappel de seconde}
+\explique{\etiq{a)} Augmenter de $4\,\%$ : $q=1+0{,}04=\res{1{,}04}$.}{$\dfrac{4}{100}=0{,}04$}
+\explique{\etiq{b)} Diminuer de $4\,\%$ : $q=1-0{,}04=\res{0{,}96}$.}{}
+\explique{\etiq{c)} Augmenter de $30\,\%$ : $q=1+0{,}3=\res{1{,}3}$.}{$\dfrac{30}{100}=0{,}3$}
+\explique{\etiq{d)} Diminuer de $30\,\%$ : $q=1-0{,}3=\res{0{,}7}$.}{}
+\explique{\etiq{e)} Augmenter de $60\,\%$ : $q=1+0{,}6=\res{1{,}6}$.}{}
+\explique{\etiq{f)} Diminuer de $25\,\%$ : $q=1-0{,}25=\res{0{,}75}$.}{}
+\explique{\etiq{g)} Augmenter de $2\,\%$ : $q=1+0{,}02=\res{1{,}02}$.}{$\dfrac{2}{100}=0{,}02$}
+\explique{\etiq{h)} Diminuer de $45\,\%$ : $q=1-0{,}45=\res{0{,}55}$.}{}
+\rem{Erreurs fréquentes : $4\,\%$ donne $0{,}04$, pas $0{,}4$ ; diminuer de $30\,\%$ donne
+$0{,}7$, pas $0{,}3$ (multiplier par $0{,}3$, c'est ne garder que $30\,\%$).}
 \end{exo}
 
 \begin{exo}[Retrouver l'évolution]
-\deux{a) diminuer de \res{4\,\%}}{b) augmenter de \res{6\,\%}}
-\deux{c) diminuer de \res{60\,\%}}{d) augmenter de \res{30\,\%}}
-\deux{e) augmenter de \res{200\,\%}}{f) diminuer de \res{2\,\%}}
-\deux{g) diminuer de \res{15\,\%}}{h) augmenter de \res{7{,}5\,\%}}
-\rem{$q>1$ : hausse de $(q-1)\times 100\,\%$ ; $q<1$ : baisse de
-$(1-q)\times 100\,\%$.}
+\explique{Si $q>1$, c'est une hausse de $q-1$ ; si $q<1$, c'est une baisse de $1-q$. On
+écrit ensuite ce nombre en pourcentage.}{$0{,}04$, c'est $4\,\%$}
+\explique{\etiq{a)} $q=0{,}96<1$ : $1-0{,}96=0{,}04$, \res{diminuer de $4\,\%$}.}{}
+\explique{\etiq{b)} $q=1{,}06>1$ : $1{,}06-1=0{,}06$, \res{augmenter de $6\,\%$}.}{}
+\explique{\etiq{c)} $q=0{,}4<1$ : $1-0{,}4=0{,}6$, \res{diminuer de $60\,\%$}.}{on garde
+$40\,\%$, on perd $60\,\%$}
+\explique{\etiq{d)} $q=1{,}3>1$ : $1{,}3-1=0{,}3$, \res{augmenter de $30\,\%$}.}{}
+\explique{\etiq{e)} $q=3>1$ : $3-1=2$, \res{augmenter de $200\,\%$}.}{tripler, c'est
+ajouter deux fois la valeur de départ}
+\explique{\etiq{f)} $q=0{,}98<1$ : $1-0{,}98=0{,}02$, \res{diminuer de $2\,\%$}.}{}
+\explique{\etiq{g)} $q=0{,}85<1$ : $1-0{,}85=0{,}15$, \res{diminuer de $15\,\%$}.}{}
+\explique{\etiq{h)} $q=1{,}075>1$ : $1{,}075-1=0{,}075$, \res{augmenter de
+$7{,}5\,\%$}.}{$0{,}075\times 100=7{,}5$}
+\rem{Erreur fréquente : lire $q=0{,}4$ comme « diminuer de $40\,\%$ ». Multiplier par
+$0{,}4$, c'est garder $40\,\%$, donc perdre $60\,\%$.}
 \end{exo}
 
 \begin{exo}[Appliquer une évolution]
-\deux{a) $300+60=\res{360}$}{b) $500-50=\res{450}$}
-\deux{c) $2\,000+60=\res{2\,060}$}{d) $60-15=\res{45}$}
+\explique{On multiplie par le coefficient multiplicateur. De tête, on peut aussi
+calculer la variation, puis l'ajouter ou la retirer.}{les deux façons donnent le même
+résultat}
+\cas{a)}
+\begin{calculs}
+300\times 1{,}2 &= \res{360} &&\justif{$+20\,\%$ : $\times 1{,}2$ ; ou $300+60$, car
+$20\,\%$ de $300$ font $60$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+500\times 0{,}9 &= \res{450} &&\justif{$-10\,\%$ : $\times 0{,}9$ ; ou $500-50$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+2\,000\times 1{,}03 &= \res{2\,060} &&\justif{$3\,\%$ de $2\,000$ font $60$ ; $2\,000+60$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+60\times 0{,}75 &= \res{45} &&\justif{$25\,\%$, c'est un quart : $60-15$}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Calculer les premiers termes]
-\begin{reponses}
-  \item $u_{1}=\res{10}$ ; $u_{2}=\res{20}$ ; $u_{3}=\res{40}$
-  \item $c_{0}=5\,000$ ; $c_{1}=\res{5\,100}$ ; $c_{2}=\res{5\,202}$ ;
-        $c_{n+1}=1{,}02\,c_{n}$
-  \item $f_{0}=40\,000$ ; $f_{1}=\res{38\,000}$ ; $f_{2}=\res{36\,100}$ ;
-        $f_{n+1}=0{,}95\,f_{n}$
-  \item $e_{0}=800$ ; $e_{1}=\res{720}$ ; $e_{2}=\res{648}$ ; $e_{n+1}=0{,}9\,e_{n}$
-  \item $i_{0}=300$ ; $i_{1}=\res{450}$ ; $i_{2}=\res{675}$ ; $i_{n+1}=1{,}5\,i_{n}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 2\times 5 = \res{10} &&\justif{géométrique : on multiplie par la raison $2$}\\
+u_{2} &= 2\times 10 = \res{20} &&\\
+u_{3} &= 2\times 20 = \res{40} &&
+\end{calculs}
+\cas{b)}
+\explique{Placer à $2\,\%$ par an, c'est augmenter de $2\,\%$ par an : on multiplie par
+$1{,}02$.}{$1+\dfrac{2}{100}=1{,}02$}
+\begin{calculs}
+c_{0} &= \res{5\,000} &&\justif{le capital placé}\\
+c_{1} &= 1{,}02\times 5\,000 = \res{5\,100} &&\justif{$2\,\%$ de $5\,000$ font $100$}\\
+c_{2} &= 1{,}02\times 5\,100 = \res{5\,202} &&\justif{$2\,\%$ de $5\,100$ font $102$}
+\end{calculs}
+\explique{$c_{n+1}=\res{1{,}02\,c_{n}}$}{même coefficient chaque année}
+\cas{c)}
+\explique{$5\,\%$ de pertes, c'est multiplier par $0{,}95$.}{$1-\dfrac{5}{100}=0{,}95$}
+\begin{calculs}
+f_{0} &= \res{40\,000} &&\\
+f_{1} &= 0{,}95\times 40\,000 = \res{38\,000} &&\justif{$5\,\%$ de $40\,000$ font $2\,000$}\\
+f_{2} &= 0{,}95\times 38\,000 = \res{36\,100} &&\justif{$5\,\%$ de $38\,000$ font $1\,900$}
+\end{calculs}
+\explique{$f_{n+1}=\res{0{,}95\,f_{n}}$}{}
+\cas{d)}
+\explique{Baisser de $10\,\%$, c'est multiplier par $0{,}9$.}{$1-\dfrac{10}{100}=0{,}9$}
+\begin{calculs}
+e_{0} &= \res{800} &&\\
+e_{1} &= 0{,}9\times 800 = \res{720} &&\justif{$10\,\%$ de $800$ font $80$}\\
+e_{2} &= 0{,}9\times 720 = \res{648} &&\justif{$10\,\%$ de $720$ font $72$}
+\end{calculs}
+\explique{$e_{n+1}=\res{0{,}9\,e_{n}}$}{}
+\cas{e)}
+\explique{Augmenter de $50\,\%$, c'est multiplier par $1{,}5$.}{$1+\dfrac{50}{100}=1{,}5$}
+\begin{calculs}
+i_{0} &= \res{300} &&\\
+i_{1} &= 1{,}5\times 300 = \res{450} &&\justif{$50\,\%$, c'est la moitié : $300+150$}\\
+i_{2} &= 1{,}5\times 450 = \res{675} &&\justif{$450+225$}
+\end{calculs}
+\explique{$i_{n+1}=\res{1{,}5\,i_{n}}$}{}
+\rem{Le pourcentage s'applique au terme précédent, pas au premier : $c_{2}=5\,202$, et non
+$5\,200$.}
 \end{exo}
 
 \begin{exo}[Reconnaître une suite géométrique]
-\rem{On calcule les quotients de deux termes consécutifs.}
-\deux{a) \res{q=4}}{b) \res{q=0{,}5}}
-\deux{c) non : $\frac{8}{4}=2$ et $\frac{12}{8}=1{,}5$}{d) \res{q=1{,}1}}
-\deux{e) oui : \res{q=1{,}04}}{f) non : on ajoute $15$ (arithmétique)}
+\explique{Pour une liste, on calcule les quotients « terme suivant divisé par terme
+précédent » ; s'ils sont tous égaux, la suite est géométrique, de raison ce quotient. Pour
+une situation, on cherche le même pourcentage à chaque étape.}{propriété 5}
+\cas{a)}
+\explique{$\dfrac{12}{3}=4$ ; \ $\dfrac{48}{12}=4$ ; \ $\dfrac{192}{48}=4$.}{quotients
+successifs}
+\explique{Géométrique, de raison \res{$q=4$}.}{les quotients sont égaux}
+\cas{b)}
+\explique{$\dfrac{32}{64}=0{,}5$ ; \ $\dfrac{16}{32}=0{,}5$ ; \ $\dfrac{8}{16}=0{,}5$.}{on
+prend la moitié à chaque fois}
+\explique{Géométrique, de raison \res{$q=0{,}5$}.}{diviser par $2$, c'est multiplier par
+$0{,}5$}
+\cas{c)}
+\explique{$\dfrac{8}{4}=2$ mais $\dfrac{12}{8}=1{,}5$.}{les quotients changent}
+\explique{\res{Pas géométrique}.}{elle est arithmétique, de raison $4$}
+\cas{d)}
+\explique{$\dfrac{550}{500}=1{,}1$. On vérifie : $550\times 1{,}1=605$ et
+$605\times 1{,}1=665{,}5$.}{$\times 1{,}1$ : on ajoute $10\,\%$ ; $550+55$ et $605+60{,}5$}
+\explique{Géométrique, de raison \res{$q=1{,}1$}.}{}
+\cas{e)}
+\explique{Augmenter de $4\,\%$, c'est multiplier par $1{,}04$ chaque année : suite
+géométrique, de raison \res{$q=1{,}04$}.}{même pourcentage chaque année}
+\cas{f)}
+\explique{On ajoute $15$~€ chaque année : la même quantité, pas le même pourcentage.
+\res{Pas géométrique}.}{elle est arithmétique, de raison $15$}
 \end{exo}
 
 \partie{Suites géométriques : expression en fonction de $n$}
 
 \begin{exo}[Appliquer la formule]
-\begin{reponses}
-  \item $u_{n}=2\times 3^{n}$ ; \; $u_{4}=2\times 81=\res{162}$
-  \item $u_{n}=5\,000\times 0{,}1^{n}$ ; \; $u_{3}=5\,000\times 0{,}001=\res{5}$
-  \item $u_{0}=\frac{6}{2}=3$ et $u_{n}=3\times 2^{n}$ ; \; $u_{5}=3\times 32=\res{96}$
-  \item $u_{n}=128\times 0{,}5^{n}$ ; \; $u_{4}=\frac{128}{16}=\res{8}$
-\end{reponses}
+\explique{On utilise $u_{n}=u_{0}\times q^{n}$ : il faut le premier terme $u_{0}$ et la
+raison $q$.}{propriété 6}
+\cas{a)}
+\begin{calculs}
+u_{n} &= u_{0}\times q^{n} &&\justif{premier terme $2$, raison $3$}\\
+u_{n} &= \res{2\times 3^{n}} &&\\
+u_{4} &= 2\times 3^{4} &&\justif{on remplace $n$ par $4$}\\
+u_{4} &= 2\times 81 &&\justif{la puissance d'abord : $3\times 3\times 3\times 3=81$}\\
+u_{4} &= \res{162} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{n} &= \res{5\,000\times 0{,}1^{n}} &&\justif{premier terme $5\,000$, raison $0{,}1$}\\
+u_{3} &= 5\,000\times 0{,}1^{3} &&\\
+u_{3} &= 5\,000\times 0{,}001 &&\justif{$0{,}1\times 0{,}1\times 0{,}1=0{,}001$}\\
+u_{3} &= \res{5} &&\justif{multiplier par $0{,}001$, c'est diviser par $1\,000$}
+\end{calculs}
+\cas{c)}
+\explique{Le premier terme donné est $u_{1}$ : on recule d'un rang.}{la formule part de
+$u_{0}$}
+\begin{calculs}
+u_{0} &= \dfrac{u_{1}}{q} &&\justif{on recule d'un rang : on divise par la raison}\\
+u_{0} &= \dfrac{6}{2} = 3 &&\\
+u_{n} &= \res{3\times 2^{n}} &&\justif{$u_{0}\times q^{n}$}\\
+u_{5} &= 3\times 2^{5} &&\\
+u_{5} &= 3\times 32 &&\justif{$2^{5}=2\times 2\times 2\times 2\times 2=32$}\\
+u_{5} &= \res{96} &&
+\end{calculs}
+\explique{Contrôle : $u_{1}=3\times 2=6$.}{on retrouve la donnée}
+\cas{d)}
+\begin{calculs}
+u_{n} &= \res{128\times 0{,}5^{n}} &&\justif{premier terme $128$, raison $0{,}5$}\\
+u_{4} &= 128\times 0{,}5^{4} &&\\
+u_{4} &= \dfrac{128}{2^{4}} &&\justif{multiplier $4$ fois par $0{,}5$, c'est diviser
+$4$ fois par $2$}\\
+u_{4} &= \dfrac{128}{16} &&\\
+u_{4} &= \res{8} &&
+\end{calculs}
+\explique{Contrôle : $128$ ; $64$ ; $32$ ; $16$ ; $8$.}{on prend la moitié quatre fois}
+\rem{Erreur fréquente : calculer $(2\times 3)^{4}=6^{4}$. La puissance ne porte que sur la
+raison : $2\times 3^{4}=2\times 81$.}
 \end{exo}
 
 \begin{exo}[Placer ses économies]
-\begin{reponses}
-  \item $c_{1}=1\,500+30=\res{1\,530}$ ; \; $c_{2}=1\,530+30{,}60=\res{1\,560{,}60}$
-  \item Géométrique de raison $1{,}02$ : \res{c_{n}=1\,500\times 1{,}02^{n}}
-  \item $c_{10}\approx 1\,500\times 1{,}22=\res{1\,830\text{ €}}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+c_{1} &= 1{,}02\times 1\,500 &&\justif{$+2\,\%$ : on multiplie par $1{,}02$}\\
+c_{1} &= \res{1\,530} &&\justif{$2\,\%$ de $1\,500$ font $30$}\\
+c_{2} &= 1{,}02\times 1\,530 &&\\
+c_{2} &= \res{1\,560{,}60} &&\justif{$2\,\%$ de $1\,530$ font $30{,}60$}
+\end{calculs}
+\explique{Au bout de deux ans, le capital vaut $1\,560{,}60$~€.}{}
+\cas{b)}
+\explique{Le capital augmente du même pourcentage chaque année : $(c_{n})$ est
+\res{géométrique}, de premier terme $c_{0}=1\,500$ et de raison $q=1{,}02$.}{on multiplie
+toujours par $1{,}02$}
+\begin{calculs}
+c_{n} &= c_{0}\times q^{n} &&\\
+c_{n} &= \res{1\,500\times 1{,}02^{n}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+c_{10} &= 1\,500\times 1{,}02^{10} &&\justif{on remplace $n$ par $10$}\\
+c_{10} &\approx 1\,500\times 1{,}22 &&\justif{on utilise la valeur donnée}\\
+c_{10} &\approx \res{1\,830} &&\justif{$1\,500+1\,500\times 0{,}22=1\,500+330$}
+\end{calculs}
+\explique{Au bout de $10$ ans, le capital vaut environ $1\,830$~€.}{« environ » :
+$1{,}22$ est une valeur arrondie}
 \end{exo}
 
 \begin{exo}[Covoiturage]
-\begin{reponses}
-  \item Géométrique de raison \res{1{,}1}.
-  \item \res{\texttt{=B2*1,1}} (recopiée vers la droite)
-  \item \res{u_{n}=80\times 1{,}1^{n}}
-  \item $u_{3}=80\times 1{,}331=106{,}48$, soit \res{106} salariés.
-  \item Un quart de $400$ : $100$. Or $106\ge 100$ : l'objectif
-        \res{\text{sera atteint}}.
-\end{reponses}
+\cas{a)}
+\explique{Augmenter de $10\,\%$, c'est multiplier par $1{,}1$ chaque année : $(u_{n})$
+est \res{géométrique}, de premier terme $u_{0}=80$ et de raison
+\res{$q=1{,}1$}.}{$1+\dfrac{10}{100}=1{,}1$}
+\cas{b)}
+\explique{En C2 se trouve $u_{1}$ (2025), qui s'obtient en multipliant $u_{0}$, en B2 juste
+à gauche, par $1{,}1$.}{les termes sont en ligne : on utilise la cellule de gauche}
+\explique{En C2 : \res{\texttt{=B2*1,1}}}{recopiée vers la droite, elle devient
+\texttt{=C2*1,1} en D2}
+\cas{c)}
+\begin{calculs}
+u_{n} &= u_{0}\times q^{n} &&\\
+u_{n} &= \res{80\times 1{,}1^{n}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u_{3} &= 80\times 1{,}1^{3} &&\justif{on remplace $n$ par $3$}\\
+u_{3} &= 80\times 1{,}331 &&\justif{valeur donnée}\\
+u_{3} &= 106{,}48 &&\justif{$8\times 1{,}331=10{,}648$, puis $\times 10$}
+\end{calculs}
+\explique{À l'unité près, $u_{3}\approx\res{106}$ : environ $106$ salariés en 2027.}{$n=3$ :
+$2024+3=2027$}
+\cas{e)}
+\explique{Un quart des $400$ salariés : $\dfrac{400}{4}=100$ salariés.}{l'objectif}
+\explique{En 2027, environ $106$ salariés covoiturent, et $106\ge 100$ : l'objectif
+\res{sera atteint}.}{2027 correspond à $n=3$, calculé en d)}
 \end{exo}
 
 \begin{exo}[Dioxyde d'azote]
-\begin{reponses}
-  \item $u_{1}=60-3=\res{57}$ ; \; \res{u_{n}=60\times 0{,}95^{n}}
-  \item 2026 : $n=6$ et $u_{6}\approx 60\times 0{,}74=\res{44{,}4\,\mu\text{g/m}^{3}}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 0{,}95\times 60 &&\justif{baisser de $5\,\%$, c'est multiplier par $0{,}95$}\\
+u_{1} &= \res{57} &&\justif{$5\,\%$ de $60$ font $3$ ; $60-3$}
+\end{calculs}
+\explique{Chaque année, on multiplie par $0{,}95$ : $(u_{n})$ est géométrique, de premier
+terme $u_{0}=60$ et de raison $q=0{,}95$.}{même pourcentage chaque année}
+\begin{calculs}
+u_{n} &= u_{0}\times q^{n} &&\\
+u_{n} &= \res{60\times 0{,}95^{n}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{6} &= 60\times 0{,}95^{6} &&\justif{2026 correspond à $n=6$}\\
+u_{6} &\approx 60\times 0{,}74 &&\justif{valeur donnée}\\
+u_{6} &\approx \res{44{,}4} &&\justif{$6\times 0{,}74=4{,}44$, puis $\times 10$}
+\end{calculs}
+\explique{En 2026, la concentration sera d'environ $44{,}4$~µg/m$^{3}$.}{}
 \end{exo}
 
 \begin{exo}[Lire la formule]
-\deux{a) $u_{0}=\res{4}$ ; $q=\res{5}$}{b) $v_{0}=\res{2\,000}$ ; $q=\res{0{,}85}$}
-\deux{c) $w_{0}=\res{1}$ ; $q=\res{3}$}{}
-\rem{$3^{n}=1\times 3^{n}$ : le premier terme est $1$.}
+\explique{Une suite géométrique s'écrit $u_{n}=u_{0}\times q^{n}$ : le nombre devant est le
+premier terme, le nombre élevé à la puissance $n$ est la raison.}{on compare avec la
+formule}
+\cas{a)}
+\explique{$u_{0}=\res{4}$ et $q=\res{5}$.}{contrôle : $u_{0}=4\times 5^{0}=4$}
+\cas{b)}
+\explique{$v_{0}=\res{2\,000}$ et $q=\res{0{,}85}$.}{}
+\cas{c)}
+\explique{$w_{n}=3^{n}$ s'écrit $w_{n}=1\times 3^{n}$ : $w_{0}=\res{1}$ et
+$q=\res{3}$.}{il n'y a pas de nombre devant : c'est $1$, et non $0$}
 \end{exo}
 
 \partie{Suites géométriques : variations et représentation graphique}
 
 \begin{exo}[Sens de variation]
-\begin{reponses}
-  \item $q=1{,}3>1$ : \res{\text{croissante}}
-  \item $q=0{,}6<1$ : \res{\text{décroissante}}
-  \item $q=1{,}02>1$ : \res{\text{croissante}}
-  \item $q=0{,}25<1$ : \res{\text{décroissante}}
-  \item $q=0{,}95<1$ : \res{\text{décroissante}}
-\end{reponses}
+\explique{Il suffit de la raison (le premier terme est positif) : si $q>1$, la suite est
+croissante ; si $0<q<1$, elle est décroissante.}{propriété 7}
+\cas{a)}
+\explique{$q=\res{1{,}3}$ et $1{,}3>1$ : $(u_{n})$ est \res{croissante}.}{la raison est le
+nombre élevé à la puissance $n$}
+\cas{b)}
+\explique{$q=\res{0{,}6}$ et $0{,}6<1$ : $(v_{n})$ est \res{décroissante}.}{}
+\cas{c)}
+\explique{$q=\res{1{,}02}$ et $1{,}02>1$ : $(w_{n})$ est \res{croissante}.}{on multiplie
+par $1{,}02$ à chaque étape}
+\cas{d)}
+\explique{$q=\res{0{,}25}$ et $0{,}25<1$ : $(t_{n})$ est \res{décroissante}.}{}
+\cas{e)}
+\explique{Baisser de $5\,\%$, c'est multiplier par $0{,}95$ : $q=\res{0{,}95}$, et
+$0{,}95<1$ : la suite est \res{décroissante}.}{$1-\dfrac{5}{100}=0{,}95$}
+\rem{Erreur fréquente : regarder le premier terme ($8$, $500$\ldots) au lieu de la raison.}
 \end{exo}
 
 \begin{exo}[Linéaire ou exponentielle ?]
-\begin{reponses}
-  \item $(a_{n})$ : $8$ ; $6{,}5$ ; $5$\ldots{} \res{\text{arithmétique}, r=-1{,}5} ;
-        \\ $(b_{n})$ : $8$ ; $4$ ; $2$ ; $1$ ; $0{,}5$ :
-        \res{\text{géométrique}, q=0{,}5}
-  \item $a_{5}=2-1{,}5=\res{0{,}5}$ ; \; $b_{5}=0{,}5\times 0{,}5=\res{0{,}25}$
-  \item Linéaire : \res{(a_{n})} ; exponentielle : \res{(b_{n})}.
-\end{reponses}
+\cas{a)}
+\explique{Croix droites, $(a_{n})$ : $8$ ; $6{,}5$ ; $5$ ; $3{,}5$ ; $2$.}{on lit les
+ordonnées}
+\explique{Différences : $6{,}5-8=-1{,}5$, et ainsi de suite, toujours $-1{,}5$.}{on retire
+$1{,}5$ à chaque rang}
+\explique{$(a_{n})$ est \res{arithmétique}, de raison \res{$r=-1{,}5$}.}{}
+\explique{Croix obliques, $(b_{n})$ : $8$ ; $4$ ; $2$ ; $1$ ; $0{,}5$.}{}
+\explique{Quotients : $\dfrac{4}{8}=0{,}5$, et ainsi de suite, toujours $0{,}5$.}{on prend
+la moitié à chaque rang}
+\explique{$(b_{n})$ est \res{géométrique}, de raison \res{$q=0{,}5$}.}{}
+\cas{b)}
+\begin{calculs}
+a_{5} &= a_{4}+r = 2-1{,}5 &&\justif{on avance d'un rang : on ajoute $-1{,}5$}\\
+a_{5} &= \res{0{,}5} &&\\
+b_{5} &= b_{4}\times q = 0{,}5\times 0{,}5 &&\justif{on multiplie par $0{,}5$}\\
+b_{5} &= \res{0{,}25} &&
+\end{calculs}
+\cas{c)}
+\explique{$(a_{n})$ : points alignés, décroissance \res{linéaire}.}{suite arithmétique}
+\explique{$(b_{n})$ : points non alignés, qui descendent de moins en moins vite :
+décroissance \res{exponentielle}.}{suite géométrique de raison $0<q<1$}
 \end{exo}
 
 \begin{exo}[Vrai ou faux ?]
-\begin{reponses}
-  \item \res{\text{Faux}} : $1{,}05>1$, la suite est croissante.
-  \item \res{\text{Vrai}} : $q=0{,}96<1$.
-  \item \res{\text{Vrai}} : les points d'une suite arithmétique sont toujours alignés.
-  \item \res{\text{Faux}} : on compare $q=0{,}8$ à $1$, pas le premier terme ;
-        $0<0{,}8<1$, elle est décroissante.
-\end{reponses}
+\cas{a)}
+\explique{\res{Faux} : $q=1{,}05>1$, la suite est croissante.}{propriété 7}
+\cas{b)}
+\explique{\res{Vrai} : baisser de $4\,\%$, c'est multiplier par $q=0{,}96$, et
+$0{,}96<1$ : la suite est décroissante.}{$1-\dfrac{4}{100}=0{,}96$}
+\cas{c)}
+\explique{\res{Vrai} : les points d'une suite arithmétique sont toujours alignés, quelle
+que soit la raison.}{propriété 4}
+\cas{d)}
+\explique{\res{Faux} : $5$ est le premier terme ; la raison est $0{,}8$, le nombre élevé à
+la puissance $n$. Comme $0{,}8<1$, la suite est décroissante.}{on compare la raison à $1$,
+pas le premier terme}
 \end{exo}
 
 \partie{Suites géométriques : problème de seuil}
 
 \begin{exo}[Dioxyde d'azote (suite)]
-\begin{reponses}
-  \item On divise par $60$ : $60\times 0{,}95^{n}\le 45 \iff 0{,}95^{n}\le
-        \frac{45}{60}=0{,}75$.
-  \item $0{,}95^{5}\approx 0{,}77>0{,}75$ et $0{,}95^{6}\approx 0{,}74\le 0{,}75$ :
-        $n=6$, \res{\text{en } 2026}.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+60\times 0{,}95^{n} &\le 45 &&\justif{on traduit $u_{n}\le 45$}\\
+0{,}95^{n} &\le \dfrac{45}{60} &&\justif{on divise par $60$, positif : le sens ne change
+pas}\\
+0{,}95^{n} &\le 0{,}75 &&\justif{$\dfrac{45}{60}=\dfrac{3\times\barre{15}}{4\times\barre{15}}$,
+soit $\dfrac{3}{4}$}
+\end{calculs}
+\cas{b)}
+\explique{$0{,}95^{5}\approx 0{,}77$ et $0{,}77>0{,}75$ : pour $n=5$, l'objectif n'est pas
+atteint.}{on compare chaque valeur donnée à $0{,}75$}
+\explique{$0{,}95^{6}\approx 0{,}74$ et $0{,}74\le 0{,}75$ : le premier rang qui convient
+est $n=6$.}{}
+\explique{L'objectif sera atteint \res{en 2026}.}{$2020+6=2026$ ; on retrouve
+$u_{6}\approx 44{,}4$ (exercice 40)}
+\rem{La valeur $0{,}95^{7}$ ne sert pas : on cherche le premier rang qui convient. Comme la
+suite est décroissante, l'objectif reste atteint ensuite.}
 \end{exo}
 
 \begin{exo}[Lettre d'information]
-\begin{reponses}
-  \item \res{u_{n}=2\,500\times 1{,}06^{n}}
-  \item On divise par $2\,500$ : $1{,}06^{n}\ge\frac{5\,000}{2\,500}=2$.
-  \item $1{,}06^{11}\approx 1{,}90<2$ et $1{,}06^{12}\approx 2{,}01\ge 2$ : $n=12$.
-        Le nombre d'abonnés aura doublé \res{\text{au bout de 12 mois}}.
-\end{reponses}
+\cas{a)}
+\explique{Augmenter de $6\,\%$, c'est multiplier par $1{,}06$ chaque mois : $(u_{n})$ est
+géométrique, de premier terme $u_{0}=2\,500$ et de raison $q=1{,}06$.}{$1+\dfrac{6}{100}=1{,}06$}
+\begin{calculs}
+u_{n} &= u_{0}\times q^{n} &&\\
+u_{n} &= \res{2\,500\times 1{,}06^{n}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+2\,500\times 1{,}06^{n} &\ge 5\,000 &&\justif{on traduit $u_{n}\ge 5\,000$}\\
+1{,}06^{n} &\ge \dfrac{5\,000}{2\,500} &&\justif{on divise par $2\,500$, positif}\\
+1{,}06^{n} &\ge 2 &&
+\end{calculs}
+\cas{c)}
+\explique{« Doubler », c'est passer de $2\,500$ à $5\,000$ abonnés : on cherche le premier
+$n$ tel que $1{,}06^{n}\ge 2$.}{question b)}
+\explique{$1{,}06^{11}\approx 1{,}90$ et $1{,}90<2$ : pas encore.}{}
+\explique{$1{,}06^{12}\approx 2{,}01$ et $2{,}01\ge 2$ : le premier rang est $n=12$.}{}
+\explique{Le nombre d'abonnés aura doublé \res{au bout de $12$ mois}, en janvier de
+l'année suivante.}{on répond dans le contexte}
 \end{exo}
 
 \begin{exo}[La valeur d'un scooter]
-\begin{reponses}
-  \item \res{v_{n}=3\,000\times 0{,}8^{n}}
-  \item $v_{n}<1\,200 \iff 0{,}8^{n}<0{,}4$ ; $0{,}8^{4}\approx 0{,}41$ et
-        $0{,}8^{5}\approx 0{,}33$ : \res{\text{au bout de 5 ans}}.
-\end{reponses}
+\cas{a)}
+\explique{Perdre $20\,\%$, c'est multiplier par $0{,}8$ chaque année : $(v_{n})$ est
+géométrique, de premier terme $v_{0}=3\,000$ et de raison $q=0{,}8$.}{$1-\dfrac{20}{100}=0{,}8$}
+\begin{calculs}
+v_{n} &= v_{0}\times q^{n} &&\\
+v_{n} &= \res{3\,000\times 0{,}8^{n}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+3\,000\times 0{,}8^{n} &< 1\,200 &&\justif{on traduit $v_{n}<1\,200$}\\
+0{,}8^{n} &< \dfrac{1\,200}{3\,000} &&\justif{on divise par $3\,000$, positif}\\
+0{,}8^{n} &< 0{,}4 &&\justif{$\dfrac{12}{30}=\dfrac{4}{10}$}
+\end{calculs}
+\explique{$0{,}8^{4}\approx 0{,}41$ et $0{,}41>0{,}4$ : pas encore.}{on compare chaque
+valeur donnée à $0{,}4$}
+\explique{$0{,}8^{5}\approx 0{,}33$ et $0{,}33<0{,}4$ : le premier rang est $n=5$.}{}
+\explique{Le scooter vaudra moins de $1\,200$~€ \res{au bout de $5$ ans}.}{}
+\rem{Piège : $0{,}41$ est très proche de $0{,}4$, mais plus grand ; $n=4$ ne convient
+pas.}
 \end{exo}
 
 \partie{Comparer deux évolutions}
 
 \begin{exo}[Arithmétique, géométrique ou aucune des deux ?]
-\deux{a) arithmétique, \res{r=5}}{b) \res{\text{aucune}} : $-1$ ; $0$ ; $3$}
-\deux{c) géométrique, \res{q=3}}{d) arithmétique, \res{r=-2}}
-\deux{e) géométrique, \res{q=1{,}2}}{f) géométrique, \res{q=2}}
-\rem{e) est le piège : ajouter $0{,}2\,u_{n}$, c'est augmenter de $20\,\%$.}
+\explique{Formule $u_{0}+r\times n$ ou relation « on ajoute $r$ » : arithmétique. Formule
+$u_{0}\times q^{n}$ ou relation « on multiplie par $q$ » : géométrique.}{tableau-bilan du
+cours}
+\cas{a)}
+\explique{$u_{n}=5n$ s'écrit $0+5n$ : \res{arithmétique}, de raison \res{$r=5$}.}{on
+ajoute $5$ à chaque rang}
+\cas{b)}
+\explique{$u_{0}=-1$ ; \ $u_{1}=0$ ; \ $u_{2}=3$.}{on calcule les premiers termes}
+\explique{Différences : $1$, puis $3$ : pas arithmétique. On ne passe pas de $0$ à $3$ en
+multipliant : pas géométrique.}{le carré de $n$ : ni « $+r$ » ni « $\times q$ »}
+\explique{\res{Ni l'une ni l'autre}.}{}
+\cas{c)}
+\explique{$u_{n}=4\times 3^{n}$ : \res{géométrique}, de premier terme $4$ et de raison
+\res{$q=3$}.}{forme $u_{0}\times q^{n}$}
+\cas{d)}
+\explique{$u_{n+1}=u_{n}-2$ : on ajoute $-2$ à chaque étape, \res{arithmétique}, de raison
+\res{$r=-2$}.}{forme $u_{n}+r$}
+\cas{e)}
+\begin{calculs}
+u_{n+1} &= u_{n}+0{,}2\,u_{n} &&\justif{on recopie la relation}\\
+u_{n+1} &= 1\times u_{n}+0{,}2\times u_{n} &&\justif{$u_{n}$, c'est $1\times u_{n}$}\\
+u_{n+1} &= 1{,}2\,u_{n} &&\justif{$1+0{,}2=1{,}2$}
+\end{calculs}
+\explique{\res{Géométrique}, de raison \res{$q=1{,}2$}.}{on multiplie par $1{,}2$ :
+hausse de $20\,\%$}
+\cas{f)}
+\explique{$u_{n+1}=2u_{n}$ : \res{géométrique}, de raison \res{$q=2$}.}{forme $q\times
+u_{n}$}
+\rem{e) est un piège : on ajoute $0{,}2\,u_{n}$, qui change à chaque rang, et non un nombre
+fixe. Ajouter $0{,}2\,u_{n}$, c'est augmenter de $20\,\%$.}
 \end{exo}
 
 \begin{exo}[Deux placements]
-\begin{reponses}
-  \item $a_{1}=\res{15\,400}$ ; \; $b_{1}=15\,000+450=\res{15\,450}$
-  \item $(a_{n})$ arithmétique, $r=400$ ; $(b_{n})$ géométrique, $q=1{,}03$.
-  \item $a_{n}=15\,000+400n$ ; \; $b_{n}=15\,000\times 1{,}03^{n}$
-  \item $400n\ge 3\,000 \iff n\ge 7{,}5$ : $n=8$, \res{\text{en } 2033}.
-  \item $b_{6}<18\,000\le b_{7}$ : \res{\text{en } 2032} avec B. Le placement
-        \res{B} finance le projet plus tôt.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+a_{1} &= 15\,000+400 = \res{15\,400} &&\justif{placement A : on ajoute $400$~€}\\
+b_{1} &= 1{,}03\times 15\,000 = \res{15\,450} &&\justif{placement B : $3\,\%$ de
+$15\,000$ font $450$}
+\end{calculs}
+\explique{Au bout d'un an, le placement A donne $15\,400$~€, le placement B
+$15\,450$~€.}{}
+\cas{b)}
+\explique{$(a_{n})$ : on ajoute $400$ chaque année, suite \res{arithmétique}, de raison
+\res{$r=400$}.}{même quantité ajoutée}
+\explique{$(b_{n})$ : on multiplie par $1{,}03$ chaque année, suite \res{géométrique}, de
+raison \res{$q=1{,}03$}.}{même pourcentage : $1+\dfrac{3}{100}$}
+\cas{c)}
+\begin{calculs}
+a_{n} &= \res{15\,000+400n} &&\justif{$a_{0}+n\times r$}\\
+b_{n} &= \res{15\,000\times 1{,}03^{n}} &&\justif{$b_{0}\times q^{n}$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+15\,000+400n &\ge 18\,000 &&\justif{le projet coûte $18\,000$~€}\\
+400n &\ge 3\,000 &&\justif{on retire $15\,000$}\\
+n &\ge 7{,}5 &&\justif{on divise par $400$ : $\dfrac{3\,000}{400}=\dfrac{30}{4}$}
+\end{calculs}
+\explique{Le premier entier qui convient est $n=8$ : avec le placement A, le projet sera
+financé \res{en 2033}.}{$2025+8=2033$ ; contrôle : $a_{7}=17\,800$ et $a_{8}=18\,200$}
+\cas{e)}
+\explique{$b_{6}\approx 17\,911$ et $17\,911<18\,000$ : pas encore.}{on compare les valeurs
+données à $18\,000$}
+\explique{$b_{7}\approx 18\,448$ et $18\,448\ge 18\,000$ : le premier rang est
+$n=7$.}{}
+\explique{Avec le placement B, le projet sera financé \res{en 2032}, un an plus tôt
+qu'avec A : il vaut mieux choisir \res{le placement B}.}{$2025+7=2032$}
 \end{exo}
 
 \begin{exo}[Réduire ses déchets]
-\begin{reponses}
-  \item $(a_{n})$ arithmétique, $r=-15$ ; $(b_{n})$ géométrique, $q=0{,}93$.
-  \item $a_{n}=360-15n$ ; \; $b_{n}=500\times 0{,}93^{n}$
-  \item $360-15n\le 180 \iff 15n\ge 180 \iff n\ge 12$ : \res{\text{en } 2032}.
-  \item $b_{n}\le 250 \iff 0{,}93^{n}\le 0{,}5$ : $n=10$, \res{\text{en } 2030}.
-  \item \res{\text{L'entreprise B}}, deux ans plus tôt.
-\end{reponses}
+\cas{a)}
+\explique{$(a_{n})$ : $15$~t de moins chaque année, suite \res{arithmétique}, de raison
+\res{$r=-15$}.}{même quantité retirée}
+\explique{$(b_{n})$ : $7\,\%$ de moins chaque année, on multiplie par $0{,}93$, suite
+\res{géométrique}, de raison \res{$q=0{,}93$}.}{$1-\dfrac{7}{100}=0{,}93$}
+\cas{b)}
+\begin{calculs}
+a_{n} &= \res{360-15n} &&\justif{premier terme $360$, raison $-15$}\\
+b_{n} &= \res{500\times 0{,}93^{n}} &&\justif{premier terme $500$, raison $0{,}93$}
+\end{calculs}
+\cas{c)}
+\explique{Objectif de A : la moitié de $360$, soit $180$~t au plus.}{« diviser par deux »}
+\begin{calculs}
+360-15n &\le 180 &&\justif{on traduit la question}\\
+-15n &\le -180 &&\justif{on retire $360$}\\
+n &\ge 12 &&\justif{on divise par $-15$, négatif : le sens change}
+\end{calculs}
+\explique{L'entreprise A atteindra son objectif \res{en 2032}.}{$2020+12=2032$ ;
+contrôle : $a_{12}=360-180=180$}
+\cas{d)}
+\explique{Objectif de B : la moitié de $500$, soit $250$~t au plus.}{}
+\begin{calculs}
+500\times 0{,}93^{n} &\le 250 &&\justif{on traduit la question}\\
+0{,}93^{n} &\le 0{,}5 &&\justif{on divise par $500$ : $\dfrac{250}{500}=0{,}5$}
+\end{calculs}
+\explique{$0{,}93^{9}\approx 0{,}52>0{,}5$ et $0{,}93^{10}\approx 0{,}48\le 0{,}5$ : le
+premier rang est $n=10$.}{on compare les valeurs données à $0{,}5$}
+\explique{L'entreprise B atteindra son objectif \res{en 2030}.}{$2020+10=2030$}
+\cas{e)}
+\explique{\res{L'entreprise B} y parvient la première, en 2030, deux ans avant
+l'entreprise A.}{$2030$ contre $2032$}
 \end{exo}
 
 \partiesansnum{Exercices type épreuve anticipée}
 
 \begin{exo}[Automatismes (QCM)]
-\deux{1. \res{\text{c) } 0{,}7}}{2. \res{\text{b) géométrique}, q=2}}
-\deux{3. \res{\text{b) } 40}}{4. \res{\text{b) } 30}}
-\deux{5. \res{\text{a) croissante}}}{6. \res{\text{a) } 200}}
+\cas{1.}
+\explique{Réponse \res{c)} : $1-\dfrac{30}{100}=0{,}7$.}{multiplier par $0{,}3$, ce serait
+ne garder que $30\,\%$}
+\cas{2.}
+\explique{Réponse \res{b)} : $\dfrac{8}{4}=2$ ; \ $\dfrac{16}{8}=2$ ; \ $\dfrac{32}{16}=2$,
+on multiplie toujours par $2$.}{les différences $4$ ; $8$ ; $16$ changent : pas
+arithmétique}
+\cas{3.}
+\explique{Réponse \res{b)} : $u_{1}=10$ ; \ $u_{2}=20$ ; \ $u_{3}=40$.}{on double trois
+fois}
+\cas{4.}
+\explique{Réponse \res{b)} : $u_{10}=60-3\times 10=60-30$, soit $30$.}{on remplace $n$
+par $10$}
+\cas{5.}
+\explique{Réponse \res{a)} : la raison $1{,}02$ est plus grande que $1$, et le premier
+terme est positif.}{propriété 7}
+\cas{6.}
+\explique{Réponse \res{a)} : $u_{1}=400\times 0{,}5$, soit $200$.}{$0{,}5^{1}=0{,}5$ :
+la moitié de $400$}
 \end{exo}
 
 \begin{exo}[Location de vélos]
-\begin{questions}
-  \item \res{u_{n}=40+30n} ; \; $u_{10}=340>300$.
-  \item $40+30n=640 \iff 30n=600 \iff n=20$ : \res{\text{au mois } 20}.
-  \item $+20\,\%$ : $\times 1{,}2$. \res{\text{Géométrique}, q=1{,}2}.
-  \item \res{v_{n}=25\times 1{,}2^{n}}
-  \item $v_{5}\approx 25\times 2{,}49=62{,}25\approx 62$ : au mois $5$, l'entreprise
-        compte environ $62$ clients.
-  \item $v_{n}>150 \iff 1{,}2^{n}>6$ ; $1{,}2^{9}\approx 5{,}16<6$ et
-        $1{,}2^{10}\approx 6{,}19>6$ : \res{\text{à partir du mois } 10}.
-\end{questions}
+\cas{1.}
+\explique{$30$ vélos de plus chaque mois : $(u_{n})$ est arithmétique, de premier terme
+$u_{0}=40$ et de raison $r=30$.}{même quantité ajoutée chaque mois}
+\begin{calculs}
+u_{n} &= u_{0}+n\times r &&\\
+u_{n} &= \res{40+30n} &&\\
+u_{10} &= 40+30\times 10 &&\justif{au mois $10$ : $n=10$}\\
+u_{10} &= 40+300 &&\\
+u_{10} &= 340 &&
+\end{calculs}
+\explique{$340>300$ : au mois $10$, l'entreprise possède \res{plus de $300$ vélos}.}{}
+\cas{2.}
+\begin{calculs}
+40+30n &= 640 &&\justif{on traduit $u_{n}=640$}\\
+30n &= 600 &&\justif{on retire $40$}\\
+n &= 20 &&\justif{on divise par $30$}
+\end{calculs}
+\explique{Elle aura $640$ vélos \res{au bout de $20$ mois}.}{contrôle :
+$u_{20}=40+600=640$}
+\cas{3.}
+\explique{Augmenter de $20\,\%$, c'est multiplier par $1{,}2$ : d'un mois au suivant,
+$v_{n+1}=1{,}2\,v_{n}$.}{$1+\dfrac{20}{100}=1{,}2$}
+\explique{On multiplie toujours par le même nombre : $(v_{n})$ est \res{géométrique}, de
+premier terme $v_{0}=25$ et de raison $q=1{,}2$.}{}
+\cas{4.}
+\begin{calculs}
+v_{n} &= v_{0}\times q^{n} &&\\
+v_{n} &= \res{25\times 1{,}2^{n}} &&
+\end{calculs}
+\cas{5.}
+\begin{calculs}
+v_{5} &= 25\times 1{,}2^{5} &&\justif{on remplace $n$ par $5$}\\
+v_{5} &\approx 25\times 2{,}49 &&\justif{valeur donnée}\\
+v_{5} &\approx 62{,}25 &&\justif{$25\times 2=50$ et $25\times 0{,}49=12{,}25$}
+\end{calculs}
+\explique{Donc $v_{5}\approx 62$ : au mois $5$, l'entreprise compte \res{environ $62$
+clients}.}{un nombre de clients est entier}
+\cas{6.}
+\begin{calculs}
+25\times 1{,}2^{n} &> 150 &&\justif{on traduit $v_{n}>150$}\\
+1{,}2^{n} &> 6 &&\justif{on divise par $25$ : $\dfrac{150}{25}=6$}
+\end{calculs}
+\explique{$1{,}2^{9}\approx 5{,}16$ et $5{,}16<6$ : pas encore.}{on compare les valeurs
+données à $6$}
+\explique{$1{,}2^{10}\approx 6{,}19$ et $6{,}19>6$ : le premier rang est $n=10$.}{}
+\explique{L'entreprise aura plus de $150$ clients \res{à partir du mois $10$}.}{}
 \end{exo}
 
 \begin{exo}[Deux clubs sportifs]
-\begin{questions}
-  \item $T_{1}=\res{685}$ ; \; \res{T_{n}=700-15n}
-  \item $T_{10}=550$ : perte de $150$ adhérents ; or $20\,\%$ de $700$ font $140$, et
-        $150>140$.
-  \item 2028 : $n=3$ ; on lit \res{E_{3}\approx 260} (valeur $259{,}2$).
-  \item Géométrique, $E_{0}=150$, \res{q=1{,}2}.
-  \item $E_{7}\approx 150\times 3{,}58=537<T_{7}=595$ ;
-        $E_{8}\approx 150\times 4{,}30=645>T_{8}=580$ : \res{\text{à partir de } 2033}.
-\end{questions}
+\cas{1.}
+\begin{calculs}
+T_{1} &= 700-15 = \res{685} &&\justif{on perd $15$ adhérents en un an}
+\end{calculs}
+\explique{$(T_{n})$ est arithmétique, de premier terme $T_{0}=700$ et de raison
+$r=-15$.}{même nombre perdu chaque année}
+\begin{calculs}
+T_{n} &= T_{0}+n\times r &&\\
+T_{n} &= \res{700-15n} &&
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+T_{10} &= 700-15\times 10 &&\justif{2035 correspond à $n=10$}\\
+T_{10} &= 700-150 &&\\
+T_{10} &= 550 &&
+\end{calculs}
+\explique{Entre 2025 et 2035, le club perd $700-550=150$ adhérents.}{}
+\begin{calculs}
+0{,}2\times 700 &= 140 &&\justif{$20\,\%$ de $700$}
+\end{calculs}
+\explique{$150>140$ : le club de tennis aura bien perdu \res{plus de $20\,\%$} de ses
+adhérents.}{on compare la perte à $20\,\%$ de l'effectif de départ}
+\cas{3.}
+\explique{2028 correspond à $n=3$. Le point d'abscisse $3$ est entre les lignes $200$ et
+$300$, un peu au-dessus du milieu.}{une ligne horizontale tous les $100$ adhérents}
+\explique{En 2028, le club d'escalade compte \res{environ $260$ adhérents}.}{une lecture
+entre $250$ et $270$ convient}
+\cas{4.}
+\explique{$E_{n+1}=1{,}2\,E_{n}$ : on multiplie toujours par $1{,}2$, donc $(E_{n})$ est
+\res{géométrique}, de premier terme \res{$E_{0}=150$} et de raison
+\res{$q=1{,}2$}.}{$E_{0}$ : l'effectif de 2025}
+\cas{5.}
+\explique{$E_{n}=150\times 1{,}2^{n}$. On compare les deux clubs aux rangs $7$ et $8$, ceux
+des valeurs données.}{$E_{0}\times q^{n}$}
+\begin{calculs}
+E_{7} &\approx 150\times 3{,}58 = 537 &&\justif{$100\times 3{,}58+50\times 3{,}58$, soit
+$358+179$}\\
+T_{7} &= 700-15\times 7 = 595 &&\justif{$700-105$}
+\end{calculs}
+\explique{$537<595$ : en 2032, le club de tennis a encore plus d'adhérents.}{}
+\begin{calculs}
+E_{8} &\approx 150\times 4{,}30 = 645 &&\justif{$430+215$}\\
+T_{8} &= 700-15\times 8 = 580 &&\justif{$700-120$}
+\end{calculs}
+\explique{$645>580$ : en 2033, le club d'escalade passe devant.}{}
+\explique{Comme $(E_{n})$ augmente et $(T_{n})$ diminue, l'escalade reste devant ensuite :
+le club d'escalade aura plus d'adhérents que le club de tennis \res{à partir de
+2033}.}{$q=1{,}2>1$ : croissante ; $r=-15<0$ : décroissante}
 \end{exo}
 
 \end{document}

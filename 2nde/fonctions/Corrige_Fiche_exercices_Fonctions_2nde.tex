@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,343 +189,1148 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
-\entete{Chapitre 2 --- Intervalles et fonctions --- Corrigé des exercices}{Seconde}
+\entete{Chapitre 2 --- Intervalles et fonctions --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
 
-\let\deuxpaquet\deux
-\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
 \definecolor{coulInt}{HTML}{D62828}
 \definecolor{coulIntB}{HTML}{1565C0}
+\definecolor{coulIntC}{HTML}{2E7D32}
+\definecolor{coulIntD}{HTML}{E67E22}
+\definecolor{coulIntE}{HTML}{7B1FA2}
 \newcommand{\axegrad}[2]{%
   \draw[-{Stealth[length=2mm]}] ({#1-0.5},0)--({#2+0.5},0);
   \foreach \k in {#1,...,#2} \draw (\k,0.07)--(\k,-0.07);}
+\NewDocumentCommand{\morceau}{O{coulInt} O{0} m m}{%
+  \draw[#1,line width=1.8pt] (#3,#2)--(#4,#2);}
 \NewDocumentCommand{\crochet}{O{coulInt} O{0} m m}{%
   \ifx[#4%
-    \draw[#1,line width=1.1pt] ($(#3,#2)+(2.4pt,4.5pt)$) -- ++(-2.4pt,0) -- ++(0,-9pt) -- ++(2.4pt,0);
+    \draw[#1,line width=1.2pt] ($(#3,#2)+(2.6pt,5pt)$) -- ++(-2.6pt,0) -- ++(0,-10pt) -- ++(2.6pt,0);
   \else
-    \draw[#1,line width=1.1pt] ($(#3,#2)+(-2.4pt,4.5pt)$) -- ++(2.4pt,0) -- ++(0,-9pt) -- ++(-2.4pt,0);
+    \draw[#1,line width=1.2pt] ($(#3,#2)+(-2.6pt,5pt)$) -- ++(2.6pt,0) -- ++(0,-10pt) -- ++(-2.6pt,0);
   \fi}
-\NewDocumentCommand{\morceau}{O{coulInt} O{0} m m}{%
-  \draw[#1,line width=1.6pt] (#3,#2)--(#4,#2);}
 \NewDocumentCommand{\bornelab}{O{0} m m}{%
-  \node[below=5pt,font=\scriptsize,inner sep=1pt] at (#2,#1) {$#3$};}
-\clubpenalty=10000
-\widowpenalty=10000
+  \node[below=6.5pt,font=\scriptsize,inner sep=1pt] at (#2,#1) {$#3$};}
+\newcommand{\surligne}[2]{\fill[yellow!45] (#1,-0.55) rectangle (#2,0.55);}
+
+\NewDocumentCommand{\droitey}{O{black!70} m m m}{%
+  \draw[#1,thick] (#2,#4)--(#3,#4) node[right,font=\scriptsize,inner sep=1.5pt]{$y=#4$};}
+\NewDocumentCommand{\solx}{O{coulInt} m}{\path[#1] (#2,0) node[croix]{};}
+\newenvironment{lecture}{\par\noindent\begin{minipage}[t]{0.55\linewidth}\vspace{0pt}\raggedright}%
+  {\end{minipage}\hfill}
+\newenvironment{figlecture}{\begin{minipage}[t]{0.43\linewidth}\vspace{0pt}\centering}%
+  {\end{minipage}\par\smallskip}
+\newcommand{\gris}[1]{\leavevmode{\small\itshape\color{black!60}#1}}
+
+\newcommand{\courbeXXV}{%
+  \repere{-5}{-3}{6}{4}
+  \gradx{-4,-3,-2,-1,1,2,3,4,5}
+  \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-4,2)
+    .. controls (-3.667,2.333) and (-3.333,3) .. (-3,3)
+    .. controls (-2.667,3) and (-2.333,2.5) .. (-2,2)
+    .. controls (-1.667,1.5) and (-1.333,0.5) .. (-1,0)
+    .. controls (-0.667,-0.5) and (-0.333,-0.667) .. (0,-1)
+    .. controls (0.333,-1.333) and (0.667,-2) .. (1,-2)
+    .. controls (1.333,-2) and (1.667,-1.333) .. (2,-1)
+    .. controls (2.333,-0.667) and (2.667,-0.5) .. (3,0)
+    .. controls (3.333,0.5) and (3.667,1.5) .. (4,2)
+    .. controls (4.333,2.5) and (4.667,2.667) .. (5,3);
+  \path[coulCourbe] (-4,2) node[croix]{} (5,3) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-4.4,3.4) {$\Cf$};}
+\newcommand{\courbeXXVII}{%
+  \repere{-4}{-4}{4}{5}
+  \gradx{-3,-2,-1,1,2,3}
+  \grady{-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt] (-3,-3)
+    .. controls (-2.667,-2) and (-2.333,-0.833) .. (-2,0)
+    .. controls (-1.667,0.833) and (-1.333,2) .. (-1,2)
+    .. controls (-0.667,2) and (-0.333,0.5) .. (0,0)
+    .. controls (0.333,-0.5) and (0.667,-1) .. (1,-1)
+    .. controls (1.333,-1) and (1.667,-0.833) .. (2,0)
+    .. controls (2.333,0.833) and (2.667,2.667) .. (3,4);
+  \path[coulCourbe] (-3,-3) node[croix]{} (3,4) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (2.1,4.3) {$\Cf$};}
+\newcommand{\courbeXXXIII}{%
+  \repere{-1}{-3}{11}{3}
+  \gradx{1,2,3,4,5,6,7,8,9,10}
+  \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt] (0,0)
+    .. controls (0.333,-0.667) and (0.667,-2) .. (1,-2)
+    .. controls (1.333,-2) and (1.667,-1.333) .. (2,-1)
+    .. controls (2.333,-0.667) and (2.667,-0.333) .. (3,0)
+    .. controls (3.333,0.333) and (3.667,0.667) .. (4,1)
+    .. controls (4.333,1.333) and (4.667,2) .. (5,2)
+    .. controls (5.333,2) and (5.667,1.222) .. (6,1)
+    .. controls (6.667,0.556) and (7.333,0.333) .. (8,0)
+    .. controls (8.667,-0.333) and (9.333,-0.667) .. (10,-1);
+  \path[coulCourbe] (0,0) node[croix]{} (10,-1) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (7.2,1.2) {$\Cf$};}
+\newcommand{\courbeXXXV}{%
+  \repere{-5}{-3}{6}{4}
+  \gradx{-4,-3,-2,-1,1,2,3,4,5}
+  \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-4,1)
+    .. controls (-3.667,0.333) and (-3.333,-0.5) .. (-3,-1)
+    .. controls (-2.667,-1.5) and (-2.333,-2) .. (-2,-2)
+    .. controls (-1.667,-2) and (-1.333,-1.5) .. (-1,-1)
+    .. controls (-0.667,-0.5) and (-0.333,0.5) .. (0,1)
+    .. controls (0.333,1.5) and (0.667,1.667) .. (1,2)
+    .. controls (1.333,2.333) and (1.667,3) .. (2,3)
+    .. controls (2.333,3) and (2.667,2.333) .. (3,2)
+    .. controls (3.333,1.667) and (3.667,1.333) .. (4,1)
+    .. controls (4.333,0.667) and (4.667,0.333) .. (5,0);
+  \path[coulCourbe] (-4,1) node[croix]{} (5,0) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (2,3.5) {$\mathcal{C}$};}
+\newcommand{\courbeXXXVI}{%
+  \repere{-4}{-2}{4}{8}
+  \gradx{-3,-2,-1,1,2,3}
+  \grady{-1,1,2,3,4,5,6,7}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:3,samples=80] plot (\x,{((\x)*(\x)*(\x)-7*(\x)+6)/2});
+  \node[coulCourbe,font=\footnotesize] at (2.4,7.4) {$\Cf$};}
+\newcommand{\courbesXXXVII}{%
+  \repere{-4}{-2}{8}{4}
+  \gradx{-3,-2,-1,1,2,3,4,5,6,7}
+  \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt] (-3,1)
+    .. controls (-2.667,1.333) and (-2.333,1.667) .. (-2,2)
+    .. controls (-1.667,2.333) and (-1.333,3) .. (-1,3)
+    .. controls (-0.667,3) and (-0.333,2.333) .. (0,2)
+    .. controls (0.333,1.667) and (0.667,1.333) .. (1,1)
+    .. controls (1.333,0.667) and (1.667,0.333) .. (2,0)
+    .. controls (2.333,-0.333) and (2.667,-1) .. (3,-1)
+    .. controls (3.333,-1) and (3.667,-0.333) .. (4,0)
+    .. controls (4.333,0.333) and (4.667,0.667) .. (5,1)
+    .. controls (5.333,1.333) and (5.667,1.667) .. (6,2)
+    .. controls (6.333,2.333) and (6.667,2.667) .. (7,3);
+  \draw[coulCourbeC,line width=1.1pt] (-3,3)
+    .. controls (-2.667,2.667) and (-2.333,2.333) .. (-2,2)
+    .. controls (-1.667,1.667) and (-1.333,1.333) .. (-1,1)
+    .. controls (-0.667,0.667) and (-0.333,0.333) .. (0,0)
+    .. controls (0.333,-0.333) and (0.667,-1) .. (1,-1)
+    .. controls (1.333,-1) and (1.667,-0.333) .. (2,0)
+    .. controls (2.333,0.333) and (2.667,0.667) .. (3,1)
+    .. controls (3.333,1.333) and (3.667,1.667) .. (4,2)
+    .. controls (4.333,2.333) and (4.667,3) .. (5,3)
+    .. controls (5.333,3) and (5.667,2.333) .. (6,2)
+    .. controls (6.333,1.667) and (6.667,1.333) .. (7,1);
+  \node[coulCourbe,font=\footnotesize,right] at (7,3) {$\Cf$};
+  \node[coulCourbeC,font=\footnotesize,right] at (7,1) {$\Cg$};}
+\newcommand{\courbesXXXVIII}{%
+  \repere{-7}{-3}{7}{6}
+  \gradx{-6,-5,-4,-3,-2,-1,1,2,3,4,5,6}
+  \grady{-2,-1,1,2,3,4,5}
+  \draw[coulCourbeC,line width=1.1pt] (-6,5)--(6,-1);
+  \draw[coulCourbe,line width=1.1pt] (-6,1)
+    .. controls (-5.667,1.667) and (-5.333,2.5) .. (-5,3)
+    .. controls (-4.667,3.5) and (-4.333,3.667) .. (-4,4)
+    .. controls (-3.667,4.333) and (-3.333,5) .. (-3,5)
+    .. controls (-2.667,5) and (-2.333,4.222) .. (-2,4)
+    .. controls (-1.333,3.556) and (-0.667,3.444) .. (0,3)
+    .. controls (0.333,2.778) and (0.667,2.333) .. (1,2)
+    .. controls (1.333,1.667) and (1.667,1.333) .. (2,1)
+    .. controls (2.333,0.667) and (2.667,0.333) .. (3,0)
+    .. controls (3.333,-0.333) and (3.667,-0.667) .. (4,-1)
+    .. controls (4.333,-1.333) and (4.667,-2) .. (5,-2)
+    .. controls (5.333,-2) and (5.667,-1.333) .. (6,-1);
+  \node[coulCourbeC,font=\footnotesize,above right] at (-6,5) {$\Cf$};
+  \node[coulCourbe,font=\footnotesize,left] at (-6,1) {$\Cg$};}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- INTERVALLES ET FONCTIONS}
-  {Chapitre 2 : fiche d'exercices --- Seconde}
-  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
-   fréquentes et les méthodes à retenir. Une équation se conclut par des accolades,
-   une inéquation par des intervalles.}
+\entetefiche{Chapitre 2 --- Intervalles et fonctions}{Seconde}
 
 \partie{Droite numérique, intervalles fermés}
 
 \begin{exo}[Représenter des intervalles fermés]
-1)
-\begin{center}
-\begin{tikzpicture}[x=0.32cm]
-  \axegrad{-7}{5}
-  \bornelab[-0.3]{-6}{-6}\bornelab[-0.3]{-3}{-3}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}\bornelab[-0.3]{4}{4}
-  \morceau[coulInt][0.3]{1}{4}\crochet[coulInt][0.3]{1}{[}\crochet[coulInt][0.3]{4}{]}
-  \morceau[coulIntB][0.3]{-6}{-3}\crochet[coulIntB][0.3]{-6}{[}\crochet[coulIntB][0.3]{-3}{]}
-  \node[coulInt,font=\scriptsize] at (2.5,0.8) {$I$};
-  \node[coulIntB,font=\scriptsize] at (-4.5,0.8) {$J$};
-\end{tikzpicture}
+\cas{1)}\par\nopagebreak
+\explique{Pour chaque intervalle, on place les deux bornes, on trace les crochets tournés
+vers l'intérieur, puis on épaissit le trait entre les deux.}{intervalle fermé : les
+bornes en font partie, les crochets sont tournés vers l'intervalle}
 
 \smallskip
-\begin{tikzpicture}[x=0.32cm]
-  \axegrad{-7}{5}
-  \bornelab[-0.3]{-2}{-2}\bornelab[-0.3]{-0.5}{-\frac12}\bornelab[-0.3]{2.5}{\frac52}\bornelab[-0.3]{3}{3}
-  \morceau[coulInt][0.3]{-2}{3}\crochet[coulInt][0.3]{-2}{[}\crochet[coulInt][0.3]{3}{]}
-  \morceau[coulIntB][-0.3]{-0.5}{2.5}\crochet[coulIntB][-0.3]{-0.5}{[}\crochet[coulIntB][-0.3]{2.5}{]}
-  \node[coulInt,font=\scriptsize] at (4,0.3) {$K$};
-  \node[coulIntB,font=\scriptsize] at (4,-0.3) {$L$};
+\begin{minipage}[t]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm]
+  \axegrad{-1}{6}
+  \morceau{1}{4}\crochet{1}{[}\crochet{4}{]}
+  \bornelab{0}{0}\bornelab{1}{1}\bornelab{4}{4}
+  \node[coulInt,right,font=\scriptsize] at (6.6,0) {$I$};
 \end{tikzpicture}
-\end{center}
-\rem{Une droite par intervalle, ou deux couleurs sur une même droite.}
-2) \res{\intff{-2}{5}}\par
-3) a) $\res{4\in\intff{0}{4}}$ (borne incluse) ; b) $\res{9\notin\intff{3}{8{,}9}}$ ;
-c) $\res{-3\in\intff{-4}{-2}}$ ; d) $\res{-50\notin\intff{-49}{-5}}$ ($-50<-49$).
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm]
+  \axegrad{-7}{1}
+  \morceau{-6}{-3}\crochet{-6}{[}\crochet{-3}{]}
+  \bornelab{-6}{-6}\bornelab{-3}{-3}\bornelab{0}{0}
+  \node[coulInt,right,font=\scriptsize] at (1.6,0) {$J$};
+\end{tikzpicture}
+\end{minipage}
+
+\medskip
+\begin{minipage}[t]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm]
+  \axegrad{-4}{5}
+  \morceau{-2}{3}\crochet{-2}{[}\crochet{3}{]}
+  \bornelab{-2}{-2}\bornelab{0}{0}\bornelab{3}{3}
+  \node[coulInt,right,font=\scriptsize] at (5.6,0) {$K$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.8cm]
+  \axegrad{-2}{4}
+  \morceau{-0.5}{2.5}\crochet{-0.5}{[}\crochet{2.5}{]}
+  \bornelab{-0.5}{-\frac12}\bornelab{0}{0}\bornelab{1}{1}\bornelab{2.5}{\frac52}
+  \node[coulInt,right,font=\scriptsize] at (4.6,0) {$L$};
+\end{tikzpicture}
+\end{minipage}
+
+\explique{Pour $L$ : $-\dfrac12=-0{,}5$ est au milieu de $-1$ et $0$ ; $\dfrac52=2{,}5$ est
+au milieu de $2$ et $3$.}{une fraction se place par son écriture décimale}
+\rem{Erreur fréquente : tourner les crochets vers l'extérieur. Pour un intervalle fermé,
+ils \og embrassent\fg{} le trait épais. On écrit toujours la plus petite borne à gauche :
+$\intff{-6}{-3}$, et non $\intff{-3}{-6}$.}
+
+\cas{2)}\par\nopagebreak
+\explique{Le trait épais va de $-2$ à $5$, et les deux crochets sont tournés vers
+l'intérieur : les deux bornes appartiennent à l'intervalle. C'est
+$\res{\intff{-2}{5}}$.}{seuls $0$ et $1$ sont écrits : ils donnent l'unité, puis on
+compte les graduations, deux à gauche de $0$, cinq à droite}
+
+\cas{3)}\par\nopagebreak
+\explique{a) $\res{4\in\intff{0}{4}}$ : $4$ est une borne, et le crochet est
+fermé.}{crochet tourné vers l'intervalle : la borne en fait partie}
+\explique{b) $\res{9\notin\intff{3}{8{,}9}}$, car $9>8{,}9$.}{$9=9{,}0$ dépasse la borne
+de droite}
+\explique{c) $\res{-3\in\intff{-4}{-2}}$, car $-4\le -3\le -2$.}{on compare aux deux
+bornes}
+\explique{d) $\res{-50\notin\intff{-49}{-5}}$, car $-50<-49$.}{$-50$ est à gauche de
+$-49$ sur la droite graduée}
+\rem{Avec des nombres négatifs, on pense à la droite graduée : $-50$ est plus loin de zéro
+que $-49$, donc plus petit. Erreur fréquente : croire $-50>-49$ parce que $50>49$.}
 \end{exo}
 
 \begin{exo}[Appartenance]
-\deux{a) $\res{2\in\intff{-3}{7}}$}{b) $\res{-4\notin\intff{-3}{5}}$}
-\deux{c) $\res{10^{-2}\in\intff{0}{1}}$}{d) $\res{\pi\in\intff{3{,}1}{3{,}2}}$}
-\deux{e) $\res{-3\in\intff{-6}{-3}}$}{f) $\res{1{,}5\notin\intff{1{,}6}{2}}$}
-\rem{c) $10^{-2}=0{,}01$ ; d) $\pi\approx 3{,}14$.}
+\explique{On compare le nombre aux deux bornes ; quand le nombre est une borne, c'est le
+crochet qui décide.}{méthode 2 du cours}
+\explique{a) $\res{2\in\intff{-3}{7}}$, car $-3\le 2\le 7$.}{}
+\explique{b) $\res{-4\notin\intff{-3}{5}}$, car $-4<-3$.}{$-4$ est à gauche de $-3$}
+\explique{c) $\res{10^{-2}\in\intff{0}{1}}$, car $10^{-2}=0{,}01$ et
+$0\le 0{,}01\le 1$.}{$10^{-2}=\dfrac{1}{10^{2}}=\dfrac{1}{100}$ (chapitre 1)}
+\explique{d) $\res{\pi\in\intff{3{,}1}{3{,}2}}$, car $\pi\approx 3{,}14$, et
+$3{,}1\le 3{,}14\le 3{,}2$.}{on passe à l'écriture décimale}
+\explique{e) $\res{-3\in\intff{-6}{-3}}$ : $-3$ est la borne de droite, et le crochet est
+fermé.}{crochet tourné vers l'intervalle}
+\explique{f) $\res{1{,}5\notin\intff{1{,}6}{2}}$, car $1{,}5<1{,}6$.}{on compare
+$1{,}50$ et $1{,}60$ : même nombre de décimales}
 \end{exo}
 
 \begin{exo}[Nombres dans un intervalle]
-1) $\frac72=3{,}5$ : les entiers positifs ou nuls de l'intervalle sont \res{0\,;1\,;2\,;3}.\par
-2) Par exemple \res{3{,}72} et \res{3{,}75}.\par
-3) $3<\pi<4$ : \res{\intff{3}{4}}.
+\cas{1)}\par\nopagebreak
+\explique{$\dfrac72=3{,}5$ : l'intervalle va de $-2$ à $3{,}5$.}{on passe à l'écriture
+décimale pour situer la borne}
+\explique{Les entiers positifs ou nuls de cet intervalle sont $\res{0\,;1\,;2\,;3}$.}{$4$
+n'y est pas, car $4>3{,}5$ ; $-2$ et $-1$ y sont, mais ils sont négatifs}
+\rem{\og Positifs ou nuls\fg{} : on n'oublie pas $0$.}
+
+\cas{2)}\par\nopagebreak
+\explique{On écrit les bornes avec deux décimales : $3{,}7=3{,}70$ et $3{,}8=3{,}80$.
+Entre les deux, on trouve $3{,}71$ ; $3{,}72$ ; \ldots ; $3{,}79$. Par exemple
+$\res{3{,}72}$ et $\res{3{,}75}$.}{il y en a bien d'autres : $3{,}705$, $3{,}7001$\ldots{}
+entre deux nombres, il y en a toujours une infinité}
+
+\cas{3)}\par\nopagebreak
+\explique{$\pi\approx 3{,}14$, donc $3\le\pi\le 4$. Les entiers $3$ et $4$ se suivent :
+l'intervalle $\res{\intff{3}{4}}$ convient.}{on encadre $\pi$ par l'entier juste en
+dessous et l'entier juste au-dessus}
 \end{exo}
 
 \partie{Intervalles ouverts, inégalités}
 
 \begin{exo}[D'un intervalle à une inégalité]
-a) $\res{2\le x\le 7}$, fermé \quad b) $\res{x>-1{,}5}$, ouvert\par
-c) $\res{-4<x\le 0}$, semi-ouvert \quad d) $\res{x<5}$, ouvert\par
-e) $\res{-3\le x<8}$, semi-ouvert \quad f) $\res{0<x<1}$, ouvert
+\explique{Crochet tourné vers l'intérieur : la borne est incluse, symbole $\le$.
+Crochet tourné vers l'extérieur : la borne est exclue, symbole $<$. Du côté de
+l'infini, il n'y a pas de borne : une seule inégalité.}{propriété 1 du cours}
+\explique{a) $x\in\intff{2}{7}$ s'écrit $\res{2\le x\le 7}$ : l'intervalle est
+\res{fermé}.}{les deux bornes sont incluses}
+\explique{b) $x\in\intoo{-1{,}5}{+\infty}$ s'écrit $\res{x>-1{,}5}$ : l'intervalle est
+\res{ouvert}.}{$-1{,}5$ est exclu ; $+\infty$ n'est pas un nombre, il n'est jamais
+atteint}
+\explique{c) $x\in\intof{-4}{0}$ s'écrit $\res{-4<x\le 0}$ : l'intervalle est
+\res{semi-ouvert}.}{$-4$ exclu, $0$ inclus : une seule borne fait partie de
+l'intervalle}
+\explique{d) $x\in\intoo{-\infty}{5}$ s'écrit $\res{x<5}$ : l'intervalle est
+\res{ouvert}.}{$5$ est exclu}
+\explique{e) $x\in\intfo{-3}{8}$ s'écrit $\res{-3\le x<8}$ : l'intervalle est
+\res{semi-ouvert}.}{$-3$ inclus, $8$ exclu}
+\explique{f) $x\in\intoo{0}{1}$ s'écrit $\res{0<x<1}$ : l'intervalle est
+\res{ouvert}.}{aucune des deux bornes}
+\rem{Avec $+\infty$ ou $-\infty$, on écrit une seule inégalité : $x>-1{,}5$, et non
+$-1{,}5<x<+\infty$, car l'infini n'est pas un nombre.}
 \end{exo}
 
 \begin{exo}[D'une phrase à un intervalle]
-1) $x\ge -1$ : \res{\intfo{-1}{+\infty}}\par
-2) $-3<x<2$ : \res{\intoo{-3}{2}}\par
-3) $x<4$ : \res{\intoo{-\infty}{4}}\par
-4) $0\le x<6$ : \res{\intfo{0}{6}}
-\rem{\og Positifs ou nuls\fg{} : $0$ est inclus ; \og strictement\fg{} : la borne est
-exclue.}
+\explique{Pour chaque phrase : l'inégalité, puis l'intervalle, puis sa représentation.
+Les crochets suivent les symboles : fermé pour $\le$ et $\ge$, ouvert pour $<$, $>$ et
+du côté de l'infini.}{méthode 3 du cours}
+
+\smallskip
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{5.6cm}@{\quad}l@{\quad}>{\raggedright\arraybackslash}p{5.6cm}@{}}
+1) $x\ge -1$ : \ $x\in\res{\intfo{-1}{+\infty}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-3}{5}
+  \morceau{-1}{5.5}\crochet{-1}{[}\bornelab{-1}{-1}\bornelab{0}{0}\end{tikzpicture} &
+\gris{\og supérieurs ou égaux\fg{} : $-1$ est inclus ; pas de limite à droite}\\[16pt]
+2) $-3<x<2$ : \ $x\in\res{\intoo{-3}{2}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-4}{4}
+  \morceau{-3}{2}\crochet{-3}{]}\crochet{2}{[}\bornelab{-3}{-3}\bornelab{0}{0}\bornelab{2}{2}\end{tikzpicture} &
+\gris{\og strictement\fg{} : les deux bornes sont exclues}\\[16pt]
+3) $x<4$ : \ $x\in\res{\intoo{-\infty}{4}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-2}{6}
+  \morceau{-2.5}{4}\crochet{4}{[}\bornelab{0}{0}\bornelab{4}{4}\end{tikzpicture} &
+\gris{$4$ est exclu ; pas de limite à gauche}\\[16pt]
+4) $0\le x<6$ : \ $x\in\res{\intfo{0}{6}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-2}{7}
+  \morceau{0}{6}\crochet{0}{[}\crochet{6}{[}\bornelab{0}{0}\bornelab{6}{6}\end{tikzpicture} &
+\gris{\og positifs ou nuls\fg{} : $x\ge 0$, donc $0$ inclus ; $6$ exclu}
+\end{tabular}
+\rem{\og Strictement\fg{} : la borne est exclue. \og Ou égal\fg{}, \og ou nul\fg{} : la
+borne est incluse. En 4), les deux conditions à la fois s'écrivent en une seule double
+inégalité.}
 \end{exo}
 
 \begin{exo}[D'une inégalité à un intervalle]
-\deux{a) \res{\intff{-4}{2}}}{b) \res{\intoo{-\infty}{3}}}
-\deux{c) \res{\intoo{5}{+\infty}}}{d) \res{\intoo{2}{3}}}
-\deux{e) \res{\intfo{1{,}5}{+\infty}}}{f) \res{\intof{-\infty}{10^{-2}}}}
-\rem{Les représentations se font comme à l'exercice 1 : crochet tourné vers
-l'extérieur pour une borne exclue et du côté de l'infini.}
+\explique{On lit chaque symbole : $\le$ ou $\ge$ donne un crochet fermé, $<$ ou $>$ un
+crochet ouvert ; du côté où $x$ n'est pas limité, on écrit $-\infty$ ou $+\infty$, avec
+un crochet ouvert.}{la plus petite borne s'écrit toujours à gauche}
+
+\smallskip
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{5.6cm}@{\quad}l@{\quad}>{\raggedright\arraybackslash}p{5.6cm}@{}}
+a) $-4\le x\le 2$ : \ $x\in\res{\intff{-4}{2}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-5}{3}
+  \morceau{-4}{2}\crochet{-4}{[}\crochet{2}{]}\bornelab{-4}{-4}\bornelab{0}{0}\bornelab{2}{2}\end{tikzpicture} &
+\gris{$\le$ des deux côtés : deux crochets fermés}\\[16pt]
+b) $x<3$ : \ $x\in\res{\intoo{-\infty}{3}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-3}{5}
+  \morceau{-3.5}{3}\crochet{3}{[}\bornelab{0}{0}\bornelab{3}{3}\end{tikzpicture} &
+\gris{tous les nombres à gauche de $3$, sans $3$}\\[16pt]
+c) $x>5$ : \ $x\in\res{\intoo{5}{+\infty}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-1}{7}
+  \morceau{5}{7.5}\crochet{5}{]}\bornelab{0}{0}\bornelab{5}{5}\end{tikzpicture} &
+\gris{tous les nombres à droite de $5$, sans $5$}\\[16pt]
+d) $2<x<3$ : \ $x\in\res{\intoo{2}{3}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-1}{5}
+  \morceau{2}{3}\crochet{2}{]}\crochet{3}{[}\bornelab{0}{0}\bornelab{2}{2}\bornelab{3}{3}\end{tikzpicture} &
+\gris{deux inégalités strictes : deux crochets ouverts}\\[16pt]
+e) $x\ge 1{,}5$ : \ $x\in\res{\intfo{1{,}5}{+\infty}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-1}{5}
+  \morceau{1.5}{5.5}\crochet{1.5}{[}\bornelab{0}{0}\bornelab{1.5}{1{,}5}\end{tikzpicture} &
+\gris{$1{,}5$ au milieu de $1$ et $2$ ; crochet fermé}\\[16pt]
+f) $x\le 10^{-2}$ : \ $x\in\res{\intof{-\infty}{10^{-2}}}$ &
+\begin{tikzpicture}[x=0.42cm,baseline=-3pt]\axegrad{-5}{2}
+  \morceau{-5.5}{0.01}\crochet{0.01}{]}\bornelab{0.01}{10^{-2}}
+  \node[above=6pt,font=\scriptsize,inner sep=1pt] at (0,0) {$0$};\end{tikzpicture} &
+\gris{$10^{-2}=0{,}01$ : juste à droite de $0$, presque confondu avec lui à cette échelle}
+\end{tabular}
+\rem{Erreur fréquente en b) : écrire $\intoo{3}{-\infty}$. La plus petite borne, ici
+$-\infty$, s'écrit à gauche.}
 \end{exo}
 
 \begin{exo}[Tableau à compléter]
-1) \res{\intfo{\frac14}{\frac23}} ; \res{\intoo{\pi}{+\infty}} ; \res{\intoo{-\infty}{-1}}\par
-2)
+\cas{1)}\par\nopagebreak
+\explique{$\dfrac14\le x<\dfrac23$ s'écrit $x\in\res{\intfo{\frac14}{\frac23}}$.}{$\frac14$
+inclus ($\le$), $\frac23$ exclu ($<$) ; on vérifie que $\frac14<\frac23$ : $0{,}25<0{,}67$}
+\explique{$x>\pi$ s'écrit $x\in\res{\intoo{\pi}{+\infty}}$.}{$\pi$ est exclu ; pas de
+limite à droite}
+\explique{$x<-1$ s'écrit $x\in\res{\intoo{-\infty}{-1}}$.}{$-1$ est exclu ; pas de limite
+à gauche}
+
+\cas{2)}\par\nopagebreak
+\explique{Sur chaque ligne, on traduit ce qui est donné : inégalité vers intervalle, ou
+intervalle vers inégalité.}{crochet fermé \,$\leftrightarrow$\, $\le$ ; crochet ouvert
+\,$\leftrightarrow$\, $<$}
 \begin{center}
-\renewcommand{\arraystretch}{1.3}
-\small
-\begin{tabular}{|c|c|}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|c|c|c|}
 \hline
-\textbf{Inégalité(s)} & \textbf{Intervalle}\\\hline
-$-1\le x\le 4$ & $\intff{-1}{4}$\\\hline
-$1<x\le 5$ & $\intof{1}{5}$\\\hline
-$-3\le x<2$ & $\intfo{-3}{2}$\\\hline
-$0<x<3$ & $\intoo{0}{3}$\\\hline
-$x>2$ & $\intoo{2}{+\infty}$\\\hline
-$x\le 1$ & $\intof{-\infty}{1}$\\\hline
-$-2\le x<6$ & $\intfo{-2}{6}$\\\hline
+\textbf{Inégalité(s)} & \textbf{Intervalle} & \textbf{Représentation}\\\hline
+$-1\le x\le 4$ & $\res{\intff{-1}{4}}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{-1}{4}\crochet{-1}{[}\crochet{4}{]}\bornelab{-1}{-1}\bornelab{0}{0}\bornelab{4}{4}\end{tikzpicture}\\\hline
+$\res{1<x\le 5}$ & $\intof{1}{5}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{1}{5}\crochet{1}{]}\crochet{5}{]}\bornelab{0}{0}\bornelab{1}{1}\bornelab{5}{5}\end{tikzpicture}\\\hline
+$-3\le x<2$ & $\res{\intfo{-3}{2}}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{-3}{2}\crochet{-3}{[}\crochet{2}{[}\bornelab{-3}{-3}\bornelab{0}{0}\bornelab{2}{2}\end{tikzpicture}\\\hline
+$0<x<3$ & $\res{\intoo{0}{3}}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{0}{3}\crochet{0}{]}\crochet{3}{[}\bornelab{0}{0}\bornelab{3}{3}\end{tikzpicture}\\\hline
+$x>2$ & $\res{\intoo{2}{+\infty}}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{2}{7.5}\crochet{2}{]}\bornelab{0}{0}\bornelab{2}{2}\end{tikzpicture}\\\hline
+$x\le 1$ & $\res{\intof{-\infty}{1}}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{-4.5}{1}\crochet{1}{]}\bornelab{0}{0}\bornelab{1}{1}\end{tikzpicture}\\\hline
+$\res{-2\le x<6}$ & $\intfo{-2}{6}$ &
+\begin{tikzpicture}[x=0.36cm,baseline=-3pt]\axegrad{-4}{7}
+  \morceau{-2}{6}\crochet{-2}{[}\crochet{6}{[}\bornelab{-2}{-2}\bornelab{0}{0}\bornelab{6}{6}\end{tikzpicture}\\\hline
 \end{tabular}
 \end{center}
+\rem{Deuxième ligne : $\intof{1}{5}$ se lit \og $1$ exclu, $5$ inclus\fg{}, d'où
+$1<x\le 5$. Erreur fréquente : $1\le x<5$, en lisant les crochets à l'envers.}
 \end{exo}
 
 \begin{exo}[Bornes incluses ou exclues ?]
-\deux{a) $\res{6\in\intof{-2}{6}}$}{b) $\res{-2\notin\intoo{-2}{4}}$}
-\deux{c) $\res{10^{-2}\in\intoo{0}{+\infty}}$}{d) $\res{\pi\in\intoo{3{,}1}{3{,}2}}$}
-\deux{e) $\res{-4\notin\intoo{-\infty}{-4}}$}{f) $\res{-1{,}5\in\intfo{-1{,}5}{1{,}5}}$}
-\deux{g) $\res{0\in\intoo{-\infty}{+\infty}}$}{h) $\res{-1\notin\intof{-1}{3}}$}
+\explique{Les crochets ne comptent que si le nombre est une borne ; sinon, on compare aux
+deux bornes.}{crochet vers l'intérieur : borne incluse ; vers l'extérieur : borne
+exclue}
+\explique{a) $\res{6\in\intof{-2}{6}}$ : $6$ est la borne de droite, et le crochet est
+tourné vers l'intérieur.}{borne incluse}
+\explique{b) $\res{-2\notin\intoo{-2}{4}}$ : en $-2$, le crochet est tourné vers
+l'extérieur.}{borne exclue}
+\explique{c) $\res{10^{-2}\in\intoo{0}{+\infty}}$, car $10^{-2}=0{,}01$ et
+$0{,}01>0$.}{l'intervalle contient tous les nombres strictement positifs}
+\explique{d) $\res{\pi\in\intoo{3{,}1}{3{,}2}}$, car $3{,}1<3{,}14<3{,}2$.}{$\pi$ n'est
+pas une borne : les crochets ne jouent aucun rôle}
+\explique{e) $\res{-4\notin\intoo{-\infty}{-4}}$ : la borne $-4$ est exclue.}{ce sont les
+nombres strictement inférieurs à $-4$}
+\explique{f) $\res{-1{,}5\in\intfo{-1{,}5}{1{,}5}}$ : en $-1{,}5$, le crochet est tourné
+vers l'intérieur.}{l'autre borne, $1{,}5$, est exclue : ne pas confondre les deux}
+\explique{g) $\res{0\in\intoo{-\infty}{+\infty}}$ : cet intervalle est $\R$ tout
+entier.}{il contient tous les nombres réels}
+\explique{h) $\res{-1\notin\intof{-1}{3}}$ : en $-1$, le crochet est tourné vers
+l'extérieur.}{borne exclue}
 \end{exo}
 
 \partie{Intersection, réunion, complémentaire}
 
 \begin{exo}[Premières intersections et réunions]
+\explique{Pour chaque couple, on représente $I$ (en rouge) et $J$ (en bleu) sur le même
+axe ; on lit la zone commune (surlignée) pour $I\cap J$, la zone couverte pour $I\cup J$,
+puis on règle chaque borne.}{méthode 4 du cours}
+\cas{a)}\par\nopagebreak
 \begin{center}
-\begin{tikzpicture}[x=0.38cm]
-  \axegrad{-2}{7}
-  \bornelab[-0.3]{-1.5}{-1{,}5}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{3}{3}\bornelab[-0.3]{6}{6}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{0}{3}
+  \axegrad{-3}{7}
   \morceau[coulInt][0.3]{-1.5}{3}\crochet[coulInt][0.3]{-1.5}{[}\crochet[coulInt][0.3]{3}{[}
   \morceau[coulIntB][-0.3]{0}{6}\crochet[coulIntB][-0.3]{0}{]}\crochet[coulIntB][-0.3]{6}{]}
-  \node[coulInt,font=\scriptsize] at (7.6,0.3) {$I$};
-  \node[coulIntB,font=\scriptsize] at (7.6,-0.3) {$J$};
+  \bornelab[-0.3]{-1.5}{-1{,}5}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{3}{3}\bornelab[-0.3]{6}{6}
+  \node[coulInt,right,font=\scriptsize] at (7.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (7.6,-0.3) {$J$};
 \end{tikzpicture}
 \end{center}
-a) $I\cap J=\res{\intoo{0}{3}}$ ; \quad $I\cup J=\res{\intff{-1{,}5}{6}}$\par
-b) $I\cap J=\res{\intfo{1}{3}}$ ; \quad $I\cup J=\res{\R}$
-\rem{En a), $0\notin J$ et $3\notin I$ : les deux bornes de $I\cap J$ sont exclues.}
+\explique{Les intervalles se superposent de $0$ à $3$. Or $0\notin J$ et $3\notin I$ :
+ces deux nombres ne sont pas dans les deux à la fois. $I\cap J=\res{\intoo{0}{3}}$.}{une
+borne de $I\cap J$ n'est incluse que si elle est dans $I$ \emph{et} dans $J$}
+\explique{À eux deux, ils couvrent la droite de $-1{,}5$ (qui est dans $I$) à $6$ (qui est
+dans $J$), sans trou : $I\cup J=\res{\intff{-1{,}5}{6}}$.}{$3\notin I$, mais $3\in J$ : pas
+de trou en $3$}
+\cas{b)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{1}{3}
+  \axegrad{-2}{5}
+  \morceau[coulInt][0.3]{-2.5}{3}\crochet[coulInt][0.3]{3}{[}
+  \morceau[coulIntB][-0.3]{1}{5.5}\crochet[coulIntB][-0.3]{1}{[}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}\bornelab[-0.3]{3}{3}
+  \node[coulInt,right,font=\scriptsize] at (5.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (5.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+\explique{Zone commune de $1$ à $3$ ; $1$ est dans $J$ et dans $I$, $3$ n'est pas dans
+$I$ : $I\cap J=\res{\intfo{1}{3}}$.}{$1<3$, donc $1\in I$}
+\explique{$I$ va jusqu'à $-\infty$, $J$ jusqu'à $+\infty$, et ils se chevauchent : ils
+couvrent toute la droite. $I\cup J=\res{\R}$.}{on peut aussi écrire
+$\intoo{-\infty}{+\infty}$}
 \end{exo}
 
 \begin{exo}[Attention aux bornes]
-a) $I\cap J=\res{\intff{-2}{1}}$ ; \quad $I\cup J=\res{\intoo{-3}{+\infty}}$\par
-b) $I\cap J=\res{\varnothing}$ ; \quad $I\cup J=\res{\intoo{1}{6{,}5}}$\par
-c) $I\cap J=\res{\intof{-\infty}{2}}$ ; \quad $I\cup J=\res{\intoo{-\infty}{4}}$\par
-d) $I\cap J=\res{\ens{5}}$ ; \quad $I\cup J=\res{\R}$\par
-e) $I\cap J=\res{\varnothing}$ ; \quad $I\cup J=\res{\R}$
-\rem{b) $3\in I$ mais $3\notin J$ : pas de nombre commun, et la réunion n'a pas de
-trou. d) Seul $5$ est dans les deux intervalles.}
+\explique{Même méthode : on représente $I$ en rouge et $J$ en bleu, puis on règle chaque
+borne en se demandant si elle est dans $I$, dans $J$.}{c'est sur les bornes que se
+joue chaque question}
+\cas{a)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{-2}{1}
+  \axegrad{-4}{3}
+  \morceau[coulInt][0.3]{-2}{3.5}\crochet[coulInt][0.3]{-2}{[}
+  \morceau[coulIntB][-0.3]{-3}{1}\crochet[coulIntB][-0.3]{-3}{]}\crochet[coulIntB][-0.3]{1}{]}
+  \bornelab[-0.3]{-3}{-3}\bornelab[-0.3]{-2}{-2}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}
+  \node[coulInt,right,font=\scriptsize] at (3.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (3.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+\explique{Zone commune de $-2$ à $1$ ; $-2$ et $1$ sont dans $I$ et dans $J$ :
+$I\cap J=\res{\intff{-2}{1}}$.}{$-3<-2\le 1$, donc $-2\in J$}
+\explique{Ensemble couvert : de $-3$, exclu, jusqu'à l'infini :
+$I\cup J=\res{\intoo{-3}{+\infty}}$.}{$-3$ n'est ni dans $J$ (crochet ouvert) ni dans
+$I$}
+\cas{b)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \axegrad{-1}{7}
+  \morceau[coulInt][0.3]{3}{6.5}\crochet[coulInt][0.3]{3}{[}\crochet[coulInt][0.3]{6.5}{[}
+  \morceau[coulIntB][-0.3]{1}{3}\crochet[coulIntB][-0.3]{1}{]}\crochet[coulIntB][-0.3]{3}{[}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}\bornelab[-0.3]{3}{3}\bornelab[-0.3]{6.5}{6{,}5}
+  \node[coulInt,right,font=\scriptsize] at (7.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (7.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+\explique{Le seul nombre qui pourrait être commun est $3$ ; or $3\in I$, mais $3\notin J$.
+Aucun nombre n'est dans les deux : $I\cap J=\res{\varnothing}$.}{l'ensemble vide se note
+$\varnothing$}
+\explique{La réunion n'a pas de trou en $3$, puisque $3\in I$ :
+$I\cup J=\res{\intoo{1}{6{,}5}}$.}{$1\notin J$ et $6{,}5\notin I$ : deux bornes exclues}
+\cas{c)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \surligne{-2.5}{2}
+  \axegrad{-2}{5}
+  \morceau[coulInt][0.3]{-2.5}{2}\crochet[coulInt][0.3]{2}{]}
+  \morceau[coulIntB][-0.3]{-2.5}{4}\crochet[coulIntB][-0.3]{4}{[}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{2}{2}\bornelab[-0.3]{4}{4}
+  \node[coulInt,right,font=\scriptsize] at (5.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (5.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+\explique{Tout nombre inférieur ou égal à $2$ est strictement inférieur à $4$ : $I$ est
+contenu dans $J$. Donc $I\cap J=\res{\intof{-\infty}{2}}$ et
+$I\cup J=\res{\intoo{-\infty}{4}}$.}{l'intersection est le plus petit des deux, la
+réunion le plus grand}
+\cas{d)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \axegrad{0}{8}
+  \morceau[coulInt][0.3]{-0.5}{5}\crochet[coulInt][0.3]{5}{]}
+  \morceau[coulIntB][-0.3]{5}{8.5}\crochet[coulIntB][-0.3]{5}{[}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{5}{5}
+  \node[coulInt,right,font=\scriptsize] at (8.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (8.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+\explique{Les deux intervalles se touchent en $5$, qui est dans $I$ et dans $J$ : c'est le
+seul nombre commun. $I\cap J=\res{\ens{5}}$.}{un seul nombre : on l'écrit entre
+accolades}
+\explique{Ils couvrent toute la droite : $I\cup J=\res{\R}$.}{}
+\cas{e)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=0.8cm]
+  \axegrad{-4}{3}
+  \morceau[coulInt][0.3]{-1}{3.5}\crochet[coulInt][0.3]{-1}{[}
+  \morceau[coulIntB][-0.3]{-4.5}{-1}\crochet[coulIntB][-0.3]{-1}{[}
+  \bornelab[-0.3]{-1}{-1}\bornelab[-0.3]{0}{0}
+  \node[coulInt,right,font=\scriptsize] at (3.6,0.3) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (3.6,-0.3) {$J$};
+\end{tikzpicture}
+\end{center}
+\explique{Seul $-1$ pourrait être commun ; or $-1\in I$ mais $-1\notin J$ :
+$I\cap J=\res{\varnothing}$.}{comparer avec d), où les deux crochets étaient fermés}
+\explique{Pas de trou en $-1$, puisque $-1\in I$ : $I\cup J=\res{\R}$.}{}
+\rem{Méthode à retenir : on dessine, on lit la zone, puis on traite chaque borne une par
+une. Une borne de $I\cap J$ doit être dans $I$ \emph{et} dans $J$ ; une borne de $I\cup J$
+dans $I$ \emph{ou} dans $J$.}
 \end{exo}
 
 \begin{exo}[Plusieurs intervalles]
-1) $I=\res{\intff{-2}{6}}$ ; $J=\res{\intfo{-4}{-1}}$ ; $L=\res{\intof{-\infty}{6}}$ ;
-$M=\res{\intoo{2}{+\infty}}$.\par
-2)
-\deux{$I\cap J=\res{\intfo{-2}{-1}}$}{$I\cup J=\res{\intff{-4}{6}}$}
-\deux{$J\cap K=\res{\varnothing}$}{$K\cup L=\res{\intof{-\infty}{10}}$}
-\deux{$I\cap L=\res{\intff{-2}{6}}$}{$K\cup M=\res{\intoo{1}{+\infty}}$}
-\rem{$I$ est contenu dans $L$ : $I\cap L=I$.}
+\cas{1)}\par\nopagebreak
+\explique{$-2\le x\le 6$ : $I=\res{\intff{-2}{6}}$ \quad ; \quad $-4\le x<-1$ :
+$J=\res{\intfo{-4}{-1}}$.}{$\le$ : crochet fermé ; $<$ : crochet ouvert}
+\explique{$x\le 6$ : $L=\res{\intof{-\infty}{6}}$ \quad ; \quad $2<x$, c'est-à-dire
+$x>2$ : $M=\res{\intoo{2}{+\infty}}$.}{$2<x$ se relit de droite à gauche : $x$ est plus
+grand que $2$}
+
+\cas{2)}\par\nopagebreak
+\explique{On représente les cinq intervalles au-dessus d'un même axe, chacun dans sa
+couleur.}{on lit ensuite chaque intersection ou réunion sur la figure}
+\begin{center}
+\begin{tikzpicture}[x=0.62cm]
+  \axegrad{-5}{11}
+  \morceau[coulInt][2.5]{-2}{6}\crochet[coulInt][2.5]{-2}{[}\crochet[coulInt][2.5]{6}{]}
+  \morceau[coulIntB][2]{-4}{-1}\crochet[coulIntB][2]{-4}{[}\crochet[coulIntB][2]{-1}{[}
+  \morceau[coulIntC][1.5]{1}{10}\crochet[coulIntC][1.5]{1}{]}\crochet[coulIntC][1.5]{10}{]}
+  \morceau[coulIntD][1]{-5.5}{6}\crochet[coulIntD][1]{6}{]}
+  \morceau[coulIntE][0.5]{2}{11.5}\crochet[coulIntE][0.5]{2}{]}
+  \node[coulInt,right,font=\scriptsize] at (11.8,2.5) {$I$};
+  \node[coulIntB,right,font=\scriptsize] at (11.8,2) {$J$};
+  \node[coulIntC,right,font=\scriptsize] at (11.8,1.5) {$K$};
+  \node[coulIntD,right,font=\scriptsize] at (11.8,1) {$L$};
+  \node[coulIntE,right,font=\scriptsize] at (11.8,0.5) {$M$};
+  \foreach \k in {-4,-2,-1,0,1,2,6,10} {\bornelab{\k}{\k}}
+\end{tikzpicture}
+\end{center}
+\explique{$I\cap J$ : zone commune de $-2$ (dans $I$ et dans $J$) à $-1$ (exclu de $J$) :
+$I\cap J=\res{\intfo{-2}{-1}}$.}{$-4\le -2<-1$, donc $-2\in J$}
+\explique{$I\cup J$ : de $-4$ (dans $J$) à $6$ (dans $I$), sans trou, puisque les deux
+intervalles se chevauchent : $I\cup J=\res{\intff{-4}{6}}$.}{}
+\explique{$J\cap K$ : $J$ s'arrête avant $-1$, $K$ commence après $1$ :
+$J\cap K=\res{\varnothing}$.}{aucune zone commune}
+\explique{$K\cup L$ : $L$ va de $-\infty$ à $6$, $K$ continue jusqu'à $10$ (inclus) :
+$K\cup L=\res{\intof{-\infty}{10}}$.}{ils se chevauchent de $1$ à $6$ : pas de trou}
+\explique{$I\cap L$ : tout nombre de $I$ vérifie $x\le 6$, donc $I$ est contenu dans $L$ :
+$I\cap L=I=\res{\intff{-2}{6}}$.}{l'intersection est le plus petit des deux}
+\explique{$K\cup M$ : de $1$ (exclu de $K$ et de $M$) jusqu'à l'infini :
+$K\cup M=\res{\intoo{1}{+\infty}}$.}{$M$ prolonge $K$ au-delà de $10$}
 \end{exo}
 
 \begin{exo}[Complémentaire]
-\deux{a) \res{\intof{-\infty}{3}}}{b) \res{\intoo{4}{+\infty}}}
-\deux{c) \res{\intoo{-\infty}{-2}}}{d) \res{\intfo{6}{+\infty}}}
-e) \res{\intoo{-\infty}{1}\cup\intoo{2}{+\infty}}\par
-f) \res{\intof{-\infty}{-5}\cup\intfo{8}{+\infty}}
-\rem{Chaque crochet se retourne : une borne incluse devient exclue, et inversement.}
+\explique{Le complémentaire est tout le reste de la droite. Chaque crochet se retourne :
+une borne de l'ensemble n'est pas dans son complémentaire, et inversement.}{méthode 5 du
+cours ; en rouge l'ensemble, en bleu son complémentaire}
+
+\smallskip
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{6.4cm}@{\quad}l@{\quad}>{\raggedright\arraybackslash}p{4.6cm}@{}}
+a) $\complement_{\R} A=\res{\intof{-\infty}{3}}$ &
+\begin{tikzpicture}[x=0.38cm,baseline=-3pt]\axegrad{-2}{6}
+  \morceau[coulInt][0.3]{3}{6.5}\crochet[coulInt][0.3]{3}{]}
+  \morceau[coulIntB][-0.3]{-2.5}{3}\crochet[coulIntB][-0.3]{3}{]}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{3}{3}\end{tikzpicture} &
+\gris{$3\notin A$, donc $3$ est dans le complémentaire}\\[22pt]
+b) $\complement_{\R} B=\res{\intoo{4}{+\infty}}$ &
+\begin{tikzpicture}[x=0.38cm,baseline=-3pt]\axegrad{-2}{7}
+  \morceau[coulInt][0.3]{-2.5}{4}\crochet[coulInt][0.3]{4}{]}
+  \morceau[coulIntB][-0.3]{4}{7.5}\crochet[coulIntB][-0.3]{4}{]}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{4}{4}\end{tikzpicture} &
+\gris{$4\in B$, donc $4$ n'est pas dans le complémentaire}\\[22pt]
+c) $\complement_{\R} C=\res{\intoo{-\infty}{-2}}$ &
+\begin{tikzpicture}[x=0.38cm,baseline=-3pt]\axegrad{-5}{3}
+  \morceau[coulInt][0.3]{-2}{3.5}\crochet[coulInt][0.3]{-2}{[}
+  \morceau[coulIntB][-0.3]{-5.5}{-2}\crochet[coulIntB][-0.3]{-2}{[}
+  \bornelab[-0.3]{-2}{-2}\bornelab[-0.3]{0}{0}\end{tikzpicture} &
+\gris{$-2\in C$ : exclu du complémentaire}\\[22pt]
+d) $\complement_{\R} D=\res{\intfo{6}{+\infty}}$ &
+\begin{tikzpicture}[x=0.38cm,baseline=-3pt]\axegrad{-1}{8}
+  \morceau[coulInt][0.3]{-1.5}{6}\crochet[coulInt][0.3]{6}{[}
+  \morceau[coulIntB][-0.3]{6}{8.5}\crochet[coulIntB][-0.3]{6}{[}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{6}{6}\end{tikzpicture} &
+\gris{$6\notin D$ : inclus dans le complémentaire}\\[22pt]
+e) $\complement_{\R} E=\res{\intoo{-\infty}{1}\cup\intoo{2}{+\infty}}$ &
+\begin{tikzpicture}[x=0.38cm,baseline=-3pt]\axegrad{-3}{5}
+  \morceau[coulInt][0.3]{1}{2}\crochet[coulInt][0.3]{1}{[}\crochet[coulInt][0.3]{2}{]}
+  \morceau[coulIntB][-0.3]{-3.5}{1}\crochet[coulIntB][-0.3]{1}{[}
+  \morceau[coulIntB][-0.3]{2}{5.5}\crochet[coulIntB][-0.3]{2}{]}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}\bornelab[-0.3]{2}{2}\end{tikzpicture} &
+\gris{deux morceaux, de part et d'autre de $E$ ; $1$ et $2$ sont dans $E$}\\[22pt]
+f) $\complement_{\R} F=\res{\intof{-\infty}{-5}\cup\intfo{8}{+\infty}}$ &
+\begin{tikzpicture}[x=0.3cm,baseline=-3pt]\axegrad{-7}{10}
+  \morceau[coulInt][0.3]{-5}{8}\crochet[coulInt][0.3]{-5}{]}\crochet[coulInt][0.3]{8}{[}
+  \morceau[coulIntB][-0.3]{-7.5}{-5}\crochet[coulIntB][-0.3]{-5}{]}
+  \morceau[coulIntB][-0.3]{8}{10.5}\crochet[coulIntB][-0.3]{8}{[}
+  \bornelab[-0.3]{-5}{-5}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{8}{8}\end{tikzpicture} &
+\gris{$-5$ et $8$ ne sont pas dans $F$ : ils sont dans le complémentaire}
+\end{tabular}
+\rem{Erreur fréquente en e) et f) : oublier l'un des deux morceaux. Le complémentaire d'un
+intervalle borné des deux côtés est toujours fait de deux morceaux.}
 \end{exo}
 
 \begin{exo}[Inégalités et intervalles : « et », « ou »]
-a) \res{\intof{-3}{-1}\cup\intfo{2}{5}}\par
-b) \res{-2\le x\le 0 \text{ ou } x\ge 3}\par
-c) \res{\intoo{-\infty}{-1}\cup\intoo{4}{+\infty}}\par
-d) \res{x\le -3 \text{ ou } x>2}\par
-e) $\intoo{-2}{+\infty}\cap\intof{-\infty}{3}=\res{\intof{-2}{3}}$\par
-f) \res{x\ge 1 \text{ et } x<5}, soit $1\le x<5$ : \res{\intfo{1}{5}}\par
-g) $\intfo{-4}{+\infty}\cap\intfo{1}{+\infty}=\res{\intfo{1}{+\infty}}$\par
-h) $\intoo{-\infty}{0}\cup\intof{-\infty}{2}=\res{\intof{-\infty}{2}}$\par
-i) $\intoo{-\infty}{-1}\cap\intoo{3}{+\infty}=\res{\varnothing}$
-\rem{\og et\fg{} : les deux conditions à la fois (intersection) ; \og ou\fg{} : au moins
-l'une des deux (réunion). En g) et h), un intervalle contient l'autre ; en i), aucun
-nombre n'est à la fois inférieur à $-1$ et supérieur à $3$.}
+\explique{\og ou\fg{} : au moins l'une des deux conditions, c'est une réunion ($\cup$).
+\og et\fg{} : les deux conditions à la fois, c'est une intersection ($\cap$).}{on
+traduit chaque condition séparément, puis on les relie}
+\cas{a)}\par\nopagebreak
+\explique{$-3<x\le -1$ donne $\intof{-3}{-1}$ ; $2\le x<5$ donne $\intfo{2}{5}$. Avec
+\og ou\fg{} : $\res{\intof{-3}{-1}\cup\intfo{2}{5}}$.}{il y a un trou entre $-1$ et $2$ :
+on ne peut pas l'écrire avec un seul intervalle}
+\cas{b)}\par\nopagebreak
+\explique{$\intff{-2}{0}$ donne $-2\le x\le 0$ ; $\intfo{3}{+\infty}$ donne $x\ge 3$. La
+réunion se lit \og ou\fg{} : $\res{-2\le x\le 0 \text{ ou } x\ge 3}$.}{$\cup$ se traduit
+par \og ou\fg}
+\cas{c)}\par\nopagebreak
+\explique{$x<-1$ donne $\intoo{-\infty}{-1}$ ; $x>4$ donne $\intoo{4}{+\infty}$ :
+$\res{\intoo{-\infty}{-1}\cup\intoo{4}{+\infty}}$.}{c'est le complémentaire de
+$\intff{-1}{4}$}
+\cas{d)}\par\nopagebreak
+\explique{$\intof{-\infty}{-3}$ donne $x\le -3$ ; $\intoo{2}{+\infty}$ donne $x>2$ :
+$\res{x\le -3 \text{ ou } x>2}$.}{}
+\cas{e)}\par\nopagebreak
+\explique{$x>-2$ donne $\intoo{-2}{+\infty}$ ; $x\le 3$ donne $\intof{-\infty}{3}$. Avec
+\og et\fg{} : $\intoo{-2}{+\infty}\cap\intof{-\infty}{3}=\res{\intof{-2}{3}}$.}{les deux
+conditions à la fois s'écrivent $-2<x\le 3$}
+\cas{f)}\par\nopagebreak
+\explique{$\intfo{1}{+\infty}$ donne $x\ge 1$ ; $\intoo{-\infty}{5}$ donne $x<5$ :
+$\res{x\ge 1 \text{ et } x<5}$, soit plus simplement $1\le x<5$, c'est-à-dire
+$\res{\intfo{1}{5}}$.}{$\cap$ se traduit par \og et\fg}
+\cas{g)}\par\nopagebreak
+\explique{$\intfo{-4}{+\infty}\cap\intfo{1}{+\infty}=\res{\intfo{1}{+\infty}}$ ; plus
+simplement : $\res{x\ge 1}$.}{un nombre supérieur ou égal à $1$ est forcément supérieur
+à $-4$ : la condition $x\ge -4$ n'ajoute rien}
+\cas{h)}\par\nopagebreak
+\explique{$\intoo{-\infty}{0}\cup\intof{-\infty}{2}=\res{\intof{-\infty}{2}}$ ; plus
+simplement : $\res{x\le 2}$.}{un nombre strictement négatif est aussi inférieur à $2$ :
+le premier intervalle est contenu dans le second}
+\cas{i)}\par\nopagebreak
+\explique{$\intoo{-\infty}{-1}\cap\intoo{3}{+\infty}=\res{\varnothing}$.}{aucun nombre
+n'est à la fois inférieur à $-1$ et supérieur à $3$}
+
+\smallskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+g)\quad\begin{tikzpicture}[x=0.32cm,baseline=-3pt]
+  \surligne{1}{4.5}
+  \axegrad{-5}{4}
+  \morceau[coulInt][0.3]{-4}{4.5}\crochet[coulInt][0.3]{-4}{[}
+  \morceau[coulIntB][-0.3]{1}{4.5}\crochet[coulIntB][-0.3]{1}{[}
+  \bornelab[-0.3]{-4}{-4}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{1}{1}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+h)\quad\begin{tikzpicture}[x=0.32cm,baseline=-3pt]
+  \axegrad{-5}{4}
+  \morceau[coulInt][0.3]{-5.5}{0}\crochet[coulInt][0.3]{0}{[}
+  \morceau[coulIntB][-0.3]{-5.5}{2}\crochet[coulIntB][-0.3]{2}{]}
+  \bornelab[-0.3]{0}{0}\bornelab[-0.3]{2}{2}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+i)\quad\begin{tikzpicture}[x=0.32cm,baseline=-3pt]
+  \axegrad{-5}{4}
+  \morceau[coulInt][0.3]{-5.5}{-1}\crochet[coulInt][0.3]{-1}{[}
+  \morceau[coulIntB][-0.3]{3}{4.5}\crochet[coulIntB][-0.3]{3}{]}
+  \bornelab[-0.3]{-1}{-1}\bornelab[-0.3]{0}{0}\bornelab[-0.3]{3}{3}
+\end{tikzpicture}
+\end{minipage}
+
+\medskip
+Le tableau complété :
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\small
+\begin{tabular}{|c|c|c|c|}
+\hline
+ & \textbf{Inégalités} & \textbf{Intervalles} & \textbf{Plus simplement}\\\hline
+a) & $-3<x\le -1$ \ ou \ $2\le x<5$ & $\intof{-3}{-1}\cup\intfo{2}{5}$ & \\\hline
+b) & $-2\le x\le 0$ \ ou \ $x\ge 3$ & $\intff{-2}{0}\cup\intfo{3}{+\infty}$ & \\\hline
+c) & $x<-1$ \ ou \ $x>4$ & $\intoo{-\infty}{-1}\cup\intoo{4}{+\infty}$ & \\\hline
+d) & $x\le -3$ \ ou \ $x>2$ & $\intof{-\infty}{-3}\cup\intoo{2}{+\infty}$ & \\\hline
+e) & $x>-2$ \ et \ $x\le 3$ & $\intoo{-2}{+\infty}\cap\intof{-\infty}{3}$ & $-2<x\le 3$ ; \ $\intof{-2}{3}$\\\hline
+f) & $x\ge 1$ \ et \ $x<5$ & $\intfo{1}{+\infty}\cap\intoo{-\infty}{5}$ & $1\le x<5$ ; \ $\intfo{1}{5}$\\\hline
+g) & $x\ge -4$ \ et \ $x\ge 1$ & $\intfo{-4}{+\infty}\cap\intfo{1}{+\infty}$ & $x\ge 1$ ; \ $\intfo{1}{+\infty}$\\\hline
+h) & $x<0$ \ ou \ $x\le 2$ & $\intoo{-\infty}{0}\cup\intof{-\infty}{2}$ & $x\le 2$ ; \ $\intof{-\infty}{2}$\\\hline
+i) & $x<-1$ \ et \ $x>3$ & $\intoo{-\infty}{-1}\cap\intoo{3}{+\infty}$ & $\varnothing$\\\hline
+\end{tabular}
+\end{center}
+\rem{Erreur fréquente en h) : répondre $\intoo{-\infty}{0}$. Avec \og ou\fg{}, il suffit
+d'une des deux conditions : $1$ vérifie $x\le 2$, il fait donc partie de l'ensemble.}
 \end{exo}
 
 \partie{Image et antécédent}
 
 \begin{exo}[Calculer des images]
-1)
+\cas{1)}\par\nopagebreak
+\explique{On remplace $x$ par le nombre, entre parenthèses s'il est négatif, puis on
+calcule en respectant les priorités : la puissance, puis les produits, puis la
+somme.}{méthode 6 du cours}
 \begin{calculs}
-f(1)&=2-3=\res{-1}\\
-f(-2)&=-4-3\times 4=\res{-16}\\
-f\!\left(\tfrac12\right)&=1-\tfrac34=\res{\tfrac14}
+f(1) &= 2\times 1-3\times 1^{2} &&\justif{on remplace $x$ par $1$}\\
+f(1) &= 2-3 &&\justif{$1^{2}=1$}\\
+f(1) &= \res{-1} &&
 \end{calculs}
-2) $f(2)=4-12=-8$ : \res{\text{oui}}, $2$ est un antécédent de $-8$.
-\rem{$-3x^{2}$ pour $x=-2$ : $-3\times(-2)^{2}=-12$, le carré d'abord.}
+\begin{calculs}
+f(-2) &= 2\times(-2)-3\times(-2)^{2} &&\justif{$-2$ entre parenthèses}\\
+f(-2) &= -4-3\times 4 &&\justif{la puissance d'abord : $(-2)^{2}=4$}\\
+f(-2) &= -4-12 &&\justif{puis le produit : $3\times 4=12$}\\
+f(-2) &= \res{-16} &&\justif{deux nombres négatifs : on ajoute $4$ et $12$}
+\end{calculs}
+\begin{calculs}
+f\!\left(\tfrac12\right) &= 2\times\dfrac12-3\times\left(\dfrac12\right)^{2} &&\justif{on remplace $x$ par $\frac12$}\\
+f\!\left(\tfrac12\right) &= 1-3\times\dfrac14 &&\justif{$2\times\frac12=1$ et $\left(\frac12\right)^{2}=\frac{1\times 1}{2\times 2}=\frac14$}\\
+f\!\left(\tfrac12\right) &= \dfrac{1\fois{4}}{1\fois{4}}-\dfrac34 &&\justif{$3\times\frac14=\frac34$ ; on écrit $1$ en quarts}\\
+f\!\left(\tfrac12\right) &= \res{\dfrac14} &&\justif{$\frac{4-3}{4}$}
+\end{calculs}
+\rem{Erreur fréquente : $-3\times(-2)^{2}=+12$. Le carré se calcule d'abord,
+$(-2)^{2}=4$, puis on multiplie par $-3$ : on obtient $-12$.}
+
+\cas{2)}\par\nopagebreak
+\explique{$2$ est un antécédent de $-8$ si l'image de $2$ vaut $-8$ : on calcule
+$f(2)$.}{méthode 7 : vérifier un antécédent, c'est calculer une image}
+\begin{calculs}
+f(2) &= 2\times 2-3\times 2^{2} &&\justif{on remplace $x$ par $2$}\\
+f(2) &= 4-12 &&\justif{$2^{2}=4$ et $3\times 4=12$}\\
+f(2) &= -8 &&
+\end{calculs}
+\explique{$f(2)=-8$ : \res{oui}, $2$ est un antécédent de $-8$ par $f$.}{on compare au
+nombre $-8$}
 \end{exo}
 
 \begin{exo}[Image et antécédent]
-1)
+\cas{1)}\par\nopagebreak
 \begin{calculs}
-g(-3)&=-12-5=\res{-17}\\
-g(5)&=20-5=\res{15}\\
-g\!\left(\tfrac34\right)&=3-5=\res{-2}
+g(-3) &= 4\times(-3)-5 &&\justif{on remplace $x$ par $-3$, entre parenthèses}\\
+g(-3) &= -12-5 &&\justif{signes contraires : le produit est négatif}\\
+g(-3) &= \res{-17} &&
 \end{calculs}
-2) $g\!\left(\frac12\right)=2-5=-3\ne 3$ : \res{\text{non}}.\par
-3)
 \begin{calculs}
-4x-5&=3\\
-4x&=8\\
-x&=\res{2}
+g(5) &= 4\times 5-5 &&\justif{on remplace $x$ par $5$}\\
+g(5) &= \res{15} &&\justif{$20-5$}
 \end{calculs}
+\begin{calculs}
+g\!\left(\tfrac34\right) &= 4\times\dfrac34-5 &&\justif{on remplace $x$ par $\frac34$}\\
+g\!\left(\tfrac34\right) &= 3-5 &&\justif{$4\times\frac34=\frac{\barre{4}\times 3}{\barre{4}}=3$}\\
+g\!\left(\tfrac34\right) &= \res{-2} &&
+\end{calculs}
+
+\cas{2)}\par\nopagebreak
+\explique{On calcule l'image de $\frac12$ et on la compare à $3$.}{vérifier un antécédent
+: calculer une image}
+\begin{calculs}
+g\!\left(\tfrac12\right) &= 4\times\dfrac12-5 &&\justif{on remplace $x$ par $\frac12$}\\
+g\!\left(\tfrac12\right) &= 2-5 &&\\
+g\!\left(\tfrac12\right) &= -3 &&
+\end{calculs}
+\explique{$g\!\left(\frac12\right)=-3$, et $-3\ne 3$ : \res{non}, $\frac12$ n'est pas un
+antécédent de $3$.}{on compare au nombre $3$}
+
+\cas{3)}\par\nopagebreak
+\explique{Chercher l'antécédent de $3$, c'est résoudre l'équation $g(x)=3$.}{méthode 7 :
+chercher un antécédent, c'est résoudre une équation}
+\begin{calculs}
+4x-5 &= 3 &&\justif{on résout $g(x)=3$}\\
+4x &= 8 &&\justif{on ajoute $5$ aux deux membres}\\
+x &= 2 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{L'antécédent de $3$ par $g$ est $\res{2}$.}{vérification : $4\times 2-5=3$}
+\rem{Question 2 : on \emph{vérifie} (on calcule une image). Question 3 : on
+\emph{cherche} (on résout une équation). Les deux démarches ne se confondent pas.}
 \end{exo}
 
 \begin{exo}[Calculer des antécédents]
-a) $x-4=-2$, donc \res{x=2}.\par
-b) $x^{2}=36$ : deux antécédents, \res{-6} et \res{6}.\par
-c) $\frac1x=4$, donc \res{x=\frac14}.\par
-d) $x(x-3)=0$ : un produit est nul si l'un de ses facteurs est nul : \res{0} et \res{3}.
-\rem{b) $(-6)^{2}=36$ aussi : ne pas oublier l'antécédent négatif.}
+\explique{Dans chaque cas, on résout l'équation $f(x)=y$.}{chercher un antécédent, c'est
+résoudre une équation}
+\cas{a)}\par\nopagebreak
+\begin{calculs}
+x-4 &= -2 &&\justif{on résout $f(x)=-2$}\\
+x &= 2 &&\justif{on ajoute $4$ aux deux membres}
+\end{calculs}
+\explique{L'antécédent de $-2$ est $\res{2}$.}{vérification : $2-4=-2$}
+\cas{b)}\par\nopagebreak
+\explique{On résout $x^{2}=36$ : on cherche les nombres dont le carré vaut $36$. Or
+$6^{2}=36$ et $(-6)^{2}=36$.}{deux nombres opposés ont le même carré}
+\explique{$36$ a deux antécédents : $\res{-6}$ et $\res{6}$.}{}
+\cas{c)}\par\nopagebreak
+\begin{calculs}
+\dfrac1x &= \dfrac41 &&\justif{on résout $f(x)=4$, avec $4=\frac41$}\\
+1\times 1 &= 4x &&\justif{produit en croix}\\
+x &= \dfrac14 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{L'antécédent de $4$ est $\res{\dfrac14}$.}{vérification : $1\div\frac14=1\times 4=4$}
+\cas{d)}\par\nopagebreak
+\explique{On résout $x(x-3)=0$. Un produit est nul lorsque l'un de ses facteurs est nul :
+$x=0$ ou $x-3=0$, c'est-à-dire $x=0$ ou $x=3$.}{on ne développe pas : la forme produit
+donne directement les solutions}
+\explique{$0$ a deux antécédents : $\res{0}$ et $\res{3}$.}{vérification : $0\times(-3)=0$
+et $3\times 0=0$}
+\rem{En b), erreur fréquente : oublier l'antécédent négatif $-6$.}
 \end{exo}
 
 \begin{exo}[Deux fonctions égales]
-1) $f(2)=6\times 1+4-10=\res{0}$ et $g(2)=\res{0}$.\par
-2) Par exemple $f(0)=12-10=2$ et $g(0)=2$.\par
-3)
+\cas{1)}\par\nopagebreak
 \begin{calculs}
-f(x)&=3x-x^{2}+12-4x+x^{2}-10\\
-f(x)&=\res{2-x}
+f(2) &= (2+4)(3-2)+2^{2}-10 &&\justif{on remplace $x$ par $2$}\\
+f(2) &= 6\times 1+4-10 &&\justif{les parenthèses, puis la puissance}\\
+f(2) &= \res{0} &&\justif{$6+4-10$}
 \end{calculs}
-Donc $f(x)=g(x)$ pour tout nombre $x$.
+\begin{calculs}
+g(2) &= 2-2 &&\\
+g(2) &= \res{0} &&
+\end{calculs}
+\explique{$2$ a la même image, $0$, par $f$ et par $g$.}{}
+
+\cas{2)}\par\nopagebreak
+\explique{Par exemple avec $0$, qui rend le calcul simple.}{tout nombre convient}
+\begin{calculs}
+f(0) &= (0+4)(3-0)+0^{2}-10 &&\justif{on remplace $x$ par $0$}\\
+f(0) &= 12-10 &&\justif{$4\times 3=12$}\\
+f(0) &= \res{2} &&\\
+g(0) &= 2-0 &&\\
+g(0) &= \res{2} &&
+\end{calculs}
+\explique{Encore la même image par $f$ et par $g$.}{}
+
+\cas{3)}\par\nopagebreak
+\explique{Deux exemples ne suffisent pas : pour \emph{tout} nombre $x$, on développe et
+on réduit $f(x)$.}{un exemple vérifie, il ne démontre pas}
+\begin{calculs}
+f(x) &= (x+4)(3-x)+x^{2}-10 &&\justif{on recopie}\\
+f(x) &= 3x-x^{2}+12-4x+x^{2}-10 &&\justif{chaque terme de $(x+4)$ multiplie $3$, puis $-x$}\\
+f(x) &= -x^{2}+x^{2}+3x-4x+12-10 &&\justif{on regroupe les termes de même sorte}\\
+f(x) &= 2-x &&\justif{$-x^{2}+x^{2}=0$ ; $3x-4x=-x$ ; $12-10=2$}
+\end{calculs}
+\explique{Pour tout nombre $x$, $f(x)=2-x$, c'est-à-dire $\res{f(x)=g(x)}$ : tout nombre a
+la même image par $f$ et par $g$.}{les fonctions $f$ et $g$ sont égales, même si leurs
+formules ne se ressemblent pas}
+\rem{Dans le développement, attention aux signes : $x\times(-x)=-x^{2}$ et
+$4\times(-x)=-4x$.}
 \end{exo}
 
 \partie{Ensemble de définition}
 
 \begin{exo}[Un nombre sans image]
-$f_1$ : \res{0} (division par zéro) ; $f_2$ : \res{2} ($2-2=0$) ; $f_3$ : \res{-5}
-(racine carrée d'un nombre négatif).
+\explique{Pour chaque fonction, on cherche le calcul impossible : une division par zéro,
+ou la racine carrée d'un nombre négatif.}{propriété 2 du cours}
+\explique{$f_1$ : $f_1(0)=\dfrac10$ n'existe pas, car on ne divise pas par zéro. Le nombre
+sans image est $\res{0}$.}{les autres en ont une : $f_1(2)=\frac12$, $f_1(9)=\frac19$\ldots}
+\explique{$f_2$ : le dénominateur $x-2$ vaut $0$ pour $x=2$ ; $f_2(2)=\dfrac70$ n'existe
+pas. Le nombre sans image est $\res{2}$.}{$f_2(-5)=\frac{0}{-7}=0$ existe : un
+numérateur nul ne gêne pas}
+\explique{$f_3$ : $\sqrt{-5}$ n'existe pas, car un nombre négatif n'a pas de racine carrée.
+Le nombre sans image est $\res{-5}$.}{$\sqrt0=0$ et $\sqrt9=3$ existent}
+\rem{Piège pour $f_2$ : $-5$ annule le numérateur, pas le dénominateur. Seul un
+dénominateur nul rend le calcul impossible.}
 \end{exo}
 
 \begin{exo}[Valeurs interdites]
-\deux{a) $x-6=0$ : \res{6}}{b) $x+5=0$ : \res{-5}}
-\deux{c) $3x=0$ : \res{0}}{d) $2x-8=0$ : \res{4}}
-\deux{e) $2x+6=0$ : \res{-3}}{f) $4x-12=0$ : \res{3}}
-\rem{Seul le dénominateur compte : le numérateur peut être nul.}
+\explique{Pour chaque fonction, on résout l'équation \og dénominateur $=0$\fg{}.}{méthode 8
+du cours}
+\cas{a)}\par\nopagebreak
+\begin{calculs}
+x-6 &= 0 &&\justif{le dénominateur s'annule}\\
+x &= 6 &&\justif{on ajoute $6$}
+\end{calculs}
+\explique{La valeur interdite est $\res{6}$.}{$f(6)=\frac10$ n'existe pas}
+\cas{b)}\par\nopagebreak
+\begin{calculs}
+x+5 &= 0 &&\justif{le dénominateur s'annule}\\
+x &= -5 &&\justif{on retranche $5$}
+\end{calculs}
+\explique{La valeur interdite est $\res{-5}$.}{$f(-5)=\frac20$ n'existe pas}
+\cas{c)}\par\nopagebreak
+\begin{calculs}
+3x &= 0 &&\justif{le dénominateur s'annule}\\
+x &= 0 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{La valeur interdite est $\res{0}$.}{$3\times 0=0$}
+\cas{d)}\par\nopagebreak
+\begin{calculs}
+2x-8 &= 0 &&\justif{le dénominateur s'annule}\\
+2x &= 8 &&\justif{on ajoute $8$}\\
+x &= 4 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{La valeur interdite est $\res{4}$.}{vérification : $2\times 4-8=0$}
+\cas{e)}\par\nopagebreak
+\begin{calculs}
+2x+6 &= 0 &&\justif{le dénominateur s'annule}\\
+2x &= -6 &&\justif{on retranche $6$}\\
+x &= -3 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{La valeur interdite est $\res{-3}$.}{vérification : $2\times(-3)+6=0$}
+\cas{f)}\par\nopagebreak
+\begin{calculs}
+4x-12 &= 0 &&\justif{le dénominateur s'annule}\\
+4x &= 12 &&\justif{on ajoute $12$}\\
+x &= 3 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{La valeur interdite est $\res{3}$.}{vérification : $4\times 3-12=0$}
+\rem{Seul le dénominateur compte. En d), le numérateur s'annule pour $x=-2$, mais
+$f(-2)=\frac{0}{-12}=0$ existe : $-2$ n'est pas une valeur interdite.}
 \end{exo}
 
 \begin{exo}[Racines carrées]
-\deux{a) \res{\intfo{0}{+\infty}}}{b) $x\ge 2$ : \res{\intfo{2}{+\infty}}}
-\deux{c) $x\ge -4$ : \res{\intfo{-4}{+\infty}}}{d) $x\ge 5$ : \res{\intfo{5}{+\infty}}}
-e) $3x-9\ge 0$ donne $3x\ge 9$ puis $x\ge 3$ : \res{\intfo{3}{+\infty}}\par
-f) $2x+8\ge 0$ donne $2x\ge -8$ puis $x\ge -4$ : \res{\intfo{-4}{+\infty}}
+\explique{Le nombre sous la racine doit être positif ou nul : on résout \og nombre sous la
+racine $\ge 0$\fg{} comme une équation, puis on conclut avec un intervalle.}{méthode 9 du
+cours}
+\cas{a)}\par\nopagebreak
+\explique{$\sqrt{x}$ existe lorsque $x\ge 0$ : $D_f=\res{\intfo{0}{+\infty}}$.}{$0$ est
+inclus : $\sqrt0=0$}
+\cas{b)}\par\nopagebreak
+\begin{calculs}
+x-2 &\ge 0 &&\justif{le nombre sous la racine est positif ou nul}\\
+x &\ge 2 &&\justif{on ajoute $2$}
+\end{calculs}
+\explique{$D_f=\res{\intfo{2}{+\infty}}$.}{$f(2)=\sqrt0=0$ existe : crochet fermé}
+\cas{c)}\par\nopagebreak
+\begin{calculs}
+x+4 &\ge 0 &&\justif{le nombre sous la racine est positif ou nul}\\
+x &\ge -4 &&\justif{on retranche $4$}
+\end{calculs}
+\explique{$D_f=\res{\intfo{-4}{+\infty}}$.}{}
+\cas{d)}\par\nopagebreak
+\begin{calculs}
+x-5 &\ge 0 &&\\
+x &\ge 5 &&\justif{on ajoute $5$}
+\end{calculs}
+\explique{$D_f=\res{\intfo{5}{+\infty}}$.}{}
+\cas{e)}\par\nopagebreak
+\begin{calculs}
+3x-9 &\ge 0 &&\justif{le nombre sous la racine est positif ou nul}\\
+3x &\ge 9 &&\justif{on ajoute $9$}\\
+x &\ge 3 &&\justif{on divise par $3$, qui est positif}
+\end{calculs}
+\explique{$D_f=\res{\intfo{3}{+\infty}}$.}{vérification : $3\times 3-9=0$}
+\cas{f)}\par\nopagebreak
+\begin{calculs}
+2x+8 &\ge 0 &&\\
+2x &\ge -8 &&\justif{on retranche $8$}\\
+x &\ge -4 &&\justif{on divise par $2$, qui est positif}
+\end{calculs}
+\explique{$D_f=\res{\intfo{-4}{+\infty}}$.}{vérification : $2\times(-4)+8=0$}
+\rem{La borne est toujours incluse, car $\sqrt0=0$ existe. Erreur fréquente : écrire
+$\intoo{2}{+\infty}$ en b).}
 \end{exo}
 
 \begin{exo}[Pour s'entraîner]
-\deux{a) \res{\R}}{b) \res{\R} (affine)}
-c) valeur interdite $1$ : \res{\intoo{-\infty}{1}\cup\intoo{1}{+\infty}}\par
-d) $5x+15=0$ pour $x=-3$ : \res{\intoo{-\infty}{-3}\cup\intoo{-3}{+\infty}}\par
-e) $4x-8\ge 0$ donne $x\ge 2$ : \res{\intfo{2}{+\infty}}
+\explique{Sans quotient ni racine, $D_f=\R$ ; avec un quotient, on retire la valeur
+interdite ; avec une racine, on résout \og nombre sous la racine $\ge 0$\fg{}.}{méthode 9
+du cours}
+\cas{a)}\par\nopagebreak
+\explique{Ni quotient ni racine : on peut calculer $3x^{2}-2$ pour tout nombre.
+$D_f=\res{\R}$, c'est-à-dire $\intoo{-\infty}{+\infty}$.}{}
+\cas{b)}\par\nopagebreak
+\explique{$f$ est affine : $D_f=\res{\R}$.}{$5-2x=-2x+5$, de la forme $ax+b$}
+\cas{c)}\par\nopagebreak
+\begin{calculs}
+x-1 &= 0 &&\justif{le dénominateur du quotient s'annule}\\
+x &= 1 &&
+\end{calculs}
+\explique{On retire la valeur interdite $1$ : $D_f=\res{\intoo{-\infty}{1}\cup\intoo{1}{+\infty}}$.}{le
+terme $+x$ ne pose aucun problème}
+\cas{d)}\par\nopagebreak
+\begin{calculs}
+5x+15 &= 0 &&\justif{le dénominateur s'annule}\\
+5x &= -15 &&\justif{on retranche $15$}\\
+x &= -3 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{$D_f=\res{\intoo{-\infty}{-3}\cup\intoo{-3}{+\infty}}$.}{le numérateur $2x+3$
+ne compte pas}
+\cas{e)}\par\nopagebreak
+\begin{calculs}
+4x-8 &\ge 0 &&\justif{le nombre sous la racine est positif ou nul}\\
+4x &\ge 8 &&\justif{on ajoute $8$}\\
+x &\ge 2 &&\justif{on divise par $4$, qui est positif}
+\end{calculs}
+\explique{$D_f=\res{\intfo{2}{+\infty}}$.}{le $+1$ est ajouté après la racine : il ne
+change rien}
+\rem{En c) et d), on retire un seul nombre : $\R$ privé d'un point s'écrit avec deux
+intervalles ouverts en ce nombre.}
 \end{exo}
 
 \partie{Tableau de valeurs}
 
 \begin{exo}[Lire un tableau]
-1) $f(-1)=\res{0}$ ; $f(1)=\res{-1}$ ; $f(-2)=\res{2}$.\par
-2) $f(2)=4\ne -1$ : \res{\text{non}}. Le tableau donne $f(1)=-1$ : $1$ est un antécédent
-de $-1$.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{5}{c|}l}
+\cline{1-6}
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $\leftarrow$ antécédents\\\cline{1-6}
+$f(x)$ & $2$ & $0$ & $-3$ & $-1$ & $4$ & $\leftarrow$ images\\\cline{1-6}
+\end{tabular}
+\end{center}
+\cas{1)}\par\nopagebreak
+\explique{Une image se lit de haut en bas : on cherche le nombre sur la ligne des $x$,
+son image est juste en dessous.}{définition 10 du cours}
+\explique{$f(-1)=\res{0}$ \ ; \ $f(1)=\res{-1}$ \ ; \ $f(-2)=\res{2}$.}{}
+\cas{2)}\par\nopagebreak
+\explique{Sous $x=2$, on lit $f(2)=4$, et non $-1$ : $2$ \res{n'est pas} un antécédent de
+$-1$.}{on vérifie avec l'image de $2$}
+\explique{Un antécédent se lit de bas en haut : on cherche $-1$ sur la ligne des images ;
+au-dessus, on lit $1$. Le tableau donne l'antécédent $\res{1}$.}{il peut y en avoir
+d'autres, que le tableau ne montre pas}
+\rem{$-1$ apparaît sur les deux lignes : en haut, c'est un antécédent (son image est
+$0$) ; en bas, c'est une image (son antécédent lu est $1$). On regarde la bonne ligne.}
 \end{exo}
 
 \begin{exo}[Lire un tableau (suite)]
-1) $g(4)=\res{5}$ ; $g(2)=\res{0}$ ; $g(-1)=\res{-2}$.\par
-2) Antécédents de $5$ : \res{4} ; de $-2$ : \res{-1} ; de $4$ : \res{-3} et \res{6}.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{5}{c|}}
+\hline
+$x$ & $-3$ & $-1$ & $2$ & $4$ & $6$\\\hline
+$g(x)$ & $4$ & $-2$ & $0$ & $5$ & $4$\\\hline
+\end{tabular}
+\end{center}
+\cas{1)}\par\nopagebreak
+\explique{$g(4)=\res{5}$ \ ; \ $g(2)=\res{0}$ \ ; \ $g(-1)=\res{-2}$.}{de haut en bas : le
+nombre sur la ligne des $x$, l'image en dessous}
+\cas{2)}\par\nopagebreak
+\explique{Antécédent de $5$ : $\res{4}$, car $g(4)=5$.}{de bas en haut : on cherche $5$
+sur la ligne des images}
+\explique{Antécédent de $-2$ : $\res{-1}$, car $g(-1)=-2$.}{}
+\explique{Antécédents de $4$ : $\res{-3}$ et $\res{6}$, car $g(-3)=4$ et $g(6)=4$.}{on
+parcourt toute la ligne des images : $4$ y figure deux fois}
+\rem{Un nombre n'a qu'une image, mais il peut avoir plusieurs antécédents. Ne pas répondre
+$5$ pour les antécédents de $4$ : $5$ est l'image de $4$.}
 \end{exo}
 
 \begin{exo}[Construire un tableau]
-\begin{minipage}[t]{0.56\linewidth}\raggedright
-1) Par exemple $f(-2)=0{,}5\times(-3)^{2}-2=2{,}5$.
+\cas{1)}\par\nopagebreak
+\explique{Premier nombre $-2$, dernier $4$, pas de $1$ : $x$ prend les valeurs $-2$ ; $-1$ ;
+$0$ ; $1$ ; $2$ ; $3$ ; $4$. On calcule chaque image, la parenthèse d'abord, puis le
+carré.}{le pas est l'écart entre deux valeurs de $x$ qui se suivent}
+\begin{calculs}
+f(-2) &= 0{,}5\times(-2-1)^{2}-2 &&\justif{on remplace $x$ par $-2$}\\
+f(-2) &= 0{,}5\times 9-2 &&\justif{$-2-1=-3$, puis $(-3)^{2}=9$}\\
+f(-2) &= 2{,}5 &&\justif{$4{,}5-2$}
+\end{calculs}
+\begin{calculs}
+f(-1) &= 0{,}5\times(-2)^{2}-2 = 0 &&\justif{$(-2)^{2}=4$ et $0{,}5\times 4=2$}\\
+f(0) &= 0{,}5\times(-1)^{2}-2 = -1{,}5 &&\justif{$0{,}5\times 1=0{,}5$}\\
+f(1) &= 0{,}5\times 0^{2}-2 = -2 &&\justif{la parenthèse est nulle}\\
+f(2) &= 0{,}5\times 1^{2}-2 = -1{,}5 &&\\
+f(3) &= 0{,}5\times 2^{2}-2 = 0 &&\\
+f(4) &= 0{,}5\times 3^{2}-2 = 2{,}5 &&\justif{$0{,}5\times 9=4{,}5$}
+\end{calculs}
 \begin{center}
-\footnotesize
-\setlength{\tabcolsep}{2pt}
 \renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|c|*{7}{c|}}
 \hline
@@ -532,82 +1338,378 @@ $x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
 $f(x)$ & $2{,}5$ & $0$ & $-1{,}5$ & $-2$ & $-1{,}5$ & $0$ & $2{,}5$\\\hline
 \end{tabular}
 \end{center}
-2) Antécédents de $0$ : \res{-1} et \res{3} ; de $2{,}5$ : \res{-2} et \res{4}.\par
-3) Ci-contre.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.40\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[x=0.38cm,y=0.38cm]
+\rem{$0{,}5\times(x-1)^{2}$ : on élève au carré avant de multiplier par $0{,}5$. Erreur
+fréquente : $0{,}5\times(-3)=-1{,}5$, puis $(-1{,}5)^{2}$.}
+
+\cas{2)}\par\nopagebreak
+\explique{On cherche $0$ sur la ligne des images : il est sous $-1$ et sous $3$. Deux
+antécédents de $0$ : $\res{-1}$ et $\res{3}$.}{de bas en haut}
+\explique{De même, $2{,}5$ est sous $-2$ et sous $4$ : $\res{-2}$ et $\res{4}$.}{}
+
+\cas{3)}\par\nopagebreak
+\begin{lecture}
+On place les sept points du tableau, de coordonnées $\bigl(x\,;f(x)\bigr)$, puis on les
+relie à main levée par une courbe sans angle.
+
+\smallskip
+\gris{Le point le plus bas est $(1\,;-2)$ ; les images se répètent de part et d'autre de
+$1$ ($f(0)=f(2)$, $f(-1)=f(3)$\ldots) : la courbe est symétrique par rapport à la droite
+verticale qui passe par ce point.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
   \repere{-3}{-3}{5}{4}
   \gradx{-2,-1,1,2,3,4}
   \grady{-2,-1,1,2,3}
-  \draw[coulCourbe,line width=1pt,domain=-2:4,samples=50] plot (\x,{0.5*(\x-1)*(\x-1)-2});
+  \draw[coulCourbe,line width=1.1pt,domain=-2:4,samples=60] plot (\x,{0.5*(\x-1)*(\x-1)-2});
   \foreach \a/\b in {-2/2.5,-1/0,0/-1.5,1/-2,2/-1.5,3/0,4/2.5} \path[coulCourbe] (\a,\b) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,right] at (4,2.5) {$\Cf$};
 \end{tikzpicture}
-\end{minipage}
+\end{figlecture}
 \end{exo}
 
 \partie{Courbe représentative}
 
 \begin{exo}[Lecture graphique]
-a) $D_f=\res{\intff{-4}{5}}$\par
-b) $f(3)=\res{0}$ et $f(-1)=\res{0}$\par
-c) $f(-2)=\res{2}$ et $f(-4)=\res{2}$\par
-d) Antécédents de $2$ : \res{-4\,;-2\,;4} ; de $0$ : \res{-1\,;3} ; de $-2$ : \res{1} ;
-$-3$ n'a \res{\text{aucun antécédent}}.\par
-e) \res{-3} et \res{5}.
-\rem{Pour les antécédents de $2$, on trace la droite $y=2$ et on lit toutes les
-abscisses des points de la courbe sur cette droite.}
+\explique{Sur la courbe, un point a pour abscisse un antécédent $x$ et pour ordonnée son
+image $f(x)$.}{définition 11 du cours}
+\cas{a)}\par\nopagebreak
+\begin{lecture}
+La courbe commence au point d'abscisse $-4$ et finit au point d'abscisse $5$ :
+$D_f=\res{\intff{-4}{5}}$.
+
+\smallskip
+\gris{On lit les abscisses des extrémités (marquées par des croix). Crochets fermés : les
+extrémités sont des points de la courbe, $-4$ et $5$ ont une image.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXV
+  \draw[black!70,dashed] (-4,2)--(-4,0) (5,3)--(5,0);
+  \morceau{-4}{5}\crochet{-4}{[}\crochet{5}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{b) et c)}\par\nopagebreak
+\begin{lecture}
+b) Au-dessus de $3$, la courbe est sur l'axe des abscisses : $f(3)=\res{0}$. De même,
+$f(-1)=\res{0}$.
+
+\smallskip
+\gris{Le point de la courbe d'abscisse $3$ est sur l'axe des abscisses : son ordonnée
+est $0$.}
+
+\medskip
+c) On part de $-2$ sur l'axe des abscisses, on monte jusqu'à la courbe, puis on va
+horizontalement jusqu'à l'axe des ordonnées : $f(-2)=\res{2}$. De même,
+$f(-4)=\res{2}$.
+
+\smallskip
+\gris{Image : de l'axe des abscisses vers la courbe, puis vers l'axe des ordonnées.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXV
+  \solx{3}\solx{-1}
+  \draw[black!70,dashed] (-2,0)--(-2,2)--(0,2) (-4,0)--(-4,2)--(-2,2);
+  \path[coulInt] (-2,2) node[croix]{} (-4,2) node[croix]{};
+\end{tikzpicture}
+\end{figlecture}
+\cas{d)}\par\nopagebreak
+\begin{lecture}
+Les antécédents de $2$ sont les abscisses des points de la courbe situés sur la droite
+horizontale $y=2$ : $\res{-4\,;-2\,;4}$.
+
+\smallskip
+\gris{Antécédent : de l'axe des ordonnées vers la courbe, puis vers l'axe des abscisses.
+On n'en oublie aucun : on suit la droite d'un bout à l'autre.}
+
+\medskip
+Antécédents de $0$ : la courbe coupe l'axe des abscisses en $\res{-1}$ et $\res{3}$
+(croix vertes).
+
+Antécédent de $-2$ : la droite $y=-2$ touche la courbe en son point le plus bas, d'abscisse
+$\res{1}$ (en bleu).
+
+La droite $y=-3$ ne rencontre pas la courbe : $-3$ \res{n'a pas d'antécédent}.
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXV
+  \droitey[coulInt]{-5}{6}{2}
+  \draw[coulInt,dashed] (-4,2)--(-4,0) (-2,2)--(-2,0) (4,2)--(4,0);
+  \solx{-4}\solx{-2}\solx{4}
+  \droitey[coulIntB]{-5}{6}{-2}
+  \draw[coulIntB,dashed] (1,-2)--(1,0);
+  \solx[coulIntB]{1}
+  \droitey[black!60]{-5}{6}{-3}
+  \solx[coulCourbeC]{-1}\solx[coulCourbeC]{3}
+\end{tikzpicture}
+\end{figlecture}
+\cas{e)}\par\nopagebreak
+\begin{lecture}
+$f(x)=3$ : on cherche les antécédents de $3$. La droite $y=3$ touche la courbe en son
+point le plus haut à gauche, d'abscisse $-3$, et en son extrémité droite, d'abscisse $5$ :
+$\res{-3}$ et $\res{5}$.
+
+\smallskip
+\gris{Vérification : les points $(-3\,;3)$ et $(5\,;3)$ sont sur la courbe.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXV
+  \droitey[coulInt]{-5}{6}{3}
+  \draw[coulInt,dashed] (-3,3)--(-3,0) (5,3)--(5,0);
+  \solx{-3}\solx{5}
+\end{tikzpicture}
+\end{figlecture}
+\rem{Erreur fréquente : lire l'image sur le mauvais axe. L'image se lit sur l'axe des
+ordonnées, l'antécédent sur l'axe des abscisses.}
 \end{exo}
 
 \begin{exo}[Points et courbes]
-1) Les points \res{(0\,;-3)} ; \res{(-4\,;0)} ; \res{(2\,;1)} et \res{(6\,;1)}
-appartiennent à $\Cf$.\par
-2) a) \res{f(3)=-2} ; b) \res{f(0)=4} ; c) \res{f(-1)=0} et \res{f(5)=0}.\par
-3) a) $f(-2)=1$ : \res{A\in\Cf} ; $f(3)=6\ne 5$ : \res{B\notin\Cf} ;
-$f(1{,}5)=2{,}25-3=-0{,}75$ : \res{C\in\Cf}. Autres points : $(0\,;-3)$, $(1\,;-2)$.\par
-b) $f(-2)=-5$ : \res{A\in\Cf} ; $f(2)=7\ne 6$ : \res{B\notin\Cf} ;
-$f\!\left(\frac13\right)=2$ : \res{C\in\Cf}. Autres points : $(0\,;1)$, $(1\,;4)$.
+\cas{1)}\par\nopagebreak
+\explique{$f(a)=b$ signifie que le point de coordonnées $(a\,;b)$ appartient à $\Cf$.}{antécédent
+en abscisse, image en ordonnée}
+\explique{a) $f(0)=-3$ : le point $\res{(0\,;-3)}$ appartient à $\Cf$.}{}
+\explique{b) $f(-4)=0$ : le point $\res{(-4\,;0)}$ appartient à $\Cf$.}{c'est un point de
+l'axe des abscisses}
+\explique{c) $f(2)=1$ et $f(6)=1$ : les points $\res{(2\,;1)}$ et $\res{(6\,;1)}$
+appartiennent à $\Cf$.}{deux égalités, donc deux points, à la même hauteur}
+\cas{2)}\par\nopagebreak
+\explique{a) Le point $(3\,;-2)$ est sur $\Cf$ : $\res{f(3)=-2}$.}{l'abscisse est
+l'antécédent, l'ordonnée l'image}
+\explique{b) Un point de l'axe des ordonnées a pour abscisse $0$ : $\Cf$ passe par
+$(0\,;4)$, donc $\res{f(0)=4}$.}{}
+\explique{c) Un point de l'axe des abscisses a pour ordonnée $0$ : $\Cf$ passe par
+$(-1\,;0)$ et $(5\,;0)$, donc $\res{f(-1)=0}$ et $\res{f(5)=0}$.}{}
+\rem{Erreur fréquente en b) et c) : inverser les deux axes. L'axe des ordonnées est
+l'axe vertical, où $x=0$.}
+\cas{3) a)}\par\nopagebreak
+\explique{Un point est sur la courbe lorsque l'image de son abscisse est égale à son
+ordonnée : on calcule l'image de l'abscisse et on compare.}{méthode 12 du cours}
+\begin{calculs}
+f(-2) &= (-2)^{2}-3 &&\justif{l'image de l'abscisse de $A$}\\
+f(-2) &= 4-3 = 1 &&
+\end{calculs}
+\explique{$f(-2)=1$, l'ordonnée de $A$ : $\res{A\in\Cf}$.}{}
+\begin{calculs}
+f(3) &= 3^{2}-3 &&\justif{l'image de l'abscisse de $B$}\\
+f(3) &= 9-3 = 6 &&
+\end{calculs}
+\explique{$f(3)=6$, alors que l'ordonnée de $B$ est $5$ : $\res{B\notin\Cf}$.}{$6\ne 5$}
+\begin{calculs}
+f(1{,}5) &= 1{,}5^{2}-3 &&\justif{l'image de l'abscisse de $C$}\\
+f(1{,}5) &= 2{,}25-3 = -0{,}75 &&\justif{$1{,}5\times 1{,}5=2{,}25$}
+\end{calculs}
+\explique{$f(1{,}5)=-0{,}75$, l'ordonnée de $C$ : $\res{C\in\Cf}$.}{}
+\explique{Deux autres points : on choisit une abscisse et on calcule son image. $f(0)=-3$
+et $f(1)=-2$ : les points $\res{(0\,;-3)}$ et $\res{(1\,;-2)}$ sont sur la
+courbe.}{$0^{2}-3=-3$ ; $1^{2}-3=-2$}
+\cas{3) b)}\par\nopagebreak
+\begin{calculs}
+f(-2) &= 3\times(-2)+1 &&\justif{l'image de l'abscisse de $A$}\\
+f(-2) &= -6+1 = -5 &&
+\end{calculs}
+\explique{$f(-2)=-5$, l'ordonnée de $A$ : $\res{A\in\Cf}$.}{}
+\begin{calculs}
+f(2) &= 3\times 2+1 &&\justif{l'image de l'abscisse de $B$}\\
+f(2) &= 7 &&
+\end{calculs}
+\explique{$f(2)=7$, alors que l'ordonnée de $B$ est $6$ : $\res{B\notin\Cf}$.}{$7\ne 6$}
+\begin{calculs}
+f\!\left(\tfrac13\right) &= 3\times\dfrac13+1 &&\justif{l'image de l'abscisse de $C$}\\
+f\!\left(\tfrac13\right) &= 1+1 = 2 &&\justif{$3\times\frac13=\frac33=1$}
+\end{calculs}
+\explique{$f\!\left(\frac13\right)=2$, l'ordonnée de $C$ : $\res{C\in\Cf}$.}{}
+\explique{Deux autres points : $f(0)=1$ et $f(1)=4$, d'où $\res{(0\,;1)}$ et
+$\res{(1\,;4)}$.}{$3\times 0+1=1$ ; $3\times 1+1=4$}
 \end{exo}
 
 \begin{exo}[Trois antécédents]
-a) \res{\intff{-3}{3}} \quad b) $f(2)=\res{0}$ \quad c) \res{-3}\par
-d) \res{0} (antécédents $-2$, $0$ et $2$) ; tout nombre strictement compris entre $-1$ et
-$2$ convient aussi.\par
-e) Par exemple \res{5} : aucun point de la courbe n'a une ordonnée supérieure à $4$.
+\cas{a)}\par\nopagebreak
+\begin{lecture}
+Les nombres qui ont une image sont les abscisses des points de la courbe : elle va de
+$-3$ à $3$. L'ensemble cherché est $\res{\intff{-3}{3}}$.
+
+\smallskip
+\gris{C'est l'ensemble de définition de $f$ ; extrémités marquées par des croix,
+crochets fermés.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \courbeXXVII
+  \draw[black!70,dashed] (-3,-3)--(-3,0) (3,4)--(3,0);
+  \morceau{-3}{3}\crochet{-3}{[}\crochet{3}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{b) et c)}\par\nopagebreak
+\begin{lecture}
+b) Au-dessus de $2$, la courbe est sur l'axe des abscisses : $f(2)=\res{0}$.
+
+\medskip
+c) La droite $y=-3$ ne rencontre la courbe qu'en son point de départ, d'abscisse $-3$ :
+l'antécédent de $-3$ est $\res{-3}$.
+
+\smallskip
+\gris{Ensuite, la courbe remonte ; son point le plus bas, à droite, est à la hauteur
+$-1$ : elle ne redescend jamais jusqu'à $-3$.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \courbeXXVII
+  \solx[coulCourbeC]{2}
+  \droitey[coulInt]{-4}{4}{-3}
+  \draw[coulInt,dashed] (-3,-3)--(-3,0);
+  \solx{-3}
+\end{tikzpicture}
+\end{figlecture}
+\cas{d)}\par\nopagebreak
+\begin{lecture}
+L'axe des abscisses, c'est-à-dire la droite $y=0$, coupe la courbe en trois points,
+d'abscisses $-2$, $0$ et $2$ : le nombre $\res{0}$ a trois antécédents.
+
+\smallskip
+\gris{Tout nombre strictement compris entre $-1$ et $2$ convient aussi : la droite
+horizontale coupe alors la courbe trois fois (en pointillés, la droite $y=1$).}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \courbeXXVII
+  \solx{-2}\solx{0}\solx{2}
+  \draw[black!60,dashed] (-4,1)--(4,1) node[above left,font=\scriptsize,inner sep=1pt]{$y=1$};
+\end{tikzpicture}
+\end{figlecture}
+\cas{e)}\par\nopagebreak
+\begin{lecture}
+Le point le plus haut de la courbe a pour ordonnée $4$, le plus bas $-3$. La droite $y=5$
+ne rencontre pas la courbe : $\res{5}$ n'a aucun antécédent.
+
+\smallskip
+\gris{Tout nombre strictement supérieur à $4$ ou strictement inférieur à $-3$ convient.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \courbeXXVII
+  \droitey[coulInt]{-4}{4}{5}
+\end{tikzpicture}
+\end{figlecture}
 \end{exo}
 
 \begin{exo}[Quelle courbe passe par ce point ?]
+\explique{Un point est sur la courbe d'une fonction lorsque l'image de son abscisse est
+égale à son ordonnée. On calcule donc l'image de l'abscisse par chaque
+fonction.}{méthode 12 du cours}
+\cas{1)}\par\nopagebreak
+\explique{Pour $A(4\,;6)$, on calcule les images de $4$ et on les compare à $6$.}{}
+\begin{calculs}
+f(4) &= 10-4 = 6 &&\\
+g(4) &= \dfrac{24}{4} = 6 &&\\
+h(4) &= -2\times 4+14 = 6 &&\justif{$-8+14$}\\
+k(4) &= -\dfrac12\times 4^{2}+5\times 4-4 &&\justif{la puissance d'abord : $4^{2}=16$}\\
+k(4) &= -8+20-4 = 8 &&\justif{$-\frac12\times 16=-8$}
+\end{calculs}
+\explique{Les courbes de $\res{f}$, $\res{g}$ et $\res{h}$ passent par $A$ ; pas celle de
+$k$, car $k(4)=8\ne 6$.}{un même point peut être sur plusieurs courbes}
+\cas{2)}\par\nopagebreak
+\explique{Pour $B(6\,;4)$ : images de $6$, comparées à $4$.}{}
+\begin{calculs}
+f(6) &= 10-6 = 4 &&\\
+g(6) &= \dfrac{24}{6} = 4 &&\\
+h(6) &= -2\times 6+14 = 2 &&\\
+k(6) &= -\dfrac12\times 6^{2}+5\times 6-4 &&\justif{$6^{2}=36$}\\
+k(6) &= -18+30-4 = 8 &&
+\end{calculs}
+\explique{Les courbes de $\res{f}$ et $\res{g}$ passent par $B$.}{$h(6)=2$ et $k(6)=8$ ne
+valent pas $4$}
+\explique{Pour $C(8\,;4)$ : images de $8$, comparées à $4$.}{}
+\begin{calculs}
+f(8) &= 10-8 = 2 &&\\
+g(8) &= \dfrac{24}{8} = 3 &&\\
+h(8) &= -2\times 8+14 = -2 &&\\
+k(8) &= -\dfrac12\times 8^{2}+5\times 8-4 &&\justif{$8^{2}=64$}\\
+k(8) &= -32+40-4 = 4 &&
+\end{calculs}
+\explique{Seule la courbe de $\res{k}$ passe par $C$.}{}
+
+\smallskip
+En résumé :
 \begin{center}
-\small
-\renewcommand{\arraystretch}{1.25}
+\renewcommand{\arraystretch}{1.3}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
  & $f$ & $g$ & $h$ & $k$\\\hline
-$x=4$ & $6$ & $6$ & $6$ & $8$\\\hline
-$x=6$ & $4$ & $4$ & $2$ & $8$\\\hline
-$x=8$ & $2$ & $3$ & $-2$ & $4$\\\hline
+image de $4$ & $\mathbf{6}$ & $\mathbf{6}$ & $\mathbf{6}$ & $8$\\\hline
+image de $6$ & $\mathbf{4}$ & $\mathbf{4}$ & $2$ & $8$\\\hline
+image de $8$ & $2$ & $3$ & $-2$ & $\mathbf{4}$\\\hline
 \end{tabular}
 \end{center}
-1) $A(4\,;6)$ : courbes de \res{f}, \res{g} et \res{h}.\par
-2) $B(6\,;4)$ : courbes de \res{f} et \res{g} ; $C(8\,;4)$ : courbe de \res{k}.
+\rem{Erreur fréquente : comparer l'image à l'abscisse du point. On calcule l'image de
+l'\emph{abscisse}, et on la compare à l'\emph{ordonnée}.}
 \end{exo}
 
 \partie{Calculatrice}
 
 \begin{exo}[Antécédents à la calculatrice]
-1) Tableau : $7$ ; $3{,}5$ ; $1$ ; $-0{,}5$ ; $-1$ ; $-0{,}5$ ; $1$ ; $3{,}5$ ; $7$.
-Axes : $x$ de $-2$ à $6$, $y$ de $-2$ à $8$.\par
-2) Antécédents de $2$ : \res{x\approx -0{,}4} et \res{x\approx 4{,}4}.\par
-3) Oui, deux : $x\approx 0{,}6$ et $x\approx 3{,}4$.
+\cas{1)}\par\nopagebreak
+\explique{Application \texttt{Grapheur}, onglet \texttt{Expressions} : on entre
+$f(x)=0{,}5x^{2}-2x+1$. Onglet \texttt{Tableau}, \texttt{Régler l'intervalle} :
+\texttt{X début} $-2$, \texttt{X fin} $6$, \texttt{Pas} $1$.}{méthode 13 du cours :
+début, fin et pas}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{9}{c|}}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\\hline
+$f(x)$ & $7$ & $3{,}5$ & $1$ & $-0{,}5$ & $-1$ & $-0{,}5$ & $1$ & $3{,}5$ & $7$\\\hline
+\end{tabular}
+\end{center}
+\explique{Une valeur vérifiée à la main : $f(-2)=0{,}5\times 4+4+1$, soit $7$.}{$(-2)^{2}=4$
+et $-2\times(-2)=4$}
+\explique{Onglet \texttt{Graphique}, menu \texttt{Axes} : $X_{\min}=-2$, $X_{\max}=6$,
+$Y_{\min}=-2$, $Y_{\max}=8$.}{un peu au-delà de la plus petite image ($-1$) et de la plus
+grande ($7$)}
+
+\cas{2) et 3)}\par\nopagebreak
+\begin{lecture}
+2) Sur la courbe : \texttt{OK}, \texttt{Calculer}, \texttt{Antécédent}, valeur $2$. La
+calculatrice donne deux antécédents : $\res{x\approx -0{,}4}$ et $\res{x\approx 4{,}4}$.
+
+\smallskip
+\gris{Contrôle avec le tableau : $f(-1)=3{,}5$ et $f(0)=1$ ; $2$ est entre les deux, donc un
+antécédent est entre $-1$ et $0$. De même, l'autre est entre $4$ et $5$.}
+
+\medskip
+3) Dans le tableau, $f(0)=1$ est positif et $f(1)=-0{,}5$ est négatif : la courbe traverse
+l'axe des abscisses entre $0$ et $1$. Elle le retraverse entre $3$ et $4$. Le nombre $0$ a
+donc \res{deux antécédents} : $x\approx 0{,}6$ et $x\approx 3{,}4$.
+
+\smallskip
+\gris{La plus petite image est $-1$, atteinte en $2$ : la courbe descend sous l'axe, puis
+remonte.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-3}{-2}{7}{8}
+  \gradx{-2,-1,1,2,3,4,5,6}
+  \grady{-1,1,2,3,4,5,6,7}
+  \draw[coulCourbe,line width=1.1pt,domain=-2:6,samples=60] plot (\x,{0.5*(\x)*(\x)-2*(\x)+1});
+  \foreach \a/\b in {-2/7,-1/3.5,0/1,1/-0.5,2/-1,3/-0.5,4/1,5/3.5,6/7} \path[coulCourbe] (\a,\b) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,left] at (5.8,7.4) {$\Cf$};
+  \droitey[coulInt]{-3}{7}{2}
+  \draw[coulInt,dashed] (-0.449,2)--(-0.449,0) (4.449,2)--(4.449,0);
+  \solx{-0.449}\solx{4.449}
+  \solx[coulIntB]{0.586}\solx[coulIntB]{3.414}
+\end{tikzpicture}
+\end{figlecture}
+\rem{Les valeurs données par la calculatrice sont approchées : on écrit $\approx$, et on
+arrondit comme demandé (à $0{,}1$).}
 \end{exo}
 
 \begin{exo}[Tableau avec un pas de 0,5]
-\begin{minipage}[t]{0.56\linewidth}\raggedright
-1)
+\cas{1)}\par\nopagebreak
+\explique{\texttt{Régler l'intervalle} : \texttt{X début} $-1$, \texttt{X fin} $2$,
+\texttt{Pas} $0{,}5$.}{de $-1$ à $2$ en avançant de $0{,}5$ : sept valeurs}
 \begin{center}
-\footnotesize
-\setlength{\tabcolsep}{2.5pt}
 \renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|c|*{7}{c|}}
 \hline
@@ -615,106 +1717,746 @@ $x$ & $-1$ & $-0{,}5$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\\hline
 $g(x)$ & $0$ & $2$ & $3$ & $3$ & $2$ & $0$ & $-3$\\\hline
 \end{tabular}
 \end{center}
-2) Ci-contre.\par
-3) $g(0{,}25)=\res{3{,}125}$ ; antécédents de $2$ : \res{-0{,}5} et \res{1} ; de $0$ :
-\res{-1} et \res{1{,}5}.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.40\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+\explique{Une valeur vérifiée à la main :}{pour contrôler la saisie de la formule}
+\begin{calculs}
+g(-0{,}5) &= -2\times(-0{,}5)^{2}+(-0{,}5)+3 &&\justif{$-0{,}5$ entre parenthèses}\\
+g(-0{,}5) &= -2\times 0{,}25-0{,}5+3 &&\justif{$(-0{,}5)^{2}=0{,}25$}\\
+g(-0{,}5) &= -0{,}5-0{,}5+3 = 2 &&
+\end{calculs}
+
+\cas{2) et 3)}\par\nopagebreak
+\begin{lecture}
+2) \texttt{Axes} : $X_{\min}=-1$, $X_{\max}=2$, $Y_{\min}=-4$, $Y_{\max}=4$. Sur la copie,
+on place les sept points du tableau et on les relie par une courbe sans angle.
+
+\medskip
+3) \texttt{Aller à} $0{,}25$ : $g(0{,}25)=\res{3{,}125}$.
+
+\smallskip
+\gris{$0{,}25$ n'est pas dans le tableau ; à la main :
+$-2\times 0{,}0625+0{,}25+3=3{,}125$.}
+
+\medskip
+Antécédents de $2$ (en rouge) : $\res{-0{,}5}$ et $\res{1}$, lus dans le tableau ; la
+droite $y=2$ coupe la courbe en ces deux points.
+
+Antécédents de $0$ (en bleu) : $\res{-1}$ et $\res{1{,}5}$.
+
+\smallskip
+\gris{Ces valeurs sont exactes : elles figurent dans le tableau.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.9cm,y=0.9cm]
   \repere{-2}{-4}{3}{4}
   \gradx{-1,1,2}
   \grady{-3,-2,-1,1,2,3}
-  \draw[coulCourbe,line width=1pt,domain=-1:2,samples=50] plot (\x,{-2*(\x)*(\x)+(\x)+3});
+  \draw[coulCourbe,line width=1.1pt,domain=-1:2,samples=60] plot (\x,{-2*(\x)*(\x)+(\x)+3});
   \foreach \a/\b in {-1/0,-0.5/2,0/3,0.5/3,1/2,1.5/0,2/-3} \path[coulCourbe] (\a,\b) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,right] at (1.6,-1.6) {$\mathcal{C}_{g}$};
+  \droitey[coulInt]{-2}{3}{2}
+  \draw[coulInt,dashed] (-0.5,2)--(-0.5,0) (1,2)--(1,0);
+  \solx{-0.5}\solx{1}
+  \solx[coulIntB]{-1}\solx[coulIntB]{1.5}
 \end{tikzpicture}
-\end{minipage}
+\end{figlecture}
 \end{exo}
 
 \begin{exo}[Une fonction quotient]
-1) $-1$ ; $0$ ; $0{,}25$ ; $0{,}32$ ; $0{,}33$ ; $0{,}33$ ; $0{,}31$ ; $0{,}30$ ; $0{,}28$ ;
-$0{,}26$ ; $0{,}25$.\par
-3) Antécédents de $0{,}25$ : \res{1} et \res{5}.\par
-4) $f(x)=0$ : \res{S=\ens{0{,}5}} ; $f(x)\ge 0{,}25$ : \res{S=\intff{1}{5}}.\par
-5) Les deux courbes se coupent en deux points : \res{S\approx\ens{0\,;1{,}30}}.
-\rem{$f(0)=-1$ et $0-1=-1$ : $0$ est une solution exacte.}
+\cas{1)}\par\nopagebreak
+\explique{On entre $f(x)=\dfrac{2x-1}{(x+1)^{2}}$, avec les parenthèses autour de $x+1$.
+\texttt{Régler l'intervalle} : \texttt{X début} $0$, \texttt{X fin} $5$, \texttt{Pas}
+$0{,}5$.}{sans parenthèses, la calculatrice élève au carré le $1$ seulement}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{6}{c|}}
+\hline
+$x$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$ & $2{,}5$\\\hline
+$f(x)$ & $-1$ & $0$ & $0{,}25$ & $0{,}32$ & $0{,}33$ & $0{,}33$\\\hline
+\end{tabular}
+
+\smallskip
+\begin{tabular}{|c|*{5}{c|}}
+\hline
+$x$ & $3$ & $3{,}5$ & $4$ & $4{,}5$ & $5$\\\hline
+$f(x)$ & $0{,}31$ & $0{,}30$ & $0{,}28$ & $0{,}26$ & $0{,}25$\\\hline
+\end{tabular}
+\end{center}
+\explique{Une valeur vérifiée à la main : $f(1)=\dfrac{2-1}{2^{2}}$, soit
+$\dfrac14=0{,}25$.}{valeurs arrondies à $0{,}01$ : $f(2)=\frac39=0{,}333\ldots$}
+
+\cas{2)}\par\nopagebreak
+\explique{\texttt{Axes} : $X_{\min}=0$, $X_{\max}=5$, $Y_{\min}=-1{,}2$,
+$Y_{\max}=0{,}5$.}{la plus petite image est $-1$, la plus grande environ $0{,}33$}
+
+\cas{3) et 4)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=2.2cm,y=2.2cm]
+  \draw[-{Stealth[length=2mm]},thick] (-0.2,0)--(5.4,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.15)--(0,0.65) node[below left=-1pt]{$y$};
+  \foreach \k in {0.5,1,...,5} \draw (\k,0.03)--(\k,-0.03);
+  \foreach \k in {1,2,3,4,5} \node[below,font=\scriptsize,inner sep=2pt] at (\k,-0.03) {$\k$};
+  \node[below,font=\scriptsize,inner sep=2pt] at (0.5,-0.03) {$0{,}5$};
+  \foreach \k/\l in {-1/-1,-0.5/-0{,}5,0.25/0{,}25,0.5/0{,}5} {\draw (0.03,\k)--(-0.03,\k) node[left,font=\scriptsize,inner sep=2pt]{$\l$};}
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \draw[coulCourbe,line width=1.1pt,domain=0:5,samples=100] plot (\x,{(2*(\x)-1)/(((\x)+1)*((\x)+1))});
+  \node[coulCourbe,font=\footnotesize] at (2.5,0.45) {$\Cf$};
+  \draw[black!70,thick] (0,0.25)--(5.3,0.25) node[above left,font=\scriptsize,inner sep=1pt]{$y=0{,}25$};
+  \draw[black!70,dashed] (1,0.25)--(1,0) (5,0.25)--(5,0);
+  \morceau{1}{5}\crochet{1}{[}\crochet{5}{]}
+  \path[coulIntB] (0.5,0) node[croix]{};
+\end{tikzpicture}
+\end{center}
+\explique{3) Le tableau donne $f(1)=0{,}25$ et $f(5)=0{,}25$ ; la droite $y=0{,}25$ coupe
+la courbe en ces deux points seulement. Les antécédents de $0{,}25$ sont $\res{1}$ et
+$\res{5}$.}{\texttt{Calculer}, \texttt{Antécédent} confirme ; ce sont des valeurs exactes}
+\begin{calculs}
+f(5) &= \dfrac{2\times 5-1}{(5+1)^{2}} &&\justif{on vérifie le second à la main}\\
+f(5) &= \dfrac{9}{36} &&\\
+f(5) &= \dfrac{1\times\barre{9}}{4\times\barre{9}} = \dfrac14 &&\justif{$0{,}25=\frac14$}
+\end{calculs}
+\explique{4) La courbe coupe l'axe des abscisses en $0{,}5$ (croix bleue) :
+$\res{S=\ens{0{,}5}}$.}{un quotient est nul lorsque son numérateur est nul : $2x-1=0$
+pour $x=0{,}5$}
+\explique{La courbe est sur la droite $y=0{,}25$ ou au-dessus de $1$ à $5$ (en rouge sur
+l'axe) : $\res{S=\intff{1}{5}}$.}{inégalité large : les bornes $1$ et $5$ sont
+comprises}
+
+\cas{5)}\par\nopagebreak
+\begin{center}
+\begin{tikzpicture}[x=2.2cm,y=2.2cm]
+  \draw[-{Stealth[length=2mm]},thick] (-0.2,0)--(5.4,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.15)--(0,0.65) node[below left=-1pt]{$y$};
+  \foreach \k in {0.5,1,...,5} \draw (\k,0.03)--(\k,-0.03);
+  \foreach \k in {2,3,4,5} \node[below,font=\scriptsize,inner sep=2pt] at (\k,-0.03) {$\k$};
+  \node[below,font=\scriptsize,inner sep=2pt] at (0.95,-0.03) {$1$};
+  \foreach \k/\l in {-1/-1,-0.5/-0{,}5} {\draw (0.03,\k)--(-0.03,\k) node[left,font=\scriptsize,inner sep=2pt]{$\l$};}
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \draw[coulCourbe,line width=1.1pt,domain=0:5,samples=100] plot (\x,{(2*(\x)-1)/(((\x)+1)*((\x)+1))});
+  \node[coulCourbe,font=\footnotesize] at (2.5,0.45) {$\Cf$};
+  \draw[coulCourbeC,line width=1.1pt] (0,-1)--(1.6,0.6) node[right,font=\footnotesize]{$y=x-1$};
+  \path (0,-1) node[croix]{} (1.303,0.303) node[croix]{};
+  \draw[black!70,dashed] (1.303,0.303)--(1.303,0);
+  \solx{0}\solx{1.303}
+  \node[coulInt,below,font=\scriptsize,inner sep=2pt] at (1.303,-0.06) {$\approx 1{,}30$};
+\end{tikzpicture}
+\end{center}
+\explique{On entre aussi $g(x)=x-1$ ; sur une courbe, \texttt{Calculer},
+\texttt{Intersection}. Les deux courbes se coupent en deux points, d'abscisses $0$ et
+environ $1{,}30$ : $\res{S\approx\ens{0\,;1{,}30}}$.}{les solutions de l'équation sont les
+abscisses des points communs}
+\explique{$0$ est une solution exacte : $f(0)=\dfrac{-1}{1}=-1$ et $0-1=-1$.}{l'autre n'est
+connue qu'arrondie}
+\rem{La courbe de $f$ monte très peu entre $1$ et $5$ : à l'écran, on peut resserrer
+l'axe des ordonnées pour bien voir qu'elle reste au-dessus de la droite $y=0{,}25$.}
 \end{exo}
 
 \begin{exo}[Intersections de courbes]
-1) Les courbes se coupent en $x=-1$, $x=1$ et $x=2$ ; $\Cf$ est sur $\Cg$ ou au-dessous
-pour \res{S=\intff{-2}{-1}\cup\intff{1}{2}}.\par
-2) Un seul point commun, \res{(1\,;9)}. Par le calcul :
+\cas{1)}\par\nopagebreak
+\begin{lecture}
+On entre $f(x)=x^{3}-2x^{2}$ et $g(x)=x-2$, puis \texttt{Axes} : $X_{\min}=-2$,
+$X_{\max}=3$ ; pour bien voir les points communs, $Y_{\min}=-5$ et $Y_{\max}=4$.
+
+\smallskip
+\gris{$f(-2)=-16$ : avec toute la courbe, les points communs seraient écrasés.}
+
+\medskip
+\texttt{Calculer}, \texttt{Intersection} : les courbes se coupent aux points d'abscisses
+$-1$, $1$ et $2$.
+
+\smallskip
+\gris{Vérification : $f(-1)=-1-2=-3$ et $g(-1)=-3$ ; $f(1)=1-2=-1$ et $g(1)=-1$ ;
+$f(2)=8-8=0$ et $g(2)=0$.}
+
+\medskip
+$x^{3}-2x^{2}\le x-2$ : on cherche où $\Cf$ est au-dessous de $\Cg$, ou la coupe : de $-2$
+à $-1$ (en rouge), et de $1$ à $2$ (en bleu).
+
+$\res{S=\intff{-2}{-1}\cup\intff{1}{2}}$.
+
+\smallskip
+\gris{Inégalité large : les abscisses des points communs sont comprises.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-3}{-5}{4}{4}
+  \gradx{-2,-1,1,2,3}
+  \grady{-4,-3,-2,-1,1,2,3}
+  \begin{scope}
+    \clip (-3,-5) rectangle (4,4);
+    \draw[coulCourbe,line width=1.1pt,domain=-2:3,samples=80] plot (\x,{(\x)*(\x)*(\x)-2*(\x)*(\x)});
+  \end{scope}
+  \draw[coulCourbeC,line width=1.1pt] (-2,-4)--(3,1);
+  \node[coulCourbe,font=\footnotesize,left] at (2.6,3.6) {$\Cf$};
+  \node[coulCourbeC,font=\footnotesize,right] at (3,1) {$\Cg$};
+  \path (-1,-3) node[croix]{} (1,-1) node[croix]{} (2,0) node[croix]{};
+  \draw[black!70,dashed] (-1,-3)--(-1,0) (1,-1)--(1,0);
+  \morceau{-2}{-1}\crochet{-2}{[}\crochet{-1}{]}
+  \morceau[coulIntB]{1}{2}\crochet[coulIntB]{1}{[}\crochet[coulIntB]{2}{]}
+\end{tikzpicture}
+\end{figlecture}
+
+\cas{2)}\par\nopagebreak
+\explique{La calculatrice (\texttt{Intersection}) donne un seul point commun,
+$\res{(1\,;9)}$. Par le calcul : un point commun a la même ordonnée sur les deux
+courbes.}{les deux expressions de $y$ sont égales}
 \begin{calculs}
-3x^{2}+x+5&=3x^{2}-2x+8\\
-3x&=3\\
-x&=1
+3x^{2}+x+5 &= 3x^{2}-2x+8 &&\justif{les deux ordonnées sont égales}\\
+x+5 &= -2x+8 &&\justif{on retranche $3x^{2}$ aux deux membres}\\
+3x+5 &= 8 &&\justif{on ajoute $2x$}\\
+3x &= 3 &&\justif{on retranche $5$}\\
+x &= 1 &&\justif{on divise par $3$}
 \end{calculs}
-et $3+1+5=9$.\par
-3) $\frac1x=\frac{1+2x}{x}$ donne $1=1+2x$, soit $x=0$, valeur interdite : \res{\text{aucun
-point commun}}.
+\begin{calculs}
+y &= 3\times 1^{2}+1+5 &&\justif{on calcule l'ordonnée avec la première équation}\\
+y &= 9 &&\justif{avec la seconde : $3-2+8=9$, même résultat}
+\end{calculs}
+\explique{Les courbes ont un seul point commun, $\res{(1\,;9)}$ : le calcul confirme la
+calculatrice.}{les $3x^{2}$ disparaissent : il reste une équation du premier degré}
+
+\cas{3)}\par\nopagebreak
+\begin{lecture}
+À l'écran, les deux courbes ne se rencontrent pas. Par le calcul, pour $x\ne 0$ :
+
+\smallskip
+$\dfrac1x=\dfrac{1+2x}{x}$ \ donne \ $1=1+2x$ \ (même dénominateur), \ puis \ $2x=0$,
+\ soit \ $x=0$.
+
+\smallskip
+Or $0$ est une valeur interdite des deux fonctions : \res{aucun point commun}.
+
+\smallskip
+\gris{On peut le voir autrement : $\dfrac{1+2x}{x}=\dfrac1x+\dfrac{2x}{x}=\dfrac1x+2$. La
+seconde courbe est la première montée de $2$ : elles ne se coupent jamais.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{6}
+  \gradx{-3,-2,-1,1,2,3}
+  \grady{-2,-1,1,2,3,4,5}
+  \begin{scope}
+    \clip (-4,-3) rectangle (4,6);
+    \draw[coulCourbe,line width=1.1pt,domain=0.15:4,samples=60] plot (\x,{1/(\x)});
+    \draw[coulCourbe,line width=1.1pt,domain=-4:-0.15,samples=60] plot (\x,{1/(\x)});
+    \draw[coulCourbeC,line width=1.1pt,domain=0.22:4,samples=60] plot (\x,{2+1/(\x)});
+    \draw[coulCourbeC,line width=1.1pt,domain=-4:-0.15,samples=60] plot (\x,{2+1/(\x)});
+  \end{scope}
+  \node[coulCourbe,font=\footnotesize] at (-2.4,-1.5) {$y=\frac1x$};
+  \node[coulCourbeC,font=\footnotesize] at (2.4,3.6) {$y=\frac{1+2x}{x}$};
+\end{tikzpicture}
+\end{figlecture}
 \end{exo}
 
 \partie{Résolution graphique}
 
 \begin{exo}[Équations]
-1) a) \res{S=\ens{5}} \quad b) \res{S=\ens{4\,;6}} \quad c) \res{S=\ens{0\,;3\,;8}}\par
-d) \res{S=\ens{1}} \quad e) \res{S=\varnothing}\par
-2) La droite $y=-1$ coupe la courbe en \res{3} points (entre $0$ et $1$, en $2$ et en
-$10$) : trois solutions.
+\explique{Les solutions de $f(x)=k$ sont les abscisses des points de $\Cf$ situés sur la
+droite horizontale $y=k$. Une équation se conclut par des accolades.}{propriété 3 du
+cours : ce sont les antécédents de $k$}
+\cas{1) a)}\par\nopagebreak
+\begin{lecture}
+La droite $y=2$ touche $\Cf$ en un seul point, son point le plus haut, d'abscisse $5$ :
+$\res{S=\ens{5}}$.
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[coulInt]{-1}{11}{2}
+  \draw[coulInt,dashed] (5,2)--(5,0);
+  \solx{5}
+\end{tikzpicture}
+\end{figlecture}
+\cas{1) b)}\par\nopagebreak
+\begin{lecture}
+La droite $y=1$ coupe $\Cf$ en deux points, d'abscisses $4$ et $6$ :
+$\res{S=\ens{4\,;6}}$.
+
+\smallskip
+\gris{Vérification : les points $(4\,;1)$ et $(6\,;1)$ sont sur la courbe.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[coulInt]{-1}{11}{1}
+  \draw[coulInt,dashed] (4,1)--(4,0) (6,1)--(6,0);
+  \solx{4}\solx{6}
+\end{tikzpicture}
+\end{figlecture}
+\cas{1) c)}\par\nopagebreak
+\begin{lecture}
+La droite $y=0$ est l'axe des abscisses : $\Cf$ le coupe en $0$, $3$ et $8$.
+$\res{S=\ens{0\,;3\,;8}}$.
+
+\smallskip
+\gris{La courbe part du point $(0\,;0)$ : on n'oublie pas la solution $0$.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \solx{0}\solx{3}\solx{8}
+\end{tikzpicture}
+\end{figlecture}
+\cas{1) d)}\par\nopagebreak
+\begin{lecture}
+La droite $y=-2$ touche $\Cf$ en son point le plus bas, d'abscisse $1$ :
+$\res{S=\ens{1}}$.
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[coulInt]{-1}{11}{-2}
+  \draw[coulInt,dashed] (1,-2)--(1,0);
+  \solx{1}
+\end{tikzpicture}
+\end{figlecture}
+\cas{1) e)}\par\nopagebreak
+\begin{lecture}
+La droite $y=3$ passe au-dessus de toute la courbe, qui ne dépasse pas $2$ :
+$\res{S=\varnothing}$.
+
+\smallskip
+\gris{Pas de point commun : l'équation n'a pas de solution.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[coulInt]{-1}{11}{3}
+\end{tikzpicture}
+\end{figlecture}
+\cas{2)}\par\nopagebreak
+\begin{lecture}
+La droite $y=-1$ coupe $\Cf$ en \res{trois points} : un entre $0$ et $1$, un en $2$, un en
+$10$. L'équation $f(x)=-1$ a trois solutions.
+
+\smallskip
+\gris{On ne demande que le nombre de solutions : inutile de lire la première, qui n'est
+pas un nombre entier.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[coulInt]{-1}{11}{-1}
+  \draw[coulInt,dashed] (2,-1)--(2,0) (10,-1)--(10,0);
+  \path[coulInt] (0.4,-1) node[croix]{} (2,-1) node[croix]{} (10,-1) node[croix]{};
+\end{tikzpicture}
+\end{figlecture}
 \end{exo}
 
 \begin{exo}[Inéquations]
-a) \res{S=\intfo{0}{1}\cup\intof{1}{10}}\par
-b) \res{S=\intfo{0}{4}\cup\intof{6}{10}}\par
-c) \res{S=\intff{0}{10}}\par
-d) \res{S=\intff{4}{6}}
-\rem{a) $f(1)=-2$ : $1$ est exclu, car l'inégalité est stricte. c) La courbe ne monte
-jamais au-dessus de $y=2$.}
+\explique{Les solutions de $f(x)>k$ sont les abscisses des points de $\Cf$ strictement
+au-dessus de la droite $y=k$ ; pour $f(x)<k$, strictement au-dessous. Pour $\ge$ ou
+$\le$, on garde aussi les points sur la droite. Une inéquation se conclut par des
+intervalles.}{propriété 3 du cours}
+\cas{a)}\par\nopagebreak
+\begin{lecture}
+$\Cf$ est strictement au-dessus de la droite $y=-2$ partout, sauf en $1$, où elle la
+touche :
+
+$\res{S=\intfo{0}{1}\cup\intof{1}{10}}$.
+
+\smallskip
+\gris{$f(1)=-2$ n'est pas strictement supérieur à $-2$ : on retire $1$.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[black!70]{-1}{11}{-2}
+  \draw[black!70,dashed] (1,-2)--(1,0);
+  \morceau{0}{1}\crochet{0}{[}\crochet{1}{[}
+  \morceau[coulIntB]{1}{10}\crochet[coulIntB]{1}{]}\crochet[coulIntB]{10}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{b)}\par\nopagebreak
+\begin{lecture}
+$\Cf$ est strictement au-dessous de la droite $y=1$ de $0$ à $4$, puis de $6$ à $10$ :
+
+$\res{S=\intfo{0}{4}\cup\intof{6}{10}}$.
+
+\smallskip
+\gris{En $4$ et en $6$, $f(x)=1$ : exclus, car l'inégalité est stricte. En $0$ et $10$,
+$f(x)<1$ : inclus.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[black!70]{-1}{11}{1}
+  \draw[black!70,dashed] (4,1)--(4,0) (6,1)--(6,0);
+  \morceau{0}{4}\crochet{0}{[}\crochet{4}{[}
+  \morceau[coulIntB]{6}{10}\crochet[coulIntB]{6}{]}\crochet[coulIntB]{10}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{c)}\par\nopagebreak
+\begin{lecture}
+La courbe ne monte jamais au-dessus de la droite $y=2$ : elle est au-dessous ou dessus
+sur tout l'intervalle de définition.
+
+$\res{S=\intff{0}{10}}$.
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[black!70]{-1}{11}{2}
+  \morceau{0}{10}\crochet{0}{[}\crochet{10}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{d)}\par\nopagebreak
+\begin{lecture}
+$\Cf$ est sur la droite $y=1$ ou au-dessus de $4$ à $6$ :
+
+$\res{S=\intff{4}{6}}$.
+
+\smallskip
+\gris{Inégalité large : $4$ et $6$ sont compris.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbeXXXIII
+  \droitey[black!70]{-1}{11}{1}
+  \draw[black!70,dashed] (4,1)--(4,0) (6,1)--(6,0);
+  \morceau{4}{6}\crochet{4}{[}\crochet{6}{]}
+\end{tikzpicture}
+\end{figlecture}
+\rem{On ne conclut que sur la partie tracée de la courbe : les solutions restent dans
+$\intff{0}{10}$, l'ensemble de définition.}
 \end{exo}
 
 \begin{exo}[Équation et inéquations]
-a) \res{S=\ens{-4\,;0\,;4}}\par
-b) \res{S=\intff{-4}{0}\cup\intff{4}{5}}\par
-c) \res{S=\intoo{-3}{-1}}
+\cas{a)}\par\nopagebreak
+\begin{lecture}
+La droite $y=1$ coupe $\mathcal{C}$ en trois points, d'abscisses $-4$, $0$ et $4$ :
+
+$\res{S=\ens{-4\,;0\,;4}}$.
+
+\smallskip
+\gris{Le point de départ $(-4\,;1)$ compte : $-4$ est dans l'ensemble de définition.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXXV
+  \droitey[coulInt]{-5}{6}{1}
+  \draw[coulInt,dashed] (-4,1)--(-4,0) (4,1)--(4,0);
+  \solx{-4}\solx{0}\solx{4}
+\end{tikzpicture}
+\end{figlecture}
+\cas{b)}\par\nopagebreak
+\begin{lecture}
+$\mathcal{C}$ est sur la droite $y=1$ ou au-dessous de $-4$ à $0$, puis de $4$ à $5$ :
+
+$\res{S=\intff{-4}{0}\cup\intff{4}{5}}$.
+
+\smallskip
+\gris{Inégalité large : les abscisses des points sur la droite sont comprises.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXXV
+  \droitey[black!70]{-5}{6}{1}
+  \draw[black!70,dashed] (-4,1)--(-4,0) (4,1)--(4,0);
+  \morceau{-4}{0}\crochet{-4}{[}\crochet{0}{]}
+  \morceau[coulIntB]{4}{5}\crochet[coulIntB]{4}{[}\crochet[coulIntB]{5}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{c)}\par\nopagebreak
+\begin{lecture}
+$\mathcal{C}$ est strictement au-dessous de la droite $y=-1$ entre $-3$ et $-1$ :
+
+$\res{S=\intoo{-3}{-1}}$.
+
+\smallskip
+\gris{En $-3$ et en $-1$, $f(x)=-1$ : exclus, car l'inégalité est stricte.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \courbeXXXV
+  \droitey[black!70]{-5}{6}{-1}
+  \draw[black!70,dashed] (-3,-1)--(-3,0) (-1,-1)--(-1,0);
+  \morceau{-3}{-1}\crochet{-3}{]}\crochet{-1}{[}
+\end{tikzpicture}
+\end{figlecture}
 \end{exo}
 
 \begin{exo}[Avec la formule]
-1) $0$ ; $6$ ; $6$ ; $3$ ; $0$ ; $0$ ; $6$.\par
-2) $f(0)=\res{3}$ ; $f(x)=6$ : \res{S=\ens{-2\,;-1\,;3}}.\par
-3)
+\cas{1)}\par\nopagebreak
+\explique{On entre $f(x)=\dfrac{x^{3}-7x+6}{2}$ ; \texttt{Régler l'intervalle} :
+\texttt{X début} $-3$, \texttt{X fin} $3$, \texttt{Pas} $1$.}{numérateur entre
+parenthèses si on le tape sur une ligne : $(x^{3}-7x+6)/2$}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|*{7}{c|}}
+\hline
+$x$ & $-3$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$\\\hline
+$f(x)$ & $0$ & $6$ & $6$ & $3$ & $0$ & $0$ & $6$\\\hline
+\end{tabular}
+\end{center}
+\explique{Une valeur vérifiée à la main :}{}
 \begin{calculs}
-(x+1)(x+2)&=x^{2}+3x+2\\
-(x^{2}+3x+2)(x-3)&=x^{3}-7x-6
+f(-2) &= \dfrac{(-2)^{3}-7\times(-2)+6}{2} &&\justif{$-2$ entre parenthèses}\\
+f(-2) &= \dfrac{-8+14+6}{2} &&\justif{$(-2)^{3}=-8$ et $-7\times(-2)=14$}\\
+f(-2) &= \dfrac{12}{2} = 6 &&
 \end{calculs}
-$f(x)=6$ revient à $x^{3}-7x+6=12$, soit $x^{3}-7x-6=0$, c'est-à-dire
-$(x+1)(x+2)(x-3)=0$ : les solutions exactes sont $-1$, $-2$ et $3$.\par
-4) $f(x)\ge 6$ : \res{S=\intff{-2}{-1}\cup\ens{3}} ; $f(x)<0$ : \res{S=\intoo{1}{2}}.\par
-5) $f(x)=0$ : \res{3} solutions ($-3$, $1$, $2$) ; $f(x)=4$ : \res{3} ; $f(x)=-1$ :
-\res{0}.
+
+\cas{2)}\par\nopagebreak
+\begin{lecture}
+La courbe coupe l'axe des ordonnées au point d'ordonnée $3$ : $f(0)=\res{3}$.
+
+\medskip
+La droite $y=6$ coupe la courbe aux points d'abscisses $-2$, $-1$ et $3$ :
+
+$\res{S=\ens{-2\,;-1\,;3}}$.
+
+\smallskip
+\gris{Entre $-2$ et $-1$, la courbe passe un peu au-dessus de $6$, puis redescend.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \courbeXXXVI
+  \path[coulIntB] (0,3) node[croix]{};
+  \droitey[coulInt]{-4}{4}{6}
+  \draw[coulInt,dashed] (-2,6)--(-2,0) (-1,6)--(-1,0) (3,6)--(3,0);
+  \solx{-2}\solx{-1}\solx{3}
+\end{tikzpicture}
+\end{figlecture}
+
+\cas{3)}\par\nopagebreak
+\explique{On développe le produit, deux facteurs à la fois.}{on part du membre de droite,
+le plus compliqué}
+\begin{calculs}
+(x+1)(x+2)(x-3) &= (x^{2}+2x+x+2)(x-3) &&\justif{on développe les deux premiers facteurs}\\
+(x+1)(x+2)(x-3) &= (x^{2}+3x+2)(x-3) &&\justif{$2x+x=3x$}\\
+(x+1)(x+2)(x-3) &= x^{3}-3x^{2}+3x^{2}-9x+2x-6 &&\justif{chaque terme multiplie $x$, puis $-3$}\\
+(x+1)(x+2)(x-3) &= x^{3}-7x-6 &&\justif{$-3x^{2}+3x^{2}=0$ ; $-9x+2x=-7x$}
+\end{calculs}
+\explique{On résout ensuite $f(x)=6$ par le calcul :}{}
+\begin{calculs}
+\dfrac{x^{3}-7x+6}{2} &= 6 &&\justif{on recopie l'équation}\\
+x^{3}-7x+6 &= 12 &&\justif{on multiplie les deux membres par $2$}\\
+x^{3}-7x-6 &= 0 &&\justif{on retranche $12$}\\
+(x+1)(x+2)(x-3) &= 0 &&\justif{la forme factorisée vérifiée au-dessus}
+\end{calculs}
+\explique{Un produit est nul lorsque l'un de ses facteurs est nul : $x+1=0$ ou $x+2=0$ ou
+$x-3=0$. Les solutions exactes sont $\res{-2}$, $\res{-1}$ et $\res{3}$.}{le calcul
+confirme la lecture graphique de la question 2}
+
+\cas{4)}\par\nopagebreak
+\begin{lecture}
+$f(x)\ge 6$ : la courbe est sur la droite $y=6$ ou au-dessus de $-2$ à $-1$ (en rouge), et
+en $3$ seulement, son extrémité droite (croix bleue) :
+
+$\res{S=\intff{-2}{-1}\cup\ens{3}}$.
+
+\smallskip
+\gris{En $3$, un seul nombre : on l'écrit entre accolades.}
+
+\medskip
+$f(x)<0$ : la courbe est strictement au-dessous de l'axe des abscisses entre $1$ et $2$
+(en vert) :
+
+$\res{S=\intoo{1}{2}}$.
+
+\smallskip
+\gris{$f(1)=0$ et $f(2)=0$ ne sont pas strictement négatifs ; en $-3$, $f(-3)=0$ non plus.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \courbeXXXVI
+  \droitey[black!70]{-4}{4}{6}
+  \draw[black!70,dashed] (-2,6)--(-2,0) (-1,6)--(-1,0) (3,6)--(3,0);
+  \morceau{-2}{-1}\crochet{-2}{[}\crochet{-1}{]}
+  \solx[coulIntB]{3}
+  \morceau[coulIntC]{1}{2}\crochet[coulIntC]{1}{]}\crochet[coulIntC]{2}{[}
+\end{tikzpicture}
+\end{figlecture}
+
+\cas{5)}\par\nopagebreak
+\begin{lecture}
+$f(x)=0$ : la courbe coupe l'axe des abscisses en $-3$, $1$ et $2$ : \res{trois
+solutions}.
+
+\medskip
+$f(x)=4$ : la droite $y=4$ coupe la courbe trois fois (en rouge) : \res{trois solutions}.
+
+\smallskip
+\gris{Une entre $-3$ et $-2$ ($f$ passe de $0$ à $6$), une entre $-1$ et $0$ (de $6$ à
+$3$), une entre $2$ et $3$ (de $0$ à $6$).}
+
+\medskip
+$f(x)=-1$ : la courbe descend à peine sous l'axe entre $1$ et $2$, sans atteindre $-1$ ;
+la droite $y=-1$ (en bleu) ne la rencontre pas : \res{aucune solution}.
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \courbeXXXVI
+  \solx[coulCourbeC]{-3}\solx[coulCourbeC]{1}\solx[coulCourbeC]{2}
+  \droitey[coulInt]{-4}{4}{4}
+  \path[coulInt] (-2.49,4) node[croix]{} (-0.29,4) node[croix]{} (2.78,4) node[croix]{};
+  \droitey[coulIntB]{-4}{4}{-1}
+\end{tikzpicture}
+\end{figlecture}
+\rem{Pour un nombre de solutions, une lecture approchée suffit : on compte les points
+communs entre la courbe et la droite horizontale.}
 \end{exo}
 
 \partie{Comparer deux fonctions}
 
 \begin{exo}[Deux courbes]
-a) \res{S=\ens{-2\,;2\,;6}}\par
-b) \res{S=\intoo{-2}{2}\cup\intof{6}{7}}\par
-c) \res{S=\intff{-3}{-2}\cup\intff{2}{6}}
-\rem{On regarde quelle courbe est au-dessus entre deux points d'intersection qui se
-suivent.}
+\explique{Les solutions de $f(x)=g(x)$ sont les abscisses des points d'intersection de
+$\Cf$ et $\Cg$ ; celles de $f(x)>g(x)$, les abscisses des points où $\Cf$ est strictement
+au-dessus de $\Cg$.}{propriété 4 du cours}
+\cas{a)}\par\nopagebreak
+\begin{lecture}
+Les deux courbes se coupent aux points $(-2\,;2)$, $(2\,;0)$ et $(6\,;2)$ :
+
+$\res{S=\ens{-2\,;2\,;6}}$.
+
+\smallskip
+\gris{On lit les abscisses des points communs, pas leurs ordonnées.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVII
+  \path (-2,2) node[croix]{} (2,0) node[croix]{} (6,2) node[croix]{};
+  \draw[black!70,dashed] (-2,2)--(-2,0) (6,2)--(6,0);
+  \solx{-2}\solx{2}\solx{6}
+\end{tikzpicture}
+\end{figlecture}
+\cas{b)}\par\nopagebreak
+\begin{lecture}
+On regarde quelle courbe est au-dessus entre deux points d'intersection qui se suivent.
+$\Cf$ est strictement au-dessus de $\Cg$ entre $-2$ et $2$, puis après $6$ :
+
+$\res{S=\intoo{-2}{2}\cup\intof{6}{7}}$.
+
+\smallskip
+\gris{Inégalité stricte : les abscisses des points communs sont exclues ; $7$ est
+inclus, car $f(7)=3$ et $g(7)=1$.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVII
+  \draw[black!70,dashed] (-2,2)--(-2,0) (6,2)--(6,0);
+  \morceau{-2}{2}\crochet{-2}{]}\crochet{2}{[}
+  \morceau[coulIntB]{6}{7}\crochet[coulIntB]{6}{]}\crochet[coulIntB]{7}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{c)}\par\nopagebreak
+\begin{lecture}
+$\Cf$ est au-dessous de $\Cg$, ou la coupe, de $-3$ à $-2$ et de $2$ à $6$ :
+
+$\res{S=\intff{-3}{-2}\cup\intff{2}{6}}$.
+
+\smallskip
+\gris{C'est le reste de l'intervalle de définition $\intff{-3}{7}$ ; inégalité large : les
+abscisses des points communs sont comprises.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVII
+  \draw[black!70,dashed] (-2,2)--(-2,0) (6,2)--(6,0);
+  \morceau{-3}{-2}\crochet{-3}{[}\crochet{-2}{]}
+  \morceau[coulIntB]{2}{6}\crochet[coulIntB]{2}{[}\crochet[coulIntB]{6}{]}
+\end{tikzpicture}
+\end{figlecture}
+\rem{Erreur fréquente : comparer les courbes à l'axe des abscisses. Ici, on compare
+$\Cf$ à $\Cg$, pas à la droite $y=0$.}
 \end{exo}
 
 \begin{exo}[Une droite et une courbe]
-a) La droite est sur $y=2$ ou au-dessous à partir de $x=0$ : \res{S=\intff{0}{6}}\par
-b) \res{S=\intof{3}{6}} \quad c) \res{S=\intff{-4}{-2}}\par
-d) \res{S=\ens{-4\,;2\,;6}} \quad e) \res{S=\intoo{-4}{2}}
+\cas{a)}\par\nopagebreak
+\begin{lecture}
+$f(x)\le 2$ : on compare la droite $\Cf$ à la droite horizontale $y=2$. Elle la coupe en
+$0$, et elle est au-dessous à droite de $0$ :
+
+$\res{S=\intff{0}{6}}$.
+
+\smallskip
+\gris{$\Cf$ passe par $(0\,;2)$ ; inégalité large : $0$ est compris.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVIII
+  \droitey[black!70]{-7}{7}{2}
+  \morceau{0}{6}\crochet{0}{[}\crochet{6}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{b)}\par\nopagebreak
+\begin{lecture}
+$g(x)<0$ : $\Cg$ est strictement au-dessous de l'axe des abscisses à droite de $3$ :
+
+$\res{S=\intof{3}{6}}$.
+
+\smallskip
+\gris{$g(3)=0$ : exclu ; $g(6)=-1<0$ : inclus.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVIII
+  \morceau{3}{6}\crochet{3}{]}\crochet{6}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{c)}\par\nopagebreak
+\begin{lecture}
+$g(x)\ge 4$ : $\Cg$ est sur la droite $y=4$ ou au-dessus de $-4$ à $-2$ :
+
+$\res{S=\intff{-4}{-2}}$.
+
+\smallskip
+\gris{Le sommet de la bosse est $(-3\,;5)$ ; la courbe passe à la hauteur $4$ en $-4$ et
+en $-2$.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVIII
+  \droitey[black!70]{-7}{7}{4}
+  \draw[black!70,dashed] (-4,4)--(-4,0) (-2,4)--(-2,0);
+  \morceau{-4}{-2}\crochet{-4}{[}\crochet{-2}{]}
+\end{tikzpicture}
+\end{figlecture}
+\cas{d)}\par\nopagebreak
+\begin{lecture}
+La droite et la courbe se coupent aux points $(-4\,;4)$, $(2\,;1)$ et $(6\,;-1)$ :
+
+$\res{S=\ens{-4\,;2\,;6}}$.
+
+\smallskip
+\gris{Le dernier point commun est l'extrémité droite des deux tracés.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVIII
+  \path (-4,4) node[croix]{} (2,1) node[croix]{} (6,-1) node[croix]{};
+  \draw[black!70,dashed] (-4,4)--(-4,0) (2,1)--(2,0) (6,-1)--(6,0);
+  \solx{-4}\solx{2}\solx{6}
+\end{tikzpicture}
+\end{figlecture}
+\cas{e)}\par\nopagebreak
+\begin{lecture}
+$f(x)<g(x)$ : la droite $\Cf$ est strictement au-dessous de $\Cg$ entre $-4$ et $2$ :
+
+$\res{S=\intoo{-4}{2}}$.
+
+\smallskip
+\gris{Inégalité stricte : $-4$ et $2$, où les deux tracés se coupent, sont exclus.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \courbesXXXVIII
+  \draw[black!70,dashed] (-4,4)--(-4,0) (2,1)--(2,0);
+  \morceau{-4}{2}\crochet{-4}{]}\crochet{2}{[}
+\end{tikzpicture}
+\end{figlecture}
+\rem{Attention aux couleurs et aux noms : ici, $\Cf$ est la droite et $\Cg$ la courbe.}
 \end{exo}
 
 \begin{exo}[Graphique et calcul]
-\begin{minipage}[t]{0.56\linewidth}\raggedright
-1)
+\cas{1)}\par\nopagebreak
+\explique{De $-2$ à $3$ avec un pas de $1$ : on calcule chaque image.}{$g(x)=x$ : l'image
+d'un nombre est ce nombre lui-même}
+\begin{calculs}
+f(-2) &= (-2)^{2}-2 = 2 &&\justif{$(-2)^{2}=4$}\\
+f(-1) &= (-1)^{2}-2 = -1 &&\\
+f(0) &= 0^{2}-2 = -2 &&\\
+f(3) &= 3^{2}-2 = 7 &&\justif{de même $f(1)=-1$ et $f(2)=2$}
+\end{calculs}
 \begin{center}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|c|*{6}{c|}}
 \hline
@@ -723,24 +2465,65 @@ $f(x)$ & $2$ & $-1$ & $-2$ & $-1$ & $2$ & $7$\\\hline
 $g(x)$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$\\\hline
 \end{tabular}
 \end{center}
-3) \res{S=\ens{-1\,;2}} ; $f(x)<g(x)$ : \res{S=\intoo{-1}{2}}.\par
-4) $(x+1)(x-2)=x^{2}-2x+x-2=x^{2}-x-2$ ; $f(x)=g(x)$ revient à $(x+1)(x-2)=0$ : $x=-1$
-ou $x=2$.\par
-5) $f(1{,}5)=0{,}25$ : \res{P\in\Cf} ; $g(1{,}5)=1{,}5\ne 0{,}25$ : \res{P\notin\Cg}.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.40\linewidth}
-\vspace{0pt}\centering
-\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+
+\cas{2) et 3)}\par\nopagebreak
+\begin{lecture}
+2) On place les points des deux tableaux ; ceux de $f$ se relient par une courbe sans
+angle, ceux de $g$ sont alignés : $\Cg$ est une droite.
+
+\medskip
+3) Les tableaux montrent déjà deux valeurs de $x$ où les images sont égales :
+$f(-1)=g(-1)$ et $f(2)=g(2)$. Les courbes se coupent en $(-1\,;-1)$ et $(2\,;2)$ :
+
+$f(x)=g(x)$ : $\res{S=\ens{-1\,;2}}$.
+
+\medskip
+$\Cf$ est strictement au-dessous de $\Cg$ entre $-1$ et $2$ :
+
+$f(x)<g(x)$ : $\res{S=\intoo{-1}{2}}$.
+
+\smallskip
+\gris{Inégalité stricte : $-1$ et $2$ sont exclus.}
+\end{lecture}
+\begin{figlecture}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
   \repere{-3}{-3}{4}{8}
   \gradx{-2,-1,1,2,3}
   \grady{-2,-1,1,2,3,4,5,6,7}
-  \draw[coulCourbe,line width=1pt,domain=-2:3,samples=50] plot (\x,{(\x)*(\x)-2});
-  \draw[coulCourbeC,line width=1pt] (-2,-2)--(3,3);
-  \path (-1,-1) node[croix]{} (2,2) node[croix]{};
+  \draw[coulCourbe,line width=1.1pt,domain=-2:3,samples=60] plot (\x,{(\x)*(\x)-2});
+  \draw[coulCourbeC,line width=1.1pt] (-2,-2)--(3,3);
+  \foreach \a/\b in {-2/2,-1/-1,0/-2,1/-1,2/2,3/7} \path[coulCourbe] (\a,\b) node[croix]{};
+  \foreach \a in {-2,0,1,3} \path[coulCourbeC] (\a,\a) node[croixdroite]{};
   \node[coulCourbe,font=\footnotesize,left] at (2.9,7) {$\Cf$};
   \node[coulCourbeC,font=\footnotesize,right] at (3,3) {$\Cg$};
+  \draw[black!70,dashed] (-1,-1)--(-1,0) (2,2)--(2,0);
+  \morceau{-1}{2}\crochet{-1}{]}\crochet{2}{[}
 \end{tikzpicture}
-\end{minipage}
+\end{figlecture}
+
+\cas{4)}\par\nopagebreak
+\begin{calculs}
+(x+1)(x-2) &= x^{2}-2x+x-2 &&\justif{on développe : $x\times x$, $x\times(-2)$, $1\times x$, $1\times(-2)$}\\
+(x+1)(x-2) &= x^{2}-x-2 &&\justif{$-2x+x=-x$ ; c'est bien $x^{2}-2-x$}
+\end{calculs}
+\begin{calculs}
+x^{2}-2 &= x &&\justif{on résout $f(x)=g(x)$}\\
+x^{2}-2-x &= 0 &&\justif{on retranche $x$ aux deux membres}\\
+(x+1)(x-2) &= 0 &&\justif{la forme factorisée vérifiée au-dessus}
+\end{calculs}
+\explique{Un produit est nul lorsque l'un de ses facteurs est nul : $x+1=0$ ou $x-2=0$,
+c'est-à-dire $x=-1$ ou $x=2$. On retrouve $\res{S=\ens{-1\,;2}}$.}{le calcul confirme que
+les valeurs lues sont exactes}
+
+\cas{5)}\par\nopagebreak
+\begin{calculs}
+f(1{,}5) &= 1{,}5^{2}-2 &&\justif{l'image de l'abscisse de $P$}\\
+f(1{,}5) &= 2{,}25-2 = 0{,}25 &&
+\end{calculs}
+\explique{$f(1{,}5)=0{,}25$, l'ordonnée de $P$ : $\res{P\in\Cf}$.}{méthode 12}
+\explique{$g(1{,}5)=1{,}5$, alors que l'ordonnée de $P$ est $0{,}25$ :
+$\res{P\notin\Cg}$.}{cohérent avec la question 3 : $1{,}5$ est entre $-1$ et $2$, où
+$\Cf$ est au-dessous de $\Cg$}
 \end{exo}
 
 \end{document}

@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,671 +189,1446 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
 \usepackage{tkz-tab}
-\entete{Ch 2 --- Fonctions affines et pourcentages --- Corrigé des exercices}{1\textsuperscript{re} mathématiques spécifiques}
-\providecommand{\justif}[1]{\quad\text{\small\itshape\color{coulPart}#1}}
+\entete{Chapitre 2 --- Fonctions affines et pourcentages --- corrigé}{1\textsuperscript{re} mathématiques spécifiques}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\newcommand{\etiq}[1]{\textbf{\color{coulExo}#1}\ }
+
+\newcommand{\cotefig}[3][0.36]{\par\noindent
+  \begin{minipage}[t]{\dimexpr0.97\linewidth-#1\linewidth\relax}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering #3\end{minipage}\par}
+
+\tikzset{
+  lecture/.style={densely dashed,coulRep,line width=0.8pt},
+  pas/.style={densely dashed,line width=0.9pt},
+}
+\newcommand{\reperefiche}{%
+  \quadrillage{-4}{-4}{5}{5}
+  \draw[->,>=Stealth,black!70] (-4,0) -- (5.5,0) node[below,font=\scriptsize] {$x$};
+  \draw[->,>=Stealth,black!70] (0,-4) -- (0,5.5) node[left,font=\scriptsize] {$y$};
+  \foreach \i in {-4,...,-1,1,2,...,4} {\node[below,font=\tiny,inner sep=1.5pt] at (\i,0) {$\i$};}
+  \foreach \i in {-4,...,-1,1,2,...,4} {\node[left,font=\tiny,inner sep=1.5pt] at (0,\i) {$\i$};}
+  \node[below left,font=\tiny,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\signes}[4]{%
+  \begin{tikzpicture}
+  \tkzTabInit[lgt=1.4,espcl=1.5]{$x$/0.7,$#1$/0.7}{$-\infty$,$#2$,$+\infty$}
+  \tkzTabLine{,#3,z,#4,}
+  \end{tikzpicture}}
 
 \begin{document}
 
-\entetecorrige{FONCTIONS AFFINES ET POURCENTAGES}{Corrigé --- Ch 2 : Fiche d'exercices --- 1\textsuperscript{re} mathématiques spécifiques}
-{Les remarques en italique signalent les erreurs les plus fréquentes et les méthodes à
-retenir. Les résultats sont encadrés. Tous les calculs se font sans calculatrice.}
+\entetefiche{Chapitre 2 --- Fonctions affines et pourcentages}{1\textsuperscript{re} mathématiques spécifiques}
 
 \partie{Appliquer un pourcentage}
 
 \begin{exo}[Calcul mental]
-\deux{a) \res{42}}{b) \res{15} \quad (le quart)}
-\deux{c) \res{24} \quad (la moitié)}{d) \res{9}}
-\deux{e) \res{4} \quad (moitié de $10\,\%$)}{f) \res{15}}
-\deux{g) \res{7} \quad ($2\times 3{,}5$)}{h) \res{75} \quad ($3\times 25$)}
-\deux{i) \res{6} \quad ($4\times 1{,}5$)}{}
-\rem{On passe par $10\,\%$ (diviser par $10$) ou $1\,\%$ (diviser par $100$).}
+\explique{On passe par un pourcentage facile ($10\,\%$, $1\,\%$, $25\,\%$, $50\,\%$),
+puis on multiplie.}{tableau « Pour calculer de tête » du cours}
+\explique{\etiq{a)} $10\,\%$ de $420$ : $420\div 10=\res{42}$.}{$10\,\%$ : on divise
+par $10$}
+\explique{\etiq{b)} $25\,\%$ de $60$ : le quart de $60$, soit $\res{15}$.}{$25\,\%
+=\dfrac{1}{4}$}
+\explique{\etiq{c)} $50\,\%$ de $48$ : la moitié de $48$, soit $\res{24}$.}{$50\,\%
+=\dfrac{1}{2}$}
+\explique{\etiq{d)} $1\,\%$ de $900$ : $900\div 100=\res{9}$.}{$1\,\%$ : on divise par
+$100$}
+\explique{\etiq{e)} $10\,\%$ de $80$ font $8$, donc $5\,\%$ en font $\res{4}$.}{$5\,\%$ :
+la moitié de $10\,\%$}
+\explique{\etiq{f)} $25\,\%$ de $20$ font $5$, donc $75\,\%$ en font $3\times 5=\res{15}$.}{$75\,\%$,
+c'est $3$ fois $25\,\%$}
+\explique{\etiq{g)} $10\,\%$ de $35$ font $3{,}5$, donc $20\,\%$ en font
+$2\times 3{,}5=\res{7}$.}{$20\,\%$, c'est $2$ fois $10\,\%$}
+\explique{\etiq{h)} $10\,\%$ de $250$ font $25$, donc $30\,\%$ en font
+$3\times 25=\res{75}$.}{$30\,\%$, c'est $3$ fois $10\,\%$}
+\explique{\etiq{i)} $10\,\%$ de $15$ font $1{,}5$, donc $40\,\%$ en font
+$4\times 1{,}5=\res{6}$.}{$40\,\%$, c'est $4$ fois $10\,\%$}
+\rem{Contrôle de bon sens : $40\,\%$ est moins que la moitié ; le résultat de i) doit
+donc être inférieur à la moitié de $15$, c'est-à-dire à $7{,}5$. C'est le cas.}
 \end{exo}
 
 \begin{exo}[Trois écritures d'un même nombre]
 \begin{center}
 \renewcommand{\arraystretch}{2.4}
-\small
 \begin{tabular}{|l|c|c|c|c|c|}
 \hline
-Fraction & $\dfrac{3}{5}$ & \res{\dfrac{9}{100}} & \res{\dfrac{9}{20}} & $\dfrac{1}{4}$ & \res{\dfrac{3}{2}}\\
+Fraction & $\dfrac{3}{5}$ & $\res{\dfrac{9}{100}}$ & $\res{\dfrac{9}{20}}$ & $\dfrac{1}{4}$ & $\res{\dfrac{3}{2}}$\\
 \hline
-Décimal & \res{0{,}6} & $0{,}09$ & \res{0{,}45} & \res{0{,}25} & $1{,}5$\\
+Décimal & $\res{0{,}6}$ & $0{,}09$ & $\res{0{,}45}$ & $\res{0{,}25}$ & $1{,}5$\\
 \hline
-Pourc. & \res{60\,\%} & \res{9\,\%} & $45\,\%$ & \res{25\,\%} & \res{150\,\%}\\
+Pourcentage & $\res{60\,\%}$ & $\res{9\,\%}$ & $45\,\%$ & $\res{25\,\%}$ & $\res{150\,\%}$\\
 \hline
 \end{tabular}
 \end{center}
-\rem{$0{,}09=9\,\%$, et non $90\,\%$ ; un pourcentage peut dépasser $100\,\%$.}
+\explique{L'outil est la définition du cours : $t\,\%=\dfrac{t}{100}$. On cherche donc
+chaque fois un nombre de centièmes.}{« pour cent » : sur $100$}
+\cas{1\textsuperscript{re} colonne}
+\begin{calculs}
+\dfrac{3}{5} &= \dfrac{3\fois{20}}{5\fois{20}} &&\justif{on veut $100$ en bas : $5\times 20=100$}\\
+\dfrac{3}{5} &= \dfrac{60}{100} &&\justif{$60$ centièmes}
+\end{calculs}
+\explique{Soit $0{,}6$ en écriture décimale, et $60\,\%$.}{}
+\cas{2\textsuperscript{e} colonne}
+\explique{$0{,}09$, c'est $9$ centièmes : $\dfrac{9}{100}$, soit $9\,\%$.}{le $9$ est au
+rang des centièmes}
+\cas{3\textsuperscript{e} colonne}
+\begin{calculs}
+45\,\% &= \dfrac{45}{100} &&\justif{définition du pourcentage}\\
+45\,\% &= \dfrac{9\times\barre{5}}{20\times\barre{5}} &&\justif{$45=9\times 5$ et
+$100=20\times 5$}\\
+45\,\% &= \dfrac{9}{20} &&
+\end{calculs}
+\explique{En écriture décimale : $\dfrac{45}{100}=0{,}45$.}{}
+\cas{4\textsuperscript{e} colonne}
+\explique{$\dfrac{1}{4}=\dfrac{25}{100}$ : soit $0{,}25$, et $25\,\%$.}{on multiplie en haut
+et en bas par $25$}
+\cas{5\textsuperscript{e} colonne}
+\explique{$1{,}5=\dfrac{150}{100}$ : soit $150\,\%$.}{$1{,}5$, c'est $150$ centièmes}
+\explique{Et $1{,}5=\dfrac{15}{10}=\dfrac{3}{2}$.}{on divise en haut et en bas par $5$}
+\rem{Erreur fréquente : écrire $0{,}09=90\,\%$. Or $90\,\%=0{,}9$ ; $0{,}09$ ne fait que
+$9$ centièmes. Un pourcentage peut dépasser $100\,\%$ : $1{,}5=150\,\%$.}
 \end{exo}
 
 \begin{exo}[Retrouver le total]
-\begin{reponses}
-  \item $5\,\%$ est la vingtième partie : $20\times 30=\res{600}$ animaux.
-  \item $30\,\%$ font $9$, donc $10\,\%$ font $3$ : \res{30} élèves.
-  \item $10\,\%$ font $8$~€, donc $100\,\%$ font \res{80\text{ €}}.
-  \item $75\,\%$ font $60$, donc $25\,\%$ font $20$ : \res{80} adhérents.
-\end{reponses}
+\explique{Ici, on connaît une partie et son pourcentage ; on cherche le total, qui
+vaut $100\,\%$.}{le total est plus grand que la partie}
+\cas{a)}
+\explique{$5\,\%$ est la vingtième partie de $100\,\%$.}{$20\times 5=100$}
+\explique{Le total est donc $20$ fois plus grand que la partie : $20\times 30=600$.}{}
+\explique{La ferme compte $\res{600}$ animaux.}{contrôle : $10\,\%$ de $600$ font $60$,
+et $5\,\%$ en font $30$}
+\cas{b)}
+\explique{$30\,\%$ font $9$ élèves, donc $10\,\%$ font $9\div 3=3$ élèves.}{$10\,\%$, c'est le
+tiers de $30\,\%$}
+\explique{$100\,\%$ font $10\times 3=30$ : la classe compte $\res{30}$ élèves.}{$100\,\%$, c'est
+$10$ fois $10\,\%$}
+\cas{c)}
+\explique{$10\,\%$ du prix font $8$~€, donc le prix entier vaut $10\times 8=80$ : le jeu
+coûte $\res{80}$~€.}{$100\,\%$, c'est $10$ fois $10\,\%$}
+\cas{d)}
+\explique{$75\,\%$ font $60$ adhérents, donc $25\,\%$ font $60\div 3=20$.}{$75\,\%$,
+c'est $3$ fois $25\,\%$}
+\explique{$100\,\%$ font $4\times 20=80$ : le club compte $\res{80}$ adhérents.}{$100\,\%$,
+c'est $4$ fois $25\,\%$}
+\rem{Erreur fréquente : calculer $5\,\%$ de $30$ en a). On ne cherche pas une partie de
+$30$ : $30$ est déjà la partie, et le total est plus grand.}
 \end{exo}
 
 \begin{exo}[Augmenter ou diminuer]
-\begin{reponses}
-  \item Hausse : $15\,\%$ de $60$ font $9$ ; nouveau prix \res{69\text{ €}}.
-  \item Baisse : $20\,\%$ de $900$ font $180$ ; prix soldé \res{720\text{ €}}.
-  \item Hausse : $3\,\%$ de $2\,000$ font $60$ ; salaire \res{2\,060\text{ €}}.
-  \item Baisse : $5\,\%$ de $6\,000$ font $300$ ; \res{5\,700} habitants.
-\end{reponses}
+\explique{Comme dans la méthode 2 : on calcule d'abord le montant de la hausse ou de la
+baisse ; une hausse s'ajoute, une baisse se retire.}{}
+\cas{a)}
+\explique{$10\,\%$ de $60$ font $6$ ; $5\,\%$ en font $3$ ; donc $15\,\%$ en font
+$6+3=9$.}{$15\,\%=10\,\%+5\,\%$ : le montant de la hausse}
+\explique{Nouveau prix : $60+9=\res{69}$~€.}{une hausse s'ajoute}
+\cas{b)}
+\explique{$10\,\%$ de $900$ font $90$ ; $20\,\%$ en font $180$.}{« soldé à $-20\,\%$ » :
+baisse de $20\,\%$}
+\explique{Prix soldé : $900-180=\res{720}$~€.}{une baisse se retire}
+\cas{c)}
+\explique{$1\,\%$ de $2\,000$ font $20$ ; $3\,\%$ en font $60$.}{$1\,\%$ : on divise par
+$100$}
+\explique{Nouveau salaire : $2\,000+60=\res{2\,060}$~€.}{}
+\cas{d)}
+\explique{$10\,\%$ de $6\,000$ font $600$ ; $5\,\%$ en font $300$.}{la moitié de
+$10\,\%$}
+\explique{La commune compte ensuite $6\,000-300=\res{5\,700}$ habitants.}{une baisse se
+retire}
+\rem{Erreur fréquente : répondre $9$~€ en a). $9$~€ est le montant de la hausse, pas le
+nouveau prix.}
 \end{exo}
 
 \begin{exo}[Prix hors taxe, prix TTC]
-\begin{reponses}
-  \item TVA : $20\,\%$ de $350$ font \res{70\text{ €}} ; prix TTC
-        $350+70=\res{420\text{ €}}$.
-  \item $10\,\%$ de $420$ font $42$ : prix soldé \res{378\text{ €}}.
-\end{reponses}
-\rem{La baisse porte sur le prix TTC, $420$~€, et non sur le prix HT.}
+\cas{a)}
+\explique{$10\,\%$ de $350$ font $35$ ; la TVA, $20\,\%$, vaut $2\times 35=\res{70}$~€.}{la
+TVA est un pourcentage du prix hors taxe}
+\explique{Prix TTC : $350+70=\res{420}$~€.}{la taxe s'ajoute au prix hors taxe}
+\cas{b)}
+\explique{La baisse porte sur le prix TTC, $420$~€ : $10\,\%$ de $420$ font $42$.}{c'est
+le prix affiché en magasin qui est soldé}
+\explique{Prix soldé : $420-42=\res{378}$~€.}{}
+\rem{Erreur fréquente : calculer $10\,\%$ de $350$. Chaque pourcentage porte sur la
+valeur du moment : d'abord $350$~€, puis $420$~€.}
 \end{exo}
 
 \partie{Calculer un pourcentage}
 
 \begin{exo}[Proportions]
-\begin{reponses}
-  \item $\dfrac{12}{40}=\dfrac{30}{100}$, soit \res{30\,\%}
-  \item $\dfrac{9}{20}=\dfrac{45}{100}$, soit \res{45\,\%}
-  \item $\dfrac{33}{150}=\dfrac{22}{100}$, soit \res{22\,\%}
-  \item $\dfrac{80}{500}=\dfrac{16}{100}$, soit \res{16\,\%}
-\end{reponses}
+\explique{La proportion est $p=\dfrac{\text{partie}}{\text{total}}$ ; pour l'écrire en
+pourcentage, on cherche une fraction de dénominateur $100$.}{définition 2}
+\cas{a)}
+\begin{calculs}
+p &= \dfrac{12}{40} &&\justif{la partie sur le total}\\
+p &= \dfrac{3\times\barre{4}}{10\times\barre{4}} &&\justif{$12=3\times 4$ et $40=10\times 4$}\\
+p &= \dfrac{3\fois{10}}{10\fois{10}} &&\justif{on veut $100$ en bas}\\
+p &= \dfrac{30}{100} &&
+\end{calculs}
+\explique{Les $12$ élèves représentent $\res{30\,\%}$ du groupe.}{}
+\cas{b)}
+\begin{calculs}
+p &= \dfrac{9}{20} &&\justif{les admis sur les candidats}\\
+p &= \dfrac{9\fois{5}}{20\fois{5}} &&\justif{$20\times 5=100$}\\
+p &= \dfrac{45}{100} &&
+\end{calculs}
+\explique{$\res{45\,\%}$ des candidats sont admis.}{}
+\cas{c)}
+\begin{calculs}
+p &= \dfrac{33}{150} &&\\
+p &= \dfrac{11\times\barre{3}}{50\times\barre{3}} &&\justif{$33=11\times 3$ et $150=50\times 3$}\\
+p &= \dfrac{11\fois{2}}{50\fois{2}} &&\justif{$50\times 2=100$}\\
+p &= \dfrac{22}{100} &&
+\end{calculs}
+\explique{Les garçons représentent $\res{22\,\%}$ des élèves.}{}
+\cas{d)}
+\begin{calculs}
+p &= \dfrac{80}{500} &&\\
+p &= \dfrac{16\times\barre{5}}{100\times\barre{5}} &&\justif{$80=16\times 5$ et $500=100\times 5$}\\
+p &= \dfrac{16}{100} &&
+\end{calculs}
+\explique{Ces clients représentent $\res{16\,\%}$ de l'ensemble.}{}
+\rem{Erreur fréquente : diviser le total par la partie ($\dfrac{40}{12}$). Une proportion
+est toujours entre $0$ et $1$, donc entre $0\,\%$ et $100\,\%$.}
 \end{exo}
 
 \begin{exo}[Deux enquêtes]
-\begin{reponses}
-  \item $\dfrac{140}{250}=\dfrac{56}{100}$, soit $56\,\%<60\,\%$ : \res{\text{non}}.
-  \item $\dfrac{340}{400}=\dfrac{85}{100}$, soit $85\,\%$ : \res{\text{c'est exact}}.
-\end{reponses}
-\rem{Autre rédaction pour a) : $60\,\%$ de $250$ font $150$, et $140<150$.}
+\cas{a)}
+\begin{calculs}
+p &= \dfrac{140}{250} &&\justif{les favorables sur le total}\\
+p &= \dfrac{28\times\barre{5}}{50\times\barre{5}} &&\justif{$140=28\times 5$ et $250=50\times 5$}\\
+p &= \dfrac{28\fois{2}}{50\fois{2}} &&\justif{$50\times 2=100$}\\
+p &= \dfrac{56}{100} &&
+\end{calculs}
+\explique{$56\,\%$ des élèves sont favorables, et $56\,\%<60\,\%$ : \res{ce n'est pas le
+cas}, le projet n'a pas assez de soutien.}{on compare au seuil de $60\,\%$}
+\explique{Autre rédaction : $60\,\%$ de $250$ font $150$ ($10\,\%$ font $25$), et
+$140<150$.}{on compare au nombre d'élèves qu'il faudrait}
+\cas{b)}
+\begin{calculs}
+p &= \dfrac{340}{400} &&\justif{les satisfaits sur le total}\\
+p &= \dfrac{85\times\barre{4}}{100\times\barre{4}} &&\justif{$340=85\times 4$ et $400=100\times 4$}\\
+p &= \dfrac{85}{100} &&
+\end{calculs}
+\explique{$85\,\%$ des clients sont satisfaits : \res{la publicité dit vrai}.}{}
 \end{exo}
 
 \begin{exo}[Taux d'évolution]
-\begin{reponses}
-  \item $t=\dfrac{180-150}{150}=\dfrac{30}{150}$, soit $t=0{,}2$ : \res{+20\,\%}.
-  \item $t=\dfrac{340-400}{400}=\dfrac{-60}{400}$, soit $t=-0{,}15$ : \res{-15\,\%}.
-  \item $t=\dfrac{720-800}{800}=\dfrac{-80}{800}$, soit $t=-0{,}1$ : \res{-10\,\%}.
-  \item $t=\dfrac{75-60}{60}=\dfrac{15}{60}$, soit $t=0{,}25$ : \res{+25\,\%}.
-\end{reponses}
-\rem{On divise toujours par la valeur de départ.}
+\explique{Formule du cours : $t=\dfrac{V_{1}-V_{0}}{V_{0}}$, l'arrivée moins le départ,
+sur le départ.}{définition 3}
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{180-150}{150} &&\justif{départ $V_{0}=150$, arrivée $V_{1}=180$}\\
+t &= \dfrac{30}{150} &&\justif{le prix a pris $30$~€}\\
+t &= \dfrac{1}{5} &&\justif{$150=5\times 30$}\\
+t &= 0{,}2 &&\justif{$\dfrac{1}{5}=\dfrac{20}{100}$}
+\end{calculs}
+\explique{$t>0$ : le prix a \res{augmenté de $20\,\%$}.}{$0{,}2=20\,\%$}
+\cas{b)}
+\begin{calculs}
+t &= \dfrac{340-400}{400} &&\justif{départ $400$, arrivée $340$}\\
+t &= \dfrac{-60}{400} &&\justif{le stock a perdu $60$~kg}\\
+t &= -\dfrac{15}{100} &&\justif{on divise en haut et en bas par $4$}\\
+t &= -0{,}15 &&
+\end{calculs}
+\explique{$t<0$ : le stock a \res{baissé de $15\,\%$}.}{le signe $-$ dit que c'est une
+baisse}
+\cas{c)}
+\begin{calculs}
+t &= \dfrac{720-800}{800} &&\\
+t &= \dfrac{-80}{800} &&\\
+t &= -0{,}1 &&\justif{$\dfrac{80}{800}=\dfrac{1}{10}$}
+\end{calculs}
+\explique{Le loyer a \res{baissé de $10\,\%$}.}{$0{,}1=10\,\%$}
+\cas{d)}
+\begin{calculs}
+t &= \dfrac{75-60}{60} &&\\
+t &= \dfrac{15}{60} &&\\
+t &= 0{,}25 &&\justif{$\dfrac{15}{60}=\dfrac{1}{4}$}
+\end{calculs}
+\explique{Le club a \res{gagné $25\,\%$} d'adhérents.}{}
+\rem{Erreur fréquente : diviser par la valeur d'arrivée. En a), $\dfrac{30}{180}$ ne
+donne pas $20\,\%$. On divise toujours par la valeur de \emph{départ}.}
 \end{exo}
 
 \begin{exo}[Plus ou moins de\ldots{} ?]
-\begin{reponses}
-  \item Perte : $80$ ; $10\,\%$ de $700$ font $70$ ; $80>70$ : \res{\text{oui}}.
-  \item Gain : $120$ ; $10\,\%$ de $1\,500$ font $150$ ; $120<150$ : \res{\text{non}}.
-  \item Perte : $120$ ; $5\,\%$ de $3\,000$ font $150$ ; $120<150$ : \res{\text{non}}.
-\end{reponses}
-\rem{Autre rédaction, celle des corrigés de l'épreuve, pour a) : une baisse de
-$10\,\%$ donnerait $700\times 0{,}9=630$ ; or $620<630$.}
+\explique{On ne calcule pas le taux : on compare la variation réelle à ce que
+représenterait le pourcentage annoncé de la valeur de départ.}{méthode 4, c)}
+\cas{a)}
+\explique{Le club a perdu $700-620=80$ adhérents.}{la perte réelle}
+\explique{$10\,\%$ de $700$ font $70$.}{la perte qu'il faudrait pour $10\,\%$}
+\explique{$80>70$ : \res{oui}, le club a perdu plus de $10\,\%$ de ses adhérents.}{}
+\explique{Autre rédaction : avec une baisse de $10\,\%$, il resterait $700-70=630$
+adhérents ; or $620<630$.}{comme dans les corrigés de l'épreuve}
+\cas{b)}
+\explique{La forêt a gagné $1\,620-1\,500=120$ arbres.}{le gain réel}
+\explique{$10\,\%$ de $1\,500$ font $150$.}{}
+\explique{$120<150$ : \res{non}, elle a gagné moins de $10\,\%$ d'arbres.}{}
+\cas{c)}
+\explique{La ville a perdu $3\,000-2\,880=120$ habitants.}{}
+\explique{$10\,\%$ de $3\,000$ font $300$, donc $5\,\%$ en font $150$.}{la moitié de
+$10\,\%$}
+\explique{$120<150$ : \res{non}, elle a perdu moins de $5\,\%$ de ses habitants.}{}
 \end{exo}
 
 \begin{exo}[Au tableur]
-\begin{reponses}
-  \item $t=\dfrac{5\,500-5\,000}{5\,000}=\dfrac{500}{5\,000}$, soit $t=0{,}1$ :
-        \res{+10\,\%}.
-  \item \res{\texttt{=(C2-B2)/B2}}
-  \item \res{\texttt{=(D2-C2)/C2}}
-\end{reponses}
-\rem{Sans parenthèses, \texttt{=C2-B2/B2} calcule $C2-1$ : la division passe avant la
-soustraction. On divise par la cellule de l'année \emph{précédente}.}
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{5\,500-5\,000}{5\,000} &&\justif{départ : 2022 ; arrivée : 2023}\\
+t &= \dfrac{500}{5\,000} &&\\
+t &= 0{,}1 &&\justif{$\dfrac{500}{5\,000}=\dfrac{1}{10}$}
+\end{calculs}
+\explique{Le nombre d'entrées a \res{augmenté de $10\,\%$} entre 2022 et 2023.}{}
+\cas{b)}
+\explique{En C3, on veut le taux de 2022 à 2023 : l'arrivée est en C2, le départ en
+B2.}{B3 porte une croix : pas d'année avant 2022}
+\explique{La bonne formule est \res{\texttt{=(C2-B2)/B2}}.}{l'arrivée moins le départ, sur
+le départ}
+\explique{\texttt{=(C2-B2)/C2} divise par l'arrivée ; \texttt{=(B2-C2)/B2} calcule le
+départ moins l'arrivée (on obtiendrait $-0{,}1$, une baisse).}{les deux pièges}
+\explique{\texttt{=C2-B2/B2} : sans parenthèses, le tableur fait la division d'abord ; il
+calcule $5\,500-1=5\,499$.}{la division passe avant la soustraction}
+\cas{c)}
+\explique{En recopiant vers la droite, chaque lettre avance d'un rang : C devient D, B
+devient C.}{rappel de l'énoncé}
+\explique{D3 contient \res{\texttt{=(D2-C2)/C2}}.}{le taux de 2023 à 2024}
+\rem{Le tableur affiche alors $-0{,}1$ en D3 : de $5\,500$ à $4\,950$, le nombre
+d'entrées a baissé de $10\,\%$.}
 \end{exo}
 
 \partie{Coefficient multiplicateur}
 
 \begin{exo}[Du taux au coefficient]
-\deux{a) \res{1{,}06} \quad b) \res{0{,}94}}{c) \res{1{,}3} \quad d) \res{0{,}7}}
-\deux{e) \res{1{,}65} \quad f) \res{0{,}88}}{g) \res{1{,}04} \quad h) \res{0{,}55}}
-\deux{i) \res{3}}{}
-\rem{Hausse : $1+\frac{t}{100}$ ; baisse : $1-\frac{t}{100}$. Une hausse de $200\,\%$
-triple la valeur.}
+\explique{D'où vient le coefficient : augmenter $V$ de $6\,\%$, c'est ajouter
+$0{,}06\times V$. On obtient $V+0{,}06\times V=V\times(1+0{,}06)$, soit
+$V\times 1{,}06$.}{on garde $100\,\%$ de $V$ et on ajoute $6\,\%$}
+\explique{Hausse de $t\,\%$ : $C_{M}=1+\dfrac{t}{100}$ ; baisse de $t\,\%$ :
+$C_{M}=1-\dfrac{t}{100}$.}{propriété 1}
+\explique{\etiq{a)} $+6\,\%$ : $C_{M}=1+0{,}06=\res{1{,}06}$}{$6\,\%=0{,}06$}
+\explique{\etiq{b)} $-6\,\%$ : $C_{M}=1-0{,}06=\res{0{,}94}$}{on garde $94\,\%$ de la
+valeur}
+\explique{\etiq{c)} $+30\,\%$ : $C_{M}=1+0{,}3=\res{1{,}3}$}{$30\,\%=0{,}30=0{,}3$}
+\explique{\etiq{d)} $-30\,\%$ : $C_{M}=1-0{,}3=\res{0{,}7}$}{on garde $70\,\%$}
+\explique{\etiq{e)} $+65\,\%$ : $C_{M}=1+0{,}65=\res{1{,}65}$}{}
+\explique{\etiq{f)} $-12\,\%$ : $C_{M}=1-0{,}12=\res{0{,}88}$}{on garde $88\,\%$}
+\explique{\etiq{g)} $+4\,\%$ : $C_{M}=1+0{,}04=\res{1{,}04}$}{$4\,\%=0{,}04$, et non
+$0{,}4$}
+\explique{\etiq{h)} $-45\,\%$ : $C_{M}=1-0{,}45=\res{0{,}55}$}{on garde $55\,\%$}
+\explique{\etiq{i)} $+200\,\%$ : $C_{M}=1+2=\res{3}$}{$200\,\%=\dfrac{200}{100}=2$ : la
+valeur triple}
+\rem{Erreurs fréquentes : $+4\,\%$ donne $1{,}04$ et non $1{,}4$ (qui ferait $+40\,\%$) ;
+$-6\,\%$ donne $0{,}94$ et non $0{,}6$. Contrôle : une hausse donne un coefficient plus
+grand que $1$, une baisse un coefficient plus petit que $1$.}
 \end{exo}
 
 \begin{exo}[Du coefficient au taux]
-\deux{a) hausse de \res{9\,\%}}{b) baisse de \res{9\,\%}}
-\deux{c) $\frac{4}{5}=0{,}8$ : baisse de \res{20\,\%}}{d) baisse de \res{30\,\%}}
-\deux{e) hausse de \res{200\,\%}}{f) baisse de \res{2\,\%}}
+\explique{On écrit le coefficient sous la forme $1+\ldots$ ou $1-\ldots$ : on lit alors
+le taux.}{$C_{M}>1$ : hausse ; $C_{M}<1$ : baisse}
+\explique{\etiq{a)} $1{,}09=1+0{,}09$ : \res{hausse de $9\,\%$}.}{$C_{M}>1$}
+\explique{\etiq{b)} $0{,}91=1-0{,}09$ : \res{baisse de $9\,\%$}.}{$C_{M}<1$}
+\explique{\etiq{c)} $\dfrac{4}{5}=0{,}8$ et $0{,}8=1-0{,}2$ : \res{baisse de $20\,\%$}.}{on
+écrit d'abord la fraction en décimal}
+\explique{\etiq{d)} $0{,}7=1-0{,}3$ : \res{baisse de $30\,\%$}.}{et non de $70\,\%$ : on
+garde $70\,\%$, on perd $30\,\%$}
+\explique{\etiq{e)} $3=1+2$ : \res{hausse de $200\,\%$}.}{et non de $300\,\%$}
+\explique{\etiq{f)} $0{,}98=1-0{,}02$ : \res{baisse de $2\,\%$}.}{}
+\rem{Le coefficient dit ce qu'on \emph{garde} ; le taux, ce qu'on \emph{gagne} ou
+\emph{perd}. Multiplier par $0{,}7$, c'est garder $70\,\%$, donc perdre $30\,\%$.}
 \end{exo}
 
 \begin{exo}[Appliquer une évolution]
-\begin{reponses}
-  \item $300\times 1{,}15=\res{345\text{ €}}$
-  \item $600\times 0{,}65=\res{390\text{ €}}$
-  \item $50\times 2{,}2=\res{110\text{ €}}$
-  \item $2\,000\times 0{,}985=\res{1\,970}$ habitants
-\end{reponses}
-\rem{c) $+120\,\%$ : $C_{M}=1+1{,}2=2{,}2$.}
+\explique{On calcule le coefficient, puis $V_{1}=V_{0}\times C_{M}$ : une seule
+multiplication.}{méthode 5}
+\cas{a)}
+\begin{calculs}
+C_{M} &= 1+0{,}15 = 1{,}15 &&\justif{hausse de $15\,\%$}\\
+V_{1} &= 300\times 1{,}15 &&\justif{$V_{1}=V_{0}\times C_{M}$}\\
+V_{1} &= 345 &&\justif{$300+300\times 0{,}15$, soit $300+45$}
+\end{calculs}
+\explique{La nouvelle valeur est $\res{345}$~€.}{}
+\cas{b)}
+\begin{calculs}
+C_{M} &= 1-0{,}35 = 0{,}65 &&\justif{baisse de $35\,\%$}\\
+V_{1} &= 600\times 0{,}65 &&\\
+V_{1} &= 390 &&\justif{$6\times 65=390$}
+\end{calculs}
+\explique{La nouvelle valeur est $\res{390}$~€.}{}
+\cas{c)}
+\begin{calculs}
+C_{M} &= 1+1{,}2 = 2{,}2 &&\justif{$120\,\%=\dfrac{120}{100}=1{,}2$}\\
+V_{1} &= 50\times 2{,}2 &&\\
+V_{1} &= 110 &&\justif{$50\times 2=100$ et $50\times 0{,}2=10$}
+\end{calculs}
+\explique{La nouvelle valeur est $\res{110}$~€ : plus que le double.}{$+120\,\%$, c'est
+plus que $+100\,\%$}
+\cas{d)}
+\begin{calculs}
+C_{M} &= 1-0{,}015 = 0{,}985 &&\justif{$1{,}5\,\%=\dfrac{1{,}5}{100}=0{,}015$}\\
+V_{1} &= 2\,000\times 0{,}985 &&\\
+V_{1} &= 1\,970 &&\justif{$2\,000\times 0{,}015=30$, puis $2\,000-30$}
+\end{calculs}
+\explique{La commune compte ensuite $\res{1\,970}$ habitants.}{}
+\rem{Erreur fréquente en d) : $1{,}5\,\%=0{,}15$. Or $0{,}15=15\,\%$ ; $1{,}5\,\%$ fait
+dix fois moins.}
 \end{exo}
 
 \begin{exo}[Le bon calcul]
-\begin{questions}
-  \item \res{\text{b) } 500\times 0{,}88} : $C_{M}=1-0{,}12$.
-  \item \res{\text{c) } 150\times 1{,}3} : $C_{M}=1+0{,}3$.
-\end{questions}
-\rem{$500\times 0{,}12$ est le montant de la baisse, pas le nouveau prix.}
+\cas{1.}
+\explique{Baisse de $12\,\%$ : $C_{M}=1-0{,}12=0{,}88$, et le nouveau prix est
+$500\times 0{,}88$. Réponse \res{b)}.}{on garde $88\,\%$ du prix}
+\explique{a) retire $0{,}12$~€ ; c) est une hausse ; d) donne $60$~€, le montant de la
+baisse et non le nouveau prix.}{pourquoi les autres sont fausses}
+\cas{2.}
+\explique{Hausse de $30\,\%$ : $C_{M}=1+0{,}3=1{,}3$, et le nouveau prix est
+$150\times 1{,}3$. Réponse \res{c)}.}{}
+\explique{a) ajoute $0{,}30$~€ ; b) donne $45$~€, le montant de la hausse ; d) est une
+baisse de $30\,\%$.}{}
 \end{exo}
 
 \begin{exo}[Retrouver un taux avec le coefficient]
-\begin{reponses}
-  \item $C_{M}=\dfrac{100}{80}=1{,}25$ : \res{+25\,\%}
-  \item $C_{M}=\dfrac{400}{500}=0{,}8$ : \res{-20\,\%}
-  \item $C_{M}=\dfrac{60}{20}=3$ : \res{+200\,\%}
-\end{reponses}
+\explique{Comme $V_{1}=V_{0}\times C_{M}$, on trouve $C_{M}=\dfrac{V_{1}}{V_{0}}$ :
+l'arrivée sur le départ.}{méthode 5, d)}
+\cas{a)}
+\begin{calculs}
+C_{M} &= \dfrac{100}{80} &&\justif{arrivée sur départ}\\
+C_{M} &= 1{,}25 &&\justif{$\dfrac{100}{80}=\dfrac{5}{4}$ ; $1{,}25=1+0{,}25$}
+\end{calculs}
+\explique{Le prix a \res{augmenté de $25\,\%$}.}{contrôle : $\dfrac{100-80}{80}=\dfrac{20}{80}=0{,}25$}
+\cas{b)}
+\begin{calculs}
+C_{M} &= \dfrac{400}{500} &&\\
+C_{M} &= 0{,}8 &&\justif{$\dfrac{4}{5}$ ; $0{,}8=1-0{,}2$}
+\end{calculs}
+\explique{Le stock a \res{baissé de $20\,\%$}.}{}
+\cas{c)}
+\begin{calculs}
+C_{M} &= \dfrac{60}{20} &&\\
+C_{M} &= 3 &&\justif{$3=1+2$}
+\end{calculs}
+\explique{La production a \res{augmenté de $200\,\%$} : elle a triplé.}{et non de
+$300\,\%$}
 \end{exo}
 
 \partie{Évolutions successives, évolution réciproque}
 
 \begin{exo}[Taux global]
-\begin{reponses}
-  \item $1{,}5\times 1{,}2=1{,}8$ : \res{+80\,\%}
-  \item $0{,}7\times 1{,}3=0{,}91$ : \res{-9\,\%}
-  \item $2\times 0{,}5=1$ : \res{0\,\%} (retour au départ)
-  \item $0{,}8\times 0{,}8=0{,}64$ : \res{-36\,\%}
-  \item $1{,}6\times 0{,}75=1{,}2$ : \res{+20\,\%}
-\end{reponses}
-\rem{Les taux ne s'ajoutent pas : on multiplie les coefficients.}
+\explique{Pourquoi on multiplie : après la première évolution, la valeur est
+$V_{0}\times C_{M1}$ ; la seconde évolution s'applique à \emph{cette nouvelle valeur},
+qui devient $V_{0}\times C_{M1}\times C_{M2}$.}{propriété 2}
+\cas{a)}
+\begin{calculs}
+C_{M} &= 1{,}5\times 1{,}2 &&\justif{$+50\,\%$ : $\times 1{,}5$ ; $+20\,\%$ : $\times 1{,}2$}\\
+C_{M} &= 1{,}8 &&\justif{$15\times 12=180$ ; $1{,}8=1+0{,}8$}
+\end{calculs}
+\explique{Hausse globale de $\res{80\,\%}$.}{et non de $70\,\%$ : avec $100$, on passe à
+$150$, puis à $180$}
+\cas{b)}
+\begin{calculs}
+C_{M} &= 0{,}7\times 1{,}3 &&\\
+C_{M} &= 0{,}91 &&\justif{$7\times 13=91$ ; $0{,}91=1-0{,}09$}
+\end{calculs}
+\explique{Baisse globale de $\res{9\,\%}$.}{et non $0\,\%$ : la hausse porte sur une
+valeur plus petite}
+\cas{c)}
+\begin{calculs}
+C_{M} &= 2\times 0{,}5 &&\justif{$+100\,\%$ : $\times 2$ ; $-50\,\%$ : $\times 0{,}5$}\\
+C_{M} &= 1 &&
+\end{calculs}
+\explique{Taux global : $\res{0\,\%}$ ; on revient à la valeur de départ.}{doubler puis
+prendre la moitié}
+\cas{d)}
+\begin{calculs}
+C_{M} &= 0{,}8\times 0{,}8 &&\\
+C_{M} &= 0{,}64 &&\justif{$0{,}64=1-0{,}36$}
+\end{calculs}
+\explique{Baisse globale de $\res{36\,\%}$.}{et non de $40\,\%$}
+\cas{e)}
+\begin{calculs}
+C_{M} &= 1{,}6\times 0{,}75 &&\justif{$-25\,\%$ : $\times 0{,}75$}\\
+C_{M} &= 1{,}2 &&\justif{$\dfrac{3}{4}$ de $1{,}6$ : $1{,}6\div 4=0{,}4$, puis $3\times 0{,}4$}
+\end{calculs}
+\explique{Hausse globale de $\res{20\,\%}$.}{et non de $35\,\%$}
+\rem{Les taux successifs ne s'ajoutent pas : on multiplie les coefficients, puis on lit
+le taux sur le coefficient global.}
 \end{exo}
 
 \begin{exo}[Le prix de l'électricité]
 \begin{calculs}
-C_{M} &= 1{,}1\times 1{,}1\\
-C_{M} &= 1{,}21
+C_{M} &= 1{,}1\times 1{,}1 &&\justif{deux hausses de $10\,\%$}\\
+C_{M} &= 1{,}21 &&\justif{$11\times 11=121$ ; $1{,}21=1+0{,}21$}
 \end{calculs}
-La hausse est de \res{21\,\%} et non de $20\,\%$ : le journaliste \res{\text{a tort}}.
+\explique{Sur l'année, le prix augmente de $21\,\%$ et non de $20\,\%$ : le journaliste
+\res{a tort}.}{}
+\explique{Avec un prix de $100$~€ : en février, il passe à $110$~€ ; en août, il prend
+$10\,\%$ de $110$, soit $11$~€, et passe à $121$~€.}{la seconde hausse porte sur
+$110$~€, pas sur $100$~€}
 \end{exo}
 
 \begin{exo}[Vrai ou faux ?]
-\begin{reponses}
-  \item \res{\text{Faux}} : $1{,}5\times 0{,}5=0{,}75$, baisse de $25\,\%$.
-  \item \res{\text{Vrai}} : $0{,}8\times 0{,}7=0{,}7\times 0{,}8=0{,}56$.
-  \item \res{\text{Vrai}} : $0{,}9\times 0{,}9=0{,}81$.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+C_{M} &= 1{,}5\times 0{,}5 &&\justif{$+50\,\%$, puis $-50\,\%$}\\
+C_{M} &= 0{,}75 &&\justif{$0{,}75=1-0{,}25$}
+\end{calculs}
+\explique{\res{Faux} : on perd $25\,\%$ en tout.}{avec $100$ : $150$, puis la moitié,
+$75$}
+\cas{b)}
+\begin{calculs}
+C_{M} &= 0{,}8\times 0{,}7 &&\justif{$-20\,\%$, puis $-30\,\%$}\\
+C_{M} &= 0{,}56 &&
+\end{calculs}
+\explique{Dans l'autre ordre, $0{,}7\times 0{,}8=0{,}56$ aussi : \res{vrai}.}{l'ordre ne
+change pas un produit}
+\cas{c)}
+\begin{calculs}
+C_{M} &= 0{,}9\times 0{,}9 &&\\
+C_{M} &= 0{,}81 &&\justif{$0{,}81=1-0{,}19$}
+\end{calculs}
+\explique{\res{Vrai} : la baisse globale est de $19\,\%$, et non de $20\,\%$.}{la seconde
+baisse porte sur une valeur plus petite}
 \end{exo}
 
 \begin{exo}[La valeur d'un scooter]
-\begin{reponses}
-  \item $4\,000\times 0{,}75=\res{3\,000\text{ €}}$ ; \;
-        $3\,000\times 0{,}8=\res{2\,400\text{ €}}$.
-  \item $C_{M}=0{,}75\times 0{,}8=0{,}6$ : \res{-40\,\%}.
-\end{reponses}
-\rem{Et non $-45\,\%$ : la seconde baisse porte sur $3\,000$~€.}
+\cas{a)}
+\begin{calculs}
+V_{1} &= 4\,000\times 0{,}75 &&\justif{$-25\,\%$ : $C_{M}=0{,}75$}\\
+V_{1} &= 3\,000 &&\justif{les trois quarts de $4\,000$}\\
+V_{2} &= 3\,000\times 0{,}8 &&\justif{$-20\,\%$ : $C_{M}=0{,}8$, appliqué à $3\,000$}\\
+V_{2} &= 2\,400 &&
+\end{calculs}
+\explique{Le scooter vaut $\res{3\,000}$~€ au bout d'un an et $\res{2\,400}$~€ au bout
+de deux ans.}{}
+\cas{b)}
+\begin{calculs}
+C_{M} &= 0{,}75\times 0{,}8 &&\justif{produit des coefficients}\\
+C_{M} &= 0{,}6 &&\justif{$0{,}6=1-0{,}4$}
+\end{calculs}
+\explique{En deux ans, le scooter a perdu $\res{40\,\%}$ de sa valeur.}{contrôle :
+$4\,000\times 0{,}6=2\,400$}
+\rem{Erreur fréquente : $25+20=45\,\%$. La seconde baisse porte sur $3\,000$~€ et non
+sur $4\,000$~€ : elle retire $600$~€, pas $800$~€.}
 \end{exo}
 
 \begin{exo}[Une même évolution répétée]
-\begin{reponses}
-  \item Multipliée par $1{,}03^{3}\approx 1{,}09$ : hausse d'environ \res{9\,\%}.
-  \item $C_{M}=1{,}01^{12}\approx 1{,}13$ : hausse d'environ \res{13\,\%} (et non
-        $12\,\%$).
-\end{reponses}
+\cas{a)}
+\explique{Trois hausses de $3\,\%$ : $1{,}03\times 1{,}03\times 1{,}03=1{,}03^{3}$.}{la
+même évolution trois fois}
+\begin{calculs}
+C_{M} &= 1{,}03^{3} &&\\
+C_{M} &\approx 1{,}09 &&\justif{valeur de l'énoncé ; $1{,}09=1+0{,}09$}
+\end{calculs}
+\explique{En $3$ ans, la production est multipliée par environ $\res{1{,}09}$ : hausse
+d'environ $\res{9\,\%}$.}{« environ » : $1{,}09$ est un arrondi}
+\cas{b)}
+\explique{Douze hausses de $1\,\%$ : le coefficient est $1{,}01^{12}$.}{$12$ mois}
+\begin{calculs}
+C_{M} &= 1{,}01^{12} &&\\
+C_{M} &\approx 1{,}13 &&\justif{$1{,}13=1+0{,}13$}
+\end{calculs}
+\explique{Sur un an, les prix augmentent d'environ $\res{13\,\%}$, et non de $12\,\%$.}{chaque
+hausse porte sur un prix déjà augmenté}
 \end{exo}
 
 \begin{exo}[Se compensent-elles ?]
-\deux{a) $0{,}8\times 1{,}25=1$ : \res{\text{oui}}}{b) $1{,}5\times 0{,}5=0{,}75$ : \res{\text{non}}}
-\deux{c) $0{,}5\times 2=1$ : \res{\text{oui}}}{d) $4\times 0{,}25=1$ : \res{\text{oui}}}
-\deux{e) $0{,}8\times 1{,}2=0{,}96$ : \res{\text{non}}}{f) $1{,}1\times 0{,}9=0{,}99$ : \res{\text{non}}}
-\rem{Une hausse de $t\,\%$ n'est jamais compensée par une baisse de $t\,\%$.}
+\explique{Deux évolutions se compensent quand le produit de leurs coefficients vaut
+$1$ : on revient alors à la valeur de départ.}{définition 4}
+\explique{\etiq{a)} $0{,}8\times 1{,}25=1$ : \res{oui}.}{$-20\,\%$, puis $+25\,\%$}
+\explique{\etiq{b)} $1{,}5\times 0{,}5=0{,}75$ : \res{non}.}{il manque $25\,\%$}
+\explique{\etiq{c)} $0{,}5\times 2=1$ : \res{oui}.}{la moitié, puis le double}
+\explique{\etiq{d)} $4\times 0{,}25=1$ : \res{oui}.}{$+300\,\%$ : $C_{M}=1+3=4$ ;
+$-75\,\%$ : $0{,}25$}
+\explique{\etiq{e)} $0{,}8\times 1{,}2=0{,}96$ : \res{non}.}{il manque $4\,\%$}
+\explique{\etiq{f)} $1{,}1\times 0{,}9=0{,}99$ : \res{non}.}{il manque $1\,\%$}
+\rem{Une hausse de $t\,\%$ n'est jamais compensée par une baisse de $t\,\%$ : la baisse
+porte sur une valeur plus grande, elle retire donc davantage.}
 \end{exo}
 
 \begin{exo}[Quelle évolution compense ?]
-\begin{questions}
-  \item \res{\text{b}} : $4\times 0{,}25=1$.
-  \item \res{\text{c}} : $1{,}25\times 0{,}8=1$ (avec $25\,\%$ : $0{,}9375$).
-  \item \res{\text{a}} : $0{,}5\times 2=1$ (avec $50\,\%$ : $0{,}75$).
-\end{questions}
+\explique{On teste chaque réponse : on cherche celle dont le produit des coefficients
+vaut $1$.}{méthode 7}
+\cas{1.}
+\explique{Baisse de $75\,\%$ : $4\times 0{,}25=1$ ; baisse de $25\,\%$ :
+$4\times 0{,}75=3$.}{}
+\explique{Une baisse de $400\,\%$ ou de $300\,\%$ est impossible. Réponse \res{b)}.}{on ne
+peut pas perdre plus de $100\,\%$}
+\cas{2.}
+\explique{$1{,}25\times 0{,}75=0{,}9375$ ; \ $1{,}25\times 0{,}25=0{,}3125$ ; \
+$1{,}25\times 0{,}8=1$ ; \ $1{,}25\times 0{,}2=0{,}25$.}{coefficients des baisses :
+$0{,}75$ ; $0{,}25$ ; $0{,}8$ ; $0{,}2$}
+\explique{Il faut une baisse de $20\,\%$. Réponse \res{c)}.}{seul produit égal à $1$}
+\cas{3.}
+\explique{$0{,}5\times 2=1$ ; \ $0{,}5\times 1{,}5=0{,}75$ ; \ $0{,}5\times 3=1{,}5$ ; \
+$0{,}5\times 2{,}5=1{,}25$.}{coefficients des hausses : $2$ ; $1{,}5$ ; $3$ ; $2{,}5$}
+\explique{Il faut une hausse de $100\,\%$. Réponse \res{a)}.}{pour revenir de la moitié,
+il faut doubler}
 \end{exo}
 
 \begin{exo}[Un verger]
-\begin{reponses}
-  \item $2\,000\times 0{,}8=\res{1\,600}$ arbres.
-  \item $1\,600\times 1{,}2=1\,920$ : \res{\text{non}}.
-  \item $1\,600\times 1{,}25=\res{2\,000}$ ; ou $0{,}8\times 1{,}25=1$.
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+V_{1} &= 2\,000\times 0{,}8 &&\justif{$-20\,\%$ : on garde $80\,\%$}\\
+V_{1} &= 1\,600 &&
+\end{calculs}
+\explique{Il reste $\res{1\,600}$ arbres.}{}
+\cas{b)}
+\begin{calculs}
+V_{2} &= 1\,600\times 1{,}2 &&\justif{$+20\,\%$ des arbres restants}\\
+V_{2} &= 1\,920 &&\justif{$1\,600+320$}
+\end{calculs}
+\explique{$1\,920<2\,000$ : \res{non}, il lui manque $80$ arbres.}{$20\,\%$ de $1\,600$
+($320$) est moins que $20\,\%$ de $2\,000$ ($400$)}
+\cas{c)}
+\begin{calculs}
+V_{2} &= 1\,600\times 1{,}25 &&\justif{$+25\,\%$ : $C_{M}=1{,}25$}\\
+V_{2} &= 2\,000 &&\justif{$25\,\%$ de $1\,600$ font $400$}
+\end{calculs}
+\explique{En replantant $25\,\%$ des arbres restants, il retrouve \res{exactement
+$2\,000$ arbres}.}{ou : $0{,}8\times 1{,}25=1$}
 \end{exo}
 
 \partie{Fonctions affines : image, antécédent}
 
 \begin{exo}[Affine ou non ?]
-\begin{reponses}
-  \item \res{\text{affine}}, $a=5$ et $b=1$
-  \item \res{\text{non}} (carré de $x$)
-  \item \res{\text{affine}}, $a=-3$ et $b=2$
-  \item \res{\text{non}} ($x$ au dénominateur)
-  \item \res{\text{affine}} (linéaire), $a=1{,}5$ et $b=0$
-  \item \res{\text{affine}} (constante), $a=0$ et $b=-4$
-\end{reponses}
-\rem{$2-3x=-3x+2$ : le coefficient de $x$ est $a$, même s'il est écrit en second.}
+\explique{Une fonction est affine quand on peut l'écrire $f(x)=ax+b$ : un nombre fois
+$x$, plus un nombre.}{définition 5}
+\cas{a)}
+\explique{$f(x)=5x+1$ : \res{affine}, avec $a=5$ et $b=1$.}{}
+\cas{b)}
+\explique{$g(x)=x^{2}-3$ : \res{non affine}.}{$x$ est au carré}
+\cas{c)}
+\explique{$h(x)=2-3x$ s'écrit $h(x)=-3x+2$ : \res{affine}, avec $a=-3$ et $b=2$.}{$a$ est
+le nombre devant $x$, avec son signe}
+\cas{d)}
+\explique{$k(x)=\dfrac{2}{x}$ : \res{non affine}.}{$x$ est au dénominateur}
+\cas{e)}
+\explique{$m(x)=1{,}5x$ s'écrit $m(x)=1{,}5x+0$ : \res{affine}, avec $a=1{,}5$ et $b=0$.}{$b=0$ :
+fonction linéaire}
+\cas{f)}
+\explique{$n(x)=-4$ s'écrit $n(x)=0\times x-4$ : \res{affine}, avec $a=0$ et
+$b=-4$.}{$a=0$ : fonction constante}
+\rem{Erreur fréquente en c) : lire $a=2$ parce que $2$ est écrit en premier. Le
+coefficient directeur est celui de $x$, où qu'il soit placé.}
 \end{exo}
 
 \begin{exo}[Images]
-\begin{reponses}
-  \item $f(0)=\res{-4}$ ; $f(2)=\res{2}$ ; $f(-1)=\res{-7}$ ; $f(0{,}5)=\res{-2{,}5}$
-  \item $g(0)=\res{6}$ ; $g(2)=\res{-2}$ ; $g(-3)=\res{18}$ ; $g(1{,}5)=\res{0}$
-\end{reponses}
-\rem{$g(-3)=-4\times(-3)+6=12+6$ : parenthèses autour de $-3$.}
+\explique{Pour calculer une image, on remplace $x$ par le nombre, entre parenthèses
+s'il est négatif.}{méthode 8}
+\cas{a)}
+\begin{calculs}
+f(0) &= 3\times 0-4 &&\justif{on remplace $x$ par $0$}\\
+f(0) &= \res{-4} &&\justif{$f(0)=b$, toujours}\\
+f(2) &= 3\times 2-4 &&\\
+f(2) &= \res{2} &&\justif{$6-4$}\\
+f(-1) &= 3\times(-1)-4 &&\justif{parenthèses autour de $-1$}\\
+f(-1) &= \res{-7} &&\justif{$-3-4$}\\
+f(0{,}5) &= 3\times 0{,}5-4 &&\\
+f(0{,}5) &= \res{-2{,}5} &&\justif{$1{,}5-4$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g(0) &= -4\times 0+6 &&\\
+g(0) &= \res{6} &&\\
+g(2) &= -4\times 2+6 &&\\
+g(2) &= \res{-2} &&\justif{$-8+6$}\\
+g(-3) &= -4\times(-3)+6 &&\justif{parenthèses autour de $-3$}\\
+g(-3) &= \res{18} &&\justif{$-4\times(-3)=12$ : moins par moins donne plus}\\
+g(1{,}5) &= -4\times 1{,}5+6 &&\\
+g(1{,}5) &= \res{0} &&\justif{$-6+6$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $-4\times -3$ sans parenthèses, puis se tromper de
+signe. $g(-3)=12+6$.}
 \end{exo}
 
 \begin{exo}[Antécédents]
-a) Antécédent de $15$ :
+\explique{Chercher l'antécédent de $15$, c'est trouver $x$ tel que $f(x)=15$ : on
+résout une équation.}{méthode 9}
+\cas{a)}
 \begin{calculs}
-3x+9 &= 15\\
-3x &= 6\\
-x &= \res{2}
+3x+9 &= 15 &&\justif{on écrit $f(x)=15$}\\
+3x &= 6 &&\justif{on retire $9$ des deux côtés}\\
+x &= 2 &&\justif{on divise par $3$}
 \end{calculs}
-De même : $3x=-9$, antécédent de $0$ : \res{-3} ; \; $3x=-15$, antécédent de $-6$ :
-\res{-5}.
-
-\smallskip
-b) Antécédent de $14$ :
+\explique{L'antécédent de $15$ est $\res{2}$.}{contrôle : $f(2)=6+9=15$}
 \begin{calculs}
--2x+8 &= 14\\
--2x &= 6\\
-x &= \res{-3}
+3x+9 &= 0 &&\justif{on écrit $f(x)=0$}\\
+3x &= -9 &&\justif{on retire $9$}\\
+x &= -3 &&\justif{on divise par $3$}
 \end{calculs}
-Antécédent de $0$ : $-2x=-8$, soit \res{4}.
-
-\smallskip
-c) $0{,}5x-2=3$, donc $0{,}5x=5$ et \res{x=10}.
+\explique{L'antécédent de $0$ est $\res{-3}$.}{contrôle : $f(-3)=-9+9=0$}
+\begin{calculs}
+3x+9 &= -6 &&\justif{on écrit $f(x)=-6$}\\
+3x &= -15 &&\justif{$-6-9=-15$}\\
+x &= -5 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{L'antécédent de $-6$ est $\res{-5}$.}{contrôle : $f(-5)=-15+9=-6$}
+\cas{b)}
+\begin{calculs}
+-2x+8 &= 0 &&\justif{on écrit $g(x)=0$}\\
+-2x &= -8 &&\justif{on retire $8$}\\
+x &= 4 &&\justif{on divise par $-2$ : $\dfrac{-8}{-2}=4$}
+\end{calculs}
+\explique{L'antécédent de $0$ est $\res{4}$.}{contrôle : $g(4)=-8+8=0$}
+\begin{calculs}
+-2x+8 &= 14 &&\justif{on écrit $g(x)=14$}\\
+-2x &= 6 &&\justif{on retire $8$}\\
+x &= -3 &&\justif{on divise par $-2$ : $\dfrac{6}{-2}=-3$}
+\end{calculs}
+\explique{L'antécédent de $14$ est $\res{-3}$.}{contrôle : $g(-3)=6+8=14$}
+\cas{c)}
+\begin{calculs}
+0{,}5x-2 &= 3 &&\justif{on recopie l'équation}\\
+0{,}5x &= 5 &&\justif{on ajoute $2$}\\
+x &= 10 &&\justif{diviser par $0{,}5$, c'est multiplier par $2$}
+\end{calculs}
+\explique{La solution est $\res{10}$.}{contrôle : $h(10)=5-2=3$}
+\rem{Erreur fréquente en b) : oublier le signe de $-2$ et trouver $x=3$. Le contrôle
+le montre : $g(3)=-6+8=2$, et non $14$.}
 \end{exo}
 
 \begin{exo}[Deux tarifs]
-a) \res{T(x)=1{,}5x+40}.
+\cas{a)}
+\explique{Le prix est la partie fixe, $40$~€, plus $1{,}5$~€ pour chacun des $x$
+kilomètres : $T(x)=\res{1{,}5x+40}$.}{$b=40$ : le fixe ; $a=1{,}5$ : le prix d'un km}
 \begin{calculs}
-1{,}5x+40 &= 70\\
-1{,}5x &= 30\\
-x &= \res{20} &&\justif{$\frac{30}{1{,}5}=\frac{300}{15}$}
+1{,}5x+40 &= 70 &&\justif{on écrit $T(x)=70$}\\
+1{,}5x &= 30 &&\justif{on retire $40$}\\
+x &= 20 &&\justif{$\dfrac{30}{1{,}5}=\dfrac{300}{15}$}
 \end{calculs}
-Le dépanneur a parcouru $20$~km.
-
-\smallskip
-b) \res{S(x)=15x+200} ; \; $S(40)=600+200=\res{800\text{ €}}$.
+\explique{Le dépanneur a parcouru $\res{20}$~km.}{contrôle : $T(20)=30+40=70$}
+\cas{b)}
+\explique{$S(x)=\res{15x+200}$.}{$200$~€ fixes, plus $15$~€ par invité}
 \begin{calculs}
-15x+200 &= 650\\
-15x &= 450\\
-x &= \res{30} \text{ invités}
+S(40) &= 15\times 40+200 &&\justif{on remplace $x$ par $40$}\\
+S(40) &= 800 &&\justif{$600+200$}
 \end{calculs}
+\explique{Pour $40$ invités, la salle coûte $\res{800}$~€.}{}
+\begin{calculs}
+15x+200 &= 650 &&\justif{on écrit $S(x)=650$}\\
+15x &= 450 &&\justif{on retire $200$}\\
+x &= 30 &&\justif{$\dfrac{450}{15}=30$}
+\end{calculs}
+\explique{Pour $650$~€, on peut inviter $\res{30}$ personnes.}{contrôle : $450+200=650$}
 \end{exo}
 
 \partie{Trouver une fonction affine}
 
 \begin{exo}[Mettre en équation]
-\begin{reponses}
-  \item \res{L(x)=6x+8}
-  \item $5$~L pour $100$~km, soit $0{,}05$~L par km : \res{R(x)=60-0{,}05x}
-  \item $4\,\%$ des ventes : $0{,}04x$ ; \; \res{S(x)=0{,}04x+1\,400}
-\end{reponses}
-\rem{$b$ est la valeur fixe ; $a$ ce que coûte ou rapporte une unité de $x$.}
+\explique{Dans $ax+b$, $b$ est la valeur fixe (celle pour $x=0$) et $a$ ce que coûte,
+rapporte ou fait perdre une unité de $x$.}{propriété 3}
+\cas{a)}
+\explique{$b=8$ (le fixe) et $a=6$ (le prix d'une heure) : $L(x)=\res{6x+8}$.}{contrôle :
+$L(1)=14$~€ pour une heure}
+\cas{b)}
+\explique{$5$~L pour $100$~km, c'est $\dfrac{5}{100}=0{,}05$~L pour $1$~km.}{on se ramène à
+une unité de $x$ : $1$~km}
+\explique{Après $x$~km, le réservoir a perdu $0{,}05x$~L : $R(x)=60-0{,}05x$, soit
+$R(x)=\res{-0{,}05x+60}$.}{$a<0$ : la quantité diminue}
+\explique{Contrôle : $R(100)=60-5=55$ ; après $100$~km, il reste bien $55$~L.}{}
+\cas{c)}
+\explique{$4\,\%$ des ventes, c'est $0{,}04\times x$ : $S(x)=\res{0{,}04x+1\,400}$.}{$4\,\%
+=0{,}04$ ; le fixe est $1\,400$~€}
+\rem{Erreur fréquente en b) : $R(x)=60-5x$. Le contrôle le montre : on aurait
+$R(100)=60-500$, un nombre négatif.}
 \end{exo}
 
 \begin{exo}[Coefficient directeur]
-\begin{reponses}
-  \item $a=\dfrac{11-2}{4-1}=\dfrac{9}{3}$, soit \res{a=3}
-  \item $a=\dfrac{2-6}{2-0}=\dfrac{-4}{2}$, soit \res{a=-2}
-  \item $a=\dfrac{7-3}{-4-(-2)}=\dfrac{4}{-2}$, soit \res{a=-2}
-  \item $a=\dfrac{6-(-2)}{1-(-3)}=\dfrac{8}{4}$, soit \res{a=2}
-\end{reponses}
-\rem{Parenthèses autour des coordonnées négatives : $-4-(-2)=-4+2=-2$.}
+\explique{$a=\dfrac{y_{B}-y_{A}}{x_{B}-x_{A}}$ : différence des ordonnées sur différence
+des abscisses, dans le même ordre.}{propriété 3}
+\cas{a)}
+\begin{calculs}
+a &= \dfrac{11-2}{4-1} &&\justif{$y_{B}-y_{A}$ en haut, $x_{B}-x_{A}$ en bas}\\
+a &= \dfrac{9}{3} &&\\
+a &= \res{3} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+a &= \dfrac{2-6}{2-0} &&\\
+a &= \dfrac{-4}{2} &&\\
+a &= \res{-2} &&\justif{la droite descend}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+a &= \dfrac{7-3}{-4-(-2)} &&\justif{parenthèses autour de $-2$}\\
+a &= \dfrac{4}{-2} &&\justif{$-4-(-2)=-4+2=-2$}\\
+a &= \res{-2} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+a &= \dfrac{6-(-2)}{1-(-3)} &&\\
+a &= \dfrac{8}{4} &&\justif{$6+2=8$ et $1+3=4$}\\
+a &= \res{2} &&
+\end{calculs}
+\rem{On peut aussi commencer par $A$ en haut \emph{et} en bas : $\dfrac{2-11}{1-4}=
+\dfrac{-9}{-3}=3$. Mélanger les deux ordres change le signe du résultat.}
 \end{exo}
 
 \begin{exo}[Déterminer une fonction affine]
-a) $a=\dfrac{11-5}{3-1}=3$. Avec $A$ :
+\explique{On calcule $a$ avec les deux points, puis $b$ en écrivant que l'un des points
+est sur la droite ; on contrôle avec l'autre.}{méthode 10}
+\cas{a)}
 \begin{calculs}
-3\times 1+b &= 5\\
-b &= 2
+a &= \dfrac{11-5}{3-1} &&\justif{$\dfrac{y_{B}-y_{A}}{x_{B}-x_{A}}$}\\
+a &= 3 &&\justif{$\dfrac{6}{2}$}\\
+3\times 1+b &= 5 &&\justif{le point $A(1\,;5)$ est sur la droite : $f(1)=5$}\\
+b &= 2 &&\justif{on retire $3$}
 \end{calculs}
-\res{f(x)=3x+2}.
-
-\smallskip
-b) $a=\dfrac{2-(-4)}{2-0}=3$ et $b=-4$ (ordonnée de $A$) : \res{f(x)=3x-4}.
-
-\smallskip
-c) $a=\dfrac{3-3}{2-(-2)}=0$ : \res{f(x)=3} (fonction constante).
-
-\smallskip
-d) $a=\dfrac{4-(-5)}{2-(-4)}=\dfrac{9}{6}$, soit $a=1{,}5$. Avec $B$ :
+\explique{$f(x)=\res{3x+2}$.}{contrôle avec $B$ : $f(3)=9+2=11$}
+\cas{b)}
+\explique{$A(0\,;-4)$ a pour abscisse $0$ : la droite coupe l'axe des ordonnées en $-4$,
+donc $b=-4$.}{$b=f(0)$ : rien à calculer}
 \begin{calculs}
-1{,}5\times 2+b &= 4\\
-3+b &= 4\\
-b &= 1
+a &= \dfrac{2-(-4)}{2-0} &&\\
+a &= 3 &&\justif{$\dfrac{6}{2}$}
 \end{calculs}
-\res{f(x)=1{,}5x+1}.
-\rem{Contrôle avec l'autre point : $f(-4)=-6+1=-5$.}
+\explique{$f(x)=\res{3x-4}$.}{contrôle avec $B$ : $f(2)=6-4=2$}
+\cas{c)}
+\begin{calculs}
+a &= \dfrac{3-3}{2-(-2)} &&\\
+a &= 0 &&\justif{$\dfrac{0}{4}$}
+\end{calculs}
+\explique{$a=0$ : $f$ est constante, égale à l'ordonnée commune des deux points :
+$f(x)=\res{3}$.}{droite horizontale}
+\cas{d)}
+\begin{calculs}
+a &= \dfrac{4-(-5)}{2-(-4)} &&\justif{parenthèses autour des négatifs}\\
+a &= \dfrac{9}{6} &&\justif{$4+5=9$ et $2+4=6$}\\
+a &= 1{,}5 &&\justif{$\dfrac{9}{6}=\dfrac{3}{2}$}\\
+1{,}5\times 2+b &= 4 &&\justif{avec le point $B(2\,;4)$ : calcul plus simple}\\
+3+b &= 4 &&\\
+b &= 1 &&
+\end{calculs}
+\explique{$f(x)=\res{1{,}5x+1}$.}{contrôle avec $A$ : $f(-4)=-6+1=-5$}
 \end{exo}
 
 \begin{exo}[Le dioxyde de carbone dans l'air]
-\begin{reponses}
-  \item $f(0)=\res{370}$ et $f(10)=\res{390}$ ; $a=\dfrac{390-370}{10-0}=2$ et
-        $b=370$ : \res{f(x)=2x+370}.
-  \item La concentration augmente de \res{2\text{ ppm par an}}.
-  \item 2030 : $x=30$ ; $f(30)=60+370=\res{430\text{ ppm}}$.
-  \item $2x+370=450$, donc $2x=80$ et $x=40$ : en \res{2040}.
-\end{reponses}
+\cas{a)}
+\explique{$x$ compte les années depuis 2000 : en 2000, $x=0$ ; en 2010, $x=10$. Donc
+$f(0)=\res{370}$ et $f(10)=\res{390}$.}{$x$ n'est pas l'année elle-même}
+\explique{$f(0)=370$ donne directement $b=370$.}{$b=f(0)$ : la valeur de départ}
+\begin{calculs}
+a &= \dfrac{390-370}{10-0} &&\justif{points $(0\,;370)$ et $(10\,;390)$}\\
+a &= 2 &&\justif{$\dfrac{20}{10}$}
+\end{calculs}
+\explique{$f(x)=\res{2x+370}$.}{contrôle : $f(10)=20+370=390$}
+\cas{b)}
+\explique{Quand $x$ augmente de $1$, $f(x)$ augmente de $2$ : selon ce modèle, la
+concentration \res{augmente de $2$~ppm par an}.}{$a$ : la variation pour une année}
+\cas{c)}
+\begin{calculs}
+f(30) &= 2\times 30+370 &&\justif{2030 : $x=2030-2000=30$}\\
+f(30) &= 430 &&
+\end{calculs}
+\explique{En 2030, la concentration serait d'environ $\res{430}$~ppm.}{}
+\cas{d)}
+\begin{calculs}
+2x+370 &= 450 &&\justif{on écrit $f(x)=450$}\\
+2x &= 80 &&\justif{on retire $370$}\\
+x &= 40 &&
+\end{calculs}
+\explique{$x=40$ correspond à $2000+40$ : la concentration atteindrait $450$~ppm en
+\res{2040}.}{on revient à l'année}
+\rem{Erreur fréquente : calculer $f(2030)$. On remplace $x$ par le nombre d'années
+écoulées depuis 2000, pas par l'année.}
 \end{exo}
 
 \partie{Tracer une fonction affine}
 
 \begin{exo}[Sens de variation]
-\begin{reponses}
-  \item $a=-1<0$ : \res{\text{décroissante}}
-  \item $a=3>0$ : \res{\text{croissante}}
-  \item $a=0$ : \res{\text{constante}}
-  \item $a=-5<0$ : \res{\text{décroissante}}
-  \item $a=-0{,}2<0$ : \res{\text{décroissante}}
-  \item $a=0{,}3>0$ : \res{\text{croissante}}
-\end{reponses}
-\rem{Seul le signe de $a$ compte, pas celui de $b$.}
+\explique{Seul le signe de $a$ compte : $a>0$, croissante ; $a<0$, décroissante ; $a=0$,
+constante.}{propriété 4}
+\explique{\etiq{a)} $f(x)=-x+4$ : $a=-1<0$, $f$ est \res{décroissante}.}{$4-x$ s'écrit
+$-1\times x+4$}
+\explique{\etiq{b)} $a=3>0$ : $g$ est \res{croissante}.}{}
+\explique{\etiq{c)} $k(x)=-2$ : $a=0$, $k$ est \res{constante}.}{$-2$ est $b$, pas $a$}
+\explique{\etiq{d)} $a=-5<0$ : $p$ est \res{décroissante}.}{}
+\explique{\etiq{e)} $a=-0{,}2<0$ : $h$ est \res{décroissante}.}{même si $b=3$ est positif}
+\explique{\etiq{f)} $a=0{,}3>0$ : $m$ est \res{croissante}.}{même si $b=-1$ est négatif}
+\rem{Le signe de $b$ ne joue aucun rôle dans le sens de variation.}
 \end{exo}
 
 \begin{exo}[Tracer des droites]
-\begin{minipage}[t]{0.46\linewidth}\raggedright\vspace{0pt}
-$f$ : $(0\,;1)$ et $(2\,;3)$.
-
-$g$ : $(0\,;2)$ et $(1\,;-1)$.
-
-$h$ : $(0\,;-2)$ et $(4\,;0)$.
-
-\smallskip
-{\small\itshape\color{coulPart}Pour $h$, on choisit une abscisse paire : $h(4)$ est
-entier.}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.52\linewidth}\centering\vspace{0pt}
-\begin{tikzpicture}[x=0.36cm,y=0.36cm]
-  \quadrillage{-3}{-3}{5}{4}
-  \draw[->,>=Stealth,black!70] (-3,0) -- (5.5,0) node[below,font=\tiny] {$x$};
-  \draw[->,>=Stealth,black!70] (0,-3) -- (0,4.5) node[left,font=\tiny] {$y$};
-  \foreach \i in {-2,-1,1,2,3,4} {\node[below,font=\tiny,inner sep=1.5pt] at (\i,0) {$\i$};}
-  \foreach \i in {-2,-1,1,2,3} {\node[left,font=\tiny,inner sep=1.5pt] at (0,\i) {$\i$};}
+\cotefig[0.42]{%
+\explique{Pour chaque droite, on calcule deux images, on place les deux points
+(croix), puis on trace.}{deux points suffisent}
+\explique{$f(0)=1$ et $f(2)=3$ : points $(0\,;1)$ et $(2\,;3)$.}{}
+\explique{$g(0)=2$ et $g(1)=-1$ : points $(0\,;2)$ et $(1\,;-1)$.}{$-3\times 1+2$}
+\explique{$h(0)=-2$ et $h(4)=0$ : points $(0\,;-2)$ et $(4\,;0)$.}{abscisse paire : pas
+de demi-unité}
+\explique{Contrôle : $f$ et $h$ montent ($a>0$) ; $g$ descend, et vite ($a=-3$).}{pour $1$
+vers la droite, on descend de $3$}}{%
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-3}{-4}{5}{4}
+  \gradx{-2/-2,-1/-1,1/1,2/2,3/3,4/4}
+  \grady{-3/-3,-2/-2,-1/-1,1/1,2/2,3/3}
   \begin{scope}
-    \clip (-3,-3) rectangle (5,4);
+    \clip (-3,-4) rectangle (5,4);
     \draw[coulCourbe,thick] (-3,-2) -- (3,4);
-    \draw[coulCourbeB,thick] (-0.667,4) -- (1.667,-3);
-    \draw[coulCourbeC,thick] (-2,-3) -- (5,0.5);
+    \draw[coulCourbeB,thick] (-0.667,4) -- (2,-4);
+    \draw[coulCourbeC,thick] (-3,-3.5) -- (5,0.5);
   \end{scope}
-  \foreach \p in {(0,1),(2,3),(0,2),(1,-1),(0,-2),(4,0)} {\path \p node[croix]{};}
+  \foreach \p in {(0,1),(2,3)} {\path[coulCourbe] \p node[croix]{};}
+  \foreach \p in {(0,2),(1,-1)} {\path[coulCourbeB] \p node[croix]{};}
+  \foreach \p in {(0,-2),(4,0)} {\path[coulCourbeC] \p node[croix]{};}
   \node[coulCourbe,font=\small,left] at (2.6,3.7) {$f$};
-  \node[coulCourbeB,font=\small,right] at (1.5,-2.6) {$g$};
+  \node[coulCourbeB,font=\small,right] at (1.7,-3.4) {$g$};
   \node[coulCourbeC,font=\small,above] at (4.4,0.3) {$h$};
-\end{tikzpicture}
-\end{minipage}
+\end{tikzpicture}}
 \end{exo}
 
 \begin{exo}[Location de paddles]
-a) \res{L(x)=4x+4} \qquad b) $L(0)=\res{4}$ ; \; $L(8)=\res{36}$.
-
-\smallskip
-\begin{minipage}[t]{0.44\linewidth}\raggedright\vspace{0pt}
-c) Droite passant par $(0\,;4)$ et $(8\,;36)$ (figure réduite).
-
-\smallskip
-d) Pour $24$~€, on lit \res{5\text{ heures}}. Calcul : $4x+4=24$, donc $4x=20$ et
-$x=5$.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.54\linewidth}\centering\vspace{0pt}
-\begin{tikzpicture}[x=0.42cm,y=0.07cm]
+\cas{a)}
+\explique{$L(x)=\res{4x+4}$.}{$4$~€ fixes, plus $4$~€ par heure}
+\cas{b)}
+\begin{calculs}
+L(0) &= 4\times 0+4 &&\\
+L(0) &= \res{4} &&\justif{on paie le fixe même sans utiliser le paddle}\\
+L(8) &= 4\times 8+4 &&\\
+L(8) &= \res{36} &&\justif{$32+4$}
+\end{calculs}
+\cas{c) et d)}
+\cotefig[0.5]{%
+\explique{c) On place $(0\,;4)$ et $(8\,;36)$, calculés en b), puis on trace le segment
+qui les relie.}{$x$ va de $0$ à $8$ : on ne prolonge pas}
+\explique{d) On part de $24$ sur l'axe des ordonnées, on va horizontalement jusqu'à la
+droite, puis on descend sur l'axe des abscisses : on lit $5$.}{lecture en pointillés}
+\begin{calculs}
+4x+4 &= 24 &&\justif{on écrit $L(x)=24$}\\
+4x &= 20 &&\justif{on retire $4$}\\
+x &= 5 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{Pour $24$~€, on loue le paddle $\res{5}$ heures.}{le calcul confirme la
+lecture}}{%
+\begin{tikzpicture}[x=1cm,y=0.2cm]
   \draw[grille,xstep=1,ystep=5] (0,0) grid (8,40);
-  \draw[->,>=Stealth,black!70] (0,0) -- (8.6,0) node[below,font=\tiny] {h};
-  \draw[->,>=Stealth,black!70] (0,0) -- (0,43) node[left,font=\tiny] {€};
-  \foreach \i in {1,...,8} {\node[below,font=\tiny,inner sep=1.5pt] at (\i,0) {$\i$};}
-  \foreach \v in {5,10,...,40} {\node[left,font=\tiny,inner sep=1.5pt] at (0,\v) {$\v$};}
+  \draw[->,>=Stealth,black!70] (0,0) -- (8.6,0) node[below,font=\scriptsize] {heures};
+  \draw[->,>=Stealth,black!70] (0,0) -- (0,43) node[left,font=\scriptsize] {€};
+  \foreach \i in {1,...,8} {\node[below,font=\scriptsize,inner sep=1.5pt] at (\i,0) {$\i$};}
+  \foreach \v in {5,10,...,40} {\node[left,font=\scriptsize,inner sep=1.5pt] at (0,\v) {$\v$};}
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
   \draw[coulCourbe,thick] (0,4) -- (8,36);
-  \draw[dashed,coulRep] (0,24) -- (5,24) -- (5,0);
-  \foreach \p in {(0,4),(8,36)} {\path \p node[croix]{};}
-\end{tikzpicture}
-\end{minipage}
-\rem{Repère non orthonormé : les deux grandeurs n'ont pas la même unité.}
+  \draw[lecture] (0,24) -- (5,24) -- (5,0);
+  \foreach \p in {(0,4),(8,36),(5,24)} {\path \p node[croix]{};}
+\end{tikzpicture}}
+\rem{Repère non orthonormé : les deux axes portent des grandeurs différentes (heures et
+euros), à l'échelle de l'énoncé.}
 \end{exo}
 
 \begin{exo}[Proportionnalité et fonctions linéaires]
-\begin{reponses}
-  \item $a=\dfrac{10}{100}=0{,}1$ : \res{f(x)=0{,}1x} ; \; $f(330)=\res{33\text{ g}}$.
-  \item $40$ pouces : $2{,}5\times 40=\res{100\text{ cm}}$ ; \; $2{,}5x=75$ donne
-        \res{x=30} pouces.
-  \item \res{f} et \res{h} ($h(x)=0{,}25x$) ; $g$ est affine non linéaire, $k$ est
-        constante.
-  \item $a=\dfrac{15}{5}=3$ : \res{\ell(x)=3x}.
-\end{reponses}
-\rem{Linéaire : $b=0$, la droite passe par l'origine.}
+\cas{a)}
+\explique{$10$~g pour $100$~mL, c'est $\dfrac{10}{100}=0{,}1$~g pour $1$~mL :
+$f(x)=\res{0{,}1x}$.}{la quantité pour une unité : le coefficient $a$}
+\begin{calculs}
+f(330) &= 0{,}1\times 330 &&\\
+f(330) &= 33 &&\justif{multiplier par $0{,}1$, c'est diviser par $10$}
+\end{calculs}
+\explique{$330$~mL de boisson contiennent $\res{33}$~g de sucre.}{}
+\cas{b)}
+\explique{On note $c(x)=2{,}5x$ la longueur en centimètres de $x$ pouces.}{proportionnalité :
+fonction linéaire}
+\begin{calculs}
+c(40) &= 2{,}5\times 40 &&\\
+c(40) &= 100 &&\justif{$2\times 40+0{,}5\times 40$, soit $80+20$}
+\end{calculs}
+\explique{$40$ pouces font environ $\res{100}$~cm.}{}
+\begin{calculs}
+2{,}5x &= 75 &&\justif{on cherche l'antécédent de $75$}\\
+x &= 30 &&\justif{$\dfrac{75}{2{,}5}=\dfrac{750}{25}$}
+\end{calculs}
+\explique{$75$~cm font environ $\res{30}$ pouces.}{}
+\cas{c)}
+\explique{Une fonction linéaire s'écrit $ax$ : pas de nombre ajouté ($b=0$).}{propriété 5}
+\explique{$f(x)=-2x$ et $h(x)=\dfrac{x}{4}=0{,}25x$ sont \res{linéaires}.}{$b=0$}
+\explique{$g(x)=2x+3$ n'est pas linéaire ($b=3$) ; $k(x)=-1$ non plus (constante,
+$b=-1$).}{affines, mais pas linéaires}
+\cas{d)}
+\begin{calculs}
+\ell(5) &= 15 &&\justif{le point $(5\,;15)$ est sur la droite}\\
+a\times 5 &= 15 &&\justif{$\ell(x)=ax$}\\
+a &= 3 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{$\ell(x)=\res{3x}$.}{contrôle : $\ell(5)=15$}
 \end{exo}
 
 \partie{Lire l'équation d'une droite}
 
 \begin{exo}[Lire une équation réduite]
-\begin{reponses}
-  \item[$(d_{1})$ :] $b=-1$ ; de $(0\,;-1)$ à $(1\,;2)$ : $a=\dfrac{3}{1}=3$ ;
-        \res{y=3x-1}, croissante.
-  \item[$(d_{2})$ :] $b=2$ ; de $(0\,;2)$ à $(2\,;0)$ : $a=\dfrac{-2}{2}=-1$ ;
-        \res{y=-x+2}, décroissante.
-  \item[$(d_{3})$ :] $b=1$ ; de $(0\,;1)$ à $(3\,;2)$ : $a=\dfrac{1}{3}$ ;
-        \res{y=\tfrac{1}{3}x+1}, croissante.
-  \item[$(d_{4})$ :] horizontale : \res{y=-2}, constante.
-\end{reponses}
-\rem{$a=\dfrac{\text{déplacement vertical}}{\text{déplacement horizontal}}$ : pour
-$(d_{3})$, on avance de $3$ pour monter de $1$.}
+\explique{$b$ : l'ordonnée du point où la droite coupe l'axe des ordonnées. $a$ : en
+partant de ce point, on avance jusqu'à un nœud du quadrillage sur la droite, et
+$a=\dfrac{\text{déplacement vertical}}{\text{déplacement horizontal}}$.}{propriété 6 ;
+une descente compte en négatif}
+\cas{$(d_{1})$}
+\cotefig{%
+\explique{$b=-1$}{la droite coupe l'axe des ordonnées en $(0\,;-1)$}
+\explique{De $(0\,;-1)$ à $(1\,;2)$ : on avance de $1$ et on monte de $3$, donc
+$a=\dfrac{3}{1}=3$.}{vertical sur horizontal}
+\explique{$(d_{1})$ : $\res{y=3x-1}$ ; la fonction est \res{croissante}.}{$a>0$}}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \reperefiche
+  \begin{scope}
+    \clip (-4,-4) rectangle (5,5);
+    \draw[coulCourbe,thick] (-1,-4) -- (2,5);
+  \end{scope}
+  \draw[pas,coulCourbe] (0,-1) -- node[below,font=\footnotesize]{$1$} (1,-1)
+    -- node[right,font=\footnotesize]{$+3$} (1,2);
+  \foreach \p in {(0,-1),(1,2)} {\path \p node[croix]{};}
+\end{tikzpicture}}
+\cas{$(d_{2})$}
+\cotefig{%
+\explique{$b=2$}{point $(0\,;2)$}
+\explique{De $(0\,;2)$ à $(2\,;0)$ : on avance de $2$ et on descend de $2$, donc
+$a=\dfrac{-2}{2}=-1$.}{on descend : déplacement négatif}
+\explique{$(d_{2})$ : $\res{y=-x+2}$ ; la fonction est \res{décroissante}.}{$a<0$ ;
+$-1\times x$ s'écrit $-x$}}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \reperefiche
+  \begin{scope}
+    \clip (-4,-4) rectangle (5,5);
+    \draw[coulCourbeB,thick] (-3,5) -- (5,-3);
+  \end{scope}
+  \draw[pas,coulCourbeB] (0,2) -- node[above,font=\footnotesize]{$2$} (2,2)
+    -- node[right,font=\footnotesize]{$-2$} (2,0);
+  \foreach \p in {(0,2),(2,0)} {\path \p node[croix]{};}
+\end{tikzpicture}}
+\cas{$(d_{3})$}
+\cotefig{%
+\explique{$b=1$}{point $(0\,;1)$}
+\explique{La droite ne repasse sur un nœud qu'en $(3\,;2)$ : on avance de $3$ et on monte
+de $1$, donc $a=\dfrac{1}{3}$.}{on cherche un nœud du quadrillage sur la droite}
+\explique{$(d_{3})$ : $\res{y=\dfrac{1}{3}x+1}$ ; la fonction est
+\res{croissante}.}{$a>0$}}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \reperefiche
+  \draw[coulCourbeC,thick] (-4,-0.333) -- (5,2.667);
+  \draw[pas,coulCourbeC] (0,1) -- node[below,font=\footnotesize]{$3$} (3,1)
+    -- node[right,font=\footnotesize]{$+1$} (3,2);
+  \foreach \p in {(0,1),(3,2)} {\path \p node[croix]{};}
+\end{tikzpicture}}
+\cas{$(d_{4})$}
+\cotefig{%
+\explique{La droite est horizontale : $a=0$.}{on avance sans monter ni descendre}
+\explique{Elle coupe l'axe des ordonnées en $-2$ : $b=-2$.}{}
+\explique{$(d_{4})$ : $\res{y=-2}$ ; la fonction est \res{constante}.}{$y=0\times x-2$}}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \reperefiche
+  \draw[black!70,thick] (-4,-2) -- (5,-2);
+  \path (0,-2) node[croix]{};
+\end{tikzpicture}}
+\rem{Erreur fréquente pour $(d_{3})$ : $a=3$. On a avancé de $3$ pour monter de $1$ :
+$a=\dfrac{1}{3}$, la droite monte doucement.}
 \end{exo}
 
 \begin{exo}[Points d'une droite]
-\begin{reponses}
-  \item $A$ : $-2\times 1+5=3$ : \res{\text{oui}} ; \; $B$ : $-2\times 3+5=-1$ et
-        $-1\ne 1$ : \res{\text{non}} ; \; $C$ : $-2\times(-2)+5=9$ : \res{\text{oui}}.
-  \item $y=-2\times 4+5=\res{-3}$.
-  \item $-2x+5=-7$, donc $-2x=-12$ et \res{x=6}.
-\end{reponses}
+\cas{a)}
+\explique{Un point est sur $(d)$ quand son ordonnée est égale à $-2\times x+5$, calculé
+avec son abscisse.}{propriété 4 : $M(x\,;y)$ est sur la droite quand $y=ax+b$}
+\explique{$A(1\,;3)$ : $-2\times 1+5=3$, l'ordonnée de $A$ : \res{$A$ est sur
+$(d)$}.}{}
+\explique{$B(3\,;1)$ : $-2\times 3+5=-1$, et $-1\ne 1$ : \res{$B$ n'est pas sur
+$(d)$}.}{}
+\explique{$C(-2\,;9)$ : $-2\times(-2)+5=9$, l'ordonnée de $C$ : \res{$C$ est sur
+$(d)$}.}{$4+5$}
+\cas{b)}
+\begin{calculs}
+y &= -2\times 4+5 &&\justif{on remplace $x$ par $4$}\\
+y &= -3 &&\justif{$-8+5$}
+\end{calculs}
+\explique{Le point de $(d)$ d'abscisse $4$ a pour ordonnée $\res{-3}$.}{}
+\cas{c)}
+\begin{calculs}
+-2x+5 &= -7 &&\justif{on remplace $y$ par $-7$}\\
+-2x &= -12 &&\justif{on retire $5$}\\
+x &= 6 &&\justif{on divise par $-2$}
+\end{calculs}
+\explique{Le point de $(d)$ d'ordonnée $-7$ a pour abscisse $\res{6}$.}{contrôle :
+$-12+5=-7$}
 \end{exo}
 
 \begin{exo}[Équation réduite sans graphique]
-\begin{questions}
-  \item \res{\text{b}} : $b=2$ et $a=\dfrac{1}{3}$.
-  \item \res{\text{c}} : $b=-3$ et $a=\dfrac{1-(-3)}{2-0}=2$.
-  \item \res{\text{a}} : $a=4>0$.
-\end{questions}
+\cas{1.}
+\explique{La droite coupe l'axe des ordonnées en $2$ : $b=2$.}{}
+\explique{$a=\dfrac{\text{vertical}}{\text{horizontal}}=\dfrac{1}{3}$. Réponse
+\res{b)} : $y=\dfrac{1}{3}x+2$.}{a) inverse les deux déplacements ; d) a $b=-2$}
+\cas{2.}
+\explique{Le point $(0\,;-3)$ donne $b=-3$.}{abscisse $0$}
+\begin{calculs}
+a &= \dfrac{1-(-3)}{2-0} &&\\
+a &= 2 &&\justif{$\dfrac{4}{2}$}
+\end{calculs}
+\explique{Réponse \res{c)} : $y=2x-3$.}{contrôle : $2\times 2-3=1$}
+\cas{3.}
+\explique{$a=4>0$ : la droite \res{monte}, réponse \res{a)}.}{}
 \end{exo}
 
 \partie{Signe d'une fonction affine}
 
 \begin{exo}[Tableaux de signes]
-a) $3x-9=0$, \res{x=3} ; $a>0$\hfill
-\begin{tikzpicture}[baseline=(current bounding box.center)]
-\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$f(x)$/0.55}{$-\infty$,$3$,$+\infty$}
-\tkzTabLine{,-,z,+,}
-\end{tikzpicture}\par\smallskip
-b) $-2x+8=0$, \res{x=4} ; $a<0$\hfill
-\begin{tikzpicture}[baseline=(current bounding box.center)]
-\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$g(x)$/0.55}{$-\infty$,$4$,$+\infty$}
-\tkzTabLine{,+,z,-,}
-\end{tikzpicture}\par\smallskip
-c) $4x+12=0$, \res{x=-3} ; $a>0$\hfill
-\begin{tikzpicture}[baseline=(current bounding box.center)]
-\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$h(x)$/0.55}{$-\infty$,$-3$,$+\infty$}
-\tkzTabLine{,-,z,+,}
-\end{tikzpicture}\par\smallskip
-d) $-0{,}5x+3=0$, \res{x=6} ; $a<0$\hfill
-\begin{tikzpicture}[baseline=(current bounding box.center)]
-\tkzTabInit[lgt=0.9,espcl=1.1,deltacl=0.3]{$x$/0.55,$k(x)$/0.55}{$-\infty$,$6$,$+\infty$}
-\tkzTabLine{,+,z,-,}
-\end{tikzpicture}\par\smallskip
-\rem{À droite du zéro, le signe de $a$ ; à gauche, le signe contraire.}
+\explique{On résout $ax+b=0$ pour placer le $0$ ; à droite du $0$, on écrit le signe de
+$a$, à gauche le signe contraire.}{propriété 7}
+\cas{a)}
+\cotefig[0.42]{%
+\begin{calculs}
+3x-9 &= 0 &&\justif{où placer le $0$}\\
+3x &= 9 &&\justif{on ajoute $9$}\\
+x &= 3 &&
+\end{calculs}
+\explique{$a=3>0$ : $+$ à droite de $3$.}{la droite monte}
+\explique{Contrôle : $f(0)=-9$, négatif, et $0$ est à gauche de $3$.}{on teste une
+valeur}}{\signes{f(x)}{3}{-}{+}}
+\cas{b)}
+\cotefig[0.42]{%
+\begin{calculs}
+-2x+8 &= 0 &&\\
+-2x &= -8 &&\justif{on retire $8$}\\
+x &= 4 &&\justif{on divise par $-2$}
+\end{calculs}
+\explique{$a=-2<0$ : $-$ à droite de $4$.}{la droite descend}
+\explique{Contrôle : $g(0)=8$, positif.}{}}{\signes{g(x)}{4}{+}{-}}
+\cas{c)}
+\cotefig[0.42]{%
+\begin{calculs}
+4x+12 &= 0 &&\\
+4x &= -12 &&\justif{on retire $12$}\\
+x &= -3 &&
+\end{calculs}
+\explique{$a=4>0$ : $+$ à droite de $-3$.}{}
+\explique{Contrôle : $h(0)=12$, positif, et $0$ est à droite de $-3$.}{}}{\signes{h(x)}{-3}{-}{+}}
+\cas{d)}
+\cotefig[0.42]{%
+\begin{calculs}
+-0{,}5x+3 &= 0 &&\\
+-0{,}5x &= -3 &&\justif{on retire $3$}\\
+x &= 6 &&\justif{$\dfrac{-3}{-0{,}5}=\dfrac{30}{5}$}
+\end{calculs}
+\explique{$a=-0{,}5<0$ : $-$ à droite de $6$.}{}
+\explique{Contrôle : $k(0)=3$, positif.}{}}{\signes{k(x)}{6}{+}{-}}
+\rem{Erreur fréquente : recopier le signe de $b$ (en a), $-9$) à droite du $0$. C'est le
+signe de $a$ qui va à droite.}
 \end{exo}
 
 \begin{exo}[Positif ou négatif ?]
-\begin{questions}
-  \item \res{\text{a}} : $-5x+2=0$ pour $x=0{,}4$ et $a<0$ : positif avant $0{,}4$.
-  \item \res{\text{c}} : $3x+12=0$ pour $x=-4$ et $a>0$ : négatif avant $-4$.
-\end{questions}
+\cas{1.}
+\cotefig[0.42]{%
+\begin{calculs}
+-5x+2 &= 0 &&\\
+-5x &= -2 &&\\
+x &= 0{,}4 &&\justif{$\dfrac{2}{5}=0{,}4$}
+\end{calculs}
+\explique{$a=-5<0$ : $f(x)$ est positif avant $0{,}4$, négatif après.}{}
+\explique{$f(x)$ est positif ou nul pour $x\le 0{,}4$ : réponse \res{a)}.}{contrôle :
+$f(0)=2$}}{\signes{f(x)}{0{,}4}{+}{-}}
+\cas{2.}
+\cotefig[0.42]{%
+\begin{calculs}
+3x+12 &= 0 &&\\
+3x &= -12 &&\\
+x &= -4 &&
+\end{calculs}
+\explique{$a=3>0$ : $3x+12$ est négatif avant $-4$.}{}
+\explique{Strictement négatif pour $x<-4$ : réponse \res{c)}.}{contrôle avec $-5$ :
+$-15+12=-3$}}{\signes{3x+12}{-4}{-}{+}}
 \end{exo}
 
 \begin{exo}[Un bénéfice]
-\begin{reponses}
-  \item $B(0)=\res{-150}$ : sans vente, le food-truck perd $150$~€ (ses frais fixes).
-  \item $5x-150=0$, donc $5x=150$ et \res{x=30}.
-  \item $a=5>0$ :\par
+\cas{a)}
+\begin{calculs}
+B(0) &= 5\times 0-150 &&\\
+B(0) &= \res{-150} &&
+\end{calculs}
+\explique{Sans aucun repas vendu, le food-truck perd $150$~€ : ce sont ses frais fixes
+de la journée.}{bénéfice négatif : une perte}
+\cas{b)}
+\begin{calculs}
+5x-150 &= 0 &&\\
+5x &= 150 &&\justif{on ajoute $150$}\\
+x &= \res{30} &&\justif{on divise par $5$}
+\end{calculs}
+\cas{c)}
+\cotefig[0.42]{%
+\explique{$a=5>0$ : $B(x)$ est négatif avant $30$ et positif après.}{chaque repas
+rapporte $5$~€}
+\explique{Le tableau commence à $0$ et finit à $80$.}{$x$ va de $0$ à $80$}}{%
 \begin{tikzpicture}
-\tkzTabInit[lgt=1.2,espcl=1.3]{$x$/0.6,$B(x)$/0.6}{$0$,$30$,$80$}
+\tkzTabInit[lgt=1.4,espcl=1.5]{$x$/0.7,$B(x)$/0.7}{$0$,$30$,$80$}
 \tkzTabLine{,-,z,+,}
-\end{tikzpicture}
-  \item Le bénéfice est positif à partir de \res{31} repas (nul pour $30$).
-\end{reponses}
+\end{tikzpicture}}
+\cas{d)}
+\explique{Le bénéfice est nul pour $30$ repas et positif au-delà : il est positif à
+partir de $\res{31}$ repas vendus.}{$B(31)=155-150=5$}
 \end{exo}
 
 \partie{Comparer deux fonctions affines}
 
 \begin{exo}[Équations]
-a)
+\explique{On regroupe les $x$ d'un côté et les nombres de l'autre, en faisant la même
+opération des deux côtés, puis on divise par le nombre devant $x$.}{rappel de la
+partie X}
+\cas{a)}
 \begin{calculs}
-6x+5 &= 4x+11\\
-2x &= 6\\
-x &= \res{3}
+6x+5 &= 4x+11 &&\justif{on recopie l'équation}\\
+2x+5 &= 11 &&\justif{on retire $4x$ des deux côtés}\\
+2x &= 6 &&\justif{on retire $5$}\\
+x &= \res{3} &&\justif{on divise par $2$}
 \end{calculs}
-b)
+\explique{Contrôle : $6\times 3+5=23$ et $4\times 3+11=23$.}{}
+\cas{b)}
 \begin{calculs}
-3x-2 &= x+8\\
-2x &= 10\\
-x &= \res{5}
+3x-2 &= x+8 &&\\
+2x-2 &= 8 &&\justif{on retire $x$}\\
+2x &= 10 &&\justif{on ajoute $2$}\\
+x &= \res{5} &&
 \end{calculs}
-c)
+\explique{Contrôle : $15-2=13$ et $5+8=13$.}{}
+\cas{c)}
 \begin{calculs}
-2x+3 &= 5x-9\\
--3x &= -12\\
-x &= \res{4}
+2x+3 &= 5x-9 &&\\
+3 &= 3x-9 &&\justif{on retire $2x$ : les $x$ restent à droite, en positif}\\
+12 &= 3x &&\justif{on ajoute $9$}\\
+x &= \res{4} &&\justif{on divise par $3$}
 \end{calculs}
-d)
+\explique{Contrôle : $8+3=11$ et $20-9=11$.}{}
+\cas{d)}
 \begin{calculs}
-4x+1 &= -2x+4\\
-6x &= 3\\
-x &= \res{0{,}5}
+4x+1 &= -2x+4 &&\\
+6x+1 &= 4 &&\justif{on ajoute $2x$ : $4x+2x=6x$}\\
+6x &= 3 &&\justif{on retire $1$}\\
+x &= \res{0{,}5} &&\justif{$\dfrac{3}{6}=\dfrac{1}{2}$}
 \end{calculs}
-\rem{En d), on ajoute $2x$ des deux côtés : $4x+2x=6x$.}
+\explique{Contrôle : $2+1=3$ et $-1+4=3$.}{}
+\rem{Erreur fréquente en d) : retirer $-2x$ en écrivant $4x-2x$. Pour faire
+disparaître $-2x$, on \emph{ajoute} $2x$.}
 \end{exo}
 
 \begin{exo}[Deux offres d'emploi]
-a) \res{f(x)=0{,}1x+1\,200} et \res{g(x)=0{,}2x+800}.
-
-b)
+\cas{a)}
+\explique{Société A : $10\,\%$ des ventes, c'est $0{,}1x$ : $f(x)=\res{0{,}1x+1\,200}$.}{le
+fixe, plus la part des ventes}
+\explique{Société B : $g(x)=\res{0{,}2x+800}$.}{$20\,\%=0{,}2$}
+\cas{b)}
 \begin{calculs}
-0{,}1x+1\,200 &= 0{,}2x+800\\
-400 &= 0{,}1x\\
-x &= \res{4\,000\text{ €}}
+0{,}1x+1\,200 &= 0{,}2x+800 &&\justif{même salaire dans les deux sociétés}\\
+1\,200 &= 0{,}1x+800 &&\justif{on retire $0{,}1x$}\\
+400 &= 0{,}1x &&\justif{on retire $800$}\\
+x &= 4\,000 &&\justif{$\dfrac{400}{0{,}1}$ : diviser par $0{,}1$, c'est multiplier par $10$}
 \end{calculs}
-c) $f(5\,000)=500+1\,200=1\,700$ et $g(5\,000)=1\,000+800=1\,800$ :
-\res{\text{société B}}.
-\rem{En dessous de $4\,000$~€ de ventes, la société A est plus intéressante.}
+\explique{Les deux salaires sont égaux pour $\res{4\,000}$~€ de ventes.}{contrôle : $400+1\,200$
+et $800+800$ font $1\,600$}
+\cas{c)}
+\begin{calculs}
+f(5\,000) &= 0{,}1\times 5\,000+1\,200 &&\\
+f(5\,000) &= 1\,700 &&\justif{$500+1\,200$}\\
+g(5\,000) &= 0{,}2\times 5\,000+800 &&\\
+g(5\,000) &= 1\,800 &&\justif{$1\,000+800$}
+\end{calculs}
+\explique{Avec $5\,000$~€ de ventes, elle gagne $100$~€ de plus dans la \res{société B} :
+c'est celle-là qu'il faut choisir.}{}
+\rem{Au-delà de $4\,000$~€ de ventes, B paie mieux, car elle reverse une plus grande part
+des ventes ; en dessous, A paie mieux grâce à son fixe plus élevé.}
 \end{exo}
 
 \begin{exo}[Deux formules de piscine]
-\begin{reponses}
-  \item \res{f(x)=5x} et \res{g(x)=2x+24}.
-  \item Intersection : \res{(8\,;40)}.
-  \item $5x=2x+24$, donc $3x=24$ et $x=8$ ; $f(8)=40$.
-  \item Moins de $8$ entrées : \res{\text{A}} ; plus de $8$ : \res{\text{B}} ; pour
-        $8$ entrées, les deux coûtent $40$~€.
-\end{reponses}
+\cas{a)}
+\explique{Formule A : $f(x)=\res{5x}$.}{pas de fixe : fonction linéaire}
+\explique{Formule B : $g(x)=\res{2x+24}$.}{$24$~€ fixes, plus $2$~€ par entrée}
+\cas{b) et d)}
+\cotefig[0.5]{%
+\explique{b) Les deux droites se coupent au point $\res{(8\,;40)}$.}{lecture en
+pointillés}
+\explique{d) Avant $8$ entrées, la droite de A est en dessous de celle de B : A est la
+moins chère.}{la droite la plus basse donne le prix le plus bas}
+\explique{Après $8$ entrées, c'est la droite de B qui est en dessous.}{}}{%
+\begin{tikzpicture}[x=0.6cm,y=0.06cm]
+  \draw[grille,xstep=1,ystep=10] (0,0) grid (12,60);
+  \draw[->,>=Stealth,black!70] (0,0) -- (12.7,0) node[below,font=\scriptsize] {$x$};
+  \draw[->,>=Stealth,black!70] (0,0) -- (0,66) node[left,font=\scriptsize] {€};
+  \foreach \i in {1,...,12} {\node[below,font=\scriptsize,inner sep=1.5pt] at (\i,0) {$\i$};}
+  \foreach \v in {10,20,...,60} {\node[left,font=\scriptsize,inner sep=1.5pt] at (0,\v) {$\v$};}
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \draw[coulCourbe,thick] (0,0) -- (12,60);
+  \draw[coulCourbeB,thick] (0,24) -- (12,48);
+  \draw[lecture] (0,40) -- (8,40) -- (8,0);
+  \path (8,40) node[croix]{};
+  \node[coulCourbe,left,font=\small] at (10.6,54) {A};
+  \node[coulCourbeB,below,font=\small] at (11.4,45) {B};
+\end{tikzpicture}}
+\cas{c)}
+\begin{calculs}
+5x &= 2x+24 &&\justif{même prix : $f(x)=g(x)$}\\
+3x &= 24 &&\justif{on retire $2x$}\\
+x &= 8 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$f(8)=5\times 8=40$ : on retrouve le point $(8\,;40)$.}{contrôle :
+$g(8)=16+24=40$}
+\cas{d) (conclusion)}
+\explique{Pour moins de $8$ entrées, la \res{formule A} est la moins chère ; pour plus de
+$8$ entrées, la \res{formule B} ; pour $8$ entrées, les deux coûtent $40$~€.}{contrôle :
+$f(4)=20$ et $g(4)=32$ ; $f(12)=60$ et $g(12)=48$}
 \end{exo}
 
 \partiesansnum{Exercices type épreuve anticipée}
 
 \begin{exo}[Automatismes (QCM)]
-\begin{questions}
-  \item \res{\text{a}} : $3\times 7=21$ ($10\,\%$ de $70$ font $7$).
-  \item \res{\text{b}} : $100\times 1{,}2\times 0{,}8=100\times 0{,}96$.
-  \item \res{\text{c}} : $\frac{1}{8}=0{,}125$ ($\frac{1}{4}=25\,\%=0{,}25$).
-  \item \res{\text{b}} : $0{,}8\times 1{,}25=1$.
-  \item \res{\text{a}} : $\dfrac{7-1}{4-2}=\dfrac{6}{2}$.
-  \item \res{\text{a}} : $a=3>0$.
-  \item \res{\text{b}} : $2x+3=13$ donne $2x=10$.
-  \item \res{\text{a}} : $-6+4=-2$.
-  \item \res{\text{a}} : $1{,}6\times 25=40$.
-\end{questions}
+\cas{1.}
+\explique{$10\,\%$ de $70$ font $7$, donc $30\,\%$ en font $3\times 7=21$ : réponse
+\res{a)}.}{$30\,\%$, c'est $3$ fois $10\,\%$}
+\cas{2.}
+\explique{$100\times 1{,}2=120$, puis $120\times 0{,}8=96$ : réponse \res{b)}.}{la baisse porte
+sur $120$~€ ; ou $C_{M}=1{,}2\times 0{,}8=0{,}96$}
+\cas{3.}
+\explique{$\dfrac{1}{8}=0{,}125$ et $0{,}125<0{,}2$ : réponse \res{c)}.}{$\dfrac{1}{4}$ et
+$25\,\%$ valent $0{,}25$}
+\cas{4.}
+\explique{$0{,}8\times 1{,}25=1$ : réponse \res{b)}.}{à connaître : $-20\,\%$ est compensé
+par $+25\,\%$}
+\cas{5.}
+\begin{calculs}
+a &= \dfrac{7-1}{4-2} &&\justif{$\dfrac{y_{B}-y_{A}}{x_{B}-x_{A}}$}\\
+a &= 3 &&\justif{$\dfrac{6}{2}$}
+\end{calculs}
+\explique{Réponse \res{a)}.}{}
+\cas{6.}
+\explique{$a=3>0$ : $f$ est croissante, réponse \res{a)}.}{le signe de $b$ ne compte pas}
+\cas{7.}
+\begin{calculs}
+2x+3 &= 13 &&\justif{on écrit $f(x)=13$}\\
+2x &= 10 &&\\
+x &= 5 &&
+\end{calculs}
+\explique{Réponse \res{b)}.}{piège : $29$ est l'image de $13$, pas son antécédent}
+\cas{8.}
+\begin{calculs}
+y &= -2\times 3+4 &&\justif{on remplace $x$ par $3$}\\
+y &= -2 &&\justif{$-6+4$}
+\end{calculs}
+\explique{Réponse \res{a)}.}{}
+\cas{9.}
+\explique{$1{,}6\times 25=40$ : réponse \res{a)}.}{$25+0{,}6\times 25$, soit $25+15$}
 \end{exo}
 
 \begin{exo}[Les inscrits d'un club de judo]
-\begin{questions}
-  \item $t=\dfrac{171-180}{180}=\dfrac{-9}{180}$, soit $t=-0{,}05$ : \res{-5\,\%}.
-  \item \res{\texttt{=(C3-B3)/B3}}
-  \item $a=-8<0$ : $f$ est \res{\text{décroissante}} ; chaque année, le club compte
-        \res{8} inscrits de moins.
-  \item 2028 : $x=8$ ; $f(8)=-64+180=\res{116}$ inscrits.
-  \item On résout l'inéquation :
+\cas{1.}
 \begin{calculs}
--8x+180 &< 100\\
--8x &< -80\\
-x &> 10 &&\justif{on divise par $-8$ : le sens change}
+t &= \dfrac{171-180}{180} &&\justif{départ : 2020 ; arrivée : 2021}\\
+t &= \dfrac{-9}{180} &&\\
+t &= -0{,}05 &&\justif{$\dfrac{9}{180}=\dfrac{1}{20}=\dfrac{5}{100}$}
 \end{calculs}
-        Premier entier : $x=11$, soit \res{2031} ($f(10)=100$ n'est pas « moins de
-        $100$ »).
-\end{questions}
+\explique{Le nombre d'inscrits a \res{baissé de $5\,\%$} entre 2020 et 2021.}{$t<0$ :
+baisse}
+\cas{2.}
+\explique{Les inscrits sont en ligne $3$ : pour 2021, l'arrivée est en C3 et le départ
+en B3.}{attention : la ligne $2$ contient les rangs}
+\explique{En C4 : \res{\texttt{=(C3-B3)/B3}}.}{l'arrivée moins le départ, sur le départ}
+\cas{3.}
+\explique{$a=-8<0$ : $f$ est \res{décroissante}.}{propriété 4}
+\explique{Selon ce modèle, le club perd \res{$8$ inscrits chaque année}.}{quand $x$
+augmente de $1$, $f(x)$ diminue de $8$}
+\cas{4.}
+\begin{calculs}
+f(8) &= -8\times 8+180 &&\justif{2028 : $x=2028-2020=8$}\\
+f(8) &= 116 &&\justif{$-64+180$}
+\end{calculs}
+\explique{Selon ce modèle, le club compterait $\res{116}$ inscrits en 2028.}{}
+\cas{5.}
+\explique{On cherche d'abord quand le club a exactement $100$ inscrits.}{}
+\begin{calculs}
+-8x+180 &= 100 &&\justif{on écrit $f(x)=100$}\\
+-8x &= -80 &&\justif{on retire $180$}\\
+x &= 10 &&\justif{on divise par $-8$}
+\end{calculs}
+\explique{En 2030 ($x=10$), il y aurait $100$ inscrits ; $f$ est décroissante, donc
+ensuite il y en a moins.}{$100$ n'est pas « moins de $100$ »}
+\explique{Pour $x=11$ : $f(11)=-88+180=92$. Il y aura moins de $100$ inscrits à
+partir de \res{2031}.}{$2020+11$}
 \end{exo}
 
 \begin{exo}[Les soldes]
-\begin{questions}
-  \item Casque : $80\times 0{,}75=\res{60\text{ €}}$ ; enceinte :
-        $120\times 0{,}9=\res{108\text{ €}}$.
-  \item Total : $60+108=\res{168\text{ €}}$ au lieu de $200$~€ ;
-        $t=\dfrac{168-200}{200}=\dfrac{-32}{200}$, soit une remise globale de
-        \res{16\,\%}.
-  \item $108\times 1{,}1=118{,}80$ : \res{\text{non}} ($0{,}9\times 1{,}1=0{,}99$
-        et $0{,}99\ne 1$).
-\end{questions}
-\rem{La remise globale n'est ni $35\,\%$ ni la moyenne $17{,}5\,\%$ : l'enceinte, plus
-chère, pèse davantage.}
+\cas{1.}
+\begin{calculs}
+\text{casque} &= 80\times 0{,}75 &&\justif{$-25\,\%$ : $C_{M}=0{,}75$}\\
+\text{casque} &= 60 &&\justif{les trois quarts de $80$}\\
+\text{enceinte} &= 120\times 0{,}9 &&\justif{$-10\,\%$ : $C_{M}=0{,}9$}\\
+\text{enceinte} &= 108 &&\justif{$120-12$}
+\end{calculs}
+\explique{Le casque soldé coûte $\res{60}$~€ et l'enceinte $\res{108}$~€.}{}
+\cas{2.}
+\explique{On paie $60+108=\res{168}$~€, au lieu de $80+120=200$~€.}{prix total avant et
+après}
+\begin{calculs}
+t &= \dfrac{168-200}{200} &&\justif{taux d'évolution du total}\\
+t &= \dfrac{-32}{200} &&\\
+t &= -0{,}16 &&\justif{$\dfrac{32}{200}=\dfrac{16}{100}$}
+\end{calculs}
+\explique{La remise globale est de $\res{16\,\%}$.}{}
+\rem{Ce n'est ni $25+10=35\,\%$, ni la moyenne $17{,}5\,\%$ : la remise de $10\,\%$ porte
+sur l'article le plus cher, qui compte davantage.}
+\cas{3.}
+\begin{calculs}
+V &= 108\times 1{,}1 &&\justif{$+10\,\%$ : $C_{M}=1{,}1$}\\
+V &= 118{,}8 &&\justif{$108+10{,}8$}
+\end{calculs}
+\explique{$118{,}80$~€ n'est pas $120$~€ : \res{non}, le prix ne revient pas à
+$120$~€.}{$0{,}9\times 1{,}1=0{,}99$, et non $1$}
 \end{exo}
 
 \end{document}

@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,536 +189,1611 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
 \usepackage{tkz-tab}
-\providecommand{\justif}[1]{\quad\text{\small\itshape\color{coulPart}#1}}
-\entete{Ch 3 --- Calcul littéral et second degré --- Corrigé des exercices}{1\textsuperscript{re} mathématiques spécifiques}
+\entete{Chapitre 3 --- Calcul littéral et second degré --- corrigé}{1\textsuperscript{re} mathématiques spécifiques}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
 
 \newcommand{\varmin}[3]{\par\smallskip{\centering
-  \begin{tikzpicture}[scale=0.8]
-  \tkzTabInit[lgt=1.1,espcl=1.5]{$x$/0.7,$#1$/1.1}{,$#2$,}
+  \begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=2.2]{$x$/1,$#1$/1.6}{,$#2$,}
   \tkzTabVar{+/ ,-/$#3$,+/ }
-  \end{tikzpicture}\par}}
+  \end{tikzpicture}\par}\smallskip}
 \newcommand{\varmax}[3]{\par\smallskip{\centering
-  \begin{tikzpicture}[scale=0.8]
-  \tkzTabInit[lgt=1.1,espcl=1.5]{$x$/0.7,$#1$/1.1}{,$#2$,}
+  \begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=2.2]{$x$/1,$#1$/1.6}{,$#2$,}
   \tkzTabVar{-/ ,+/$#3$,-/ }
-  \end{tikzpicture}\par}}
-\newcommand{\varint}[3]{\par\smallskip{\centering
-  \begin{tikzpicture}[scale=0.8]
-  \tkzTabInit[lgt=1.1,espcl=1.6]{$x$/0.7,$#1$/1.1}{#2}
-  \tkzTabVar{#3}
-  \end{tikzpicture}\par}}
+  \end{tikzpicture}\par}\smallskip}
+\newcommand{\varint}[4][x]{\par\smallskip{\centering
+  \begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=1.6,espcl=2.2]{$#1$/1,$#2$/1.6}{#3}
+  \tkzTabVar{#4}
+  \end{tikzpicture}\par}\smallskip}
 
 \begin{document}
 
-\entetecorrige{CALCUL LITTÉRAL ET SECOND DEGRÉ}{Corrigé --- Ch 3 : Fiche d'exercices --- 1\textsuperscript{re} mathématiques spécifiques}
-{Les remarques en italique signalent les erreurs les plus fréquentes et les méthodes à
-retenir. Les résultats sont encadrés. Tous les calculs se font sans calculatrice.}
+\entetefiche{Chapitre 3 --- Calcul littéral et second degré}{1\textsuperscript{re}
+mathématiques spécifiques}
 
 \partie{Développer}
 
 \begin{exo}[Distributivité simple]
-\deux{$A=\res{5x+15}$}{$B=\res{8x-28}$}
-\deux{$C=\res{-3x-18}$}{$D=-8+10x=\res{10x-8}$}
-\deux{$E=\res{21-7x}$}{$F=\res{-x+9}$}
-\rem{Le facteur multiplie \emph{chaque} terme : $-2\times(-5x)=+10x$.}
+\explique{Dans $k(a+b)$, le nombre devant la parenthèse multiplie \emph{chaque} terme de
+la parenthèse : $k(a+b)=ka+kb$.}{méthode 1 du cours}
+\begin{calculs}
+A &= 5(x+3) &&\justif{on recopie}\\
+A &= 5\times x+5\times 3 &&\justif{$5$ multiplie $x$, puis $3$}\\
+A &= \res{5x+15} &&
+\end{calculs}
+\begin{calculs}
+B &= 4(2x-7) &&\justif{on recopie}\\
+B &= 4\times 2x-4\times 7 &&\justif{$4$ multiplie $2x$, puis $7$}\\
+B &= \res{8x-28} &&\justif{$4\times 2x=8x$}
+\end{calculs}
+\begin{calculs}
+C &= -3(x+6) &&\justif{on recopie}\\
+C &= (-3)\times x+(-3)\times 6 &&\justif{c'est $-3$, avec son signe, qui multiplie}\\
+C &= \res{-3x-18} &&\justif{$(-3)\times 6=-18$}
+\end{calculs}
+\begin{calculs}
+D &= -2(4-5x) &&\justif{on recopie}\\
+D &= (-2)\times 4+(-2)\times(-5x) &&\justif{le terme $-5x$ garde son signe}\\
+D &= -8+10x &&\justif{moins par moins donne plus : $(-2)\times(-5x)=+10x$}\\
+D &= \res{10x-8} &&\justif{on range : le terme en $x$ d'abord}
+\end{calculs}
+\begin{calculs}
+E &= 7(3-x) &&\justif{on recopie}\\
+E &= 7\times 3+7\times(-x) &&\\
+E &= \res{21-7x} &&
+\end{calculs}
+\begin{calculs}
+F &= -(x-9) &&\justif{le signe $-$ devant la parenthèse, c'est $-1$}\\
+F &= (-1)\times x+(-1)\times(-9) &&\justif{$-1$ multiplie chaque terme}\\
+F &= \res{-x+9} &&\justif{un $-$ devant une parenthèse change tous les signes}
+\end{calculs}
+\rem{Erreur fréquente : ne multiplier que le premier terme, $5(x+3)=5x+3$. Le nombre
+devant la parenthèse multiplie les \emph{deux} termes.}
+\rem{Avec un nombre négatif devant, on écrit les produits avec des parenthèses, comme
+$(-2)\times(-5x)$ : on voit alors la règle des signes.}
 \end{exo}
 
 \begin{exo}[Un facteur en $x$]
-\deux{$A=\res{x^{2}+8x}$}{$B=\res{6x^{2}-2x}$}
-\deux{$C=\res{-x^{2}+4x}$}{$D=\res{-8x^{2}-20x}$}
-\deux{$E=\res{15x-6x^{2}}$}{}
-\rem{$x\times x=x^{2}$ et $2x\times 3x=6x^{2}$.}
+\explique{Même méthode : le facteur devant la parenthèse, ici un terme en $x$, multiplie
+chaque terme.}{$x\times x=x^{2}$}
+\begin{calculs}
+A &= x(x+8) &&\justif{on recopie}\\
+A &= x\times x+x\times 8 &&\justif{$x$ multiplie chaque terme}\\
+A &= \res{x^{2}+8x} &&\justif{$x\times x=x^{2}$}
+\end{calculs}
+\begin{calculs}
+B &= 2x(3x-1) &&\justif{on recopie}\\
+B &= 2x\times 3x-2x\times 1 &&\justif{$2x$ multiplie chaque terme}\\
+B &= \res{6x^{2}-2x} &&\justif{$2x\times 3x=2\times 3\times x\times x=6x^{2}$}
+\end{calculs}
+\begin{calculs}
+C &= -x(x-4) &&\justif{on recopie}\\
+C &= (-x)\times x+(-x)\times(-4) &&\justif{$-x$ multiplie chaque terme}\\
+C &= \res{-x^{2}+4x} &&\justif{$(-x)\times(-4)=+4x$}
+\end{calculs}
+\begin{calculs}
+D &= -4x(2x+5) &&\justif{on recopie}\\
+D &= (-4x)\times 2x+(-4x)\times 5 &&\justif{$-4x$ multiplie chaque terme}\\
+D &= \res{-8x^{2}-20x} &&\justif{$(-4)\times 2=-8$ et $x\times x=x^{2}$}
+\end{calculs}
+\begin{calculs}
+E &= 3x(5-2x) &&\justif{on recopie}\\
+E &= 3x\times 5+3x\times(-2x) &&\justif{$3x$ multiplie chaque terme}\\
+E &= \res{15x-6x^{2}} &&\justif{$3x\times(-2x)=-6x^{2}$}
+\end{calculs}
+\rem{On multiplie les nombres entre eux, puis les $x$ entre eux : $2x\times 3x=6x^{2}$,
+et non $6x$ ni $5x^{2}$.}
 \end{exo}
 
 \begin{exo}[Double distributivité]
+\explique{Dans $(a+b)(c+d)$, chaque terme de la première parenthèse multiplie chaque
+terme de la seconde : quatre produits, puis on réduit.}{méthode 1 du cours}
 \begin{calculs}
-A &= x^{2}+5x+2x+10 &&\justif{quatre produits}\\
-A &= \res{x^{2}+7x+10}
+A &= (x+2)(x+5) &&\justif{on recopie}\\
+A &= x\times x+x\times 5+2\times x+2\times 5 &&\justif{quatre produits}\\
+A &= x^{2}+5x+2x+10 &&\\
+A &= \res{x^{2}+7x+10} &&\justif{on réduit : $5x+2x=7x$}
 \end{calculs}
-\deux{$B=\res{x^{2}+x-12}$}{$C=\res{x^{2}-7x+6}$}
-\deux{$D=\res{2x^{2}+7x+3}$}{$E=\res{3x^{2}+4x-4}$}
 \begin{calculs}
-F &= 4x-x^{2}+20-5x &&\justif{$5\times(-x)=-5x$}\\
-F &= \res{-x^{2}-x+20}
+B &= (x-3)(x+4) &&\justif{on recopie}\\
+B &= x\times x+x\times 4+(-3)\times x+(-3)\times 4 &&\justif{quatre produits ; $-3$ garde
+son signe}\\
+B &= x^{2}+4x-3x-12 &&\\
+B &= \res{x^{2}+x-12} &&\justif{$4x-3x=1x$, qu'on écrit $x$}
 \end{calculs}
+\begin{calculs}
+C &= (x-6)(x-1) &&\justif{on recopie}\\
+C &= x\times x+x\times(-1)+(-6)\times x+(-6)\times(-1) &&\justif{quatre produits}\\
+C &= x^{2}-x-6x+6 &&\justif{$(-6)\times(-1)=+6$}\\
+C &= \res{x^{2}-7x+6} &&\justif{$-x-6x=-7x$}
+\end{calculs}
+\begin{calculs}
+D &= (2x+1)(x+3) &&\justif{on recopie}\\
+D &= 2x\times x+2x\times 3+1\times x+1\times 3 &&\justif{quatre produits}\\
+D &= 2x^{2}+6x+x+3 &&\\
+D &= \res{2x^{2}+7x+3} &&\justif{$6x+x=7x$}
+\end{calculs}
+\begin{calculs}
+E &= (3x-2)(x+2) &&\justif{on recopie}\\
+E &= 3x\times x+3x\times 2+(-2)\times x+(-2)\times 2 &&\justif{quatre produits}\\
+E &= 3x^{2}+6x-2x-4 &&\\
+E &= \res{3x^{2}+4x-4} &&\justif{$6x-2x=4x$}
+\end{calculs}
+\begin{calculs}
+F &= (x+5)(4-x) &&\justif{on recopie}\\
+F &= x\times 4+x\times(-x)+5\times 4+5\times(-x) &&\justif{quatre produits}\\
+F &= 4x-x^{2}+20-5x &&\justif{$x\times(-x)=-x^{2}$}\\
+F &= \res{-x^{2}-x+20} &&\justif{$4x-5x=-x$ ; on range : $x^{2}$, puis $x$, puis le
+nombre}
+\end{calculs}
+\rem{Pour n'oublier aucun produit, on compte : il en faut quatre. On peut aussi relier
+par des flèches chaque terme de la première parenthèse à chaque terme de la seconde.}
+\rem{Contrôle rapide : on remplace $x$ par $1$ des deux côtés. Pour $A$ :
+$(1+2)\times(1+5)=18$ et $1+7+10=18$.}
 \end{exo}
 
 \begin{exo}[Vrai ou faux ?]
-\begin{reponses}
-  \item Faux : $3(x+4)=\res{3x+12}$.
-  \item \res{\text{Vrai}}.
-  \item \res{\text{Vrai}}.
-  \item Faux : $(x+1)(x+2)=\res{x^{2}+3x+2}$.
-  \item Faux : $-(3-x)=\res{-3+x}$.
-\end{reponses}
-\rem{d) On oublie souvent les deux produits « croisés » $x\times 2$ et $1\times x$.}
+\explique{Pour savoir si une égalité est vraie pour tout $x$, on développe le membre de
+gauche et on compare avec celui de droite.}{on part du côté avec des parenthèses}
+\cas{a)}
+\begin{calculs}
+3(x+4) &= 3\times x+3\times 4 &&\justif{$3$ multiplie chaque terme}\\
+3(x+4) &= 3x+12 &&
+\end{calculs}
+\explique{\res{Faux} : on trouve $3x+12$, pas $3x+4$. L'égalité correcte est
+$3(x+4)=\res{3x+12}$.}{le $4$ a été oublié dans la multiplication}
+\cas{b)}
+\begin{calculs}
+-2(x-5) &= (-2)\times x+(-2)\times(-5) &&\justif{$-2$ multiplie chaque terme}\\
+-2(x-5) &= -2x+10 &&\justif{$(-2)\times(-5)=+10$}
+\end{calculs}
+\explique{\res{Vrai}.}{}
+\cas{c)}
+\begin{calculs}
+x(x+1) &= x\times x+x\times 1 &&\justif{$x$ multiplie chaque terme}\\
+x(x+1) &= x^{2}+x &&
+\end{calculs}
+\explique{\res{Vrai}.}{}
+\cas{d)}
+\begin{calculs}
+(x+1)(x+2) &= x\times x+x\times 2+1\times x+1\times 2 &&\justif{quatre produits}\\
+(x+1)(x+2) &= x^{2}+2x+x+2 &&\\
+(x+1)(x+2) &= x^{2}+3x+2 &&\justif{$2x+x=3x$}
+\end{calculs}
+\explique{\res{Faux} : l'égalité correcte est $(x+1)(x+2)=\res{x^{2}+3x+2}$.}{il manque
+les deux produits \og croisés\fg{} $x\times 2$ et $1\times x$}
+\explique{Un seul exemple suffit pour montrer qu'elle est fausse : pour $x=1$,
+$(1+1)\times(1+2)=6$ mais $1^{2}+2=3$.}{tester une valeur}
+\cas{e)}
+\begin{calculs}
+-(3-x) &= (-1)\times 3+(-1)\times(-x) &&\justif{le $-$ devant, c'est $-1$}\\
+-(3-x) &= -3+x &&\justif{$(-1)\times(-x)=+x$}
+\end{calculs}
+\explique{\res{Faux} : l'égalité correcte est $-(3-x)=\res{-3+x}$.}{un $-$ devant la
+parenthèse change \emph{tous} les signes}
+\rem{Erreur fréquente (e) : changer le signe du premier terme seulement.}
 \end{exo}
 
 \partie{Identités remarquables}
 
 \begin{exo}[Le carré d'une somme]
+\explique{On reconnaît $(a+b)^{2}$ : un carré, avec un $+$ dans la parenthèse. On
+repère $a$ et $b$, puis on applique $(a+b)^{2}=a^{2}+2ab+b^{2}$.}{méthode 2 du cours}
 \begin{calculs}
-A &= x^{2}+2\times x\times 4+4^{2} &&\justif{$a=x$, $b=4$}\\
-A &= \res{x^{2}+8x+16}
+A &= (x+4)^{2} &&\justif{$(a+b)^{2}$, avec $a=x$ et $b=4$}\\
+A &= x^{2}+2\times x\times 4+4^{2} &&\justif{$a^{2}+2ab+b^{2}$}\\
+A &= \res{x^{2}+8x+16} &&\justif{$2\times 4=8$ et $4^{2}=16$}
 \end{calculs}
-\deux{$B=\res{x^{2}+2x+1}$}{$C=\res{4x^{2}+12x+9}$}
-\deux{$D=\res{9x^{2}+30x+25}$}{}
-\rem{Le double produit ne s'oublie pas : $(x+4)^{2}\ne x^{2}+16$.}
+\begin{calculs}
+B &= (x+1)^{2} &&\justif{$a=x$ et $b=1$}\\
+B &= x^{2}+2\times x\times 1+1^{2} &&\justif{$a^{2}+2ab+b^{2}$}\\
+B &= \res{x^{2}+2x+1} &&
+\end{calculs}
+\begin{calculs}
+C &= (2x+3)^{2} &&\justif{$a=2x$ et $b=3$}\\
+C &= (2x)^{2}+2\times 2x\times 3+3^{2} &&\justif{on garde les parenthèses autour de $2x$}\\
+C &= \res{4x^{2}+12x+9} &&\justif{$(2x)^{2}=2x\times 2x=4x^{2}$ ; $2\times 2\times 3=12$}
+\end{calculs}
+\begin{calculs}
+D &= (3x+5)^{2} &&\justif{$a=3x$ et $b=5$}\\
+D &= (3x)^{2}+2\times 3x\times 5+5^{2} &&\justif{$a^{2}+2ab+b^{2}$}\\
+D &= \res{9x^{2}+30x+25} &&\justif{$(3x)^{2}=9x^{2}$ ; $2\times 3\times 5=30$}
+\end{calculs}
+\rem{Erreur fréquente : oublier le double produit, $(x+4)^{2}=x^{2}+16$. Contrôle avec
+$x=1$ : $(1+4)^{2}=25$, alors que $1+16=17$.}
+\rem{Autre piège : $(2x)^{2}$ vaut $4x^{2}$, pas $2x^{2}$ ; le $2$ est lui aussi élevé
+au carré.}
 \end{exo}
 
 \begin{exo}[Le carré d'une différence]
+\explique{On reconnaît $(a-b)^{2}$ : un carré, avec un $-$ dans la parenthèse. On
+applique $(a-b)^{2}=a^{2}-2ab+b^{2}$ ; seul le double produit est
+négatif.}{méthode 2 du cours}
 \begin{calculs}
-A &= x^{2}-2\times x\times 3+3^{2} &&\justif{$a=x$, $b=3$}\\
-A &= \res{x^{2}-6x+9}
+A &= (x-3)^{2} &&\justif{$(a-b)^{2}$, avec $a=x$ et $b=3$}\\
+A &= x^{2}-2\times x\times 3+3^{2} &&\justif{$a^{2}-2ab+b^{2}$}\\
+A &= \res{x^{2}-6x+9} &&
 \end{calculs}
-\deux{$B=\res{x^{2}-20x+100}$}{$C=\res{4x^{2}-4x+1}$}
-\deux{$D=\res{25x^{2}-20x+4}$}{}
+\begin{calculs}
+B &= (x-10)^{2} &&\justif{$a=x$ et $b=10$}\\
+B &= x^{2}-2\times x\times 10+10^{2} &&\justif{$a^{2}-2ab+b^{2}$}\\
+B &= \res{x^{2}-20x+100} &&
+\end{calculs}
+\begin{calculs}
+C &= (2x-1)^{2} &&\justif{$a=2x$ et $b=1$}\\
+C &= (2x)^{2}-2\times 2x\times 1+1^{2} &&\justif{$a^{2}-2ab+b^{2}$}\\
+C &= \res{4x^{2}-4x+1} &&\justif{$(2x)^{2}=4x^{2}$}
+\end{calculs}
+\begin{calculs}
+D &= (5x-2)^{2} &&\justif{$a=5x$ et $b=2$}\\
+D &= (5x)^{2}-2\times 5x\times 2+2^{2} &&\justif{$a^{2}-2ab+b^{2}$}\\
+D &= \res{25x^{2}-20x+4} &&\justif{$(5x)^{2}=25x^{2}$ ; $2\times 5\times 2=20$}
+\end{calculs}
+\rem{Le dernier terme $b^{2}$ est toujours positif : $(x-3)^{2}$ se termine par $+9$, pas
+par $-9$.}
 \end{exo}
 
 \begin{exo}[Somme par différence]
-\deux{$A=x^{2}-6^{2}=\res{x^{2}-36}$}{$B=\res{x^{2}-1}$}
-\deux{$C=(3x)^{2}-2^{2}=\res{9x^{2}-4}$}{$D=\res{16x^{2}-25}$}
-\rem{$(3x)^{2}=9x^{2}$ : le $3$ est aussi élevé au carré.}
+\explique{On reconnaît $(a+b)(a-b)$ : deux parenthèses avec les mêmes termes, l'une avec
+$+$, l'autre avec $-$. Le résultat est $a^{2}-b^{2}$, sans terme en $x$.}{méthode 2 du
+cours}
+\begin{calculs}
+A &= (x+6)(x-6) &&\justif{$(a+b)(a-b)$, avec $a=x$ et $b=6$}\\
+A &= x^{2}-6^{2} &&\justif{$a^{2}-b^{2}$}\\
+A &= \res{x^{2}-36} &&
+\end{calculs}
+\begin{calculs}
+B &= (x-1)(x+1) &&\justif{$a=x$ et $b=1$ ; l'ordre des parenthèses ne compte pas}\\
+B &= x^{2}-1^{2} &&\justif{$a^{2}-b^{2}$}\\
+B &= \res{x^{2}-1} &&
+\end{calculs}
+\begin{calculs}
+C &= (3x+2)(3x-2) &&\justif{$a=3x$ et $b=2$}\\
+C &= (3x)^{2}-2^{2} &&\justif{$a^{2}-b^{2}$}\\
+C &= \res{9x^{2}-4} &&\justif{$(3x)^{2}=9x^{2}$}
+\end{calculs}
+\begin{calculs}
+D &= (4x-5)(4x+5) &&\justif{$a=4x$ et $b=5$}\\
+D &= (4x)^{2}-5^{2} &&\justif{$a^{2}-b^{2}$}\\
+D &= \res{16x^{2}-25} &&
+\end{calculs}
+\rem{Pourquoi n'y a-t-il pas de terme en $x$ ? En faisant les quatre produits de $A$, on
+trouve $+6x$ et $-6x$, qui s'annulent : $x^{2}-6x+6x-36=x^{2}-36$.}
 \end{exo}
 
 \begin{exo}[La bonne réponse]
-\deux{1. \res{\text{b}}\; ($x^{2}-14x+49$)}{2. \res{\text{c}}\; ($9x^{2}+6x+1$)}
-\deux{3. \res{\text{b}}\; ($(x-4)(x+4)$)}{4. \res{\text{a}}\; ($4x^{2}-25$)}
+\cas{1.}
+\begin{calculs}
+(x-7)^{2} &= x^{2}-2\times x\times 7+7^{2} &&\justif{$(a-b)^{2}$, avec $a=x$ et $b=7$}\\
+(x-7)^{2} &= x^{2}-14x+49 &&
+\end{calculs}
+\explique{Réponse \res{b)}.}{a) et c) oublient le double produit ; d) oublie le $2$ du
+double produit}
+\cas{2.}
+\begin{calculs}
+(3x+1)^{2} &= (3x)^{2}+2\times 3x\times 1+1^{2} &&\justif{$(a+b)^{2}$, avec $a=3x$ et
+$b=1$}\\
+(3x+1)^{2} &= 9x^{2}+6x+1 &&
+\end{calculs}
+\explique{Réponse \res{c)}.}{a) oublie le double produit ; b) écrit $3x^{2}$ au lieu de
+$9x^{2}$}
+\cas{3.}
+\explique{$x^{2}-16=x^{2}-4^{2}$ : c'est la forme $a^{2}-b^{2}$, avec $a=x$ et $b=4$.
+Donc $x^{2}-16=(x-4)(x+4)$ : réponse \res{b)}.}{on lit l'identité de droite à gauche}
+\explique{Contrôle : $(x-4)(x+4)=x^{2}+4x-4x-16=x^{2}-16$.}{a) donnerait
+$x^{2}-8x+16$}
+\cas{4.}
+\begin{calculs}
+(2x-5)(2x+5) &= (2x)^{2}-5^{2} &&\justif{$(a-b)(a+b)$, avec $a=2x$ et $b=5$}\\
+(2x-5)(2x+5) &= 4x^{2}-25 &&
+\end{calculs}
+\explique{Réponse \res{a)}.}{b) oublie de mettre le $2$ au carré}
+\rem{Dans un QCM, on calcule d'abord soi-même, puis on cherche son résultat parmi les
+réponses : les mauvaises réponses sont les erreurs les plus fréquentes.}
 \end{exo}
 
 \partie{Équations du premier degré}
 
 \begin{exo}[Premières équations]
-\deux{a) $x=12-7$ : \res{S=\ens{5}}}{b) $x=-20\div 4$ : \res{S=\ens{-5}}}
-\deux{c) $3x=15$ : \res{S=\ens{5}}}{}
+\explique{On fait la même opération sur les deux membres de l'égalité : on regroupe les
+$x$ d'un côté, les nombres de l'autre, puis on divise par le nombre devant
+$x$.}{méthode 3 du cours}
+\cas{a)}
 \begin{calculs}
-5x+2 &= 3x+10\\
-2x &= 8\\
-x &= 4
+x+7 &= 12 &&\justif{on recopie}\\
+x &= 12-7 &&\justif{on retranche $7$ aux deux membres}\\
+x &= 5 &&
 \end{calculs}
-d) \res{S=\ens{4}} ; \quad e) $6x=12$ : \res{S=\ens{2}} ; \quad f) $12=4x$ :
-\res{S=\ens{3}}
+\explique{$\res{S=\ens{5}}$.}{contrôle : $5+7=12$}
+\cas{b)}
+\begin{calculs}
+4x &= -20 &&\justif{on recopie}\\
+x &= \dfrac{-20}{4} &&\justif{on divise les deux membres par $4$}\\
+x &= -5 &&
+\end{calculs}
+\explique{$\res{S=\ens{-5}}$.}{contrôle : $4\times(-5)=-20$}
+\cas{c)}
+\begin{calculs}
+3x-5 &= 10 &&\justif{on recopie}\\
+3x &= 10+5 &&\justif{on ajoute $5$ aux deux membres}\\
+3x &= 15 &&\\
+x &= 5 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$\res{S=\ens{5}}$.}{contrôle : $3\times 5-5=10$}
+\cas{d)}
+\begin{calculs}
+5x+2 &= 3x+10 &&\justif{on recopie}\\
+5x-3x &= 10-2 &&\justif{les $x$ à gauche, les nombres à droite}\\
+2x &= 8 &&\\
+x &= 4 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$\res{S=\ens{4}}$.}{contrôle : $5\times 4+2=22$ et $3\times 4+10=22$}
+\cas{e)}
+\begin{calculs}
+8x-1 &= 2x+11 &&\justif{on recopie}\\
+8x-2x &= 11+1 &&\justif{$-2x$ passe à gauche, $-1$ passe à droite}\\
+6x &= 12 &&\\
+x &= 2 &&\justif{on divise par $6$}
+\end{calculs}
+\explique{$\res{S=\ens{2}}$.}{contrôle : $8\times 2-1=15$ et $2\times 2+11=15$}
+\cas{f)}
+\begin{calculs}
+2x+9 &= 6x-3 &&\justif{on recopie}\\
+9+3 &= 6x-2x &&\justif{les $x$ du côté où il y en a le plus}\\
+12 &= 4x &&\\
+x &= 3 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$\res{S=\ens{3}}$.}{contrôle : $2\times 3+9=15$ et $6\times 3-3=15$}
+\rem{Un terme qui change de côté change de signe : c'est la même chose que retrancher
+(ou ajouter) ce terme aux deux membres.}
+\rem{En f), mettre les $x$ à droite évite un coefficient négatif devant $x$.}
 \end{exo}
 
 \begin{exo}[Avec des parenthèses]
+\explique{On développe d'abord les parenthèses ; on retrouve alors une équation comme
+celles de l'exercice 9.}{méthode 3 du cours}
+\cas{a)}
 \begin{calculs}
-3(x+2) &= 21\\
-3x+6 &= 21 &&\justif{on développe d'abord}\\
-3x &= 15\\
-x &= 5
+3(x+2) &= 21 &&\justif{on recopie}\\
+3x+6 &= 21 &&\justif{on développe : $3\times x+3\times 2$}\\
+3x &= 21-6 &&\justif{on retranche $6$}\\
+3x &= 15 &&\\
+x &= 5 &&\justif{on divise par $3$}
 \end{calculs}
-a) \res{S=\ens{5}} ; \quad b) $2x-8=x+1$ : \res{S=\ens{9}}
+\explique{$\res{S=\ens{5}}$.}{contrôle : $3\times(5+2)=21$}
+\cas{b)}
 \begin{calculs}
-5(x+1) &= 2(x+7)\\
-5x+5 &= 2x+14\\
-3x &= 9\\
-x &= 3
+2(x-4) &= x+1 &&\justif{on recopie}\\
+2x-8 &= x+1 &&\justif{on développe}\\
+2x-x &= 1+8 &&\justif{les $x$ à gauche, les nombres à droite}\\
+x &= 9 &&
 \end{calculs}
-c) \res{S=\ens{3}} ; \quad d) $-x+6=2x$ soit $6=3x$ : \res{S=\ens{2}}\par
-e) $8x-4=3x+21$ soit $5x=25$ : \res{S=\ens{5}}
+\explique{$\res{S=\ens{9}}$.}{contrôle : $2\times(9-4)=10$ et $9+1=10$}
+\cas{c)}
+\begin{calculs}
+5(x+1) &= 2(x+7) &&\justif{on recopie}\\
+5x+5 &= 2x+14 &&\justif{on développe les deux membres}\\
+5x-2x &= 14-5 &&\\
+3x &= 9 &&\\
+x &= 3 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$\res{S=\ens{3}}$.}{contrôle : $5\times 4=20$ et $2\times 10=20$}
+\cas{d)}
+\begin{calculs}
+-(x-6) &= 2x &&\justif{on recopie}\\
+-x+6 &= 2x &&\justif{le $-$ devant la parenthèse change tous les signes}\\
+6 &= 2x+x &&\justif{les $x$ à droite, où il y en a le plus}\\
+6 &= 3x &&\\
+x &= 2 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$\res{S=\ens{2}}$.}{contrôle : $-(2-6)=4$ et $2\times 2=4$}
+\cas{e)}
+\begin{calculs}
+4(2x-1) &= 3(x+7) &&\justif{on recopie}\\
+8x-4 &= 3x+21 &&\justif{on développe les deux membres}\\
+8x-3x &= 21+4 &&\\
+5x &= 25 &&\\
+x &= 5 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{$\res{S=\ens{5}}$.}{contrôle : $4\times 9=36$ et $3\times 12=36$}
+\rem{Erreur fréquente : $3(x+2)=21$ devient $3x+2=21$ ; le $3$ multiplie aussi le $2$.}
 \end{exo}
 
 \begin{exo}[L'inconnue au dénominateur]
+\explique{Quand $x$ est au dénominateur, on multiplie les deux membres par $x$ (qui n'est
+pas nul) : $x$ remonte, et on se ramène à une équation du type $3x=12$.}{méthode 3 du
+cours}
+\cas{a)}
 \begin{calculs}
-\dfrac{12}{x} &= 3\\
-12 &= 3x &&\justif{on multiplie par $x$}\\
-x &= 4
+\dfrac{12}{x} &= 3 &&\justif{on recopie}\\
+12 &= 3x &&\justif{on multiplie les deux membres par $x$}\\
+x &= 4 &&\justif{on divise par $3$}
 \end{calculs}
-a) \res{S=\ens{4}} ; \quad b) $30=6x$ : \res{S=\ens{5}}\par
-c) $8=-2x$ : \res{S=\ens{-4}} ; \quad d) $21=7x$ : \res{S=\ens{3}}\par
-e) $\dfrac{120}{x}=15$ soit $120=15x$ : \res{x=8} amis.
-\rem{Contrôle : $120\div 8=15$.}
+\explique{$\res{S=\ens{4}}$.}{contrôle : $12\div 4=3$}
+\cas{b)}
+\begin{calculs}
+\dfrac{30}{x} &= 6 &&\justif{on recopie}\\
+30 &= 6x &&\justif{on multiplie par $x$}\\
+x &= 5 &&\justif{on divise par $6$}
+\end{calculs}
+\explique{$\res{S=\ens{5}}$.}{contrôle : $30\div 5=6$}
+\cas{c)}
+\begin{calculs}
+\dfrac{8}{x} &= -2 &&\justif{on recopie}\\
+8 &= -2x &&\justif{on multiplie par $x$}\\
+x &= -4 &&\justif{on divise par $-2$ : $8\div(-2)=-4$}
+\end{calculs}
+\explique{$\res{S=\ens{-4}}$.}{contrôle : $8\div(-4)=-2$}
+\cas{d)}
+\begin{calculs}
+\dfrac{21}{x} &= 7 &&\justif{on recopie}\\
+21 &= 7x &&\justif{on multiplie par $x$}\\
+x &= 3 &&\justif{on divise par $7$}
+\end{calculs}
+\explique{$\res{S=\ens{3}}$.}{contrôle : $21\div 3=7$}
+\cas{e)}
+\explique{Soit $x$ le nombre d'amis. Chacun reçoit $120$ divisé par $x$ euros, donc
+l'équation est $\dfrac{120}{x}=15$.}{on nomme l'inconnue, puis on traduit la phrase}
+\begin{calculs}
+\dfrac{120}{x} &= 15 &&\justif{on recopie l'équation}\\
+120 &= 15x &&\justif{on multiplie par $x$}\\
+x &= 8 &&\justif{on divise par $15$ : $15\times 8=120$}
+\end{calculs}
+\explique{La cagnotte est partagée entre \res{8~amis}.}{contrôle : $120\div 8=15$}
 \end{exo}
 
 \begin{exo}[Deux formules pour la piscine]
-\begin{questions}
-  \item Entrées seules : $6\times 10=\res{60\text{ €}}$ ; carte :
-        $40+4\times 10=\res{80\text{ €}}$.
-  \item Entrées seules : \res{6x} ; carte : \res{40+4x}.
-  \item \begin{calculs}
-        6x &= 40+4x\\
-        2x &= 40\\
-        x &= 20
-        \end{calculs}
-        Les deux formules coûtent autant pour \res{20} entrées ($120$~€).
-  \item Entrées seules : $150$~€ ; carte : $140$~€. La \res{\text{carte}} est moins
-        chère.
-\end{questions}
+\cas{1.}
+\explique{Sans carte : $6\times 10=\res{60}$~€.}{$10$ entrées à $6$~€}
+\explique{Avec la carte : $40+4\times 10=40+40=\res{80}$~€.}{la carte, puis $10$
+entrées à $4$~€}
+\cas{2.}
+\explique{Sans carte, on paie $6$~€ par entrée : $\res{6x}$ euros.}{on remplace $10$
+par $x$ dans le calcul du 1.}
+\explique{Avec la carte : $\res{40+4x}$ euros.}{$40$~€ une fois, plus $4$~€ par entrée}
+\cas{3.}
+\explique{Les deux formules coûtent autant quand les deux prix sont égaux : on résout
+$6x=40+4x$.}{on écrit l'équation}
+\begin{calculs}
+6x &= 40+4x &&\justif{on recopie}\\
+6x-4x &= 40 &&\justif{les $x$ à gauche}\\
+2x &= 40 &&\\
+x &= 20 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{Les deux formules coûtent autant pour \res{20~entrées} : $120$~€ dans les deux
+cas.}{contrôle : $6\times 20=120$ et $40+80=120$}
+\cas{4.}
+\explique{Sans carte : $6\times 25=150$~€. Avec la carte : $40+4\times 25=40+100=140$~€.}{on
+remplace $x$ par $25$}
+\explique{Pour $25$ entrées, il vaut mieux choisir \res{la carte annuelle}, moins chère
+de $10$~€.}{on répond par une phrase}
+\rem{Au-delà de $20$ entrées, la carte devient la formule la moins chère.}
 \end{exo}
 
 \partie{Équations $x^{2}=a$}
 
 \begin{exo}[Résoudre $x^{2}=a$]
-\deux{a) \res{S=\ens{-4\,;4}}}{b) \res{S=\ens{-1\,;1}}}
-\deux{c) \res{S=\ens{0}}}{d) \res{S=\ens{-\sqrt{3}\,;\sqrt{3}}}}
-\deux{e) \res{S=\varnothing}}{f) \res{S=\ens{-12\,;12}}}
-\rem{e) Un carré n'est jamais négatif. Ne pas oublier la solution négative.}
+\explique{On regarde le signe de $a$ : si $a>0$, deux solutions $-\sqrt{a}$ et
+$\sqrt{a}$ ; si $a=0$, une seule solution $0$ ; si $a<0$, aucune
+solution.}{méthode 4 du cours}
+\cas{a)}
+\explique{$16>0$ et $16=4^{2}$ : $\res{S=\ens{-4\,;4}}$.}{$(-4)^{2}=16$ aussi}
+\cas{b)}
+\explique{$1>0$ et $1=1^{2}$ : $\res{S=\ens{-1\,;1}}$.}{$(-1)^{2}=1$}
+\cas{c)}
+\explique{Le seul nombre dont le carré vaut $0$ est $0$ : $\res{S=\ens{0}}$.}{$a=0$ : une
+seule solution}
+\cas{d)}
+\explique{$3>0$ : $\res{S=\ens{-\sqrt{3}\,;\sqrt{3}}}$.}{$3$ n'est pas le carré d'un
+entier : on garde la racine carrée}
+\cas{e)}
+\explique{$-25<0$ : $\res{S=\varnothing}$.}{un carré n'est jamais négatif}
+\cas{f)}
+\explique{$144>0$ et $144=12^{2}$ : $\res{S=\ens{-12\,;12}}$.}{$12\times 12=144$}
+\rem{Erreur fréquente : oublier la solution négative. $(-4)^{2}=(-4)\times(-4)=16$.}
+\rem{En e), on n'écrit pas $-5$ : $(-5)^{2}=25$, pas $-25$.}
 \end{exo}
 
 \begin{exo}[Isoler $x^{2}$ d'abord]
+\explique{On isole d'abord $x^{2}$ (comme on isolerait $x$), puis on applique la méthode
+de l'exercice 13.}{méthode 4 du cours}
+\cas{a)}
 \begin{calculs}
-2x^{2} &= 98\\
+x^{2}-9 &= 0 &&\justif{on recopie}\\
+x^{2} &= 9 &&\justif{on ajoute $9$ aux deux membres}
+\end{calculs}
+\explique{$9>0$ et $9=3^{2}$ : $\res{S=\ens{-3\,;3}}$.}{deux solutions opposées}
+\cas{b)}
+\begin{calculs}
+x^{2}+4 &= 40 &&\justif{on recopie}\\
+x^{2} &= 36 &&\justif{on retranche $4$}
+\end{calculs}
+\explique{$36=6^{2}$ : $\res{S=\ens{-6\,;6}}$.}{}
+\cas{c)}
+\begin{calculs}
+2x^{2} &= 98 &&\justif{on recopie}\\
 x^{2} &= 49 &&\justif{on divise par $2$}
 \end{calculs}
-\deux{a) $x^{2}=9$ : \res{S=\ens{-3\,;3}}}{b) $x^{2}=36$ : \res{S=\ens{-6\,;6}}}
-\deux{c) \res{S=\ens{-7\,;7}}}{d) $x^{2}=4$ : \res{S=\ens{-2\,;2}}}
-\deux{e) $x^{2}=-9$ : \res{S=\varnothing}}{f) $x^{2}=25$ : \res{S=\ens{-5\,;5}}}
+\explique{$49=7^{2}$ : $\res{S=\ens{-7\,;7}}$.}{}
+\cas{d)}
+\begin{calculs}
+5x^{2}-20 &= 0 &&\justif{on recopie}\\
+5x^{2} &= 20 &&\justif{on ajoute $20$}\\
+x^{2} &= 4 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{$4=2^{2}$ : $\res{S=\ens{-2\,;2}}$.}{}
+\cas{e)}
+\begin{calculs}
+x^{2}+10 &= 1 &&\justif{on recopie}\\
+x^{2} &= -9 &&\justif{on retranche $10$ : $1-10=-9$}
+\end{calculs}
+\explique{$-9<0$ : $\res{S=\varnothing}$.}{un carré n'est jamais négatif}
+\cas{f)}
+\begin{calculs}
+4x^{2}-1 &= 99 &&\justif{on recopie}\\
+4x^{2} &= 100 &&\justif{on ajoute $1$}\\
+x^{2} &= 25 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$25=5^{2}$ : $\res{S=\ens{-5\,;5}}$.}{contrôle : $4\times 25-1=99$}
+\rem{Ordre des étapes : d'abord le nombre ajouté ou retranché, puis le nombre qui
+multiplie $x^{2}$, comme pour une équation du premier degré.}
 \end{exo}
 
 \begin{exo}[Des carrés]
-\begin{questions}
-  \item $x^{2}=81$, donc $x=-9$ ou $x=9$ ; une longueur est positive : \res{9\text{ m}}.
-  \item $x^{2}=100$ : côté \res{10\text{ cm}}.
-  \item \res{-7} et \res{7}.
-\end{questions}
+\cas{1.}
+\explique{Soit $x$ le côté du potager, en mètres. L'aire d'un carré est côté $\times$
+côté : $x^{2}=81$.}{on nomme l'inconnue}
+\explique{$81=9^{2}$, donc $x=-9$ ou $x=9$.}{les deux solutions de l'équation}
+\explique{Une longueur est positive : le côté mesure \res{9~m}.}{on rejette $-9$}
+\cas{2.}
+\explique{Soit $x$ le côté de la photo, en centimètres : $x^{2}=100$, donc $x=-10$ ou
+$x=10$.}{$100=10^{2}$}
+\explique{Le côté mesure \res{10~cm}.}{une longueur est positive}
+\cas{3.}
+\explique{On résout $x^{2}=49$ : $49=7^{2}$, donc les nombres cherchés sont \res{-7} et
+\res{7}.}{ici, pas de longueur : on garde les deux solutions}
+\rem{Dans un problème, on garde ou on rejette la solution négative selon ce que représente
+$x$.}
 \end{exo}
 
 \partie{Équations produit}
 
 \begin{exo}[Produit nul]
+\explique{L'équation est de la forme \og produit $=0$\fg. Un produit est nul quand l'un
+de ses facteurs est nul : on écrit \og premier facteur $=0$ ou second facteur
+$=0$\fg.}{méthode 5 du cours}
+\cas{a)}
 \begin{calculs}
-x-1 &= 0 \quad\text{ou}\quad x+7=0\\
-x &= 1 \quad\text{ou}\quad x=-7
+(x-1)(x+7) &= 0 &&\justif{on recopie}\\
+x-1 &= 0 \quad\text{ou}\quad x+7=0 &&\justif{un des facteurs est nul}\\
+x &= 1 \quad\text{ou}\quad x=-7 &&
 \end{calculs}
-\deux{a) \res{S=\ens{-7\,;1}}}{b) \res{S=\ens{-5\,;-2}}}
-\deux{c) \res{S=\ens{3\,;8}}}{d) \res{S=\ens{-4\,;0}}}
+\explique{$\res{S=\ens{-7\,;1}}$.}{solutions rangées dans l'ordre croissant}
+\cas{b)}
+\begin{calculs}
+(x+2)(x+5) &= 0 &&\justif{on recopie}\\
+x+2 &= 0 \quad\text{ou}\quad x+5=0 &&\justif{un des facteurs est nul}\\
+x &= -2 \quad\text{ou}\quad x=-5 &&
+\end{calculs}
+\explique{$\res{S=\ens{-5\,;-2}}$.}{$-5$ est plus petit que $-2$}
+\cas{c)}
+\begin{calculs}
+(x-3)(x-8) &= 0 &&\justif{on recopie}\\
+x-3 &= 0 \quad\text{ou}\quad x-8=0 &&\\
+x &= 3 \quad\text{ou}\quad x=8 &&
+\end{calculs}
+\explique{$\res{S=\ens{3\,;8}}$.}{}
+\cas{d)}
+\begin{calculs}
+x(x+4) &= 0 &&\justif{les deux facteurs sont $x$ et $x+4$}\\
+x &= 0 \quad\text{ou}\quad x+4=0 &&\\
+x &= 0 \quad\text{ou}\quad x=-4 &&
+\end{calculs}
+\explique{$\res{S=\ens{-4\,;0}}$.}{}
+\rem{Repère rapide : dans $(x-1)$, la solution est $1$ ; dans $(x+7)$, c'est $-7$. Le
+signe change.}
+\rem{Contrôle : on remplace $x$ par la solution, une parenthèse doit valoir $0$. Pour
+$x=-7$ : $x+7=0$.}
 \end{exo}
 
 \begin{exo}[Des coefficients devant $x$]
+\explique{Même méthode ; chaque facteur donne une petite équation du premier degré, à
+résoudre jusqu'au bout.}{méthode 5 du cours}
+\cas{a)}
 \begin{calculs}
-2x-4 &= 0 \quad\text{ou}\quad x+3=0\\
-x &= 2 \quad\text{ou}\quad x=-3
+(2x-4)(x+3) &= 0 &&\justif{on recopie}\\
+2x-4 &= 0 \quad\text{ou}\quad x+3=0 &&\justif{un des facteurs est nul}\\
+2x &= 4 \quad\text{ou}\quad x=-3 &&\\
+x &= 2 \quad\text{ou}\quad x=-3 &&\justif{$4\div 2=2$}
 \end{calculs}
-\deux{a) \res{S=\ens{-3\,;2}}}{b) \res{S=\ens{-3\,;5}}}
-\deux{c) \res{S=\ens{-4\,;3}}}{d) \res{S=\ens{2\,;6}}}
-\deux{e) \res{S=\ens{-1\,;5}}}{}
-\rem{d) $-x+6=0$ donne $x=6$ ; e) $-2x=-10$ donne $x=5$.}
+\explique{$\res{S=\ens{-3\,;2}}$.}{}
+\cas{b)}
+\begin{calculs}
+(3x+9)(x-5) &= 0 &&\justif{on recopie}\\
+3x+9 &= 0 \quad\text{ou}\quad x-5=0 &&\\
+3x &= -9 \quad\text{ou}\quad x=5 &&\justif{on retranche $9$}\\
+x &= -3 \quad\text{ou}\quad x=5 &&\justif{$-9\div 3=-3$}
+\end{calculs}
+\explique{$\res{S=\ens{-3\,;5}}$.}{}
+\cas{c)}
+\begin{calculs}
+(5x-15)(2x+8) &= 0 &&\justif{on recopie}\\
+5x-15 &= 0 \quad\text{ou}\quad 2x+8=0 &&\\
+5x &= 15 \quad\text{ou}\quad 2x=-8 &&\\
+x &= 3 \quad\text{ou}\quad x=-4 &&\justif{$15\div 5=3$ et $-8\div 2=-4$}
+\end{calculs}
+\explique{$\res{S=\ens{-4\,;3}}$.}{}
+\cas{d)}
+\begin{calculs}
+(-x+6)(4x-8) &= 0 &&\justif{on recopie}\\
+-x+6 &= 0 \quad\text{ou}\quad 4x-8=0 &&\\
+6 &= x \quad\text{ou}\quad 4x=8 &&\justif{on fait passer $-x$ à droite}\\
+x &= 6 \quad\text{ou}\quad x=2 &&
+\end{calculs}
+\explique{$\res{S=\ens{2\,;6}}$.}{}
+\cas{e)}
+\begin{calculs}
+(-2x+10)(3x+3) &= 0 &&\justif{on recopie}\\
+-2x+10 &= 0 \quad\text{ou}\quad 3x+3=0 &&\\
+-2x &= -10 \quad\text{ou}\quad 3x=-3 &&\\
+x &= 5 \quad\text{ou}\quad x=-1 &&\justif{$-10\div(-2)=5$ et $-3\div 3=-1$}
+\end{calculs}
+\explique{$\res{S=\ens{-1\,;5}}$.}{}
+\rem{Avec un coefficient devant $x$, on ne lit plus la solution \og en changeant le
+signe\fg{} : $2x-4=0$ donne $x=2$, pas $x=4$.}
+\rem{Contrôle de e) : pour $x=5$, $-2\times 5+10=0$ ; pour $x=-1$, $3\times(-1)+3=0$.}
 \end{exo}
 
 \begin{exo}[Factoriser par $x$ d'abord]
+\explique{$x^{2}-4x$ est une somme, pas un produit : on ne peut pas encore utiliser le
+produit nul. Mais $x$ est dans les deux termes ($x^{2}=x\times x$) : on le met en
+facteur.}{méthode 5 du cours}
+\cas{a)}
 \begin{calculs}
-x^{2}-4x &= 0\\
-x(x-4) &= 0\\
-x &= 0 \quad\text{ou}\quad x=4
+x^{2}-4x &= 0 &&\justif{on recopie ; ce n'est pas encore un produit}\\
+x(x-4) &= 0 &&\justif{$x^{2}=x\times x$ et $4x=x\times 4$}\\
+x &= 0 \quad\text{ou}\quad x-4=0 &&\justif{un des facteurs est nul}\\
+x &= 0 \quad\text{ou}\quad x=4 &&
 \end{calculs}
-\deux{a) \res{S=\ens{0\,;4}}}{b) $x(x+6)=0$ : \res{S=\ens{-6\,;0}}}
-\deux{c) $x(3x-9)=0$ : \res{S=\ens{0\,;3}}}{d) $x(2x+10)=0$ : \res{S=\ens{-5\,;0}}}
-e) $x^{2}-7x=0$ soit $x(x-7)=0$ : \res{S=\ens{0\,;7}}
-\rem{e) Diviser par $x$ ferait perdre la solution $0$.}
+\explique{$\res{S=\ens{0\,;4}}$.}{}
+\cas{b)}
+\begin{calculs}
+x^{2}+6x &= 0 &&\justif{on recopie}\\
+x(x+6) &= 0 &&\justif{on factorise par $x$}\\
+x &= 0 \quad\text{ou}\quad x+6=0 &&\\
+x &= 0 \quad\text{ou}\quad x=-6 &&
+\end{calculs}
+\explique{$\res{S=\ens{-6\,;0}}$.}{}
+\cas{c)}
+\begin{calculs}
+3x^{2}-9x &= 0 &&\justif{on recopie}\\
+x(3x-9) &= 0 &&\justif{$3x^{2}=x\times 3x$ et $9x=x\times 9$}\\
+x &= 0 \quad\text{ou}\quad 3x-9=0 &&\\
+x &= 0 \quad\text{ou}\quad x=3 &&\justif{$3x=9$}
+\end{calculs}
+\explique{$\res{S=\ens{0\,;3}}$.}{}
+\cas{d)}
+\begin{calculs}
+2x^{2}+10x &= 0 &&\justif{on recopie}\\
+x(2x+10) &= 0 &&\justif{on factorise par $x$}\\
+x &= 0 \quad\text{ou}\quad 2x+10=0 &&\\
+x &= 0 \quad\text{ou}\quad x=-5 &&\justif{$2x=-10$}
+\end{calculs}
+\explique{$\res{S=\ens{-5\,;0}}$.}{}
+\cas{e)}
+\begin{calculs}
+x^{2} &= 7x &&\justif{on recopie}\\
+x^{2}-7x &= 0 &&\justif{on retranche $7x$ : tout passe à gauche}\\
+x(x-7) &= 0 &&\justif{on factorise par $x$}\\
+x &= 0 \quad\text{ou}\quad x-7=0 &&\\
+x &= 0 \quad\text{ou}\quad x=7 &&
+\end{calculs}
+\explique{$\res{S=\ens{0\,;7}}$.}{contrôle : $7^{2}=49$ et $7\times 7=49$}
+\rem{Contrôle de la factorisation : on redéveloppe, $x(x-4)=x^{2}-4x$.}
+\rem{Piège en e) : diviser les deux membres par $x$ donne $x=7$ et fait perdre la solution
+$0$. On ne divise jamais par $x$ : on factorise.}
 \end{exo}
 
 \partie{Fonction polynôme du second degré}
 
 \begin{exo}[Reconnaître, lire $a$, $b$ et $c$]
-\deux{$f$ : \res{a=2\,;\ b=5\,;\ c=-1}}{$g$ : \res{a=-1\,;\ b=0\,;\ c=3}}
-\deux{$h$ : \res{\text{pas du 2\textsuperscript{d} degré}}}{$k$ : \res{a=-1\,;\ b=4\,;\ c=0}}
-\deux{$m$ : \res{a=1\,;\ b=0\,;\ c=0}}{$p$ : \res{a=3\,;\ b=-2\,;\ c=6}}
-\rem{On lit chaque coefficient avec son signe, même si les termes sont dans le
-désordre ($k$, $p$).}
+\explique{Une fonction est du second degré si elle s'écrit $ax^{2}+bx+c$ avec $a\ne 0$ :
+il faut un terme en $x^{2}$. On range les termes dans cet ordre, puis on lit chaque
+coefficient \textbf{avec son signe}.}{méthode 6 du cours}
+\cas{$f$}
+\explique{$f(x)=2x^{2}+5x-1$ : \res{a=2} ; \res{b=5} ; \res{c=-1}.}{déjà rangée ; $c$
+garde son signe $-$}
+\cas{$g$}
+\explique{$g(x)=-x^{2}+3$ : \res{a=-1} ; \res{b=0} ; \res{c=3}.}{$-x^{2}=-1\times x^{2}$ ;
+pas de terme en $x$ : $b=0$}
+\cas{$h$}
+\explique{$h(x)=7x-2$ n'a pas de terme en $x^{2}$ : $h$ \res{n'est pas du second degré}
+(c'est une fonction affine).}{sa courbe est une droite}
+\cas{$k$}
+\explique{On range : $k(x)=-x^{2}+4x$, donc \res{a=-1} ; \res{b=4} ;
+\res{c=0}.}{pas de nombre seul : $c=0$}
+\cas{$m$}
+\explique{$m(x)=x^{2}=1x^{2}+0x+0$ : \res{a=1} ; \res{b=0} ; \res{c=0}.}{$x^{2}$, c'est
+$1\times x^{2}$}
+\cas{$p$}
+\explique{On range : $p(x)=3x^{2}-2x+6$, donc \res{a=3} ; \res{b=-2} ;
+\res{c=6}.}{chaque terme garde son signe en changeant de place}
+\rem{Erreur fréquente : lire les coefficients dans l'ordre où ils sont écrits. Pour $p$,
+$a$ n'est pas $6$ : $a$ est toujours le nombre devant $x^{2}$.}
 \end{exo}
 
 \begin{exo}[Calculer des images]
+\explique{Pour calculer une image, on remplace $x$ par le nombre, \emph{entre
+parenthèses} s'il est négatif ; on calcule d'abord les carrés, puis les produits, puis
+les sommes.}{méthode 6 du cours}
+\cas{1.}
 \begin{calculs}
-f(-2) &= (-2)^{2}-3\times(-2)+2\\
-f(-2) &= 4+6+2\\
-f(-2) &= 12
+f(0) &= 0^{2}-3\times 0+2 &&\justif{on remplace $x$ par $0$}\\
+f(0) &= \res{2} &&
 \end{calculs}
-1\textdegree) $f(0)=\res{2}$ ; $f(1)=\res{0}$ ; $f(-1)=\res{6}$ ; $f(3)=\res{2}$ ;
-$f(-2)=\res{12}$.\par
-2\textdegree) $g(0)=\res{5}$ ; $g(2)=-8+2+5=\res{-1}$ ; $g(-1)=-2-1+5=\res{2}$.
-\rem{$(-1)^{2}=1$, donc $-2\times(-1)^{2}=-2$.}
+\begin{calculs}
+f(1) &= 1^{2}-3\times 1+2 &&\justif{on remplace $x$ par $1$}\\
+f(1) &= 1-3+2 = \res{0} &&
+\end{calculs}
+\begin{calculs}
+f(-1) &= (-1)^{2}-3\times(-1)+2 &&\justif{on remplace $x$ par $(-1)$}\\
+f(-1) &= 1+3+2 = \res{6} &&\justif{$(-1)^{2}=1$ et $-3\times(-1)=+3$}
+\end{calculs}
+\begin{calculs}
+f(3) &= 3^{2}-3\times 3+2 &&\justif{on remplace $x$ par $3$}\\
+f(3) &= 9-9+2 = \res{2} &&
+\end{calculs}
+\begin{calculs}
+f(-2) &= (-2)^{2}-3\times(-2)+2 &&\justif{on remplace $x$ par $(-2)$}\\
+f(-2) &= 4+6+2 = \res{12} &&\justif{$(-2)^{2}=4$ et $-3\times(-2)=+6$}
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+g(0) &= -2\times 0^{2}+0+5 &&\justif{on remplace $x$ par $0$}\\
+g(0) &= \res{5} &&
+\end{calculs}
+\begin{calculs}
+g(2) &= -2\times 2^{2}+2+5 &&\justif{on remplace $x$ par $2$}\\
+g(2) &= -8+2+5 = \res{-1} &&\justif{$2^{2}=4$, puis $-2\times 4=-8$}
+\end{calculs}
+\begin{calculs}
+g(-1) &= -2\times(-1)^{2}+(-1)+5 &&\justif{on remplace $x$ par $(-1)$}\\
+g(-1) &= -2-1+5 = \res{2} &&\justif{$(-1)^{2}=1$, puis $-2\times 1=-2$}
+\end{calculs}
+\rem{Erreur fréquente : calculer $-2\times(-1)$ avant le carré, et trouver $+2$. Le carré
+passe d'abord : $(-1)^{2}=1$, puis $-2\times 1=-2$.}
+\rem{L'image de $0$ est toujours le nombre $c$ : $f(0)=2$ et $g(0)=5$.}
 \end{exo}
 
 \begin{exo}[Sur la courbe ou non ?]
-\deux{$f(1)=0$ : $A$ \res{\text{oui}}}{$f(-1)=-4$ : $B$ \res{\text{non}}}
-\deux{$f(2)=5$ : $C$ \res{\text{oui}}}{$f(-3)=0$ : $D$ \res{\text{oui}}}
-\deux{$f(0)=-3$ : $E$ \res{\text{non}}}{}
+\explique{Un point est sur la courbe de $f$ quand son ordonnée est égale à l'image de son
+abscisse. On calcule donc $f(\text{abscisse})$ et on compare à
+l'ordonnée.}{méthode 6 du cours}
+\cas{$A(1\,;0)$}
+\begin{calculs}
+f(1) &= 1^{2}+2\times 1-3 &&\justif{on remplace $x$ par l'abscisse $1$}\\
+f(1) &= 1+2-3 = 0 &&
+\end{calculs}
+\explique{$f(1)=0$, l'ordonnée de $A$ : $A$ \res{est sur} la courbe.}{}
+\cas{$B(-1\,;-2)$}
+\begin{calculs}
+f(-1) &= (-1)^{2}+2\times(-1)-3 &&\justif{on remplace $x$ par $(-1)$}\\
+f(-1) &= 1-2-3 = -4 &&
+\end{calculs}
+\explique{$-4\ne -2$ : $B$ \res{n'est pas} sur la courbe.}{le point de la courbe
+d'abscisse $-1$ est $(-1\,;-4)$}
+\cas{$C(2\,;5)$}
+\begin{calculs}
+f(2) &= 2^{2}+2\times 2-3 &&\\
+f(2) &= 4+4-3 = 5 &&
+\end{calculs}
+\explique{$f(2)=5$ : $C$ \res{est sur} la courbe.}{}
+\cas{$D(-3\,;0)$}
+\begin{calculs}
+f(-3) &= (-3)^{2}+2\times(-3)-3 &&\\
+f(-3) &= 9-6-3 = 0 &&\justif{$(-3)^{2}=9$}
+\end{calculs}
+\explique{$f(-3)=0$ : $D$ \res{est sur} la courbe.}{}
+\cas{$E(0\,;3)$}
+\explique{$f(0)=-3$ et $-3\ne 3$ : $E$ \res{n'est pas} sur la courbe.}{$f(0)=c=-3$}
+\rem{On ne remplace que $x$ : c'est l'abscisse (le premier nombre) qui entre dans le
+calcul, l'ordonnée sert à comparer.}
 \end{exo}
 
 \begin{exo}[Distance d'arrêt]
-\begin{questions}
-  \item $d(v)=v^{2}+3v$ a un terme en $v^{2}$ : \res{a=1\,;\ b=3\,;\ c=0}.
-  \item $d(3)=\res{18}$ ; $d(5)=\res{40}$ ; $d(9)=\res{108}$. À $50$~km/h, la voiture
-        s'arrête en $40$~m.
-  \item $d(6)=36+18=\res{54}$ : la distance est multipliée par $3$, elle ne
-        \res{\text{double pas}}.
-\end{questions}
+\cas{1.}
+\explique{$d(v)=v^{2}+3v$ est de la forme $av^{2}+bv+c$ avec un terme en $v^{2}$ : $d$
+est du second degré, avec \res{a=1} ; \res{b=3} ; \res{c=0}.}{ici la variable s'appelle
+$v$ au lieu de $x$ ; pas de nombre seul : $c=0$}
+\cas{2.}
+\begin{calculs}
+d(3) &= 3^{2}+3\times 3 &&\justif{on remplace $v$ par $3$}\\
+d(3) &= 9+9 = \res{18} &&
+\end{calculs}
+\begin{calculs}
+d(5) &= 5^{2}+3\times 5 &&\justif{on remplace $v$ par $5$}\\
+d(5) &= 25+15 = \res{40} &&
+\end{calculs}
+\begin{calculs}
+d(9) &= 9^{2}+3\times 9 &&\justif{on remplace $v$ par $9$}\\
+d(9) &= 81+27 = \res{108} &&
+\end{calculs}
+\explique{Interprétation : à $50$~km/h, la voiture a besoin de $40$~m pour
+s'arrêter.}{$v=5$ correspond à $50$~km/h ; $d$ est en mètres}
+\cas{3.}
+\begin{calculs}
+d(6) &= 6^{2}+3\times 6 &&\justif{$60$~km/h : $v=6$}\\
+d(6) &= 36+18 = \res{54} &&
+\end{calculs}
+\explique{À $30$~km/h, $d(3)=18$~m ; le double serait $36$~m. Or $d(6)=54$~m : la
+distance d'arrêt \res{ne double pas}, elle est multipliée par $3$.}{$54\div 18=3$}
+\rem{Ce n'est pas une situation de proportionnalité : à cause du terme en $v^{2}$,
+doubler la vitesse fait bien plus que doubler la distance.}
 \end{exo}
 
 \partie{Forme factorisée et racines}
 
 \begin{exo}[Vérifier une forme factorisée]
+\explique{\og Vérifier\fg{} : on part de la forme factorisée, la plus compliquée, on la
+développe, et on doit retrouver l'autre expression. On développe d'abord les deux
+parenthèses, puis on multiplie par le nombre devant.}{méthode 7 du cours}
+\cas{a)}
 \begin{calculs}
-(x-2)(x+4) &= x^{2}+4x-2x-8\\
-(x-2)(x+4) &= x^{2}+2x-8 &&\justif{on retrouve $f(x)$}\\[3pt]
-3(x+2)(x-3) &= 3\left(x^{2}-3x+2x-6\right)\\
-3(x+2)(x-3) &= 3x^{2}-3x-18\\[3pt]
--(x-1)(x-5) &= -\left(x^{2}-6x+5\right)\\
--(x-1)(x-5) &= -x^{2}+6x-5\\[3pt]
-2(x-2)(x+2) &= 2\left(x^{2}-4\right)\\
-2(x-2)(x+2) &= 2x^{2}-8
+(x-2)(x+4) &= x\times x+x\times 4+(-2)\times x+(-2)\times 4 &&\justif{quatre produits}\\
+(x-2)(x+4) &= x^{2}+4x-2x-8 &&\\
+(x-2)(x+4) &= x^{2}+2x-8 &&\justif{$4x-2x=2x$}
 \end{calculs}
-\rem{On part de la forme factorisée, la plus compliquée, et on retrouve l'autre.}
+\explique{On retrouve $f(x)$ : l'égalité est \res{vraie}.}{}
+\cas{b)}
+\begin{calculs}
+3(x+2)(x-3) &= 3\left(x^{2}-3x+2x-6\right) &&\justif{d'abord les deux parenthèses}\\
+3(x+2)(x-3) &= 3\left(x^{2}-x-6\right) &&\justif{$-3x+2x=-x$}\\
+3(x+2)(x-3) &= 3x^{2}-3x-18 &&\justif{puis $3$ multiplie chaque terme}
+\end{calculs}
+\explique{On retrouve $g(x)$ : l'égalité est \res{vraie}.}{}
+\cas{c)}
+\begin{calculs}
+-(x-1)(x-5) &= -\left(x^{2}-5x-x+5\right) &&\justif{d'abord les deux parenthèses}\\
+-(x-1)(x-5) &= -\left(x^{2}-6x+5\right) &&\justif{$(-1)\times(-5)=+5$}\\
+-(x-1)(x-5) &= -x^{2}+6x-5 &&\justif{le $-$ devant change tous les signes}
+\end{calculs}
+\explique{On retrouve $h(x)$ : l'égalité est \res{vraie}.}{}
+\cas{d)}
+\begin{calculs}
+2(x-2)(x+2) &= 2\left(x^{2}-2^{2}\right) &&\justif{$(a-b)(a+b)=a^{2}-b^{2}$, avec $a=x$
+et $b=2$}\\
+2(x-2)(x+2) &= 2\left(x^{2}-4\right) &&\\
+2(x-2)(x+2) &= 2x^{2}-8 &&\justif{$2$ multiplie chaque terme}
+\end{calculs}
+\explique{On retrouve $k(x)$ : l'égalité est \res{vraie}.}{}
+\rem{Erreur fréquente : multiplier le nombre devant dans les \emph{deux} parenthèses,
+$3(x+2)(x-3)=(3x+6)(3x-9)$. Le $3$ ne multiplie qu'une seule fois : on le garde devant
+et on le distribue à la fin.}
 \end{exo}
 
 \begin{exo}[Lire les racines]
-\deux{$f$ : \res{3} et \res{-1}}{$g$ : \res{-5} et \res{2}}
-\deux{$h$ : \res{4} et \res{6}}{$k$ : \res{0} et \res{7}}
-\deux{$m$ : \res{-2} et \res{-8}}{}
-\rem{Dans $(x+5)$, la racine est $-5$ : on change le signe.}
+\explique{Les racines sont les solutions de $f(x)=0$. Sur une forme factorisée, chaque
+racine annule une parenthèse ; le nombre devant les parenthèses n'est jamais
+nul.}{propriété 6 du cours}
+\cas{$f$}
+\explique{$x-3=0$ ou $x+1=0$ : les racines de $f$ sont \res{-1} et
+\res{3}.}{dans $(x+1)$, la racine est $-1$}
+\cas{$g$}
+\explique{$x+5=0$ ou $x-2=0$ : les racines de $g$ sont \res{-5} et \res{2}.}{le $2$
+devant ne change pas les racines}
+\cas{$h$}
+\explique{$x-4=0$ ou $x-6=0$ : les racines de $h$ sont \res{4} et \res{6}.}{le signe $-$
+devant ne change pas les racines}
+\cas{$k$}
+\explique{$5x=0$ ou $x-7=0$ : les racines de $k$ sont \res{0} et \res{7}.}{$5x=0$ donne
+$x=0$}
+\cas{$m$}
+\explique{$x+2=0$ ou $x+8=0$ : les racines de $m$ sont \res{-8} et \res{-2}.}{deux
+racines négatives}
+\rem{Erreur fréquente : garder le signe de la parenthèse. Dans $(x+5)$, la racine est
+$-5$ : on vérifie que $-5+5=0$.}
+\rem{Le nombre devant les parenthèses ($2$, $-1$, $5$, $-3$) n'est pas une racine.}
 \end{exo}
 
 \begin{exo}[Points sur les axes]
-\begin{questions}
-  \item $(x+2)(x-3)=x^{2}-3x+2x-6=x^{2}-x-6$.
-  \item $x+2=0$ ou $x-3=0$ : racines \res{-2} et \res{3}.
-  \item \res{(-2\,;0)} et \res{(3\,;0)}.
-  \item $f(0)=-6$ : la courbe coupe l'axe des ordonnées en \res{(0\,;-6)}.
-\end{questions}
+\cas{1.}
+\begin{calculs}
+(x+2)(x-3) &= x\times x+x\times(-3)+2\times x+2\times(-3) &&\justif{quatre produits}\\
+(x+2)(x-3) &= x^{2}-3x+2x-6 &&\\
+(x+2)(x-3) &= x^{2}-x-6 &&\justif{$-3x+2x=-x$}
+\end{calculs}
+\explique{On retrouve $f(x)$ : donc \res{f(x)=(x+2)(x-3)}.}{on part de la forme
+factorisée}
+\cas{2.}
+\begin{calculs}
+(x+2)(x-3) &= 0 &&\justif{on résout $f(x)=0$ avec la forme factorisée}\\
+x+2 &= 0 \quad\text{ou}\quad x-3=0 &&\justif{produit nul}\\
+x &= -2 \quad\text{ou}\quad x=3 &&
+\end{calculs}
+\explique{Les racines de $f$ sont \res{-2} et \res{3}.}{}
+\cas{3.}
+\explique{La courbe coupe l'axe des abscisses aux points \res{(-2\,;0)} et
+\res{(3\,;0)}.}{sur l'axe des abscisses, l'ordonnée est nulle}
+\cas{4.}
+\begin{calculs}
+f(0) &= 0^{2}-0-6 &&\justif{la forme développée est la plus simple ici}\\
+f(0) &= -6 &&
+\end{calculs}
+\explique{La courbe coupe l'axe des ordonnées au point \res{(0\,;-6)}.}{sur l'axe des
+ordonnées, l'abscisse est nulle ; $f(0)=c$}
+\rem{Chaque forme a son usage : la forme factorisée donne les racines, la forme développée
+donne $f(0)=c$.}
 \end{exo}
 
 \partie{Représentation graphique}
 
 \begin{exo}[Tableau de valeurs et tracé]
-{\centering\small
-\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{4pt}
+\explique{On calcule chaque image en remplaçant $x$, on place les points (en croix), puis
+on les relie par une courbe arrondie, sans règle.}{méthode 8 du cours}
+\cas{a)}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\begin{calculs}
+f(-1) &= 1+4+3 = 8 &&\justif{$(-1)^{2}=1$ et $-4\times(-1)=+4$}\\
+f(0) &= 0-0+3 = 3 &&\\
+f(1) &= 1-4+3 = 0 &&\\
+f(2) &= 4-8+3 = -1 &&\\
+f(3) &= 9-12+3 = 0 &&\\
+f(4) &= 16-16+3 = 3 &&\\
+f(5) &= 25-20+3 = 8 &&
+\end{calculs}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.3}
 \begin{tabular}{|c|*{7}{c|}}
 \hline
 $x$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
 \hline
 $f(x)$ & $8$ & $3$ & $0$ & $-1$ & $0$ & $3$ & $8$\\
 \hline
-\end{tabular}\par\smallskip
+\end{tabular}
+\end{center}
+\explique{$a=1>0$ : la courbe est tournée vers le haut.}{contrôle de l'allure}
+\explique{Sommet \res{S(2\,;-1)} ; axe de symétrie : la droite verticale qui passe par
+\res{x=2}.}{le point le plus bas ; les valeurs se répètent de part et d'autre de $2$}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-2}{-2}{6}{9}
+  \gradx{-1,1,2,3,4,5} \grady{2,4,6,8}
+  \draw[red,dashed,thick] (2,-2)--(2,9);
+  \draw[coulCourbe,line width=1.1pt,domain=-1:5,samples=60] plot (\x,{\x*\x-4*\x+3});
+  \foreach \p in {(-1,8),(0,3),(1,0),(2,-1),(3,0),(4,3),(5,8)}
+    \path[coulCourbe] \p node[croix]{};
+  \node[below right,font=\footnotesize,inner sep=2pt] at (2,-1) {$S$};
+  \node[coulCourbe,font=\footnotesize] at (5.5,6.5) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\begin{calculs}
+g(-2) &= -4-4+3 = -5 &&\justif{$-(-2)^{2}=-4$ et $2\times(-2)=-4$}\\
+g(-1) &= -1-2+3 = 0 &&\justif{$-(-1)^{2}=-1$}\\
+g(0) &= 0+0+3 = 3 &&\\
+g(1) &= -1+2+3 = 4 &&\\
+g(2) &= -4+4+3 = 3 &&\\
+g(3) &= -9+6+3 = 0 &&\\
+g(4) &= -16+8+3 = -5 &&
+\end{calculs}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.3}
 \begin{tabular}{|c|*{7}{c|}}
 \hline
 $x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\
 \hline
 $g(x)$ & $-5$ & $0$ & $3$ & $4$ & $3$ & $0$ & $-5$\\
 \hline
-\end{tabular}\par}
-\smallskip
-\begin{minipage}[t]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
-  \repere{-2}{-2}{6}{9}
-  \gradx{2,4} \grady{2,4,6,8}
-  \draw[coulCourbe,line width=1pt,domain=-1:5,samples=60] plot (\x,{\x*\x-4*\x+3});
-  \foreach \p in {(-1,8),(0,3),(1,0),(2,-1),(3,0),(4,3),(5,8)}
-    \path[coulCourbe] \p node[croix]{};
-\end{tikzpicture}\par
-{\small a) $S(2\,;-1)$, axe $x=2$}
+\end{tabular}
+\end{center}
+\explique{$a=-1<0$ : la courbe est tournée vers le bas.}{contrôle de l'allure}
+\explique{Sommet \res{S(1\,;4)} ; axe de symétrie : la droite verticale qui passe par
+\res{x=1}.}{le point le plus haut}
 \end{minipage}\hfill
-\begin{minipage}[t]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+\begin{minipage}[t]{0.38\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
   \repere{-3}{-6}{5}{5}
-  \gradx{-2,2,4} \grady{-4,-2,2,4}
-  \draw[coulCourbe,line width=1pt,domain=-2:4,samples=60] plot (\x,{-\x*\x+2*\x+3});
+  \gradx{-2,-1,1,2,3,4} \grady{-4,-2,2,4}
+  \draw[red,dashed,thick] (1,-6)--(1,5);
+  \draw[coulCourbe,line width=1.1pt,domain=-2:4,samples=60] plot (\x,{-\x*\x+2*\x+3});
   \foreach \p in {(-2,-5),(-1,0),(0,3),(1,4),(2,3),(3,0),(4,-5)}
     \path[coulCourbe] \p node[croix]{};
-\end{tikzpicture}\par
-{\small b) $S(1\,;4)$, axe $x=1$}
+  \node[above right,font=\footnotesize,inner sep=2pt] at (1,4) {$S$};
+  \node[coulCourbe,font=\footnotesize] at (4.3,-3) {$\mathcal{C}_{g}$};
+\end{tikzpicture}
 \end{minipage}
-\rem{Les valeurs se répètent de part et d'autre du sommet : c'est un contrôle.}
+\rem{Erreur fréquente : $-x^{2}$ pour $x=-2$ vaut $-(-2)^{2}=-4$, pas $+4$. On fait le
+carré d'abord, puis on met le signe $-$.}
+\rem{Les valeurs égales de part et d'autre du sommet ($f(1)=f(3)$, $g(0)=g(2)$) servent
+de contrôle : si la symétrie n'y est pas, un calcul est faux.}
 \end{exo}
 
 \begin{exo}[Associer une fonction à sa courbe]
-$g$ et $k$ ont $a<0$ (courbes tournées vers le bas) : $g(0)=4$, donc
-$g\to\res{\mathcal{C}_{1}}$ ; $k(0)=-1$, donc $k\to\res{\mathcal{C}_{4}}$.\par
-$f$ et $h$ ont $a>0$ : $f(0)=-3$, donc $f\to\res{\mathcal{C}_{3}}$ ; $h(0)=0$, donc
-$h\to\res{\mathcal{C}_{2}}$.
-\rem{Deux indices suffisent : le signe de $a$ et le point $(0\,;c)$.}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\explique{Premier indice, le signe de $a$ : $g$ et $k$ ont $a=-1<0$, leurs courbes sont
+tournées vers le bas ($\mathcal{C}_{1}$ et $\mathcal{C}_{4}$). $f$ et $h$ ont $a>0$,
+leurs courbes sont tournées vers le haut ($\mathcal{C}_{2}$ et $\mathcal{C}_{3}$).}{la
+propriété 7 du cours}
+\explique{Second indice, le point $(0\,;c)$ sur l'axe des ordonnées, car
+$f(0)=c$.}{méthode 9 du cours}
+\explique{$g(0)=4$ : $g$ correspond à $\res{\mathcal{C}_{1}}$, qui passe par
+$(0\,;4)$.}{}
+\explique{$k(0)=-1$ : $k$ correspond à $\res{\mathcal{C}_{4}}$, qui passe par
+$(0\,;-1)$.}{}
+\explique{$f(0)=-3$ : $f$ correspond à $\res{\mathcal{C}_{3}}$, qui passe par
+$(0\,;-3)$.}{}
+\explique{$h(0)=0$ : $h$ correspond à $\res{\mathcal{C}_{2}}$, qui passe par
+l'origine.}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-5}{4}{5}
+  \gradx{-3,-2,-1,1,2,3} \grady{-4,-2,2,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:3,samples=60] plot (\x,{-\x*\x+4});
+  \draw[coulCourbeB,line width=1.1pt,domain=-1.58:1.58,samples=60] plot (\x,{2*\x*\x});
+  \draw[coulCourbeC,line width=1.1pt,domain=-2.8:2.8,samples=60] plot (\x,{\x*\x-3});
+  \draw[black!70,line width=1.1pt,domain=-2:2,samples=60] plot (\x,{-\x*\x-1});
+  \foreach \y in {4,0,-3,-1} \path (0,\y) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-3.4,-4.3) {$\mathcal{C}_{1}$};
+  \node[coulCourbeB,font=\footnotesize,fill=white,inner sep=1pt] at (2.1,4.6) {$\mathcal{C}_{2}$};
+  \node[coulCourbeC,font=\footnotesize,fill=white,inner sep=1pt] at (3.4,4.3) {$\mathcal{C}_{3}$};
+  \node[black!70,font=\footnotesize,fill=white,inner sep=1pt] at (-2.6,-3.3) {$\mathcal{C}_{4}$};
+\end{tikzpicture}
+\end{minipage}
+\rem{Deux indices suffisent : le signe de $a$ partage les courbes en deux groupes, puis
+le point $(0\,;c)$ les distingue dans chaque groupe.}
 \end{exo}
 
 \begin{exo}[Lire une parabole]
-\begin{questions}
-  \item Vers le \res{\text{haut}} ; cohérent : $a=1>0$.
-  \item Sommet \res{S(-1\,;-4)} ; axe : la droite verticale qui passe par \res{x=-1}.
-  \item Racines \res{-3} et \res{1}.
-  \item Points d'ordonnée $-3$ : \res{S=\ens{-2\,;0}}.
-  \item $f(0)=\res{-3}$ : le point $(0\,;-3)$, sur l'axe des ordonnées.
-\end{questions}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\cas{1.}
+\explique{La parabole est tournée vers le \res{haut}. C'est cohérent : $f(x)=x^{2}+2x-3$
+a pour coefficient $a=1>0$.}{$a>0$ : vers le haut}
+\cas{2.}
+\explique{Le sommet est le point le plus bas : \res{S(-1\,;-4)}.}{contrôle :
+$f(-1)=1-2-3=-4$}
+\explique{L'axe de symétrie est la droite verticale qui passe par
+\res{x=-1}.}{elle passe par le sommet}
+\cas{3.}
+\explique{La courbe coupe l'axe des abscisses en $x=-3$ et $x=1$ : les racines de $f$
+sont \res{-3} et \res{1}.}{contrôle : $f(1)=0$ et $f(-3)=9-6-3=0$}
+\cas{4.}
+\explique{On trace la droite horizontale d'ordonnée $-3$ ; elle coupe la courbe en deux
+points, d'abscisses $-2$ et $0$ : $\res{S=\ens{-2\,;0}}$.}{les solutions sont des
+abscisses}
+\cas{5.}
+\begin{calculs}
+f(0) &= 0^{2}+2\times 0-3 &&\justif{on remplace $x$ par $0$}\\
+f(0) &= \res{-3} &&
+\end{calculs}
+\explique{C'est le point $(0\,;-3)$, où la courbe coupe l'axe des ordonnées ; c'est l'un
+des deux points de la question 4.}{$f(0)=c$}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-5}{-5}{3}{6}
+  \gradx{-4,-3,-2,-1,1,2} \grady{-4,-3,-2,-1,1,2,3,4,5}
+  \draw[red,dashed,thick] (-1,-5)--(-1,6);
+  \draw[coulExo,thick] (-5,-3)--(3,-3);
+  \draw[coulCourbe,line width=1.1pt,domain=-4:2,samples=60] plot (\x,{\x*\x+2*\x-3});
+  \draw[densely dotted,thick] (-2,-3)--(-2,0);
+  \foreach \p in {(-1,-4),(-3,0),(1,0),(-2,-3),(0,-3)}
+    \path \p node[croix]{};
+  \node[below right,font=\footnotesize,inner sep=2pt] at (-1,-4) {$S$};
+  \node[coulExo,font=\footnotesize,above] at (-4.2,-3) {$y=-3$};
+  \node[coulCourbe,font=\footnotesize] at (2.4,4) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\rem{Résoudre graphiquement $f(x)=-3$ : on cherche les points de la courbe
+d'\emph{ordonnée} $-3$, et on donne leurs \emph{abscisses}.}
 \end{exo}
 
 \partie{Tableaux de variations}
 
 \begin{exo}[Sommet et tableau de variations]
-a) Racines $2$ et $6$ ; $x_{S}=\dfrac{2+6}{2}=4$ ; $f(4)=2\times(-2)=-4$ :
-\res{S(4\,;-4)}, minimum ($a=1>0$).
+\explique{On lit les racines sur la forme factorisée ; le sommet est au milieu des
+racines : $x_{S}=\dfrac{x_{1}+x_{2}}{2}$, et son ordonnée est $f(x_{S})$. Le signe de
+$a$, le nombre devant les parenthèses, donne le sens du tableau.}{méthode 10 du cours}
+\cas{a)}
+\explique{Racines de $f$ : $2$ et $6$.}{on annule chaque parenthèse}
+\begin{calculs}
+x_{S} &= \dfrac{2+6}{2} &&\justif{le milieu des racines}\\
+x_{S} &= 4 &&\\
+f(4) &= (4-2)\times(4-6) &&\justif{on remplace $x$ par $4$ dans la forme factorisée}\\
+f(4) &= 2\times(-2) = -4 &&
+\end{calculs}
+\explique{Sommet \res{S(4\,;-4)}.}{}
+\explique{Pas de nombre devant les parenthèses : $a=1>0$. $f$ diminue, puis augmente ;
+son minimum est $-4$.}{tournée vers le haut}
 \varmin{f(x)}{4}{-4}
-b) Racines $-1$ et $3$ ; $x_{S}=1$ ; $g(1)=-2\times 2\times(-2)=8$ : \res{S(1\,;8)},
-maximum ($a=-2<0$).
+\cas{b)}
+\explique{Racines de $g$ : $-1$ et $3$.}{dans $(x+1)$, la racine est $-1$}
+\begin{calculs}
+x_{S} &= \dfrac{-1+3}{2} &&\justif{le milieu des racines}\\
+x_{S} &= 1 &&\\
+g(1) &= -2\times(1+1)\times(1-3) &&\justif{on remplace $x$ par $1$}\\
+g(1) &= -2\times 2\times(-2) = 8 &&\justif{deux signes $-$ : le produit est positif}
+\end{calculs}
+\explique{Sommet \res{S(1\,;8)}.}{}
+\explique{$a=-2<0$ : $g$ augmente, puis diminue ; son maximum est $8$.}{tournée vers le
+bas}
 \varmax{g(x)}{1}{8}
-c) Racines $-4$ et $-2$ ; $x_{S}=-3$ ; $h(-3)=3\times 1\times(-1)=-3$ :
-\res{S(-3\,;-3)}, minimum.
+\cas{c)}
+\explique{Racines de $h$ : $-4$ et $-2$.}{deux racines négatives}
+\begin{calculs}
+x_{S} &= \dfrac{-4+(-2)}{2} &&\justif{le milieu des racines}\\
+x_{S} &= \dfrac{-6}{2} = -3 &&\\
+h(-3) &= 3\times(-3+4)\times(-3+2) &&\justif{on remplace $x$ par $(-3)$}\\
+h(-3) &= 3\times 1\times(-1) = -3 &&
+\end{calculs}
+\explique{Sommet \res{S(-3\,;-3)}.}{}
+\explique{$a=3>0$ : $h$ diminue, puis augmente ; son minimum est $-3$.}{tournée vers le
+haut}
 \varmin{h(x)}{-3}{-3}
-d) Racines $5$ et $-1$ ; $x_{S}=2$ ; $k(2)=-(-3)\times 3=9$ : \res{S(2\,;9)},
-maximum.
+\cas{d)}
+\explique{Racines de $k$ : $5$ et $-1$.}{}
+\begin{calculs}
+x_{S} &= \dfrac{5+(-1)}{2} &&\justif{le milieu des racines}\\
+x_{S} &= \dfrac{4}{2} = 2 &&\\
+k(2) &= -(2-5)\times(2+1) &&\justif{on remplace $x$ par $2$}\\
+k(2) &= -(-3)\times 3 = 9 &&\justif{$-(-3)=3$, puis $3\times 3=9$}
+\end{calculs}
+\explique{Sommet \res{S(2\,;9)}.}{}
+\explique{$a=-1<0$ : $k$ augmente, puis diminue ; son maximum est $9$.}{le signe $-$
+devant les parenthèses, c'est $a=-1$}
 \varmax{k(x)}{2}{9}
-\rem{$a$ est le nombre devant les parenthèses : dans $-(x-5)(x+1)$, $a=-1$.}
+\rem{$a$ est le nombre devant les parenthèses : dans $-(x-5)(x+1)$, $a=-1$ ; sans
+nombre devant, $a=1$.}
+\rem{Contrôle du sens : avec $a>0$, la valeur du sommet est la plus petite (souvent
+négative) ; avec $a<0$, la plus grande.}
 \end{exo}
 
 \begin{exo}[Factoriser d'abord]
-a) $x(x-6)=0$ : racines $0$ et $6$ ; $x_{S}=3$ ; $f(3)=9-18=-9$ : \res{S(3\,;-9)},
-minimum.
+\explique{Les fonctions sont données sous forme développée : pour trouver les racines, on
+résout $f(x)=0$ en factorisant par $x$ (ou, en d), avec la méthode
+$x^{2}=a$).}{méthodes 5 et 10 du cours}
+\cas{a)}
+\begin{calculs}
+x^{2}-6x &= 0 &&\justif{les racines : on résout $f(x)=0$}\\
+x(x-6) &= 0 &&\justif{on factorise par $x$}\\
+x &= 0 \quad\text{ou}\quad x=6 &&\justif{produit nul}
+\end{calculs}
+\begin{calculs}
+x_{S} &= \dfrac{0+6}{2} = 3 &&\justif{le milieu des racines}\\
+f(3) &= 3^{2}-6\times 3 &&\justif{la forme développée suffit}\\
+f(3) &= 9-18 = -9 &&
+\end{calculs}
+\explique{Sommet \res{S(3\,;-9)} ; $a=1>0$ : minimum $-9$.}{tournée vers le haut}
 \varmin{f(x)}{3}{-9}
-b) $x(-x+10)=0$ : racines $0$ et $10$ ; $x_{S}=5$ ; $g(5)=-25+50=25$ :
-\res{S(5\,;25)}, maximum.
+\cas{b)}
+\begin{calculs}
+-x^{2}+10x &= 0 &&\justif{les racines}\\
+x(-x+10) &= 0 &&\justif{on factorise par $x$ : $-x^{2}=x\times(-x)$}\\
+x &= 0 \quad\text{ou}\quad -x+10=0 &&\\
+x &= 0 \quad\text{ou}\quad x=10 &&
+\end{calculs}
+\begin{calculs}
+x_{S} &= \dfrac{0+10}{2} = 5 &&\justif{le milieu des racines}\\
+g(5) &= -5^{2}+10\times 5 &&\justif{$-5^{2}=-25$ : le carré, puis le signe}\\
+g(5) &= -25+50 = 25 &&
+\end{calculs}
+\explique{Sommet \res{S(5\,;25)} ; $a=-1<0$ : maximum $25$.}{tournée vers le bas}
 \varmax{g(x)}{5}{25}
-c) $x(2x+8)=0$ : racines $0$ et $-4$ ; $x_{S}=-2$ ; $h(-2)=8-16=-8$ :
-\res{S(-2\,;-8)}, minimum.
+\cas{c)}
+\begin{calculs}
+2x^{2}+8x &= 0 &&\justif{les racines}\\
+x(2x+8) &= 0 &&\justif{on factorise par $x$}\\
+x &= 0 \quad\text{ou}\quad 2x+8=0 &&\\
+x &= 0 \quad\text{ou}\quad x=-4 &&\justif{$2x=-8$}
+\end{calculs}
+\begin{calculs}
+x_{S} &= \dfrac{-4+0}{2} = -2 &&\justif{le milieu des racines}\\
+h(-2) &= 2\times(-2)^{2}+8\times(-2) &&\justif{on remplace $x$ par $(-2)$}\\
+h(-2) &= 8-16 = -8 &&\justif{$(-2)^{2}=4$, puis $2\times 4=8$}
+\end{calculs}
+\explique{Sommet \res{S(-2\,;-8)} ; $a=2>0$ : minimum $-8$.}{tournée vers le haut}
 \varmin{h(x)}{-2}{-8}
-d) $x^{2}=9$ : racines $-3$ et $3$ ; $x_{S}=0$ ; $k(0)=-9$ : \res{S(0\,;-9)},
-minimum.
+\cas{d)}
+\begin{calculs}
+x^{2}-9 &= 0 &&\justif{les racines ; pas de $x$ en facteur ici}\\
+x^{2} &= 9 &&\justif{on isole $x^{2}$}\\
+x &= -3 \quad\text{ou}\quad x=3 &&\justif{$9>0$ et $9=3^{2}$}
+\end{calculs}
+\begin{calculs}
+x_{S} &= \dfrac{-3+3}{2} = 0 &&\justif{le milieu des racines}\\
+k(0) &= 0^{2}-9 = -9 &&
+\end{calculs}
+\explique{Sommet \res{S(0\,;-9)} ; $a=1>0$ : minimum $-9$.}{tournée vers le haut}
 \varmin{k(x)}{0}{-9}
+\rem{On peut aussi factoriser $k(x)$ avec l'identité $a^{2}-b^{2}$ :
+$x^{2}-9=(x-3)(x+3)$, et lire les racines $-3$ et $3$.}
+\rem{Contrôle de la factorisation par $x$ : on redéveloppe, $x(-x+10)=-x^{2}+10x$.}
 \end{exo}
 
 \begin{exo}[Maximum ou minimum ?]
-\begin{questions}
-  \item $f$ : $a=4>0$, $x_{S}=2$, $f(2)=4\times 1\times(-1)$ : minimum \res{-4} en $2$.\par
-        $g$ : $a=-1<0$, $x_{S}=-1$, $g(-1)=-2\times(-2)$ : maximum \res{4} en $-1$.\par
-        $h$ : $a=-5<0$, $x_{S}=1$, $h(1)=-5\times 1\times(-1)$ : maximum \res{5} en $1$.
-  \item $f(0)=4\times(-1)\times(-3)=\res{12}$ ; $f(4)=4\times 3\times 1=\res{12}$.
-        \varint{f(x)}{$0$,$2$,$4$}{+/$12$,-/$-4$,+/$12$}
-\end{questions}
+\cas{1.}
+\explique{Pour $f(x)=4(x-1)(x-3)$ : racines $1$ et $3$, donc
+$x_{S}=\dfrac{1+3}{2}=2$.}{le milieu des racines}
+\begin{calculs}
+f(2) &= 4\times(2-1)\times(2-3) &&\justif{on remplace $x$ par $2$}\\
+f(2) &= 4\times 1\times(-1) = -4 &&
+\end{calculs}
+\explique{$a=4>0$ : $f$ admet un \res{minimum, égal à $-4$}, atteint en
+$x=2$.}{tournée vers le haut}
+\explique{Pour $g(x)=-(x+3)(x-1)$ : racines $-3$ et $1$, donc
+$x_{S}=\dfrac{-3+1}{2}=-1$.}{}
+\begin{calculs}
+g(-1) &= -(-1+3)\times(-1-1) &&\justif{on remplace $x$ par $(-1)$}\\
+g(-1) &= -2\times(-2) = 4 &&
+\end{calculs}
+\explique{$a=-1<0$ : $g$ admet un \res{maximum, égal à $4$}, atteint en
+$x=-1$.}{tournée vers le bas}
+\explique{Pour $h(x)=-5x(x-2)$ : racines $0$ et $2$, donc
+$x_{S}=\dfrac{0+2}{2}=1$.}{$-5x=0$ donne $x=0$}
+\begin{calculs}
+h(1) &= -5\times 1\times(1-2) &&\justif{on remplace $x$ par $1$}\\
+h(1) &= -5\times(-1) = 5 &&
+\end{calculs}
+\explique{$a=-5<0$ : $h$ admet un \res{maximum, égal à $5$}, atteint en
+$x=1$.}{tournée vers le bas}
+\cas{2.}
+\begin{calculs}
+f(0) &= 4\times(0-1)\times(0-3) &&\justif{on remplace $x$ par $0$}\\
+f(0) &= 4\times(-1)\times(-3) = \res{12} &&\justif{deux signes $-$ : positif}
+\end{calculs}
+\begin{calculs}
+f(4) &= 4\times(4-1)\times(4-3) &&\justif{on remplace $x$ par $4$}\\
+f(4) &= 4\times 3\times 1 = \res{12} &&
+\end{calculs}
+\explique{Entre $0$ et $4$, $f$ diminue de $12$ à $-4$ (en $x=2$), puis augmente
+jusqu'à $12$.}{les valeurs aux bouts, puis le sommet}
+\varint{f(x)}{$0$,$2$,$4$}{+/$12$,-/$-4$,+/$12$}
+\rem{$f(0)=f(4)$ : c'est normal, $0$ et $4$ sont à la même distance du sommet $x=2$
+(symétrie de la parabole).}
 \end{exo}
 
 \partie{Problèmes type épreuve anticipée}
 
 \begin{exo}[Un food truck]
-\begin{questions}
-  \item $B(0)=\res{-20}$ : sans aucun repas vendu, la journée coûte $200$~€.
-  \item \begin{calculs}
-        -(x-2)(x-10) &= -\left(x^{2}-12x+20\right)\\
-        -(x-2)(x-10) &= -x^{2}+12x-20
-        \end{calculs}
-  \item $x=2$ ou $x=10$ : bénéfice nul pour \res{20} ou \res{100} repas.
-  \item $x_{S}=6$ ; $B(6)=-(4)\times(-4)=16$ ; $B(12)=-(10)\times 2=-20$.
-        \varint{B(x)}{$0$,$6$,$12$}{-/$-20$,+/$16$,-/$-20$}
-  \item Bénéfice maximal \res{160\text{ €}} pour \res{60} repas.
-\end{questions}
-\rem{Penser aux unités : $x$ en dizaines de repas, $B(x)$ en dizaines d'euros.}
+\explique{On garde en tête les unités : $x$ compte des \emph{dizaines} de repas, $B(x)$
+des \emph{dizaines} d'euros.}{méthode 11 du cours}
+\cas{1.}
+\begin{calculs}
+B(0) &= -0^{2}+12\times 0-20 &&\justif{on remplace $x$ par $0$}\\
+B(0) &= \res{-20} &&
+\end{calculs}
+\explique{Si le food truck ne vend aucun repas, il perd $20$ dizaines d'euros, soit
+$200$~€ : ce sont les frais de la journée.}{$B(0)<0$ : une perte}
+\cas{2.}
+\begin{calculs}
+-(x-2)(x-10) &= -\left(x^{2}-10x-2x+20\right) &&\justif{d'abord les deux parenthèses}\\
+-(x-2)(x-10) &= -\left(x^{2}-12x+20\right) &&\justif{$(-2)\times(-10)=+20$}\\
+-(x-2)(x-10) &= -x^{2}+12x-20 &&\justif{le $-$ devant change tous les signes}
+\end{calculs}
+\explique{On retrouve $B(x)$ : donc $B(x)=-(x-2)(x-10)$.}{on part de la forme donnée}
+\cas{3.}
+\begin{calculs}
+-(x-2)(x-10) &= 0 &&\justif{bénéfice nul : on résout $B(x)=0$}\\
+x-2 &= 0 \quad\text{ou}\quad x-10=0 &&\justif{produit nul}\\
+x &= 2 \quad\text{ou}\quad x=10 &&
+\end{calculs}
+\explique{Le bénéfice est nul pour \res{20} ou \res{100} repas.}{$x=2$ : $2$ dizaines de
+repas}
+\cas{4.}
+\begin{calculs}
+x_{S} &= \dfrac{2+10}{2} = 6 &&\justif{le milieu des racines}\\
+B(6) &= -(6-2)\times(6-10) &&\justif{forme factorisée}\\
+B(6) &= -4\times(-4) = 16 &&\\
+B(12) &= -(12-2)\times(12-10) &&\justif{la valeur au bout de l'intervalle}\\
+B(12) &= -10\times 2 = -20 &&
+\end{calculs}
+\explique{$a=-1<0$ : $B$ augmente de $0$ à $6$, puis diminue de $6$ à $12$.}{tournée
+vers le bas ; $B(0)=-20$ (question 1)}
+\varint{B(x)}{$0$,$6$,$12$}{-/$-20$,+/$16$,-/$-20$}
+\cas{5.}
+\explique{Le bénéfice maximal est de $16$ dizaines d'euros, soit \res{160~€}, pour $6$
+dizaines de repas, soit \res{60~repas}.}{on revient aux unités de l'énoncé}
+\rem{Erreur fréquente : répondre \og $16$~€ pour $6$ repas\fg. On relit l'énoncé pour
+convertir les dizaines.}
 \end{exo}
 
 \begin{exo}[Une balle lancée d'une falaise]
-\begin{questions}
-  \item $h(0)=\res{15}$ : la balle part de $15$~m, le haut de la falaise.
-  \item \begin{calculs}
-        -5(t+1)(t-3) &= -5\left(t^{2}-3t+t-3\right)\\
-        -5(t+1)(t-3) &= -5\left(t^{2}-2t-3\right)\\
-        -5(t+1)(t-3) &= -5t^{2}+10t+15
-        \end{calculs}
-  \item $t=-1$ ou $t=3$ ; un temps est positif : l'eau au bout de \res{3\text{ s}}.
-  \item $t_{S}=\dfrac{-1+3}{2}=1$ ; $h(1)=-5\times 2\times(-2)=20$.
-        \varint{h(t)}{$0$,$1$,$3$}{-/$15$,+/$20$,-/$0$}
-  \item \res{20\text{ m}} au bout de \res{1\text{ s}}.
-\end{questions}
+\cas{1.}
+\begin{calculs}
+h(0) &= -5\times 0^{2}+10\times 0+15 &&\justif{on remplace $t$ par $0$}\\
+h(0) &= \res{15} &&
+\end{calculs}
+\explique{Au départ ($t=0$), la balle est à $15$~m au-dessus de la mer : c'est la hauteur
+de la falaise.}{$h(0)$ : la hauteur au départ}
+\cas{2.}
+\begin{calculs}
+-5(t+1)(t-3) &= -5\left(t^{2}-3t+t-3\right) &&\justif{d'abord les deux parenthèses}\\
+-5(t+1)(t-3) &= -5\left(t^{2}-2t-3\right) &&\justif{$-3t+t=-2t$}\\
+-5(t+1)(t-3) &= -5t^{2}+10t+15 &&\justif{$-5$ multiplie chaque terme}
+\end{calculs}
+\explique{On retrouve $h(t)$ : donc $h(t)=-5(t+1)(t-3)$.}{$(-5)\times(-3)=+15$}
+\cas{3.}
+\begin{calculs}
+-5(t+1)(t-3) &= 0 &&\justif{dans l'eau, la hauteur est nulle : $h(t)=0$}\\
+t+1 &= 0 \quad\text{ou}\quad t-3=0 &&\justif{produit nul ; $-5$ n'est jamais nul}\\
+t &= -1 \quad\text{ou}\quad t=3 &&
+\end{calculs}
+\explique{Un temps est positif : la balle touche l'eau au bout de \res{3~secondes}.}{on
+rejette $t=-1$}
+\cas{4.}
+\begin{calculs}
+t_{S} &= \dfrac{-1+3}{2} = 1 &&\justif{le milieu des racines, même avec $-1$}\\
+h(1) &= -5\times(1+1)\times(1-3) &&\justif{forme factorisée}\\
+h(1) &= -5\times 2\times(-2) = 20 &&
+\end{calculs}
+\explique{$h(0)=15$ et $h(3)=0$ ; $a=-5<0$ : $h$ augmente de $0$ à $1$, puis diminue de
+$1$ à $3$.}{tournée vers le bas}
+\varint[t]{h(t)}{$0$,$1$,$3$}{-/$15$,+/$20$,-/$0$}
+\cas{5.}
+\explique{La balle atteint sa hauteur maximale, \res{20~m}, au bout de \res{1~seconde}.}{le
+maximum du tableau}
+\rem{La racine $-1$ n'a pas de sens pour la balle (un temps négatif), mais elle sert
+quand même à trouver le sommet : le milieu de $-1$ et $3$.}
 \end{exo}
 
 \begin{exo}[Le plus grand enclos]
-\begin{questions}
-  \item Deux côtés voisins font la moitié du périmètre, $20$~m : l'autre côté mesure
-        \res{15\text{ m}}, l'aire \res{75\text{ m}^{2}}.
-  \item De même, l'autre côté mesure $20-x$ et l'aire est $A(x)=x(20-x)$.
-  \item $A(x)=\res{-x^{2}+20x}$ ; racines \res{0} et \res{20}.
-  \item $x_{S}=10$ ; $A(10)=10\times 10=100$.
-        \varint{A(x)}{$0$,$10$,$20$}{-/$0$,+/$100$,-/$0$}
-  \item Un carré de \res{10\text{ m}} de côté : \res{100\text{ m}^{2}}.
-\end{questions}
+\cas{1.}
+\explique{Le périmètre, $40$~m, fait deux longueurs et deux largeurs : deux côtés voisins
+font la moitié, $20$~m.}{$40\div 2=20$}
+\explique{Si $x=5$, l'autre côté mesure $20-5=\res{15~m}$, et l'aire vaut
+$5\times 15=\res{75~m^{2}}$.}{aire d'un rectangle : longueur $\times$ largeur}
+\cas{2.}
+\explique{Comme au 1., deux côtés voisins font $20$~m : si l'un mesure $x$, l'autre
+mesure $20-x$.}{on remplace $5$ par $x$}
+\explique{L'aire est le produit des deux côtés : $A(x)=x(20-x)$.}{}
+\cas{3.}
+\begin{calculs}
+A(x) &= x(20-x) &&\justif{on recopie}\\
+A(x) &= x\times 20+x\times(-x) &&\justif{$x$ multiplie chaque terme}\\
+A(x) &= 20x-x^{2} &&\\
+A(x) &= \res{-x^{2}+20x} &&\justif{on range}
+\end{calculs}
+\begin{calculs}
+x(20-x) &= 0 &&\justif{les racines : la forme factorisée sert ici}\\
+x &= 0 \quad\text{ou}\quad 20-x=0 &&\justif{produit nul}\\
+x &= 0 \quad\text{ou}\quad x=20 &&
+\end{calculs}
+\explique{Les racines de $A$ sont \res{0} et \res{20}.}{un côté nul : l'enclos est
+aplati, son aire est nulle}
+\cas{4.}
+\begin{calculs}
+x_{S} &= \dfrac{0+20}{2} = 10 &&\justif{le milieu des racines}\\
+A(10) &= 10\times(20-10) &&\\
+A(10) &= 10\times 10 = 100 &&
+\end{calculs}
+\explique{$a=-1<0$ : $A$ augmente de $0$ à $10$, puis diminue de $10$ à $20$.}{tournée
+vers le bas ; $A(0)=A(20)=0$}
+\varint{A(x)}{$0$,$10$,$20$}{-/$0$,+/$100$,-/$0$}
+\cas{5.}
+\explique{L'aire est la plus grande pour $x=10$ : l'autre côté mesure aussi $20-10=10$~m.
+C'est un \res{carré de $10$~m de côté}, d'aire \res{100~m^{2}}.}{on donne les deux
+dimensions}
 \end{exo}
 
 \partiesansnum{Exercices type épreuve anticipée}
 
 \begin{exo}[Automatismes (QCM)]
-\deux{1. \res{\text{b}}\; ($4x=8$)}{2. \res{\text{b}}}
-\deux{3. \res{\text{b}}}{4. \res{\text{b}}\; ($x=2$ ou $x=-4$)}
-\deux{5. \res{\text{a}}\; ($4-6+1=-1$)}{6. \res{\text{b}}\; ($a<0$, milieu de $1$ et $5$)}
+\cas{1.}
+\begin{calculs}
+6x+1 &= 2x+9 &&\justif{on recopie}\\
+6x-2x &= 9-1 &&\justif{les $x$ à gauche, les nombres à droite}\\
+4x &= 8 &&\\
+x &= 2 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{Réponse \res{b)}.}{contrôle : $6\times 2+1=13$ et $2\times 2+9=13$}
+\cas{2.}
+\begin{calculs}
+(x+3)^{2} &= x^{2}+2\times x\times 3+3^{2} &&\justif{$(a+b)^{2}$, avec $a=x$ et $b=3$}\\
+(x+3)^{2} &= x^{2}+6x+9 &&
+\end{calculs}
+\explique{Réponse \res{b)}.}{a) oublie le double produit}
+\cas{3.}
+\explique{$7>0$ : deux solutions, $-\sqrt{7}$ et $\sqrt{7}$. Réponse \res{b)}.}{c)
+oublie la solution négative ; d) divise $7$ par $2$}
+\cas{4.}
+\begin{calculs}
+(3x-6)(x+4) &= 0 &&\justif{on recopie}\\
+3x-6 &= 0 \quad\text{ou}\quad x+4=0 &&\justif{produit nul}\\
+x &= 2 \quad\text{ou}\quad x=-4 &&\justif{$3x=6$}
+\end{calculs}
+\explique{$S=\ens{-4\,;2}$ : réponse \res{b)}.}{d) oublie de diviser par $3$}
+\cas{5.}
+\begin{calculs}
+y &= 2^{2}-3\times 2+1 &&\justif{on remplace $x$ par $2$}\\
+y &= 4-6+1 = -1 &&
+\end{calculs}
+\explique{Le point est $(2\,;-1)$ : réponse \res{a)}.}{}
+\cas{6.}
+\explique{$a=-2<0$ : la parabole est tournée vers le bas, donc $f$ admet un
+\emph{maximum}.}{on élimine a) et d)}
+\explique{Racines $1$ et $5$ : le sommet est en $x_{S}=\dfrac{1+5}{2}=3$. Réponse
+\res{b)}.}{le milieu des racines}
 \end{exo}
 
 \begin{exo}[Une épidémie de grippe]
-\begin{questions}
-  \item $f(2)=\res{12}$ : $1\,200$ malades à la semaine $2$.
-  \item Pic à la semaine \res{4}, avec \res{1\,600} malades.
-  \item $f(1)=-1+8=\res{7}$ : $700$ malades au bout d'une semaine.
-  \item $-x(x-8)=-x^{2}+8x$. Racines $0$ et $8$ : l'épidémie s'arrête au bout de
-        \res{8} semaines.
-  \item $x_{S}=4$ ; $f(4)=-4\times(-4)=16$, soit \res{1\,600} malades.
-        \varint{f(x)}{$0$,$4$,$8$}{-/$0$,+/$16$,-/$0$}
-\end{questions}
+\begin{minipage}[t]{0.5\linewidth}\raggedright
+\cas{1.}
+\explique{Sur la courbe, le point d'abscisse $2$ a pour ordonnée $12$ : $f(2)=\res{12}$.}{on
+monte de $x=2$ jusqu'à la courbe}
+\explique{Deux semaines après le début de l'épidémie, il y a $12$ centaines de malades,
+soit \res{1\,200~malades}.}{$f(x)$ compte des centaines}
+\cas{2.}
+\explique{Le point le plus haut de la courbe est $(4\,;16)$ : le pic a lieu à la
+semaine \res{4}, avec $16$ centaines, soit \res{1\,600~malades}.}{le sommet de la
+parabole}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.6cm,y=0.2cm]
+  \draw[grille,xstep=1,ystep=2] (0,0) grid (9,18);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(9.4,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,19.2) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \foreach \i in {1,...,8} {\draw (\i,0.3)--(\i,-0.3) node[below,font=\scriptsize,inner sep=1.5pt]{$\i$};}
+  \foreach \v in {2,4,...,16} {\draw (0.07,\v)--(-0.07,\v) node[left,font=\scriptsize,inner sep=1.5pt]{$\v$};}
+  \draw[coulCourbe,line width=1.1pt,domain=0:8,samples=60] plot (\x,{-\x*\x+8*\x});
+  \draw[densely dotted,thick] (2,0)--(2,12)--(0,12);
+  \draw[densely dotted,thick] (4,0)--(4,16)--(0,16);
+  \path (2,12) node[croix]{} (4,16) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (7.6,11) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\cas{3.}
+\begin{calculs}
+f(1) &= -1^{2}+8\times 1 &&\justif{on remplace $x$ par $1$ ; $-1^{2}=-1$}\\
+f(1) &= -1+8 = \res{7} &&
+\end{calculs}
+\explique{Une semaine après le début de l'épidémie, il y a \res{700~malades}.}{$7$
+centaines}
+\cas{4.}
+\begin{calculs}
+-x(x-8) &= (-x)\times x+(-x)\times(-8) &&\justif{$-x$ multiplie chaque terme}\\
+-x(x-8) &= -x^{2}+8x &&\justif{$(-x)\times(-8)=+8x$}
+\end{calculs}
+\explique{On retrouve $f(x)$ : donc $f(x)=-x(x-8)$.}{}
+\begin{calculs}
+-x(x-8) &= 0 &&\justif{plus de malades : $f(x)=0$}\\
+-x &= 0 \quad\text{ou}\quad x-8=0 &&\justif{produit nul}\\
+x &= 0 \quad\text{ou}\quad x=8 &&
+\end{calculs}
+\explique{$x=0$ est le début de l'épidémie : elle s'arrête au bout de
+\res{8~semaines}.}{on interprète chaque solution}
+\cas{5.}
+\begin{calculs}
+x_{S} &= \dfrac{0+8}{2} = 4 &&\justif{le milieu des racines}\\
+f(4) &= -4\times(4-8) &&\justif{forme factorisée}\\
+f(4) &= -4\times(-4) = 16 &&
+\end{calculs}
+\explique{$a=-1<0$ : $f$ augmente de $0$ à $4$, puis diminue de $4$ à
+$8$.}{$f(0)=f(8)=0$}
+\varint{f(x)}{$0$,$4$,$8$}{-/$0$,+/$16$,-/$0$}
+\explique{Au pic, il y a $16$ centaines de malades, soit \res{1\,600~malades} : on
+retrouve la lecture de la question 2.}{le calcul confirme le graphique}
 \end{exo}
 
 \begin{exo}[Le prix d'une place de théâtre]
-\begin{questions}
-  \item $200-80=\res{120}$ spectateurs ; recette $8\times 120=\res{960\text{ €}}$.
-  \item \begin{calculs}
-        200-10x &= 150\\
-        -10x &= -50\\
-        x &= 5
-        \end{calculs}
-        Une place à \res{5\text{ €}}.
-  \item Recette = prix $\times$ spectateurs $=x(200-10x)$, puis
-        $R(x)=200x-10x^{2}=-10x^{2}+200x$.
-  \item $x=0$ ou $200-10x=0$ : racines \res{0} et \res{20}. Places gratuites ou
-        plus aucun spectateur à $20$~€ : recette nulle.
-  \item $x_{S}=10$ ; $R(10)=10\times 100=1\,000$.
-        \varint{R(x)}{$0$,$10$,$20$}{-/$0$,+/$1\,000$,-/$0$}
-  \item Place à \res{10\text{ €}} : recette maximale \res{1\,000\text{ €}}.
-\end{questions}
+\cas{1.}
+\begin{calculs}
+200-10\times 8 &= 200-80 &&\justif{on remplace $x$ par $8$}\\
+200-10\times 8 &= 120 &&
+\end{calculs}
+\explique{La troupe prévoit \res{120~spectateurs}. La recette est
+$8\times 120=\res{960~€}$.}{recette : prix d'une place $\times$ nombre de spectateurs}
+\cas{2.}
+\begin{calculs}
+200-10x &= 150 &&\justif{nombre de spectateurs égal à $150$}\\
+-10x &= 150-200 &&\justif{on retranche $200$}\\
+-10x &= -50 &&\\
+x &= 5 &&\justif{on divise par $-10$}
+\end{calculs}
+\explique{Une place à \res{5~€} donne $150$ spectateurs.}{contrôle : $200-50=150$}
+\cas{3.}
+\explique{Recette $=$ prix d'une place $\times$ nombre de spectateurs, donc
+$R(x)=x(200-10x)$.}{comme au 1., avec $x$ au lieu de $8$}
+\begin{calculs}
+R(x) &= x(200-10x) &&\justif{on recopie}\\
+R(x) &= x\times 200+x\times(-10x) &&\justif{$x$ multiplie chaque terme}\\
+R(x) &= 200x-10x^{2} &&\\
+R(x) &= -10x^{2}+200x &&\justif{on range}
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+x(200-10x) &= 0 &&\justif{on résout $R(x)=0$ avec la forme factorisée}\\
+x &= 0 \quad\text{ou}\quad 200-10x=0 &&\justif{produit nul}\\
+x &= 0 \quad\text{ou}\quad x=20 &&\justif{$10x=200$}
+\end{calculs}
+\explique{Les racines de $R$ sont \res{0} et \res{20}.}{}
+\explique{Pour $x=0$, les places sont gratuites : la recette est nulle. Pour $x=20$, la
+troupe ne prévoit plus aucun spectateur ($200-200=0$) : la recette est nulle
+aussi.}{on interprète chaque racine}
+\cas{5.}
+\begin{calculs}
+x_{S} &= \dfrac{0+20}{2} = 10 &&\justif{le milieu des racines}\\
+R(10) &= 10\times(200-10\times 10) &&\justif{forme factorisée}\\
+R(10) &= 10\times 100 = 1\,000 &&
+\end{calculs}
+\explique{$a=-10<0$ : $R$ augmente de $0$ à $10$, puis diminue de $10$ à
+$20$.}{tournée vers le bas}
+\varint{R(x)}{$0$,$10$,$20$}{-/$0$,+/$1\,000$,-/$0$}
+\cas{6.}
+\explique{La recette est la plus grande pour une place à \res{10~€} : elle vaut alors
+\res{1\,000~€} ($100$ spectateurs).}{le maximum du tableau}
+\rem{Un prix trop bas rapporte peu par place ; un prix trop haut fait fuir les
+spectateurs : le meilleur prix est entre les deux.}
 \end{exo}
 
 \end{document}

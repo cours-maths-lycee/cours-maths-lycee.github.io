@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,671 +189,2544 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
-\entete{Chapitre 4 --- Calcul littéral --- Corrigé des exercices}{Seconde}
+\entete{Chapitre 4 --- Calcul littéral --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
 
-\let\deuxpaquet\deux
-\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
-\clubpenalty=10000
-\widowpenalty=10000
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- CALCUL LITTÉRAL}
-  {Chapitre 4 : fiche d'exercices --- Seconde}
-  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
-   fréquentes et les méthodes à retenir. Chaque équation se termine par l'ensemble $S$
-   des solutions.}
+\entetefiche{Chapitre 4 --- Calcul littéral}{Seconde}
 
 \partie{Réduire, substituer}
 
 \begin{exo}[Réduire une somme]
-\deux{$A=\res{14a}$}{$B=\res{7a+6}$}
-\deux{$C=\res{11a^{2}+3}$}{$D=\res{7a^{2}+6a}$}
-\deux{$E=\res{2m}$}{$F=\res{-13m}$}
-\deux{$G=\res{-3m^{2}+3m}$}{$H=\res{-7m^{2}}$}
-\deux{$K=\res{7n^{2}+6n+6}$}{$L=\res{4n^{2}+7n}$}
-$M=\res{-4n^{2}-7n-3}$
-\rem{Dans $B$, le $6$ reste seul : on n'écrit pas $13a$.}
+\explique{Pour réduire une somme, on rapproche les termes semblables (même partie
+littérale : les $a$ ensemble, les $a^{2}$ ensemble, les nombres ensemble), avec le
+signe placé devant eux, puis on additionne leurs nombres.}{méthode 1 du cours}
+\cas{A}
+\begin{calculs}
+A &= 7a+5a+2a &&\justif{on recopie : trois termes en $a$}\\
+A &= (7+5+2)a &&\justif{on additionne les nombres devant $a$}\\
+A &= \res{14a} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 6+2a+5a &&\justif{on recopie}\\
+B &= 6+7a &&\justif{$2a+5a=7a$ ; le $6$ n'a pas de terme semblable}\\
+B &= \res{7a+6} &&\justif{on écrit d'habitude les termes en $a$ d'abord}
+\end{calculs}
+\rem{Erreur fréquente : écrire $B=13a$. Le nombre $6$ et les $a$ ne sont pas semblables :
+$6+7a$ reste une somme de deux termes.}
+\cas{C}
+\begin{calculs}
+C &= 4a^{2}+3+7a^{2} &&\justif{on recopie}\\
+C &= 4a^{2}+7a^{2}+3 &&\justif{on rapproche les $a^{2}$}\\
+C &= \res{11a^{2}+3} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 6a+3a^{2}+4a^{2} &&\justif{on recopie}\\
+D &= 3a^{2}+4a^{2}+6a &&\justif{les $a^{2}$ ensemble ; $6a$ n'est pas semblable à $a^{2}$}\\
+D &= \res{7a^{2}+6a} &&\justif{on s'arrête : $7a^{2}$ et $6a$ ne se regroupent pas}
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 9m-12m+5m &&\justif{on recopie}\\
+E &= (9-12+5)m &&\justif{de gauche à droite : $9-12=-3$, puis $-3+5=2$}\\
+E &= \res{2m} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= -6m-3m-4m &&\justif{trois termes négatifs}\\
+F &= (-6-3-4)m &&\justif{on ajoute les distances à zéro : $6+3+4=13$}\\
+F &= \res{-13m} &&\justif{on garde le signe moins}
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 3m-8m^{2}+5m^{2} &&\justif{on recopie}\\
+G &= -8m^{2}+5m^{2}+3m &&\justif{les $m^{2}$ avec leur signe}\\
+G &= \res{-3m^{2}+3m} &&\justif{$-8+5=-3$}
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= -6m^{2}+4m^{2}-5m^{2} &&\justif{trois termes semblables}\\
+H &= (-6+4-5)m^{2} &&\justif{$-6+4=-2$, puis $-2-5=-7$}\\
+H &= \res{-7m^{2}} &&
+\end{calculs}
+\cas{K}
+\begin{calculs}
+K &= 3n^{2}+6n-5+4n^{2}+3+8 &&\justif{on recopie}\\
+K &= 3n^{2}+4n^{2}+6n-5+3+8 &&\justif{les $n^{2}$, puis les $n$, puis les nombres}\\
+K &= \res{7n^{2}+6n+6} &&\justif{$-5+3+8=6$}
+\end{calculs}
+\cas{L}
+\begin{calculs}
+L &= 4+5n-3n^{2}+7n^{2}+2n-4 &&\justif{on recopie}\\
+L &= -3n^{2}+7n^{2}+5n+2n+4-4 &&\justif{on rapproche les termes semblables}\\
+L &= \res{4n^{2}+7n} &&\justif{$4-4=0$ : il n'y a plus de nombre seul}
+\end{calculs}
+\cas{M}
+\begin{calculs}
+M &= -7n^{2}+6-4n+3n^{2}-3n-9 &&\justif{on recopie}\\
+M &= -7n^{2}+3n^{2}-4n-3n+6-9 &&\justif{chaque terme garde le signe écrit devant lui}\\
+M &= \res{-4n^{2}-7n-3} &&\justif{$-7+3=-4$ ; $-4-3=-7$ ; $6-9=-3$}
+\end{calculs}
+\rem{Contrôle rapide : on remplace la lettre par $1$ dans l'expression de départ et dans le
+résultat. Pour $M$ : $-7+6-4+3-3-9=-14$ et $-4-7-3=-14$.}
 \end{exo}
 
 \begin{exo}[Réduire un produit]
-\deux{$A=\res{24x}$}{$B=\res{15x^{2}}$}
-\deux{$C=\res{14x^{2}}$}{$D=\res{15x^{2}}$}
-\deux{$E=\res{-12x^{2}}$}{$F=\res{-30x}$}
-\deux{$G=\res{-14x^{2}}$}{$H=\res{18x^{2}}$}
-\deux{$K=\res{-12x^{2}}$}{$L=\res{10x^{2}}$}
-$M=\res{-12x^{2}}$
+\explique{Pour réduire un produit, on multiplie les nombres entre eux (règle des
+signes), puis les lettres entre elles : $x\times x=x^{2}$.}{un produit se réduit
+toujours}
+\cas{A}
+\begin{calculs}
+A &= 6\times 4x &&\justif{on recopie}\\
+A &= 6\times 4\times x &&\justif{les nombres, puis la lettre}\\
+A &= \res{24x} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 3x\times 5x &&\justif{on recopie}\\
+B &= 3\times 5\times x\times x &&\justif{les nombres, puis les lettres}\\
+B &= \res{15x^{2}} &&\justif{$x\times x=x^{2}$}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 7\times 2x^{2} &&\\
+C &= \res{14x^{2}} &&\justif{$7\times 2=14$ ; le $x^{2}$ ne change pas}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 3x^{2}\times 5 &&\\
+D &= \res{15x^{2}} &&\justif{$3\times 5=15$}
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= -4x\times 3x &&\justif{signes contraires : le produit est négatif}\\
+E &= -4\times 3\times x\times x &&\\
+E &= \res{-12x^{2}} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= -6\times 5x &&\justif{signes contraires : négatif}\\
+F &= \res{-30x} &&\justif{une seule lettre : pas de carré}
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 2x(-7x) &&\justif{le $\times$ est sous-entendu devant la parenthèse}\\
+G &= 2\times(-7)\times x\times x &&\justif{signes contraires : négatif}\\
+G &= \res{-14x^{2}} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= -3x(-6x) &&\justif{deux nombres négatifs : le produit est positif}\\
+H &= (-3)\times(-6)\times x\times x &&\\
+H &= \res{18x^{2}} &&
+\end{calculs}
+\cas{K}
+\begin{calculs}
+K &= 4(-3x^{2}) &&\justif{signes contraires : négatif}\\
+K &= \res{-12x^{2}} &&
+\end{calculs}
+\cas{L}
+\begin{calculs}
+L &= -5(-2x^{2}) &&\justif{même signe : positif}\\
+L &= \res{10x^{2}} &&
+\end{calculs}
+\cas{M}
+\begin{calculs}
+M &= 3x^{2}\times(-4) &&\justif{signes contraires : négatif}\\
+M &= \res{-12x^{2}} &&
+\end{calculs}
+\rem{Ne pas confondre somme et produit : $3x+5x=8x$, mais $3x\times 5x=15x^{2}$. Dans un
+produit, les exposants des $x$ s'ajoutent : $x\times x^{2}=x^{3}$.}
 \end{exo}
 
 \begin{exo}[Substituer]
-1) Pour $x=2$ : $B=12-8-4=\res{0}$ ; pour $x=3$ : $B=27-12-4=\res{11}$ ; pour $x=-1$ :
-$B=3+4-4=\res{3}$ ; pour $x=-2$ : $B=12+8-4=\res{16}$ ; pour $x=\frac13$ :
-$B=\frac13-\frac43-4=\res{-5}$.\par
-2) $C=6+8+5=\res{19}$ ; \; $C=-2-16+5=\res{-13}$.
-\rem{$-4p$ pour $p=-2$ : $-4\times(-2)=+8$.}
+\explique{Substituer, c'est remplacer la lettre par sa valeur : on écrit la valeur entre
+parenthèses, on rétablit les $\times$, puis on calcule avec les priorités (le carré
+d'abord, puis les produits, enfin les sommes).}{méthode 2 du cours}
+\cas{1) Pour $x=2$}
+\begin{calculs}
+B &= 3\times 2^{2}-4\times 2-4 &&\justif{on remplace $x$ par $2$}\\
+B &= 3\times 4-8-4 &&\justif{le carré d'abord : $2^{2}=4$}\\
+B &= 12-8-4 &&\\
+B &= \res{0} &&
+\end{calculs}
+\cas{1) Pour $x=3$}
+\begin{calculs}
+B &= 3\times 3^{2}-4\times 3-4 &&\\
+B &= 3\times 9-12-4 &&\justif{$3^{2}=9$}\\
+B &= 27-12-4 &&\\
+B &= \res{11} &&
+\end{calculs}
+\cas{1) Pour $x=-1$}
+\begin{calculs}
+B &= 3\times(-1)^{2}-4\times(-1)-4 &&\justif{la valeur négative entre parenthèses}\\
+B &= 3\times 1+4-4 &&\justif{$(-1)^{2}=1$ ; $-4\times(-1)=+4$}\\
+B &= \res{3} &&
+\end{calculs}
+\cas{1) Pour $x=-2$}
+\begin{calculs}
+B &= 3\times(-2)^{2}-4\times(-2)-4 &&\\
+B &= 3\times 4+8-4 &&\justif{$(-2)^{2}=4$ : un carré est positif}\\
+B &= 12+8-4 &&\\
+B &= \res{16} &&
+\end{calculs}
+\cas{1) Pour $x=\frac13$}
+\begin{calculs}
+B &= 3\times\left(\tfrac13\right)^{2}-4\times\tfrac13-4 &&\\
+B &= 3\times\tfrac19-\tfrac43-4 &&\justif{$\left(\frac13\right)^{2}=\frac{1\times 1}{3\times 3}=\frac19$}\\
+B &= \tfrac13-\tfrac43-4 &&\justif{$3\times\frac19=\frac39=\frac13$}\\
+B &= -1-4 &&\justif{$\frac13-\frac43=-\frac33=-1$}\\
+B &= \res{-5} &&
+\end{calculs}
+\cas{2) Pour $m=3$ et $p=-2$}
+\begin{calculs}
+C &= 2\times 3-4\times(-2)+5 &&\justif{chaque lettre remplacée par sa valeur}\\
+C &= 6+8+5 &&\justif{$-4\times(-2)=+8$}\\
+C &= \res{19} &&
+\end{calculs}
+\cas{2) Pour $m=-1$ et $p=4$}
+\begin{calculs}
+C &= 2\times(-1)-4\times 4+5 &&\\
+C &= -2-16+5 &&\\
+C &= \res{-13} &&\justif{$-18+5=-13$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $-4\times-2$ sans parenthèses, puis se tromper de signe.
+Autre piège : $3\times(-2)^{2}$ vaut $3\times 4=12$ ; le carré se calcule avant le
+produit.}
 \end{exo}
 
 \begin{exo}[Égales ou non ?]
-1) Pour $x=0$ : $A=-10$ et $B=-10$ ; pour $x=1$ : $A=-6$ et $B=-8$.\par
-2) \res{\text{Non}} : pour $x=1$, elles sont différentes.\par
-3) $A=x^{2}+5x-2x-10=\res{x^{2}+3x-10}$, qui n'est pas $B$.
-\rem{Un test réussi ($x=0$) ne prouve pas une égalité ; un seul contre-exemple suffit à
-la réfuter.}
+\cas{1)}
+\begin{calculs}
+A &= (0-2)(0+5) &&\justif{pour $x=0$, dans chaque expression}\\
+A &= -2\times 5 &&\\
+A &= -10 &&\\
+B &= 2\times 0^{2}-10 &&\\
+B &= -10 &&
+\end{calculs}
+\begin{calculs}
+A &= (1-2)(1+5) &&\justif{pour $x=1$}\\
+A &= -1\times 6 &&\\
+A &= -6 &&\\
+B &= 2\times 1^{2}-10 &&\\
+B &= -8 &&
+\end{calculs}
+\explique{Pour $x=0$, $A=\res{-10}$ et $B=\res{-10}$ ; pour $x=1$, $A=\res{-6}$ et
+$B=\res{-8}$.}{}
+\cas{2)}
+\explique{Pour $x=1$, $A$ et $B$ prennent des valeurs différentes : elles ne sont
+\res{pas égales}.}{un seul contre-exemple suffit}
+\rem{Le test avec $x=0$ a réussi, mais il ne prouve rien : deux expressions égales
+doivent donner le même résultat pour \emph{toutes} les valeurs de $x$.}
+\cas{3)}
+\begin{calculs}
+A &= (x-2)(x+5) &&\justif{on recopie}\\
+A &= x^{2}+5x-2x-10 &&\justif{chaque terme par chaque terme : $x\times x$, $x\times 5$, $-2\times x$, $-2\times 5$}\\
+A &= \res{x^{2}+3x-10} &&
+\end{calculs}
+\explique{La forme développée de $A$ n'est pas $2x^{2}-10$ : on confirme que $A$ et $B$
+ne sont pas égales.}{pour prouver une égalité, on développe}
 \end{exo}
 
 \partie{Développer}
 
 \begin{exo}[Distributivité simple]
-\deux{$A=\res{12x+20}$}{$B=\res{6x+12}$}
-\deux{$C=\res{4x^{2}+5x}$}{$D=\res{6x^{2}+21x}$}
-\deux{$E=\res{11x+12}$}{$F=\res{18x+24}$}
-\deux{$G=\res{14x+15}$}{$H=\res{18x+18}$}
-\deux{$K=\res{3x^{2}+15x+2}$}{$L=\res{14x^{2}+21x}$}
+\explique{Le facteur devant (ou derrière) la parenthèse multiplie \emph{chaque} terme :
+$k(a+b)=ka+kb$. On réduit ensuite.}{propriété 2 et méthode 3 du cours}
+\cas{A}
+\begin{calculs}
+A &= 4(3x+5) &&\justif{on recopie}\\
+A &= 4\times 3x+4\times 5 &&\justif{$4$ multiplie $3x$, puis $5$}\\
+A &= \res{12x+20} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (6+3x)\times 2 &&\justif{le facteur est à droite : il multiplie aussi chaque terme}\\
+B &= 6\times 2+3x\times 2 &&\\
+B &= 12+6x &&\\
+B &= \res{6x+12} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= x(4x+5) &&\justif{le facteur est $x$}\\
+C &= x\times 4x+x\times 5 &&\\
+C &= \res{4x^{2}+5x} &&\justif{$x\times 4x=4x^{2}$}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 3x(2x+7) &&\\
+D &= 3x\times 2x+3x\times 7 &&\\
+D &= \res{6x^{2}+21x} &&\justif{$3x\times 2x=6x^{2}$ et $3x\times 7=21x$}
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 5x+3(2x+4) &&\justif{le produit d'abord ; le $5x$ attend}\\
+E &= 5x+6x+12 &&\\
+E &= \res{11x+12} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 2(5x+6)+4(2x+3) &&\justif{deux produits, développés chacun}\\
+F &= 10x+12+8x+12 &&\\
+F &= \res{18x+24} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 5(3+2x)+4x &&\\
+G &= 15+10x+4x &&\\
+G &= \res{14x+15} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= 3(4x+2)+2(6+3x) &&\\
+H &= 12x+6+12+6x &&\\
+H &= \res{18x+18} &&
+\end{calculs}
+\cas{K}
+\begin{calculs}
+K &= x(3x+5)+2(5x+1) &&\\
+K &= 3x^{2}+5x+10x+2 &&\\
+K &= \res{3x^{2}+15x+2} &&
+\end{calculs}
+\cas{L}
+\begin{calculs}
+L &= 2x(4x+3)+3x(2x+5) &&\\
+L &= 8x^{2}+6x+6x^{2}+15x &&\justif{$2x\times 4x=8x^{2}$ ; $3x\times 2x=6x^{2}$}\\
+L &= \res{14x^{2}+21x} &&
+\end{calculs}
+\rem{Erreur fréquente : ne multiplier que le premier terme, $4(3x+5)=12x+5$. Contrôle avec
+$x=1$ : $4\times 8=32$ et $12+20=32$.}
 \end{exo}
 
 \begin{exo}[Avec des signes moins]
-\deux{$A=\res{2a+18}$}{$B=\res{-a-12}$}
+\explique{Le facteur garde son signe et multiplie chaque terme : on applique la règle des
+signes à chaque produit. Un $-$ devant une parenthèse change le signe de chaque
+terme.}{propriété 2 du cours}
+\cas{A}
 \begin{calculs}
-C&=12+8a-15-6a=\res{2a-3}\\
-D&=15a-10+8a-6=\res{23a-16}
+A &= 6(a+3)-4a &&\\
+A &= 6a+18-4a &&\\
+A &= \res{2a+18} &&
 \end{calculs}
-\deux{$E=\res{14b^{2}+13b}$}{$F=\res{-11b^{2}+10b}$}
+\cas{B}
 \begin{calculs}
-G&=-12b^{2}-8b-2b^{2}+9b\\
-G&=\res{-14b^{2}+b}\\
-H&=-12b^{2}+6b-12b^{2}-18b\\
-H&=\res{-24b^{2}-12b}
+B &= -7a+3(2a-4) &&\\
+B &= -7a+6a-12 &&\justif{$3\times(-4)=-12$}\\
+B &= \res{-a-12} &&\justif{$-7a+6a=-1a$, qu'on écrit $-a$}
 \end{calculs}
-\rem{Dans $G$ : $-b\times(-9)=+9b$.}
+\cas{C}
+\begin{calculs}
+C &= 4(3+2a)-3(5+2a) &&\justif{le second facteur est $-3$}\\
+C &= 12+8a-15-6a &&\justif{$-3\times 5=-15$ et $-3\times 2a=-6a$}\\
+C &= \res{2a-3} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= -5(-3a+2)+2(4a-3) &&\\
+D &= 15a-10+8a-6 &&\justif{$-5\times(-3a)=+15a$ ; $-5\times 2=-10$}\\
+D &= \res{23a-16} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 3b+2b(5+7b) &&\\
+E &= 3b+10b+14b^{2} &&\justif{$2b\times 7b=14b^{2}$}\\
+E &= \res{14b^{2}+13b} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 5b(-3b+2)+4b^{2} &&\\
+F &= -15b^{2}+10b+4b^{2} &&\justif{$5b\times(-3b)=-15b^{2}$}\\
+F &= \res{-11b^{2}+10b} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 4b(-3b-2)-b(2b-9) &&\justif{le second facteur est $-b$}\\
+G &= -12b^{2}-8b-2b^{2}+9b &&\justif{$-b\times 2b=-2b^{2}$ et $-b\times(-9)=+9b$}\\
+G &= \res{-14b^{2}+b} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= -3b(4b-2)+6b(-2b-3) &&\\
+H &= -12b^{2}+6b-12b^{2}-18b &&\justif{$-3b\times(-2)=+6b$}\\
+H &= \res{-24b^{2}-12b} &&
+\end{calculs}
+\rem{Erreur fréquente dans $C$ et $G$ : ne changer que le signe du premier terme. Le
+facteur $-3$ (ou $-b$) multiplie \emph{chaque} terme de la parenthèse.}
 \end{exo}
 
 \begin{exo}[Double distributivité]
-\deux{$A=\res{8x^{2}+26x+15}$}{$B=\res{8x^{2}+34x+21}$}
+\explique{Chaque terme de la première parenthèse multiplie chaque terme de la seconde :
+$(a+b)(c+d)=ac+ad+bc+bd$, soit quatre produits, chacun avec son signe.}{méthode 3 du
+cours, exemple e)}
+\cas{A}
 \begin{calculs}
-C&=-6x^{2}+15x+8x-20=\res{-6x^{2}+23x-20}\\
-D&=-15+20x+6x-8x^{2}=\res{-8x^{2}+26x-15}
+A &= (2x+5)(4x+3) &&\justif{on recopie}\\
+A &= 8x^{2}+6x+20x+15 &&\justif{$2x\times 4x$, $2x\times 3$, $5\times 4x$, $5\times 3$}\\
+A &= \res{8x^{2}+26x+15} &&
 \end{calculs}
-\deux{$E=\res{12x^{2}+26x+10}$}{$F=\res{15x^{2}-22x+8}$}
-\deux{$G=\res{18x^{2}-27x+10}$}{$H=\res{8x^{2}-22x+15}$}
+\cas{B}
+\begin{calculs}
+B &= (3+4x)(2x+7) &&\\
+B &= 6x+21+8x^{2}+28x &&\\
+B &= \res{8x^{2}+34x+21} &&\justif{on range : $x^{2}$, puis $x$, puis le nombre}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (3x-4)(-2x+5) &&\\
+C &= -6x^{2}+15x+8x-20 &&\justif{$-4\times(-2x)=+8x$ ; $-4\times 5=-20$}\\
+C &= \res{-6x^{2}+23x-20} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (-5+2x)(3-4x) &&\\
+D &= -15+20x+6x-8x^{2} &&\justif{$-5\times(-4x)=+20x$ ; $2x\times(-4x)=-8x^{2}$}\\
+D &= \res{-8x^{2}+26x-15} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (-4x-2)(-3x-5) &&\\
+E &= 12x^{2}+20x+6x+10 &&\justif{quatre produits de deux négatifs : tous positifs}\\
+E &= \res{12x^{2}+26x+10} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (2-3x)(4-5x) &&\\
+F &= 8-10x-12x+15x^{2} &&\justif{$-3x\times(-5x)=+15x^{2}$}\\
+F &= \res{15x^{2}-22x+8} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= (-6x+5)(-3x+2) &&\\
+G &= 18x^{2}-12x-15x+10 &&\\
+G &= \res{18x^{2}-27x+10} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= (-3+2x)(4x-5) &&\\
+H &= -12x+15+8x^{2}-10x &&\\
+H &= \res{8x^{2}-22x+15} &&
+\end{calculs}
+\rem{Contrôle avec $x=1$ : pour $C$, $(3-4)(-2+5)=-3$ et $-6+23-20=-3$. Pour $F$,
+$(2-3)(4-5)=1$ et $15-22+8=1$.}
 \end{exo}
 
 \begin{exo}[Une différence de produits]
+\explique{Le $-$ devant un produit porte sur tout ce produit : on développe d'abord ce
+produit entre crochets, puis le $-$ change le signe de chaque terme du crochet.}{propriété
+2 : pour soustraire un produit, on le développe entre crochets}
+\cas{A}
 \begin{calculs}
-A&=8x^{2}+26x+15-\big[6x^{2}-11x-10\big]\\
-A&=\res{2x^{2}+37x+25}\\
-B&=-6x^{2}+29x-28+10x^{2}-19x+6\\
-B&=\res{4x^{2}+10x-22}\\
-C&=12x^{2}-9x-30-\big[-12x^{2}+7x+10\big]\\
-C&=\res{24x^{2}-16x-40}\\
-D&=18x^{2}-9x-2-\big[-15x^{2}+26x-8\big]\\
-D&=\res{33x^{2}-35x+6}
+A &= (4x+3)(2x+5)-(3x+2)(2x-5) &&\justif{on recopie}\\
+A &= 8x^{2}+20x+6x+15-\big[6x^{2}-15x+4x-10\big] &&\justif{chaque produit à part}\\
+A &= 8x^{2}+26x+15-\big[6x^{2}-11x-10\big] &&\justif{on réduit dans le crochet}\\
+A &= 8x^{2}+26x+15-6x^{2}+11x+10 &&\justif{le $-$ change tous les signes du crochet}\\
+A &= \res{2x^{2}+37x+25} &&
 \end{calculs}
-\rem{Le crochet garde le produit entier ; le $-$ change ensuite tous ses signes.}
+\cas{B}
+\begin{calculs}
+B &= (-2x+7)(3x-4)+(5x-2)(2x-3) &&\justif{ici une somme : pas de changement de signe}\\
+B &= -6x^{2}+8x+21x-28+10x^{2}-15x-4x+6 &&\\
+B &= \res{4x^{2}+10x-22} &&\justif{$-6+10=4$ ; $8+21-15-4=10$ ; $-28+6=-22$}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (-4x-5)(-3x+6)-(2+3x)(5-4x) &&\\
+C &= 12x^{2}-24x+15x-30-\big[10-8x+15x-12x^{2}\big] &&\\
+C &= 12x^{2}-9x-30-\big[-12x^{2}+7x+10\big] &&\\
+C &= 12x^{2}-9x-30+12x^{2}-7x-10 &&\justif{le $-$ change tous les signes}\\
+C &= \res{24x^{2}-16x-40} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (6x+1)(3x-2)-(5x-2)(4-3x) &&\\
+D &= 18x^{2}-12x+3x-2-\big[20x-15x^{2}-8+6x\big] &&\\
+D &= 18x^{2}-9x-2-\big[-15x^{2}+26x-8\big] &&\\
+D &= 18x^{2}-9x-2+15x^{2}-26x+8 &&\\
+D &= \res{33x^{2}-35x+6} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $-(3x+2)(2x-5)=-6x^{2}-15x+\ldots$, en ne changeant que le
+premier signe. Le crochet évite cette erreur.}
 \end{exo}
 
 \begin{exo}[Crochets et trois facteurs]
+\cas{A}
 \begin{calculs}
-A&=6-3x-4-5x+2=\res{4-8x}\\
-B&=4x-3+5x-6x-2=\res{3x-5}\\
-C&=4-\big[3-2x\big]+3-4x=\res{4-2x}\\
-D&=5x+\big[x-4\big]-\big[2x+4\big]=\res{4x-8}\\
-E&=6x^{2}+15x-4\big[2x^{2}-x-15\big]\\
-E&=\res{-2x^{2}+19x+60}\\
-F&=(3x^{2}+2x-8)(-x+3)\\
-F&=\res{-3x^{3}+7x^{2}+14x-24}
+A &= (6-3x)-4-(5x-2) &&\justif{un $+$ devant la première parenthèse : on l'enlève}\\
+A &= 6-3x-4-5x+2 &&\justif{le $-$ change les signes de $5x-2$}\\
+A &= \res{4-8x} &&\justif{$6-4+2=4$ et $-3x-5x=-8x$}
 \end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (4x-3)+5x-(6x+2) &&\\
+B &= 4x-3+5x-6x-2 &&\\
+B &= \res{3x-5} &&
+\end{calculs}
+\cas{C}
+\explique{Des parenthèses dans des crochets : on commence par les parenthèses les plus
+intérieures.}{comme pour les priorités de calcul}
+\begin{calculs}
+C &= 4-\big[6-(2x+3)\big]+(3-4x) &&\justif{on recopie}\\
+C &= 4-\big[6-2x-3\big]+3-4x &&\justif{la parenthèse intérieure}\\
+C &= 4-\big[3-2x\big]+3-4x &&\justif{on réduit le crochet}\\
+C &= 4-3+2x+3-4x &&\justif{le $-$ change les signes du crochet}\\
+C &= \res{4-2x} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 5x+\big[2-(6-x)\big]-\big[3x-(x-4)\big] &&\\
+D &= 5x+\big[2-6+x\big]-\big[3x-x+4\big] &&\justif{les parenthèses intérieures}\\
+D &= 5x+\big[x-4\big]-\big[2x+4\big] &&\\
+D &= 5x+x-4-2x-4 &&\\
+D &= \res{4x-8} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 3x(2x+5)-4(2x+5)(x-3) &&\justif{trois facteurs : d'abord les deux parenthèses}\\
+E &= 6x^{2}+15x-4\big[2x^{2}-6x+5x-15\big] &&\\
+E &= 6x^{2}+15x-4\big[2x^{2}-x-15\big] &&\\
+E &= 6x^{2}+15x-8x^{2}+4x+60 &&\justif{puis $-4$ multiplie chaque terme du crochet}\\
+E &= \res{-2x^{2}+19x+60} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (x+2)(3x-4)(-x+3) &&\justif{deux facteurs d'abord}\\
+F &= \big[3x^{2}-4x+6x-8\big](-x+3) &&\\
+F &= (3x^{2}+2x-8)(-x+3) &&\justif{puis chaque terme par chaque terme : six produits}\\
+F &= -3x^{3}+9x^{2}-2x^{2}+6x+8x-24 &&\justif{$3x^{2}\times(-x)=-3x^{3}$}\\
+F &= \res{-3x^{3}+7x^{2}+14x-24} &&
+\end{calculs}
+\rem{Dans $E$, on ne multiplie pas $-4$ par $(2x+5)$ et par $(x-3)$ à la fois : le
+$-4$ ne multiplie qu'une fois le produit développé. Contrôle de $F$ avec $x=1$ :
+$3\times(-1)\times 2=-6$ et $-3+7+14-24=-6$.}
 \end{exo}
 
 \partie{Identités remarquables}
 
 \begin{exo}[Le carré d'une somme]
-\deux{$A=\res{9x^{2}+24x+16}$}{$B=\res{25+20x+4x^{2}}$}
-\deux{$C=\res{16a^{2}+24a+9}$}{$D=\res{9+30b+25b^{2}}$}
-\deux{$E=\res{x^{2}+12x+36}$}{$F=\res{16x^{2}+8x+1}$}
-\deux{$G=\res{9m^{2}+30m+25}$}{$H=\res{16+24r+9r^{2}}$}
-\rem{Le double produit : pour $A$, $2\times 3x\times 4=24x$.}
+\explique{On reconnaît $(a+b)^{2}=a^{2}+2ab+b^{2}$ : on écrit $a$ et $b$, puis les trois
+termes, avec des parenthèses autour de $a$ ou de $b$ quand ils contiennent un
+nombre et une lettre.}{méthode 4 du cours}
+\cas{A}
+\begin{calculs}
+A &= (3x+4)^{2} &&\justif{$(a+b)^{2}$ avec $a=3x$ et $b=4$}\\
+A &= (3x)^{2}+2\times 3x\times 4+4^{2} &&\justif{carré, double produit, carré}\\
+A &= \res{9x^{2}+24x+16} &&\justif{$(3x)^{2}=9x^{2}$}
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (5+2x)^{2} &&\justif{$a=5$ et $b=2x$}\\
+B &= 5^{2}+2\times 5\times 2x+(2x)^{2} &&\\
+B &= \res{25+20x+4x^{2}} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (4a+3)^{2} &&\justif{$a=4a$ et $b=3$ (la lettre de l'expression est aussi $a$)}\\
+C &= (4a)^{2}+2\times 4a\times 3+3^{2} &&\\
+C &= \res{16a^{2}+24a+9} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (3+5b)^{2} &&\justif{$a=3$ et $b=5b$}\\
+D &= 3^{2}+2\times 3\times 5b+(5b)^{2} &&\\
+D &= \res{9+30b+25b^{2}} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (x+6)^{2} &&\justif{$a=x$ et $b=6$}\\
+E &= x^{2}+2\times x\times 6+6^{2} &&\\
+E &= \res{x^{2}+12x+36} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (4x+1)^{2} &&\justif{$a=4x$ et $b=1$}\\
+F &= (4x)^{2}+2\times 4x\times 1+1^{2} &&\\
+F &= \res{16x^{2}+8x+1} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= (3m+5)^{2} &&\justif{$a=3m$ et $b=5$}\\
+G &= (3m)^{2}+2\times 3m\times 5+5^{2} &&\\
+G &= \res{9m^{2}+30m+25} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= (4+3r)^{2} &&\justif{$a=4$ et $b=3r$}\\
+H &= 4^{2}+2\times 4\times 3r+(3r)^{2} &&\\
+H &= \res{16+24r+9r^{2}} &&
+\end{calculs}
+\rem{Erreur la plus fréquente : $(3x+4)^{2}=9x^{2}+16$, sans le double produit. Contrôle
+avec $x=1$ : $(3+4)^{2}=49$ et $9+24+16=49$, alors que $9+16=25$. Autre erreur :
+$(3x)^{2}=3x^{2}$ ; le carré porte sur le $3$ aussi.}
 \end{exo}
 
 \begin{exo}[Le carré d'une différence]
-\deux{$A=\res{16x^{2}-24x+9}$}{$B=\res{9x^{2}-30x+25}$}
-\deux{$C=\res{16-24x+9x^{2}}$}{$D=\res{25-20x+4x^{2}}$}
-\deux{$E=\res{25a^{2}-30a+9}$}{$F=\res{4-20b+25b^{2}}$}
-\deux{$G=\res{9m^{2}-6m+1}$}{$H=\res{n^{2}-8n+16}$}
+\explique{On reconnaît $(a-b)^{2}=a^{2}-2ab+b^{2}$ : seul le double produit est
+précédé d'un $-$ ; les deux carrés sont positifs.}{méthode 4 du cours}
+\cas{A}
+\begin{calculs}
+A &= (4x-3)^{2} &&\justif{$(a-b)^{2}$ avec $a=4x$ et $b=3$}\\
+A &= (4x)^{2}-2\times 4x\times 3+3^{2} &&\\
+A &= \res{16x^{2}-24x+9} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (3x-5)^{2} &&\justif{$a=3x$ et $b=5$}\\
+B &= (3x)^{2}-2\times 3x\times 5+5^{2} &&\\
+B &= \res{9x^{2}-30x+25} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (4-3x)^{2} &&\justif{$a=4$ et $b=3x$}\\
+C &= 4^{2}-2\times 4\times 3x+(3x)^{2} &&\\
+C &= \res{16-24x+9x^{2}} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (5-2x)^{2} &&\justif{$a=5$ et $b=2x$}\\
+D &= 5^{2}-2\times 5\times 2x+(2x)^{2} &&\\
+D &= \res{25-20x+4x^{2}} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (5a-3)^{2} &&\justif{$a=5a$ et $b=3$}\\
+E &= (5a)^{2}-2\times 5a\times 3+3^{2} &&\\
+E &= \res{25a^{2}-30a+9} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (2-5b)^{2} &&\justif{$a=2$ et $b=5b$}\\
+F &= 2^{2}-2\times 2\times 5b+(5b)^{2} &&\\
+F &= \res{4-20b+25b^{2}} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= (3m-1)^{2} &&\justif{$a=3m$ et $b=1$}\\
+G &= (3m)^{2}-2\times 3m\times 1+1^{2} &&\\
+G &= \res{9m^{2}-6m+1} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= (n-4)^{2} &&\justif{$a=n$ et $b=4$}\\
+H &= n^{2}-2\times n\times 4+4^{2} &&\\
+H &= \res{n^{2}-8n+16} &&
+\end{calculs}
+\rem{Erreur fréquente : $(4x-3)^{2}=16x^{2}-24x-9$. Le dernier terme est $b^{2}=3^{2}=9$,
+positif. Contrôle avec $x=1$ : $(4-3)^{2}=1$ et $16-24+9=1$.}
 \end{exo}
 
 \begin{exo}[Somme par différence]
-\deux{$A=\res{16x^{2}-9}$}{$C=\res{9-25x^{2}}$}
-\deux{$D=\res{9a^{2}-16}$}{$E=\res{b^{2}-25}$}
-$F=\res{49-c^{2}}$\par
-$B=4x^{2}-6x+10x-15=\res{4x^{2}+4x-15}$
-\rem{$B$ n'est pas une identité : $2x+5$ et $2x-3$ n'ont pas les mêmes termes.}
+\explique{On reconnaît $(a+b)(a-b)=a^{2}-b^{2}$ : les deux parenthèses ont les
+\emph{mêmes} termes, l'une avec $+$, l'autre avec $-$.}{avant d'appliquer la formule, on
+vérifie que les termes sont les mêmes}
+\cas{A}
+\begin{calculs}
+A &= (4x+3)(4x-3) &&\justif{$a=4x$ et $b=3$}\\
+A &= (4x)^{2}-3^{2} &&\\
+A &= \res{16x^{2}-9} &&
+\end{calculs}
+\cas{B}
+\explique{$2x+5$ et $2x-3$ n'ont pas les mêmes nombres ($5$ et $3$) : ce n'est pas une
+identité remarquable. On utilise la double distributivité.}{le produit piège annoncé par
+l'énoncé}
+\begin{calculs}
+B &= (2x+5)(2x-3) &&\\
+B &= 4x^{2}-6x+10x-15 &&\justif{quatre produits}\\
+B &= \res{4x^{2}+4x-15} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (3+5x)(3-5x) &&\justif{$a=3$ et $b=5x$}\\
+C &= 3^{2}-(5x)^{2} &&\\
+C &= \res{9-25x^{2}} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (3a+4)(3a-4) &&\justif{$a=3a$ et $b=4$}\\
+D &= (3a)^{2}-4^{2} &&\\
+D &= \res{9a^{2}-16} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (b-5)(b+5) &&\justif{l'ordre des parenthèses ne change rien : $a=b$ et $b=5$}\\
+E &= b^{2}-5^{2} &&\\
+E &= \res{b^{2}-25} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (7+c)(7-c) &&\justif{$a=7$ et $b=c$}\\
+F &= 7^{2}-c^{2} &&\\
+F &= \res{49-c^{2}} &&
+\end{calculs}
+\rem{Le résultat est toujours le carré du terme qui garde son signe, moins le carré du
+terme qui change de signe : dans $C$, c'est $9-25x^{2}$, et non $25x^{2}-9$.}
 \end{exo}
 
 \begin{exo}[Choisir la bonne formule]
-\deux{$A=\res{6x+15}$}{$B=\res{4x^{2}+20x+25}$}
-\deux{$C=\res{9x^{2}-24x+16}$}{$D=\res{25x^{2}-9}$}
-\deux{$E=\res{21x^{2}-29x-10}$}{$F=\res{9-49x^{2}}$}
+\explique{Avant de développer, on regarde la forme : un nombre devant une parenthèse
+(distributivité), un carré (première ou deuxième identité), deux parenthèses aux mêmes
+termes (troisième identité), sinon la double distributivité.}{on choisit la formule la
+plus rapide}
+\cas{A}
 \begin{calculs}
-G&=4x^{2}+12x+9-\big[x^{2}-8x+16\big]\\
-G&=\res{3x^{2}+20x-7}\\
-H&=x^{2}-25-\big[4x^{2}-1\big]=\res{-3x^{2}-24}\\
-K&=x^{2}+8x+16+3\big[2x^{2}+3x-2\big]\\
-K&=\res{7x^{2}+17x+10}\\
-L&=9x^{2}-1-2\big[x^{2}-6x+9\big]\\
-L&=\res{7x^{2}+12x-19}
+A &= 3(2x+5) &&\justif{distributivité simple}\\
+A &= \res{6x+15} &&
 \end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (2x+5)^{2} &&\justif{$(a+b)^{2}$ avec $a=2x$ et $b=5$}\\
+B &= (2x)^{2}+2\times 2x\times 5+5^{2} &&\\
+B &= \res{4x^{2}+20x+25} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (3x-4)^{2} &&\justif{$(a-b)^{2}$ avec $a=3x$ et $b=4$}\\
+C &= (3x)^{2}-2\times 3x\times 4+4^{2} &&\\
+C &= \res{9x^{2}-24x+16} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (5x-3)(5x+3) &&\justif{$(a-b)(a+b)$ avec $a=5x$ et $b=3$}\\
+D &= (5x)^{2}-3^{2} &&\\
+D &= \res{25x^{2}-9} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (7x+2)(3x-5) &&\justif{pas les mêmes termes : double distributivité}\\
+E &= 21x^{2}-35x+6x-10 &&\\
+E &= \res{21x^{2}-29x-10} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (3+7x)(3-7x) &&\justif{$a=3$ et $b=7x$}\\
+F &= 3^{2}-(7x)^{2} &&\\
+F &= \res{9-49x^{2}} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= (2x+3)^{2}-(x-4)^{2} &&\justif{deux identités ; le second carré se soustrait}\\
+G &= 4x^{2}+12x+9-\big[x^{2}-8x+16\big] &&\justif{le second carré entre crochets}\\
+G &= 4x^{2}+12x+9-x^{2}+8x-16 &&\justif{le $-$ change tous les signes}\\
+G &= \res{3x^{2}+20x-7} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= (x-5)(x+5)-(2x+1)(2x-1) &&\justif{deux fois la troisième identité}\\
+H &= x^{2}-25-\big[4x^{2}-1\big] &&\\
+H &= x^{2}-25-4x^{2}+1 &&\\
+H &= \res{-3x^{2}-24} &&
+\end{calculs}
+\cas{K}
+\begin{calculs}
+K &= (x+4)^{2}+3(2x-1)(x+2) &&\justif{une identité, puis trois facteurs}\\
+K &= x^{2}+8x+16+3\big[2x^{2}+4x-x-2\big] &&\justif{les deux parenthèses d'abord}\\
+K &= x^{2}+8x+16+3\big[2x^{2}+3x-2\big] &&\\
+K &= x^{2}+8x+16+6x^{2}+9x-6 &&\justif{puis le $3$ sur chaque terme}\\
+K &= \res{7x^{2}+17x+10} &&
+\end{calculs}
+\cas{L}
+\begin{calculs}
+L &= (3x+1)(3x-1)-2(x-3)^{2} &&\justif{le carré se calcule avant le produit par $2$}\\
+L &= 9x^{2}-1-2\big[x^{2}-6x+9\big] &&\\
+L &= 9x^{2}-1-2x^{2}+12x-18 &&\justif{$-2$ multiplie chaque terme du crochet}\\
+L &= \res{7x^{2}+12x-19} &&
+\end{calculs}
+\rem{Dans $L$, on ne calcule pas $\big(2(x-3)\big)^{2}$ : le carré ne porte que sur $(x-3)$.
+Contrôle de $L$ avec $x=1$ : $4\times 2-2\times 4=0$ et $7+12-19=0$.}
 \end{exo}
 
 \partie{Factoriser}
 
 \begin{exo}[Compléter les factorisations]
-\deux{a) $\res{5(x+8)}$}{b) $\res{4(3x-2)}$}
-\deux{c) $\res{5(2x-3)}$}{d) $\res{4x(2x+3)}$}
-e) $\res{x(x-9)}$ \quad f) $(x+3)(3x-2+x+4)=\res{(x+3)(4x+2)}$
+\explique{Factoriser, c'est faire le chemin inverse du développement : $ka+kb=k(a+b)$. On
+cherche ce qui reste de chaque terme quand on enlève le facteur commun.}{définition 2 du
+cours}
+\cas{a)}
+\begin{calculs}
+5\times x+5\times 8 &= 5(x+8) &&\justif{le facteur commun $5$ est déjà écrit}
+\end{calculs}
+\explique{On complète : $\res{5(x+8)}$.}{contrôle : $5(x+8)=5x+40$}
+\cas{b)}
+\begin{calculs}
+12x-8 &= 4\times 3x-4\times 2 &&\justif{$12=4\times 3$ et $8=4\times 2$}\\
+12x-8 &= \res{4(3x-2)} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+10x-15 &= 5\times 2x-5\times 3 &&\justif{$2x$ devient $10x$ en multipliant par $5$}\\
+10x-15 &= \res{5(2x-3)} &&\justif{contrôle : $5\times 3=15$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+8x^{2}+12x &= 4x\times 2x+4x\times 3 &&\justif{$8x^{2}=4x\times 2x$ et $12x=4x\times 3$}\\
+8x^{2}+12x &= \res{4x(2x+3)} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+x^{2}-9x &= x\times x-x\times 9 &&\justif{$x^{2}=x\times x$ : $x$ est dans les deux termes}\\
+x^{2}-9x &= \res{x(x-9)} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+(x+3)(3x-2)+(x+3)(x+4) &= (x+3)\big[(3x-2)+(x+4)\big] &&\justif{le facteur commun est la parenthèse $(x+3)$}\\
+(x+3)(3x-2)+(x+3)(x+4) &= \res{(x+3)(4x+2)} &&\justif{on réduit le crochet : $3x+x=4x$ et $-2+4=2$}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Un nombre ou $x$ en facteur]
-\deux{$A=\res{12(4a-3b)}$}{$B=\res{30(5a-3b)}$}
-\deux{$C=\res{12(2x-3)}$}{$D=\res{x(35+13x)}$}
-\deux{$E=\res{7x(4x-1)}$}{$F=\res{5x(x^{2}+2x+3)}$}
-\rem{On prend le plus grand facteur commun : $C=6(4x-6)$ n'est pas terminé.}
+\explique{On cherche le plus grand nombre qui divise tous les nombres (tables de
+multiplication à l'envers), et on ajoute $x$ si chaque terme contient $x$.}{on factorise
+le plus possible}
+\cas{A}
+\begin{calculs}
+A &= 48a-36b &&\justif{$12$ divise $48$ et $36$ : $48=12\times 4$ et $36=12\times 3$}\\
+A &= 12\times 4a-12\times 3b &&\\
+A &= \res{12(4a-3b)} &&\justif{$4$ et $3$ n'ont plus de diviseur commun}
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 150a-90b &&\justif{$150=30\times 5$ et $90=30\times 3$}\\
+B &= 30\times 5a-30\times 3b &&\\
+B &= \res{30(5a-3b)} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 24x-36 &&\justif{$24=12\times 2$ et $36=12\times 3$}\\
+C &= 12\times 2x-12\times 3 &&\\
+C &= \res{12(2x-3)} &&
+\end{calculs}
+\rem{$C=6(4x-6)$ ou $C=4(6x-9)$ sont justes mais incomplets : on peut encore sortir un
+facteur de la parenthèse. On prend le plus grand facteur commun, ici $12$.}
+\cas{D}
+\begin{calculs}
+D &= 35x+13x^{2} &&\justif{$35$ et $13$ n'ont pas de diviseur commun ; $x$ est dans les deux termes}\\
+D &= x\times 35+x\times 13x &&\\
+D &= \res{x(35+13x)} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 28x^{2}-7x &&\justif{$28=7\times 4$ ; $x^{2}=x\times x$ : facteur commun $7x$}\\
+E &= 7x\times 4x-7x\times 1 &&\justif{$7x=7x\times 1$}\\
+E &= \res{7x(4x-1)} &&
+\end{calculs}
+\rem{Erreur fréquente : $E=7x(4x)$, en oubliant le $1$. Il reste $1$, pas $0$, quand on
+enlève $7x$ de $7x$ ; contrôle : $7x(4x-1)=28x^{2}-7x$.}
+\cas{F}
+\begin{calculs}
+F &= 5x^{3}+10x^{2}+15x &&\justif{$5$ divise $5$, $10$ et $15$ ; chaque terme contient $x$}\\
+F &= 5x\times x^{2}+5x\times 2x+5x\times 3 &&\justif{$x^{3}=x\times x^{2}$}\\
+F &= \res{5x(x^{2}+2x+3)} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Une parenthèse en facteur]
+\explique{Le facteur commun est une parenthèse entière, présente dans les deux termes. On
+l'écrit devant, puis on recopie ce qui reste de chaque terme entre crochets, chacun entre
+parenthèses et avec son signe.}{méthode 5 du cours, exemples c) et d)}
+\cas{A}
 \begin{calculs}
-A&=(4x+3)\big[(2x-5)+(3x+7)\big]\\
-A&=\res{(4x+3)(5x+2)}\\
-B&=(6x-5)\big[(2x+3)+(4x-1)\big]\\
-B&=\res{(6x-5)(6x+2)}\\
-C&=(2x-7)\big[(3x+5)+(4x+1)\big]\\
-C&=\res{(2x-7)(7x+6)}\\
-D&=(5r+3)\big[(8r-2)+(3r-4)\big]\\
-D&=\res{(5r+3)(11r-6)}\\
-E&=(x-4)\big[(x+2)-(2x+5)\big]\\
-E&=\res{(x-4)(-x-3)}\\
-F&=\res{(2y-5)(x+3)}
+A &= (4x+3)(2x-5)+(4x+3)(3x+7) &&\justif{$(4x+3)$ est dans les deux termes}\\
+A &= (4x+3)\big[(2x-5)+(3x+7)\big] &&\\
+A &= \res{(4x+3)(5x+2)} &&\justif{$2x+3x=5x$ et $-5+7=2$}
 \end{calculs}
-\rem{$B$ peut encore s'écrire $2(6x-5)(3x+1)$.}
+\cas{B}
+\begin{calculs}
+B &= (6x-5)(2x+3)+(6x-5)(4x-1) &&\justif{facteur commun $(6x-5)$}\\
+B &= (6x-5)\big[(2x+3)+(4x-1)\big] &&\\
+B &= \res{(6x-5)(6x+2)} &&
+\end{calculs}
+\rem{On peut aller plus loin : $6x+2=2(3x+1)$, donc $B=2(6x-5)(3x+1)$.}
+\cas{C}
+\begin{calculs}
+C &= (3x+5)(2x-7)+(2x-7)(4x+1) &&\justif{le facteur commun $(2x-7)$ n'est pas à la même place}\\
+C &= (2x-7)\big[(3x+5)+(4x+1)\big] &&\\
+C &= \res{(2x-7)(7x+6)} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (8r-2)(5r+3)+(3r-4)(5r+3) &&\justif{facteur commun $(5r+3)$}\\
+D &= (5r+3)\big[(8r-2)+(3r-4)\big] &&\\
+D &= \res{(5r+3)(11r-6)} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (x-4)(x+2)-(x-4)(2x+5) &&\justif{facteur commun $(x-4)$ ; le $-$ porte sur tout le second reste}\\
+E &= (x-4)\big[(x+2)-(2x+5)\big] &&\\
+E &= (x-4)(x+2-2x-5) &&\justif{$-(2x+5)=-2x-5$}\\
+E &= \res{(x-4)(-x-3)} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $(x-4)(x+2-2x+5)$. Le $-$ change le signe de $2x$ \emph{et}
+de $5$. Contrôle avec $x=0$ : $-4\times 2-(-4)\times 5=12$ et $-4\times(-3)=12$.}
+\cas{F}
+\begin{calculs}
+F &= x(2y-5)+3(2y-5) &&\justif{deux lettres, mais une parenthèse commune $(2y-5)$}\\
+F &= (2y-5)\big[x+3\big] &&\\
+F &= \res{(2y-5)(x+3)} &&
+\end{calculs}
+\rem{On contrôle chaque factorisation en la redéveloppant : pour $A$,
+$(4x+3)(5x+2)=20x^{2}+23x+6$, comme $8x^{2}-14x-15+12x^{2}+37x+21$.}
 \end{exo}
 
 \partie{Factoriser avec une identité remarquable}
 
 \begin{exo}[Différence de deux carrés]
-\deux{$A=\res{(5x+4)(5x-4)}$}{$B=\res{(1+3x)(1-3x)}$}
-\deux{$C$ : \res{\text{impossible}}}{$D=\res{(6R+5)(6R-5)}$}
-\deux{$E=5(x^{2}-1)=\res{5(x+1)(x-1)}$}{}
-$F=9-x^{2}=\res{(3+x)(3-x)}$
-\rem{$C$ est une somme de deux carrés. Pour $E$, on factorise d'abord par $5$.}
+\explique{Deux carrés séparés par un $-$ : on écrit chaque terme comme un carré, $a^{2}$
+et $b^{2}$, puis $a^{2}-b^{2}=(a+b)(a-b)$.}{méthode 6 du cours}
+\cas{A}
+\begin{calculs}
+A &= 25x^{2}-16 &&\justif{$25x^{2}=(5x)^{2}$ et $16=4^{2}$}\\
+A &= (5x)^{2}-4^{2} &&\justif{$a=5x$ et $b=4$}\\
+A &= \res{(5x+4)(5x-4)} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 1-9x^{2} &&\justif{$1=1^{2}$ et $9x^{2}=(3x)^{2}$}\\
+B &= 1^{2}-(3x)^{2} &&\justif{$a=1$ et $b=3x$}\\
+B &= \res{(1+3x)(1-3x)} &&
+\end{calculs}
+\cas{C}
+\explique{$C=4x^{2}+9=(2x)^{2}+3^{2}$ est une \emph{somme} de deux carrés : elle
+\res{ne se factorise pas} avec les identités remarquables.}{il faut un signe $-$ entre
+les carrés}
+\cas{D}
+\begin{calculs}
+D &= 36R^{2}-25 &&\justif{$a=6R$ et $b=5$}\\
+D &= (6R)^{2}-5^{2} &&\\
+D &= \res{(6R+5)(6R-5)} &&
+\end{calculs}
+\cas{E}
+\explique{$5x^{2}$ et $5$ ne sont pas des carrés « ronds », mais ils ont le facteur
+commun $5$ : on le sort d'abord.}{on regarde toujours d'abord s'il y a un facteur commun}
+\begin{calculs}
+E &= 5x^{2}-5 &&\\
+E &= 5(x^{2}-1) &&\justif{facteur commun $5$}\\
+E &= 5(x^{2}-1^{2}) &&\justif{dans la parenthèse : $a=x$ et $b=1$}\\
+E &= \res{5(x+1)(x-1)} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= -x^{2}+9 &&\justif{on change l'ordre pour voir la différence}\\
+F &= 9-x^{2} &&\\
+F &= 3^{2}-x^{2} &&\justif{$a=3$ et $b=x$}\\
+F &= \res{(3+x)(3-x)} &&
+\end{calculs}
+\rem{Contrôle en redéveloppant : $(3+x)(3-x)=9-x^{2}$. Dans $F$, ne pas écrire
+$(x+3)(x-3)$ : cela vaut $x^{2}-9$, l'opposé.}
 \end{exo}
 
 \begin{exo}[Carrés parfaits]
-\deux{$A=\res{(3x+2)^{2}}$}{$C=\res{(4d+3)^{2}}$}
-\deux{$D=\res{(6-x)^{2}}$}{$F=\res{(4b-5)^{2}}$}
-$B$ : $a=5a$, $b=3$, mais $2\times 5a\times 3=30a\ne 15a$ : \res{\text{impossible}}.\par
-$E$ : $-1$ n'est pas un carré : \res{\text{impossible}}.
+\explique{Trois termes dont deux carrés : on trouve $a$ et $b$ (les racines des deux
+carrés), puis on contrôle que le troisième terme est bien $2ab$ ; son signe donne
+$(a+b)^{2}$ ou $(a-b)^{2}$.}{méthode 6 du cours}
+\cas{A}
+\explique{$9x^{2}=(3x)^{2}$ et $4=2^{2}$, donc $a=3x$ et $b=2$.}{on trouve $a$ et $b$}
+\explique{$2ab=2\times 3x\times 2=12x$ : c'est bien le terme restant, avec un $+$. Donc
+$A=\res{(3x+2)^{2}}$.}{on contrôle le double produit}
+\cas{B}
+\explique{$25a^{2}=(5a)^{2}$ et $9=3^{2}$ ; le double produit serait
+$2\times 5a\times 3=30a$. Or le terme restant est $15a$ : $B$ \res{ne se factorise pas}
+avec une identité.}{le contrôle échoue}
+\cas{C}
+\explique{On range d'abord : $C=16d^{2}+24d+9$. Puis $16d^{2}=(4d)^{2}$ et $9=3^{2}$ ;
+$2\times 4d\times 3=24d$ est le terme restant. Donc $C=\res{(4d+3)^{2}}$.}{les carrés ne
+sont pas toujours aux extrémités}
+\cas{D}
+\explique{$36=6^{2}$ et $x^{2}=x^{2}$ ; $2\times 6\times x=12x$ et le terme restant est
+$-12x$. Donc $D=\res{(6-x)^{2}}$.}{le signe $-$ donne $(a-b)^{2}$}
+\rem{$(x-6)^{2}$ est juste aussi : $(6-x)^{2}$ et $(x-6)^{2}$ sont égaux, car deux nombres
+opposés ont le même carré.}
+\cas{E}
+\explique{$E=9x^{2}+6x-1$ : le dernier terme $-1$ est négatif, ce n'est pas un carré.
+$E$ \res{ne se factorise pas} avec une identité.}{dans $a^{2}\pm 2ab+b^{2}$, les deux
+carrés sont précédés d'un $+$}
+\cas{F}
+\explique{On range : $F=16b^{2}-40b+25$. Puis $16b^{2}=(4b)^{2}$ et $25=5^{2}$ ;
+$2\times 4b\times 5=40b$ et le terme restant est $-40b$. Donc $F=\res{(4b-5)^{2}}$.}{}
+\rem{Contrôle de $A$ en redéveloppant : $(3x+2)^{2}=9x^{2}+12x+4$.}
 \end{exo}
 
 \begin{exo}[Quelle méthode ?]
-\deux{$A=\res{(7x+4)(7x-4)}$}{$B=\res{x(16x+7)}$}
-\deux{$C=\res{(2x+5)^{2}}$}{$D=\res{(8-3x)^{2}}$}
-\deux{$E=\res{a(5-4a)}$}{$F=\res{(1-5f)^{2}}$}
+\explique{Pour chaque expression, on se pose les questions dans l'ordre : un facteur
+commun ? deux carrés séparés par un $-$ ? trois termes dont deux carrés ?}{méthodes 5 et 6
+du cours}
+\cas{A}
+\begin{calculs}
+A &= 49x^{2}-16 &&\justif{deux carrés séparés par un $-$ : $a=7x$ et $b=4$}\\
+A &= (7x)^{2}-4^{2} &&\\
+A &= \res{(7x+4)(7x-4)} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 16x^{2}+7x &&\justif{$7x$ n'est pas un carré, mais $x$ est commun}\\
+B &= x\times 16x+x\times 7 &&\\
+B &= \res{x(16x+7)} &&
+\end{calculs}
+\cas{C}
+\explique{$4x^{2}=(2x)^{2}$ et $25=5^{2}$ ; $2\times 2x\times 5=20x$ est le terme restant.
+Donc $C=\res{(2x+5)^{2}}$.}{trois termes : carré parfait}
+\cas{D}
+\explique{$64=8^{2}$ et $9x^{2}=(3x)^{2}$ ; $2\times 8\times 3x=48x$ et le terme restant
+est $-48x$. Donc $D=\res{(8-3x)^{2}}$.}{signe $-$ : $(a-b)^{2}$}
+\cas{E}
+\begin{calculs}
+E &= 5a-4a^{2} &&\justif{$5a$ n'est pas un carré ; $a$ est commun}\\
+E &= a\times 5-a\times 4a &&\\
+E &= \res{a(5-4a)} &&
+\end{calculs}
+\cas{F}
+\explique{On range : $F=25f^{2}-10f+1$. Puis $25f^{2}=(5f)^{2}$ et $1=1^{2}$ ;
+$2\times 5f\times 1=10f$ et le terme restant est $-10f$. Donc
+$F=\res{(5f-1)^{2}}$.}{ou $(1-5f)^{2}$, qui est égal}
 \end{exo}
 
 \partie{Factorisations avancées}
 
 \begin{exo}[Identité remarquable sur des expressions]
+\explique{$a$ et $b$ sont ici des expressions : on les écrit entre parenthèses dans les
+crochets de $(a+b)(a-b)$, puis on réduit chaque crochet.}{propriété 5 et méthode 7 du
+cours, exemple a)}
+\cas{A}
 \begin{calculs}
-A&=\big[(7x+5)+(3x+1)\big]\big[(7x+5)-(3x+1)\big]\\
-A&=\res{(10x+6)(4x+4)}\\
-B&=\big[(7x-3)+(2x-1)\big]\big[(7x-3)-(2x-1)\big]\\
-B&=\res{(9x-4)(5x-2)}\\
-C&=\big[(3x-2)+7\big]\big[(3x-2)-7\big]\\
-C&=\res{(3x+5)(3x-9)}\\
-D&=\big[9-(2x-3)\big]\big[9+(2x-3)\big]\\
-D&=\res{(12-2x)(2x+6)}\\
-E&=\big[(x+5)+(x+2)\big]\big[(x+5)-(x+2)\big]\\
-E&=\res{3(2x+7)}
+A &= (7x+5)^{2}-(3x+1)^{2} &&\justif{$a=7x+5$ et $b=3x+1$}\\
+A &= \big[(7x+5)+(3x+1)\big]\big[(7x+5)-(3x+1)\big] &&\\
+A &= (7x+5+3x+1)(7x+5-3x-1) &&\justif{le $-$ change les signes de $3x+1$}\\
+A &= \res{(10x+6)(4x+4)} &&
 \end{calculs}
-\rem{Dans $B$ : $-(2x-1)=-2x+1$. On peut encore sortir des facteurs numériques :
+\rem{On peut encore sortir des facteurs : $10x+6=2(5x+3)$ et $4x+4=4(x+1)$, donc
 $A=8(5x+3)(x+1)$.}
+\cas{B}
+\begin{calculs}
+B &= (7x-3)^{2}-(2x-1)^{2} &&\justif{$a=7x-3$ et $b=2x-1$}\\
+B &= \big[(7x-3)+(2x-1)\big]\big[(7x-3)-(2x-1)\big] &&\\
+B &= (7x-3+2x-1)(7x-3-2x+1) &&\justif{$-(2x-1)=-2x+1$}\\
+B &= \res{(9x-4)(5x-2)} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (3x-2)^{2}-49 &&\justif{$49=7^{2}$ : $a=3x-2$ et $b=7$}\\
+C &= \big[(3x-2)+7\big]\big[(3x-2)-7\big] &&\\
+C &= \res{(3x+5)(3x-9)} &&
+\end{calculs}
+\rem{Et $3x-9=3(x-3)$ : $C=3(3x+5)(x-3)$.}
+\cas{D}
+\begin{calculs}
+D &= 81-(2x-3)^{2} &&\justif{$81=9^{2}$ : $a=9$ et $b=2x-3$}\\
+D &= \big[9+(2x-3)\big]\big[9-(2x-3)\big] &&\\
+D &= (9+2x-3)(9-2x+3) &&\\
+D &= \res{(2x+6)(12-2x)} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (x+5)^{2}-(x+2)^{2} &&\justif{$a=x+5$ et $b=x+2$}\\
+E &= \big[(x+5)+(x+2)\big]\big[(x+5)-(x+2)\big] &&\\
+E &= (2x+7)(x+5-x-2) &&\\
+E &= (2x+7)\times 3 &&\justif{les $x$ s'éliminent dans le second crochet}\\
+E &= \res{3(2x+7)} &&
+\end{calculs}
+\rem{Erreur fréquente : oublier les parenthèses dans le crochet $\big[(7x-3)-(2x-1)\big]$
+et écrire $7x-3-2x-1$. L'énoncé demande ces parenthèses pour cette raison.}
 \end{exo}
 
 \begin{exo}[Le « 1 » caché et le carré]
+\explique{Un facteur seul vaut $1\times$ ce facteur : quand on l'enlève, il reste $1$ dans
+le crochet. Un carré $(\ldots)^{2}$ est un produit $(\ldots)(\ldots)$ : il contient le
+facteur commun.}{propriété 5 du cours}
+\cas{A}
 \begin{calculs}
-A&=(5x+4)\big[(3x-2)+1\big]=\res{(5x+4)(3x-1)}\\
-B&=(x-1)\big[3(x+2)-1\big]=\res{(x-1)(3x+5)}\\
-C&=(6r-4)\big[(2r-3)+(6r-4)\big]\\
-C&=\res{(6r-4)(8r-7)}\\
-D&=(4m-2)\big[(4m-2)-(3m+1)\big]\\
-D&=\res{(4m-2)(m-3)}\\
-E&=(x+2)\big[(x+2)+4+1\big]=\res{(x+2)(x+7)}
+A &= (5x+4)(3x-2)+(5x+4) &&\justif{le second terme est $1\times(5x+4)$}\\
+A &= (5x+4)(3x-2)+1\times(5x+4) &&\\
+A &= (5x+4)\big[(3x-2)+1\big] &&\\
+A &= \res{(5x+4)(3x-1)} &&
 \end{calculs}
-\rem{Dans $E$, $x+2$ apparaît trois fois : le dernier terme donne le \og 1\fg{}.}
+\cas{B}
+\begin{calculs}
+B &= 3(x-1)(x+2)-(x-1) &&\justif{facteur commun $(x-1)$}\\
+B &= 3(x-1)(x+2)-1\times(x-1) &&\justif{le « 1 » caché}\\
+B &= (x-1)\big[3(x+2)-1\big] &&\\
+B &= (x-1)(3x+6-1) &&\\
+B &= \res{(x-1)(3x+5)} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (6r-4)(2r-3)+(6r-4)^{2} &&\justif{$(6r-4)^{2}=(6r-4)(6r-4)$}\\
+C &= (6r-4)(2r-3)+(6r-4)(6r-4) &&\\
+C &= (6r-4)\big[(2r-3)+(6r-4)\big] &&\\
+C &= \res{(6r-4)(8r-7)} &&
+\end{calculs}
+\rem{Et $6r-4=2(3r-2)$ : $C=2(3r-2)(8r-7)$.}
+\cas{D}
+\begin{calculs}
+D &= (4m-2)^{2}-(4m-2)(3m+1) &&\justif{$(4m-2)^{2}=(4m-2)(4m-2)$}\\
+D &= (4m-2)\big[(4m-2)-(3m+1)\big] &&\\
+D &= (4m-2)(4m-2-3m-1) &&\\
+D &= \res{(4m-2)(m-3)} &&
+\end{calculs}
+\cas{E}
+\explique{$x+2$ apparaît trois fois : dans le carré, dans $4(x+2)$, et seul, en fin
+d'expression ($x+2=1\times(x+2)$).}{on regroupe d'abord les deux derniers termes}
+\begin{calculs}
+E &= (x+2)^{2}+4(x+2)+x+2 &&\\
+E &= (x+2)(x+2)+4(x+2)+1\times(x+2) &&\\
+E &= (x+2)\big[(x+2)+4+1\big] &&\\
+E &= \res{(x+2)(x+7)} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $(5x+4)\big[(3x-2)+0\big]$ dans $A$. Contrôle avec $x=0$ :
+$4\times(-2)+4=-4$ et $4\times(-1)=-4$.}
 \end{exo}
 
 \begin{exo}[Faire apparaître le facteur commun]
+\explique{Le facteur commun est caché : on le fait apparaître en réordonnant les termes,
+en reconnaissant un opposé ($3-x=-(x-3)$) ou en factorisant un seul morceau avec une
+identité.}{propriété 5 et méthode 7 du cours}
+\cas{A}
 \begin{calculs}
-A&=(3x-4)(x+2)+6(3x-4)\\
-A&=\res{(3x-4)(x+8)}\\
-B&=(x-5)^{2}+(x-5)\\
-B&=\res{(x-5)(x-4)}\\
-C&=(-x+2)(3x+1)-(3x+1)(x-7)\\
-C&=\res{(3x+1)(9-2x)}\\
-D&=(3x+4)(3x-4)+(3x+4)(2x+5)\\
-D&=\res{(3x+4)(5x+1)}\\
-E&=(4x+5)^{2}-2(4x+5)\\
-E&=\res{(4x+5)(4x+3)}
+A &= (3x-4)(x+2)+6(-4+3x) &&\justif{$-4+3x=3x-4$ : même parenthèse, termes dans l'autre ordre}\\
+A &= (3x-4)(x+2)+6(3x-4) &&\\
+A &= (3x-4)\big[(x+2)+6\big] &&\\
+A &= \res{(3x-4)(x+8)} &&
 \end{calculs}
-\rem{$B$ : $(5-x)^{2}=(x-5)^{2}$ (un carré efface le signe). $C$ :
-$-3x-1=-(3x+1)$.}
+\cas{B}
+\begin{calculs}
+B &= (5-x)^{2}+(x-5) &&\justif{$5-x$ est l'opposé de $x-5$, et deux opposés ont le même carré}\\
+B &= (x-5)^{2}+1\times(x-5) &&\justif{$(5-x)^{2}=(x-5)^{2}$}\\
+B &= (x-5)\big[(x-5)+1\big] &&\\
+B &= \res{(x-5)(x-4)} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (-x+2)(3x+1)+(-3x-1)(x-7) &&\justif{$-3x-1=-(3x+1)$}\\
+C &= (-x+2)(3x+1)-(3x+1)(x-7) &&\justif{le signe $-$ passe devant le produit}\\
+C &= (3x+1)\big[(-x+2)-(x-7)\big] &&\\
+C &= (3x+1)(-x+2-x+7) &&\\
+C &= \res{(3x+1)(-2x+9)} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 9x^{2}-16+(3x+4)(2x+5) &&\justif{$9x^{2}-16=(3x)^{2}-4^{2}$ fait apparaître $(3x+4)$}\\
+D &= (3x+4)(3x-4)+(3x+4)(2x+5) &&\\
+D &= (3x+4)\big[(3x-4)+(2x+5)\big] &&\\
+D &= \res{(3x+4)(5x+1)} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 16x^{2}+40x+25-2(4x+5) &&\justif{$16x^{2}+40x+25=(4x+5)^{2}$ : $a=4x$ et $b=5$ ; $2ab=40x$}\\
+E &= (4x+5)^{2}-2(4x+5) &&\\
+E &= (4x+5)\big[(4x+5)-2\big] &&\\
+E &= \res{(4x+5)(4x+3)} &&
+\end{calculs}
+\rem{Erreur fréquente dans $C$ : écrire $(3x+1)\big[(-x+2)+(x-7)\big]$ en gardant le $+$.
+Quand on remplace $(-3x-1)$ par $-(3x+1)$, le signe devant le produit devient $-$.}
 \end{exo}
 
 \begin{exo}[Choisir la méthode]
-\deux{$A=\res{(4x-7)^{2}}$}{$B=\res{x(3x^{2}-10x+24)}$}
+\explique{On applique la méthode 7 : facteur commun visible ? identité ? facteur commun
+caché ?}{on n'oublie pas de réduire chaque facteur}
+\cas{A}
+\explique{$16x^{2}=(4x)^{2}$ et $49=7^{2}$ ; $2\times 4x\times 7=56x$ et le terme restant
+est $-56x$. Donc $A=\res{(4x-7)^{2}}$.}{trois termes : carré parfait}
+\cas{B}
 \begin{calculs}
-C&=(2x+5)\big[(3x-4)+(4x+9)\big]\\
-C&=\res{(2x+5)(7x+5)}\\
-D&=(5x+3)\big[(4x-9)-(6x-9)\big]\\
-D&=\res{-2x(5x+3)}\\
-E&=\big[(4x-1)+(3x+2)\big]\big[(4x-1)-(3x+2)\big]\\
-E&=\res{(7x+1)(x-3)}
+B &= 24x-10x^{2}+3x^{3} &&\justif{chaque terme contient $x$ ; $24$, $10$ et $3$ n'ont pas de diviseur commun}\\
+B &= x\times 24-x\times 10x+x\times 3x^{2} &&\\
+B &= \res{x(24-10x+3x^{2})} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (2x+5)(3x-4)+(2x+5)(4x+9) &&\justif{facteur commun $(2x+5)$}\\
+C &= (2x+5)\big[(3x-4)+(4x+9)\big] &&\\
+C &= \res{(2x+5)(7x+5)} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (5x+3)(4x-9)-(5x+3)(6x-9) &&\justif{facteur commun $(5x+3)$}\\
+D &= (5x+3)\big[(4x-9)-(6x-9)\big] &&\\
+D &= (5x+3)(4x-9-6x+9) &&\\
+D &= (5x+3)(-2x) &&\justif{les nombres s'éliminent}\\
+D &= \res{-2x(5x+3)} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (4x-1)^{2}-(3x+2)^{2} &&\justif{$a=4x-1$ et $b=3x+2$}\\
+E &= \big[(4x-1)+(3x+2)\big]\big[(4x-1)-(3x+2)\big] &&\\
+E &= (4x-1+3x+2)(4x-1-3x-2) &&\\
+E &= \res{(7x+1)(x-3)} &&
 \end{calculs}
 \end{exo}
 
 \partie{Fractions rationnelles}
 
 \begin{exo}[Valeurs interdites]
-\deux{$A$ : \res{-3}}{$B$ : \res{\frac23}}
-\deux{$C$ : \res{0} et \res{-5}}{$D$ : \res{-\frac23} et \res{2}}
-$E$ : $x^{2}-16=0$ pour \res{-4} et \res{4}.
+\explique{Une valeur interdite annule le dénominateur : on cherche pour quelles valeurs de
+$x$ le dénominateur vaut $0$. Un produit est nul quand l'un de ses facteurs est nul
+(collège).}{définition 3 du cours}
+\cas{A}
+\explique{$x+3=0$ pour $x=-3$ : la valeur interdite est \res{$-3$}.}{contrôle :
+$-3+3=0$}
+\cas{B}
+\explique{$3x-2=0$ donne $3x=2$, soit $x=\frac23$ : la valeur interdite est
+\res{$\frac23$}.}{on ajoute $2$, puis on divise par $3$}
+\cas{C}
+\explique{$x(x+5)=0$ pour $x=0$ ou $x+5=0$, soit $x=-5$ : les valeurs interdites sont
+\res{$0$ et $-5$}.}{un facteur nul suffit}
+\cas{D}
+\explique{$(3x+2)(2-x)=0$ pour $3x+2=0$, soit $x=-\frac23$, ou $2-x=0$, soit $x=2$ : les
+valeurs interdites sont \res{$-\frac23$ et $2$}.}{une valeur par facteur}
+\cas{E}
+\explique{$x^{2}-16=(x+4)(x-4)$, nul pour $x=-4$ ou $x=4$ : les valeurs interdites sont
+\res{$-4$ et $4$}.}{troisième identité ; $4^{2}$ et $(-4)^{2}$ valent $16$}
+\rem{Le numérateur ne joue aucun rôle : seul le dénominateur peut rendre le calcul
+impossible.}
 \end{exo}
 
 \begin{exo}[Premiers calculs]
-\deux{$A=\res{\dfrac{2x+1}{x}}$}{$B=\res{\dfrac{4x-3}{x}}$}
-\deux{$C=\res{\dfrac{7}{x}}$}{$D=\res{\dfrac{x^{2}+3}{x}}$}
-$E=\dfrac{x}{3x}+\dfrac{6}{3x}=\res{\dfrac{x+6}{3x}}$
+\explique{On écrit chaque terme avec le dénominateur commun, puis on additionne les
+numérateurs seulement.}{méthode 8 du cours ; ici $x\ne 0$}
+\cas{A}
+\begin{calculs}
+A &= 2+\dfrac{1}{x} &&\justif{$2=\frac{2}{1}$ ; dénominateur commun $x$}\\
+A &= \dfrac{2\fois{x}}{1\fois{x}}+\dfrac{1}{x} &&\\
+A &= \res{\dfrac{2x+1}{x}} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 4-\dfrac{3}{x} &&\\
+B &= \dfrac{4\fois{x}}{1\fois{x}}-\dfrac{3}{x} &&\\
+B &= \res{\dfrac{4x-3}{x}} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= \dfrac{2}{x}+\dfrac{5}{x} &&\justif{même dénominateur : on additionne les numérateurs}\\
+C &= \res{\dfrac{7}{x}} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= x+\dfrac{3}{x} &&\\
+D &= \dfrac{x\fois{x}}{1\fois{x}}+\dfrac{3}{x} &&\justif{$x\times x=x^{2}$}\\
+D &= \res{\dfrac{x^{2}+3}{x}} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= \dfrac13+\dfrac{2}{x} &&\justif{dénominateur commun $3x$}\\
+E &= \dfrac{1\fois{x}}{3\fois{x}}+\dfrac{2\fois{3}}{x\fois{3}} &&\\
+E &= \res{\dfrac{x+6}{3x}} &&
+\end{calculs}
+\rem{Erreur fréquente : $2+\frac1x=\frac{3}{x}$. On n'ajoute pas un entier au numérateur :
+$2$ s'écrit d'abord $\frac{2x}{x}$. Contrôle avec $x=1$ : $2+1=3$ et $\frac{2+1}{1}=3$.}
 \end{exo}
 
 \begin{exo}[Une seule fraction]
+\explique{On donne d'abord les valeurs interdites (un dénominateur ne doit pas être nul),
+on met au même dénominateur (le produit des dénominateurs, laissé factorisé), puis on
+réduit le numérateur seulement.}{méthode 8 du cours}
+\cas{A}
+\explique{$x-2=0$ pour $x=2$ : on travaille pour $x\ne 2$.}{valeur interdite \res{$2$}}
 \begin{calculs}
-A&=\frac{x-2+3}{x-2}=\res{\frac{x+1}{x-2}}\\
-B&=\frac{4(x+2)-3x}{x(x+2)}=\res{\frac{x+8}{x(x+2)}}\\
-C&=\frac{x^{2}+2(x+3)}{x(x+3)}=\res{\frac{x^{2}+2x+6}{x(x+3)}}\\
-D&=\frac{3(x-1)-(x+2)}{x-1}=\res{\frac{2x-5}{x-1}}\\
-E&=\frac{x+2+x-2}{(x-2)(x+2)}=\res{\frac{2x}{(x-2)(x+2)}}
+A &= 1+\dfrac{3}{x-2} &&\\
+A &= \dfrac{x-2}{x-2}+\dfrac{3}{x-2} &&\justif{$1=\frac{x-2}{x-2}$}\\
+A &= \dfrac{x-2+3}{x-2} &&\\
+A &= \res{\dfrac{x+1}{x-2}} &&
 \end{calculs}
-Valeurs interdites : $A$ : $2$ ; $B$ : $0$ et $-2$ ; $C$ : $0$ et $-3$ ; $D$ : $1$ ;
-$E$ : $2$ et $-2$.
-\rem{$D$ : la parenthèse autour de $x+2$ est indispensable.}
+\cas{B}
+\explique{Les dénominateurs $x$ et $x+2$ s'annulent en $0$ et en $-2$ : on travaille pour
+$x\ne 0$ et $x\ne -2$.}{valeurs interdites \res{$0$ et $-2$}}
+\begin{calculs}
+B &= \dfrac{4}{x}-\dfrac{3}{x+2} &&\justif{dénominateur commun $x(x+2)$}\\
+B &= \dfrac{4(x+2)}{x(x+2)}-\dfrac{3x}{x(x+2)} &&\\
+B &= \dfrac{4x+8-3x}{x(x+2)} &&\\
+B &= \res{\dfrac{x+8}{x(x+2)}} &&
+\end{calculs}
+\cas{C}
+\explique{$x+3=0$ pour $x=-3$, et $x=0$ annule le second dénominateur : on travaille pour
+$x\ne -3$ et $x\ne 0$.}{valeurs interdites \res{$-3$ et $0$}}
+\begin{calculs}
+C &= \dfrac{x}{x+3}+\dfrac{2}{x} &&\justif{dénominateur commun $x(x+3)$}\\
+C &= \dfrac{x\times x}{x(x+3)}+\dfrac{2(x+3)}{x(x+3)} &&\\
+C &= \res{\dfrac{x^{2}+2x+6}{x(x+3)}} &&\justif{$x^{2}+2(x+3)=x^{2}+2x+6$}
+\end{calculs}
+\cas{D}
+\explique{$x-1=0$ pour $x=1$ : on travaille pour $x\ne 1$.}{valeur interdite \res{$1$}}
+\begin{calculs}
+D &= 3-\dfrac{x+2}{x-1} &&\\
+D &= \dfrac{3(x-1)}{x-1}-\dfrac{x+2}{x-1} &&\\
+D &= \dfrac{3(x-1)-(x+2)}{x-1} &&\justif{le $-$ porte sur tout le numérateur $x+2$}\\
+D &= \dfrac{3x-3-x-2}{x-1} &&\\
+D &= \res{\dfrac{2x-5}{x-1}} &&
+\end{calculs}
+\rem{Erreur fréquente dans $D$ : écrire $3x-3-x+2$, sans parenthèses autour de $x+2$.}
+\cas{E}
+\explique{$x-2$ et $x+2$ s'annulent en $2$ et en $-2$ : on travaille pour $x\ne 2$ et
+$x\ne -2$.}{valeurs interdites \res{$2$ et $-2$}}
+\begin{calculs}
+E &= \dfrac{1}{x-2}+\dfrac{1}{x+2} &&\justif{dénominateur commun $(x-2)(x+2)$}\\
+E &= \dfrac{x+2}{(x-2)(x+2)}+\dfrac{x-2}{(x-2)(x+2)} &&\\
+E &= \res{\dfrac{2x}{(x-2)(x+2)}} &&\justif{$x+2+x-2=2x$}
+\end{calculs}
+\rem{On ne simplifie que des facteurs communs au numérateur et au dénominateur : dans
+$\frac{x+1}{x-2}$, les $x$ ne se simplifient pas.}
 \end{exo}
 
 \begin{exo}[Démontrer une égalité]
-1)
+\explique{Pour démontrer une égalité, on part d'un membre (le plus compliqué, ou celui
+qui a plusieurs fractions) et on le transforme jusqu'à obtenir l'autre.}{on ne part pas
+de l'égalité à démontrer}
+\cas{1)}
+\explique{Pour $x\ne 1$, on transforme le membre de droite.}{il contient deux termes à
+réunir}
 \begin{calculs}
-2-\frac{1}{x-1}&=\frac{2(x-1)-1}{x-1}\\
-2-\frac{1}{x-1}&=\res{\frac{2x-3}{x-1}}
+2-\dfrac{1}{x-1} &= \dfrac{2(x-1)}{x-1}-\dfrac{1}{x-1} &&\justif{$2=\frac{2(x-1)}{x-1}$}\\
+2-\dfrac{1}{x-1} &= \dfrac{2x-2-1}{x-1} &&\\
+2-\dfrac{1}{x-1} &= \dfrac{2x-3}{x-1} &&
 \end{calculs}
-2)
+\explique{On obtient le membre de gauche : pour tout $x\ne 1$,
+$\res{\dfrac{2x-3}{x-1}=2-\dfrac{1}{x-1}}$.}{on conclut par une phrase}
+\cas{2)}
+\explique{Pour $x\ne 0$ et $x\ne 2$, on transforme le membre de gauche.}{dénominateur
+commun $x(x-2)$}
 \begin{calculs}
-\frac{1}{x-2}-\frac1x&=\frac{x-(x-2)}{x(x-2)}\\
-\frac{1}{x-2}-\frac1x&=\res{\frac{2}{x(x-2)}}
+\dfrac{1}{x-2}-\dfrac{1}{x} &= \dfrac{x}{x(x-2)}-\dfrac{x-2}{x(x-2)} &&\\
+\dfrac{1}{x-2}-\dfrac{1}{x} &= \dfrac{x-(x-2)}{x(x-2)} &&\justif{parenthèses : le $-$ porte sur $x-2$}\\
+\dfrac{1}{x-2}-\dfrac{1}{x} &= \dfrac{x-x+2}{x(x-2)} &&\\
+\dfrac{1}{x-2}-\dfrac{1}{x} &= \dfrac{2}{x(x-2)} &&
 \end{calculs}
+\explique{Pour tout $x\ne 0$ et $x\ne 2$,
+$\res{\dfrac{1}{x-2}-\dfrac{1}{x}=\dfrac{2}{x(x-2)}}$.}{}
 \end{exo}
 
 \partie{Équations du premier degré}
 
 \begin{exo}[Les deux règles]
-\deux{a) $\res{S=\ens{5}}$}{b) $\res{S=\ens{8}}$}
-\deux{c) $4=4x$ : $\res{S=\ens{1}}$}{d) $\res{S=\ens{\frac72}}$}
-\deux{e) $-3x=21$ : $\res{S=\ens{-7}}$}{f) $0x=-11$ : $\res{S=\varnothing}$}
+\explique{On regroupe les $x$ d'un côté et les nombres de l'autre en ajoutant ou en
+soustrayant le même terme aux deux membres, puis on divise par le coefficient de
+$x$.}{propriété 7 et méthode 9 du cours}
+\cas{a)}
+\begin{calculs}
+4x+3 &= 3x+8 &&\justif{on recopie}\\
+4x-3x &= 8-3 &&\justif{on soustrait $3x$ et $3$ aux deux membres}\\
+x &= 5 &&
+\end{calculs}
+\explique{$\res{S=\ens{5}}$.}{vérification : $4\times 5+3=23$ et $3\times 5+8=23$}
+\cas{b)}
+\begin{calculs}
+3x+2 &= 4x-6 &&\\
+2+6 &= 4x-3x &&\justif{les $x$ du côté où il y en a le plus : on évite les signes moins}\\
+8 &= x &&
+\end{calculs}
+\explique{$\res{S=\ens{8}}$.}{vérification : $26=26$}
+\cas{c)}
+\begin{calculs}
+2x+5 &= 6x+1 &&\\
+5-1 &= 6x-2x &&\\
+4 &= 4x &&\\
+x &= 1 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$\res{S=\ens{1}}$.}{vérification : $7=7$}
+\cas{d)}
+\begin{calculs}
+7-2x &= 0 &&\\
+7 &= 2x &&\justif{on ajoute $2x$ aux deux membres}\\
+x &= \dfrac72 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$\res{S=\ens{\frac72}}$.}{on garde la fraction (ou $3{,}5$)}
+\cas{e)}
+\begin{calculs}
+2x-9 &= 5x+12 &&\\
+-9-12 &= 5x-2x &&\\
+-21 &= 3x &&\\
+x &= -7 &&\justif{on divise par $3$ : $-21\div 3=-7$}
+\end{calculs}
+\explique{$\res{S=\ens{-7}}$.}{vérification : $-14-9=-23$ et $-35+12=-23$}
+\cas{f)}
+\begin{calculs}
+3x+7 &= 3x-4 &&\\
+3x-3x &= -4-7 &&\\
+0x &= -11 &&\justif{les $x$ disparaissent}
+\end{calculs}
+\explique{$0x=-11$ n'est vrai pour aucun $x$ : $\res{S=\varnothing}$.}{$0\times x$ vaut
+toujours $0$, jamais $-11$}
+\rem{Erreur fréquente : diviser par $3$ avant d'avoir regroupé, ou changer le signe d'un
+terme qui ne change pas de membre.}
 \end{exo}
 
 \begin{exo}[Avec des parenthèses]
+\explique{On développe d'abord chaque membre (un $-$ devant une parenthèse change tous les
+signes), on réduit, puis on applique les deux règles.}{méthode 9 du cours}
+\cas{a)}
 \begin{calculs}
-\text{a) } 9-x&=x+9\\
--2x&=0 \;:\; \res{S=\ens{0}}\\
-\text{b) } x+1&=0 \;:\; \res{S=\ens{-1}}\\
-\text{c) } 4x+10&=x+16\\
-3x&=6 \;:\; \res{S=\ens{2}}\\
-\text{d) } x-8&=5x-20\\
-12&=4x \;:\; \res{S=\ens{3}}\\
-\text{e) } 3m-4&=2m+5 \;:\; \res{S=\ens{9}}
+7-(x-2) &= 5x-(4x-9) &&\justif{on recopie}\\
+7-x+2 &= 5x-4x+9 &&\justif{les deux $-$ changent les signes des parenthèses}\\
+9-x &= x+9 &&\justif{on réduit chaque membre}\\
+9-9 &= x+x &&\\
+0 &= 2x &&\\
+x &= 0 &&
 \end{calculs}
+\explique{$\res{S=\ens{0}}$.}{vérification : $7+2=9$ et $0+9=9$}
+\cas{b)}
+\begin{calculs}
+4(x-2)+3(3-x) &= 0 &&\\
+4x-8+9-3x &= 0 &&\\
+x+1 &= 0 &&\\
+x &= -1 &&
+\end{calculs}
+\explique{$\res{S=\ens{-1}}$.}{vérification : $4\times(-3)+3\times 4=0$}
+\cas{c)}
+\begin{calculs}
+6(x+3)-2(x+4) &= x+16 &&\\
+6x+18-2x-8 &= x+16 &&\justif{$-2\times 4=-8$}\\
+4x+10 &= x+16 &&\\
+4x-x &= 16-10 &&\\
+3x &= 6 &&\\
+x &= 2 &&
+\end{calculs}
+\explique{$\res{S=\ens{2}}$.}{vérification : $30-12=18$ et $2+16=18$}
+\cas{d)}
+\begin{calculs}
+3(x-2)-2(x+1) &= 5(x-4) &&\\
+3x-6-2x-2 &= 5x-20 &&\\
+x-8 &= 5x-20 &&\\
+-8+20 &= 5x-x &&\\
+12 &= 4x &&\\
+x &= 3 &&
+\end{calculs}
+\explique{$\res{S=\ens{3}}$.}{vérification : $3-8=-5$ et $5\times(-1)=-5$}
+\cas{e)}
+\begin{calculs}
+m-(4-2m) &= 2m+5 &&\justif{l'inconnue s'appelle $m$}\\
+m-4+2m &= 2m+5 &&\\
+3m-4 &= 2m+5 &&\\
+3m-2m &= 5+4 &&\\
+m &= 9 &&
+\end{calculs}
+\explique{$\res{S=\ens{9}}$.}{vérification : $9-(4-18)=23$ et $18+5=23$}
 \end{exo}
 
 \begin{exo}[Coefficients fractionnaires]
-\deux{a) $\res{S=\ens{-2}}$}{b) $\res{S=\ens{\frac18}}$}
-\deux{c) $\res{S=\ens{6}}$}{d) $\res{S=\ens{-\frac45}}$}
-\deux{e) $\res{S=\ens{\frac16}}$}{f) $\res{S=\ens{-\frac34}}$}
-\rem{c) $x=\frac92\times\frac43$ : on multiplie par l'inverse du coefficient.}
+\explique{L'équation a la forme $ax=b$ avec $a$ fractionnaire : on divise par $a$, c'est-à-dire
+qu'on multiplie par son inverse (chapitre 1).}{l'inverse de $\frac{p}{q}$ est $\frac{q}{p}$}
+\cas{a)}
+\begin{calculs}
+\dfrac{-5x}{3} &= \dfrac{10}{3} &&\justif{même dénominateur}\\
+-5x &= 10 &&\justif{on multiplie les deux membres par $3$}\\
+x &= -2 &&\justif{on divise par $-5$}
+\end{calculs}
+\explique{$\res{S=\ens{-2}}$.}{}
+\cas{b)}
+\begin{calculs}
+\dfrac{12x}{5} &= \dfrac{3}{10} &&\\
+x &= \dfrac{3}{10}\times\dfrac{5}{12} &&\justif{on multiplie par l'inverse de $\frac{12}{5}$}\\
+x &= \dfrac{\barre{3}\times\barre{5}}{2\times\barre{5}\times 4\times\barre{3}} &&\justif{$10=2\times 5$ et $12=4\times 3$}\\
+x &= \dfrac18 &&
+\end{calculs}
+\explique{$\res{S=\ens{\frac18}}$.}{}
+\cas{c)}
+\begin{calculs}
+\dfrac34x &= \dfrac92 &&\\
+x &= \dfrac92\times\dfrac43 &&\justif{l'inverse de $\frac34$ est $\frac43$}\\
+x &= \dfrac{3\times\barre{3}\times 2\times\barre{2}}{\barre{2}\times\barre{3}} &&\justif{$9=3\times 3$ et $4=2\times 2$}\\
+x &= 6 &&
+\end{calculs}
+\explique{$\res{S=\ens{6}}$.}{vérification : $\frac34\times 6=\frac{18}{4}=\frac92$}
+\cas{d)}
+\begin{calculs}
+-3x &= \dfrac{12}{5} &&\\
+x &= \dfrac{12}{5}\times\left(-\dfrac13\right) &&\justif{diviser par $-3$, c'est multiplier par $-\frac13$}\\
+x &= -\dfrac{4\times\barre{3}}{5\times\barre{3}} &&\\
+x &= -\dfrac45 &&
+\end{calculs}
+\explique{$\res{S=\ens{-\frac45}}$.}{}
+\cas{e)}
+\begin{calculs}
+\dfrac{-3}{7}x &= \dfrac{-1}{14} &&\\
+x &= \dfrac{-1}{14}\times\dfrac{7}{-3} &&\justif{deux signes moins : le résultat est positif}\\
+x &= \dfrac{1\times\barre{7}}{2\times\barre{7}\times 3} &&\justif{$14=2\times 7$}\\
+x &= \dfrac16 &&
+\end{calculs}
+\explique{$\res{S=\ens{\frac16}}$.}{}
+\cas{f)}
+\begin{calculs}
+\dfrac56 &= \dfrac{-10}{9}x &&\justif{l'inconnue est à droite}\\
+x &= \dfrac56\times\dfrac{9}{-10} &&\\
+x &= -\dfrac{\barre{5}\times 3\times\barre{3}}{2\times\barre{3}\times 2\times\barre{5}} &&\justif{$6=2\times 3$ ; $9=3\times 3$ ; $10=2\times 5$}\\
+x &= -\dfrac34 &&
+\end{calculs}
+\explique{$\res{S=\ens{-\frac34}}$.}{}
+\rem{Erreur fréquente : soustraire le coefficient au lieu de diviser, par exemple écrire
+$x=\frac92-\frac34$ en c). Le coefficient multiplie $x$ : on divise.}
 \end{exo}
 
 \begin{exo}[Supprimer les fractions]
+\explique{On multiplie \emph{chaque terme} des deux membres par le dénominateur commun :
+les fractions disparaissent. Un numérateur qui est une somme se met entre
+parenthèses.}{méthode 9 du cours, exemple b)}
+\cas{a)}
 \begin{calculs}
-\text{a) } -x+12&=3x-24 \;:\; \res{S=\ens{9}}\\
-\text{b) } 5x+2&=6x-8 \;:\; \res{S=\ens{10}}\\
-\text{c) } 9x-20&=7 \;:\; \res{S=\ens{3}}\\
-\text{d) } 3x+10&=-x+54 \;:\; \res{S=\ens{11}}\\
-\text{e) } 2x-6-16&=3x+1+2 \;:\; \res{S=\ens{-25}}\\
-\text{f) } 3(2x+4)&=4(x+5) \;:\; \res{S=\ens{4}}
+-\dfrac13x+4 &= x-8 &&\justif{dénominateur $3$}\\
+3\times\left(-\dfrac13x\right)+3\times 4 &= 3\times x-3\times 8 &&\justif{chaque terme $\times 3$}\\
+-x+12 &= 3x-24 &&\\
+12+24 &= 3x+x &&\\
+36 &= 4x &&\\
+x &= 9 &&
 \end{calculs}
-\rem{On multiplie par $3$, $2$, $15$, $6$, $4$ et $12$ ; chaque terme, y compris celui
-sans fraction.}
+\explique{$\res{S=\ens{9}}$.}{vérification : $-3+4=1$ et $9-8=1$}
+\cas{b)}
+\begin{calculs}
+\dfrac52x+1 &= 3x-4 &&\justif{chaque terme $\times 2$}\\
+5x+2 &= 6x-8 &&\\
+2+8 &= 6x-5x &&\\
+x &= 10 &&
+\end{calculs}
+\explique{$\res{S=\ens{10}}$.}{vérification : $26=26$}
+\cas{c)}
+\begin{calculs}
+\dfrac{3x}{5}-\dfrac43 &= \dfrac{7}{15} &&\justif{$15$ est un multiple de $5$ et de $3$}\\
+15\times\dfrac{3x}{5}-15\times\dfrac43 &= 15\times\dfrac{7}{15} &&\\
+9x-20 &= 7 &&\justif{$15\div 5=3$, $3\times 3x=9x$ ; $15\div 3=5$, $5\times 4=20$}\\
+9x &= 27 &&\\
+x &= 3 &&
+\end{calculs}
+\explique{$\res{S=\ens{3}}$.}{vérification : $\frac95-\frac43=\frac{27-20}{15}=\frac{7}{15}$}
+\cas{d)}
+\begin{calculs}
+\dfrac{x}{2}+\dfrac53 &= -\dfrac{x}{6}+9 &&\justif{dénominateur commun $6$ ; le $9$ aussi est multiplié}\\
+3x+10 &= -x+54 &&\\
+3x+x &= 54-10 &&\\
+4x &= 44 &&\\
+x &= 11 &&
+\end{calculs}
+\explique{$\res{S=\ens{11}}$.}{vérification : $\frac{11}{2}+\frac53=\frac{43}{6}$ et $-\frac{11}{6}+\frac{54}{6}=\frac{43}{6}$}
+\cas{e)}
+\begin{calculs}
+\dfrac{x-3}{2}-4 &= \dfrac{3x+1}{4}+\dfrac12 &&\justif{dénominateur commun $4$}\\
+2(x-3)-16 &= 3x+1+2 &&\justif{$4\times\frac{x-3}{2}=2(x-3)$ ; $4\times 4=16$ ; $4\times\frac12=2$}\\
+2x-6-16 &= 3x+3 &&\\
+2x-22 &= 3x+3 &&\\
+-22-3 &= 3x-2x &&\\
+x &= -25 &&
+\end{calculs}
+\explique{$\res{S=\ens{-25}}$.}{vérification : les deux membres valent $-18$}
+\cas{f)}
+\begin{calculs}
+\dfrac{3x+1}{4}-\dfrac{x-3}{4} &= \dfrac{x+5}{3} &&\justif{dénominateur commun $12$}\\
+3(3x+1)-3(x-3) &= 4(x+5) &&\justif{parenthèses autour de chaque numérateur}\\
+9x+3-3x+9 &= 4x+20 &&\justif{$-3\times(-3)=+9$}\\
+6x+12 &= 4x+20 &&\\
+6x-4x &= 20-12 &&\\
+2x &= 8 &&\\
+x &= 4 &&
+\end{calculs}
+\explique{$\res{S=\ens{4}}$.}{vérification : $\frac{13-1}{4}=3$ et $\frac93=3$}
+\rem{Erreur fréquente : oublier de multiplier le terme sans fraction (le $-4$ de e)
+devient $-16$), ou oublier la parenthèse : $3(x-3)$, et non $3x-3$.}
 \end{exo}
 
 \begin{exo}[Produit en croix, cas particuliers]
-1) a) $9x+6=20x-4$ : $\res{S=\ens{\frac{10}{11}}}$ \quad b) $9x-6=10$ :
-$\res{S=\ens{\frac{16}{9}}}$\par
-2) a) ($\times 6$) $-x+24=-x+24$ : $0x=0$, $\res{S=\R}$.\par
-b) ($\times 12$) $-2x-5=-2x-1$ : $0x=4$, $\res{S=\varnothing}$.
+\cas{1) a)}
+\begin{calculs}
+\dfrac{3x+2}{4} &= \dfrac{5x-1}{3} &&\justif{deux fractions égales}\\
+3(3x+2) &= 4(5x-1) &&\justif{produit en croix}\\
+9x+6 &= 20x-4 &&\\
+6+4 &= 20x-9x &&\\
+10 &= 11x &&\\
+x &= \dfrac{10}{11} &&
+\end{calculs}
+\explique{$\res{S=\ens{\frac{10}{11}}}$.}{on garde la valeur exacte}
+\cas{1) b)}
+\begin{calculs}
+\dfrac{3x-2}{5} &= \dfrac23 &&\\
+3(3x-2) &= 5\times 2 &&\justif{produit en croix}\\
+9x-6 &= 10 &&\\
+9x &= 16 &&\\
+x &= \dfrac{16}{9} &&
+\end{calculs}
+\explique{$\res{S=\ens{\frac{16}{9}}}$.}{}
+\cas{2) a)}
+\begin{calculs}
+\dfrac12(x+4)-\dfrac23(x-3) &= \dfrac16(-x+12)+2 &&\justif{chaque terme $\times 6$}\\
+3(x+4)-4(x-3) &= -x+12+12 &&\justif{$6\times\frac12=3$ ; $6\times\frac23=4$ ; $6\times 2=12$}\\
+3x+12-4x+12 &= -x+24 &&\\
+-x+24 &= -x+24 &&\justif{les deux membres sont identiques}\\
+0x &= 0 &&
+\end{calculs}
+\explique{$0x=0$ est vrai pour tout $x$ : $\res{S=\R}$.}{propriété 7 : $a=0$ et $b=0$}
+\cas{2) b)}
+\begin{calculs}
+\dfrac{x+1}{3}-\dfrac{2x-1}{4}-1 &= -\dfrac{2x+1}{12} &&\justif{chaque terme $\times 12$}\\
+4(x+1)-3(2x-1)-12 &= -(2x+1) &&\\
+4x+4-6x+3-12 &= -2x-1 &&\\
+-2x-5 &= -2x-1 &&\\
+0x &= 4 &&\justif{on ajoute $2x$ et $5$}
+\end{calculs}
+\explique{$0x=4$ n'est jamais vrai : $\res{S=\varnothing}$.}{propriété 7 : $a=0$ et
+$b\ne 0$}
+\rem{Quand les $x$ disparaissent, on ne s'arrête pas : on lit l'égalité qui reste. Vraie
+($0=0$), tous les réels sont solutions ; fausse ($0=4$), il n'y en a aucune.}
 \end{exo}
 
 \begin{exo}[L'inconnue au dénominateur]
+\explique{On donne la valeur interdite (dénominateur nul), on fait un produit en croix
+($2=\frac21$), on résout, puis on vérifie que la solution n'est pas
+interdite.}{méthode 10 du cours}
+\cas{a)}
+\explique{$2x+1=0$ pour $x=-\frac12$. Pour $x\ne -\frac12$ :}{on écarte $-\frac12$}
 \begin{calculs}
-\text{a) } x&\ne -\tfrac12 \;:\; 3x-2=4x+2\\
-x&=-4 \;:\; \res{S=\ens{-4}}\\
-\text{b) } x&\ne 2 \;:\; 3-2x=2-x\\
-x&=1 \;:\; \res{S=\ens{1}}\\
-\text{c) } x&\ne -\tfrac12 \;:\; 12-4x=6x+3\\
-x&=\tfrac{9}{10} \;:\; \res{S=\ens{\tfrac{9}{10}}}\\
-\text{d) } x&\ne -\tfrac12 \;:\; 4+2x=1+2x\\
-0x&=-3 \;:\; \res{S=\varnothing}\\
-\text{e) } x&\ne 2 \;:\; 3-x=2x-4\\
-x&=\tfrac73 \;:\; \res{S=\ens{\tfrac73}}\\
-\text{f) } x&\ne -2 \;:\; -3x=4+2x\\
-x&=-\tfrac45 \;:\; \res{S=\ens{-\tfrac45}}
+\dfrac{3x-2}{2x+1} &= 2 &&\\
+3x-2 &= 2(2x+1) &&\justif{produit en croix avec $\frac21$}\\
+3x-2 &= 4x+2 &&\\
+-2-2 &= 4x-3x &&\\
+x &= -4 &&
 \end{calculs}
+\explique{$-4\ne -\frac12$ : $\res{S=\ens{-4}}$.}{vérification : $\frac{-14}{-7}=2$}
+\cas{b)}
+\explique{$2-x=0$ pour $x=2$. Pour $x\ne 2$ :}{}
+\begin{calculs}
+\dfrac{3-2x}{2-x} &= 1 &&\\
+3-2x &= 2-x &&\justif{produit en croix avec $\frac11$}\\
+3-2 &= 2x-x &&\\
+x &= 1 &&
+\end{calculs}
+\explique{$1\ne 2$ : $\res{S=\ens{1}}$.}{vérification : $\frac11=1$}
+\cas{c)}
+\explique{$2x+1=0$ pour $x=-\frac12$. Pour $x\ne -\frac12$ :}{}
+\begin{calculs}
+\dfrac{3-x}{2x+1} &= \dfrac34 &&\\
+4(3-x) &= 3(2x+1) &&\justif{produit en croix}\\
+12-4x &= 6x+3 &&\\
+12-3 &= 6x+4x &&\\
+9 &= 10x &&\\
+x &= \dfrac{9}{10} &&
+\end{calculs}
+\explique{$\frac{9}{10}$ n'est pas interdit : $\res{S=\ens{\frac{9}{10}}}$.}{}
+\cas{d)}
+\explique{$1+2x=0$ pour $x=-\frac12$. Pour $x\ne -\frac12$ :}{}
+\begin{calculs}
+\dfrac{2+x}{1+2x} &= \dfrac12 &&\\
+2(2+x) &= 1+2x &&\justif{produit en croix}\\
+4+2x &= 1+2x &&\\
+0x &= -3 &&\justif{les $x$ disparaissent}
+\end{calculs}
+\explique{$0x=-3$ est toujours faux : $\res{S=\varnothing}$.}{}
+\cas{e)}
+\explique{$x-2=0$ pour $x=2$. Pour $x\ne 2$ :}{}
+\begin{calculs}
+\dfrac{3-x}{x-2} &= 2 &&\\
+3-x &= 2(x-2) &&\\
+3-x &= 2x-4 &&\\
+3+4 &= 2x+x &&\\
+7 &= 3x &&\\
+x &= \dfrac73 &&
+\end{calculs}
+\explique{$\frac73\ne 2$ : $\res{S=\ens{\frac73}}$.}{vérification : $\frac{2/3}{1/3}=2$}
+\cas{f)}
+\explique{$2+x=0$ pour $x=-2$. Pour $x\ne -2$ :}{}
+\begin{calculs}
+\dfrac{-3x}{2+x} &= 2 &&\\
+-3x &= 2(2+x) &&\\
+-3x &= 4+2x &&\\
+-3x-2x &= 4 &&\\
+-5x &= 4 &&\\
+x &= -\dfrac45 &&
+\end{calculs}
+\explique{$-\frac45\ne -2$ : $\res{S=\ens{-\frac45}}$.}{}
+\rem{Le dernier contrôle n'est pas une formalité : une solution qui annule le
+dénominateur serait à rejeter.}
 \end{exo}
 
 \partie{Équations produit}
 
 \begin{exo}[Produit nul]
-\deux{a) $\res{S=\ens{0\,;\frac53}}$}{b) $\res{S=\ens{0\,;\frac83}}$}
-\deux{c) $\res{S=\ens{\frac52}}$}{d) $\res{S=\ens{-2\,;-\frac43\,;0}}$}
-e) $\res{S=\ens{-1\,;\frac23\,;5}}$
-\rem{c) Un carré est nul si et seulement si le nombre est nul : une seule solution.}
+\explique{Un produit est nul si et seulement si l'un au moins de ses facteurs est nul : on
+écrit \og facteur $=0$\fg{} pour chaque facteur qui contient $x$.}{propriété 8 du cours}
+\cas{a)}
+\explique{$2x(3x-5)=0$ équivaut à $2x=0$ ou $3x-5=0$, soit $x=0$ ou $x=\frac53$ :
+$\res{S=\ens{0\,;\frac53}}$.}{deux facteurs : deux équations du premier degré}
+\cas{b)}
+\explique{$-4x^{2}(3x-8)=0$ équivaut à $-4x^{2}=0$ ou $3x-8=0$. Or $-4x^{2}=0$ seulement
+pour $x=0$ ; et $3x-8=0$ donne $x=\frac83$ : $\res{S=\ens{0\,;\frac83}}$.}{$-4$ n'est
+jamais nul ; $x^{2}=x\times x$ est nul pour $x=0$}
+\cas{c)}
+\explique{$(-2x+5)^{2}=(-2x+5)(-2x+5)$ : les deux facteurs sont les mêmes. $-2x+5=0$ donne
+$x=\frac52$ : $\res{S=\ens{\frac52}}$.}{une seule solution}
+\cas{d)}
+\explique{$x^{2}(x+2)(-4-3x)=0$ équivaut à $x^{2}=0$ ou $x+2=0$ ou $-4-3x=0$, soit $x=0$,
+$x=-2$ ou $x=-\frac43$.}{$-4-3x=0$ donne $-3x=4$}
+\explique{$\res{S=\ens{-2\,;-\frac43\,;0}}$.}{on range les solutions dans l'ordre croissant}
+\cas{e)}
+\explique{$x+1=0$ ou $3x-2=0$ ou $x-5=0$, soit $x=-1$, $x=\frac23$ ou $x=5$ :
+$\res{S=\ens{-1\,;\frac23\,;5}}$.}{trois facteurs : trois solutions}
+\rem{Erreur fréquente : développer un produit déjà factorisé. Avec un produit nul, la forme
+factorisée donne directement les solutions.}
 \end{exo}
 
 \begin{exo}[Factoriser d'abord]
+\explique{On met tout dans le membre de gauche ($\ldots=0$), on factorise, puis on applique
+le produit nul.}{méthode 11 du cours}
+\cas{a)}
 \begin{calculs}
-\text{a) } x(3x-8)&=0 \;:\; \res{S=\ens{0\,;\tfrac83}}\\
-\text{b) } x^{2}(2x-5)&=0 \;:\; \res{S=\ens{0\,;\tfrac52}}\\
-\text{c) } (x+3)\big[(x+3)-(4x-3)\big]&=0\\
-(x+3)(6-3x)&=0 \;:\; \res{S=\ens{-3\,;2}}\\
-\text{d) } (2x-5)\big[(3x+1)-(4-x)\big]&=0\\
-(2x-5)(4x-3)&=0 \;:\; \res{S=\ens{\tfrac34\,;\tfrac52}}\\
-\text{e) } (3x+2)(3x-2-3+x)&=0\\
-(3x+2)(4x-5)&=0 \;:\; \res{S=\ens{-\tfrac23\,;\tfrac54}}\\
-\text{f) } (3x-1)\big[(x+2)^{2}-9\big]&=0\\
-(3x-1)(x+5)(x-1)&=0 \;:\; \res{S=\ens{-5\,;\tfrac13\,;1}}
+3x^{2}-8x &= 0 &&\justif{$x$ est commun}\\
+x(3x-8) &= 0 &&
 \end{calculs}
-\rem{e) $9x^{2}-4=(3x+2)(3x-2)$ fait apparaître le facteur commun.}
+\explique{$x=0$ ou $3x-8=0$ : $\res{S=\ens{0\,;\frac83}}$.}{}
+\cas{b)}
+\begin{calculs}
+2x^{3}-5x^{2} &= 0 &&\justif{$x^{2}$ est commun : $x^{3}=x^{2}\times x$}\\
+x^{2}(2x-5) &= 0 &&
+\end{calculs}
+\explique{$x^{2}=0$ ou $2x-5=0$ : $\res{S=\ens{0\,;\frac52}}$.}{}
+\cas{c)}
+\begin{calculs}
+(x+3)^{2} &= (x+3)(4x-3) &&\justif{on recopie}\\
+(x+3)^{2}-(x+3)(4x-3) &= 0 &&\justif{tout dans le membre de gauche}\\
+(x+3)\big[(x+3)-(4x-3)\big] &= 0 &&\justif{facteur commun $(x+3)$}\\
+(x+3)(-3x+6) &= 0 &&\justif{$x+3-4x+3=-3x+6$}
+\end{calculs}
+\explique{$x+3=0$ ou $-3x+6=0$, soit $x=-3$ ou $x=2$ : $\res{S=\ens{-3\,;2}}$.}{}
+\rem{Ne jamais diviser par $(x+3)$ : on obtiendrait $x+3=4x-3$, soit seulement $x=2$, et
+on perdrait la solution $-3$.}
+\cas{d)}
+\begin{calculs}
+(2x-5)(3x+1)-(2x-5)(4-x) &= 0 &&\justif{tout à gauche}\\
+(2x-5)\big[(3x+1)-(4-x)\big] &= 0 &&\\
+(2x-5)(4x-3) &= 0 &&\justif{$3x+1-4+x=4x-3$}
+\end{calculs}
+\explique{$2x-5=0$ ou $4x-3=0$ : $\res{S=\ens{\frac34\,;\frac52}}$.}{}
+\cas{e)}
+\explique{Pas de facteur commun visible : on factorise le morceau $9x^{2}-4$ avec la
+troisième identité, ce qui fait apparaître $(3x+2)$ et $(3x-2)$.}{propriété 5 : une
+identité dans un seul morceau}
+\begin{calculs}
+9x^{2}-4-3(3x+2)+x(3x+2) &= 0 &&\\
+(3x+2)(3x-2)-3(3x+2)+x(3x+2) &= 0 &&\justif{$9x^{2}-4=(3x)^{2}-2^{2}$}\\
+(3x+2)\big[(3x-2)-3+x\big] &= 0 &&\justif{facteur commun $(3x+2)$}\\
+(3x+2)(4x-5) &= 0 &&
+\end{calculs}
+\explique{$3x+2=0$ ou $4x-5=0$ : $\res{S=\ens{-\frac23\,;\frac54}}$.}{}
+\cas{f)}
+\begin{calculs}
+(3x-1)(x+2)^{2}-9(3x-1) &= 0 &&\justif{tout à gauche}\\
+(3x-1)\big[(x+2)^{2}-9\big] &= 0 &&\justif{facteur commun $(3x-1)$}\\
+(3x-1)\big[(x+2)-3\big]\big[(x+2)+3\big] &= 0 &&\justif{$a^{2}-b^{2}$ avec $a=x+2$ et $b=3$}\\
+(3x-1)(x-1)(x+5) &= 0 &&
+\end{calculs}
+\explique{$3x-1=0$ ou $x-1=0$ ou $x+5=0$ : $\res{S=\ens{-5\,;\frac13\,;1}}$.}{trois
+facteurs}
 \end{exo}
 
 \begin{exo}[Différence de deux carrés nulle]
+\explique{Le membre de gauche est de la forme $a^{2}-b^{2}$ : on le factorise en
+$(a-b)(a+b)$, puis on applique le produit nul.}{méthode 11 du cours, exemple d)}
+\cas{a)}
 \begin{calculs}
-\text{a) } (3x-x-2)(3x+x+2)&=0\\
-(2x-2)(4x+2)&=0 \;:\; \res{S=\ens{-\tfrac12\,;1}}\\
-\text{b) } (2x-2)(4x+4)&=0 \;:\; \res{S=\ens{-1\,;1}}\\
-\text{c) } \big[(3x+5)-2(x+1)\big]\big[(3x+5)+2(x+1)\big]&=0\\
-(x+3)(5x+7)&=0 \;:\; \res{S=\ens{-3\,;-\tfrac75}}\\
-\text{d) } \big[3(x+1)-2(2x+3)\big]\big[3(x+1)+2(2x+3)\big]&=0\\
-(-x-3)(7x+9)&=0 \;:\; \res{S=\ens{-3\,;-\tfrac97}}
+9x^{2}-(x+2)^{2} &= 0 &&\justif{$9x^{2}=(3x)^{2}$ : $a=3x$ et $b=x+2$}\\
+\big[3x-(x+2)\big]\big[3x+(x+2)\big] &= 0 &&\\
+(2x-2)(4x+2) &= 0 &&
 \end{calculs}
-\rem{c) $4(x+1)^{2}=\big[2(x+1)\big]^{2}$.}
+\explique{$2x-2=0$ ou $4x+2=0$, soit $x=1$ ou $x=-\frac12$ :
+$\res{S=\ens{-\frac12\,;1}}$.}{}
+\cas{b)}
+\begin{calculs}
+(3x+1)^{2}-(x+3)^{2} &= 0 &&\justif{$a=3x+1$ et $b=x+3$}\\
+\big[(3x+1)-(x+3)\big]\big[(3x+1)+(x+3)\big] &= 0 &&\\
+(2x-2)(4x+4) &= 0 &&
+\end{calculs}
+\explique{$2x-2=0$ ou $4x+4=0$ : $\res{S=\ens{-1\,;1}}$.}{}
+\cas{c)}
+\begin{calculs}
+(3x+5)^{2}-4(x+1)^{2} &= 0 &&\justif{$4(x+1)^{2}=\big[2(x+1)\big]^{2}$ : $b=2(x+1)$}\\
+\big[(3x+5)-2(x+1)\big]\big[(3x+5)+2(x+1)\big] &= 0 &&\\
+(3x+5-2x-2)(3x+5+2x+2) &= 0 &&\\
+(x+3)(5x+7) &= 0 &&
+\end{calculs}
+\explique{$x+3=0$ ou $5x+7=0$ : $\res{S=\ens{-3\,;-\frac75}}$.}{}
+\cas{d)}
+\begin{calculs}
+9(x+1)^{2}-4(2x+3)^{2} &= 0 &&\justif{$a=3(x+1)$ et $b=2(2x+3)$}\\
+\big[3(x+1)-2(2x+3)\big]\big[3(x+1)+2(2x+3)\big] &= 0 &&\\
+(3x+3-4x-6)(3x+3+4x+6) &= 0 &&\\
+(-x-3)(7x+9) &= 0 &&
+\end{calculs}
+\explique{$-x-3=0$ ou $7x+9=0$ : $\res{S=\ens{-3\,;-\frac97}}$.}{}
+\rem{Erreur fréquente : $4(x+1)^{2}=(4x+4)^{2}$. Le $4$ est le carré de $2$ : c'est
+$\big(2(x+1)\big)^{2}=(2x+2)^{2}$.}
 \end{exo}
 
 \begin{exo}[Développer d'abord]
+\explique{Les deux membres contiennent des $x^{2}$ (ou des $x^{3}$) qui vont s'éliminer :
+on développe, on regroupe, et il reste une équation du premier degré, ou une équation
+produit.}{méthode 9 du cours}
+\cas{a)}
 \begin{calculs}
-\text{a) } 3x^{2}+10x-8&=3x^{2}+5\\
-10x&=13 \;:\; \res{S=\ens{\tfrac{13}{10}}}\\
-\text{b) } 4x^{2}+12x+9&=4x^{2}+2x\\
-10x&=-9 \;:\; \res{S=\ens{-0{,}9}}\\
-\text{c) } x^{2}+2x-3&=x^{2}+x-20 \;:\; \res{S=\ens{-17}}\\
-\text{d) } x^{3}-8x^{2}+16x&=x^{3}+3x^{2}\\
-x(16-11x)&=0 \;:\; \res{S=\ens{0\,;\tfrac{16}{11}}}
+(3x-2)(4+x) &= 3x^{2}+5 &&\\
+12x+3x^{2}-8-2x &= 3x^{2}+5 &&\justif{double distributivité}\\
+3x^{2}+10x-8 &= 3x^{2}+5 &&\\
+10x &= 13 &&\justif{les $3x^{2}$ s'éliminent ; on ajoute $8$}\\
+x &= \dfrac{13}{10} &&
 \end{calculs}
-\rem{En d), ce sont les $x^{3}$ qui s'éliminent ; il reste une équation produit.}
+\explique{$\res{S=\ens{\frac{13}{10}}}$.}{soit $1{,}3$}
+\cas{b)}
+\begin{calculs}
+(2x+3)^{2} &= 4x(x+0{,}5) &&\\
+4x^{2}+12x+9 &= 4x^{2}+2x &&\justif{$(a+b)^{2}$ à gauche ; $4x\times 0{,}5=2x$}\\
+12x-2x &= -9 &&\justif{les $4x^{2}$ s'éliminent}\\
+10x &= -9 &&\\
+x &= -\dfrac{9}{10} &&
+\end{calculs}
+\explique{$\res{S=\ens{-\frac{9}{10}}}$.}{soit $-0{,}9$}
+\cas{c)}
+\begin{calculs}
+(x+3)(x-1) &= (x+5)(x-4) &&\\
+x^{2}-x+3x-3 &= x^{2}-4x+5x-20 &&\\
+x^{2}+2x-3 &= x^{2}+x-20 &&\\
+2x-x &= -20+3 &&\justif{les $x^{2}$ s'éliminent}\\
+x &= -17 &&
+\end{calculs}
+\explique{$\res{S=\ens{-17}}$.}{vérification : $(-14)\times(-18)=252$ et
+$(-12)\times(-21)=252$}
+\cas{d)}
+\begin{calculs}
+x(4-x)^{2} &= x^{2}(x+3) &&\\
+x(16-8x+x^{2}) &= x^{3}+3x^{2} &&\justif{$(a-b)^{2}$ avec $a=4$, $b=x$}\\
+16x-8x^{2}+x^{3} &= x^{3}+3x^{2} &&\\
+16x-8x^{2}-3x^{2} &= 0 &&\justif{les $x^{3}$ s'éliminent ; tout à gauche}\\
+16x-11x^{2} &= 0 &&\\
+x(16-11x) &= 0 &&\justif{$x$ est commun}
+\end{calculs}
+\explique{$x=0$ ou $16-11x=0$ : $\res{S=\ens{0\,;\frac{16}{11}}}$.}{ici, il reste une
+équation produit}
+\rem{En d), on ne divise pas par $x$ : on perdrait la solution $0$.}
 \end{exo}
 
 \begin{exo}[Choisir la bonne écriture]
-1) $E(x)=x^{2}-4x+4-36=x^{2}-4x-32$ ; \; $E(x)=\big[(x-2)-6\big]\big[(x-2)+6\big]$, soit
-$(x-8)(x+4)$.\par
-2) $E(0)=\res{-32}$ (forme B) ;\; $E(x)=0$ : $\res{S=\ens{-4\,;8}}$ (forme C) ;\;
-$E(x)=-32$ : $x(x-4)=0$, $\res{S=\ens{0\,;4}}$ (forme B) ;\; $E(x)=-36$ :
-$(x-2)^{2}=0$, $\res{S=\ens{2}}$ (forme A).
+\cas{1)}
+\begin{calculs}
+E(x) &= (x-2)^{2}-36 &&\justif{forme A}\\
+E(x) &= x^{2}-4x+4-36 &&\justif{$(a-b)^{2}$ avec $a=x$ et $b=2$}\\
+E(x) &= x^{2}-4x-32 &&\justif{forme B}
+\end{calculs}
+\begin{calculs}
+E(x) &= (x-2)^{2}-6^{2} &&\justif{$a^{2}-b^{2}$ avec $a=x-2$ et $b=6$}\\
+E(x) &= \big[(x-2)-6\big]\big[(x-2)+6\big] &&\\
+E(x) &= (x-8)(x+4) &&\justif{forme C}
+\end{calculs}
+\explique{On a bien $\res{E(x)=x^{2}-4x-32}$ et $\res{E(x)=(x-8)(x+4)}$.}{contrôle :
+$(x-8)(x+4)=x^{2}+4x-8x-32$}
+\cas{2)}
+\explique{$E(0)$ : avec la forme B, $E(0)=0-0-32=\res{-32}$.}{$x=0$ annule les termes en
+$x$}
+\explique{$E(x)=0$ : avec la forme C, $(x-8)(x+4)=0$, soit $x=8$ ou $x=-4$ :
+$\res{S=\ens{-4\,;8}}$.}{forme factorisée et produit nul}
+\explique{$E(x)=-32$ : avec la forme B, $x^{2}-4x-32=-32$, soit $x^{2}-4x=0$, puis
+$x(x-4)=0$ : $\res{S=\ens{0\,;4}}$.}{le $-32$ s'élimine}
+\explique{$E(x)=-36$ : avec la forme A, $(x-2)^{2}-36=-36$, soit $(x-2)^{2}=0$, donc
+$x-2=0$ : $\res{S=\ens{2}}$.}{le $-36$ s'élimine}
+\rem{La bonne forme est celle où le nombre du second membre s'élimine, ou la forme
+factorisée pour une équation $\ldots=0$.}
 \end{exo}
 
 \partie{Équations $x^{2}=a$ et équations quotient}
 
 \begin{exo}[Équations $x^{2}=a$]
-\deux{a) $\res{S=\ens{-9\,;9}}$}{b) $\res{S=\varnothing}$}
-\deux{c) $x^{2}=16$ : $\res{S=\ens{-4\,;4}}$}{d) $\res{S=\ens{-\sqrt5\,;\sqrt5}}$}
-\deux{e) $x^{2}=\frac{25}{4}$ : $\res{S=\ens{-\frac52\,;\frac52}}$}{}
-f) $x+2=7$ ou $x+2=-7$ : $\res{S=\ens{-9\,;5}}$
+\explique{On isole le carré, puis : si $a>0$, deux solutions opposées $\sqrt a$ et
+$-\sqrt a$ ; si $a=0$, la seule solution $0$ ; si $a<0$, aucune.}{propriété 9 et méthode
+13 du cours}
+\cas{a)}
+\explique{$x^{2}=81$ et $81>0$ : $\res{S=\ens{-9\,;9}}$.}{$9^{2}=81$ et $(-9)^{2}=81$}
+\cas{b)}
+\explique{$x^{2}=-16$ : un carré n'est jamais négatif, $\res{S=\varnothing}$.}{$-16<0$}
+\cas{c)}
+\explique{$3x^{2}=48$ donne $x^{2}=16$ : $\res{S=\ens{-4\,;4}}$.}{on divise par $3$ pour
+isoler le carré}
+\cas{d)}
+\explique{$x^{2}-5=0$ donne $x^{2}=5$ : $\res{S=\ens{-\sqrt5\,;\sqrt5}}$.}{$5$ n'est pas un
+carré parfait : on garde la racine}
+\cas{e)}
+\explique{$4x^{2}-25=0$ donne $4x^{2}=25$, puis $x^{2}=\frac{25}{4}$ :
+$\res{S=\ens{-\frac52\,;\frac52}}$.}{$\left(\frac52\right)^{2}=\frac{25}{4}$}
+\cas{f)}
+\explique{$(x+2)^{2}=49$ : le carré porte sur $x+2$, donc $x+2=7$ ou $x+2=-7$, soit $x=5$
+ou $x=-9$ : $\res{S=\ens{-9\,;5}}$.}{méthode 13, exemple d)}
+\rem{Erreur fréquente : oublier la solution négative ($x^{2}=81$ donne aussi $-9$), ou
+écrire $x=\sqrt{-16}$, qui n'existe pas.}
 \end{exo}
 
 \begin{exo}[Équations quotient]
-a) $x\ne -2$ : $\res{S=\ens{\frac43}}$ \quad b) $x\ne 3$ : $\res{S=\ens{-\frac92}}$\par
-c) Numérateur : $\big[(2x+3)-3(x-1)\big]\big[(2x+3)+3(x-1)\big]=(6-x)\times 5x$ ;
-dénominateur : $4(x-1)(x+1)$, nul pour $1$ et $-1$. Le numérateur s'annule pour $0$ et
-$6$ : $\res{S=\ens{0\,;6}}$.\par
-d) Numérateur : $(3x-4)(3x+4)-2(3x-4)=(3x-4)(3x+2)$ ; dénominateur nul pour $\frac43$.
-Il reste $\res{S=\ens{-\frac23}}$.\par
-e) Pour $x\ne 0$ : $\dfrac{6+x-7}{2x}=0$, soit $x-1=0$ : $\res{S=\ens{1}}$.
-\rem{d) $\frac43$ annule aussi le numérateur, mais il est interdit.}
+\explique{$\dfrac{A}{B}=0$ équivaut à $A=0$ et $B\ne 0$ : on cherche la ou les valeurs
+interdites, on résout \og numérateur $=0$\fg{}, puis on retire les valeurs
+interdites.}{propriété 9 et méthode 14 du cours}
+\cas{a)}
+\explique{Valeur interdite : $x+2=0$ pour $x=-2$. Numérateur : $3x-4=0$ donne
+$x=\frac43$, qui n'est pas interdit : $\res{S=\ens{\frac43}}$.}{}
+\cas{b)}
+\explique{Valeur interdite : $3-x=0$ pour $x=3$. Numérateur : $2x+9=0$ donne
+$x=-\frac92$ : $\res{S=\ens{-\frac92}}$.}{}
+\cas{c)}
+\explique{Le dénominateur : $4x^{2}-4=4(x^{2}-1)=4(x+1)(x-1)$ ; il est nul pour $x=-1$ ou
+$x=1$, les deux valeurs interdites.}{facteur commun $4$, puis troisième identité}
+\begin{calculs}
+(2x+3)^{2}-9(x-1)^{2} &= 0 &&\justif{$9(x-1)^{2}=\big[3(x-1)\big]^{2}$}\\
+\big[(2x+3)-3(x-1)\big]\big[(2x+3)+3(x-1)\big] &= 0 &&\\
+(2x+3-3x+3)(2x+3+3x-3) &= 0 &&\\
+(-x+6)\times 5x &= 0 &&
+\end{calculs}
+\explique{$-x+6=0$ ou $5x=0$, soit $x=6$ ou $x=0$, qui ne sont pas interdits :
+$\res{S=\ens{0\,;6}}$.}{}
+\cas{d)}
+\explique{Le dénominateur : $12-9x=0$ pour $x=\frac{12}{9}=\frac43$, valeur interdite.}{}
+\begin{calculs}
+9x^{2}-16-2(3x-4) &= 0 &&\justif{$9x^{2}-16=(3x-4)(3x+4)$}\\
+(3x-4)(3x+4)-2(3x-4) &= 0 &&\\
+(3x-4)\big[(3x+4)-2\big] &= 0 &&\\
+(3x-4)(3x+2) &= 0 &&
+\end{calculs}
+\explique{$3x-4=0$ ou $3x+2=0$, soit $x=\frac43$ ou $x=-\frac23$. Or $\frac43$ est
+interdit : $\res{S=\ens{-\frac23}}$.}{on retire la valeur interdite}
+\cas{e)}
+\explique{Valeur interdite : $0$. Pour $x\ne 0$, on met tout dans le membre de gauche et
+au même dénominateur $2x$.}{se ramener à $\frac{A}{B}=0$}
+\begin{calculs}
+\dfrac{3}{x}+\dfrac12-\dfrac{7}{2x} &= 0 &&\\
+\dfrac{3\fois{2}}{x\fois{2}}+\dfrac{1\fois{x}}{2\fois{x}}-\dfrac{7}{2x} &= 0 &&\\
+\dfrac{6+x-7}{2x} &= 0 &&\\
+\dfrac{x-1}{2x} &= 0 &&
+\end{calculs}
+\explique{$x-1=0$ donne $x=1$, qui n'est pas interdit : $\res{S=\ens{1}}$.}{vérification :
+$3+\frac12=\frac72$}
+\rem{Erreur fréquente en d) : garder $\frac43$ dans les solutions. Pour $x=\frac43$, le
+quotient n'existe pas.}
 \end{exo}
 
 \begin{exo}[Dans des problèmes]
-1) $c^{2}=30$ et $c>0$ : $c=\res{\sqrt{30}\text{ cm}}$.\par
-2) $\pi r^{2}=49\pi$, soit $r^{2}=49$ : $r=\res{7\text{ cm}}$.\par
-3) $x^{2}+7=43$, soit $x^{2}=36$ : \res{-6} ou \res{6}.\par
-4) Pour $x=\res{6}$ ($x\ne -2$). Valoir $1$ : $x-6=x+2$ est impossible : \res{\text{jamais}}.
+\cas{1)}
+\explique{Soit $c$ le côté du carré, en cm ($c>0$) : $c^{2}=30$. Les solutions sont
+$\sqrt{30}$ et $-\sqrt{30}$ ; un côté est positif.}{on garde la solution qui a un sens}
+\explique{Le côté mesure $\res{\sqrt{30}}$~cm.}{valeur exacte : on ne l'arrondit pas}
+\cas{2)}
+\explique{Soit $r$ le rayon, en cm : $\pi r^{2}=49\pi$, donc $r^{2}=49$. Comme $r>0$,
+$r=7$.}{on divise par $\pi$}
+\explique{Le rayon mesure $\res{7}$~cm.}{}
+\cas{3)}
+\explique{Soit $x$ ce nombre : $x^{2}+7=43$, donc $x^{2}=36$, soit $x=6$ ou $x=-6$.}{}
+\explique{Le nombre est $\res{6}$ ou $\res{-6}$.}{vérification : $36+7=43$}
+\cas{4)}
+\explique{Valeur interdite : $-2$. La fraction est nulle quand $x-6=0$, soit pour
+$x=\res{6}$, qui n'est pas interdit.}{équation quotient}
+\explique{Elle vaut $1$ si $x-6=x+2$ (produit en croix), soit $0x=8$ : c'est impossible.
+La fraction \res{ne vaut jamais $1$}.}{le numérateur est toujours plus petit de $8$ que le
+dénominateur}
 \end{exo}
 
 \partie{Mise en équation}
 
 \begin{exo}[Quatre problèmes courts]
-1) Soit $x$ l'âge de Zoé : $3(x+9)=75$ donne $x+9=25$ : Zoé a \res{16\text{ ans}}.\par
-2) Soit $x$ le nombre choisi : $5(3x-4)=205$ donne $3x-4=41$ : \res{x=15}.\par
-3) Soit $x$ la contenance : $\frac{x}{4}+15=\frac{2x}{3}$ ; ($\times 12$)
-$3x+180=8x$ : \res{36\text{ L}}.\par
-4) $n+(n+2)=152$, $n=75$ : \res{75} et \res{77}.
+\explique{Pour chaque problème : on annonce l'inconnue (\og Soit $x$ \ldots\fg), on traduit
+l'énoncé par une équation, on la résout, on vérifie que le résultat a un sens, puis on
+conclut par une phrase.}{méthode 15 du cours}
+\cas{1)}
+\explique{Soit $x$ l'âge de Zoé, en années. Elle ajoute $9$ : $x+9$ ; elle multiplie le
+résultat par $3$ : $3(x+9)$.}{le \og résultat\fg{} entier est multiplié : parenthèses}
+\begin{calculs}
+3(x+9) &= 75 &&\\
+3x+27 &= 75 &&\\
+3x &= 48 &&\\
+x &= 16 &&
+\end{calculs}
+\explique{Zoé a $\res{16}$ ans.}{vérification : $16+9=25$ et $25\times 3=75$}
+\cas{2)}
+\explique{Soit $x$ le nombre choisi par Lina : $\times 3$ donne $3x$, $-4$ donne $3x-4$,
+puis $\times 5$ donne $5(3x-4)$.}{on suit le programme étape par étape}
+\begin{calculs}
+5(3x-4) &= 205 &&\\
+15x-20 &= 205 &&\\
+15x &= 225 &&\\
+x &= 15 &&
+\end{calculs}
+\explique{Lina avait choisi $\res{15}$.}{vérification : $45-4=41$ et $41\times 5=205$}
+\cas{3)}
+\explique{Soit $x$ la contenance de la cuve, en litres. Remplie au quart, elle contient
+$\frac{x}{4}$ ; aux deux tiers, $\frac{2x}{3}$.}{\og le quart de $x$\fg{} : $\frac14\times x$}
+\begin{calculs}
+\dfrac{x}{4}+15 &= \dfrac{2x}{3} &&\justif{on ajoute $15$~L}\\
+3x+180 &= 8x &&\justif{chaque terme $\times 12$}\\
+180 &= 5x &&\\
+x &= 36 &&
+\end{calculs}
+\explique{La cuve contient $\res{36}$~L.}{vérification : $9+15=24$, et $24$ est les deux
+tiers de $36$}
+\cas{4)}
+\explique{Soit $n$ le plus petit des deux entiers impairs : le suivant est $n+2$.}{deux
+impairs consécutifs diffèrent de $2$, pas de $1$}
+\begin{calculs}
+n+(n+2) &= 152 &&\\
+2n+2 &= 152 &&\\
+2n &= 150 &&\\
+n &= 75 &&
+\end{calculs}
+\explique{Les deux entiers sont $\res{75}$ et $\res{77}$.}{$75$ est bien impair ;
+vérification : $75+77=152$}
 \end{exo}
 
 \begin{exo}[Entiers et âges]
-1) $n+3(n+2)=98$ donne $4n+6=98$, puis $n=23$ : \res{23}, \res{24} et \res{25}.\par
-2) Dans $x$ ans : $30+x=(18+x)+(4+x)$, soit $30+x=22+2x$ : \res{8\text{ ans}}.
-\rem{Vérification : $38=26+12$.}
+\cas{1)}
+\explique{Soit $n$ le premier entier : les deux suivants sont $n+1$ et $n+2$. Le
+troisième est $n+2$, son triple $3(n+2)$.}{on nomme le plus petit}
+\begin{calculs}
+n+3(n+2) &= 98 &&\justif{le premier, augmenté du triple du troisième}\\
+n+3n+6 &= 98 &&\\
+4n &= 92 &&\\
+n &= 23 &&
+\end{calculs}
+\explique{Les trois entiers sont $\res{23}$, $\res{24}$ et $\res{25}$.}{vérification :
+$23+3\times 25=98$}
+\cas{2)}
+\explique{Soit $x$ le nombre d'années cherché. Dans $x$ ans, les sœurs auront $30+x$,
+$18+x$ et $4+x$ ans.}{chacune vieillit de $x$ ans}
+\begin{calculs}
+30+x &= (18+x)+(4+x) &&\justif{l'aînée, la somme des deux autres}\\
+30+x &= 22+2x &&\\
+30-22 &= 2x-x &&\\
+x &= 8 &&
+\end{calculs}
+\explique{Ce sera dans $\res{8}$ ans.}{vérification : $38=26+12$}
+\rem{Erreur fréquente : écrire $30+x=18+4+x$, en ne faisant vieillir qu'une des deux
+cadettes.}
 \end{exo}
 
 \begin{exo}[Stocks, jardin et concert]
-1) Soit $b$ le nombre de paires de bottes : $b+3b+(b+5)=95$ donne $5b=90$, puis $b=18$ :
-\res{18} bottes, \res{54} baskets, \res{23} sandales.\par
-2) Le verger représente $1-\frac14-\frac13=\frac{5}{12}$ du jardin : $\frac{5}{12}x=75$,
-$x=\res{180\text{ m}^{2}}$.\par
-3) $40x+25(800-x)=26\,000$ donne $15x=6\,000$ : \res{400} places assises.
+\cas{1)}
+\explique{Soit $b$ le nombre de paires de bottes : il y a $3b$ paires de baskets et $b+5$
+paires de sandales.}{on part de celle qui sert à exprimer les autres}
+\begin{calculs}
+b+3b+(b+5) &= 95 &&\\
+5b+5 &= 95 &&\\
+5b &= 90 &&\\
+b &= 18 &&
+\end{calculs}
+\explique{Le magasin reçoit $\res{18}$ paires de bottes, $\res{54}$ paires de baskets et
+$\res{23}$ paires de sandales.}{vérification : $18+54+23=95$}
+\cas{2)}
+\explique{Soit $x$ l'aire du jardin, en m$^{2}$. Le verger est ce qui reste quand on
+enlève le quart et le tiers : $x-\frac{x}{4}-\frac{x}{3}$.}{}
+\begin{calculs}
+x-\dfrac{x}{4}-\dfrac{x}{3} &= 75 &&\\
+12x-3x-4x &= 900 &&\justif{chaque terme $\times 12$}\\
+5x &= 900 &&\\
+x &= 180 &&
+\end{calculs}
+\explique{L'aire du jardin est de $\res{180}$~m$^{2}$.}{vérification : $180-45-60=75$}
+\cas{3)}
+\explique{Soit $x$ le nombre de places assises : il y a $800-x$ places debout.}{les deux
+nombres font $800$ en tout}
+\begin{calculs}
+40x+25(800-x) &= 26\,000 &&\justif{la recette}\\
+40x+20\,000-25x &= 26\,000 &&\\
+15x &= 6\,000 &&\\
+x &= 400 &&
+\end{calculs}
+\explique{$\res{400}$ places assises ont été vendues.}{vérification :
+$16\,000+10\,000=26\,000$}
 \end{exo}
 
 \partie{Problèmes de géométrie}
 
 \begin{exo}[Exprimer des longueurs et des aires]
-1) $GO=\res{x+7}$ ; \; $RS=\res{\frac{2x}{5}}$ (deux parts sur cinq).\par
-2) Le grand rectangle moins le rectangle blanc : $6(x+6)-6x=\res{36}$. L'aire ne
-dépend pas de $x$.
+\cas{1)}
+\explique{$GO$ est la somme des deux morceaux : $GO=\res{x+7}$.}{on lit les cotes}
+\explique{$[RT]$, de longueur $x$, est partagé en cinq parts égales de $\frac{x}{5}$, et
+$[RS]$ en contient deux : $RS=\res{\dfrac{2x}{5}}$.}{$2\times\frac{x}{5}=\frac{2x}{5}$}
+\cas{2)}
+\explique{La partie colorée est le grand rectangle de dimensions $x+6$ et $6$, moins le
+rectangle blanc de dimensions $6$ et $x$.}{on découpe la figure}
+\begin{calculs}
+\mathcal{A} &= 6(x+6)-6x &&\\
+\mathcal{A} &= 6x+36-6x &&\\
+\mathcal{A} &= \res{36} &&
+\end{calculs}
+\explique{L'aire de la partie colorée vaut $36$ quelle que soit la valeur de $x$ : elle ne
+dépend pas de $x$.}{c'est l'aire d'un carré de côté $6$, déplacé en partie}
 \end{exo}
 
 \begin{exo}[Un trapèze et un triangle]
-1) Trapèze : $\dfrac{(x+3x)(x+3)}{2}=\res{2x^{2}+6x}$ ; triangle :
-$\dfrac{(6+x)\times 2x}{2}=\res{x^{2}+6x}$.\par
-2) Somme : $3x^{2}+12x=\res{3x(x+4)}$ : l'autre côté mesure $\res{x+4}$.
+\cas{1)}
+\explique{L'aire d'un trapèze est $\dfrac{(B+b)\times h}{2}$, avec ici $B=3x$, $b=x$ et
+$h=x+3$.}{formule du collège}
+\begin{calculs}
+\mathcal{A}_{1} &= \dfrac{(3x+x)(x+3)}{2} &&\\
+\mathcal{A}_{1} &= \dfrac{4x(x+3)}{2} &&\\
+\mathcal{A}_{1} &= 2x(x+3) &&\justif{$4\div 2=2$}\\
+\mathcal{A}_{1} &= \res{2x^{2}+6x} &&
+\end{calculs}
+\explique{L'aire d'un triangle est $\dfrac{\text{base}\times\text{hauteur}}{2}$ : la base
+mesure $6+x$, la hauteur $2x$.}{}
+\begin{calculs}
+\mathcal{A}_{2} &= \dfrac{(6+x)\times 2x}{2} &&\\
+\mathcal{A}_{2} &= (6+x)\times x &&\justif{$2x\div 2=x$}\\
+\mathcal{A}_{2} &= \res{x^{2}+6x} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+\mathcal{A}_{1}+\mathcal{A}_{2} &= 2x^{2}+6x+x^{2}+6x &&\\
+\mathcal{A}_{1}+\mathcal{A}_{2} &= 3x^{2}+12x &&\\
+\mathcal{A}_{1}+\mathcal{A}_{2} &= 3x(x+4) &&\justif{facteur commun $3x$}
+\end{calculs}
+\explique{La somme des aires est l'aire d'un rectangle de côtés $3x$ et
+$\res{x+4}$.}{factoriser par $3x$ fait apparaître l'autre côté}
 \end{exo}
 
 \begin{exo}[Deux solides]
-Pavé : $(2x+6)\times 2x\times x=4x^{3}+12x^{2}$.\par
-Prisme : aire de la base $\dfrac{2x\times 4x}{2}=4x^{2}$, puis volume
-$4x^{2}(x+3)=4x^{3}+12x^{2}$.\par
-Les volumes sont \res{\text{égaux}} pour tout $x>0$.
+\explique{Volume du pavé droit : longueur $\times$ largeur $\times$ hauteur.}{}
+\begin{calculs}
+V_{1} &= (2x+6)\times 2x\times x &&\\
+V_{1} &= (2x+6)\times 2x^{2} &&\\
+V_{1} &= 4x^{3}+12x^{2} &&
+\end{calculs}
+\explique{Volume du prisme droit : aire de la base $\times$ longueur. La base est un
+triangle rectangle de côtés de l'angle droit $2x$ et $4x$.}{}
+\begin{calculs}
+\mathcal{B} &= \dfrac{2x\times 4x}{2} &&\\
+\mathcal{B} &= 4x^{2} &&\\
+V_{2} &= 4x^{2}(x+3) &&\justif{la longueur du prisme est $x+3$}\\
+V_{2} &= 4x^{3}+12x^{2} &&
+\end{calculs}
+\explique{Pour tout $x>0$, $V_{1}$ et $V_{2}$ valent $4x^{3}+12x^{2}$ : les deux solides ont
+\res{le même volume}.}{on développe les deux volumes pour les comparer}
 \end{exo}
 
 \begin{exo}[Une aire donnée]
-$4(6+x)=30$, $24+4x=30$, $x=\res{1{,}5\text{ cm}}$.
+\explique{$ABCD$ est un rectangle de longueur $AB=6+x$ et de largeur $BC=4$ (en cm, avec
+$x>0$).}{on exprime les longueurs}
+\begin{calculs}
+4(6+x) &= 30 &&\justif{l'aire de $ABCD$}\\
+24+4x &= 30 &&\\
+4x &= 6 &&\\
+x &= 1{,}5 &&\justif{$1{,}5>0$ : possible}
+\end{calculs}
+\explique{Il faut $x=\res{1{,}5}$~cm.}{vérification : $4\times 7{,}5=30$}
 \end{exo}
 
 \begin{exo}[Un carré dans un carré]
-Le grand carré a pour côté $3+2x$.\par
-1) $4(3+2x)=36$ : $x=\res{3}$.\par
-2) $(3+2x)^{2}=49$ et $3+2x>0$ : $3+2x=7$, $x=\res{2}$.\par
-3) $(3+2x)^{2}-9=27$, soit $(3+2x)^{2}=36$ : $3+2x=6$, $x=\res{1{,}5}$.
+\explique{La bande a la largeur $x$ de chaque côté : le grand carré a pour côté
+$x+3+x=3+2x$ (en cm, avec $x>0$).}{on place $x$ des deux côtés du petit carré}
+\cas{1)}
+\begin{calculs}
+4(3+2x) &= 36 &&\justif{périmètre du grand carré}\\
+12+8x &= 36 &&\\
+8x &= 24 &&\\
+x &= 3 &&
+\end{calculs}
+\explique{Il faut $x=\res{3}$~cm.}{vérification : côté $9$, périmètre $36$}
+\cas{2)}
+\explique{$(3+2x)^{2}=49$ : le carré porte sur $3+2x$, donc $3+2x=7$ ou $3+2x=-7$, soit
+$x=2$ ou $x=-5$.}{méthode 13, exemple d)}
+\explique{Une largeur est positive : il faut $x=\res{2}$~cm.}{on rejette $-5$}
+\cas{3)}
+\explique{Aire de la bande : grand carré moins petit carré, $(3+2x)^{2}-9$. Le triple de
+l'aire du petit carré vaut $3\times 9=27$.}{}
+\begin{calculs}
+(3+2x)^{2}-9 &= 27 &&\\
+(3+2x)^{2} &= 36 &&
+\end{calculs}
+\explique{$3+2x=6$ ou $3+2x=-6$, soit $x=1{,}5$ ou $x=-4{,}5$. Il faut $x=\res{1{,}5}$~cm.}{vérification :
+côté $6$, bande $36-9=27$}
 \end{exo}
 
 \begin{exo}[Un bassin dans une parcelle]
-1) \res{c)} et \res{d)} : la parcelle moins le bassin, $x^{2}-(x-2)^{2}=4x-4$.\par
-2) Le bassin a pour côté $x-2$ : $(x-2)^{2}=36$ et $x-2>0$, donc $x-2=6$ et
-$x=\res{8\text{ m}}$.
+\cas{1)}
+\explique{Le bassin est un carré de côté $x-2$ : la bordure est la parcelle moins le
+bassin, d'aire $x^{2}-(x-2)^{2}$. L'expression \res{d)} convient.}{on découpe la figure}
+\begin{calculs}
+x^{2}-(x-2)^{2} &= x^{2}-\big[x^{2}-4x+4\big] &&\\
+x^{2}-(x-2)^{2} &= 4x-4 &&
+\end{calculs}
+\explique{L'expression \res{c)} convient donc aussi. Les autres ne conviennent pas :
+a) vaut $4x+4$ ; b) vaut $4x$ ; e) vaut $x^{2}-2x$.}{pour $x=3$ : la bordure vaut
+$9-1=8$ ; a) donne $16$, b) $12$, e) $3$}
+\cas{2)}
+\explique{$(x-2)^{2}=36$ donne $x-2=6$ ou $x-2=-6$, soit $x=8$ ou $x=-4$.}{méthode 13}
+\explique{Comme $x>2$, la parcelle a pour côté $x=\res{8}$~m.}{vérification : bassin de
+côté $6$, d'aire $36$}
 \end{exo}
 
 \partie{Isoler une grandeur}
 
 \begin{exo}[Échauffement]
-\deux{a) $\res{A=B-3}$}{b) $\res{A=5-B}$}
-\deux{c) $\res{A=\frac{B}{4}}$}{d) $\res{A=3B}$}
-\deux{e) $\res{A=\frac{6}{B}}$}{f) $\res{A=\frac{C-B}{2}}$}
+\explique{On traite $A$ comme l'inconnue d'une équation, les autres lettres comme des
+nombres connus.}{définition 5 et méthode 17 du cours}
+\cas{a)}
+\begin{calculs}
+A+3 &= B &&\\
+A &= \res{B-3} &&\justif{on soustrait $3$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+5-A &= B &&\\
+5 &= B+A &&\justif{on ajoute $A$ pour le rendre positif}\\
+A &= \res{5-B} &&\justif{on soustrait $B$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+4A &= B &&\\
+A &= \res{\dfrac{B}{4}} &&\justif{on divise par $4$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\dfrac{A}{3} &= B &&\\
+A &= \res{3B} &&\justif{on multiplie par $3$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\dfrac{6}{A} &= B &&\justif{produit en croix avec $\frac{B}{1}$}\\
+6 &= AB &&\\
+A &= \res{\dfrac{6}{B}} &&\justif{on divise par $B$, non nul}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+2A+B &= C &&\\
+2A &= C-B &&\justif{on soustrait $B$}\\
+A &= \res{\dfrac{C-B}{2}} &&\justif{on divise par $2$ tout le membre de droite}
+\end{calculs}
+\rem{Erreur fréquente en f) : $A=C-\frac{B}{2}$. On divise \emph{tout} $C-B$ par $2$.}
 \end{exo}
 
 \begin{exo}[Formules de géométrie et de physique]
-\deux{1) $\res{\ell=\dfrac{V}{L\,h}}$}{2) $\res{h=\dfrac{2\mathcal{A}}{b}}$}
-\deux{3) $\res{r=\dfrac{E-U}{I}}$}{4) $\res{d=\dfrac{V}{L\,H}}$}
-\deux{5) $\res{C_{0}=\dfrac{C}{1+t}}$}{6) $\res{r=\sqrt{\dfrac{\mathcal{A}}{\pi}}}$}
-\rem{3) $rI=E-U$ ; 4) $L\,H=\frac{V}{d}$, puis produit en croix.}
+\cas{1)}
+\begin{calculs}
+V &= L\,\ell\,h &&\justif{on recopie}\\
+\ell &= \res{\dfrac{V}{L\,h}} &&\justif{on divise par $L\,h$}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+\mathcal{A} &= \dfrac{b\times h}{2} &&\\
+2\mathcal{A} &= b\times h &&\justif{on multiplie par $2$}\\
+h &= \res{\dfrac{2\mathcal{A}}{b}} &&\justif{on divise par $b$}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+U &= E-rI &&\\
+rI &= E-U &&\justif{on ajoute $rI$ et on soustrait $U$}\\
+r &= \res{\dfrac{E-U}{I}} &&\justif{on divise par $I$}
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+L\,H-\dfrac{V}{d} &= 0 &&\\
+L\,H &= \dfrac{V}{d} &&\justif{on ajoute $\frac{V}{d}$}\\
+L\,H\times d &= V &&\justif{produit en croix avec $\frac{L\,H}{1}$}\\
+d &= \res{\dfrac{V}{L\,H}} &&\justif{on divise par $L\,H$}
+\end{calculs}
+\cas{5)}
+\begin{calculs}
+C &= C_{0}(1+t) &&\\
+C_{0} &= \res{\dfrac{C}{1+t}} &&\justif{on divise par $1+t$ ; on ne développe pas}
+\end{calculs}
+\cas{6)}
+\begin{calculs}
+\mathcal{A} &= \pi r^{2} &&\\
+r^{2} &= \dfrac{\mathcal{A}}{\pi} &&\justif{on divise par $\pi$}\\
+r &= \res{\sqrt{\dfrac{\mathcal{A}}{\pi}}} &&\justif{$r$ est positif : on garde la racine positive}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Plus difficile]
-1) $\dfrac1f=\dfrac{a+b}{ab}$, donc $\res{f=\dfrac{ab}{a+b}}$.\par
-2) $d^{2}=\dfrac{6{,}67\times 10^{-11}\,m\,m'}{F}$, donc
-$\res{d=\sqrt{\dfrac{6{,}67\times 10^{-11}\,m\,m'}{F}}}$.
+\cas{1)}
+\begin{calculs}
+\dfrac1f &= \dfrac1a+\dfrac1b &&\justif{on recopie}\\
+\dfrac1f &= \dfrac{b}{ab}+\dfrac{a}{ab} &&\justif{dénominateur commun $ab$}\\
+\dfrac1f &= \dfrac{a+b}{ab} &&\\
+f\times(a+b) &= ab &&\justif{produit en croix}\\
+f &= \res{\dfrac{ab}{a+b}} &&\justif{on divise par $a+b$}
+\end{calculs}
+\rem{Erreur fréquente : $f=a+b$. L'inverse d'une somme n'est pas la somme des inverses.}
+\cas{2)}
+\begin{calculs}
+F &= 6{,}67\times 10^{-11}\,\dfrac{m\,m'}{d^{2}} &&\\
+F\times d^{2} &= 6{,}67\times 10^{-11}\,m\,m' &&\justif{on multiplie par $d^{2}$}\\
+d^{2} &= \dfrac{6{,}67\times 10^{-11}\,m\,m'}{F} &&\justif{on divise par $F$}\\
+d &= \res{\sqrt{\dfrac{6{,}67\times 10^{-11}\,m\,m'}{F}}} &&\justif{$d$ est positif}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Isoler, puis calculer]
-1) $2y=10-4x+3z$, $\res{y=\dfrac{10-4x+3z}{2}}$ ; pour $x=1$ et $z=2$ : $y=\res{6}$.\par
-2) $\ell=\dfrac{72}{6\times 3}=\res{4\text{ cm}}$.\par
-3) $r=\sqrt{\dfrac{80}{\pi}}\approx\res{5{,}0\text{ cm}}$.
+\cas{1)}
+\begin{calculs}
+4x+2y-3z &= 10 &&\\
+2y &= 10-4x+3z &&\justif{on soustrait $4x$ et on ajoute $3z$}\\
+y &= \res{\dfrac{10-4x+3z}{2}} &&\justif{on divise par $2$}
+\end{calculs}
+\begin{calculs}
+y &= \dfrac{10-4\times 1+3\times 2}{2} &&\justif{pour $x=1$ et $z=2$}\\
+y &= \dfrac{12}{2} &&\\
+y &= \res{6} &&\justif{vérification : $4+12-6=10$}
+\end{calculs}
+\cas{2)}
+\explique{Avec l'exercice 52 (question 1), $\ell=\dfrac{V}{L\,h}$, avec $V=72$, $L=6$
+et $h=3$.}{on isole d'abord, puis on substitue}
+\begin{calculs}
+\ell &= \dfrac{72}{6\times 3} &&\\
+\ell &= \dfrac{72}{18} &&\\
+\ell &= 4 &&
+\end{calculs}
+\explique{La largeur du pavé est de $\res{4}$~cm.}{vérification : $6\times 4\times 3=72$}
+\cas{3)}
+\explique{Avec l'exercice 52 (question 6), $r=\sqrt{\dfrac{\mathcal{A}}{\pi}}$, avec
+$\mathcal{A}=80$.}{}
+\begin{calculs}
+r &= \sqrt{\dfrac{80}{\pi}} &&\\
+r &\approx 5{,}05 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{Le rayon mesure environ $\res{5{,}0}$~cm (au millimètre près).}{$5{,}05$ cm
+s'arrondit à $5{,}0$ cm}
 \end{exo}
 
 \partiesansnum{Vers le devoir commun}
 
 \begin{exo}[Maîtrise des calculs]
+\cas{1) $A(x)$}
 \begin{calculs}
-A(x)&=6x-15+6x^{2}+5x-4\\
-A(x)&=\res{6x^{2}+11x-19}\\
-B(x)&=-3x^{2}-2x+8-5+x\\
-B(x)&=\res{-3x^{2}-x+3}
+A(x) &= 3(2x-5)+(3x+4)(2x-1) &&\justif{une distributivité, puis une double distributivité}\\
+A(x) &= 6x-15+6x^{2}-3x+8x-4 &&\\
+A(x) &= \res{6x^{2}+11x-19} &&
 \end{calculs}
-\deux{$C(x)=\res{x(8x-5)}$}{$D(x)=\res{(3x+5)^{2}}$}
+\cas{1) $B(x)$}
 \begin{calculs}
-E(x)&=(2x-5)\big[1-3(2x-5)\big]\\
-E(x)&=\res{(2x-5)(16-6x)}\\
-F(x)&=(x+2)\big[(-2x+3)-(x+2)\big]\\
-F(x)&=\res{(x+2)(-3x+1)}
+B(x) &= (x+2)(-3x+4)-(5-x) &&\\
+B(x) &= -3x^{2}+4x-6x+8-5+x &&\justif{le $-$ change les signes de $5-x$}\\
+B(x) &= \res{-3x^{2}-x+3} &&
+\end{calculs}
+\cas{2) $C(x)$}
+\begin{calculs}
+C(x) &= 8x^{2}-5x &&\justif{$x$ est commun}\\
+C(x) &= \res{x(8x-5)} &&
+\end{calculs}
+\cas{2) $D(x)$}
+\explique{$9x^{2}=(3x)^{2}$ et $25=5^{2}$ ; $2\times 3x\times 5=30x$ est le terme restant.
+Donc $D(x)=\res{(3x+5)^{2}}$.}{carré parfait}
+\cas{2) $E(x)$}
+\begin{calculs}
+E(x) &= (2x-5)-3(2x-5)^{2} &&\justif{le « 1 » caché : $(2x-5)=1\times(2x-5)$}\\
+E(x) &= (2x-5)\big[1-3(2x-5)\big] &&\\
+E(x) &= (2x-5)(1-6x+15) &&\\
+E(x) &= \res{(2x-5)(16-6x)} &&
+\end{calculs}
+\rem{Et $16-6x=2(8-3x)$ : $E(x)=2(2x-5)(8-3x)$.}
+\cas{2) $F(x)$}
+\begin{calculs}
+F(x) &= (x+2)(-2x+3)-(x+2)^{2} &&\justif{facteur commun $(x+2)$}\\
+F(x) &= (x+2)\big[(-2x+3)-(x+2)\big] &&\\
+F(x) &= (x+2)(-2x+3-x-2) &&\\
+F(x) &= \res{(x+2)(-3x+1)} &&
 \end{calculs}
 \end{exo}
 
 \begin{exo}[Une fonction, trois écritures]
-1) $f(x)=x^{2}+6x+9-16=\res{x^{2}+6x-7}$ ;\; $f(x)=\big[(x+3)-4\big]\big[(x+3)+4\big]$,
-soit $\res{(x-1)(x+7)}$.\par
-2) $f(0)=\res{-7}$ ; $f\big(\frac12\big)=\frac14+3-7=\res{-\frac{15}{4}}$.\par
-Antécédents de $0$ : $(x-1)(x+7)=0$, \res{1} et \res{-7}.\par
-De $-7$ : $x^{2}+6x=0$, soit $x(x+6)=0$ : \res{0} et \res{-6} ; \; de $-16$ : $(x+3)^{2}=0$ : \res{-3}.
+\cas{1)}
+\begin{calculs}
+f(x) &= (x+3)^{2}-16 &&\justif{forme de l'énoncé}\\
+f(x) &= x^{2}+6x+9-16 &&\justif{$(a+b)^{2}$ avec $a=x$ et $b=3$}\\
+f(x) &= \res{x^{2}+6x-7} &&\justif{forme développée}
+\end{calculs}
+\begin{calculs}
+f(x) &= (x+3)^{2}-4^{2} &&\justif{$a^{2}-b^{2}$ avec $a=x+3$ et $b=4$}\\
+f(x) &= \big[(x+3)-4\big]\big[(x+3)+4\big] &&\\
+f(x) &= \res{(x-1)(x+7)} &&\justif{forme factorisée}
+\end{calculs}
+\cas{2)}
+\explique{$f(0)=0+0-7=\res{-7}$.}{forme développée}
+\begin{calculs}
+f\big(\tfrac12\big) &= \big(\tfrac12+3\big)^{2}-16 &&\justif{forme de l'énoncé : $\frac12+3=\frac72$}\\
+f\big(\tfrac12\big) &= \tfrac{49}{4}-\tfrac{64}{4} &&\justif{$16=\frac{64}{4}$}\\
+f\big(\tfrac12\big) &= \res{-\tfrac{15}{4}} &&
+\end{calculs}
+\explique{Antécédents de $0$ : $(x-1)(x+7)=0$, soit $x=1$ ou $x=-7$. Ce sont $\res{1}$ et
+$\res{-7}$.}{forme factorisée}
+\explique{Antécédents de $-7$ : $x^{2}+6x-7=-7$, soit $x^{2}+6x=0$, puis $x(x+6)=0$. Ce
+sont $\res{0}$ et $\res{-6}$.}{forme développée : le $-7$ s'élimine}
+\explique{Antécédent de $-16$ : $(x+3)^{2}-16=-16$, soit $(x+3)^{2}=0$, donc $x=-3$. C'est
+$\res{-3}$.}{forme de l'énoncé : le $-16$ s'élimine}
 \end{exo}
 
 \begin{exo}[Lire, puis démontrer]
-1) On lit $f(x)=0$ pour $x=-1$ et $x=4$ ; $f(x)=-4$ pour $x=0$ et $x=3$.\par
-2)
+\cas{1)}
+\explique{La courbe coupe l'axe des abscisses aux points d'abscisses $-1$ et $4$ : on
+conjecture que $f(x)=0$ a pour solutions $\res{-1}$ et $\res{4}$.}{points de la courbe
+d'ordonnée $0$}
+\explique{La courbe passe à l'ordonnée $-4$ aux abscisses $0$ et $3$ : on conjecture
+que $f(x)=-4$ a pour solutions $\res{0}$ et $\res{3}$.}{on trace la droite horizontale
+d'ordonnée $-4$}
+\cas{2)}
 \begin{calculs}
-f(x)&=2x^{2}-x-3-(x^{2}+2x+1)\\
-f(x)&=\res{x^{2}-3x-4}\\
-f(x)&=(x+1)\big[(2x-3)-(x+1)\big]\\
-f(x)&=\res{(x+1)(x-4)}
+f(x) &= (2x-3)(x+1)-(x+1)^{2} &&\\
+f(x) &= 2x^{2}+2x-3x-3-\big[x^{2}+2x+1\big] &&\justif{le carré entre crochets}\\
+f(x) &= 2x^{2}-x-3-x^{2}-2x-1 &&\\
+f(x) &= \res{x^{2}-3x-4} &&
 \end{calculs}
-3) $f(2)=4-6-4=\res{-6}$ ; $f(x)=0$ : $\res{S=\ens{-1\,;4}}$ ; $f(x)=-4$ :
-$x(x-3)=0$, $\res{S=\ens{0\,;3}}$. Les conjectures sont démontrées.
+\begin{calculs}
+f(x) &= (2x-3)(x+1)-(x+1)^{2} &&\justif{on repart de l'énoncé : facteur commun $(x+1)$}\\
+f(x) &= (x+1)\big[(2x-3)-(x+1)\big] &&\\
+f(x) &= (x+1)(2x-3-x-1) &&\\
+f(x) &= \res{(x+1)(x-4)} &&
+\end{calculs}
+\cas{3)}
+\explique{$f(2)=4-6-4=\res{-6}$.}{forme développée}
+\explique{$f(x)=0$ : $(x+1)(x-4)=0$, soit $x=-1$ ou $x=4$, toutes deux dans $\intff{-2}{5}$ :
+$\res{S=\ens{-1\,;4}}$.}{forme factorisée}
+\explique{$f(x)=-4$ : $x^{2}-3x-4=-4$, soit $x^{2}-3x=0$, puis $x(x-3)=0$ :
+$\res{S=\ens{0\,;3}}$.}{forme développée : le $-4$ s'élimine}
+\explique{Les solutions trouvées par le calcul sont celles lues sur le graphique : les deux
+conjectures sont démontrées.}{une lecture graphique se démontre par le calcul}
 \end{exo}
 
 \begin{exo}[Équations]
-\deux{a) $\frac23x=8$ : $\res{S=\ens{12}}$}{b) $\res{S=\ens{\frac94}}$}
-c) $4x+3=-5+3x$ : $\res{S=\ens{-8}}$\par
-d) $(2x-10)(4x+2)=0$ : $\res{S=\ens{-\frac12\,;5}}$\par
-e) $(3x-2)^{2}-\big[2(x+2)\big]^{2}=0$, soit $(x-6)(5x+2)=0$ :
-$\res{S=\ens{-\frac25\,;6}}$
+\cas{a)}
+\begin{calculs}
+\dfrac23x-3 &= 5 &&\\
+\dfrac23x &= 8 &&\justif{on ajoute $3$}\\
+x &= 8\times\dfrac32 &&\justif{on multiplie par l'inverse de $\frac23$}\\
+x &= 12 &&
+\end{calculs}
+\explique{$\res{S=\ens{12}}$.}{vérification : $8-3=5$}
+\cas{b)}
+\begin{calculs}
+\dfrac74-\dfrac{x}{3} &= 1 &&\justif{chaque terme $\times 12$}\\
+21-4x &= 12 &&\\
+9 &= 4x &&\\
+x &= \dfrac94 &&
+\end{calculs}
+\explique{$\res{S=\ens{\frac94}}$.}{vérification : $\frac74-\frac34=1$}
+\cas{c)}
+\begin{calculs}
+4x+3 &= 1-3(2-x) &&\\
+4x+3 &= 1-6+3x &&\justif{$-3\times(-x)=+3x$}\\
+4x+3 &= 3x-5 &&\\
+x &= -8 &&
+\end{calculs}
+\explique{$\res{S=\ens{-8}}$.}{vérification : $-29=-29$}
+\cas{d)}
+\begin{calculs}
+(3x-4)^{2}-(x+6)^{2} &= 0 &&\justif{$a=3x-4$ et $b=x+6$}\\
+\big[(3x-4)-(x+6)\big]\big[(3x-4)+(x+6)\big] &= 0 &&\\
+(2x-10)(4x+2) &= 0 &&
+\end{calculs}
+\explique{$2x-10=0$ ou $4x+2=0$ : $\res{S=\ens{-\frac12\,;5}}$.}{}
+\cas{e)}
+\explique{$9x^{2}-12x+4=(3x-2)^{2}$ ($a=3x$ et $b=2$ ; $2ab=12x$) et
+$4(x+2)^{2}=\big[2(x+2)\big]^{2}$.}{on reconnaît deux carrés}
+\begin{calculs}
+9x^{2}-12x+4 &= 4(x+2)^{2} &&\\
+(3x-2)^{2}-\big[2(x+2)\big]^{2} &= 0 &&\justif{tout à gauche}\\
+\big[(3x-2)-2(x+2)\big]\big[(3x-2)+2(x+2)\big] &= 0 &&\\
+(x-6)(5x+2) &= 0 &&
+\end{calculs}
+\explique{$x-6=0$ ou $5x+2=0$ : $\res{S=\ens{-\frac25\,;6}}$.}{}
 \end{exo}
 
 \begin{exo}[Points d'intersection de deux courbes]
-a) $x^{2}+2x-3=2x+6$ donne $x^{2}-9=0$, soit $(x-3)(x+3)=0$.
-$g(3)=12$ et $g(-3)=0$ : $\res{(3\,;12)}$ et $\res{(-3\,;0)}$.\par
-b) $3x^{2}-x+1=5x+1$ donne $3x^{2}-6x=0$, soit $3x(x-2)=0$.
-$g(0)=1$ et $g(2)=11$ : $\res{(0\,;1)}$ et $\res{(2\,;11)}$.
+\explique{Un point commun aux deux courbes a la même abscisse $x$ et la même ordonnée : on
+résout $f(x)=g(x)$, puis on calcule l'ordonnée $g(x)$.}{chapitre 2}
+\cas{a)}
+\begin{calculs}
+x^{2}+2x-3 &= 2x+6 &&\\
+x^{2}-9 &= 0 &&\justif{les $2x$ s'éliminent}\\
+(x-3)(x+3) &= 0 &&
+\end{calculs}
+\explique{$x=3$ ou $x=-3$ ; $g(3)=12$ et $g(-3)=0$. Les points d'intersection sont
+$\res{(3\,;12)}$ et $\res{(-3\,;0)}$.}{contrôle : $f(3)=9+6-3=12$}
+\cas{b)}
+\begin{calculs}
+3x^{2}-x+1 &= 5x+1 &&\\
+3x^{2}-6x &= 0 &&\\
+3x(x-2) &= 0 &&
+\end{calculs}
+\explique{$x=0$ ou $x=2$ ; $g(0)=1$ et $g(2)=11$. Les points d'intersection sont
+$\res{(0\,;1)}$ et $\res{(2\,;11)}$.}{contrôle : $f(2)=12-2+1=11$}
 \end{exo}
 
 \begin{exo}[Deux problèmes]
-1) $(x+3)^{2}=x^{2}+51$ donne $6x+9=51$, puis $x=7$ : l'aire de départ vaut \res{49\text{ cm}^{2}}.\par
-2) $0<x\le 6$ ; carré : $x^{2}$ ; rectangle : $(6-x)(9-x)=54-15x+x^{2}$.
-$x^{2}=54-15x+x^{2}$ donne $x=\res{3{,}6\text{ cm}}$, qui convient.
+\cas{1)}
+\explique{Soit $x$ le côté du carré de départ, en cm ($x>0$) : son aire est $x^{2}$ ; le
+nouveau carré a pour aire $(x+3)^{2}$.}{}
+\begin{calculs}
+(x+3)^{2} &= x^{2}+51 &&\\
+x^{2}+6x+9 &= x^{2}+51 &&\\
+6x &= 42 &&\justif{les $x^{2}$ s'éliminent}\\
+x &= 7 &&
+\end{calculs}
+\explique{L'aire du carré de départ est $7^{2}=\res{49}$~cm$^{2}$.}{vérification :
+$100=49+51$}
+\cas{2)}
+\explique{$M$ est sur $[AB]$ : $0<x\le 6$. Le carré a pour aire $x^{2}$. Le rectangle a
+pour côtés $NQ=6-x$ et $QC=9-x$, donc pour aire $(6-x)(9-x)=54-15x+x^{2}$.}{comme dans
+la méthode 16}
+\begin{calculs}
+x^{2} &= 54-15x+x^{2} &&\\
+15x &= 54 &&\justif{les $x^{2}$ s'éliminent}\\
+x &= 3{,}6 &&\justif{$0<3{,}6\le 6$ : possible}
+\end{calculs}
+\explique{Il faut placer $M$ à $\res{3{,}6}$~cm de $A$.}{vérification : $3{,}6^{2}=12{,}96$
+et $2{,}4\times 5{,}4=12{,}96$}
 \end{exo}
 
 \end{document}

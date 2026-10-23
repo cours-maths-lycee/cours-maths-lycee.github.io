@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,518 +189,1248 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
-\entete{Chapitre 3 --- Polynômes du second degré --- Corrigé des exercices}{1\textsuperscript{re} STI2D}
-
 \usepackage{tkz-tab}
-\let\deuxpaquet\deux
-\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
-\newenvironment{tabsignes}[2]{\begin{center}\begin{tikzpicture}[scale=0.58]
-  \tkzTabInit[lgt=2.2,espcl=1.7]{#1}{#2}}{\end{tikzpicture}\end{center}}
-\clubpenalty=10000
-\widowpenalty=10000
+\entete{Chapitre 3 --- Polynômes du second degré --- corrigé}{1\textsuperscript{re} STI2D}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\tabsignes}[4][2.2]{\par\smallskip{\centering
+  \begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=2.6,espcl=#1]{$x$/1,$#2$/1.2}{#3}
+  \tkzTabLine{#4}
+  \end{tikzpicture}\par}\smallskip}
+\newcommand{\tabvar}[4][2.2]{\par\smallskip{\centering
+  \begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=2,espcl=#1]{$x$/1,$#2$/2}{#3}
+  \tkzTabVar{#4}
+  \end{tikzpicture}\par}\smallskip}
+
+\definecolor{coulInt}{HTML}{D62828}
+\definecolor{coulIntB}{HTML}{1565C0}
+\NewDocumentCommand{\morceau}{O{coulInt} m m}{%
+  \draw[#1,line width=2.2pt,opacity=0.85] (#2,0)--(#3,0);}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- POLYNÔMES DU SECOND DEGRÉ}
-  {Chapitre 3 : fiche d'exercices --- Première STI2D}
-  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
-   fréquentes et les contrôles à faire. Le discriminant est toujours écrit
-   $\Delta=b^{2}-4ac$ avant d'être calculé, comme au devoir.}
+\entetefiche{Chapitre 3 --- Polynômes du second degré}{1\textsuperscript{re} STI2D}
 
 \partie{Fonction polynôme du second degré}
 
 \begin{exo}[Est-ce un trinôme ?]
-\begin{reponses}
-  \item Oui : \res{a=3}, \res{b=-2}, \res{c=5}.
-  \item Non : $4x+1$ est affine (pas de $x^{2}$).
-  \item Oui : \res{a=-1}, \res{b=0}, \res{c=6}.
-  \item Non : il y a un terme en $x^{3}$.
-  \item $l(x)=x^{2}-2x-8$ : oui, \res{a=1}, \res{b=-2}, \res{c=-8}.
-  \item $m(x)=x^{2}-\left(x^{2}-2x+1\right)=2x-1$ : non, affine.
-\end{reponses}
-\rem{Une expression avec des parenthèses se développe avant de conclure.}
+\explique{Une fonction polynôme du second degré s'écrit $ax^{2}+bx+c$ avec $a\ne 0$.
+Quand il y a des parenthèses, on développe d'abord.}{méthode 1 du cours}
+\cas{a)}
+\explique{$f(x)=3x^{2}-2x+5$ : \res{oui}, avec $a=\res{3}$, $b=\res{-2}$ et
+$c=\res{5}$.}{chaque coefficient avec son signe}
+\cas{b)}
+\explique{$g(x)=4x+1$ : \res{non}, il n'y a pas de terme en $x^{2}$ ; c'est une fonction
+affine.}{$a=0$}
+\cas{c)}
+\explique{$h(x)=-x^{2}+6$ : \res{oui}, avec $a=\res{-1}$, $b=\res{0}$ et
+$c=\res{6}$.}{$-x^{2}=-1\times x^{2}$ ; pas de terme en $x$ : $b=0$}
+\cas{d)}
+\explique{$k(x)=2x^{3}+x^{2}-1$ : \res{non}, il y a un terme en $x^{3}$.}{le plus grand
+exposant doit être $2$}
+\cas{e)}
+\begin{calculs}
+l(x) &= (x+2)(x-4) &&\justif{des parenthèses : on développe}\\
+l(x) &= x^{2}-4x+2x-8 &&\justif{quatre produits}\\
+l(x) &= x^{2}-2x-8 &&\justif{on réduit : $-4x+2x=-2x$}
+\end{calculs}
+\explique{\res{Oui}, avec $a=\res{1}$, $b=\res{-2}$ et $c=\res{-8}$.}{}
+\cas{f)}
+\begin{calculs}
+m(x) &= x^{2}-(x-1)^{2} &&\justif{on recopie}\\
+m(x) &= x^{2}-\left(x^{2}-2x+1\right) &&\justif{identité remarquable, entre parenthèses}\\
+m(x) &= x^{2}-x^{2}+2x-1 &&\justif{le $-$ devant la parenthèse change tous les signes}\\
+m(x) &= 2x-1 &&\justif{les $x^{2}$ s'éliminent}
+\end{calculs}
+\explique{\res{Non} : $m$ est une fonction affine.}{$a=0$}
+\rem{Erreur fréquente en f) : écrire $x^{2}-x^{2}-2x+1$ en oubliant de changer tous les
+signes de la parenthèse.}
 \end{exo}
 
 \begin{exo}[Lire les coefficients]
-\deux{$f$ : $3$ ; $-4$ ; $2$}{$g$ : $-1$ ; $5$ ; $0$}
-\deux{$h$ : $1$ ; $0$ ; $-16$}{$k$ : $-2$ ; $0$ ; $7$}
-\deux{$l$ : $\frac{1}{3}$ ; $1$ ; $-4$}{$m$ : $-1$ ; $-3$ ; $6$}
-\deux{$n$ : $-1$ ; $2$ ; $-5$}{$p$ : $5$ ; $0$ ; $0$}
-\rem{Pour $m$, on range d'abord : $-x^{2}-3x+6$. Un terme absent vaut $0$.}
+\explique{On lit chaque coefficient \emph{avec son signe} ; un terme absent a un
+coefficient nul.}{méthode 1 du cours}
+\cas{$f(x)=3x^{2}-4x+2$}
+\explique{$a=\res{3}$, $b=\res{-4}$, $c=\res{2}$.}{}
+\cas{$g(x)=-x^{2}+5x$}
+\explique{$a=\res{-1}$, $b=\res{5}$, $c=\res{0}$.}{$-x^{2}=-1\times x^{2}$ ; pas de
+nombre seul : $c=0$}
+\cas{$h(x)=x^{2}-16$}
+\explique{$a=\res{1}$, $b=\res{0}$, $c=\res{-16}$.}{$x^{2}=1\times x^{2}$ ; pas de terme
+en $x$ : $b=0$}
+\cas{$k(x)=-2x^{2}+7$}
+\explique{$a=\res{-2}$, $b=\res{0}$, $c=\res{7}$.}{}
+\cas{$l(x)=\frac{1}{3}x^{2}+x-4$}
+\explique{$a=\res{\dfrac{1}{3}}$, $b=\res{1}$, $c=\res{-4}$.}{$x=1\times x$}
+\cas{$m(x)=6-3x-x^{2}$}
+\explique{On range d'abord : $m(x)=-x^{2}-3x+6$. Donc $a=\res{-1}$, $b=\res{-3}$,
+$c=\res{6}$.}{$a$ est devant $x^{2}$, quelle que soit sa place}
+\cas{$n(x)=-x^{2}+2x-5$}
+\explique{$a=\res{-1}$, $b=\res{2}$, $c=\res{-5}$.}{}
+\cas{$p(x)=5x^{2}$}
+\explique{$a=\res{5}$, $b=\res{0}$, $c=\res{0}$.}{c'est bien un trinôme : seul $a$ doit
+être non nul}
+\rem{Erreur fréquente pour $m$ : prendre $a=6$ parce que $6$ est écrit en premier.}
 \end{exo}
 
 \begin{exo}[Développer d'abord]
-\deux{$f(x)=\res{x^{2}-x-12}$}{$g(x)=\res{3x^{2}+x-2}$}
-\deux{$h(x)=\res{x^{2}-4x+9}$}{$k(x)=\res{2x^{2}+12x+17}$}
+\explique{On développe, on réduit et on range : $x^{2}$, puis $x$, puis le nombre seul.
+Si les $x^{2}$ s'éliminent, ce n'est pas un trinôme.}{méthode 1 du cours}
+\cas{$f$}
 \begin{calculs}
-l(x)&=x^{2}+6x+9-\left(x^{2}-6x+9\right)\\
-l(x)&=12x\\
-m(x)&=9x^{2}+6x+1-9x^{2}\\
-m(x)&=6x+1
+f(x) &= (x+3)(x-4) &&\justif{on recopie}\\
+f(x) &= x^{2}-4x+3x-12 &&\justif{quatre produits}\\
+f(x) &= \res{x^{2}-x-12} &&\justif{$-4x+3x=-x$}
 \end{calculs}
-$l$ et $m$ ne sont \res{\text{pas des trinômes}} (les $x^{2}$ s'éliminent).
+\explique{Trinôme : $a=\res{1}$, $b=\res{-1}$, $c=\res{-12}$.}{}
+\cas{$g$}
+\begin{calculs}
+g(x) &= (3x-2)(x+1) &&\justif{on recopie}\\
+g(x) &= 3x^{2}+3x-2x-2 &&\justif{quatre produits}\\
+g(x) &= \res{3x^{2}+x-2} &&
+\end{calculs}
+\explique{Trinôme : $a=\res{3}$, $b=\res{1}$, $c=\res{-2}$.}{}
+\cas{$h$}
+\begin{calculs}
+h(x) &= (x-2)^{2}+5 &&\justif{on recopie}\\
+h(x) &= x^{2}-4x+4+5 &&\justif{$(a-b)^{2}=a^{2}-2ab+b^{2}$}\\
+h(x) &= \res{x^{2}-4x+9} &&
+\end{calculs}
+\explique{Trinôme : $a=\res{1}$, $b=\res{-4}$, $c=\res{9}$.}{}
+\cas{$k$}
+\begin{calculs}
+k(x) &= 2(x+3)^{2}-1 &&\justif{on recopie}\\
+k(x) &= 2\left(x^{2}+6x+9\right)-1 &&\justif{le carré d'abord, entre parenthèses}\\
+k(x) &= 2x^{2}+12x+18-1 &&\justif{puis on multiplie par $2$}\\
+k(x) &= \res{2x^{2}+12x+17} &&
+\end{calculs}
+\explique{Trinôme : $a=\res{2}$, $b=\res{12}$, $c=\res{17}$.}{}
+\cas{$l$}
+\begin{calculs}
+l(x) &= (x+3)^{2}-(x-3)^{2} &&\justif{on recopie}\\
+l(x) &= x^{2}+6x+9-\left(x^{2}-6x+9\right) &&\justif{deux identités remarquables}\\
+l(x) &= x^{2}+6x+9-x^{2}+6x-9 &&\justif{le $-$ change tous les signes}\\
+l(x) &= \res{12x} &&
+\end{calculs}
+\explique{\res{Pas un trinôme} : les $x^{2}$ s'éliminent.}{$a=0$}
+\cas{$m$}
+\begin{calculs}
+m(x) &= (3x+1)^{2}-9x^{2} &&\justif{on recopie}\\
+m(x) &= 9x^{2}+6x+1-9x^{2} &&\justif{$(3x)^{2}=9x^{2}$}\\
+m(x) &= \res{6x+1} &&
+\end{calculs}
+\explique{\res{Pas un trinôme} : les $x^{2}$ s'éliminent.}{$a=0$}
+\rem{Erreur fréquente : $(x-2)^{2}=x^{2}+4$. Le carré d'une différence a trois termes,
+dont le double produit $-4x$.}
 \end{exo}
 
 \begin{exo}[Calculer des images]
-\begin{questions}
-  \item $f(0)=\res{1}$ ; \ $f(1)=3-2+1=\res{2}$ ; \ $f(-2)=12+4+1=\res{17}$ ;\\
-        $f\big(\frac{1}{3}\big)=\frac{1}{3}-\frac{2}{3}+1=\res{\tfrac{2}{3}}$
-  \item $g(2)=-4+12=\res{8}$ ; \ $g(-1)=-1-6=\res{-7}$ ; \ $g(7)=-49+42=\res{-7}$ ;\\
-        $g\big(\frac{1}{2}\big)=-\frac{1}{4}+3=\res{\tfrac{11}{4}}$
-  \item $g(-1)=g(7)$ : $-1$ et $7$ sont symétriques par rapport à $3$, l'axe de la
-        parabole.
-\end{questions}
-\rem{$(-2)^{2}=4$ : le carré d'un nombre négatif est positif.}
+\explique{On remplace $x$ par le nombre, entre parenthèses s'il est négatif, puis on
+calcule : les puissances d'abord, puis les produits.}{priorités de calcul}
+\cas{1)}
+\begin{calculs}
+f(0) &= 3\times 0^{2}-2\times 0+1 &&\justif{on remplace $x$ par $0$}\\
+f(0) &= \res{1} &&\justif{l'image de $0$ est toujours $c$}\\[3pt]
+f(1) &= 3\times 1^{2}-2\times 1+1 &&\\
+f(1) &= 3-2+1=\res{2} &&\\[3pt]
+f(-2) &= 3\times(-2)^{2}-2\times(-2)+1 &&\justif{$-2$ entre parenthèses}\\
+f(-2) &= 12+4+1=\res{17} &&\justif{$(-2)^{2}=4$ et $-2\times(-2)=+4$}\\[3pt]
+f\!\left(\tfrac{1}{3}\right) &= 3\times\left(\frac{1}{3}\right)^{2}-2\times\frac{1}{3}+1 &&\\
+f\!\left(\tfrac{1}{3}\right) &= 3\times\frac{1}{9}-\frac{2}{3}+1 &&\justif{$\left(\frac{1}{3}\right)^{2}=\frac{1}{9}$}\\
+f\!\left(\tfrac{1}{3}\right) &= \frac{1}{3}-\frac{2}{3}+\frac{3}{3} &&\justif{$3\times\frac{1}{9}=\frac{3}{9}=\frac{1}{3}$ ; $1=\frac{3}{3}$}\\
+f\!\left(\tfrac{1}{3}\right) &= \res{\frac{2}{3}} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+g(2) &= -2^{2}+6\times 2 &&\justif{$-2^{2}=-4$ : le carré porte sur $2$ seulement}\\
+g(2) &= -4+12=\res{8} &&\\[3pt]
+g(-1) &= -(-1)^{2}+6\times(-1) &&\justif{$-(-1)^{2}=-1$}\\
+g(-1) &= -1-6=\res{-7} &&\\[3pt]
+g(7) &= -7^{2}+6\times 7 &&\\
+g(7) &= -49+42=\res{-7} &&\\[3pt]
+g\!\left(\tfrac{1}{2}\right) &= -\left(\frac{1}{2}\right)^{2}+6\times\frac{1}{2} &&\\
+g\!\left(\tfrac{1}{2}\right) &= -\frac{1}{4}+3 &&\\
+g\!\left(\tfrac{1}{2}\right) &= -\frac{1}{4}+\frac{12}{4}=\res{\frac{11}{4}} &&\justif{$3=\frac{12}{4}$}
+\end{calculs}
+\cas{3)}
+\explique{$g(-1)=g(7)=-7$ : deux nombres différents ont \res{la même image}.}{on
+l'expliquera avec la courbe (partie VII) : $-1$ et $7$ sont à égale distance de $3$}
+\rem{Erreur fréquente : $(-2)^{2}=-4$. Le carré d'un nombre négatif est positif :
+$(-2)^{2}=(-2)\times(-2)=4$. En revanche, $-x^{2}$ pour $x=-1$ donne $-(-1)^{2}=-1$.}
 \end{exo}
 
 \partie{Forme factorisée et racines}
 
 \begin{exo}[De la forme factorisée à la forme développée]
+\explique{On développe d'abord les deux parenthèses, puis on multiplie par le nombre
+devant.}{méthode 2 du cours}
+\cas{$f$}
 \begin{calculs}
-f(x)&=3\left(x^{2}-x-2\right)\\
-f(x)&=\res{3x^{2}-3x-6}\\
-g(x)&=-\left(x^{2}-x-12\right)\\
-g(x)&=\res{-x^{2}+x+12}\\
-h(x)&=2\left(x^{2}+5x+4\right)\\
-h(x)&=\res{2x^{2}+10x+8}\\
-k(x)&=-3\left(x^{2}-3x+2\right)\\
-k(x)&=\res{-3x^{2}+9x-6}
+f(x) &= 3(x-2)(x+1) &&\justif{on recopie}\\
+f(x) &= 3\left(x^{2}+x-2x-2\right) &&\justif{les deux parenthèses d'abord}\\
+f(x) &= 3\left(x^{2}-x-2\right) &&\\
+f(x) &= \res{3x^{2}-3x-6} &&\justif{puis on multiplie par $3$}
 \end{calculs}
-\rem{On développe les deux parenthèses, puis on multiplie par $a$.}
+\cas{$g$}
+\begin{calculs}
+g(x) &= -(x+3)(x-4) &&\justif{on recopie}\\
+g(x) &= -\left(x^{2}-4x+3x-12\right) &&\justif{les deux parenthèses d'abord}\\
+g(x) &= -\left(x^{2}-x-12\right) &&\\
+g(x) &= \res{-x^{2}+x+12} &&\justif{le $-$ change tous les signes}
+\end{calculs}
+\cas{$h$}
+\begin{calculs}
+h(x) &= 2(x+4)(x+1) &&\justif{on recopie}\\
+h(x) &= 2\left(x^{2}+x+4x+4\right) &&\\
+h(x) &= 2\left(x^{2}+5x+4\right) &&\\
+h(x) &= \res{2x^{2}+10x+8} &&\justif{puis on multiplie par $2$}
+\end{calculs}
+\cas{$k$}
+\begin{calculs}
+k(x) &= -3(x-1)(x-2) &&\justif{on recopie}\\
+k(x) &= -3\left(x^{2}-2x-x+2\right) &&\justif{$(-1)\times(-2)=+2$}\\
+k(x) &= -3\left(x^{2}-3x+2\right) &&\\
+k(x) &= \res{-3x^{2}+9x-6} &&\justif{puis on multiplie par $-3$}
+\end{calculs}
+\rem{Erreur fréquente : multiplier le nombre devant par les \emph{deux} parenthèses,
+$3(x-2)(x+1)=(3x-6)(3x+3)$. Le $3$ ne multiplie qu'une fois.}
 \end{exo}
 
 \begin{exo}[Équations produit]
-\begin{reponses}
-  \item \res{S=\ens{-2\,;5}}
-  \item $x+4=0$ ou $2x-3=0$ : \ \res{S=\ens{-4\,;\tfrac{3}{2}}}
-  \item $x+3=0$ ou $x+7=0$ : \ \res{S=\ens{-7\,;-3}}
-  \item $x=0$ ou $2x-8=0$ : \ \res{S=\ens{0\,;4}}
-\end{reponses}
-\rem{Le facteur $-3$ (ou $-4$) ne s'annule jamais : il n'intervient pas.}
+\explique{Un produit est nul si l'un de ses facteurs est nul ; un nombre comme $-3$ ou
+$-4$ ne s'annule jamais.}{méthode 2 du cours}
+\cas{a)}
+\begin{calculs}
+(x-5)(x+2) &= 0 &&\justif{on recopie}\\
+x-5 &= 0 \quad\text{ou}\quad x+2=0 &&\justif{produit nul}\\
+x &= 5 \quad\text{ou}\quad x=-2 &&
+\end{calculs}
+\explique{$\res{S=\ens{-2\,;5}}$.}{on range les solutions dans l'ordre croissant}
+\cas{b)}
+\begin{calculs}
+-3(x+4)(2x-3) &= 0 &&\justif{on recopie}\\
+x+4 &= 0 \quad\text{ou}\quad 2x-3=0 &&\justif{le facteur $-3$ ne s'annule pas}\\
+x &= -4 \quad\text{ou}\quad 2x=3 &&\\
+x &= -4 \quad\text{ou}\quad x=\frac{3}{2} &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$\res{S=\ens{-4\,;\tfrac{3}{2}}}$.}{}
+\cas{c)}
+\begin{calculs}
+-4(x+3)(x+7) &= 0 &&\justif{on recopie}\\
+x+3 &= 0 \quad\text{ou}\quad x+7=0 &&\justif{le facteur $-4$ ne s'annule pas}\\
+x &= -3 \quad\text{ou}\quad x=-7 &&
+\end{calculs}
+\explique{$\res{S=\ens{-7\,;-3}}$.}{}
+\cas{d)}
+\begin{calculs}
+x(2x-8) &= 0 &&\justif{on recopie}\\
+x &= 0 \quad\text{ou}\quad 2x-8=0 &&\justif{le premier facteur est $x$}\\
+x &= 0 \quad\text{ou}\quad 2x=8 &&\\
+x &= 0 \quad\text{ou}\quad x=4 &&
+\end{calculs}
+\explique{$\res{S=\ens{0\,;4}}$.}{}
+\rem{En d), on n'oublie pas la solution $0$ : le facteur $x$ s'annule en $0$.}
 \end{exo}
 
 \begin{exo}[Lire les racines]
-\deux{$f$ : \res{3\text{ et }-4}}{$g$ : \res{-2\text{ et }6}}
-\deux{$h$ : \res{5\text{ et }-1}}{$k$ : \res{\tfrac{1}{3}\text{ et }-2}}
-\deux{$l$ : \res{-3\text{ et }-5}}{$m$ : \res{-5\text{ et }5}}
-\deux{$n$ : \res{0\text{ et }7}}{$p$ : \res{-1\text{ et }-6}}
-\rem{Pour $k$, $3x-1=0$ donne $x=\frac{1}{3}$ : ce n'est pas $1$.}
+\explique{Dans $a(x-x_{1})(x-x_{2})$, les racines se lisent en changeant le signe :
+dans $(x-3)$, la racine est $3$ ; dans $(x+4)$, elle est $-4$.}{propriété 1 du cours}
+\cas{$f(x)=(x-3)(x+4)$}
+\explique{Racines \res{$3$ et $-4$}.}{}
+\cas{$g(x)=2(x+2)(x-6)$}
+\explique{Racines \res{$-2$ et $6$}.}{le $2$ devant ne s'annule pas}
+\cas{$h(x)=-3(x-5)(x+1)$}
+\explique{Racines \res{$5$ et $-1$}.}{}
+\cas{$k(x)=(3x-1)(x+2)$}
+\explique{$3x-1=0$ donne $3x=1$, soit $x=\dfrac{1}{3}$. Racines
+\res{$\dfrac{1}{3}$ et $-2$}.}{devant $x$, il y a $3$ : on ne lit pas directement}
+\cas{$l(x)=4(x+3)(x+5)$}
+\explique{Racines \res{$-3$ et $-5$}.}{}
+\cas{$m(x)=-(x+5)(x-5)$}
+\explique{Racines \res{$-5$ et $5$}.}{}
+\cas{$n(x)=x(x-7)$}
+\explique{Racines \res{$0$ et $7$}.}{$x=x-0$ : racine $0$}
+\cas{$p(x)=2(x+1)(x+6)$}
+\explique{Racines \res{$-1$ et $-6$}.}{}
+\rem{Contrôle : on remplace $x$ par la racine trouvée, une parenthèse doit valoir $0$.
+Pour $k$ : $3\times\frac{1}{3}-1=0$.}
 \end{exo}
 
 \begin{exo}[Les deux formes d'une même fonction]
-\begin{questions}
-  \item $f(x)=3\left(x^{2}-x-2\right)=\res{3x^{2}-3x-6}$
-  \item Forme factorisée : $f(0)=3\times 1\times(-2)=-6$ ; forme développée :
-        $f(0)=-6$.
-  \item Racines \res{-1} et \res{2} : \res{S=\ens{-1\,;2}}.
-  \item Oui, avec \res{a=3}.
-\end{questions}
+\cas{1)}
+\begin{calculs}
+f(x) &= 3(x+1)(x-2) &&\justif{on recopie}\\
+f(x) &= 3\left(x^{2}-2x+x-2\right) &&\justif{les deux parenthèses d'abord}\\
+f(x) &= 3\left(x^{2}-x-2\right) &&\\
+f(x) &= \res{3x^{2}-3x-6} &&\justif{puis on multiplie par $3$}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+f(0) &= 3\times(0+1)\times(0-2) &&\justif{avec la forme factorisée}\\
+f(0) &= 3\times 1\times(-2)=-6 &&\\[3pt]
+f(0) &= 3\times 0^{2}-3\times 0-6 &&\justif{avec la forme développée}\\
+f(0) &= -6 &&
+\end{calculs}
+\explique{Les deux formes donnent $\res{f(0)=-6}$.}{c'est un contrôle du
+développement}
+\cas{3)}
+\explique{Racines : \res{$-1$ et $2$}.}{lues sur la forme factorisée, en changeant le
+signe}
+\begin{calculs}
+3(x+1)(x-2) &= 0 &&\justif{on résout avec la forme factorisée}\\
+x+1 &= 0 \quad\text{ou}\quad x-2=0 &&\justif{produit nul}
+\end{calculs}
+\explique{$\res{S=\ens{-1\,;2}}$.}{les solutions de $f(x)=0$ sont les racines}
+\cas{4)}
+\explique{\res{Oui} : sa forme développée est $3x^{2}-3x-6$, avec $a=\res{3}$.}{le nombre
+devant les parenthèses est $a$}
+\rem{Chaque forme a son usage : la forme factorisée pour les racines, la forme développée
+pour lire $a$, $b$ et $c$.}
 \end{exo}
 
 \partie{Le discriminant}
 
 \begin{exo}[Calculer un discriminant]
-\rem{$\Delta=b^{2}-4ac$, avec les nombres négatifs entre parenthèses.}
-\deux{$f$ : $4+60=\res{64}>0$}{$g$ : $4+60=\res{64}>0$}
-\deux{$h$ : $4-60=\res{-56}<0$}{$k$ : $4-60=\res{-56}<0$}
-\deux{$l$ : $144-144=\res{0}$}{$m$ : $100-100=\res{0}$}
-\deux{$n$ : $25-24=\res{1}>0$}{$p$ : $16-24=\res{-8}<0$}
-\deux{$q$ : $49-24=\res{25}>0$}{}
-\rem{Pour $k$ : $-4\times(-1)\times(-15)=-60$. Le signe de $-4ac$ dépend des signes de
-$a$ et de $c$.}
+\explique{On lit $a$, $b$ et $c$ avec leur signe, puis on écrit $\Delta=b^{2}-4ac$ en
+mettant les nombres négatifs entre parenthèses.}{méthode 3 du cours}
+\begin{calculs}
+\Delta_{f} &= (-2)^{2}-4\times 1\times(-15) &&\justif{$a=1$, $b=-2$, $c=-15$}\\
+\Delta_{f} &= 4+60=\res{64} &&\justif{$\Delta_{f}>0$}\\[3pt]
+\Delta_{g} &= 2^{2}-4\times 1\times(-15) &&\justif{$a=1$, $b=2$, $c=-15$}\\
+\Delta_{g} &= 4+60=\res{64} &&\justif{$\Delta_{g}>0$}\\[3pt]
+\Delta_{h} &= 2^{2}-4\times 1\times 15 &&\justif{$a=1$, $b=2$, $c=15$}\\
+\Delta_{h} &= 4-60=\res{-56} &&\justif{$\Delta_{h}<0$}\\[3pt]
+\Delta_{k} &= 2^{2}-4\times(-1)\times(-15) &&\justif{$a=-1$, $b=2$, $c=-15$}\\
+\Delta_{k} &= 4-60=\res{-56} &&\justif{$-4\times(-1)\times(-15)=-60$ : $\Delta_{k}<0$}\\[3pt]
+\Delta_{l} &= (-12)^{2}-4\times 4\times 9 &&\justif{$a=4$, $b=-12$, $c=9$}\\
+\Delta_{l} &= 144-144=\res{0} &&\\[3pt]
+\Delta_{m} &= (-10)^{2}-4\times 25\times 1 &&\justif{$a=25$, $b=-10$, $c=1$}\\
+\Delta_{m} &= 100-100=\res{0} &&\\[3pt]
+\Delta_{n} &= 5^{2}-4\times(-2)\times(-3) &&\justif{$a=-2$, $b=5$, $c=-3$}\\
+\Delta_{n} &= 25-24=\res{1} &&\justif{$\Delta_{n}>0$}\\[3pt]
+\Delta_{p} &= 4^{2}-4\times(-3)\times(-2) &&\justif{$a=-3$, $b=4$, $c=-2$}\\
+\Delta_{p} &= 16-24=\res{-8} &&\justif{$\Delta_{p}<0$}\\[3pt]
+\Delta_{q} &= 7^{2}-4\times(-2)\times(-3) &&\justif{$a=-2$, $b=7$, $c=-3$}\\
+\Delta_{q} &= 49-24=\res{25} &&\justif{$\Delta_{q}>0$}
+\end{calculs}
+\rem{$b^{2}$ est toujours positif : $(-2)^{2}=4$. Le signe de $-4ac$ dépend des signes de
+$a$ et de $c$ : s'ils sont de même signe, $-4ac$ est négatif ($k$, $n$, $p$, $q$).}
+\rem{Erreur fréquente : écrire $-2^{2}$ au lieu de $(-2)^{2}$ ; la calculatrice donne
+alors $-4$.}
 \end{exo}
 
 \begin{exo}[Combien de racines ?]
-\deux{$f$ : $\Delta=9$ : \res{2}}{$g$ : $\Delta=-4$ : \res{0}}
-\deux{$h$ : $\Delta=36$ : \res{2}}{$k$ : $\Delta=0$ : \res{1}}
-\deux{$l$ : $\Delta=1$ : \res{2}}{$m$ : $\Delta=-23$ : \res{0}}
+\explique{Le signe de $\Delta$ donne le nombre de racines : deux si $\Delta>0$, une seule
+si $\Delta=0$, aucune si $\Delta<0$.}{propriété 2 du cours}
+\begin{calculs}
+\Delta_{f} &= 5^{2}-4\times 1\times 4 &&\justif{$a=1$, $b=5$, $c=4$}\\
+\Delta_{f} &= 25-16=9 &&\justif{$\Delta_{f}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{g} &= 4^{2}-4\times 1\times 5 &&\justif{$a=1$, $b=4$, $c=5$}\\
+\Delta_{g} &= 16-20=-4 &&\justif{$\Delta_{g}<0$ : \res{aucune racine}}\\[3pt]
+\Delta_{h} &= (-8)^{2}-4\times 1\times 7 &&\justif{$a=1$, $b=-8$, $c=7$}\\
+\Delta_{h} &= 64-28=36 &&\justif{$\Delta_{h}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{k} &= 6^{2}-4\times 9\times 1 &&\justif{$a=9$, $b=6$, $c=1$}\\
+\Delta_{k} &= 36-36=0 &&\justif{$\Delta_{k}=0$ : \res{une seule racine}}\\[3pt]
+\Delta_{l} &= 5^{2}-4\times 2\times 3 &&\justif{$a=2$, $b=5$, $c=3$}\\
+\Delta_{l} &= 25-24=1 &&\justif{$\Delta_{l}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{m} &= (-1)^{2}-4\times(-3)\times(-2) &&\justif{$a=-3$, $b=-1$, $c=-2$}\\
+\Delta_{m} &= 1-24=-23 &&\justif{$\Delta_{m}<0$ : \res{aucune racine}}
+\end{calculs}
+\rem{Pour $l$, $\Delta_{l}=1$ est petit mais positif : il y a bien deux racines. Seul le
+\emph{signe} de $\Delta$ compte.}
 \end{exo}
 
 \begin{exo}[Quand $b$ ou $c$ est nul]
-\deux{$f$ : $0+100=\res{100}$ : 2}{$g$ : $0+144=\res{144}$ : 2}
-\deux{$h$ : $49-0=\res{49}$ : 2}{$k$ : $36-0=\res{36}$ : 2}
-\deux{$l$ : $0-40=\res{-40}$ : 0}{$m$ : $0-16=\res{-16}$ : 0}
-\rem{Si $b=0$, $\Delta=-4ac$ ; si $c=0$, $\Delta=b^{2}$.}
+\explique{Un terme absent a un coefficient nul : si $b=0$, $\Delta=-4ac$ ; si $c=0$,
+$\Delta=b^{2}$.}{méthode 3 du cours}
+\begin{calculs}
+\Delta_{f} &= 0^{2}-4\times 1\times(-25) &&\justif{$a=1$, $b=0$, $c=-25$}\\
+\Delta_{f} &= \res{100} &&\justif{$\Delta_{f}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{g} &= 0^{2}-4\times(-3)\times 12 &&\justif{$a=-3$, $b=0$, $c=12$}\\
+\Delta_{g} &= \res{144} &&\justif{$\Delta_{g}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{h} &= (-7)^{2}-4\times 2\times 0 &&\justif{$a=2$, $b=-7$, $c=0$}\\
+\Delta_{h} &= \res{49} &&\justif{$\Delta_{h}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{k} &= 6^{2}-4\times(-1)\times 0 &&\justif{$a=-1$, $b=6$, $c=0$}\\
+\Delta_{k} &= \res{36} &&\justif{$\Delta_{k}>0$ : \res{deux racines}}\\[3pt]
+\Delta_{l} &= 0^{2}-4\times(-2)\times(-5) &&\justif{$a=-2$, $b=0$, $c=-5$}\\
+\Delta_{l} &= \res{-40} &&\justif{$\Delta_{l}<0$ : \res{aucune racine}}\\[3pt]
+\Delta_{m} &= 0^{2}-4\times 4\times 1 &&\justif{$a=4$, $b=0$, $c=1$}\\
+\Delta_{m} &= \res{-16} &&\justif{$\Delta_{m}<0$ : \res{aucune racine}}
+\end{calculs}
+\rem{Quand $c=0$ ($h$ et $k$), $\Delta=b^{2}$ est toujours positif (ou nul) : il y a
+toujours la racine $0$, puisqu'on peut factoriser par $x$.}
+\rem{Erreur fréquente pour $g$ : prendre $b=12$. Le nombre seul est $c$ ; il n'y a pas
+de terme en $x$, donc $b=0$.}
 \end{exo}
 
 \partie{Racines et équations du second degré}
 
 \begin{exo}[Deux racines]
-\textbf{a)} $\Delta=4+60=64$ :
+\explique{On calcule $\Delta$ ; ici $\Delta>0$, donc deux solutions :
+$x_{1}=\dfrac{-b-\sqrt{\Delta}}{2a}$ et $x_{2}=\dfrac{-b+\sqrt{\Delta}}{2a}$.}{méthode 4
+du cours}
+\cas{a)}
 \begin{calculs}
-x_{1}&=\frac{2-8}{2}=-3 & x_{2}&=\frac{2+8}{2}=5
+\Delta &= (-2)^{2}-4\times 1\times(-15) &&\justif{$a=1$, $b=-2$, $c=-15$}\\
+\Delta &= 4+60=64 &&\justif{$\Delta>0$ : deux solutions ; $\sqrt{64}=8$}\\
+x_{1} &= \frac{2-8}{2}=-3 &&\justif{$-b=2$ et $2a=2$}\\
+x_{2} &= \frac{2+8}{2}=5 &&
 \end{calculs}
-\res{S=\ens{-3\,;5}}\par
-\textbf{b)} $\Delta=9+16=25$ :
+\explique{$\res{S=\ens{-3\,;5}}$.}{contrôle : $(-3)^{2}-2\times(-3)-15=0$}
+\cas{b)}
 \begin{calculs}
-x_{1}&=\frac{-3-5}{4}=-2 & x_{2}&=\frac{-3+5}{4}=\frac{1}{2}
+\Delta &= 3^{2}-4\times 2\times(-2) &&\justif{$a=2$, $b=3$, $c=-2$}\\
+\Delta &= 9+16=25 &&\justif{$\sqrt{25}=5$}\\
+x_{1} &= \frac{-3-5}{4}=-2 &&\justif{$2a=4$}\\
+x_{2} &= \frac{-3+5}{4}=\frac{1}{2} &&\justif{$\frac{2}{4}=\frac{1}{2}$}
 \end{calculs}
-\res{S=\ens{-2\,;\tfrac{1}{2}}}\par
-\textbf{c)} $\Delta=64-60=4$ :
+\explique{$\res{S=\ens{-2\,;\tfrac{1}{2}}}$.}{}
+\cas{c)}
 \begin{calculs}
-x_{1}&=\frac{8-2}{6}=1 & x_{2}&=\frac{8+2}{6}=\frac{5}{3}
+\Delta &= (-8)^{2}-4\times 3\times 5 &&\justif{$a=3$, $b=-8$, $c=5$}\\
+\Delta &= 64-60=4 &&\justif{$\sqrt{4}=2$}\\
+x_{1} &= \frac{8-2}{6}=1 &&\justif{$-b=8$ et $2a=6$}\\
+x_{2} &= \frac{8+2}{6}=\frac{5}{3} &&\justif{$\frac{10}{6}=\frac{5}{3}$}
 \end{calculs}
-\res{S=\ens{1\,;\tfrac{5}{3}}}\par
-\textbf{d)} $\Delta=49-48=1$ :
+\explique{$\res{S=\ens{1\,;\tfrac{5}{3}}}$.}{}
+\cas{d)}
 \begin{calculs}
-x_{1}&=\frac{-7-1}{-2}=4 & x_{2}&=\frac{-7+1}{-2}=3
+\Delta &= 7^{2}-4\times(-1)\times(-12) &&\justif{$a=-1$, $b=7$, $c=-12$}\\
+\Delta &= 49-48=1 &&\justif{$\sqrt{1}=1$}\\
+x_{1} &= \frac{-7-1}{-2}=4 &&\justif{$2a=-2$ : on divise par un négatif}\\
+x_{2} &= \frac{-7+1}{-2}=3 &&
 \end{calculs}
-\res{S=\ens{3\,;4}}
-\rem{Avec $a<0$, le dénominateur $2a$ est négatif : attention aux signes.}
+\explique{$\res{S=\ens{3\,;4}}$.}{on range les solutions dans l'ordre croissant}
+\rem{Erreur fréquente : oublier le signe de $-b$. Si $b=-2$, alors $-b=2$.}
+\rem{Avec $a<0$ (en d), le dénominateur $2a$ est négatif : $x_{1}$ est alors la plus
+grande solution.}
 \end{exo}
 
 \begin{exo}[Les trois cas]
-\begin{reponses}
-  \item $\Delta=400-400=0$ ; $x_{0}=\frac{20}{8}$ : \ \res{S=\ens{\tfrac{5}{2}}}
-  \item $\Delta=4-16=-12<0$ : \ \res{S=\varnothing}
-  \item $\Delta=4-60=-56<0$ : \ \res{S=\varnothing}
-  \item $\Delta=64-64=0$ ; $x_{0}=\frac{-8}{2}$ : \ \res{S=\ens{-4}}
-  \item $\Delta=1+48=49$ ; $\frac{-1-7}{12}$ et $\frac{-1+7}{12}$ :\\
-        \res{S=\ens{-\tfrac{2}{3}\,;\tfrac{1}{2}}}
-  \item $\Delta=25-16=9$ ; $\frac{-5-3}{-4}$ et $\frac{-5+3}{-4}$ :
-        \ \res{S=\ens{\tfrac{1}{2}\,;2}}
-\end{reponses}
+\explique{Le signe de $\Delta$ dit le cas : deux solutions, une seule
+$x_{0}=\dfrac{-b}{2a}$, ou aucune.}{théorème 1 du cours}
+\cas{a)}
+\begin{calculs}
+\Delta &= (-20)^{2}-4\times 4\times 25 &&\justif{$a=4$, $b=-20$, $c=25$}\\
+\Delta &= 400-400=0 &&\justif{$\Delta=0$ : une seule solution}\\
+x_{0} &= \frac{20}{8}=\frac{5}{2} &&\justif{$x_{0}=\frac{-b}{2a}$, avec $2a=8$}
+\end{calculs}
+\explique{$\res{S=\ens{\tfrac{5}{2}}}$.}{}
+\cas{b)}
+\begin{calculs}
+\Delta &= 2^{2}-4\times 1\times 4 &&\justif{$a=1$, $b=2$, $c=4$}\\
+\Delta &= 4-16=-12 &&\justif{$\Delta<0$}
+\end{calculs}
+\explique{$\res{S=\varnothing}$.}{aucune solution}
+\cas{c)}
+\begin{calculs}
+\Delta &= 2^{2}-4\times(-3)\times(-5) &&\justif{$a=-3$, $b=2$, $c=-5$}\\
+\Delta &= 4-60=-56 &&\justif{$\Delta<0$}
+\end{calculs}
+\explique{$\res{S=\varnothing}$.}{aucune solution}
+\cas{d)}
+\begin{calculs}
+\Delta &= 8^{2}-4\times 1\times 16 &&\justif{$a=1$, $b=8$, $c=16$}\\
+\Delta &= 64-64=0 &&\justif{$\Delta=0$ : une seule solution}\\
+x_{0} &= \frac{-8}{2}=-4 &&\justif{$x_{0}=\frac{-b}{2a}$}
+\end{calculs}
+\explique{$\res{S=\ens{-4}}$.}{}
+\cas{e)}
+\begin{calculs}
+\Delta &= 1^{2}-4\times 6\times(-2) &&\justif{$a=6$, $b=1$, $c=-2$}\\
+\Delta &= 1+48=49 &&\justif{$\Delta>0$ : deux solutions ; $\sqrt{49}=7$}\\
+x_{1} &= \frac{-1-7}{12}=-\frac{2}{3} &&\justif{$\frac{-8}{12}=-\frac{2}{3}$}\\
+x_{2} &= \frac{-1+7}{12}=\frac{1}{2} &&\justif{$\frac{6}{12}=\frac{1}{2}$}
+\end{calculs}
+\explique{$\res{S=\ens{-\tfrac{2}{3}\,;\tfrac{1}{2}}}$.}{}
+\cas{f)}
+\begin{calculs}
+\Delta &= 5^{2}-4\times(-2)\times(-2) &&\justif{$a=-2$, $b=5$, $c=-2$}\\
+\Delta &= 25-16=9 &&\justif{$\Delta>0$ : deux solutions ; $\sqrt{9}=3$}\\
+x_{1} &= \frac{-5-3}{-4}=2 &&\justif{$2a=-4$}\\
+x_{2} &= \frac{-5+3}{-4}=\frac{1}{2} &&
+\end{calculs}
+\explique{$\res{S=\ens{\tfrac{1}{2}\,;2}}$.}{}
+\rem{En a) et d), $\Delta=0$ annonce un carré : $4x^{2}-20x+25=(2x-5)^{2}$ et
+$x^{2}+8x+16=(x+4)^{2}$.}
 \end{exo}
 
 \begin{exo}[Sans discriminant]
-\begin{reponses}
-  \item $x^{2}=7$ : \ \res{S=\ens{-\sqrt{7}\,;\sqrt{7}}}
-  \item $x(2x-9)=0$ : \ \res{S=\ens{0\,;\tfrac{9}{2}}}
-  \item $(x-8)(x+8)=0$ : \ \res{S=\ens{-8\,;8}}
-  \item $(3x-2)(3x+2)=0$ : \ \res{S=\ens{-\tfrac{2}{3}\,;\tfrac{2}{3}}}
-  \item $3x(x+4)=0$ : \ \res{S=\ens{-4\,;0}}
-  \item $x^{2}=-9$, impossible : \ \res{S=\varnothing}
-\end{reponses}
-\rem{Pas de terme constant : facteur commun $x$. Pas de terme en $x$ : on isole
-$x^{2}$.}
+\explique{Pas de terme en $x$ : on isole $x^{2}$, ou on reconnaît une différence de deux
+carrés. Pas de nombre seul : on factorise par $x$.}{méthode 4 du cours, cas e)}
+\cas{a)}
+\begin{calculs}
+x^{2}-7 &= 0 &&\justif{on recopie}\\
+x^{2} &= 7 &&\justif{on ajoute $7$}\\
+x &= -\sqrt{7} \quad\text{ou}\quad x=\sqrt{7} &&\justif{$7>0$ : deux solutions}
+\end{calculs}
+\explique{$\res{S=\ens{-\sqrt{7}\,;\sqrt{7}}}$.}{}
+\cas{b)}
+\begin{calculs}
+2x^{2}-9x &= 0 &&\justif{on recopie}\\
+x(2x-9) &= 0 &&\justif{facteur commun $x$}\\
+x &= 0 \quad\text{ou}\quad 2x-9=0 &&\justif{produit nul}\\
+x &= 0 \quad\text{ou}\quad x=\frac{9}{2} &&
+\end{calculs}
+\explique{$\res{S=\ens{0\,;\tfrac{9}{2}}}$.}{}
+\cas{c)}
+\begin{calculs}
+x^{2}-64 &= 0 &&\justif{on recopie}\\
+(x-8)(x+8) &= 0 &&\justif{$a^{2}-b^{2}=(a-b)(a+b)$, avec $64=8^{2}$}\\
+x-8 &= 0 \quad\text{ou}\quad x+8=0 &&\justif{produit nul}
+\end{calculs}
+\explique{$\res{S=\ens{-8\,;8}}$.}{}
+\cas{d)}
+\begin{calculs}
+9x^{2}-4 &= 0 &&\justif{on recopie}\\
+(3x-2)(3x+2) &= 0 &&\justif{$9x^{2}=(3x)^{2}$ et $4=2^{2}$}\\
+3x-2 &= 0 \quad\text{ou}\quad 3x+2=0 &&\justif{produit nul}\\
+x &= \frac{2}{3} \quad\text{ou}\quad x=-\frac{2}{3} &&
+\end{calculs}
+\explique{$\res{S=\ens{-\tfrac{2}{3}\,;\tfrac{2}{3}}}$.}{}
+\cas{e)}
+\begin{calculs}
+3x^{2}+12x &= 0 &&\justif{on recopie}\\
+3x(x+4) &= 0 &&\justif{facteur commun $3x$}\\
+3x &= 0 \quad\text{ou}\quad x+4=0 &&\justif{produit nul}
+\end{calculs}
+\explique{$\res{S=\ens{-4\,;0}}$.}{}
+\cas{f)}
+\begin{calculs}
+x^{2}+9 &= 0 &&\justif{on recopie}\\
+x^{2} &= -9 &&\justif{on retranche $9$}
+\end{calculs}
+\explique{$\res{S=\varnothing}$.}{un carré n'est jamais négatif}
+\rem{Erreur fréquente en b) : diviser par $x$ et « perdre » la solution $0$. On
+factorise, on ne divise pas par $x$.}
+\rem{En a), $x^{2}=7$ a deux solutions : on n'oublie pas $-\sqrt{7}$.}
 \end{exo}
 
 \begin{exo}[Tout ramener d'un côté]
-\begin{reponses}
-  \item $x^{2}+2x-8=0$ ; $\Delta=36$ : \ \res{S=\ens{-4\,;2}}
-  \item $x^{2}+3x+2x+6=0$, soit $x^{2}+5x+6=0$ ; $\Delta=1$ :\\
-        \res{S=\ens{-3\,;-2}}
-  \item $x^{2}-3x+2=0$ ; $\Delta=1$ : \ \res{S=\ens{1\,;2}}
-  \item $x^{2}-x-6-6=0$, soit $x^{2}-x-12=0$ ; $\Delta=49$ :\\
-        \res{S=\ens{-3\,;4}}
-\end{reponses}
-\rem{En d), on ne résout pas « $x+2=6$ ou $x-3=6$ » : le produit vaut $6$, pas $0$.}
+\explique{On développe s'il le faut, puis on met tout dans le membre de gauche pour se
+ramener à $ax^{2}+bx+c=0$.}{méthode 4 du cours, cas d)}
+\cas{a)}
+\begin{calculs}
+3x^{2}+2x-1 &= 2x^{2}+7 &&\justif{on recopie}\\
+x^{2}+2x-8 &= 0 &&\justif{on retranche $2x^{2}$ et $7$}
+\end{calculs}
+\begin{calculs}
+\Delta &= 2^{2}-4\times 1\times(-8) &&\\
+\Delta &= 4+32=36 &&\justif{$\sqrt{36}=6$}\\
+x_{1} &= \frac{-2-6}{2}=-4 &&\\
+x_{2} &= \frac{-2+6}{2}=2 &&
+\end{calculs}
+\explique{$\res{S=\ens{-4\,;2}}$.}{}
+\cas{b)}
+\begin{calculs}
+x(x+3) &= -(2x+6) &&\justif{on recopie}\\
+x^{2}+3x &= -2x-6 &&\justif{on développe les deux membres}\\
+x^{2}+5x+6 &= 0 &&\justif{on ajoute $2x$ et $6$}
+\end{calculs}
+\begin{calculs}
+\Delta &= 5^{2}-4\times 1\times 6 &&\\
+\Delta &= 25-24=1 &&\\
+x_{1} &= \frac{-5-1}{2}=-3 &&\\
+x_{2} &= \frac{-5+1}{2}=-2 &&
+\end{calculs}
+\explique{$\res{S=\ens{-3\,;-2}}$.}{}
+\cas{c)}
+\begin{calculs}
+x^{2}-3x+7 &= 5 &&\justif{on recopie}\\
+x^{2}-3x+2 &= 0 &&\justif{on retranche $5$}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-3)^{2}-4\times 1\times 2 &&\\
+\Delta &= 9-8=1 &&\\
+x_{1} &= \frac{3-1}{2}=1 &&\\
+x_{2} &= \frac{3+1}{2}=2 &&
+\end{calculs}
+\explique{$\res{S=\ens{1\,;2}}$.}{}
+\cas{d)}
+\begin{calculs}
+(x+2)(x-3) &= 6 &&\justif{on recopie}\\
+x^{2}-3x+2x-6 &= 6 &&\justif{on développe}\\
+x^{2}-x-12 &= 0 &&\justif{on retranche $6$}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-1)^{2}-4\times 1\times(-12) &&\\
+\Delta &= 1+48=49 &&\justif{$\sqrt{49}=7$}\\
+x_{1} &= \frac{1-7}{2}=-3 &&\\
+x_{2} &= \frac{1+7}{2}=4 &&
+\end{calculs}
+\explique{$\res{S=\ens{-3\,;4}}$.}{contrôle : $(-3+2)\times(-3-3)=6$}
+\rem{En d), on ne résout pas « $x+2=6$ ou $x-3=6$ » : la règle du produit nul ne marche
+que si le produit vaut $0$.}
 \end{exo}
 
 \begin{exo}[Racines d'une fonction]
-\begin{reponses}
-  \item $\Delta=81-80=1$ : \ \res{4\text{ et }5}
-  \item $\Delta=9+216=225$ ; $\frac{-3-15}{-6}$ et $\frac{-3+15}{-6}$ :
-        \ \res{3\text{ et }-2}
-  \item $\Delta=16-28=-12<0$ : \ \res{\text{aucune racine}}
-  \item $\Delta=36-36=0$ : \ \res{\tfrac{1}{3}} (racine double)
-\end{reponses}
-\rem{En b), on peut aussi diviser par $-3$ : $x^{2}-x-6=0$, même racines.}
+\explique{Les racines de $f$ sont les solutions de $f(x)=0$ : on résout avec
+$\Delta$.}{méthode 4 du cours}
+\cas{a)}
+\begin{calculs}
+\Delta &= (-9)^{2}-4\times 1\times 20 &&\justif{$a=1$, $b=-9$, $c=20$}\\
+\Delta &= 81-80=1 &&\\
+x_{1} &= \frac{9-1}{2}=4 &&\\
+x_{2} &= \frac{9+1}{2}=5 &&
+\end{calculs}
+\explique{$f$ a deux racines : \res{$4$ et $5$}.}{}
+\cas{b)}
+\begin{calculs}
+\Delta &= 3^{2}-4\times(-3)\times 18 &&\justif{$a=-3$, $b=3$, $c=18$}\\
+\Delta &= 9+216=225 &&\justif{$\sqrt{225}=15$}\\
+x_{1} &= \frac{-3-15}{-6}=3 &&\justif{$2a=-6$}\\
+x_{2} &= \frac{-3+15}{-6}=-2 &&
+\end{calculs}
+\explique{$g$ a deux racines : \res{$-2$ et $3$}.}{}
+\cas{c)}
+\begin{calculs}
+\Delta &= 4^{2}-4\times 1\times 7 &&\justif{$a=1$, $b=4$, $c=7$}\\
+\Delta &= 16-28=-12 &&\justif{$\Delta<0$}
+\end{calculs}
+\explique{$h$ n'a \res{aucune racine}.}{}
+\cas{d)}
+\begin{calculs}
+\Delta &= (-6)^{2}-4\times 9\times 1 &&\justif{$a=9$, $b=-6$, $c=1$}\\
+\Delta &= 36-36=0 &&\justif{une seule racine}\\
+x_{0} &= \frac{6}{18}=\frac{1}{3} &&\justif{$x_{0}=\frac{-b}{2a}$}
+\end{calculs}
+\explique{$k$ a une seule racine : \res{$\dfrac{1}{3}$}.}{}
+\rem{En b), on peut d'abord diviser l'équation $-3x^{2}+3x+18=0$ par $-3$ :
+$x^{2}-x-6=0$ a les mêmes solutions, avec de plus petits nombres.}
 \end{exo}
 
 \partie{Factoriser un trinôme}
 
 \begin{exo}[Les racines sont données]
-\begin{reponses}
-  \item \res{(x+3)(x-2)}
-  \item \res{3(x+3)(x-2)}
-  \item \res{-(x-1)(x-4)}
-  \item \res{2(x-3)^{2}}
-\end{reponses}
-\rem{Contrôle sur le terme constant : en b), $3\times 3\times(-2)=-18$.}
+\explique{Avec deux racines, $P(x)=a(x-x_{1})(x-x_{2})$ ; avec une racine double,
+$P(x)=a(x-x_{0})^{2}$. Le coefficient $a$ se lit devant $x^{2}$.}{théorème 2 du cours}
+\cas{a)}
+\explique{$a=1$, racines $-3$ et $2$ : $x^{2}+x-6=\res{(x+3)(x-2)}$.}{$x-(-3)=x+3$}
+\cas{b)}
+\explique{$a=3$, racines $-3$ et $2$ : $3x^{2}+3x-18=\res{3(x+3)(x-2)}$.}{mêmes racines
+qu'en a), mais $a=3$}
+\cas{c)}
+\explique{$a=-1$, racines $1$ et $4$ : $-x^{2}+5x-4=\res{-(x-1)(x-4)}$.}{$-1$ devant
+s'écrit « $-$ »}
+\cas{d)}
+\explique{$a=2$, racine double $3$ : $2x^{2}-12x+18=\res{2(x-3)^{2}}$.}{}
+\explique{Contrôle en développant b) :}{}
+\begin{calculs}
+3(x+3)(x-2) &= 3\left(x^{2}-2x+3x-6\right) &&\\
+3(x+3)(x-2) &= 3\left(x^{2}+x-6\right) &&\\
+3(x+3)(x-2) &= 3x^{2}+3x-18 &&\justif{on retrouve le trinôme de départ}
+\end{calculs}
+\rem{Erreur fréquente : oublier $a$, et écrire $(x+3)(x-2)$ en b). Contrôle rapide sur le
+nombre seul : $3\times 3\times(-2)=-18$, c'est bien $c$.}
 \end{exo}
 
 \begin{exo}[Factoriser]
-\begin{reponses}
-  \item $\Delta=36$, racines $-2$ et $4$ : \ \res{(x+2)(x-4)}
-  \item $\Delta=9$, racines $-\frac{1}{2}$ et $1$ : \ \res{2\left(x+\tfrac{1}{2}\right)(x-1)}
-  \item $\Delta=16$, racines $1$ et $-3$ : \ \res{-(x-1)(x+3)}
-  \item $\Delta=25$, racines $\frac{1}{3}$ et $2$ : \ \res{3\left(x-\tfrac{1}{3}\right)(x-2)}
-\end{reponses}
-\rem{En b) et d), on peut aussi écrire $(2x+1)(x-1)$ et $(3x-1)(x-2)$.}
+\explique{On calcule $\Delta$, puis les racines, et on écrit $a(x-x_{1})(x-x_{2})$ en
+n'oubliant pas $a$.}{méthode 5 du cours}
+\cas{$f$}
+\begin{calculs}
+\Delta &= (-2)^{2}-4\times 1\times(-8) &&\justif{$a=1$, $b=-2$, $c=-8$}\\
+\Delta &= 4+32=36 &&\justif{$\sqrt{36}=6$}\\
+x_{1} &= \frac{2-6}{2}=-2 &&\\
+x_{2} &= \frac{2+6}{2}=4 &&
+\end{calculs}
+\explique{$f(x)=\res{(x+2)(x-4)}$.}{contrôle : $2\times(-4)=-8$, c'est bien $c$}
+\cas{$g$}
+\begin{calculs}
+\Delta &= (-1)^{2}-4\times 2\times(-1) &&\justif{$a=2$, $b=-1$, $c=-1$}\\
+\Delta &= 1+8=9 &&\justif{$\sqrt{9}=3$}\\
+x_{1} &= \frac{1-3}{4}=-\frac{1}{2} &&\\
+x_{2} &= \frac{1+3}{4}=1 &&
+\end{calculs}
+\explique{$g(x)=\res{2\left(x+\tfrac{1}{2}\right)(x-1)}$.}{contrôle :
+$2\times\frac{1}{2}\times(-1)=-1$}
+\cas{$h$}
+\begin{calculs}
+\Delta &= (-2)^{2}-4\times(-1)\times 3 &&\justif{$a=-1$, $b=-2$, $c=3$}\\
+\Delta &= 4+12=16 &&\justif{$\sqrt{16}=4$}\\
+x_{1} &= \frac{2-4}{-2}=1 &&\justif{$2a=-2$}\\
+x_{2} &= \frac{2+4}{-2}=-3 &&
+\end{calculs}
+\explique{$h(x)=\res{-(x-1)(x+3)}$.}{contrôle : $-1\times(-1)\times 3=3$}
+\cas{$k$}
+\begin{calculs}
+\Delta &= (-7)^{2}-4\times 3\times 2 &&\justif{$a=3$, $b=-7$, $c=2$}\\
+\Delta &= 49-24=25 &&\justif{$\sqrt{25}=5$}\\
+x_{1} &= \frac{7-5}{6}=\frac{1}{3} &&\\
+x_{2} &= \frac{7+5}{6}=2 &&
+\end{calculs}
+\explique{$k(x)=\res{3\left(x-\tfrac{1}{3}\right)(x-2)}$.}{contrôle :
+$3\times\left(-\frac{1}{3}\right)\times(-2)=2$}
+\rem{Pour $g$ et $k$, on peut faire entrer $a$ dans la première parenthèse :
+$2\left(x+\frac{1}{2}\right)=2x+1$ et $3\left(x-\frac{1}{3}\right)=3x-1$, d'où
+$g(x)=(2x+1)(x-1)$ et $k(x)=(3x-1)(x-2)$. Ce n'est pas exigé.}
 \end{exo}
 
 \begin{exo}[Factoriser si c'est possible]
-\begin{reponses}
-  \item $\Delta=0$, racine $-2$ : \ \res{(x+2)^{2}}
-  \item $\Delta=-36<0$ : \ \res{\text{ne se factorise pas}}
-  \item \res{(x-3)(x+3)}
-  \item $\Delta=49$, racines $-\frac{2}{3}$ et $\frac{1}{2}$ :
-        \ \res{6\left(x+\tfrac{2}{3}\right)\left(x-\tfrac{1}{2}\right)}
-  \item $\Delta=1-24=-23<0$ : \ \res{\text{ne se factorise pas}}
-  \item $\Delta=36-36=0$, racine $1$ : \ \res{-3(x-1)^{2}}
-\end{reponses}
+\explique{Si $\Delta>0$ : $a(x-x_{1})(x-x_{2})$ ; si $\Delta=0$ : $a(x-x_{0})^{2}$ ; si
+$\Delta<0$ : pas de factorisation.}{théorème 2 du cours}
+\cas{$f$}
+\begin{calculs}
+\Delta &= 4^{2}-4\times 1\times 4 &&\justif{$a=1$, $b=4$, $c=4$}\\
+\Delta &= 16-16=0 &&\justif{une racine double}\\
+x_{0} &= \frac{-4}{2}=-2 &&\justif{$x_{0}=\frac{-b}{2a}$}
+\end{calculs}
+\explique{$f(x)=\res{(x+2)^{2}}$.}{$\Delta=0$ : un carré}
+\cas{$g$}
+\begin{calculs}
+\Delta &= 0^{2}-4\times 1\times 9 &&\justif{$a=1$, $b=0$, $c=9$}\\
+\Delta &= -36 &&\justif{$\Delta<0$}
+\end{calculs}
+\explique{$g$ \res{ne se factorise pas}.}{$x^{2}+9\ge 9$ : jamais nul}
+\cas{$h$}
+\begin{calculs}
+\Delta &= 0^{2}-4\times 1\times(-9) &&\justif{$a=1$, $b=0$, $c=-9$}\\
+\Delta &= 36 &&\justif{$\sqrt{36}=6$}\\
+x_{1} &= \frac{0-6}{2}=-3 &&\\
+x_{2} &= \frac{0+6}{2}=3 &&
+\end{calculs}
+\explique{$h(x)=\res{(x+3)(x-3)}$.}{plus vite : $x^{2}-3^{2}=(x-3)(x+3)$}
+\cas{$k$}
+\begin{calculs}
+\Delta &= 1^{2}-4\times 6\times(-2) &&\justif{$a=6$, $b=1$, $c=-2$}\\
+\Delta &= 1+48=49 &&\justif{$\sqrt{49}=7$}\\
+x_{1} &= \frac{-1-7}{12}=-\frac{2}{3} &&\\
+x_{2} &= \frac{-1+7}{12}=\frac{1}{2} &&
+\end{calculs}
+\explique{$k(x)=\res{6\left(x+\tfrac{2}{3}\right)\left(x-\tfrac{1}{2}\right)}$.}{contrôle :
+$6\times\frac{2}{3}\times\left(-\frac{1}{2}\right)=-2$}
+\cas{$l$}
+\begin{calculs}
+\Delta &= 1^{2}-4\times 3\times 2 &&\justif{$a=3$, $b=1$, $c=2$}\\
+\Delta &= 1-24=-23 &&\justif{$\Delta<0$}
+\end{calculs}
+\explique{$l$ \res{ne se factorise pas}.}{}
+\cas{$m$}
+\begin{calculs}
+\Delta &= 6^{2}-4\times(-3)\times(-3) &&\justif{$a=-3$, $b=6$, $c=-3$}\\
+\Delta &= 36-36=0 &&\justif{une racine double}\\
+x_{0} &= \frac{-6}{-6}=1 &&\justif{$x_{0}=\frac{-b}{2a}$}
+\end{calculs}
+\explique{$m(x)=\res{-3(x-1)^{2}}$.}{on n'oublie pas $a=-3$ devant le carré}
+\rem{« Ne se factorise pas » se justifie toujours par le calcul : $\Delta<0$.}
 \end{exo}
 
 \begin{exo}[Racine évidente]
-\begin{reponses}
-  \item $f(1)=1-6+5=0$. $f(x)=(x-1)(x-x_{2})$ et $f(0)=5=x_{2}$ :
-        \ \res{(x-1)(x-5)}
-  \item $g(1)=2+5-7=0$. $g(0)=-7$ et $g(0)=2\times(-1)\times(-x_{2})$, soit $2x_{2}$ ; donc
-        $x_{2}=-\frac{7}{2}$ : \ \res{2(x-1)\left(x+\tfrac{7}{2}\right)}
-  \item $h(-1)=-2+5-3=0$. $h(0)=-3$ et $h(0)=-2\times 1\times(-x_{2})$, soit $2x_{2}$ ; donc
-        $x_{2}=-\frac{3}{2}$ : \ \res{-2(x+1)\left(x+\tfrac{3}{2}\right)}
-\end{reponses}
-\rem{On vérifie en développant : le calcul du discriminant donne le même résultat.}
+\explique{On vérifie que l'image du nombre vaut $0$. On écrit alors
+$a(x-x_{1})(x-x_{2})$ avec $x_{2}$ inconnu, et on trouve $x_{2}$ en remplaçant $x$ par
+$0$ dans les deux formes.}{remarque « racine évidente » de la partie V}
+\cas{a)}
+\begin{calculs}
+f(1) &= 1^{2}-6\times 1+5 &&\\
+f(1) &= 1-6+5=0 &&\justif{$1$ est bien une racine}
+\end{calculs}
+\explique{$a=1$, donc $f(x)=(x-1)(x-x_{2})$. En $x=0$, les deux formes donnent
+$f(0)$ :}{$f(0)=5$, le nombre seul}
+\begin{calculs}
+(0-1)\times(0-x_{2}) &= 5 &&\justif{forme factorisée en $0$ ; forme développée : $5$}\\
+(-1)\times(-x_{2}) &= 5 &&\\
+x_{2} &= 5 &&
+\end{calculs}
+\explique{$f(x)=\res{(x-1)(x-5)}$.}{contrôle : $f(5)=25-30+5=0$}
+\cas{b)}
+\begin{calculs}
+g(1) &= 2\times 1^{2}+5\times 1-7 &&\\
+g(1) &= 2+5-7=0 &&\justif{$1$ est bien une racine}
+\end{calculs}
+\explique{$a=2$, donc $g(x)=2(x-1)(x-x_{2})$. En $x=0$ :}{$g(0)=-7$}
+\begin{calculs}
+2\times(0-1)\times(0-x_{2}) &= -7 &&\\
+2x_{2} &= -7 &&\justif{$2\times(-1)\times(-x_{2})=2x_{2}$}\\
+x_{2} &= -\frac{7}{2} &&
+\end{calculs}
+\explique{$g(x)=\res{2(x-1)\left(x+\tfrac{7}{2}\right)}$.}{ou $(x-1)(2x+7)$}
+\cas{c)}
+\begin{calculs}
+h(-1) &= -2\times(-1)^{2}-5\times(-1)-3 &&\\
+h(-1) &= -2+5-3=0 &&\justif{$-1$ est bien une racine}
+\end{calculs}
+\explique{$a=-2$, donc $h(x)=-2(x+1)(x-x_{2})$. En $x=0$ :}{$h(0)=-3$}
+\begin{calculs}
+-2\times(0+1)\times(0-x_{2}) &= -3 &&\\
+2x_{2} &= -3 &&\justif{$-2\times 1\times(-x_{2})=2x_{2}$}\\
+x_{2} &= -\frac{3}{2} &&
+\end{calculs}
+\explique{$h(x)=\res{-2(x+1)\left(x+\tfrac{3}{2}\right)}$.}{ou $-(x+1)(2x+3)$}
+\rem{Le calcul de $\Delta$ donne le même résultat, en plus long. Pour $g$ :
+$\Delta=25+56=81$, racines $\frac{-5-9}{4}=-\frac{7}{2}$ et $\frac{-5+9}{4}=1$.}
 \end{exo}
 
 \partie{Représentation graphique}
 
 \begin{exo}[Tableau de valeurs et tracé]
-\textbf{1°)} $a=1>0$ : \res{\text{un creux}}.\par
-\textbf{2°)} $\Delta=1+8=9$ : racines $\frac{-1-3}{2}=\res{-2}$ et
-$\frac{-1+3}{2}=\res{1}$.\par
-\begin{minipage}[c]{0.55\linewidth}
-\textbf{3°)}\par
-{\small
-\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\cas{1)}
+\explique{$a=\res{1>0}$ : la parabole est \res{un creux}.}{propriété 3 du cours :
+tournée vers le haut}
+\cas{2)}
+\begin{calculs}
+\Delta &= 1^{2}-4\times 1\times(-2) &&\justif{$a=1$, $b=1$, $c=-2$}\\
+\Delta &= 1+8=9 &&\justif{$\Delta>0$ : deux racines ; $\sqrt{9}=3$}\\
+x_{1} &= \frac{-1-3}{2}=-2 &&\\
+x_{2} &= \frac{-1+3}{2}=1 &&
+\end{calculs}
+\explique{Les racines de $f$ sont \res{$-2$ et $1$}.}{la courbe coupera l'axe des
+abscisses en ces deux points}
+\cas{3)}
+\begin{calculs}
+f(-3) &= 9-3-2=4 &&\justif{$(-3)^{2}=9$}\\
+f(-1) &= 1-1-2=-2 &&\justif{$(-1)^{2}=1$}\\
+f(0) &= -2 &&\justif{le nombre seul}\\
+f(2) &= 4+2-2=4 &&
+\end{calculs}
+\explique{$f(-2)=0$ et $f(1)=0$ : ce sont les racines.}{pas besoin de les recalculer}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
 $x$ & $-3$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
 \hline
-$f(x)$ & $4$ & $0$ & $-2$ & $-2$ & $0$ & $4$\\
+$f(x)$ & \res{$4$} & \res{$0$} & \res{$-2$} & \res{$-2$} & \res{$0$} & \res{$4$}\\
 \hline
-\end{tabular}}
+\end{tabular}
+\end{center}
+\cas{4)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place les six points du tableau, puis on les relie à main levée par une
+courbe arrondie, sans segments.}{méthode 6 du cours}
+\explique{Le bas de la courbe est entre $x=-1$ et $x=0$ : $f(-1)=f(0)$.}{les valeurs se
+répondent : $f(-3)=f(2)$, $f(-2)=f(1)$}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.42\linewidth}\centering
-\textbf{4°)}\par
-\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
   \repere{-4}{-3}{3}{5}
-  \gradx{-3,-2,-1,1,2} \grady{-2,2,4}
-  \draw[coulCourbe,line width=1pt,domain=-3:2,samples=60] plot (\x,{\x*\x+\x-2});
+  \gradx{-3,-2,-1,1,2} \grady{-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:2,samples=60] plot (\x,{\x*\x+\x-2});
   \foreach \p in {(-3,4),(-2,0),(-1,-2),(0,-2),(1,0),(2,4)} \path[coulCourbe] \p node[croix]{};
+  \node[coulCourbe,font=\footnotesize,right] at (2,4) {$\Cf$};
 \end{tikzpicture}
 \end{minipage}
-\rem{Le tableau est symétrique par rapport à $x=-\frac{1}{2}$ : $f(-1)=f(0)$,
-$f(-2)=f(1)$. On relie à main levée, sans ligne brisée.}
+\rem{Erreur fréquente : relier les points par des segments, ou mettre la pointe du creux
+sur un point du tableau. Le bas de la parabole est à $x=-\frac{1}{2}$, entre deux points.}
 \end{exo}
 
 \begin{exo}[Un deuxième tracé]
-\begin{minipage}[c]{0.55\linewidth}\raggedright
-$a=-1<0$ : une bosse.\par
-$\Delta=16-12=4$ : racines $1$ et $3$.\par
-{\small
-\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\explique{$a=\res{-1<0}$ : la parabole est \res{une bosse}.}{propriété 3 du cours}
+\begin{calculs}
+\Delta &= 4^{2}-4\times(-1)\times(-3) &&\justif{$a=-1$, $b=4$, $c=-3$}\\
+\Delta &= 16-12=4 &&\justif{$\sqrt{4}=2$}\\
+x_{1} &= \frac{-4-2}{-2}=3 &&\justif{$2a=-2$}\\
+x_{2} &= \frac{-4+2}{-2}=1 &&
+\end{calculs}
+\explique{Racines : \res{$1$ et $3$}.}{}
+\begin{calculs}
+g(0) &= -3 &&\justif{le nombre seul}\\
+g(2) &= -4+8-3=1 &&\justif{$-2^{2}=-4$}\\
+g(4) &= -16+16-3=-3 &&\justif{$-4^{2}=-16$}
+\end{calculs}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
 $x$ & $0$ & $1$ & $2$ & $3$ & $4$\\
 \hline
-$g(x)$ & $-3$ & $0$ & $1$ & $0$ & $-3$\\
+$g(x)$ & \res{$-3$} & \res{$0$} & \res{$1$} & \res{$0$} & \res{$-3$}\\
 \hline
-\end{tabular}}
+\end{tabular}
+\end{center}
+\explique{On place les points et on relie par une courbe arrondie ; le haut de la bosse
+est en $(2\,;1)$.}{symétrie : $g(0)=g(4)$ et $g(1)=g(3)$}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.42\linewidth}\centering
-\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
   \repere{-1}{-4}{5}{2}
-  \gradx{1,2,3,4} \grady{-3,-1,1}
-  \draw[coulCourbe,line width=1pt,domain=0:4,samples=60] plot (\x,{-\x*\x+4*\x-3});
+  \gradx{1,2,3,4} \grady{-3,-2,-1,1}
+  \draw[coulCourbe,line width=1.1pt,domain=0:4,samples=60] plot (\x,{-\x*\x+4*\x-3});
   \foreach \p in {(0,-3),(1,0),(2,1),(3,0),(4,-3)} \path[coulCourbe] \p node[croix]{};
+  \node[coulCourbe,font=\footnotesize,right] at (4,-3) {$\Cg$};
 \end{tikzpicture}
 \end{minipage}
+\rem{Erreur fréquente : $g(2)=-(-4)+8-3$. Le carré porte sur $2$ seulement :
+$-2^{2}=-4$.}
 \end{exo}
 
 \begin{exo}[Associer une courbe à une fonction]
-\begin{questions}
-  \item $f$ : $a>0$, deux racines ($\pm 1$) ; \ $g$ : $a<0$, deux racines
-        ($\pm\sqrt{3}$) ;\\
-        $h$ : $a>0$, aucune racine ; \ $k$ : $a>0$, une racine double ($-1$).
-  \item Courbe 1 : \res{g} (une bosse) ; courbe 2 : \res{k} (touche l'axe en $-1$) ;\\
-        courbe 3 : \res{f} (coupe l'axe en $\pm 1$) ; courbe 4 : \res{h} (au-dessus de
-        l'axe).
-\end{questions}
+\cas{1)}
+\explique{$f(x)=x^{2}-1$ : $a=1>0$ ; $\Delta=0^{2}-4\times 1\times(-1)=4>0$ : \res{deux
+racines}.}{$x^{2}-1=(x-1)(x+1)$ : racines $-1$ et $1$}
+\explique{$g(x)=-x^{2}+3$ : $a=-1<0$ ; $\Delta=0^{2}-4\times(-1)\times 3=12>0$ :
+\res{deux racines}.}{}
+\explique{$h(x)=x^{2}+1$ : $a=1>0$ ; $\Delta=0^{2}-4\times 1\times 1=-4<0$ : \res{aucune
+racine}.}{}
+\explique{$k(x)=(x+1)^{2}=x^{2}+2x+1$ : $a=1>0$ ; $\Delta=2^{2}-4\times 1\times 1=0$ :
+\res{une seule racine}, $-1$.}{on développe pour lire $a$, $b$ et $c$}
+\cas{2)}
+\explique{Seule $g$ a $a<0$ : c'est la seule bosse, \res{courbe 1}.}{signe de $a$}
+\explique{$k$ a une seule racine : sa courbe touche l'axe des abscisses en un point,
+\res{courbe 2}.}{en $x=-1$}
+\explique{$f$ a deux racines : sa courbe coupe l'axe en deux points, \res{courbe 3}.}{en
+$-1$ et $1$}
+\explique{$h$ n'a pas de racine : sa courbe ne coupe pas l'axe, \res{courbe 4}.}{au-dessus
+de l'axe}
+\rem{Contrôle par une image : $f(0)=-1$, et la courbe 3 passe bien par $(0\,;-1)$ ;
+$h(0)=1$, et la courbe 4 par $(0\,;1)$.}
 \end{exo}
 
 \begin{exo}[Sans tracer]
-\deux{$f$ : $\Delta=0$ : \res{1\text{ point}}}{$g$ : $\Delta=-47$ : \res{0}}
-\deux{$h$ : $\Delta=36$ : \res{2}}{$k$ : $\Delta=144$ : \res{2}}
-\deux{$l$ : $\Delta=0$ : \res{1}}{$m$ : $\Delta=-8$ : \res{0}}
+\explique{La parabole coupe l'axe des abscisses en deux points si $\Delta>0$, le touche en
+un point si $\Delta=0$, ne le coupe pas si $\Delta<0$.}{propriété 4 du cours}
+\begin{calculs}
+\Delta_{f} &= (-8)^{2}-4\times 1\times 16=0 &&\justif{\res{un point}}\\
+\Delta_{g} &= 1^{2}-4\times 3\times 4=-47 &&\justif{\res{aucun point}}\\
+\Delta_{h} &= 2^{2}-4\times(-1)\times 8=36 &&\justif{\res{deux points}}\\
+\Delta_{k} &= 0^{2}-4\times 2\times(-18)=144 &&\justif{\res{deux points}}\\
+\Delta_{l} &= 6^{2}-4\times(-9)\times(-1)=0 &&\justif{\res{un point}}\\
+\Delta_{m} &= 4^{2}-4\times 1\times 6=-8 &&\justif{\res{aucun point}}
+\end{calculs}
+\rem{Pour $k$, $b=0$ : il n'y a pas de terme en $x$.}
 \end{exo}
 
 \partie{Sommet et variations}
 
 \begin{exo}[Coordonnées du sommet]
-\rem{$\alpha=-\frac{b}{2a}$, puis $\beta=f(\alpha)$.}
-\begin{reponses}
-  \item $\alpha=\frac{6}{2}=3$ ; $\beta=9-18+2=-7$ : \ \res{S(3\,;-7)}
-  \item $\alpha=-\frac{4}{-2}=2$ ; $\beta=-4+8+3=7$ : \ \res{S(2\,;7)}
-  \item $\alpha=-\frac{8}{4}=-2$ ; $\beta=8-16+5=-3$ : \ \res{S(-2\,;-3)}
-  \item $\alpha=-\frac{12}{-4}=3$ ; $\beta=-18+36-7=11$ : \ \res{S(3\,;11)}
-\end{reponses}
+\explique{$\alpha=-\dfrac{b}{2a}$, puis $\beta=f(\alpha)$ : on remplace $x$ par
+$\alpha$.}{théorème 3 du cours}
+\cas{a)}
+\begin{calculs}
+\alpha &= -\frac{-6}{2\times 1} &&\justif{$a=1$ et $b=-6$}\\
+\alpha &= 3 &&\\
+\beta &= 3^{2}-6\times 3+2 &&\justif{$\beta=f(3)$}\\
+\beta &= 9-18+2=-7 &&
+\end{calculs}
+\explique{$\res{S(3\,;-7)}$.}{}
+\cas{b)}
+\begin{calculs}
+\alpha &= -\frac{4}{2\times(-1)} &&\justif{$a=-1$ et $b=4$}\\
+\alpha &= 2 &&\justif{$-\frac{4}{-2}=2$}\\
+\beta &= -2^{2}+4\times 2+3 &&\justif{$\beta=g(2)$}\\
+\beta &= -4+8+3=7 &&
+\end{calculs}
+\explique{$\res{S(2\,;7)}$.}{}
+\cas{c)}
+\begin{calculs}
+\alpha &= -\frac{8}{2\times 2} &&\justif{$a=2$ et $b=8$}\\
+\alpha &= -2 &&\\
+\beta &= 2\times(-2)^{2}+8\times(-2)+5 &&\justif{$\beta=h(-2)$}\\
+\beta &= 8-16+5=-3 &&
+\end{calculs}
+\explique{$\res{S(-2\,;-3)}$.}{}
+\cas{d)}
+\begin{calculs}
+\alpha &= -\frac{12}{2\times(-2)} &&\justif{$a=-2$ et $b=12$}\\
+\alpha &= 3 &&\justif{$-\frac{12}{-4}=3$}\\
+\beta &= -2\times 3^{2}+12\times 3-7 &&\justif{$\beta=k(3)$}\\
+\beta &= -18+36-7=11 &&
+\end{calculs}
+\explique{$\res{S(3\,;11)}$.}{}
+\rem{Erreur fréquente : oublier le « $-$ » de $-\frac{b}{2a}$. En a), $b=-6$ donne
+$\alpha=-\frac{-6}{2}=3$, et non $-3$.}
 \end{exo}
 
 \begin{exo}[Tableau de variations]
-\textbf{a)} $\alpha=2$, $\beta=-1$, $a>0$ : \res{\text{minimum }-1} en $x=2$.
-\begin{tabsignes}{$x$/1,$f(x)$/1.6}{$-\infty$,$2$,$+\infty$}
-  \tkzTabVar{+/$+\infty$,-/$-1$,+/$+\infty$}
-\end{tabsignes}
-\textbf{b)} $\alpha=1$, $\beta=-3+6+9=12$, $a<0$ : \res{\text{maximum }12} en $x=1$.
-\begin{tabsignes}{$x$/1,$g(x)$/1.6}{$-\infty$,$1$,$+\infty$}
-  \tkzTabVar{-/$-\infty$,+/$12$,-/$-\infty$}
-\end{tabsignes}
-\textbf{c)} $\alpha=-2$, $\beta=8-16=-8$, $a>0$ : \res{\text{minimum }-8} en $x=-2$.\par
-\textbf{d)} $\alpha=-3$, $\beta=-9+18-5=4$, $a<0$ : \res{\text{maximum }4} en $x=-3$.
-\rem{c) et d) : tableaux sur le même modèle que a) et b).}
+\explique{On calcule le sommet ; si $a>0$, la fonction décroît puis croît (minimum
+$\beta$) ; si $a<0$, elle croît puis décroît (maximum $\beta$).}{méthode 7 du cours}
+\cas{a)}
+\begin{calculs}
+\alpha &= -\frac{-4}{2\times 1}=2 &&\justif{$a=1$ et $b=-4$}\\
+\beta &= 2^{2}-4\times 2+3=-1 &&\justif{$\beta=f(2)$}
+\end{calculs}
+\tabvar{f(x)}{$-\infty$,$2$,$+\infty$}{+/ ,-/$-1$,+/ }
+\explique{$f$ admet un \res{minimum, $-1$}, atteint en $x=2$.}{$a=1>0$ : un creux}
+\cas{b)}
+\begin{calculs}
+\alpha &= -\frac{6}{2\times(-3)}=1 &&\justif{$a=-3$ et $b=6$}\\
+\beta &= -3\times 1^{2}+6\times 1+9=12 &&\justif{$\beta=g(1)$}
+\end{calculs}
+\tabvar{g(x)}{$-\infty$,$1$,$+\infty$}{-/ ,+/$12$,-/ }
+\explique{$g$ admet un \res{maximum, $12$}, atteint en $x=1$.}{$a=-3<0$ : une bosse}
+\cas{c)}
+\begin{calculs}
+\alpha &= -\frac{8}{2\times 2}=-2 &&\justif{$a=2$, $b=8$ ($c=0$)}\\
+\beta &= 2\times(-2)^{2}+8\times(-2)=-8 &&\justif{$8-16=-8$}
+\end{calculs}
+\tabvar{h(x)}{$-\infty$,$-2$,$+\infty$}{+/ ,-/$-8$,+/ }
+\explique{$h$ admet un \res{minimum, $-8$}, atteint en $x=-2$.}{$a=2>0$}
+\cas{d)}
+\begin{calculs}
+\alpha &= -\frac{-6}{2\times(-1)}=-3 &&\justif{$a=-1$ et $b=-6$ : $-\frac{-6}{-2}=-3$}\\
+\beta &= -(-3)^{2}-6\times(-3)-5=4 &&\justif{$-9+18-5=4$}
+\end{calculs}
+\tabvar{k(x)}{$-\infty$,$-3$,$+\infty$}{-/ ,+/$4$,-/ }
+\explique{$k$ admet un \res{maximum, $4$}, atteint en $x=-3$.}{$a=-1<0$}
+\rem{En d), deux signes $-$ dans $-\frac{-6}{2\times(-1)}$ : on calcule d'abord
+$2\times(-1)=-2$, puis $\frac{-6}{-2}=3$, et enfin $\alpha=-3$.}
 \end{exo}
 
 \begin{exo}[Le sommet à partir des racines]
-\begin{questions}
-  \item $f$ : $\Delta=4$, racines \res{2} et \res{4}. \ $g$ : on divise par $-2$,
-        $x^{2}-4x-5=0$, racines \res{-1} et \res{5}.
-  \item $f$ : $\alpha=\frac{2+4}{2}=3$ ; \ $g$ : $\alpha=\frac{-1+5}{2}=2$.
-  \item $f(3)=9-18+8=\res{-1}$ : minimum (creux) ;\\
-        $g(2)=-8+16+10=\res{18}$ : maximum (bosse).
-\end{questions}
+\cas{1)}
+\begin{calculs}
+\Delta_{f} &= (-6)^{2}-4\times 1\times 8=4 &&\justif{$36-32$ ; $\sqrt{4}=2$}\\
+x_{1} &= \frac{6-2}{2}=2 &&\\
+x_{2} &= \frac{6+2}{2}=4 &&
+\end{calculs}
+\explique{Racines de $f$ : \res{$2$ et $4$}.}{}
+\begin{calculs}
+\Delta_{g} &= 8^{2}-4\times(-2)\times 10=144 &&\justif{$64+80$ ; $\sqrt{144}=12$}\\
+x_{1} &= \frac{-8-12}{-4}=5 &&\justif{$2a=-4$}\\
+x_{2} &= \frac{-8+12}{-4}=-1 &&
+\end{calculs}
+\explique{Racines de $g$ : \res{$-1$ et $5$}.}{}
+\cas{2)}
+\explique{Le sommet est sur l'axe de symétrie, au milieu des deux racines :
+$\alpha=\dfrac{x_{1}+x_{2}}{2}$.}{remarque de la partie VII}
+\begin{calculs}
+\alpha_{f} &= \frac{2+4}{2}=\res{3} &&\\
+\alpha_{g} &= \frac{-1+5}{2}=\res{2} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+\beta_{f} &= f(3)=3^{2}-6\times 3+8 &&\\
+\beta_{f} &= 9-18+8=\res{-1} &&\\[3pt]
+\beta_{g} &= g(2)=-2\times 2^{2}+8\times 2+10 &&\\
+\beta_{g} &= -8+16+10=\res{18} &&
+\end{calculs}
+\explique{$f$ : $a=1>0$, minimum $-1$ en $x=3$.}{un creux}
+\tabvar{f(x)}{$-\infty$,$3$,$+\infty$}{+/ ,-/$-1$,+/ }
+\explique{$g$ : $a=-2<0$, maximum $18$ en $x=2$.}{une bosse}
+\tabvar{g(x)}{$-\infty$,$2$,$+\infty$}{-/ ,+/$18$,-/ }
+\rem{Contrôle avec la formule : $\alpha_{f}=-\frac{-6}{2}=3$ et
+$\alpha_{g}=-\frac{8}{-4}=2$.}
+\rem{Pour $g$, on peut aussi diviser $-2x^{2}+8x+10=0$ par $-2$ : $x^{2}-4x-5=0$ a les
+mêmes racines.}
 \end{exo}
 
 \begin{exo}[Maximum ou minimum ?]
-\begin{reponses}
-  \item $a>0$ ; $\alpha=1$ : \ \res{\text{minimum }-3} en $x=1$
-  \item $a<0$ ; $\alpha=2$ : \ \res{\text{maximum }6} en $x=2$
-  \item $a<0$ ; $\alpha=1$ : \ \res{\text{maximum }3} en $x=1$
-  \item $a>0$ ; $\alpha=-4$ : \ \res{\text{minimum }-4} en $x=-4$
-\end{reponses}
-\rem{Le signe de $a$ suffit à dire « maximum » ou « minimum ».}
+\explique{Le signe de $a$ dit « maximum » ou « minimum » ; la valeur est $\beta$, atteinte
+en $x=\alpha$.}{théorème 3 du cours}
+\cas{a)}
+\begin{calculs}
+\alpha &= -\frac{-8}{2\times 4}=1 &&\justif{$a=4$ et $b=-8$}\\
+\beta &= 4\times 1^{2}-8\times 1+1=-3 &&
+\end{calculs}
+\explique{$a=4>0$ : $f_{1}$ a un \res{minimum, $-3$}, atteint en $x=1$.}{}
+\cas{b)}
+\begin{calculs}
+\alpha &= -\frac{4}{2\times(-1)}=2 &&\justif{$a=-1$ et $b=4$}\\
+\beta &= -2^{2}+4\times 2+2=6 &&
+\end{calculs}
+\explique{$a=-1<0$ : $f_{2}$ a un \res{maximum, $6$}, atteint en $x=2$.}{}
+\cas{c)}
+\begin{calculs}
+\alpha &= -\frac{6}{2\times(-3)}=1 &&\justif{$a=-3$ et $b=6$}\\
+\beta &= -3\times 1^{2}+6\times 1=3 &&
+\end{calculs}
+\explique{$a=-3<0$ : $f_{3}$ a un \res{maximum, $3$}, atteint en $x=1$.}{}
+\cas{d)}
+\begin{calculs}
+\alpha &= -\frac{8}{2\times 1}=-4 &&\justif{$a=1$ et $b=8$}\\
+\beta &= (-4)^{2}+8\times(-4)+12=-4 &&\justif{$16-32+12$}
+\end{calculs}
+\explique{$a=1>0$ : $f_{4}$ a un \res{minimum, $-4$}, atteint en $x=-4$.}{}
+\explique{Ont un maximum : \res{$f_{2}$ et $f_{3}$} ; ont un minimum : \res{$f_{1}$ et
+$f_{4}$}.}{on conclut par une phrase}
+\rem{Le signe de $a$ suffit pour répondre « maximum » ou « minimum » ; le calcul de
+$\beta$ donne sa valeur.}
 \end{exo}
 
 \partie{Synthèse : étudier et tracer une parabole}
 
 \begin{exo}[Étude complète]
-$a=1>0$ : un creux. $\alpha=1$, $\beta=-4$. $\Delta=16$ : racines $-1$ et $3$.
-\begin{tabsignes}{$x$/1,$f(x)$/1.6}{$-2$,$1$,$4$}
-  \tkzTabVar{+/$5$,-/$-4$,+/$5$}
-\end{tabsignes}
-\begin{minipage}[c]{0.55\linewidth}
-{\small
-\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{2.5pt}
+\explique{$a=1>0$ : la parabole est \res{un creux}.}{\textbf{sens}}
+\begin{calculs}
+\alpha &= -\frac{-2}{2\times 1}=1 &&\justif{\textbf{sommet}}\\
+\beta &= 1^{2}-2\times 1-3=-4 &&\justif{$\beta=f(1)$ : $S(1\,;-4)$}\\
+\Delta &= (-2)^{2}-4\times 1\times(-3)=16 &&\justif{\textbf{racines} ; $\sqrt{16}=4$}\\
+x_{1} &= \frac{2-4}{2}=-1 &&\\
+x_{2} &= \frac{2+4}{2}=3 &&
+\end{calculs}
+\explique{\textbf{Variations} sur $\intff{-2}{4}$ : $f(-2)=4+4-3=5$ et
+$f(4)=16-8-3=5$.}{on calcule les images aux bornes}
+\tabvar{f(x)}{$-2$,$1$,$4$}{+/$5$,-/$-4$,+/$5$}
+\explique{$f$ a un \res{minimum, $-4$}, atteint en $x=1$.}{}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{\textbf{Valeurs}, avec $f(0)=-3$ et $f(2)=4-4-3=-3$ :}{symétrie par rapport à
+$x=1$}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
 $x$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\
 \hline
 $f(x)$ & $5$ & $0$ & $-3$ & $-4$ & $-3$ & $0$ & $5$\\
 \hline
-\end{tabular}}
+\end{tabular}
+\end{center}
+\explique{\textbf{Tracé} : on place les points et le sommet $S$, puis on relie par une
+courbe arrondie, symétrique par rapport à la droite $x=1$.}{méthode 8 du cours}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.42\linewidth}\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
-  \repere{-3}{-5}{5}{5}
-  \gradx{-2,2,4} \grady{-4,-2,2,4}
-  \draw[coulCourbe,line width=1pt,domain=-2:4,samples=60] plot (\x,{\x*\x-2*\x-3});
-  \foreach \p in {(-2,5),(-1,0),(0,-3),(1,-4),(2,-3),(3,0),(4,5)} \path[coulCourbe] \p node[croix]{};
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-3}{-5}{5}{6}
+  \gradx{-2,-1,1,2,3,4} \grady{-4,-3,-2,-1,1,2,3,4,5}
+  \draw[black!40,dashed] (1,-5) -- (1,6);
+  \draw[coulCourbe,line width=1.1pt,domain=-2:4,samples=60] plot (\x,{\x*\x-2*\x-3});
+  \foreach \p in {(-2,5),(-1,0),(0,-3),(2,-3),(3,0),(4,5)} \path[coulCourbe] \p node[croix]{};
+  \path[coulExo] (1,-4) node[croix]{} node[below right,font=\scriptsize] {$S$};
+  \node[coulCourbe,font=\footnotesize,right] at (4,5) {$\Cf$};
 \end{tikzpicture}
 \end{minipage}
 \end{exo}
 
 \begin{exo}[Étude complète]
-$a=-1<0$ : une bosse. $\alpha=-\frac{1}{2}$, $\beta=-\frac{1}{4}+\frac{1}{2}+2=\frac{9}{4}$.
-$\Delta=1+8=9$ : racines $-2$ et $1$.
-\begin{tabsignes}{$x$/1,$g(x)$/1.6}{$-3$,$-\frac{1}{2}$,$2$}
-  \tkzTabVar{-/$-4$,+/$\frac{9}{4}$,-/$-4$}
-\end{tabsignes}
-\begin{minipage}[c]{0.55\linewidth}
-{\small
-\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{2.5pt}
+\explique{$a=-1<0$ : la parabole est \res{une bosse}.}{\textbf{sens}}
+\begin{calculs}
+\alpha &= -\frac{-1}{2\times(-1)}=-\frac{1}{2} &&\justif{\textbf{sommet} ; $\frac{-1}{-2}=\frac{1}{2}$}\\
+\beta &= -\left(-\frac{1}{2}\right)^{2}-\left(-\frac{1}{2}\right)+2 &&\justif{$\beta=g\left(-\frac{1}{2}\right)$}\\
+\beta &= -\frac{1}{4}+\frac{2}{4}+\frac{8}{4}=\frac{9}{4} &&\justif{soit $2{,}25$ : $S\left(-\frac{1}{2}\,;\frac{9}{4}\right)$}\\
+\Delta &= (-1)^{2}-4\times(-1)\times 2=9 &&\justif{\textbf{racines} ; $\sqrt{9}=3$}\\
+x_{1} &= \frac{1-3}{-2}=1 &&\justif{$-b=1$ et $2a=-2$}\\
+x_{2} &= \frac{1+3}{-2}=-2 &&
+\end{calculs}
+\explique{\textbf{Variations} sur $\intff{-3}{2}$ : $g(-3)=-9+3+2=-4$ et
+$g(2)=-4-2+2=-4$.}{images aux bornes}
+\tabvar{g(x)}{$-3$,$-\frac{1}{2}$,$2$}{-/$-4$,+/$\frac{9}{4}$,-/$-4$}
+\explique{$g$ a un \res{maximum, $\dfrac{9}{4}$}, atteint en $x=-\dfrac{1}{2}$.}{}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{\textbf{Valeurs}, avec $g(-1)=-1+1+2=2$ et $g(0)=2$ :}{symétrie par rapport à
+$x=-\frac{1}{2}$}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
 $x$ & $-3$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
 \hline
 $g(x)$ & $-4$ & $0$ & $2$ & $2$ & $0$ & $-4$\\
 \hline
-\end{tabular}}
+\end{tabular}
+\end{center}
+\explique{\textbf{Tracé} : le sommet est entre $x=-1$ et $x=0$, un peu au-dessus de
+$2$.}{$\frac{9}{4}=2{,}25$}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.42\linewidth}\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
-  \repere{-4}{-5}{3}{3}
-  \gradx{-3,-2,1,2} \grady{-4,-2,2}
-  \draw[coulCourbe,line width=1pt,domain=-3:2,samples=60] plot (\x,{-\x*\x-\x+2});
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-4}{-5}{3}{4}
+  \gradx{-3,-2,-1,1,2} \grady{-4,-3,-2,-1,1,2,3}
+  \draw[black!40,dashed] (-0.5,-5) -- (-0.5,4);
+  \draw[coulCourbe,line width=1.1pt,domain=-3:2,samples=60] plot (\x,{-\x*\x-\x+2});
   \foreach \p in {(-3,-4),(-2,0),(-1,2),(0,2),(1,0),(2,-4)} \path[coulCourbe] \p node[croix]{};
-  \path[coulExo] (-0.5,2.25) node[croix]{};
+  \path[coulExo] (-0.5,2.25) node[croix]{} node[above,font=\scriptsize] {$S$};
+  \node[coulCourbe,font=\footnotesize,right] at (2,-4) {$\Cg$};
 \end{tikzpicture}
 \end{minipage}
 \end{exo}
 
 \begin{exo}[Étude complète]
-$a=2>0$ : un creux. $\alpha=-\frac{2}{4}=-\frac{1}{2}$,
-$\beta=\frac{1}{2}-1-4=-\frac{9}{2}$. $\Delta=4+32=36$ : racines
-$\frac{-2-6}{4}=-2$ et $\frac{-2+6}{4}=1$.
-\begin{tabsignes}{$x$/1,$h(x)$/1.6}{$-2$,$-\frac{1}{2}$,$1$}
-  \tkzTabVar{+/$0$,-/$-\frac{9}{2}$,+/$0$}
-\end{tabsignes}
-\begin{minipage}[c]{0.55\linewidth}
-{\small
-\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{3pt}
+\explique{$a=2>0$ : la parabole est \res{un creux}.}{\textbf{sens}}
+\begin{calculs}
+\alpha &= -\frac{2}{2\times 2}=-\frac{1}{2} &&\justif{\textbf{sommet}}\\
+\beta &= 2\times\left(-\frac{1}{2}\right)^{2}+2\times\left(-\frac{1}{2}\right)-4 &&\justif{$\beta=h\left(-\frac{1}{2}\right)$}\\
+\beta &= \frac{1}{2}-1-4=-\frac{9}{2} &&\justif{$2\times\frac{1}{4}=\frac{1}{2}$ ; soit $-4{,}5$}\\
+\Delta &= 2^{2}-4\times 2\times(-4)=36 &&\justif{\textbf{racines} ; $\sqrt{36}=6$}\\
+x_{1} &= \frac{-2-6}{4}=-2 &&\\
+x_{2} &= \frac{-2+6}{4}=1 &&
+\end{calculs}
+\explique{\textbf{Variations} sur $\intff{-2}{1}$ : les bornes sont les racines, donc
+$h(-2)=h(1)=0$.}{}
+\tabvar{h(x)}{$-2$,$-\frac{1}{2}$,$1$}{+/$0$,-/$-\frac{9}{2}$,+/$0$}
+\explique{$h$ a un \res{minimum, $-\dfrac{9}{2}$}, atteint en $x=-\dfrac{1}{2}$.}{}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{\textbf{Valeurs}, avec $h(-1)=2-2-4=-4$ et $h(0)=-4$ :}{}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 $x$ & $-2$ & $-1$ & $0$ & $1$\\
 \hline
 $h(x)$ & $0$ & $-4$ & $-4$ & $0$\\
 \hline
-\end{tabular}}
-\par\smallskip
-La courbe passe bien par $(-2\,;0)$ et $(1\,;0)$.
+\end{tabular}
+\end{center}
+\explique{La courbe passe bien par les points $(-2\,;0)$ et $(1\,;0)$ de l'axe des
+abscisses : ce sont les racines calculées.}{la vérification demandée}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.42\linewidth}\centering
-\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
   \repere{-3}{-5}{2}{2}
-  \gradx{-2,-1,1} \grady{-4,-2,1}
-  \draw[coulCourbe,line width=1pt,domain=-2:1,samples=60] plot (\x,{2*\x*\x+2*\x-4});
+  \gradx{-2,-1,1} \grady{-4,-3,-2,-1,1}
+  \draw[black!40,dashed] (-0.5,-5) -- (-0.5,2);
+  \draw[coulCourbe,line width=1.1pt,domain=-2:1,samples=60] plot (\x,{2*\x*\x+2*\x-4});
   \foreach \p in {(-2,0),(-1,-4),(0,-4),(1,0)} \path[coulCourbe] \p node[croix]{};
-  \path[coulExo] (-0.5,-4.5) node[croix]{};
+  \path[coulExo] (-0.5,-4.5) node[croix]{} node[below,font=\scriptsize] {$S$};
+  \node[coulCourbe,font=\footnotesize,above right] at (1,0) {$\mathcal{C}_{h}$};
 \end{tikzpicture}
 \end{minipage}
 \end{exo}
@@ -707,207 +1438,712 @@ La courbe passe bien par $(-2\,;0)$ et $(1\,;0)$.
 \partie{Signe d'un trinôme}
 
 \begin{exo}[À partir de la forme factorisée]
-\rem{Signe de $a$ à l'extérieur des racines, signe contraire entre elles.}
-\textbf{$f$} : racines $-2$ et $5$, $a=3>0$.
-\begin{tabsignes}{$x$/1,$f(x)$/1}{$-\infty$,$-2$,$5$,$+\infty$}
+\explique{On dresse le tableau de signes du produit : une ligne par facteur, rangée dans
+l'ordre des racines, puis la règle des signes dans chaque colonne.}{comme l'exemple de la
+partie IX}
+\cas{$f(x)=3(x+2)(x-5)$}
+\explique{$3$ est toujours positif ; $x+2$ s'annule en $-2$ et $x-5$ en $5$, négatifs
+avant, positifs après.}{un facteur $x-r$ est négatif avant $r$, positif après}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=2.4,espcl=2.2]{$x$/1,$3$/1,$x+2$/1,$x-5$/1,$f(x)$/1.2}%
+    {$-\infty$,$-2$,$5$,$+\infty$}
+  \tkzTabLine{,+,t,+,t,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
   \tkzTabLine{,+,z,-,z,+,}
-\end{tabsignes}
-\textbf{$g$} : racines $-6$ et $1$, $a=-2<0$ : signe $-$, $+$, $-$.\par
-\textbf{$h$} : racines $-4$ et $\frac{1}{3}$, $a=12>0$ : signe $+$, $-$, $+$.\par
-\textbf{$k$} : racines $-\frac{1}{4}$ et $\frac{5}{2}$, $a=-24<0$ : signe $-$, $+$, $-$.
-\rem{Pour $h$, $a=4\times 3=12$ : le coefficient de $x^{2}$ après développement.}
+\end{tikzpicture}
+\end{center}
+\cas{$g(x)=-2(x-1)(x+6)$}
+\explique{On range les racines : $-6<1$. Le facteur $-2$ est toujours négatif.}{la ligne
+de $x+6$ vient en premier}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=2.4,espcl=2.2]{$x$/1,$-2$/1,$x+6$/1,$x-1$/1,$g(x)$/1.2}%
+    {$-\infty$,$-6$,$1$,$+\infty$}
+  \tkzTabLine{,-,t,-,t,-,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\cas{$h(x)=4(x+4)(3x-1)$}
+\explique{$3x-1=0$ donne $x=\dfrac{1}{3}$ ; $3x-1$ est négatif avant $\dfrac{1}{3}$,
+positif après.}{coefficient de $x$ positif : $3>0$}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=2.4,espcl=2.2]{$x$/1,$4$/1,$x+4$/1,$3x-1$/1,$h(x)$/1.2}%
+    {$-\infty$,$-4$,$\frac{1}{3}$,$+\infty$}
+  \tkzTabLine{,+,t,+,t,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\cas{$k(x)=-3(2x-5)(4x+1)$}
+\explique{$2x-5=0$ donne $x=\dfrac{5}{2}$ ; $4x+1=0$ donne $x=-\dfrac{1}{4}$. On range :
+$-\dfrac{1}{4}<\dfrac{5}{2}$.}{la ligne de $4x+1$ vient en premier}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \tkzTabInit[lgt=2.4,espcl=2.2]{$x$/1,$-3$/1,$4x+1$/1,$2x-5$/1,$k(x)$/1.2}%
+    {$-\infty$,$-\frac{1}{4}$,$\frac{5}{2}$,$+\infty$}
+  \tkzTabLine{,-,t,-,t,-,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\rem{Contrôle par le théorème 4 : le coefficient de $x^{2}$ est $a=3$ pour $f$, $-2$ pour
+$g$, $4\times 3=12$ pour $h$ et $-3\times 2\times 4=-24$ pour $k$. Le trinôme a le signe
+de $a$ à l'extérieur des racines : c'est bien la dernière ligne de chaque tableau.}
 \end{exo}
 
 \begin{exo}[À partir de la forme développée]
-\begin{reponses}
-  \item $\Delta=25+96=121$ ; racines $-4$ et $\frac{3}{2}$ ; $a>0$ : $+$, $-$, $+$.
-  \item $\Delta=4+32=36$ ; racines $-2$ et $4$ ; $a<0$ : $-$, $+$, $-$.
-  \item $\Delta=49-24=25$ ; racines $\frac{1}{2}$ et $3$ ; $a>0$ : $+$, $-$, $+$.
-  \item $\Delta=1+24=25$ ; racines $-1$ et $\frac{2}{3}$ ; $a<0$ : $-$, $+$, $-$.
-\end{reponses}
-\textbf{a)} par exemple :
-\begin{tabsignes}{$x$/1,$f(x)$/1}{$-\infty$,$-4$,$\frac{3}{2}$,$+\infty$}
-  \tkzTabLine{,+,z,-,z,+,}
-\end{tabsignes}
-\rem{On range toujours les racines dans l'ordre croissant avant de remplir le tableau.}
+\explique{On calcule $\Delta$ et les racines ; le trinôme a le signe de $a$ à l'extérieur
+des racines, le signe contraire entre elles.}{méthode 9 et théorème 4 du cours}
+\cas{a)}
+\begin{calculs}
+\Delta &= 5^{2}-4\times 2\times(-12)=121 &&\justif{$25+96$ ; $\sqrt{121}=11$}\\
+x_{1} &= \frac{-5-11}{4}=-4 &&\\
+x_{2} &= \frac{-5+11}{4}=\frac{3}{2} &&
+\end{calculs}
+\tabsignes{f(x)}{$-\infty$,$-4$,$\frac{3}{2}$,$+\infty$}{,+,z,-,z,+,}
+\explique{$a=2>0$ : positif à l'extérieur des racines, négatif entre.}{}
+\cas{b)}
+\begin{calculs}
+\Delta &= 2^{2}-4\times(-1)\times 8=36 &&\justif{$4+32$ ; $\sqrt{36}=6$}\\
+x_{1} &= \frac{-2-6}{-2}=4 &&\\
+x_{2} &= \frac{-2+6}{-2}=-2 &&\justif{on range les racines : $-2<4$}
+\end{calculs}
+\tabsignes{g(x)}{$-\infty$,$-2$,$4$,$+\infty$}{,-,z,+,z,-,}
+\explique{$a=-1<0$ : négatif à l'extérieur, positif entre les racines.}{}
+\cas{c)}
+\begin{calculs}
+\Delta &= (-7)^{2}-4\times 2\times 3=25 &&\justif{$49-24$ ; $\sqrt{25}=5$}\\
+x_{1} &= \frac{7-5}{4}=\frac{1}{2} &&\\
+x_{2} &= \frac{7+5}{4}=3 &&
+\end{calculs}
+\tabsignes{h(x)}{$-\infty$,$\frac{1}{2}$,$3$,$+\infty$}{,+,z,-,z,+,}
+\explique{$a=2>0$ : positif à l'extérieur des racines.}{}
+\cas{d)}
+\begin{calculs}
+\Delta &= (-1)^{2}-4\times(-3)\times 2=25 &&\justif{$1+24$}\\
+x_{1} &= \frac{1-5}{-6}=\frac{2}{3} &&\justif{$-b=1$ et $2a=-6$}\\
+x_{2} &= \frac{1+5}{-6}=-1 &&\justif{on range : $-1<\frac{2}{3}$}
+\end{calculs}
+\tabsignes{k(x)}{$-\infty$,$-1$,$\frac{2}{3}$,$+\infty$}{,-,z,+,z,-,}
+\explique{$a=-3<0$ : négatif à l'extérieur, positif entre les racines.}{}
+\rem{Avec $a<0$, la formule donne souvent la plus grande racine en premier : on range
+toujours les racines dans l'ordre croissant avant de remplir le tableau.}
 \end{exo}
 
 \begin{exo}[Les trois cas]
-\begin{reponses}
-  \item $\Delta=0$, racine $-2$ : positif, nul en $-2$.
-  \item Racines $-2$ et $2$ : $+$, $-$, $+$.
-  \item $\Delta=-16<0$, $a>0$ : toujours positif.
-  \item $\Delta=-12<0$, $a<0$ : toujours négatif.
-  \item $\Delta=0$, racine $\frac{1}{3}$, $a<0$ : négatif, nul en $\frac{1}{3}$.
-  \item $\Delta=1$, racines $1$ et $\frac{3}{2}$, $a>0$ : $+$, $-$, $+$.
-\end{reponses}
+\explique{$\Delta>0$ : signe de $a$ à l'extérieur des racines ; $\Delta=0$ : signe de
+$a$, nul en $x_{0}$ ; $\Delta<0$ : toujours le signe de $a$.}{théorème 4 du cours}
+\cas{$f(x)=x^{2}+4x+4$}
+\begin{calculs}
+\Delta &= 4^{2}-4\times 1\times 4=0 &&\justif{une racine double}\\
+x_{0} &= \frac{-4}{2}=-2 &&
+\end{calculs}
+\tabsignes{f(x)}{$-\infty$,$-2$,$+\infty$}{,+,z,+,}
+\explique{$a=1>0$ : $f(x)$ est \res{positif, nul en $-2$}.}{$f(x)=(x+2)^{2}$, un carré}
+\cas{$g(x)=x^{2}-4$}
+\explique{$x^{2}-4=(x-2)(x+2)$ : racines $-2$ et $2$ ; $a=1>0$.}{différence de carrés ; ou
+$\Delta=16$}
+\tabsignes{g(x)}{$-\infty$,$-2$,$2$,$+\infty$}{,+,z,-,z,+,}
+\explique{$g(x)$ est \res{positif à l'extérieur de $-2$ et $2$, négatif entre}.}{}
+\cas{$h(x)=x^{2}+4$}
+\begin{calculs}
+\Delta &= 0^{2}-4\times 1\times 4=-16 &&\justif{$\Delta<0$ : pas de racine}
+\end{calculs}
+\tabsignes[4]{h(x)}{$-\infty$,$+\infty$}{,+,}
+\explique{$a=1>0$ : $h(x)$ est \res{toujours positif}.}{}
+\cas{$k(x)=-x^{2}+2x-4$}
+\begin{calculs}
+\Delta &= 2^{2}-4\times(-1)\times(-4)=-12 &&\justif{$4-16$ : pas de racine}
+\end{calculs}
+\tabsignes[4]{k(x)}{$-\infty$,$+\infty$}{,-,}
+\explique{$a=-1<0$ : $k(x)$ est \res{toujours négatif}.}{}
+\cas{$l(x)=-9x^{2}+6x-1$}
+\begin{calculs}
+\Delta &= 6^{2}-4\times(-9)\times(-1)=0 &&\justif{$36-36$}\\
+x_{0} &= \frac{-6}{-18}=\frac{1}{3} &&
+\end{calculs}
+\tabsignes{l(x)}{$-\infty$,$\frac{1}{3}$,$+\infty$}{,-,z,-,}
+\explique{$a=-9<0$ : $l(x)$ est \res{négatif, nul en $\dfrac{1}{3}$}.}{}
+\cas{$m(x)=2x^{2}-5x+3$}
+\begin{calculs}
+\Delta &= (-5)^{2}-4\times 2\times 3=1 &&\justif{$25-24$}\\
+x_{1} &= \frac{5-1}{4}=1 &&\\
+x_{2} &= \frac{5+1}{4}=\frac{3}{2} &&
+\end{calculs}
+\tabsignes{m(x)}{$-\infty$,$1$,$\frac{3}{2}$,$+\infty$}{,+,z,-,z,+,}
+\explique{$a=2>0$ : $m(x)$ est \res{positif à l'extérieur de $1$ et $\dfrac{3}{2}$, négatif
+entre}.}{}
+\rem{Erreur fréquente : quand $\Delta<0$, conclure « toujours positif » sans regarder
+$a$. Pour $k$, $a<0$ : toujours négatif.}
 \end{exo}
 
 \begin{exo}[Sans tableau de signes]
-\begin{reponses}
-  \item $a>0$, $\Delta=-8<0$ : \res{\text{toujours positif}}
-  \item $a<0$, $\Delta=-24<0$ : \res{\text{toujours négatif}}
-  \item $\Delta=144>0$ : \res{\text{change de signe}} (en $-2$ et $2$)
-  \item $a<0$, $\Delta=0$ : \res{\text{négatif ou nul}} (nul en $2$)
-  \item $a>0$, $\Delta=-15<0$ : \res{\text{toujours positif}}
-  \item $a<0$, $\Delta=-8<0$ : \res{\text{toujours négatif}}
-\end{reponses}
+\explique{Si $\Delta<0$, le trinôme a toujours le signe de $a$ ; si $\Delta>0$, il change
+de signe en chaque racine ; si $\Delta=0$, il a le signe de $a$ et s'annule une
+fois.}{théorème 4 du cours}
+\begin{calculs}
+\Delta_{f} &= 2^{2}-4\times 1\times 3=-8 &&\justif{$\Delta<0$ et $a=1>0$ : \res{toujours positif}}\\
+\Delta_{g} &= 0^{2}-4\times(-2)\times(-3)=-24 &&\justif{$\Delta<0$ et $a=-2<0$ : \res{toujours négatif}}\\
+\Delta_{h} &= 0^{2}-4\times 3\times(-12)=144 &&\justif{$\Delta>0$ : \res{change de signe} (en $-2$ et $2$)}\\
+\Delta_{k} &= 4^{2}-4\times(-1)\times(-4)=0 &&\justif{$\Delta=0$ et $a=-1<0$ : \res{négatif}, nul en $2$}\\
+\Delta_{l} &= 1^{2}-4\times 4\times 1=-15 &&\justif{$\Delta<0$ et $a=4>0$ : \res{toujours positif}}\\
+\Delta_{m} &= 2^{2}-4\times(-3)\times(-1)=-8 &&\justif{$\Delta<0$ et $a=-3<0$ : \res{toujours négatif}}
+\end{calculs}
+\rem{$k(x)=-(x-2)^{2}$ ne change pas de signe : il est négatif, sauf en $x=2$ où il est
+nul. On peut dire « toujours négatif ou nul ».}
 \end{exo}
 
 \partie{Inéquations du second degré}
 
 \begin{exo}[Inéquations]
-\begin{reponses}
-  \item $\Delta=0$, racine $-2$ ; positif sauf en $-2$ : \ \res{S=\R\setminus\{-2\}}
-  \item $\Delta=1$, racines $1$ et $\frac{3}{2}$ ; $a<0$ : négatif à l'extérieur :\\
-        \res{S=\left]-\infty\,;1\right]\cup\left[\tfrac{3}{2}\,;+\infty\right[}
-  \item Racines $-3$ et $5$ ; $a>0$ :
-        \ \res{S=\left]-\infty\,;-3\right]\cup\left[5\,;+\infty\right[}
-  \item $\Delta=49$, racines $-5$ et $2$ : \ \res{S=\left]-5\,;2\right[}
-\end{reponses}
-\rem{Crochets fermés en une racine pour $\le$ ou $\ge$, ouverts pour $<$ ou $>$.}
+\explique{On cherche les racines, on dresse le tableau de signes, puis on lit les $x$ qui
+conviennent : crochets ouverts pour $<$ ou $>$, fermés aux racines pour $\le$ ou
+$\ge$.}{méthode 10 du cours}
+\cas{a)}
+\begin{calculs}
+\Delta &= 4^{2}-4\times 1\times 4=0 &&\justif{une racine double}\\
+x_{0} &= \frac{-4}{2}=-2 &&
+\end{calculs}
+\tabsignes{x^{2}+4x+4}{$-\infty$,$-2$,$+\infty$}{,+,z,+,}
+\explique{$\res{S=\left]-\infty\,;-2\right[\cup\left]-2\,;+\infty\right[}$.}{strictement
+positif partout, sauf en $-2$ où il est nul}
+\cas{b)}
+\begin{calculs}
+\Delta &= 5^{2}-4\times(-2)\times(-3)=1 &&\justif{$25-24$}\\
+x_{1} &= \frac{-5-1}{-4}=\frac{3}{2} &&\\
+x_{2} &= \frac{-5+1}{-4}=1 &&\justif{on range : $1<\frac{3}{2}$}
+\end{calculs}
+\tabsignes{-2x^{2}+5x-3}{$-\infty$,$1$,$\frac{3}{2}$,$+\infty$}{,-,z,+,z,-,}
+\explique{$\res{S=\left]-\infty\,;1\right]\cup\left[\tfrac{3}{2}\,;+\infty\right[}$.}{$a<0$
+: négatif à l'extérieur ; $\le$ : racines comprises}
+\cas{c)}
+\begin{calculs}
+\Delta &= (-2)^{2}-4\times 1\times(-15)=64 &&\justif{$\sqrt{64}=8$}\\
+x_{1} &= \frac{2-8}{2}=-3 &&\\
+x_{2} &= \frac{2+8}{2}=5 &&
+\end{calculs}
+\tabsignes{x^{2}-2x-15}{$-\infty$,$-3$,$5$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\res{S=\left]-\infty\,;-3\right]\cup\left[5\,;+\infty\right[}$.}{$a>0$ :
+positif à l'extérieur ; $\ge$ : racines comprises}
+\cas{d)}
+\begin{calculs}
+\Delta &= 3^{2}-4\times 1\times(-10)=49 &&\justif{$9+40$ ; $\sqrt{49}=7$}\\
+x_{1} &= \frac{-3-7}{2}=-5 &&\\
+x_{2} &= \frac{-3+7}{2}=2 &&
+\end{calculs}
+\tabsignes{x^{2}+3x-10}{$-\infty$,$-5$,$2$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\res{S=\left]-5\,;2\right[}$.}{négatif entre les racines ; $<$ : racines
+exclues}
+\rem{En a), on peut aussi écrire $S=\R\setminus\{-2\}$ (« $\R$ privé de $-2$ »).}
 \end{exo}
 
 \begin{exo}[Tout ramener d'un côté]
-\begin{reponses}
-  \item $-2x^{2}+7x-3\le 0$ ; $\Delta=25$, racines $\frac{1}{2}$ et $3$ ; $a<0$ :\\
-        \res{S=\left]-\infty\,;\tfrac{1}{2}\right]\cup\left[3\,;+\infty\right[}
-  \item $2x^{2}-3x+4\ge 0$ ; $\Delta=-23<0$, $a>0$ : \ \res{S=\R}
-  \item $x^{2}-5x+6\ge 0$ ; racines $2$ et $3$ :\\
-        \res{S=\left]-\infty\,;2\right]\cup\left[3\,;+\infty\right[}
-  \item $x^{2}-6x+8<0$ ; racines $2$ et $4$ : \ \res{S=\left]2\,;4\right[}
-\end{reponses}
+\explique{On met tout dans le membre de gauche, puis on résout comme à l'exercice
+36.}{méthode 10 du cours, cas c)}
+\cas{a)}
+\begin{calculs}
+-2x^{2}+7x &\le 3 &&\justif{on recopie}\\
+-2x^{2}+7x-3 &\le 0 &&\justif{on retranche $3$}
+\end{calculs}
+\begin{calculs}
+\Delta &= 7^{2}-4\times(-2)\times(-3)=25 &&\justif{$49-24$ ; $\sqrt{25}=5$}\\
+x_{1} &= \frac{-7-5}{-4}=3 &&\\
+x_{2} &= \frac{-7+5}{-4}=\frac{1}{2} &&
+\end{calculs}
+\tabsignes{-2x^{2}+7x-3}{$-\infty$,$\frac{1}{2}$,$3$,$+\infty$}{,-,z,+,z,-,}
+\explique{$\res{S=\left]-\infty\,;\tfrac{1}{2}\right]\cup\left[3\,;+\infty\right[}$.}{$a<0$
+: négatif à l'extérieur}
+\cas{b)}
+\begin{calculs}
+2x^{2} &\ge 3x-4 &&\justif{on recopie}\\
+2x^{2}-3x+4 &\ge 0 &&\justif{on retranche $3x$ et on ajoute $4$}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-3)^{2}-4\times 2\times 4=-23 &&\justif{$9-32$ : pas de racine}
+\end{calculs}
+\explique{$a=2>0$ : le trinôme est toujours positif ; $\res{S=\R}$.}{signe de $a$
+partout}
+\cas{c)}
+\begin{calculs}
+x(x-4) &\ge x-6 &&\justif{on recopie}\\
+x^{2}-4x &\ge x-6 &&\justif{on développe}\\
+x^{2}-5x+6 &\ge 0 &&\justif{on retranche $x$ et on ajoute $6$}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-5)^{2}-4\times 1\times 6=1 &&\\
+x_{1} &= \frac{5-1}{2}=2 &&\\
+x_{2} &= \frac{5+1}{2}=3 &&
+\end{calculs}
+\tabsignes{x^{2}-5x+6}{$-\infty$,$2$,$3$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\res{S=\left]-\infty\,;2\right]\cup\left[3\,;+\infty\right[}$.}{$a>0$ :
+positif à l'extérieur}
+\cas{d)}
+\begin{calculs}
+x^{2}+8 &< 6x &&\justif{on recopie}\\
+x^{2}-6x+8 &< 0 &&\justif{on retranche $6x$}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-6)^{2}-4\times 1\times 8=4 &&\justif{$36-32$ ; $\sqrt{4}=2$}\\
+x_{1} &= \frac{6-2}{2}=2 &&\\
+x_{2} &= \frac{6+2}{2}=4 &&
+\end{calculs}
+\tabsignes{x^{2}-6x+8}{$-\infty$,$2$,$4$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\res{S=\left]2\,;4\right[}$.}{négatif entre les racines ; inégalité stricte}
+\rem{On ne divise jamais les deux membres par $x$ : on ne connaît pas son signe.}
 \end{exo}
 
 \begin{exo}[Cas particuliers]
-\begin{reponses}
-  \item \res{S=\left]-\infty\,;-5\right]\cup\left[5\,;+\infty\right[}
-  \item \res{S=\left]-3\,;3\right[}
-  \item \res{S=\left]-1\,;1\right[}
-  \item $3x^{2}+6>0$ toujours : \ \res{S=\varnothing}
-  \item Un carré est positif, nul seulement en $-2$ : \ \res{S=\R\setminus\{-2\}}
-  \item $\Delta=-15<0$, $a>0$ : \ \res{S=\R}
-\end{reponses}
-\rem{En a), $x^{2}\ge 25$ ne donne pas seulement $x\ge 5$ : on n'oublie pas les
-négatifs.}
+\cas{a)}
+\begin{calculs}
+x^{2} &\ge 25 &&\justif{on recopie}\\
+x^{2}-25 &\ge 0 &&\justif{tout dans le membre de gauche}\\
+(x-5)(x+5) &\ge 0 &&\justif{différence de carrés : racines $-5$ et $5$}
+\end{calculs}
+\explique{$a=1>0$ : positif à l'extérieur des racines ;
+$\res{S=\left]-\infty\,;-5\right]\cup\left[5\,;+\infty\right[}$.}{}
+\cas{b)}
+\begin{calculs}
+x^{2} &< 9 &&\justif{on recopie}\\
+(x-3)(x+3) &< 0 &&\justif{$x^{2}-9<0$ : racines $-3$ et $3$}
+\end{calculs}
+\explique{Négatif entre les racines : $\res{S=\left]-3\,;3\right[}$.}{$a=1>0$}
+\cas{c)}
+\explique{$-x^{2}+1=(1-x)(1+x)$ : racines $-1$ et $1$ ; $a=-1<0$, donc positif entre
+les racines.}{}
+\explique{$\res{S=\left]-1\,;1\right[}$.}{inégalité stricte}
+\cas{d)}
+\explique{$3x^{2}\ge 0$, donc $3x^{2}+6\ge 6$ : le membre de gauche n'est jamais
+négatif ; $\res{S=\varnothing}$.}{ou : $\Delta=-72<0$ et $a=3>0$, toujours positif}
+\cas{e)}
+\explique{Un carré est positif ; $(x+2)^{2}$ n'est nul qu'en $-2$.
+$\res{S=\left]-\infty\,;-2\right[\cup\left]-2\,;+\infty\right[}$.}{inégalité stricte :
+on enlève $-2$}
+\cas{f)}
+\begin{calculs}
+\Delta &= (-1)^{2}-4\times 1\times 4=-15 &&\justif{$\Delta<0$ : pas de racine}
+\end{calculs}
+\explique{$a=1>0$ : toujours positif ; $\res{S=\R}$.}{}
+\rem{Erreur fréquente en a) : écrire $x\ge 5$ seulement. Les nombres négatifs comme
+$-6$ conviennent aussi : $(-6)^{2}=36\ge 25$.}
 \end{exo}
 
 \begin{exo}[Lecture graphique]
-\begin{reponses}
-  \item La courbe coupe l'axe des abscisses en $-3$ et $1$ ; par le calcul, $\Delta=16$ :
-        \ \res{S=\ens{-3\,;1}}
-  \item Courbe au-dessus de l'axe :
-        \ \res{S=\left]-\infty\,;-3\right[\cup\left]1\,;+\infty\right[}
-  \item \res{S=\intff{-3}{1}}
-  \item $x^{2}+2x-3=-3$, soit $x(x+2)=0$ : \ \res{S=\ens{-2\,;0}} ; sur le graphique,
-        la droite $y=-3$ coupe la courbe en $-2$ et $0$.
-\end{reponses}
+\cas{a)}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\explique{Graphiquement : la courbe coupe l'axe des abscisses en $-3$ et en $1$.}{les
+points où $f(x)=0$}
+\begin{calculs}
+\Delta &= 2^{2}-4\times 1\times(-3)=16 &&\justif{$\sqrt{16}=4$}\\
+x_{1} &= \frac{-2-4}{2}=-3 &&\\
+x_{2} &= \frac{-2+4}{2}=1 &&
+\end{calculs}
+\explique{$\res{S=\ens{-3\,;1}}$ : le calcul confirme la lecture.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-5}{-5}{3}{5}
+  \gradx{-3,1} \grady{-4,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-4:2,samples=60] plot (\x,{\x*\x+2*\x-3});
+  \path[coulInt] (-3,0) node[croix]{} (1,0) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\explique{Graphiquement : la courbe est au-dessus de l'axe des abscisses à gauche de $-3$
+et à droite de $1$.}{$f(x)>0$ : points au-dessus de l'axe}
+\explique{Par le calcul : $a=1>0$, donc $f(x)$ est positif à l'extérieur des racines.}{théorème 4}
+\explique{$\res{S=\left]-\infty\,;-3\right[\cup\left]1\,;+\infty\right[}$.}{racines exclues}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-5}{-5}{3}{5}
+  \gradx{-3,1} \grady{-4,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-4:2,samples=60] plot (\x,{\x*\x+2*\x-3});
+  \morceau{-5}{-3} \morceau[coulIntB]{1}{3}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\explique{Graphiquement : la courbe est sous l'axe, ou dessus, entre $-3$ et $1$.}{$f(x)\le 0$ :
+« ou nul », racines comprises}
+\explique{Par le calcul : négatif entre les racines ; $\res{S=\intff{-3}{1}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-5}{-5}{3}{5}
+  \gradx{-3,1} \grady{-4,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-4:2,samples=60] plot (\x,{\x*\x+2*\x-3});
+  \morceau{-3}{1}
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\explique{Graphiquement : on trace la droite horizontale $y=-3$ ; elle coupe la courbe en
+deux points, d'abscisses $-2$ et $0$.}{les antécédents de $-3$}
+\begin{calculs}
+x^{2}+2x-3 &= -3 &&\justif{on recopie $f(x)=-3$}\\
+x^{2}+2x &= 0 &&\justif{on ajoute $3$}\\
+x(x+2) &= 0 &&\justif{facteur commun $x$}\\
+x &= 0 \quad\text{ou}\quad x+2=0 &&\justif{produit nul}
+\end{calculs}
+\explique{$\res{S=\ens{-2\,;0}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-5}{-5}{3}{5}
+  \gradx{-2,1} \grady{-3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-4:2,samples=60] plot (\x,{\x*\x+2*\x-3});
+  \draw[coulCourbeB,line width=0.9pt] (-5,-3) -- (3,-3);
+  \draw[coulInt,dashed] (-2,-3) -- (-2,0);
+  \path[coulInt] (-2,-3) node[croix]{} (0,-3) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\rem{En b), la courbe ne montre que l'intervalle $\intff{-4}{2}$ ; c'est le calcul qui dit
+que $f(x)$ reste positif au-delà.}
 \end{exo}
 
 \partie{Intersection d'une parabole et d'une droite}
 
 \begin{exo}[Points d'intersection]
-\rem{On résout $f(x)=g(x)$ ; les ordonnées se calculent avec la droite.}
-\begin{reponses}
-  \item $x^{2}-3x=0$, soit $x(x-3)=0$ : \ \res{(0\,;2)} et \res{(3\,;-1)}
-  \item $x^{2}-2x+1=0$, racine double $1$ : \ \res{(1\,;7)} (la droite est tangente)
-  \item $x^{2}-2x+2=0$, $\Delta=-4<0$ : \ \res{\text{aucun point}}
-\end{reponses}
+\explique{Les abscisses des points communs sont les solutions de $f(x)=g(x)$ : on met
+tout à gauche et on résout. Les ordonnées se calculent avec l'équation de la
+droite.}{méthode 11 du cours}
+\cas{a)}
+\begin{calculs}
+x^{2}-4x+2 &= -x+2 &&\justif{$f(x)=g(x)$}\\
+x^{2}-3x &= 0 &&\justif{tout à gauche}\\
+x(x-3) &= 0 &&\justif{pas de nombre seul : facteur commun $x$}\\
+x &= 0 \quad\text{ou}\quad x=3 &&\justif{produit nul}
+\end{calculs}
+\explique{Ordonnées : $-0+2=2$ et $-3+2=-1$. Points \res{$(0\,;2)$ et
+$(3\,;-1)$}.}{contrôle sur la parabole : $9-12+2=-1$}
+\cas{b)}
+\begin{calculs}
+x^{2}+2x+4 &= 4x+3 &&\justif{$f(x)=g(x)$}\\
+x^{2}-2x+1 &= 0 &&\justif{tout à gauche}\\
+\Delta &= (-2)^{2}-4\times 1\times 1=0 &&\justif{une seule solution}\\
+x_{0} &= \frac{2}{2}=1 &&
+\end{calculs}
+\explique{Ordonnée : $4\times 1+3=7$. Un seul point, \res{$(1\,;7)$} : la droite est
+tangente à la parabole.}{elle la touche sans la traverser}
+\cas{c)}
+\begin{calculs}
+x^{2}-x+3 &= x+1 &&\justif{$f(x)=g(x)$}\\
+x^{2}-2x+2 &= 0 &&\justif{tout à gauche}\\
+\Delta &= (-2)^{2}-4\times 1\times 2=-4 &&\justif{$\Delta<0$ : aucune solution}
+\end{calculs}
+\explique{\res{Aucun point commun} : la droite ne coupe pas la parabole.}{}
+\rem{Erreur fréquente : donner seulement les abscisses. Un point a deux coordonnées.}
 \end{exo}
 
 \begin{exo}[Deux paraboles]
-\begin{reponses}
-  \item $2x^{2}-2x-4=0$, soit $x^{2}-x-2=0$, racines $-1$ et $2$ :\\
-        \res{(-1\,;-3)} et \res{(2\,;3)}
-  \item $2x^{2}-4x+2=0$, soit $(x-1)^{2}=0$ : \ \res{(1\,;3)}
-  \item $-6x+6=0$, donc $x=1$ : \ \res{(1\,;2)}
-\end{reponses}
-\rem{En c), les termes en $x^{2}$ s'éliminent : l'équation est du premier degré.}
+\explique{Même méthode : les abscisses des points communs sont les solutions de
+$f(x)=g(x)$.}{propriété 5 du cours}
+\cas{a)}
+\begin{calculs}
+x^{2}+x-3 &= -x^{2}+3x+1 &&\justif{on égale les deux expressions}\\
+2x^{2}-2x-4 &= 0 &&\justif{tout à gauche : $x^{2}+x^{2}$, $x-3x$, $-3-1$}\\
+\Delta &= (-2)^{2}-4\times 2\times(-4)=36 &&\justif{$4+32$ ; $\sqrt{36}=6$}\\
+x_{1} &= \frac{2-6}{4}=-1 &&\\
+x_{2} &= \frac{2+6}{4}=2 &&
+\end{calculs}
+\explique{Ordonnées avec $\mathcal{P}$ : $(-1)^{2}-1-3=-3$ et $2^{2}+2-3=3$. Points
+\res{$(-1\,;-3)$ et $(2\,;3)$}.}{contrôle avec $\mathcal{P}'$ : $-1-3+1=-3$}
+\cas{b)}
+\begin{calculs}
+x^{2}-2x+4 &= -x^{2}+2x+2 &&\\
+2x^{2}-4x+2 &= 0 &&\justif{tout à gauche}\\
+\Delta &= (-4)^{2}-4\times 2\times 2=0 &&\justif{une seule solution}\\
+x_{0} &= \frac{4}{4}=1 &&
+\end{calculs}
+\explique{Ordonnée : $1-2+4=3$. Un seul point, \res{$(1\,;3)$} : les deux paraboles se
+touchent.}{}
+\cas{c)}
+\begin{calculs}
+3x^{2}-2x+1 &= 3x^{2}+4x-5 &&\\
+-6x+6 &= 0 &&\justif{les $3x^{2}$ s'éliminent}\\
+-6x &= -6 &&\\
+x &= 1 &&
+\end{calculs}
+\explique{Ordonnée : $3-2+1=2$. Un seul point, \res{$(1\,;2)$}.}{}
+\explique{On remarque que les termes en $x^{2}$ s'éliminent : l'équation est du
+\res{premier degré}, et il n'y a qu'un point commun.}{même coefficient $a=3$}
 \end{exo}
 
 \begin{exo}[Combien de points ?]
-\begin{itemize}
-  \item $\mathcal{D}_{1}$ : $x^{2}-4x+4=0$, $\Delta=0$ : \res{1\text{ point}}.
-  \item $\mathcal{D}_{2}$ : $x^{2}-4x+5=0$, $\Delta=-4$ : \res{\text{aucun}}.
-  \item $\mathcal{D}_{3}$ : $x^{2}-4x-1=0$, $\Delta=20$ : \res{2\text{ points}}.
-\end{itemize}
+\explique{Les abscisses des points communs sont les solutions de $x^{2}=4x+p$ ; le signe
+du discriminant donne leur nombre, sans calculer les points.}{propriété 5 du cours}
+\cas{$\mathcal{D}_{1}$}
+\begin{calculs}
+x^{2} &= 4x-4 &&\\
+x^{2}-4x+4 &= 0 &&\justif{tout à gauche}\\
+\Delta &= (-4)^{2}-4\times 1\times 4=0 &&
+\end{calculs}
+\explique{\res{Un seul point commun} : $\mathcal{D}_{1}$ est tangente à
+$\mathcal{P}$.}{$\Delta=0$}
+\cas{$\mathcal{D}_{2}$}
+\begin{calculs}
+x^{2} &= 4x-5 &&\\
+x^{2}-4x+5 &= 0 &&\\
+\Delta &= (-4)^{2}-4\times 1\times 5=-4 &&
+\end{calculs}
+\explique{\res{Aucun point commun}.}{$\Delta<0$}
+\cas{$\mathcal{D}_{3}$}
+\begin{calculs}
+x^{2} &= 4x+1 &&\\
+x^{2}-4x-1 &= 0 &&\\
+\Delta &= (-4)^{2}-4\times 1\times(-1)=20 &&
+\end{calculs}
+\explique{\res{Deux points communs}.}{$\Delta>0$}
+\rem{Les trois droites sont parallèles (même coefficient directeur $4$) : la plus basse
+ne touche pas la parabole, la plus haute la coupe deux fois.}
 \end{exo}
 
 \begin{exo}[Avec un paramètre]
-\begin{questions}
-  \item $x^{2}+x=3x+m$, soit $x^{2}-2x-m=0$.
-  \item $\Delta=(-2)^{2}-4\times 1\times(-m)=\res{4+4m}$.
-  \item Deux points si $4+4m>0$, soit \res{m>-1} ; un seul si \res{m=-1} ; aucun si
-        \res{m<-1}.
-\end{questions}
+\cas{1)}
+\begin{calculs}
+x^{2}+x &= 3x+m &&\justif{même ordonnée pour la même abscisse}\\
+x^{2}+x-3x-m &= 0 &&\justif{tout à gauche}\\
+x^{2}-2x-m &= 0 &&
+\end{calculs}
+\explique{Les abscisses des points communs sont bien les solutions de
+$\res{x^{2}-2x-m=0}$.}{}
+\cas{2)}
+\begin{calculs}
+\Delta &= (-2)^{2}-4\times 1\times(-m) &&\justif{$a=1$, $b=-2$, $c=-m$}\\
+\Delta &= \res{4+4m} &&\justif{$-4\times(-m)=+4m$}
+\end{calculs}
+\cas{3)}
+\explique{Deux points quand $\Delta>0$ :}{}
+\begin{calculs}
+4+4m &> 0 &&\\
+4m &> -4 &&\justif{on retranche $4$}\\
+m &> -1 &&\justif{on divise par $4>0$ : le sens ne change pas}
+\end{calculs}
+\explique{La droite coupe $\mathcal{P}$ en \res{deux points si $m>-1$}, en \res{un seul si
+$m=-1$} et en \res{aucun si $m<-1$}.}{$\Delta=0$ pour $m=-1$ ; $\Delta<0$ pour $m<-1$}
+\rem{Erreur fréquente : prendre $c=m$. Après avoir tout mis à gauche, le nombre seul est
+$-m$.}
 \end{exo}
 
 \partie{Position relative de deux courbes}
 
 \begin{exo}[Une parabole et une droite]
-\begin{questions}
-  \item $d(x)=x^{2}+x-2-(3x-2)=\res{x^{2}-2x}$
-  \item $d(x)=x(x-2)$ : racines $0$ et $2$, $a>0$ : $+$, $-$, $+$.
-  \item $\Cf$ est \res{\text{au-dessus}} de la droite sur
-        $\left]-\infty\,;0\right[$ et sur $\left]2\,;+\infty\right[$,
-        \res{\text{au-dessous}} sur $\left]0\,;2\right[$ ; elles se coupent en
-        $(0\,;-2)$ et $(2\,;4)$.
-\end{questions}
+\cas{1)}
+\begin{calculs}
+d(x) &= x^{2}+x-2-(3x-2) &&\justif{on soustrait \textbf{toute} l'expression de $g$}\\
+d(x) &= x^{2}+x-2-3x+2 &&\justif{le $-$ change tous les signes}\\
+d(x) &= \res{x^{2}-2x} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+d(x) &= x(x-2) &&\justif{facteur commun $x$ : racines $0$ et $2$}
+\end{calculs}
+\tabsignes{d(x)}{$-\infty$,$0$,$2$,$+\infty$}{,+,z,-,z,+,}
+\explique{$a=1>0$ : positif à l'extérieur des racines, négatif entre.}{théorème 4}
+\cas{3)}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\explique{$\Cf$ est \res{au-dessus} de $\mathcal{C}_{g}$ sur $\left]-\infty\,;0\right[$
+et sur $\left]2\,;+\infty\right[$, \res{au-dessous} sur $\left]0\,;2\right[$.}{là où
+$d(x)>0$, puis là où $d(x)<0$}
+\explique{Elles se coupent en $(0\,;-2)$ et en $(2\,;4)$.}{ordonnées : $g(0)=-2$ et
+$g(2)=4$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-3}{-3}{3}{5}
+  \gradx{-2,-1,1,2} \grady{-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:2.3,samples=60] plot (\x,{\x*\x+\x-2});
+  \draw[coulCourbeB,line width=1.1pt,domain=-0.33:2.33] plot (\x,{3*\x-2});
+  \path (0,-2) node[croix]{} (2,4) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,left] at (-2.6,3) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize,right] at (2.3,4.6) {$\mathcal{C}_{g}$};
+\end{tikzpicture}
+\end{minipage}
 \end{exo}
 
 \begin{exo}[Trois situations]
-\begin{reponses}
-  \item $d(x)=x^{2}-5x+4$, racines $1$ et $4$ : $\Cf$ au-dessous sur
-        $\left]1\,;4\right[$, au-dessus ailleurs.
-  \item $d(x)=-x^{2}+2x=-x(x-2)$ : $\Cf$ au-dessus sur $\left]0\,;2\right[$,
-        au-dessous ailleurs.
-  \item $d(x)=x^{2}-2x+1=(x-1)^{2}\ge 0$ : $\Cf$ toujours au-dessus, sauf en $x=1$ où
-        elles se touchent.
-\end{reponses}
+\explique{On étudie le signe de $d(x)=f(x)-g(x)$ : là où $d(x)>0$, $\Cf$ est au-dessus
+de $\mathcal{C}_{g}$.}{méthode 12 du cours}
+\cas{a)}
+\begin{calculs}
+d(x) &= x^{2}-4x+5-(x+1) &&\justif{toute l'expression de $g$}\\
+d(x) &= x^{2}-5x+4 &&\\
+\Delta &= (-5)^{2}-4\times 1\times 4=9 &&\justif{$\sqrt{9}=3$}\\
+x_{1} &= \frac{5-3}{2}=1 &&\\
+x_{2} &= \frac{5+3}{2}=4 &&
+\end{calculs}
+\tabsignes{d(x)}{$-\infty$,$1$,$4$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\Cf$ est \res{au-dessous} de $\mathcal{C}_{g}$ sur $\left]1\,;4\right[$,
+\res{au-dessus} sur $\left]-\infty\,;1\right[$ et sur $\left]4\,;+\infty\right[$ ; elles se
+coupent en $(1\,;2)$ et $(4\,;5)$.}{ordonnées : $g(1)=2$ et $g(4)=5$}
+\cas{b)}
+\begin{calculs}
+d(x) &= -x^{2}+3x+1-(x+1) &&\\
+d(x) &= -x^{2}+2x &&\\
+d(x) &= -x(x-2) &&\justif{facteur commun $-x$ : racines $0$ et $2$}
+\end{calculs}
+\tabsignes{d(x)}{$-\infty$,$0$,$2$,$+\infty$}{,-,z,+,z,-,}
+\explique{$\Cf$ est \res{au-dessus} de $\mathcal{C}_{g}$ sur $\left]0\,;2\right[$,
+\res{au-dessous} ailleurs ; elles se coupent en $(0\,;1)$ et $(2\,;3)$.}{$a=-1<0$ :
+positif entre les racines}
+\cas{c)}
+\begin{calculs}
+d(x) &= x^{2}+3x+1-5x &&\\
+d(x) &= x^{2}-2x+1 &&\\
+\Delta &= (-2)^{2}-4\times 1\times 1=0 &&\justif{une racine double}\\
+x_{0} &= \frac{2}{2}=1 &&
+\end{calculs}
+\tabsignes{d(x)}{$-\infty$,$1$,$+\infty$}{,+,z,+,}
+\explique{$\Cf$ est \res{toujours au-dessus} de $\mathcal{C}_{g}$, sauf en $x=1$ où elles
+se touchent, au point $(1\,;5)$.}{$d(x)=(x-1)^{2}\ge 0$ ; $g(1)=5$}
+\rem{En c), la droite est tangente à la parabole : elle la touche sans la traverser.}
 \end{exo}
 
 \begin{exo}[Deux paraboles]
-\begin{reponses}
-  \item $d(x)=2x^{2}-3x-2$, $\Delta=25$, racines $-\frac{1}{2}$ et $2$ : $\Cf$
-        au-dessous sur $\left]-\frac{1}{2}\,;2\right[$, au-dessus ailleurs.
-  \item $d(x)=6x-6$ : $\Cf$ au-dessus pour $x>1$, au-dessous pour $x<1$.
-  \item $d(x)=x^{2}-2x-3$, racines $-1$ et $3$ : $\Cf$ au-dessous sur
-        $\left]-1\,;3\right[$, au-dessus ailleurs.
-\end{reponses}
-\rem{On soustrait \emph{toute} l'expression de $g$ : la parenthèse est indispensable.}
+\explique{Même méthode : on étudie le signe de $d(x)=f(x)-g(x)$, en soustrayant
+\emph{toute} l'expression de $g$, entre parenthèses.}{méthode 12 du cours}
+\cas{a)}
+\begin{calculs}
+d(x) &= x^{2}+x+1-\left(-x^{2}+4x+3\right) &&\\
+d(x) &= x^{2}+x+1+x^{2}-4x-3 &&\justif{le $-$ change tous les signes}\\
+d(x) &= 2x^{2}-3x-2 &&\\
+\Delta &= (-3)^{2}-4\times 2\times(-2)=25 &&\justif{$9+16$ ; $\sqrt{25}=5$}\\
+x_{1} &= \frac{3-5}{4}=-\frac{1}{2} &&\\
+x_{2} &= \frac{3+5}{4}=2 &&
+\end{calculs}
+\tabsignes{d(x)}{$-\infty$,$-\frac{1}{2}$,$2$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\Cf$ est \res{au-dessous} de $\mathcal{C}_{g}$ sur
+$\left]-\frac{1}{2}\,;2\right[$, \res{au-dessus} ailleurs ; elles se coupent en
+$x=-\frac{1}{2}$ et $x=2$.}{$a=2>0$ : négatif entre les racines}
+\cas{b)}
+\begin{calculs}
+d(x) &= 3x^{2}+x-2-\left(3x^{2}-5x+4\right) &&\\
+d(x) &= 3x^{2}+x-2-3x^{2}+5x-4 &&\\
+d(x) &= 6x-6 &&\justif{les $x^{2}$ s'éliminent}
+\end{calculs}
+\explique{$6x-6$ s'annule en $1$ ; il est négatif avant, positif après.}{fonction affine
+de coefficient $6>0$}
+\tabsignes{d(x)}{$-\infty$,$1$,$+\infty$}{,-,z,+,}
+\explique{$\Cf$ est \res{au-dessous} de $\mathcal{C}_{g}$ pour $x<1$, \res{au-dessus} pour
+$x>1$ ; elles se coupent en $(1\,;2)$.}{$f(1)=3+1-2=2$}
+\cas{c)}
+\begin{calculs}
+d(x) &= 2x^{2}+3x-1-\left(x^{2}+5x+2\right) &&\\
+d(x) &= 2x^{2}+3x-1-x^{2}-5x-2 &&\\
+d(x) &= x^{2}-2x-3 &&\\
+\Delta &= (-2)^{2}-4\times 1\times(-3)=16 &&\justif{$\sqrt{16}=4$}\\
+x_{1} &= \frac{2-4}{2}=-1 &&\\
+x_{2} &= \frac{2+4}{2}=3 &&
+\end{calculs}
+\tabsignes{d(x)}{$-\infty$,$-1$,$3$,$+\infty$}{,+,z,-,z,+,}
+\explique{$\Cf$ est \res{au-dessous} de $\mathcal{C}_{g}$ sur $\left]-1\,;3\right[$,
+\res{au-dessus} ailleurs ; elles se coupent en $(-1\,;-2)$ et $(3\,;26)$.}{$f(-1)=2-3-1$
+et $f(3)=18+9-1$}
+\rem{Erreur fréquente : $f(x)-g(x)=x^{2}+x+1-x^{2}+4x+3$, en ne changeant que le premier
+signe. La parenthèse autour de $g(x)$ est indispensable.}
 \end{exo}
 
 \partie{Problèmes du second degré}
 
 \begin{exo}[Une aire imposée]
-\begin{questions}
-  \item Le demi-périmètre vaut $7$ : \res{0<x<7}.
-  \item Largeur \res{7-x} ; aire \res{x(7-x)=-x^{2}+7x}.
-  \item $-x^{2}+7x>10$, soit $x^{2}-7x+10<0$ ; racines $2$ et $5$ :
-        \res{2<x<5}. La longueur doit être strictement comprise entre $2$ et $5$~cm.
-\end{questions}
+\cas{1)}
+\explique{Le périmètre vaut $14$~cm, donc longueur $+$ largeur $=7$~cm (le
+demi-périmètre). Les deux côtés sont positifs : \res{$0<x<7$}.}{\textbf{inconnue}, et
+ses valeurs possibles}
+\cas{2)}
+\begin{calculs}
+\ell &= \res{7-x} &&\justif{largeur : $x+\ell=7$}\\
+A(x) &= x(7-x) &&\justif{aire $=$ longueur $\times$ largeur}\\
+A(x) &= \res{-x^{2}+7x} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+-x^{2}+7x &> 10 &&\justif{l'inéquation}\\
+-x^{2}+7x-10 &> 0 &&\justif{tout à gauche}\\
+\Delta &= 7^{2}-4\times(-1)\times(-10)=9 &&\justif{$49-40$ ; $\sqrt{9}=3$}\\
+x_{1} &= \frac{-7-3}{-2}=5 &&\\
+x_{2} &= \frac{-7+3}{-2}=2 &&
+\end{calculs}
+\tabsignes{-x^{2}+7x-10}{$-\infty$,$2$,$5$,$+\infty$}{,-,z,+,z,-,}
+\explique{$a=-1<0$ : positif entre les racines, donc $2<x<5$, qui est bien dans
+$\left]0\,;7\right[$.}{\textbf{retour à l'énoncé}}
+\explique{L'aire dépasse $10~\text{cm}^{2}$ quand la longueur est \res{strictement
+comprise entre $2$~cm et $5$~cm}.}{contrôle : $x=3$ donne $3\times 4=12>10$}
+\rem{Si l'on veut que la longueur soit le plus grand côté ($x\ge 7-x$), on ajoute
+$x\ge 3{,}5$ : la réponse devient $3{,}5\le x<5$.}
 \end{exo}
 
 \begin{exo}[Une trajectoire]
-\begin{questions}
-  \item $h(0)=\res{35\text{ m}}$.
-  \item $\alpha=-\frac{30}{-10}=3$ ; $h(3)=-45+90+35=\res{80\text{ m}}$, au bout de
-        $3$~s.
-  \item $-5t^{2}+30t+35=0$, soit $t^{2}-6t-7=0$ ; racines $-1$ et $7$ ; on garde
-        \res{t=7\text{ s}}.
-  \item $h(t)>35$, soit $-5t^{2}+30t>0$, soit $t(t-6)<0$ : $t\in\left]0\,;6\right[$, soit
-        \res{6\text{ s}}.
-\end{questions}
-\rem{Diviser par $-5$ change le sens d'une inégalité.}
+\cas{1)}
+\begin{calculs}
+h(0) &= -5\times 0^{2}+30\times 0+35=35 &&\justif{au départ, $t=0$}
+\end{calculs}
+\explique{Le projectile part de \res{$35$~m} de haut.}{la hauteur du toit}
+\cas{2)}
+\begin{calculs}
+\alpha &= -\frac{30}{2\times(-5)}=3 &&\justif{$a=-5<0$ : maximum au sommet}\\
+h(3) &= -5\times 9+90+35 &&\\
+h(3) &= -45+90+35=80 &&
+\end{calculs}
+\explique{Hauteur maximale \res{$80$~m}, atteinte au bout de \res{$3$~s}.}{}
+\cas{3)}
+\begin{calculs}
+-5t^{2}+30t+35 &= 0 &&\justif{au sol : $h(t)=0$}\\
+t^{2}-6t-7 &= 0 &&\justif{on divise par $-5$}\\
+\Delta &= (-6)^{2}-4\times 1\times(-7)=64 &&\justif{$36+28$ ; $\sqrt{64}=8$}\\
+t_{1} &= \frac{6-8}{2}=-1 &&\\
+t_{2} &= \frac{6+8}{2}=7 &&
+\end{calculs}
+\explique{Le projectile touche le sol au bout de \res{$7$~s}.}{on rejette $-1$ : le temps
+est positif}
+\cas{4)}
+\begin{calculs}
+-5t^{2}+30t+35 &> 35 &&\justif{plus haut que le départ}\\
+-5t^{2}+30t &> 0 &&\justif{on retranche $35$}\\
+t^{2}-6t &< 0 &&\justif{on divise par $-5<0$ : le sens change}\\
+t(t-6) &< 0 &&\justif{racines $0$ et $6$}
+\end{calculs}
+\explique{$a=1>0$ : négatif entre les racines, donc $t\in\left]0\,;6\right[$. Le
+projectile est plus haut que son point de départ pendant \res{$6$~s}.}{$6-0=6$}
+\rem{Diviser par un nombre négatif change le sens d'une inégalité, pas celui d'une
+égalité.}
 \end{exo}
 
 \begin{exo}[Un atelier]
-\begin{questions}
-  \item $B(x)=42x-\left(x^{2}-8x+400\right)=\res{-x^{2}+50x-400}$.
-  \item $\Delta=2\,500-1\,600=900$ ; racines $10$ et $40$ ; $a<0$ : $B(x)>0$ pour
-        \res{10<x<40}.
-  \item $\alpha=25$ et $B(25)=-625+1\,250-400$ : \res{225\text{ € pour 25 pièces}}.
-\end{questions}
+\cas{1)}
+\begin{calculs}
+B(x) &= R(x)-C(x) &&\justif{bénéfice $=$ recette $-$ coût}\\
+B(x) &= 42x-\left(x^{2}-8x+400\right) &&\justif{toute l'expression de $C$}\\
+B(x) &= 42x-x^{2}+8x-400 &&\justif{le $-$ change tous les signes}\\
+B(x) &= \res{-x^{2}+50x-400} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+\Delta &= 50^{2}-4\times(-1)\times(-400) &&\justif{on cherche les racines de $B$}\\
+\Delta &= 2\,500-1\,600=900 &&\justif{$\sqrt{900}=30$}\\
+x_{1} &= \frac{-50-30}{-2}=40 &&\\
+x_{2} &= \frac{-50+30}{-2}=10 &&
+\end{calculs}
+\tabsignes{B(x)}{$0$,$10$,$40$,$50$}{,-,z,+,z,-,}
+\explique{L'atelier fait un bénéfice ($B(x)>0$) pour une production \res{strictement
+comprise entre $10$ et $40$ pièces} par jour.}{$a=-1<0$ : positif entre les racines ;
+tableau sur $\intff{0}{50}$}
+\cas{3)}
+\begin{calculs}
+\alpha &= -\frac{50}{2\times(-1)}=25 &&\justif{$a<0$ : maximum au sommet}\\
+B(25) &= -625+1\,250-400=225 &&\justif{$25^{2}=625$}
+\end{calculs}
+\explique{Le bénéfice est maximal pour \res{$25$ pièces} par jour ; il vaut alors
+\res{$225$~€}.}{$25$ est bien entre $0$ et $50$}
+\rem{Contrôle : $25$ est au milieu des racines $10$ et $40$.}
 \end{exo}
 
 \end{document}

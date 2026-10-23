@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,546 +189,1403 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
-\entete{Chapitre 1 --- Fractions et puissances --- Corrigé des exercices}{Seconde}
-
-\let\deuxpaquet\deux
-\renewcommand{\deux}[2]{\deuxpaquet{#1}{#2}\par}
-\clubpenalty=10000
-\widowpenalty=10000
+\entete{Chapitre 1 --- Fractions et puissances --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- FRACTIONS ET PUISSANCES}
-  {Chapitre 1 : fiche d'exercices --- Seconde}
-  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
-   fréquentes et les méthodes à retenir. Ce qui n'est pas exigé est en gris.}
+\entetefiche{Chapitre 1 --- Fractions et puissances}{Seconde}
 
 \partie{Nombres relatifs et priorités}
 
 \begin{exo}[Calculs sur les relatifs]
-\deux{$A=\res{-16}$}{$B=14+11=\res{25}$}
-\deux{$C=\res{-42}$}{$D=\res{40}$}
-\deux{$E=\dfrac{27}{-9}=\res{-3}$}{$F=-13-4=\res{-17}$}
-\rem{Soustraire $-11$, c'est ajouter $11$ ; deux facteurs négatifs donnent un produit
-positif.}
+\begin{calculs}
+A &= -9-7 &&\justif{deux nombres négatifs : on ajoute leurs distances à zéro, $9$ et $7$}\\
+A &= \res{-16} &&\justif{on garde le signe moins}
+\end{calculs}
+\begin{calculs}
+B &= 14-(-11) &&\justif{on recopie}\\
+B &= 14+11 &&\justif{soustraire $-11$, c'est ajouter son opposé $11$}\\
+B &= \res{25} &&
+\end{calculs}
+\begin{calculs}
+C &= -6\times 7 &&\justif{signes contraires : le produit est négatif}\\
+C &= \res{-42} &&\justif{$6\times 7=42$}
+\end{calculs}
+\begin{calculs}
+D &= (-8)\times(-5) &&\justif{même signe : le produit est positif}\\
+D &= \res{40} &&\justif{$8\times 5=40$}
+\end{calculs}
+\begin{calculs}
+E &= \dfrac{-(-27)}{-9} &&\justif{on recopie}\\
+E &= \dfrac{27}{-9} &&\justif{l'opposé de $-27$ est $27$}\\
+E &= \res{-3} &&\justif{signes contraires : le quotient est négatif ; $27\div 9=3$}
+\end{calculs}
+\begin{calculs}
+F &= -13+(-4) &&\justif{ajouter $-4$, c'est soustraire $4$}\\
+F &= -13-4 &&\\
+F &= \res{-17} &&\justif{deux nombres négatifs : on ajoute $13$ et $4$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $-9-7=16$ en pensant \og moins par moins donne plus\fg.
+Cette règle vaut pour un \emph{produit} ou un \emph{quotient}, jamais pour une somme :
+dans $A$, on perd $9$ puis encore $7$.}
 \end{exo}
 
 \begin{exo}[Priorités de calcul]
 \begin{calculs}
-A&=64-(-18)\\
-A&=\res{82}\\
-B&=-7-16\\
-B&=\res{-23}\\
-C&=6+(-4)\times 4\\
-C&=6-16=\res{-10}\\
-D&=-36\div(-4)\times 4\\
-D&=9\times 4=\res{36}
+A &= 8^{2}-3\times(-6) &&\justif{on recopie}\\
+A &= 64-3\times(-6) &&\justif{la puissance d'abord : $8^{2}=8\times 8=64$}\\
+A &= 64-(-18) &&\justif{puis le produit : signes contraires, négatif}\\
+A &= 64+18 &&\justif{soustraire $-18$, c'est ajouter $18$}\\
+A &= \res{82} &&
 \end{calculs}
-\rem{Dans $B$, la puissance passe avant la soustraction. Dans $D$, division et produit
-se font de gauche à droite.}
+\begin{calculs}
+B &= -7-4^{2} &&\justif{la puissance passe avant la soustraction}\\
+B &= -7-16 &&\justif{$4^{2}=16$ ; le moins devant reste une soustraction}\\
+B &= \res{-23} &&
+\end{calculs}
+\rem{Dans $B$, le carré ne porte que sur $4$ : on ne calcule pas $(-4)^{2}$.}
+\begin{calculs}
+C &= 6+(-9+5)\times 4 &&\justif{la parenthèse d'abord}\\
+C &= 6+(-4)\times 4 &&\justif{$-9+5=-4$}\\
+C &= 6+(-16) &&\justif{puis le produit, avant l'addition}\\
+C &= \res{-10} &&\justif{signes contraires : $16-6=10$, signe de $-16$}
+\end{calculs}
+\rem{Erreur fréquente : calculer $6+(-4)=2$, puis $2\times 4=8$. Le produit passe
+avant l'addition.}
+\begin{calculs}
+D &= -36\div(-4)\times 2^{2} &&\justif{la puissance d'abord}\\
+D &= -36\div(-4)\times 4 &&\justif{division et produit : de gauche à droite}\\
+D &= 9\times 4 &&\justif{$(-36)\div(-4)=9$ : même signe, positif}\\
+D &= \res{36} &&
+\end{calculs}
+\rem{Dans $D$, on ne commence pas par $(-4)\times 4$ : division et multiplication ont
+la même priorité, on les fait dans l'ordre où elles sont écrites.}
 \end{exo}
 
 \begin{exo}[Parenthèses]
 \begin{calculs}
-A&=20-4\times(-5)\\
-A&=20+20=\res{40}\\
-B&=-15+8=\res{-7}\\
-C&=-48\div(-6)=\res{8}\\
-D&=3-2\times(5+5)\\
-D&=3-20=\res{-17}
+A &= 20-4\times(3-8) &&\justif{la parenthèse d'abord}\\
+A &= 20-4\times(-5) &&\justif{$3-8=-5$}\\
+A &= 20-(-20) &&\justif{puis le produit : $4\times(-5)=-20$}\\
+A &= 20+20 &&\justif{soustraire $-20$, c'est ajouter $20$}\\
+A &= \res{40} &&
 \end{calculs}
-\rem{Dans $D$, on commence par la parenthèse la plus intérieure : $1-6=-5$, puis
-$5-(-5)=10$.}
+\rem{Erreur fréquente : calculer $20-4=16$ avant le produit. Le $4$ est d'abord
+multiplié par la parenthèse.}
+\begin{calculs}
+B &= 5\times(-3)+2^{3} &&\justif{on recopie}\\
+B &= 5\times(-3)+8 &&\justif{la puissance : $2^{3}=2\times 2\times 2=8$, et non $2\times 3$}\\
+B &= -15+8 &&\justif{puis le produit}\\
+B &= \res{-7} &&\justif{signes contraires : $15-8=7$, signe de $-15$}
+\end{calculs}
+\begin{calculs}
+C &= -48\div\bigl(2\times(-3)\bigr) &&\justif{la parenthèse d'abord}\\
+C &= -48\div(-6) &&\justif{$2\times(-3)=-6$}\\
+C &= \res{8} &&\justif{même signe : le quotient est positif}
+\end{calculs}
+\begin{calculs}
+D &= 3-2\times\bigl(5-(1-6)\bigr) &&\justif{la parenthèse la plus intérieure d'abord}\\
+D &= 3-2\times\bigl(5-(-5)\bigr) &&\justif{$1-6=-5$}\\
+D &= 3-2\times 10 &&\justif{$5-(-5)=5+5=10$}\\
+D &= 3-20 &&\justif{le produit avant la soustraction}\\
+D &= \res{-17} &&
+\end{calculs}
 \end{exo}
 
 \partie{Additionner et soustraire des fractions}
 
 \begin{exo}[Même dénominateur]
-\deux{$A=\res{\dfrac75}$}{$B=\dfrac{-2+7}{9}=\res{\dfrac59}$}
-\deux{$C=\dfrac{5-9}{7}=\res{-\dfrac47}$}{$D=\dfrac{-3+8}{11}=\res{\dfrac{5}{11}}$}
-\deux{$E=\dfrac{6}{12}=\res{\dfrac12}$}{$F=\dfrac{-12}{4}=\res{-3}$}
-\rem{Le dénominateur ne change pas : on n'additionne jamais les dénominateurs.}
+\begin{calculs}
+A &= \dfrac{4}{5}+\dfrac{3}{5} &&\justif{même dénominateur : on additionne les numérateurs}\\
+A &= \dfrac{4+3}{5} &&\justif{le dénominateur ne change pas}\\
+A &= \res{\dfrac{7}{5}} &&\justif{$7$ et $5$ n'ont pas de diviseur commun}
+\end{calculs}
+\begin{calculs}
+B &= \dfrac{-2}{9}+\dfrac{7}{9} &&\\
+B &= \dfrac{-2+7}{9} &&\\
+B &= \res{\dfrac{5}{9}} &&\justif{$-2+7=5$}
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{5}{7}-\dfrac{9}{7} &&\\
+C &= \dfrac{5-9}{7} &&\justif{on soustrait les numérateurs}\\
+C &= \res{-\dfrac{4}{7}} &&\justif{$5-9=-4$ ; le signe moins s'écrit devant la fraction}
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{-3}{11}-\dfrac{-8}{11} &&\\
+D &= \dfrac{-3-(-8)}{11} &&\justif{parenthèses autour de $-8$}\\
+D &= \dfrac{-3+8}{11} &&\justif{soustraire $-8$, c'est ajouter $8$}\\
+D &= \res{\dfrac{5}{11}} &&
+\end{calculs}
+\begin{calculs}
+E &= \dfrac{7}{12}+\dfrac{-1}{12} &&\\
+E &= \dfrac{7-1}{12} &&\justif{ajouter $-1$, c'est soustraire $1$}\\
+E &= \dfrac{6}{12} &&\justif{$6$ et $12$ sont divisibles par $6$ : on simplifie}\\
+E &= \dfrac{1\times\barre{6}}{2\times\barre{6}} &&\justif{$6=1\times 6$ et $12=2\times 6$}\\
+E &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\begin{calculs}
+F &= \dfrac{-7}{4}-\dfrac{5}{4} &&\\
+F &= \dfrac{-7-5}{4} &&\\
+F &= \dfrac{-12}{4} &&\justif{deux nombres négatifs : $-7-5=-12$}\\
+F &= \res{-3} &&\justif{$12\div 4=3$ : le résultat est un entier}
+\end{calculs}
+\rem{On n'additionne jamais les dénominateurs : $\frac45+\frac35$ ne vaut pas
+$\frac{7}{10}$. Des cinquièmes plus des cinquièmes donnent des cinquièmes. On pense
+ensuite à simplifier ($E$ et $F$).}
 \end{exo}
 
 \begin{exo}[Dénominateurs différents]
+\explique{Pour chaque calcul, on cherche d'abord un dénominateur commun : le plus petit
+multiple commun aux deux dénominateurs.}{on récite la table du plus grand dénominateur
+jusqu'à tomber sur un multiple de l'autre}
 \begin{calculs}
-A&=\dfrac{8}{20}+\dfrac{15}{20}=\res{\dfrac{23}{20}}\\
-B&=\dfrac{10}{12}+\dfrac{3}{12}=\res{\dfrac{13}{12}}\\
-C&=\dfrac{9}{12}+\dfrac{2}{12}=\res{\dfrac{11}{12}}\\
-D&=\dfrac{9}{24}-\dfrac{20}{24}=\res{-\dfrac{11}{24}}\\
-E&=-\dfrac{10}{15}-\dfrac{12}{15}=\res{-\dfrac{22}{15}}\\
-F&=-\dfrac{14}{12}+\dfrac{15}{12}=\res{\dfrac{1}{12}}
+A &= \dfrac{2}{5}+\dfrac{3}{4} &&\justif{$5$ et $4$ : dénominateur commun $5\times 4=20$}\\
+A &= \dfrac{2\fois{4}}{5\fois{4}}+\dfrac{3\fois{5}}{4\fois{5}} &&\justif{on multiplie en haut et en bas par le même nombre}\\
+A &= \dfrac{8}{20}+\dfrac{15}{20} &&\\
+A &= \res{\dfrac{23}{20}} &&\justif{$23$ et $20$ n'ont pas de diviseur commun}
 \end{calculs}
-\rem{Pour $B$, $C$, $D$, $F$, le plus petit dénominateur commun n'est pas le produit
-des dénominateurs : $12$ est un multiple de $6$ et de $4$.}
+\begin{calculs}
+B &= \dfrac{5}{6}+\dfrac{1}{4} &&\justif{table de $6$ : $6$ puis $12$, qui est dans la table de $4$}\\
+B &= \dfrac{5\fois{2}}{6\fois{2}}+\dfrac{1\fois{3}}{4\fois{3}} &&\justif{$6\times 2=12$ et $4\times 3=12$}\\
+B &= \dfrac{10}{12}+\dfrac{3}{12} &&\\
+B &= \res{\dfrac{13}{12}} &&
+\end{calculs}
+\rem{Avec le dénominateur $6\times 4=24$, on trouve $\frac{26}{24}$ : c'est juste aussi,
+mais il faut ensuite simplifier par $2$. Le plus petit dénominateur commun évite cette
+étape.}
+\begin{calculs}
+C &= \dfrac{3}{4}+\dfrac{1}{6} &&\justif{dénominateur commun $12$, comme pour $B$}\\
+C &= \dfrac{3\fois{3}}{4\fois{3}}+\dfrac{1\fois{2}}{6\fois{2}} &&\\
+C &= \dfrac{9}{12}+\dfrac{2}{12} &&\\
+C &= \res{\dfrac{11}{12}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{3}{8}-\dfrac{5}{6} &&\justif{table de $8$ : $8$ ; $16$ ; $24$, qui est dans la table de $6$}\\
+D &= \dfrac{3\fois{3}}{8\fois{3}}-\dfrac{5\fois{4}}{6\fois{4}} &&\\
+D &= \dfrac{9}{24}-\dfrac{20}{24} &&\\
+D &= \dfrac{9-20}{24} &&\\
+D &= \res{-\dfrac{11}{24}} &&\justif{$9-20=-11$}
+\end{calculs}
+\begin{calculs}
+E &= -\dfrac{2}{3}-\dfrac{4}{5} &&\justif{dénominateur commun $3\times 5=15$}\\
+E &= -\dfrac{2\fois{5}}{3\fois{5}}-\dfrac{4\fois{3}}{5\fois{3}} &&\\
+E &= -\dfrac{10}{15}-\dfrac{12}{15} &&\\
+E &= \dfrac{-10-12}{15} &&\justif{deux nombres négatifs : on ajoute $10$ et $12$}\\
+E &= \res{-\dfrac{22}{15}} &&
+\end{calculs}
+\begin{calculs}
+F &= -\dfrac{7}{6}+\dfrac{5}{4} &&\justif{dénominateur commun $12$}\\
+F &= -\dfrac{7\fois{2}}{6\fois{2}}+\dfrac{5\fois{3}}{4\fois{3}} &&\\
+F &= -\dfrac{14}{12}+\dfrac{15}{12} &&\\
+F &= \dfrac{-14+15}{12} &&\\
+F &= \res{\dfrac{1}{12}} &&\justif{$-14+15=1$}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Avec un nombre entier]
-\deux{$A=\dfrac{12}{4}-\dfrac{5}{4}=\res{\dfrac74}$}{$B=-\dfrac{10}{5}-\dfrac{3}{5}=\res{-\dfrac{13}{5}}$}
-\deux{$C=-\dfrac{24}{6}+\dfrac{17}{6}=\res{-\dfrac76}$}{$D=\dfrac{9}{2}-\dfrac{8}{2}=\res{\dfrac12}$}
+\explique{Un entier est une fraction de dénominateur $1$ : $3=\dfrac{3}{1}$. On l'écrit
+avec le dénominateur de l'autre fraction.}{même méthode que pour deux fractions}
+\begin{calculs}
+A &= 3-\dfrac{5}{4} &&\justif{on recopie}\\
+A &= \dfrac{3\fois{4}}{1\fois{4}}-\dfrac{5}{4} &&\justif{$3=\frac31$, écrit avec le dénominateur $4$}\\
+A &= \dfrac{12}{4}-\dfrac{5}{4} &&\\
+A &= \res{\dfrac{7}{4}} &&\justif{$12-5=7$}
+\end{calculs}
+\begin{calculs}
+B &= -2-\dfrac{3}{5} &&\\
+B &= -\dfrac{2\fois{5}}{1\fois{5}}-\dfrac{3}{5} &&\\
+B &= -\dfrac{10}{5}-\dfrac{3}{5} &&\\
+B &= \dfrac{-10-3}{5} &&\justif{deux nombres négatifs : on ajoute $10$ et $3$}\\
+B &= \res{-\dfrac{13}{5}} &&
+\end{calculs}
+\begin{calculs}
+C &= -4+\dfrac{17}{6} &&\\
+C &= -\dfrac{4\fois{6}}{1\fois{6}}+\dfrac{17}{6} &&\\
+C &= -\dfrac{24}{6}+\dfrac{17}{6} &&\\
+C &= \dfrac{-24+17}{6} &&\justif{signes contraires : $24-17=7$, signe de $-24$}\\
+C &= \res{-\dfrac{7}{6}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{9}{2}-4 &&\\
+D &= \dfrac{9}{2}-\dfrac{4\fois{2}}{1\fois{2}} &&\\
+D &= \dfrac{9}{2}-\dfrac{8}{2} &&\\
+D &= \res{\dfrac{1}{2}} &&\justif{contrôle : $4{,}5-4=0{,}5$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $3-\frac54=\frac{3-5}{4}$. On ne retire pas un entier au
+seul numérateur : il faut d'abord l'écrire en quarts.}
 \end{exo}
 
 \begin{exo}[Avec une lettre]
+\explique{On calcule avec $x$ comme avec un nombre : $3x=\dfrac{3x}{1}$ s'écrit avec le
+dénominateur de l'autre fraction.}{même méthode qu'avec un entier}
 \begin{calculs}
-A&=\dfrac{12x}{4}-\dfrac{x}{4}=\res{\dfrac{11x}{4}}\\
-B&=\dfrac{2x}{5}-\dfrac{15}{5}=\res{\dfrac{2x-15}{5}}\\
-C&=\dfrac{6}{3}-\dfrac{x-1}{3}\\
-C&=\dfrac{6-(x-1)}{3}=\res{\dfrac{7-x}{3}}\\
-D&=\dfrac{2x+1-3x}{3}=\res{\dfrac{1-x}{3}}
+A &= 3x-\dfrac{x}{4} &&\justif{on recopie}\\
+A &= \dfrac{3x\fois{4}}{1\fois{4}}-\dfrac{x}{4} &&\justif{$3x$ écrit avec le dénominateur $4$}\\
+A &= \dfrac{12x}{4}-\dfrac{x}{4} &&\\
+A &= \dfrac{12x-x}{4} &&\\
+A &= \res{\dfrac{11x}{4}} &&\justif{$12$ fois $x$, moins une fois $x$ : $11$ fois $x$}
 \end{calculs}
-\rem{Dans $C$, le moins porte sur tout le numérateur : $-(x-1)=-x+1$.}
+\begin{calculs}
+B &= \dfrac{2}{5}x-3 &&\justif{$\frac25x=\frac{2x}{5}$}\\
+B &= \dfrac{2x}{5}-\dfrac{3\fois{5}}{1\fois{5}} &&\\
+B &= \dfrac{2x}{5}-\dfrac{15}{5} &&\\
+B &= \res{\dfrac{2x-15}{5}} &&\justif{$2x$ et $-15$ ne se regroupent pas}
+\end{calculs}
+\begin{calculs}
+C &= 2-\dfrac{x-1}{3} &&\\
+C &= \dfrac{2\fois{3}}{1\fois{3}}-\dfrac{x-1}{3} &&\\
+C &= \dfrac{6}{3}-\dfrac{x-1}{3} &&\\
+C &= \dfrac{6-(x-1)}{3} &&\justif{parenthèses : le moins porte sur $x$ et sur $-1$}\\
+C &= \dfrac{6-x+1}{3} &&\justif{$-(x-1)=-x+1$}\\
+C &= \res{\dfrac{7-x}{3}} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $\frac{6-x-1}{3}$. Le signe moins devant une fraction
+s'applique à tout son numérateur (propriété 3 du cours).}
+\begin{calculs}
+D &= \dfrac{2x+1}{3}-x &&\\
+D &= \dfrac{2x+1}{3}-\dfrac{x\fois{3}}{1\fois{3}} &&\\
+D &= \dfrac{2x+1}{3}-\dfrac{3x}{3} &&\\
+D &= \dfrac{2x+1-3x}{3} &&\justif{le moins ne porte que sur $3x$}\\
+D &= \res{\dfrac{1-x}{3}} &&\justif{$2x-3x=-x$}
+\end{calculs}
+\rem{Pour contrôler, on remplace $x$ par un nombre simple dans l'expression de départ et
+dans le résultat. Pour $C$ avec $x=4$ : $2-\frac33=1$ et $\frac{7-4}{3}=1$.}
 \end{exo}
 
 \partie{Multiplier et diviser des fractions}
 
 \begin{exo}[Simplifier avant de calculer]
+\explique{On fixe d'abord le signe en comptant les signes moins, puis on décompose
+chaque nombre en produit de petits facteurs pour barrer les facteurs communs.}{on
+n'effectue pas les produits : les nombres resteraient grands}
 \begin{calculs}
-A&=-\dfrac{2\times 2\times 3\times 3}{2\times 3\times 2\times 5}=\res{-\dfrac35}\\
-B&=\dfrac{2\times 3\times 4\times 5\times 7}{3\times 7\times 2\times 5}=\res{4}\\
-C&=-\dfrac{2\times 13\times 3\times 3}{3\times 5\times 3\times 13}=\res{-\dfrac25}\\
-D&=\dfrac{1\times 2\times 7\times 3\times 5}{2\times 5\times 3\times 7}=\res{1}
+A &= \dfrac{-4\times 9}{6\times 10} &&\justif{un seul signe moins : le résultat est négatif}\\
+A &= -\dfrac{2\times 2\times 3\times 3}{2\times 3\times 2\times 5} &&\justif{$4=2\times 2$ ; $9=3\times 3$ ; $6=2\times 3$ ; $10=2\times 5$}\\
+A &= -\dfrac{\barre{2}\times\barre{2}\times\barre{3}\times 3}{\barre{2}\times\barre{3}\times\barre{2}\times 5} &&\justif{on barre deux $2$ et un $3$, en haut et en bas}\\
+A &= \res{-\dfrac{3}{5}} &&
 \end{calculs}
-\rem{On fixe d'abord le signe : deux signes moins dans $B$ et $D$ (positif), un seul
-dans $A$ et $C$ (négatif). Dans $D$, tout se barre : il reste $1$, et non $0$.}
+\begin{calculs}
+B &= \dfrac{24\times(-35)}{(-21)\times 10} &&\justif{deux signes moins : le résultat est positif}\\
+B &= \dfrac{2\times 3\times 4\times 5\times 7}{3\times 7\times 2\times 5} &&\justif{$24=2\times 3\times 4$ ; $35=5\times 7$ ; $21=3\times 7$}\\
+B &= \dfrac{\barre{2}\times\barre{3}\times 4\times\barre{5}\times\barre{7}}{\barre{3}\times\barre{7}\times\barre{2}\times\barre{5}} &&\justif{tout le dénominateur se barre : il reste $1$ en bas}\\
+B &= \res{4} &&\justif{$\frac41=4$}
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{26\times(-9)}{15\times 39} &&\justif{un seul signe moins : le résultat est négatif}\\
+C &= -\dfrac{2\times 13\times 3\times 3}{3\times 5\times 3\times 13} &&\justif{$26=2\times 13$ et $39=3\times 13$ : $13$ est le facteur commun caché}\\
+C &= -\dfrac{2\times\barre{13}\times\barre{3}\times\barre{3}}{\barre{3}\times 5\times\barre{3}\times\barre{13}} &&\\
+C &= \res{-\dfrac{2}{5}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{14\times(-15)}{(-10)\times 21} &&\justif{deux signes moins : le résultat est positif}\\
+D &= \dfrac{1\times 2\times 7\times 3\times 5}{2\times 5\times 3\times 7} &&\justif{tout le numérateur va se barrer : on écrit le facteur $1$}\\
+D &= \dfrac{1\times\barre{2}\times\barre{7}\times\barre{3}\times\barre{5}}{\barre{2}\times\barre{5}\times\barre{3}\times\barre{7}} &&\justif{tout se simplifie}\\
+D &= \res{1} &&\justif{il reste $1$, et non $0$}
+\end{calculs}
+\rem{En effectuant les produits, $B$ devient $\frac{840}{210}$ : la simplification est
+bien plus difficile à voir. On décompose d'abord, on barre ensuite.}
 \end{exo}
 
 \begin{exo}[Simplifier avec des lettres]
 \begin{calculs}
-A&=\dfrac{3\times 5\times 2\times 4\times 2\times 7}{5\times 7\times 2\times 3\times 4}=\res{2}\\
-B&=\dfrac{3\times 4\times 5\times x}{4\times 5}=\res{3x}\\
-C&=\dfrac{2\times 3\times 5\times a\times b}{2\times 5\times b\times 3\times 3}=\res{\dfrac{a}{3}}\\
-D&=\dfrac{2\times 2\times a\times 3\times 3}{2\times 3\times 2\times a}=\res{3}
+A &= \dfrac{15\times 8\times 14}{35\times 6\times 4} &&\justif{on recopie}\\
+A &= \dfrac{3\times 5\times 2\times 4\times 2\times 7}{5\times 7\times 2\times 3\times 4} &&\justif{$15=3\times 5$ ; $8=2\times 4$ ; $14=2\times 7$ ; $35=5\times 7$ ; $6=2\times 3$}\\
+A &= \dfrac{\barre{3}\times\barre{5}\times\barre{2}\times\barre{4}\times 2\times\barre{7}}{\barre{5}\times\barre{7}\times\barre{2}\times\barre{3}\times\barre{4}} &&\justif{il ne reste qu'un $2$ en haut}\\
+A &= \res{2} &&
 \end{calculs}
+\begin{calculs}
+B &= \dfrac{3x\times 20}{4\times 5} &&\justif{$3x$ veut dire $3\times x$}\\
+B &= \dfrac{3\times x\times 4\times 5}{4\times 5} &&\justif{$20=4\times 5$}\\
+B &= \dfrac{3\times x\times\barre{4}\times\barre{5}}{\barre{4}\times\barre{5}} &&\\
+B &= \res{3x} &&
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{6a\times 5b}{10b\times 9} &&\\
+C &= \dfrac{2\times 3\times a\times 5\times b}{2\times 5\times b\times 3\times 3} &&\justif{une lettre est un facteur comme un nombre}\\
+C &= \dfrac{\barre{2}\times\barre{3}\times a\times\barre{5}\times\barre{b}}{\barre{2}\times\barre{5}\times\barre{b}\times\barre{3}\times 3} &&\justif{on barre $b$ : il n'est pas nul}\\
+C &= \res{\dfrac{a}{3}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{4a\times 9}{6\times 2a} &&\\
+D &= \dfrac{2\times 2\times a\times 3\times 3}{2\times 3\times 2\times a} &&\justif{$4=2\times 2$ ; $9=3\times 3$ ; $6=2\times 3$}\\
+D &= \dfrac{\barre{2}\times\barre{2}\times\barre{a}\times 3\times\barre{3}}{\barre{2}\times\barre{3}\times\barre{2}\times\barre{a}} &&\justif{il ne reste qu'un $3$ en haut}\\
+D &= \res{3} &&
+\end{calculs}
+\rem{On ne barre que des facteurs d'un produit. L'énoncé précise que $a$ et $b$ ne sont
+pas nuls : on ne peut pas simplifier par $0$.}
 \end{exo}
 
 \begin{exo}[Produits]
-\deux{$A=\res{-\dfrac{15}{28}}$}{$B=\res{-\dfrac{8}{15}}$}
-\deux{$C=\res{-\dfrac{15}{8}}$}{$D=\dfrac73\times\dfrac{-2}{5}=\res{-\dfrac{14}{15}}$}
-\deux{$E=\res{\dfrac{16}{45}}$}{$F=\res{-\dfrac{15}{56}}$}
-\rem{$F$ compte trois signes moins : le produit est négatif.}
+\explique{Pour multiplier deux fractions, on fixe le signe, puis on multiplie les
+numérateurs entre eux et les dénominateurs entre eux.}{pas besoin de dénominateur commun
+pour un produit}
+\begin{calculs}
+A &= \dfrac{5}{4}\times\dfrac{-3}{7} &&\justif{un seul signe moins : le résultat est négatif}\\
+A &= -\dfrac{5\times 3}{4\times 7} &&\justif{numérateurs entre eux, dénominateurs entre eux}\\
+A &= \res{-\dfrac{15}{28}} &&\justif{$15=3\times 5$ et $28=4\times 7$ : rien à simplifier}
+\end{calculs}
+\begin{calculs}
+B &= \dfrac{-2}{5}\times\dfrac{4}{3} &&\justif{un seul signe moins}\\
+B &= -\dfrac{2\times 4}{5\times 3} &&\\
+B &= \res{-\dfrac{8}{15}} &&
+\end{calculs}
+\begin{calculs}
+C &= -5\times\dfrac{3}{8} &&\\
+C &= -\dfrac{5}{1}\times\dfrac{3}{8} &&\justif{un entier est une fraction de dénominateur $1$}\\
+C &= -\dfrac{5\times 3}{1\times 8} &&\\
+C &= \res{-\dfrac{15}{8}} &&
+\end{calculs}
+\rem{Erreur fréquente : multiplier aussi le dénominateur par $5$. On ne multiplie que le
+numérateur, puisque $5=\frac51$.}
+\begin{calculs}
+D &= \dfrac{-7}{-3}\times\dfrac{2}{-5} &&\justif{trois signes moins : le résultat est négatif}\\
+D &= -\dfrac{7\times 2}{3\times 5} &&\\
+D &= \res{-\dfrac{14}{15}} &&
+\end{calculs}
+\begin{calculs}
+E &= \dfrac{-4}{5}\times\dfrac{-4}{9} &&\justif{deux signes moins : le résultat est positif}\\
+E &= \dfrac{4\times 4}{5\times 9} &&\\
+E &= \res{\dfrac{16}{45}} &&
+\end{calculs}
+\begin{calculs}
+F &= \dfrac{3}{-8}\times\dfrac{-5}{-7} &&\justif{trois signes moins : le résultat est négatif}\\
+F &= -\dfrac{3\times 5}{8\times 7} &&\\
+F &= \res{-\dfrac{15}{56}} &&
+\end{calculs}
+\rem{Le signe d'un produit se lit en comptant les signes moins : un nombre pair donne un
+résultat positif, un nombre impair un résultat négatif.}
 \end{exo}
 
 \begin{exo}[Quotients]
+\explique{Diviser par une fraction, c'est multiplier par son inverse : on retourne la
+fraction placée \emph{après} le signe $\div$.}{$\dfrac{a}{b}\div\dfrac{c}{d}=\dfrac{a}{b}\times\dfrac{d}{c}$}
 \begin{calculs}
-A&=\dfrac25\times\dfrac73=\res{\dfrac{14}{15}}\\
-B&=\dfrac54\times\dfrac37=\res{\dfrac{15}{28}}\\
-C&=\dfrac34\times\dfrac16=\res{\dfrac18}\\
-D&=6\times\dfrac{5}{-2}=\res{-15}\\
-E&=\dfrac49\times\dfrac{2}{-5}=\res{-\dfrac{8}{45}}\\
-F&=3\times\dfrac{7}{-4}=\res{-\dfrac{21}{4}}
+A &= \dfrac{2}{5}\div\dfrac{3}{7} &&\justif{on recopie}\\
+A &= \dfrac{2}{5}\times\dfrac{7}{3} &&\justif{on multiplie par l'inverse de $\frac37$}\\
+A &= \dfrac{2\times 7}{5\times 3} &&\\
+A &= \res{\dfrac{14}{15}} &&
 \end{calculs}
-\rem{Diviser par $6$, c'est multiplier par $\frac16$.}
+\begin{calculs}
+B &= \dfrac{5}{4}\div\dfrac{7}{3} &&\\
+B &= \dfrac{5}{4}\times\dfrac{3}{7} &&\justif{l'inverse de $\frac73$ est $\frac37$}\\
+B &= \dfrac{5\times 3}{4\times 7} &&\\
+B &= \res{\dfrac{15}{28}} &&
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{3}{4}\div 6 &&\\
+C &= \dfrac{3}{4}\times\dfrac{1}{6} &&\justif{l'inverse de $6$ est $\frac16$}\\
+C &= \dfrac{1\times 3}{4\times 2\times 3} &&\justif{$6=2\times 3$ ; le numérateur va se barrer : facteur $1$}\\
+C &= \dfrac{1\times\barre{3}}{4\times 2\times\barre{3}} &&\\
+C &= \res{\dfrac{1}{8}} &&
+\end{calculs}
+\begin{calculs}
+D &= 6\div\dfrac{-2}{5} &&\\
+D &= 6\times\dfrac{5}{-2} &&\justif{l'inverse de $\frac{-2}{5}$ est $\frac{5}{-2}$ : le signe reste}\\
+D &= -\dfrac{6\times 5}{2} &&\justif{un seul signe moins}\\
+D &= -\dfrac{\barre{2}\times 3\times 5}{\barre{2}} &&\justif{$6=2\times 3$}\\
+D &= \res{-15} &&
+\end{calculs}
+\begin{calculs}
+E &= \dfrac{4}{9}\div\dfrac{-5}{2} &&\\
+E &= \dfrac{4}{9}\times\dfrac{2}{-5} &&\\
+E &= -\dfrac{4\times 2}{9\times 5} &&\justif{un seul signe moins}\\
+E &= \res{-\dfrac{8}{45}} &&
+\end{calculs}
+\begin{calculs}
+F &= 3\div\dfrac{-4}{7} &&\\
+F &= 3\times\dfrac{7}{-4} &&\\
+F &= -\dfrac{3\times 7}{4} &&\\
+F &= \res{-\dfrac{21}{4}} &&
+\end{calculs}
+\rem{Erreur fréquente : retourner la première fraction, ou les deux. Seul le diviseur est
+remplacé par son inverse ; l'inverse d'un nombre négatif est négatif.}
 \end{exo}
 
 \partie{Fractions et priorités de calcul}
 
 \begin{exo}[Respecter les priorités]
 \begin{calculs}
-A&=\dfrac{5}{12}+\dfrac{9}{12}=\dfrac{14}{12}\\
-A&=\res{\dfrac76}\\
-B&=\dfrac{7}{10}+\dfrac{4}{10}=\res{\dfrac{11}{10}}\\
-C&=-\dfrac{10}{12}+\dfrac{9}{12}-\dfrac{8}{12}\\
-C&=-\dfrac{9}{12}=\res{-\dfrac34}\\
-D&=\dfrac{9}{14}+\dfrac{1}{2}\\
-D&=\dfrac{9}{14}+\dfrac{7}{14}=\res{\dfrac87}
+A &= \dfrac{5}{12}-\dfrac{-3}{4} &&\justif{on recopie}\\
+A &= \dfrac{5}{12}+\dfrac{3}{4} &&\justif{soustraire $-\frac34$, c'est ajouter $\frac34$}\\
+A &= \dfrac{5}{12}+\dfrac{3\fois{3}}{4\fois{3}} &&\justif{$12$ est un multiple de $4$}\\
+A &= \dfrac{5}{12}+\dfrac{9}{12} &&\\
+A &= \dfrac{14}{12} &&\\
+A &= \dfrac{7\times\barre{2}}{6\times\barre{2}} &&\justif{on simplifie par $2$}\\
+A &= \res{\dfrac{7}{6}} &&
 \end{calculs}
-\rem{Dans $D$, le produit d'abord : $\frac57\times\frac{7}{10}=\frac{5}{10}=\frac12$.}
+\begin{calculs}
+B &= \dfrac{7}{10}-\dfrac{-2}{5} &&\\
+B &= \dfrac{7}{10}+\dfrac{2}{5} &&\justif{soustraire $-\frac25$, c'est ajouter $\frac25$}\\
+B &= \dfrac{7}{10}+\dfrac{2\fois{2}}{5\fois{2}} &&\justif{$10$ est un multiple de $5$}\\
+B &= \dfrac{7}{10}+\dfrac{4}{10} &&\\
+B &= \res{\dfrac{11}{10}} &&
+\end{calculs}
+\begin{calculs}
+C &= -\dfrac{5}{6}+\dfrac{3}{4}-\dfrac{2}{3} &&\justif{$12$ est un multiple de $6$, de $4$ et de $3$}\\
+C &= -\dfrac{5\fois{2}}{6\fois{2}}+\dfrac{3\fois{3}}{4\fois{3}}-\dfrac{2\fois{4}}{3\fois{4}} &&\\
+C &= -\dfrac{10}{12}+\dfrac{9}{12}-\dfrac{8}{12} &&\\
+C &= \dfrac{-10+9-8}{12} &&\justif{de gauche à droite : $-10+9=-1$, puis $-1-8=-9$}\\
+C &= -\dfrac{9}{12} &&\\
+C &= -\dfrac{3\times\barre{3}}{4\times\barre{3}} &&\justif{on simplifie par $3$}\\
+C &= \res{-\dfrac{3}{4}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{9}{14}+\dfrac{5}{7}\times\dfrac{7}{10} &&\justif{le produit passe avant l'addition}\\
+D &= \dfrac{9}{14}+\dfrac{1\times 5\times 7}{7\times 2\times 5} &&\justif{$10=2\times 5$ ; on n'effectue pas le produit}\\
+D &= \dfrac{9}{14}+\dfrac{1\times\barre{5}\times\barre{7}}{\barre{7}\times 2\times\barre{5}} &&\justif{on barre $5$ et $7$ : il reste $\frac12$}\\
+D &= \dfrac{9}{14}+\dfrac{1\fois{7}}{2\fois{7}} &&\justif{$14$ est un multiple de $2$}\\
+D &= \dfrac{9}{14}+\dfrac{7}{14} &&\\
+D &= \dfrac{16}{14} &&\\
+D &= \dfrac{8\times\barre{2}}{7\times\barre{2}} &&\\
+D &= \res{\dfrac{8}{7}} &&
+\end{calculs}
+\rem{Erreur fréquente dans $D$ : additionner $\frac{9}{14}+\frac57$ d'abord. On
+trouverait $\frac{19}{20}$, ce qui est faux : le produit passe avant l'addition.}
 \end{exo}
 
 \begin{exo}[Parenthèses et lettres]
 \begin{calculs}
-A&=\dfrac45\times\dfrac14=\res{\dfrac15}\\
-B&=\dfrac{3}{6}\times\dfrac{3}{4}\\
-B&=\dfrac12\times\dfrac34=\res{\dfrac38}\\
-C&=\dfrac{9x}{12}-\dfrac{2(x-2)}{12}\\
-C&=\dfrac{9x-2x+4}{12}=\res{\dfrac{7x+4}{12}}\\
-D&=\dfrac{3\times 8\times x\times x}{4\times 9}=\res{\dfrac{2x^{2}}{3}}
+A &= \dfrac{4}{5}\left(\dfrac{1}{2}-\dfrac{1}{4}\right) &&\justif{un nombre collé à une parenthèse : c'est un produit}\\
+A &= \dfrac{4}{5}\times\left(\dfrac{1\fois{2}}{2\fois{2}}-\dfrac{1}{4}\right) &&\justif{la parenthèse d'abord}\\
+A &= \dfrac{4}{5}\times\left(\dfrac{2}{4}-\dfrac{1}{4}\right) &&\\
+A &= \dfrac{4}{5}\times\dfrac{1}{4} &&\\
+A &= \dfrac{\barre{4}\times 1}{5\times\barre{4}} &&\justif{on barre le $4$}\\
+A &= \res{\dfrac{1}{5}} &&
 \end{calculs}
-\rem{Dans $C$ : $-2\times(-2)=+4$.}
+\begin{calculs}
+B &= \left(\dfrac{2}{3}-\dfrac{1}{6}\right)\times\left(\dfrac{1}{4}+\dfrac{1}{2}\right) &&\justif{chaque parenthèse à part}\\
+B &= \left(\dfrac{2\fois{2}}{3\fois{2}}-\dfrac{1}{6}\right)\times\left(\dfrac{1}{4}+\dfrac{1\fois{2}}{2\fois{2}}\right) &&\\
+B &= \left(\dfrac{4}{6}-\dfrac{1}{6}\right)\times\left(\dfrac{1}{4}+\dfrac{2}{4}\right) &&\\
+B &= \dfrac{3}{6}\times\dfrac{3}{4} &&\\
+B &= \dfrac{\barre{3}\times 3}{2\times\barre{3}\times 4} &&\justif{$6=2\times 3$ ; on barre un $3$}\\
+B &= \res{\dfrac{3}{8}} &&
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{3x}{4}-\dfrac{x-2}{6} &&\justif{$12$ est un multiple de $4$ et de $6$}\\
+C &= \dfrac{3x\fois{3}}{4\fois{3}}-\dfrac{(x-2)\fois{2}}{6\fois{2}} &&\justif{tout le numérateur $x-2$ est multiplié : parenthèses}\\
+C &= \dfrac{9x}{12}-\dfrac{2x-4}{12} &&\justif{$(x-2)\times 2=2x-4$}\\
+C &= \dfrac{9x-(2x-4)}{12} &&\justif{le moins porte sur tout le numérateur}\\
+C &= \dfrac{9x-2x+4}{12} &&\justif{$-(2x-4)=-2x+4$}\\
+C &= \res{\dfrac{7x+4}{12}} &&
+\end{calculs}
+\rem{Erreur fréquente : écrire $9x-2x-4$. Contrôle avec $x=2$ : $\frac{6}{4}-\frac{0}{6}=\frac32$
+et $\frac{14+4}{12}=\frac{18}{12}=\frac32$.}
+\begin{calculs}
+D &= \dfrac{3x}{4}\times\dfrac{8}{9}x &&\justif{un produit : pas de dénominateur commun}\\
+D &= \dfrac{3x}{4}\times\dfrac{8x}{9} &&\justif{$\frac89x=\frac{8x}{9}$}\\
+D &= \dfrac{3\times x\times 2\times 4\times x}{4\times 3\times 3} &&\justif{$8=2\times 4$ et $9=3\times 3$}\\
+D &= \dfrac{\barre{3}\times x\times 2\times\barre{4}\times x}{\barre{4}\times\barre{3}\times 3} &&\\
+D &= \res{\dfrac{2x^{2}}{3}} &&\justif{$x\times x=x^{2}$}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Fractions de fractions]
+\explique{Le grand trait de fraction est une division : $\dfrac{\;\frac{a}{b}\;}{\;\frac{c}{d}\;}=\dfrac{a}{b}\div\dfrac{c}{d}$.
+On multiplie donc la fraction du haut par l'inverse de celle du bas.}{propriété 6 du
+cours}
 \begin{calculs}
-A&=\dfrac34\times\dfrac65=\dfrac{18}{20}\\
-A&=\res{\dfrac{9}{10}}\\
-B&=\dfrac{6}{35}\times\dfrac{14}{9}=\dfrac{2\times 3\times 2\times 7}{5\times 7\times 3\times 3}\\
-B&=\res{\dfrac{4}{15}}\\
-C&=\dfrac74\times\dfrac{1}{-14}=\res{-\dfrac18}
+A &= \dfrac{\;\dfrac{3}{4}\;}{\;\dfrac{5}{6}\;} &&\justif{on recopie}\\
+A &= \dfrac{3}{4}\times\dfrac{6}{5} &&\justif{on multiplie par l'inverse de $\frac56$}\\
+A &= \dfrac{3\times 2\times 3}{2\times 2\times 5} &&\justif{$6=2\times 3$ et $4=2\times 2$}\\
+A &= \dfrac{3\times\barre{2}\times 3}{\barre{2}\times 2\times 5} &&\\
+A &= \res{\dfrac{9}{10}} &&
 \end{calculs}
-Pour $D$, numérateur et dénominateur à part :
 \begin{calculs}
-2-\dfrac35&=\dfrac{10}{5}-\dfrac35=\dfrac75\\
-\dfrac34-\dfrac25&=\dfrac{15}{20}-\dfrac{8}{20}=\dfrac{7}{20}\\
-D&=\dfrac75\times\dfrac{20}{7}=\res{4}
+B &= \dfrac{\;\dfrac{6}{-35}\;}{\;\dfrac{-9}{14}\;} &&\justif{deux signes moins : le résultat est positif}\\
+B &= \dfrac{6}{35}\times\dfrac{14}{9} &&\justif{on multiplie par l'inverse de $\frac{9}{14}$}\\
+B &= \dfrac{2\times 3\times 2\times 7}{5\times 7\times 3\times 3} &&\justif{$6=2\times 3$ ; $14=2\times 7$ ; $35=5\times 7$ ; $9=3\times 3$}\\
+B &= \dfrac{2\times\barre{3}\times 2\times\barre{7}}{5\times\barre{7}\times\barre{3}\times 3} &&\\
+B &= \res{\dfrac{4}{15}} &&
 \end{calculs}
+\begin{calculs}
+C &= \dfrac{\;\dfrac{7}{4}\;}{-14} &&\justif{un seul signe moins : le résultat est négatif}\\
+C &= -\dfrac{7}{4}\times\dfrac{1}{14} &&\justif{diviser par $14$, c'est multiplier par $\frac{1}{14}$}\\
+C &= -\dfrac{\barre{7}\times 1}{4\times 2\times\barre{7}} &&\justif{$14=2\times 7$}\\
+C &= \res{-\dfrac{1}{8}} &&
+\end{calculs}
+\explique{Pour $D$, le numérateur et le dénominateur sont des calculs : on les calcule à
+part, puis on divise.}{le grand trait joue le rôle de parenthèses}
+\begin{calculs}
+2-\dfrac{3}{5} &= \dfrac{2\fois{5}}{1\fois{5}}-\dfrac{3}{5} &&\justif{le numérateur}\\
+2-\dfrac{3}{5} &= \dfrac{10}{5}-\dfrac{3}{5} &&\\
+2-\dfrac{3}{5} &= \dfrac{7}{5} &&
+\end{calculs}
+\begin{calculs}
+\dfrac{3}{4}-\dfrac{2}{5} &= \dfrac{3\fois{5}}{4\fois{5}}-\dfrac{2\fois{4}}{5\fois{4}} &&\justif{le dénominateur ; dénominateur commun $20$}\\
+\dfrac{3}{4}-\dfrac{2}{5} &= \dfrac{15}{20}-\dfrac{8}{20} &&\\
+\dfrac{3}{4}-\dfrac{2}{5} &= \dfrac{7}{20} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{7}{5}\div\dfrac{7}{20} &&\justif{on divise les deux résultats}\\
+D &= \dfrac{7}{5}\times\dfrac{20}{7} &&\\
+D &= \dfrac{\barre{7}\times 4\times\barre{5}}{\barre{5}\times\barre{7}} &&\justif{$20=4\times 5$}\\
+D &= \res{4} &&
+\end{calculs}
+\rem{Dans $D$, on ne barre pas les $5$ ni les $3$ des petites fractions : ce sont des
+sommes, pas des produits.}
 \end{exo}
 
 \partie{Produit en croix}
 
 \begin{exo}[Justifier le produit en croix]
-1) Les deux fractions sont égales, et leurs dénominateurs $4$ et $2$ ne sont pas nuls :
-d'après le produit en croix, $2\times(3x-1)=4\times(x+3)$.
-
-\smallskip
-2)
+\cas{1)}
+\explique{Les fractions $\dfrac{3x-1}{4}$ et $\dfrac{x+3}{2}$ sont égales et leurs
+dénominateurs $4$ et $2$ ne sont pas nuls. D'après le produit en croix,
+$(3x-1)\times 2=4\times(x+3)$, c'est-à-dire $2\times(3x-1)=4\times(x+3)$.}{si
+$\frac{a}{b}=\frac{c}{d}$ avec $b\ne 0$ et $d\ne 0$, alors $a\times d=b\times c$}
+\explique{On peut aussi le voir directement : on multiplie les deux membres par
+$4\times 2=8$. À gauche, $8\times\dfrac{3x-1}{4}=2\times(3x-1)$ ; à droite,
+$8\times\dfrac{x+3}{2}=4\times(x+3)$.}{c'est pour cela que le produit en croix
+\og marche\fg}
+\cas{2)}
 \begin{calculs}
-6x-2&=4x+12\\
-6x-4x&=12+2\\
-2x&=14\\
-x&=\res{7}
+2\times(3x-1) &= 4\times(x+3) &&\justif{on part de l'égalité du 1)}\\
+6x-2 &= 4x+12 &&\justif{on développe les deux membres}\\
+6x-4x &= 12+2 &&\justif{les $x$ à gauche, les nombres à droite}\\
+2x &= 14 &&\\
+x &= 7 &&\justif{on divise par $2$}
 \end{calculs}
-\rem{Vérification : $\frac{20}{4}=5$ et $\frac{10}{2}=5$.}
+\explique{Vérification : $\dfrac{3\times 7-1}{4}=\dfrac{20}{4}=5$ et
+$\dfrac{7+3}{2}=\dfrac{10}{2}=5$.}{on remplace $x$ par $7$ dans chaque membre}
+\explique{Les deux membres sont égaux : le nombre $x$ vaut \res{$7$}.}{}
 \end{exo}
 
 \begin{exo}[Premières équations]
-\textbf{a)}
+\explique{Chaque équation est une égalité de deux fractions : le produit en croix fait
+disparaître les dénominateurs.}{parenthèses autour de chaque numérateur qui est une
+somme}
+\cas{a)}
 \begin{calculs}
-3x&=20\\
-x&=\res{\dfrac{20}{3}}
+\dfrac{x}{4} &= \dfrac{5}{3} &&\justif{on recopie l'équation}\\
+3\times x &= 4\times 5 &&\justif{produit en croix}\\
+3x &= 20 &&\\
+x &= \dfrac{20}{3} &&\justif{on divise par $3$ ; la fraction reste telle quelle}
 \end{calculs}
-\textbf{b)}
+\explique{La solution est \res{$\dfrac{20}{3}$}.}{on ne l'arrondit pas : $20\div 3$ ne
+tombe pas juste}
+\cas{b)}
 \begin{calculs}
-5(4-x)&=3(x+2)\\
-20-5x&=3x+6\\
-14&=8x\\
-x&=\dfrac{14}{8}=\res{\dfrac74}
+\dfrac{4-x}{3} &= \dfrac{x+2}{5} &&\\
+5(4-x) &= 3(x+2) &&\justif{produit en croix}\\
+20-5x &= 3x+6 &&\justif{on développe}\\
+20-6 &= 3x+5x &&\justif{les $x$ du côté où il y en a le plus}\\
+14 &= 8x &&\\
+x &= \dfrac{14}{8} &&\justif{on divise par $8$}\\
+x &= \dfrac{7}{4} &&\justif{on simplifie par $2$}
 \end{calculs}
-\textbf{c)}
+\explique{La solution est \res{$\dfrac{7}{4}$}.}{contrôle : les deux membres valent
+$\frac34$}
+\cas{c)}
 \begin{calculs}
-6(2+x)&=-3\times 5\\
-12+6x&=-15\\
-6x&=-27\\
-x&=-\dfrac{27}{6}=\res{-\dfrac92}
+\dfrac{2+x}{-3} &= \dfrac{5}{6} &&\\
+6(2+x) &= -3\times 5 &&\justif{le $-3$ garde son signe}\\
+12+6x &= -15 &&\\
+6x &= -27 &&\justif{on retire $12$ aux deux membres}\\
+x &= -\dfrac{27}{6} &&\\
+x &= -\dfrac{9}{2} &&\justif{on simplifie par $3$}
 \end{calculs}
-\textbf{d)}
+\explique{La solution est \res{$-\dfrac{9}{2}$}.}{contrôle : $2-\frac92=-\frac52$ et
+$-\frac52\div(-3)=\frac56$}
+\cas{d)}
 \begin{calculs}
--2(2x-1)&=3(x+4)\\
--4x+2&=3x+12\\
--10&=7x\\
-x&=\res{-\dfrac{10}{7}}
+\dfrac{2x-1}{3} &= \dfrac{x+4}{-2} &&\\
+-2(2x-1) &= 3(x+4) &&\justif{le $-2$ garde son signe}\\
+-4x+2 &= 3x+12 &&\justif{$-2\times(-1)=+2$}\\
+2-12 &= 3x+4x &&\\
+-10 &= 7x &&\\
+x &= -\dfrac{10}{7} &&\justif{on divise par $7$}
 \end{calculs}
-\rem{Un dénominateur négatif garde son signe dans le produit en croix.}
+\explique{La solution est \res{$-\dfrac{10}{7}$}.}{contrôle : les deux membres valent
+$-\frac97$}
+\rem{Erreur fréquente : oublier les parenthèses, $5\times 4-x$ au lieu de $5(4-x)$. Le
+facteur multiplie tout le numérateur.}
 \end{exo}
 
 \begin{exo}[S'entraîner]
-\textbf{a)} $8x=15$, donc $x=\res{\dfrac{15}{8}}$.\par
-\textbf{b)} $9x=24$, donc $x=\dfrac{24}{9}=\res{\dfrac83}$.\par
-\textbf{c)}
+\cas{a)}
 \begin{calculs}
-4(x+2)&=5(2x-3)\\
-4x+8&=10x-15\\
-23&=6x\\
-x&=\res{\dfrac{23}{6}}
+\dfrac{x}{5} &= \dfrac{3}{8} &&\\
+8x &= 5\times 3 &&\justif{produit en croix}\\
+8x &= 15 &&\\
+x &= \dfrac{15}{8} &&
 \end{calculs}
-\textbf{d)}
+\explique{Vérification : $\dfrac{15}{8}\div 5=\dfrac{15}{40}=\dfrac{3}{8}$. La solution
+est \res{$\dfrac{15}{8}$}.}{diviser par $5$, c'est multiplier par $\frac15$}
+\cas{b)}
 \begin{calculs}
-4(2x+1)&=3(3x-2)\\
-8x+4&=9x-6\\
-x&=\res{10}
+\dfrac{4}{9} &= \dfrac{x}{6} &&\justif{l'inconnue peut être à droite}\\
+4\times 6 &= 9x &&\justif{produit en croix}\\
+24 &= 9x &&\\
+x &= \dfrac{24}{9} &&\\
+x &= \dfrac{8}{3} &&\justif{on simplifie par $3$}
 \end{calculs}
-\rem{Vérification de d) : $\frac{21}{3}=7$ et $\frac{28}{4}=7$.}
+\explique{Vérification : $\dfrac{8}{3}\div 6=\dfrac{8}{18}=\dfrac{4}{9}$. La solution
+est \res{$\dfrac{8}{3}$}.}{}
+\cas{c)}
+\begin{calculs}
+\dfrac{x+2}{5} &= \dfrac{2x-3}{4} &&\\
+4(x+2) &= 5(2x-3) &&\justif{produit en croix}\\
+4x+8 &= 10x-15 &&\justif{on développe}\\
+8+15 &= 10x-4x &&\justif{les $x$ à droite, où il y en a le plus}\\
+23 &= 6x &&\\
+x &= \dfrac{23}{6} &&
+\end{calculs}
+\explique{Vérification : $x+2=\dfrac{35}{6}$, donc $\dfrac{x+2}{5}=\dfrac{7}{6}$ ;
+$2x-3=\dfrac{14}{3}$, donc $\dfrac{2x-3}{4}=\dfrac{14}{12}=\dfrac{7}{6}$. La solution
+est \res{$\dfrac{23}{6}$}.}{$2x=\frac{23}{3}$ et $\frac{23}{3}-\frac93=\frac{14}{3}$}
+\cas{d)}
+\begin{calculs}
+\dfrac{2x+1}{3} &= \dfrac{3x-2}{4} &&\\
+4(2x+1) &= 3(3x-2) &&\\
+8x+4 &= 9x-6 &&\\
+4+6 &= 9x-8x &&\\
+x &= 10 &&
+\end{calculs}
+\explique{Vérification : $\dfrac{21}{3}=7$ et $\dfrac{28}{4}=7$. La solution est
+\res{$10$}.}{}
 \end{exo}
 
 \begin{exo}[Plusieurs fractions (1)]
-\textbf{a)} ($\times 5$)
+\explique{Un membre contient une \emph{somme} de fractions : le produit en croix ne
+s'applique pas. On multiplie chaque terme des deux membres par un dénominateur
+commun.}{y compris les termes sans fraction}
+\cas{a)}
 \begin{calculs}
-5x+x&=90\\
-x&=\res{15}
+x+\dfrac{x}{5} &= 18 &&\justif{on recopie ; dénominateur commun $5$}\\
+5\times x+5\times\dfrac{x}{5} &= 5\times 18 &&\justif{chaque terme $\times 5$, $x$ compris}\\
+5x+x &= 90 &&\justif{$5\times\frac{x}{5}=x$}\\
+6x &= 90 &&\\
+x &= 15 &&\justif{$90\div 6=15$}
 \end{calculs}
-\textbf{b)} ($\times 12$)
+\explique{Vérification : $15+\dfrac{15}{5}=15+3=18$. La solution est \res{$15$}.}{}
+\cas{b)}
 \begin{calculs}
-4x-3x&=60\\
-x&=\res{60}
+\dfrac{x}{3}-\dfrac{x}{4} &= 5 &&\justif{dénominateur commun $12$}\\
+12\times\dfrac{x}{3}-12\times\dfrac{x}{4} &= 12\times 5 &&\justif{chaque terme $\times 12$}\\
+4x-3x &= 60 &&\justif{$12\div 3=4$ et $12\div 4=3$}\\
+x &= 60 &&
 \end{calculs}
-\textbf{c)} ($\times 15$)
+\explique{Vérification : $\dfrac{60}{3}-\dfrac{60}{4}=20-15=5$. La solution est
+\res{$60$}.}{}
+\cas{c)}
 \begin{calculs}
-5t-3(t+1)&=15\\
-2t-3&=15\\
-t&=\res{9}
+\dfrac{t}{3}-\dfrac{t+1}{5} &= 1 &&\justif{dénominateur commun $15$}\\
+5t-3(t+1) &= 15 &&\justif{chaque terme $\times 15$ ; parenthèses à cause du moins}\\
+5t-3t-3 &= 15 &&\justif{$-3\times(t+1)=-3t-3$}\\
+2t &= 18 &&\justif{on ajoute $3$}\\
+t &= 9 &&
 \end{calculs}
-\textbf{d)} ($\times 6$)
+\explique{Vérification : $\dfrac{9}{3}-\dfrac{10}{5}=3-2=1$. La solution est
+\res{$9$}.}{}
+\cas{d)}
 \begin{calculs}
-3(3t-1)+2(t-2)&=12t\\
-11t-7&=12t\\
-t&=\res{-7}
+\dfrac{3t-1}{2}+\dfrac{t-2}{3} &= 2t &&\justif{dénominateur commun $6$}\\
+3(3t-1)+2(t-2) &= 12t &&\justif{chaque terme $\times 6$ : $6\div 2=3$ et $6\div 3=2$}\\
+9t-3+2t-4 &= 12t &&\justif{on développe}\\
+11t-7 &= 12t &&\\
+-7 &= 12t-11t &&\justif{les $t$ à droite, où il y en a le plus}\\
+t &= -7 &&
 \end{calculs}
-\rem{Chaque terme est multiplié, y compris celui sans fraction ($x$ dans a), $1$ dans
-c), $2t$ dans d)).}
+\explique{Vérification : $\dfrac{-22}{2}+\dfrac{-9}{3}=-11-3=-14$ et
+$2\times(-7)=-14$. La solution est \res{$-7$}.}{}
+\rem{Erreur fréquente : oublier de multiplier le terme sans fraction ($18$ en a), $1$ en
+c), $2t$ en d)). L'égalité n'est conservée que si l'on multiplie tout.}
 \end{exo}
 
 \begin{exo}[Plusieurs fractions (2)]
-\textbf{a)} ($\times 12$)
+\cas{a)}
 \begin{calculs}
-6y+9y&=4y-264\\
-11y&=-264\\
-y&=\res{-24}
+\dfrac{y}{2}+\dfrac{3y}{4} &= \dfrac{y}{3}-22 &&\justif{$12$ est un multiple de $2$, de $4$ et de $3$}\\
+6y+9y &= 4y-264 &&\justif{chaque terme $\times 12$ ; $12\times 22=264$}\\
+15y &= 4y-264 &&\\
+11y &= -264 &&\justif{on retire $4y$}\\
+y &= -24 &&\justif{$264\div 11=24$}
 \end{calculs}
-\textbf{b)} ($\times 12$)
+\explique{Vérification : $\dfrac{-24}{2}+\dfrac{-72}{4}=-12-18=-30$ et
+$\dfrac{-24}{3}-22=-8-22=-30$. La solution est \res{$-24$}.}{}
+\cas{b)}
 \begin{calculs}
-4(y+7)&=6(y-1)-3y\\
-4y+28&=3y-6\\
-y&=\res{-34}
+\dfrac{y+7}{3} &= \dfrac{y-1}{2}-\dfrac{y}{4} &&\justif{une somme à droite : pas de produit en croix ; $\times 12$}\\
+4(y+7) &= 6(y-1)-3y &&\justif{$12\div 3=4$ ; $12\div 2=6$ ; $12\div 4=3$}\\
+4y+28 &= 6y-6-3y &&\\
+4y+28 &= 3y-6 &&\\
+4y-3y &= -6-28 &&\\
+y &= -34 &&
 \end{calculs}
-\textbf{c)} ($\times 36$)
+\explique{Vérification : $\dfrac{-27}{3}=-9$ et
+$\dfrac{-35}{2}-\dfrac{-34}{4}=-17{,}5+8{,}5=-9$. La solution est \res{$-34$}.}{}
+\cas{c)}
 \begin{calculs}
-12(z-4)-3(z-6)&=4(2z-15)\\
-9z-30&=8z-60\\
-z&=\res{-30}
+\dfrac{z-4}{3}-\dfrac{z-6}{12} &= \dfrac{2z-15}{9} &&\justif{table de $12$ : $12$ ; $24$ ; $36$, multiple de $3$ et de $9$}\\
+12(z-4)-3(z-6) &= 4(2z-15) &&\justif{chaque terme $\times 36$ : $36\div 3=12$ ; $36\div 12=3$ ; $36\div 9=4$}\\
+12z-48-3z+18 &= 8z-60 &&\justif{attention : $-3\times(-6)=+18$}\\
+9z-30 &= 8z-60 &&\\
+9z-8z &= -60+30 &&\\
+z &= -30 &&
 \end{calculs}
-\textbf{d)} ($\times 10$)
+\explique{Vérification : $\dfrac{-34}{3}-\dfrac{-36}{12}=-\dfrac{34}{3}+3=-\dfrac{25}{3}$
+et $\dfrac{-75}{9}=-\dfrac{25}{3}$. La solution est \res{$-30$}.}{$3=\frac93$}
+\cas{d)}
 \begin{calculs}
-2(3z+2)-5(2z-1)&=3-6z\\
--4z+9&=3-6z\\
-2z&=-6\\
-z&=\res{-3}
+\dfrac{3z+2}{5}-\dfrac{2z-1}{2} &= \dfrac{3-6z}{10} &&\justif{dénominateur commun $10$}\\
+2(3z+2)-5(2z-1) &= 3-6z &&\justif{chaque terme $\times 10$}\\
+6z+4-10z+5 &= 3-6z &&\justif{attention : $-5\times(-1)=+5$}\\
+-4z+9 &= 3-6z &&\\
+-4z+6z &= 3-9 &&\justif{on ajoute $6z$ et on retire $9$}\\
+2z &= -6 &&\\
+z &= -3 &&
 \end{calculs}
-\rem{Attention aux signes devant les parenthèses : $-3\times(-6)=+18$,
-$-5\times(-1)=+5$.}
+\explique{Vérification : $\dfrac{-7}{5}-\dfrac{-7}{2}=\dfrac{-14+35}{10}=\dfrac{21}{10}$
+et $\dfrac{3+18}{10}=\dfrac{21}{10}$. La solution est \res{$-3$}.}{}
+\rem{Le piège de cet exercice est le signe moins devant une fraction : après la
+multiplication, il porte sur tout le numérateur, d'où les parenthèses.}
 \end{exo}
 
 \partie{Fractions et problèmes}
 
 \begin{exo}[Fraction d'une quantité]
-\deux{a) $\dfrac34\times 120=\res{90\text{ €}}$}{b) $\dfrac25\times 35=\res{14\text{ kg}}$}
-\deux{c) $\dfrac56\times 90=\res{75\text{ min}}$}{d) $\dfrac23\times\dfrac34\times 48=\res{24}$}
-\rem{En d), on peut calculer $\frac23\times\frac34=\frac12$ d'abord.}
+\explique{Prendre les $\dfrac{a}{b}$ \emph{de} quelque chose, c'est multiplier par
+$\dfrac{a}{b}$.}{en pratique : on divise par $b$, puis on multiplie par $a$}
+\cas{a)}
+\begin{calculs}
+\text{montant} &= \dfrac{3}{4}\times 120 &&\justif{les trois quarts de $120$}\\
+\text{montant} &= 3\times 30 &&\justif{un quart de $120$ : $120\div 4=30$}\\
+\text{montant} &= 90 &&
+\end{calculs}
+\explique{Les trois quarts de $120$~€ font \res{$90$~€}.}{}
+\cas{b)}
+\begin{calculs}
+\text{masse} &= \dfrac{2}{5}\times 35 &&\\
+\text{masse} &= 2\times 7 &&\justif{un cinquième de $35$ : $35\div 5=7$}\\
+\text{masse} &= 14 &&
+\end{calculs}
+\explique{Les deux cinquièmes de $35$~kg font \res{$14$~kg}.}{}
+\cas{c)}
+\begin{calculs}
+\text{durée} &= \dfrac{5}{6}\times 90 &&\\
+\text{durée} &= 5\times 15 &&\justif{un sixième de $90$ : $90\div 6=15$}\\
+\text{durée} &= 75 &&
+\end{calculs}
+\explique{Les cinq sixièmes de $90$~min font \res{$75$~min}.}{soit $1$~h $15$~min}
+\cas{d)}
+\begin{calculs}
+\text{élèves} &= \dfrac{2}{3}\times\dfrac{3}{4}\times 48 &&\justif{\og les $\frac23$ des $\frac34$ de\fg{} : deux multiplications}\\
+\text{élèves} &= \dfrac{1\times\barre{2}\times\barre{3}}{\barre{3}\times\barre{2}\times 2}\times 48 &&\justif{$4=2\times 2$}\\
+\text{élèves} &= \dfrac{1}{2}\times 48 &&\justif{les $\frac23$ des $\frac34$, c'est la moitié}\\
+\text{élèves} &= 24 &&
+\end{calculs}
+\explique{Cela fait \res{$24$ élèves}.}{contrôle : les $\frac34$ de $48$ font $36$, et
+les $\frac23$ de $36$ font $24$}
 \end{exo}
 
 \begin{exo}[Le festival]
 \begin{calculs}
-\text{prévente}&=\dfrac56\times 1~200=1~000\\
-\text{restantes}&=1~200-1~000=200\\
-\text{sur place}&=\dfrac34\times 200=150\\
-\text{invendues}&=200-150=\res{50}
+\text{places en prévente} &= \dfrac{5}{6}\times 1~200 &&\justif{les $\frac56$ des places}\\
+\text{places en prévente} &= 5\times 200 &&\justif{$1~200\div 6=200$}\\
+\text{places en prévente} &= 1~000 &&
 \end{calculs}
-\rem{Les $\frac34$ portent sur les places restantes, pas sur les $1~200$.}
+\begin{calculs}
+\text{places restantes} &= 1~200-1~000 &&\\
+\text{places restantes} &= 200 &&
+\end{calculs}
+\begin{calculs}
+\text{places vendues sur place} &= \dfrac{3}{4}\times 200 &&\justif{les $\frac34$ des places \emph{restantes}, pas du total}\\
+\text{places vendues sur place} &= 3\times 50 &&\justif{$200\div 4=50$}\\
+\text{places vendues sur place} &= 150 &&
+\end{calculs}
+\begin{calculs}
+\text{places invendues} &= 200-150 &&\\
+\text{places invendues} &= 50 &&
+\end{calculs}
+\explique{Il reste \res{$50$ places invendues}.}{contrôle : $1~000+150+50=1~200$}
+\rem{Erreur fréquente : prendre les $\frac34$ des $1~200$ places, soit $900$ places ; on
+dépasserait le nombre de places disponibles. Une fraction \og du reste\fg{} porte sur ce
+qui reste.}
 \end{exo}
 
 \begin{exo}[L'anniversaire de Lina]
-a)
+\cas{a)}
+\explique{La question demande une fraction : on raisonne en fractions de la somme
+reçue, qui vaut $1$ (la somme entière).}{les euros viennent au b)}
 \begin{calculs}
-\text{reste}&=1-\dfrac13=\dfrac23\\
-\text{vêtements}&=\dfrac38\times\dfrac23=\dfrac14\\
-\text{reste final}&=\dfrac23-\dfrac14=\res{\dfrac{5}{12}}
+\text{reste après les jeux} &= 1-\dfrac{1}{3} &&\justif{elle dépense le tiers}\\
+\text{reste après les jeux} &= \dfrac{3}{3}-\dfrac{1}{3} &&\justif{$1=\frac33$}\\
+\text{reste après les jeux} &= \dfrac{2}{3} &&
 \end{calculs}
-b) Jeux vidéo : $\frac13\times 120=\res{40\text{ €}}$ ; vêtements :
-$\frac14\times 120=\res{30\text{ €}}$ ; il reste $\frac{5}{12}\times 120=\res{50\text{ €}}$.
-\rem{Vérification : $40+30+50=120$.}
+\begin{calculs}
+\text{vêtements} &= \dfrac{3}{8}\times\dfrac{2}{3} &&\justif{les $\frac38$ de ce qui reste}\\
+\text{vêtements} &= \dfrac{1\times\barre{3}\times\barre{2}}{\barre{2}\times 4\times\barre{3}} &&\justif{$8=2\times 4$}\\
+\text{vêtements} &= \dfrac{1}{4} &&\justif{les vêtements font le quart de la somme reçue}
+\end{calculs}
+\begin{calculs}
+\text{reste final} &= \dfrac{2}{3}-\dfrac{1}{4} &&\\
+\text{reste final} &= \dfrac{2\fois{4}}{3\fois{4}}-\dfrac{1\fois{3}}{4\fois{3}} &&\justif{dénominateur commun $12$}\\
+\text{reste final} &= \dfrac{8}{12}-\dfrac{3}{12} &&\\
+\text{reste final} &= \dfrac{5}{12} &&
+\end{calculs}
+\explique{Il reste à Lina les \res{$\dfrac{5}{12}$} de la somme reçue.}{}
+\cas{b)}
+\begin{calculs}
+\text{jeux vidéo} &= \dfrac{1}{3}\times 120 = 40 &&\justif{le tiers de $120$}\\
+\text{vêtements} &= \dfrac{1}{4}\times 120 = 30 &&\justif{le quart de la somme reçue, trouvé au a)}\\
+\text{reste} &= \dfrac{5}{12}\times 120 &&\\
+\text{reste} &= 5\times 10 = 50 &&\justif{$120\div 12=10$}
+\end{calculs}
+\explique{Lina a dépensé \res{$40$~€} en jeux vidéo et \res{$30$~€} en vêtements ; il
+lui reste \res{$50$~€}.}{contrôle : $40+30+50=120$}
+\rem{Autre méthode, en euros : il reste $120-40=80$~€ après les jeux ; les $\frac38$ de
+$80$~€ font $30$~€ ; il reste $80-30=50$~€.}
 \end{exo}
 
 \begin{exo}[Le budget d'une association]
-a)
+\cas{a)}
 \begin{calculs}
-\text{reste}&=1-\dfrac25=\dfrac35\\
-\text{sorties}&=\dfrac34\times\dfrac35=\res{\dfrac{9}{20}}\\
-\text{frais}&=\dfrac35-\dfrac{9}{20}=\dfrac{12}{20}-\dfrac{9}{20}\\
-\text{frais}&=\res{\dfrac{3}{20}}
+\text{reste après le matériel} &= 1-\dfrac{2}{5} &&\justif{le budget entier vaut $1$}\\
+\text{reste après le matériel} &= \dfrac{5}{5}-\dfrac{2}{5} &&\\
+\text{reste après le matériel} &= \dfrac{3}{5} &&
 \end{calculs}
-b) Les $\frac{3}{20}$ du budget font $270$~€, donc $\frac{1}{20}$ fait $90$~€ et le
-budget est de $20\times 90=\res{1~800\text{ €}}$.
-\rem{Vérification : matériel $720$~€, sorties $810$~€, frais $270$~€ ; total $1~800$~€.}
+\begin{calculs}
+\text{sorties} &= \dfrac{3}{4}\times\dfrac{3}{5} &&\justif{les $\frac34$ de ce qui reste}\\
+\text{sorties} &= \dfrac{9}{20} &&\justif{rien à simplifier}
+\end{calculs}
+\begin{calculs}
+\text{frais} &= \dfrac{3}{5}-\dfrac{9}{20} &&\justif{ce qui reste après les sorties}\\
+\text{frais} &= \dfrac{3\fois{4}}{5\fois{4}}-\dfrac{9}{20} &&\justif{$20$ est un multiple de $5$}\\
+\text{frais} &= \dfrac{12}{20}-\dfrac{9}{20} &&\\
+\text{frais} &= \dfrac{3}{20} &&
+\end{calculs}
+\explique{Les sorties représentent les \res{$\dfrac{9}{20}$} du budget, les frais de
+fonctionnement les \res{$\dfrac{3}{20}$}.}{contrôle : $\frac25=\frac{8}{20}$ et
+$\frac{8}{20}+\frac{9}{20}+\frac{3}{20}=1$}
+\cas{b)}
+\explique{Les frais de fonctionnement, soit les $\dfrac{3}{20}$ du budget, font
+$270$~€. On remonte au budget entier en passant par un vingtième.}{le total est
+l'inconnue}
+\begin{calculs}
+\text{un vingtième du budget} &= 270\div 3 &&\justif{trois vingtièmes font $270$~€}\\
+\text{un vingtième du budget} &= 90 &&
+\end{calculs}
+\begin{calculs}
+\text{budget} &= 20\times 90 &&\justif{vingt vingtièmes : le budget entier}\\
+\text{budget} &= 1~800 &&
+\end{calculs}
+\explique{Le budget annuel de l'association est de \res{$1~800$~€}.}{contrôle :
+matériel $720$~€, sorties $810$~€, frais $270$~€ ; total $1~800$~€}
+\rem{Erreur fréquente : calculer $\frac{3}{20}\times 270$. Ici, $270$~€ n'est pas le
+total mais une partie : on cherche le nombre dont les $\frac{3}{20}$ font $270$.}
 \end{exo}
 
 \partie{Puissances}
 
 \begin{exo}[Calculer des puissances]
-\deux{$A=\res{81}$}{$B=\res{16}$}
-\deux{$C=\dfrac{1}{4^{2}}=\res{\dfrac{1}{16}}$}{$D=\dfrac{1}{(-3)^{3}}=\res{-\dfrac{1}{27}}$}
-\deux{$E=\res{0{,}001}$}{$F=\res{1}$}
-\deux{$G=\res{\dfrac17}$}{$H=\res{-9}$}
-\rem{$4^{-2}$ n'est pas négatif : c'est l'inverse de $4^{2}$.}
+\begin{calculs}
+A &= 3^{4} &&\justif{$4$ facteurs égaux à $3$}\\
+A &= 3\times 3\times 3\times 3 &&\\
+A &= \res{81} &&\justif{$9\times 9=81$}
+\end{calculs}
+\begin{calculs}
+B &= (-2)^{4} &&\\
+B &= (-2)\times(-2)\times(-2)\times(-2) &&\\
+B &= \res{16} &&\justif{exposant pair : le résultat est positif}
+\end{calculs}
+\begin{calculs}
+C &= 4^{-2} &&\justif{$a^{-n}=\frac{1}{a^{n}}$}\\
+C &= \dfrac{1}{4^{2}} &&\\
+C &= \res{\dfrac{1}{16}} &&
+\end{calculs}
+\begin{calculs}
+D &= (-3)^{-3} &&\\
+D &= \dfrac{1}{(-3)^{3}} &&\justif{on garde les parenthèses}\\
+D &= \dfrac{1}{-27} &&\justif{exposant impair : $(-3)^{3}$ est négatif}\\
+D &= \res{-\dfrac{1}{27}} &&
+\end{calculs}
+\begin{calculs}
+E &= 10^{-3} &&\\
+E &= \dfrac{1}{10^{3}} &&\\
+E &= \dfrac{1}{1~000} &&\\
+E &= \res{0{,}001} &&
+\end{calculs}
+\begin{calculs}
+F &= 25^{0} &&\\
+F &= \res{1} &&\justif{$a^{0}=1$ pour tout nombre $a$ non nul}
+\end{calculs}
+\begin{calculs}
+G &= 7^{-1} &&\\
+G &= \res{\dfrac{1}{7}} &&\justif{$a^{-1}$ est l'inverse de $a$}
+\end{calculs}
+\begin{calculs}
+H &= (-9)^{1} &&\\
+H &= \res{-9} &&\justif{un seul facteur}
+\end{calculs}
+\rem{Erreur fréquente : croire que $4^{-2}$ est négatif, ou le confondre avec
+$4\times(-2)$. Un exposant négatif indique une division : $4^{-2}$ est l'inverse de
+$4^{2}$.}
 \end{exo}
 
 \begin{exo}[Écriture décimale]
-\deux{$A=\res{0{,}001}$}{$B=\res{0{,}000~000~1}$}
-\deux{$C=\res{100~000}$}{$D=\res{1}$}
+\begin{calculs}
+A &= 10^{-3} &&\justif{$3$ chiffres après la virgule, le dernier est $1$}\\
+A &= \res{0{,}001} &&
+\end{calculs}
+\begin{calculs}
+B &= 10^{-7} &&\justif{$7$ chiffres après la virgule : six zéros puis $1$}\\
+B &= \res{0{,}000~000~1} &&
+\end{calculs}
+\begin{calculs}
+C &= 10^{5} &&\justif{$1$ suivi de $5$ zéros}\\
+C &= \res{100~000} &&
+\end{calculs}
+\begin{calculs}
+D &= 10^{0} &&\\
+D &= \res{1} &&\justif{$a^{0}=1$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $7$ zéros après la virgule pour $10^{-7}$. L'exposant
+compte les chiffres après la virgule, $1$ compris.}
 \end{exo}
 
 \begin{exo}[Puissances et priorités]
-\deux{$A=2+25=\res{27}$}{$B=7^{2}=\res{49}$}
-\deux{$C=2-25=\res{-23}$}{$D=27+16=\res{43}$}
-\deux{$E=16\times 9=\res{144}$}{$F=-27+32=\res{5}$}
-\rem{$A$ et $B$ : la parenthèse change tout.}
+\begin{calculs}
+A &= 2+5^{2} &&\justif{la puissance avant l'addition}\\
+A &= 2+25 &&\\
+A &= \res{27} &&
+\end{calculs}
+\begin{calculs}
+B &= (2+5)^{2} &&\justif{la parenthèse d'abord}\\
+B &= 7^{2} &&\\
+B &= \res{49} &&
+\end{calculs}
+\rem{$A$ et $B$ ne diffèrent que par les parenthèses, et les résultats changent. De même,
+$(2+5)^{2}$ ne vaut pas $2^{2}+5^{2}=29$.}
+\begin{calculs}
+C &= 2-5^{2} &&\justif{le carré ne porte que sur $5$}\\
+C &= 2-25 &&\\
+C &= \res{-23} &&
+\end{calculs}
+\begin{calculs}
+D &= 3^{3}+2^{4} &&\\
+D &= 27+16 &&\justif{$3\times 3\times 3=27$ et $2\times 2\times 2\times 2=16$}\\
+D &= \res{43} &&
+\end{calculs}
+\begin{calculs}
+E &= 2^{4}\times 3^{2} &&\justif{les puissances d'abord}\\
+E &= 16\times 9 &&\\
+E &= \res{144} &&
+\end{calculs}
+\begin{calculs}
+F &= (-3)^{3}+2^{5} &&\\
+F &= -27+32 &&\justif{exposant impair : $(-3)^{3}=-27$ ; $2^{5}=32$}\\
+F &= \res{5} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Puissances et priorités (suite)]
 \begin{calculs}
-A&=(27-16)\times 100=\res{1~100}\\
-B&=9+16\times 0{,}1=\res{10{,}6}\\
-C&=16-100\div 25=\res{12}\\
-D&=100\times(-1)-(-32)\\
-D&=-100+32=\res{-68}
+A &= (3^{3}-4^{2})\times 10^{2} &&\justif{dans la parenthèse, les puissances d'abord}\\
+A &= (27-16)\times 10^{2} &&\\
+A &= 11\times 100 &&\justif{$10^{2}=100$}\\
+A &= \res{1~100} &&
+\end{calculs}
+\begin{calculs}
+B &= (-3)^{2}+4^{2}\times 10^{-1} &&\\
+B &= 9+16\times 0{,}1 &&\justif{exposant pair : $(-3)^{2}=9$ ; $10^{-1}=0{,}1$}\\
+B &= 9+1{,}6 &&\justif{le produit avant l'addition}\\
+B &= \res{10{,}6} &&
+\end{calculs}
+\begin{calculs}
+C &= (-4)^{2}-10^{2}\div 5^{2} &&\justif{les puissances d'abord}\\
+C &= 16-100\div 25 &&\\
+C &= 16-4 &&\justif{la division avant la soustraction}\\
+C &= \res{12} &&
+\end{calculs}
+\begin{calculs}
+D &= 10^{2}\times(-1)^{7}-(-2)^{5} &&\\
+D &= 100\times(-1)-(-32) &&\justif{exposants impairs : $(-1)^{7}=-1$ et $(-2)^{5}=-32$}\\
+D &= -100+32 &&\justif{soustraire $-32$, c'est ajouter $32$}\\
+D &= \res{-68} &&
 \end{calculs}
 \end{exo}
 
 \begin{exo}[Des calculs plus longs]
 \begin{calculs}
-A&=20-9\times(-2)^{2}\\
-A&=20-36=\res{-16}\\
-B&=\dfrac{125-80}{81-54}=\dfrac{45}{27}\\
-B&=\res{\dfrac53}\\
-C&=\dfrac{42-32}{40-36}=\dfrac{10}{4}\\
-C&=\res{\dfrac52}
+A &= 20-3^{2}\times(6-2\times 4)^{2} &&\justif{dans la parenthèse, le produit d'abord}\\
+A &= 20-3^{2}\times(6-8)^{2} &&\\
+A &= 20-3^{2}\times(-2)^{2} &&\\
+A &= 20-9\times 4 &&\justif{les puissances : $(-2)^{2}=4$}\\
+A &= 20-36 &&\justif{le produit avant la soustraction}\\
+A &= \res{-16} &&
 \end{calculs}
+\begin{calculs}
+B &= \dfrac{5^{3}-5\times 4^{2}}{3^{4}-6\times 3^{2}} &&\justif{numérateur et dénominateur à part, comme entre parenthèses}\\
+B &= \dfrac{125-5\times 16}{81-6\times 9} &&\justif{les puissances}\\
+B &= \dfrac{125-80}{81-54} &&\justif{les produits}\\
+B &= \dfrac{45}{27} &&\\
+B &= \dfrac{5\times\barre{9}}{3\times\barre{9}} &&\justif{on simplifie par $9$}\\
+B &= \res{\dfrac{5}{3}} &&
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{6\times 7-2^{5}}{5\times 2^{3}-(3\times 2)^{2}} &&\\
+C &= \dfrac{42-32}{5\times 8-6^{2}} &&\justif{$2^{5}=32$ ; $2^{3}=8$ ; la parenthèse : $3\times 2=6$}\\
+C &= \dfrac{10}{40-36} &&\\
+C &= \dfrac{10}{4} &&\\
+C &= \dfrac{5\times\barre{2}}{2\times\barre{2}} &&\\
+C &= \res{\dfrac{5}{2}} &&
+\end{calculs}
+\rem{Erreur fréquente dans $B$ : barrer les $5$ ou les $3$ de part et d'autre du trait.
+Le numérateur et le dénominateur sont des différences : on les calcule avant de
+simplifier.}
 \end{exo}
 
 \begin{exo}[Des résultats en fraction]
 \begin{calculs}
-A&=\dfrac19+\dfrac{2}{10}=\dfrac{5}{45}+\dfrac{9}{45}\\
-A&=\res{\dfrac{14}{45}}\\
-B&=\dfrac{9+8}{\frac{1}{10}}=17\times 10=\res{170}\\
-C&=\dfrac14-\dfrac{1}{10}=\dfrac{5}{20}-\dfrac{2}{20}\\
-C&=\res{\dfrac{3}{20}}\\
-D&=16\times\dfrac{1}{16}=\res{1}
+A &= (-3)^{-2}+2\times 10^{-1} &&\\
+A &= \dfrac{1}{(-3)^{2}}+2\times\dfrac{1}{10} &&\justif{$a^{-n}=\frac{1}{a^{n}}$}\\
+A &= \dfrac{1}{9}+\dfrac{2}{10} &&\\
+A &= \dfrac{1}{9}+\dfrac{1}{5} &&\justif{$\frac{2}{10}=\frac15$}\\
+A &= \dfrac{1\fois{5}}{9\fois{5}}+\dfrac{1\fois{9}}{5\fois{9}} &&\justif{dénominateur commun $45$}\\
+A &= \dfrac{5}{45}+\dfrac{9}{45} &&\\
+A &= \res{\dfrac{14}{45}} &&
+\end{calculs}
+\begin{calculs}
+B &= \dfrac{3^{2}-(-2)^{3}}{10^{-1}} &&\\
+B &= \dfrac{9-(-8)}{10^{-1}} &&\justif{exposant impair : $(-2)^{3}=-8$}\\
+B &= \dfrac{17}{10^{-1}} &&\justif{$9+8=17$}\\
+B &= 17\div\dfrac{1}{10} &&\justif{$10^{-1}=\frac{1}{10}$}\\
+B &= 17\times 10 &&\justif{diviser par $\frac{1}{10}$, c'est multiplier par $10$}\\
+B &= \res{170} &&
+\end{calculs}
+\begin{calculs}
+C &= 2^{-2}-10^{-1} &&\\
+C &= \dfrac{1}{4}-\dfrac{1}{10} &&\\
+C &= \dfrac{1\fois{5}}{4\fois{5}}-\dfrac{1\fois{2}}{10\fois{2}} &&\justif{dénominateur commun $20$}\\
+C &= \dfrac{5}{20}-\dfrac{2}{20} &&\\
+C &= \res{\dfrac{3}{20}} &&
+\end{calculs}
+\begin{calculs}
+D &= (2^{5}-4^{2})\times(-4)^{-2} &&\\
+D &= (32-16)\times\dfrac{1}{(-4)^{2}} &&\\
+D &= 16\times\dfrac{1}{16} &&\justif{exposant pair : $(-4)^{2}=16$}\\
+D &= \res{1} &&
 \end{calculs}
 \end{exo}
 
 \partie{Règles de calcul sur les puissances}
 
 \begin{exo}[Produits]
-\deux{$A=3^{4+7}=\res{3^{11}}$}{$B=\res{(-5)^{8}}$}
-\deux{$C=7^{2-6}=\res{7^{-4}}$}{$D=x^{3+1+5}=\res{x^{9}}$}
-\rem{$x=x^{1}$ : on n'oublie pas cet exposant.}
+\explique{Les puissances ont la même base : on ajoute les exposants.}{$a^{n}\times
+a^{p}=a^{n+p}$ : on compte $n+p$ facteurs}
+\begin{calculs}
+A &= 3^{4}\times 3^{7} &&\\
+A &= 3^{4+7} &&\\
+A &= \res{3^{11}} &&
+\end{calculs}
+\begin{calculs}
+B &= (-5)^{3}\times(-5)^{5} &&\justif{la base est $-5$ : on garde les parenthèses}\\
+B &= (-5)^{3+5} &&\\
+B &= \res{(-5)^{8}} &&
+\end{calculs}
+\begin{calculs}
+C &= 7^{2}\times 7^{-6} &&\\
+C &= 7^{2+(-6)} &&\\
+C &= \res{7^{-4}} &&
+\end{calculs}
+\begin{calculs}
+D &= x^{3}\times x\times x^{5} &&\justif{$x=x^{1}$}\\
+D &= x^{3+1+5} &&\\
+D &= \res{x^{9}} &&
+\end{calculs}
+\rem{Erreur fréquente : multiplier les exposants ($3^{28}$) ou les bases ($9^{11}$).
+$3^{4}\times 3^{7}$ compte $4+7$ facteurs égaux à $3$.}
 \end{exo}
 
 \begin{exo}[Quotients]
-\deux{$A=\res{6^{5}}$}{$B=\res{(-3)^{3}}$}
-\deux{$C=\res{y^{3}}$}{$D=2^{-4-3}=\res{2^{-7}}$}
-\deux{$E=4^{-1-6}=\res{4^{-7}}$}{$F=x^{-5-(-9)}=\res{x^{4}}$}
+\explique{Les puissances ont la même base : on soustrait l'exposant du bas à celui du
+haut.}{$\dfrac{a^{n}}{a^{p}}=a^{n-p}$}
+\begin{calculs}
+A &= \dfrac{6^{9}}{6^{4}} &&\\
+A &= 6^{9-4} &&\\
+A &= \res{6^{5}} &&
+\end{calculs}
+\begin{calculs}
+B &= \dfrac{(-3)^{8}}{(-3)^{5}} &&\\
+B &= (-3)^{8-5} &&\\
+B &= \res{(-3)^{3}} &&
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{y^{12}}{y^{9}} &&\\
+C &= y^{12-9} &&\\
+C &= \res{y^{3}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{2^{-4}}{2^{3}} &&\\
+D &= 2^{-4-3} &&\\
+D &= \res{2^{-7}} &&
+\end{calculs}
+\begin{calculs}
+E &= \dfrac{4^{-1}}{4^{6}} &&\\
+E &= 4^{-1-6} &&\\
+E &= \res{4^{-7}} &&
+\end{calculs}
+\begin{calculs}
+F &= \dfrac{x^{-5}}{x^{-9}} &&\\
+F &= x^{-5-(-9)} &&\justif{parenthèses autour de l'exposant négatif}\\
+F &= x^{-5+9} &&\justif{soustraire $-9$, c'est ajouter $9$}\\
+F &= \res{x^{4}} &&
+\end{calculs}
+\rem{L'exposant du bas est toujours soustrait, même quand il est négatif ($F$).}
 \end{exo}
 
 \begin{exo}[Produits et quotients]
-\deux{$A=\dfrac{3^{14}}{3^{11}}=\res{3^{3}}$}{$B=\dfrac{x^{5}}{x^{11}}=\res{x^{-6}}$}
-\deux{$C=\dfrac{2^{11}}{2^{1}}=\res{2^{10}}$}{$D=\dfrac{y^{10}}{y^{7}}=\res{y^{3}}$}
+\explique{On regroupe d'abord le numérateur et le dénominateur, chacun en une seule
+puissance, puis on divise.}{d'abord $a^{n}\times a^{p}$, puis $\frac{a^{n}}{a^{p}}$}
+\begin{calculs}
+A &= \dfrac{3^{10}\times 3^{4}}{3^{5}\times 3^{6}} &&\\
+A &= \dfrac{3^{14}}{3^{11}} &&\justif{$10+4=14$ et $5+6=11$}\\
+A &= 3^{14-11} &&\\
+A &= \res{3^{3}} &&\justif{soit $27$, non demandé}
+\end{calculs}
+\begin{calculs}
+B &= \dfrac{x^{5}}{x^{7}\times x^{4}} &&\\
+B &= \dfrac{x^{5}}{x^{11}} &&\\
+B &= x^{5-11} &&\\
+B &= \res{x^{-6}} &&
+\end{calculs}
+\begin{calculs}
+C &= \dfrac{2^{4}\times 2^{7}}{2^{3}\times 2^{-2}} &&\\
+C &= \dfrac{2^{11}}{2^{1}} &&\justif{$3+(-2)=1$}\\
+C &= 2^{11-1} &&\\
+C &= \res{2^{10}} &&
+\end{calculs}
+\begin{calculs}
+D &= \dfrac{(y^{2})^{5}}{y^{3}\times y^{4}} &&\\
+D &= \dfrac{y^{10}}{y^{7}} &&\justif{$(a^{n})^{p}=a^{n\times p}$ : $2\times 5=10$}\\
+D &= y^{10-7} &&\\
+D &= \res{y^{3}} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Toutes les règles]
+\explique{On développe d'abord les puissances de puissances et les puissances de
+produits, puis on traite chaque base à part.}{même démarche que la méthode 12 du cours}
 \begin{calculs}
-A&=\dfrac{5^{-4}\times 3^{1}}{5^{-3}\times 3^{-3}}\\
-A&=5^{-4-(-3)}\times 3^{1-(-3)}\\
-A&=5^{-1}\times 3^{4}=\res{\dfrac{81}{5}}\\
-B&=\dfrac{3^{0}\times 10^{7}}{3^{-3}\times 10^{-8}}\\
-B&=3^{3}\times 10^{15}=\res{2{,}7\times 10^{16}}
+A &= \dfrac{(5^{2})^{-2}\times 3}{(5\times 3)^{-3}} &&\justif{on recopie}\\
+A &= \dfrac{5^{-4}\times 3^{1}}{5^{-3}\times 3^{-3}} &&\justif{$(5^{2})^{-2}=5^{2\times(-2)}$ ; $(5\times 3)^{-3}=5^{-3}\times 3^{-3}$}\\
+A &= 5^{-4-(-3)}\times 3^{1-(-3)} &&\justif{chaque base à part ; on soustrait les exposants}\\
+A &= 5^{-1}\times 3^{4} &&\justif{$-4+3=-1$ et $1+3=4$}\\
+A &= \dfrac{1}{5}\times 81 &&\\
+A &= \res{\dfrac{81}{5}} &&
 \end{calculs}
-\rem{$3^{4}\times 3^{-4}=3^{0}=1$ ; $(10^{2})^{-4}=10^{-8}$.}
+\begin{calculs}
+B &= \dfrac{3^{4}\times 10^{5}\times 3^{-4}\times 10^{2}}{(3^{3})^{-1}\times(10^{2})^{-4}} &&\\
+B &= \dfrac{3^{4}\times 3^{-4}\times 10^{5}\times 10^{2}}{3^{-3}\times 10^{-8}} &&\justif{on regroupe les bases ; $3\times(-1)=-3$ et $2\times(-4)=-8$}\\
+B &= \dfrac{3^{0}\times 10^{7}}{3^{-3}\times 10^{-8}} &&\justif{$4+(-4)=0$ et $5+2=7$}\\
+B &= 3^{0-(-3)}\times 10^{7-(-8)} &&\\
+B &= 3^{3}\times 10^{15} &&\\
+B &= \res{27\times 10^{15}} &&
+\end{calculs}
+\rem{$3^{4}\times 3^{-4}=3^{0}=1$ : les deux facteurs se compensent. Attention aux
+exposants négatifs du dénominateur, qu'on soustrait entre parenthèses.}
 \end{exo}
 
 \begin{exo}[Calculer et simplifier]
 \begin{calculs}
-A&=\dfrac{2^{12}\times 10^{-7}}{2^{10}\times 10^{-5}}\\
-A&=2^{2}\times 10^{-2}=\res{4\times 10^{-2}}\\
-B&=\dfrac{b^{2}\times b^{-9}}{b^{8}}=\dfrac{b^{-7}}{b^{8}}\\
-B&=\res{b^{-15}}
+A &= \dfrac{2^{6}\times 10^{-3}\times(2^{3})^{2}\times(10^{-1})^{4}}{2^{10}\times 10^{-5}} &&\\
+A &= \dfrac{2^{6}\times 2^{6}\times 10^{-3}\times 10^{-4}}{2^{10}\times 10^{-5}} &&\justif{$(2^{3})^{2}=2^{6}$ et $(10^{-1})^{4}=10^{-4}$}\\
+A &= \dfrac{2^{12}\times 10^{-7}}{2^{10}\times 10^{-5}} &&\justif{on ajoute les exposants}\\
+A &= 2^{12-10}\times 10^{-7-(-5)} &&\justif{chaque base à part}\\
+A &= 2^{2}\times 10^{-2} &&\\
+A &= \res{4\times 10^{-2}} &&\justif{soit $0{,}04$}
+\end{calculs}
+\begin{calculs}
+B &= \dfrac{b^{2}\times(b^{-3})^{3}}{(b^{4})^{2}} &&\\
+B &= \dfrac{b^{2}\times b^{-9}}{b^{8}} &&\justif{$-3\times 3=-9$ et $4\times 2=8$}\\
+B &= \dfrac{b^{-7}}{b^{8}} &&\justif{$2+(-9)=-7$}\\
+B &= b^{-7-8} &&\\
+B &= \res{b^{-15}} &&
 \end{calculs}
 \end{exo}
 
 \partie{Notation scientifique}
 
 \begin{exo}[Entiers et décimaux]
-\deux{$A=\res{2{,}74\times 10^{5}}$}{$B=\res{6{,}1\times 10^{-4}}$}
-\deux{$C=\res{3{,}82\times 10^{7}}$}{$D=\res{2{,}9\times 10^{-7}}$}
-\deux{$E=\res{5{,}63\times 10^{4}}$}{$F=\res{7{,}308\times 10^{-5}}$}
+\explique{On place la virgule après le premier chiffre non nul, puis on compte de combien
+de rangs elle s'est déplacée.}{elle recule : exposant positif ; elle avance : exposant
+négatif}
+\begin{calculs}
+A &= 274~000 &&\justif{la virgule recule de $5$ rangs : $2{,}74$}\\
+A &= \res{2{,}74\times 10^{5}} &&
+\end{calculs}
+\begin{calculs}
+B &= 0{,}000~61 &&\justif{la virgule avance de $4$ rangs : $6{,}1$}\\
+B &= \res{6{,}1\times 10^{-4}} &&
+\end{calculs}
+\begin{calculs}
+C &= 38~200~000 &&\justif{la virgule recule de $7$ rangs}\\
+C &= \res{3{,}82\times 10^{7}} &&
+\end{calculs}
+\begin{calculs}
+D &= 0{,}000~000~29 &&\justif{la virgule avance de $7$ rangs}\\
+D &= \res{2{,}9\times 10^{-7}} &&
+\end{calculs}
+\begin{calculs}
+E &= 56~300 &&\justif{la virgule recule de $4$ rangs}\\
+E &= \res{5{,}63\times 10^{4}} &&
+\end{calculs}
+\begin{calculs}
+F &= 0{,}000~073~08 &&\justif{la virgule avance de $5$ rangs ; le $0$ entre $3$ et $8$ reste}\\
+F &= \res{7{,}308\times 10^{-5}} &&
+\end{calculs}
+\rem{Contrôle rapide : un nombre plus grand que $10$ a un exposant positif, un nombre
+compris entre $0$ et $1$ un exposant négatif.}
 \end{exo}
 
 \begin{exo}[Produits par une puissance de 10]
+\explique{On écrit le premier facteur en notation scientifique, puis on regroupe les
+puissances de $10$.}{$10^{n}\times 10^{p}=10^{n+p}$}
 \begin{calculs}
-A&=5{,}32\times 10^{2}\times 10^{3}=\res{5{,}32\times 10^{5}}\\
-B&=6{,}4\times 10^{1}\times 10^{-5}=\res{6{,}4\times 10^{-4}}\\
-C&=4{,}817\times 10^{2}\times 10^{8}=\res{4{,}817\times 10^{10}}\\
-D&=3{,}6\times 10^{-2}\times 10^{-4}=\res{3{,}6\times 10^{-6}}
+A &= 532\times 10^{3} &&\justif{$532$ a trois chiffres avant la virgule : ce n'est pas fini}\\
+A &= 5{,}32\times 10^{2}\times 10^{3} &&\justif{$532=5{,}32\times 10^{2}$}\\
+A &= 5{,}32\times 10^{2+3} &&\\
+A &= \res{5{,}32\times 10^{5}} &&
+\end{calculs}
+\begin{calculs}
+B &= 64\times 10^{-5} &&\\
+B &= 6{,}4\times 10^{1}\times 10^{-5} &&\justif{$64=6{,}4\times 10^{1}$}\\
+B &= 6{,}4\times 10^{1+(-5)} &&\\
+B &= \res{6{,}4\times 10^{-4}} &&
+\end{calculs}
+\begin{calculs}
+C &= 481{,}7\times 10^{8} &&\\
+C &= 4{,}817\times 10^{2}\times 10^{8} &&\justif{$481{,}7=4{,}817\times 10^{2}$}\\
+C &= \res{4{,}817\times 10^{10}} &&\justif{$2+8=10$}
+\end{calculs}
+\begin{calculs}
+D &= 0{,}036\times 10^{-4} &&\\
+D &= 3{,}6\times 10^{-2}\times 10^{-4} &&\justif{$0{,}036=3{,}6\times 10^{-2}$ : la virgule avance de $2$ rangs}\\
+D &= 3{,}6\times 10^{-2+(-4)} &&\\
+D &= \res{3{,}6\times 10^{-6}} &&
 \end{calculs}
 \end{exo}
 
 \begin{exo}[Un calcul jusqu'au bout]
 \begin{calculs}
-E&=\dfrac{35\times 6}{14}\times\dfrac{10^{-2}\times 10^{9}}{10^{5}}\\
-E&=15\times 10^{2}\\
-E&=\res{1{,}5\times 10^{3}}
+E &= \dfrac{35\times 10^{-2}\times 6\times(10^{3})^{3}}{14\times 10^{5}} &&\justif{on recopie}\\
+E &= \dfrac{35\times 6}{14}\times\dfrac{10^{-2}\times 10^{9}}{10^{5}} &&\justif{les nombres d'un côté, les puissances de $10$ de l'autre}\\
+E &= \dfrac{5\times\barre{7}\times\barre{2}\times 3}{\barre{2}\times\barre{7}}\times 10^{-2+9-5} &&\justif{$35=5\times 7$ ; $6=2\times 3$ ; $14=2\times 7$ ; $(10^{3})^{3}=10^{9}$}\\
+E &= 15\times 10^{2} &&\justif{$5\times 3=15$ et $-2+9-5=2$}\\
+E &= 1{,}5\times 10^{1}\times 10^{2} &&\justif{$15=1{,}5\times 10^{1}$}\\
+E &= \res{1{,}5\times 10^{3}} &&
 \end{calculs}
-\rem{$15\times 10^{2}$ n'est pas en notation scientifique : un seul chiffre avant la
-virgule.}
+\rem{$15\times 10^{2}$ est juste mais n'est pas la notation scientifique : il faut un seul
+chiffre non nul avant la virgule.}
 \end{exo}
 
 \begin{exo}[Deux expressions]
-1)
+\cas{1)}
 \begin{calculs}
-A&=\dfrac{3}{12}\times 10^{1500-1502}\\
-A&=0{,}25\times 10^{-2}=\res{2{,}5\times 10^{-3}}
+A &= \dfrac{3\times 10^{1500}}{12\times 10^{1502}} &&\justif{on recopie}\\
+A &= \dfrac{3}{12}\times\dfrac{10^{1500}}{10^{1502}} &&\justif{les nombres d'un côté, les puissances de $10$ de l'autre}\\
+A &= \dfrac{1}{4}\times 10^{1500-1502} &&\justif{$\frac{3}{12}=\frac14$}\\
+A &= 0{,}25\times 10^{-2} &&\justif{$\frac14=0{,}25$}\\
+A &= 2{,}5\times 10^{-1}\times 10^{-2} &&\justif{$0{,}25=2{,}5\times 10^{-1}$}\\
+A &= \res{2{,}5\times 10^{-3}} &&
 \end{calculs}
-2)
+\rem{Impossible d'écrire $10^{1500}$ en entier : ce sont les règles sur les puissances qui
+font le calcul.}
+\cas{2)}
+\explique{Le numérateur de $B$ est une \emph{différence} : les règles sur les puissances
+ne s'appliquent pas. On revient à l'écriture décimale.}{$10^{2}=100$ et
+$10^{-1}=0{,}1$}
 \begin{calculs}
-B&=\dfrac{640-34}{101}=\dfrac{606}{101}\\
-B&=\res{6}
+B &= \dfrac{6{,}4\times 10^{2}-340\times 10^{-1}}{1{,}01\times 10^{2}} &&\\
+B &= \dfrac{640-34}{101} &&\justif{$6{,}4\times 100=640$ ; $340\times 0{,}1=34$ ; $1{,}01\times 100=101$}\\
+B &= \dfrac{606}{101} &&\\
+B &= 6 &&\justif{$101\times 6=606$}
 \end{calculs}
-$B$ est bien un nombre entier.
+\explique{$B=6$ : \res{$B$ est un nombre entier}.}{}
 \end{exo}
 
 \begin{exo}[La lumière de la Lune]
-1) $384~000\text{ km}=384~000~000\text{ m}=\res{3{,}84\times 10^{8}\text{ m}}$.
-
-\smallskip
-2)
+\cas{1)}
 \begin{calculs}
-t&=\dfrac{3{,}84\times 10^{8}}{3\times 10^{8}}\\
-t&=\res{1{,}28\text{ s}}
+d &= 384~000\text{ km} &&\\
+d &= 384~000~000\text{ m} &&\justif{$1$~km $=1~000$~m : trois zéros de plus}\\
+d &= \res{3{,}84\times 10^{8}\text{ m}} &&\justif{la virgule recule de $8$ rangs}
 \end{calculs}
-\rem{Le temps est la distance divisée par la distance parcourue en une seconde.}
+\cas{2)}
+\explique{En une seconde, la lumière parcourt $3\times 10^{8}$~m. Le temps, en secondes,
+est le nombre de fois que cette longueur tient dans la distance Terre-Lune.}{temps $=$
+distance $\div$ distance parcourue en une seconde}
+\begin{calculs}
+t &= \dfrac{3{,}84\times 10^{8}}{3\times 10^{8}} &&\justif{les deux distances en mètres}\\
+t &= \dfrac{3{,}84}{3}\times\dfrac{10^{8}}{10^{8}} &&\justif{les nombres d'un côté, les puissances de $10$ de l'autre}\\
+t &= 1{,}28\times 1 &&\justif{$\frac{10^{8}}{10^{8}}=10^{0}=1$}\\
+t &= 1{,}28 &&
+\end{calculs}
+\explique{La lumière renvoyée par la Lune met environ \res{$1{,}28$~s} pour nous
+parvenir.}{un peu plus d'une seconde}
 \end{exo}
 
 \end{document}

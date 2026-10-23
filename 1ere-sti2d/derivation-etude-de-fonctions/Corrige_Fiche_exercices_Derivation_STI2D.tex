@@ -1,9 +1,10 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\iflycee@unecolonne
+\lycee@unecolonnetrue
 \newif\iflycee@palatino
 \lycee@palatinotrue
 
@@ -188,471 +189,1186 @@
   title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
 \newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
 
-\RequirePackage{cuted}
-\geometry{top=1.6cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
 
-\newcommand{\entetecorrige}[3]{%
-  \begin{strip}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
   \begin{center}
     \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
-        boxrule=1.6pt,arc=3pt,halign=center,top=5pt,bottom=5pt]
-      {\LARGE\bfseries\color{coulPart} #1}\\[3pt]
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
       {\normalsize #2}
     \end{tcolorbox}
-  \end{center}
-  \if\relax\detokenize{#3}\relax\else
-
-  \vspace{2pt}
-  \noindent
-  \begin{tcolorbox}[enhanced,colback=white,colframe=black!35,boxrule=0.5pt,arc=2pt,
-      left=7pt,right=7pt,top=4pt,bottom=4pt]
-  {\small #3}
-  \end{tcolorbox}
-  \vspace{6pt}
-  \fi
-  \end{strip}}
+  \end{center}}
 
 \newcounter{partie}
-\newcommand{\partiebandeau}[1]{%
-  \besoinplace{8\baselineskip}\vspace{6pt}%
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
   \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
-      leftrule=3pt,arc=0pt,left=5pt,right=4pt,top=3pt,bottom=3pt,
-      before skip=4pt,after skip=2pt]
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
     \bfseries\color{coulPart}#1\signet{1}{#1}
   \end{tcolorbox}}
-\newcommand{\partie}[1]{\stepcounter{partie}\partiebandeau{\Roman{partie}) #1}}
-\newcommand{\partiesansnum}[1]{\partiebandeau{#1}}
 
-\newcommand{\res}[1]{%
-  \tcbox[on line,colback=coulPart!7,colframe=coulPart,boxrule=0.5pt,arc=1pt,
-    boxsep=0pt,left=3pt,right=3pt,top=1pt,bottom=2pt]{$#1$}}
-\newcommand{\calc}[1]{\par\smallskip\noindent$\displaystyle #1$\par}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
 \newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
   {\end{aligned}$\par\smallskip}
-\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{coulPart}#1}\par}
-\newcommand{\deux}[2]{\par\noindent\makebox[0.5\linewidth][l]{#1}#2}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
 
-\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=2pt}
-\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=1pt}
-\newlist{reponses}{enumerate}{1}
-\setlist[reponses]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
-
-\setlength{\parskip}{1pt}
-\setlength{\columnsep}{0.6cm}
-\raggedbottom
-\formulesserrees
-\AtBeginDocument{\formulesserrees}
+\setlength{\parskip}{2pt}
 
 \makeatother
 \usepackage{tkz-tab}
-\entete{Chapitre 5 --- Dérivation et étude de fonctions --- Corrigé des exercices}{1\textsuperscript{re} STI2D}
-\clubpenalty=10000
-\widowpenalty=10000
+\entete{Chapitre 5 --- Dérivation et étude de fonctions --- corrigé}{1\textsuperscript{re} STI2D}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\setlength{\parindent}{0pt}
+\tikzset{lecture/.style={coulRep,line width=1pt,-{Stealth[length=2mm]}}}
 
 \begin{document}
 
-\entetecorrige{CORRIGÉ --- DÉRIVATION ET ÉTUDE DE FONCTIONS}
-  {Chapitre 5 : fiche d'exercices --- Première STI2D}
-  {Les résultats sont encadrés ; les remarques en bleu signalent les erreurs
-   fréquentes. Pour dériver, on écrit d'abord $u$, $u'$ (et $v$, $v'$), puis la
-   formule, puis on remplace.}
+\entetefiche{Chapitre 5 --- Dérivation et étude de fonctions}{Première STI2D}
 
 \partie{Fonctions affines et droites}
 
 \begin{exo}[Coefficient directeur]
-\begin{reponses}
-  \item $m=\dfrac{8-2}{3-1}=\res{3}$
-  \item $m=\dfrac{-2-4}{2-(-1)}=\res{-2}$ \quad ($\frac{-6}{3}$)
-  \item $m=\dfrac{-1-(-3)}{4-0}=\res{\dfrac{1}{2}}$ \quad ($\frac{2}{4}$)
-  \item $m=\dfrac{5-5}{1-(-3)}=\res{0}$ : la droite est horizontale.
-\end{reponses}
+\explique{Dans chaque cas, on recopie la formule du coefficient directeur, puis on
+remplace par les coordonnées.}{ce qu'on monte, divisé par ce qu'on avance}
+\cas{a)}
+\begin{calculs}
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &&\justif{on écrit la formule}\\
+m &= \frac{8-2}{3-1} &&\justif{on remplace par les coordonnées}\\
+m &= \frac{6}{2} &&\\
+m &= \res{3} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+m &= \frac{-2-4}{2-(-1)} &&\justif{$2-(-1)=2+1$ : attention aux signes}\\
+m &= \frac{-6}{3} &&\\
+m &= \res{-2} &&\justif{la droite descend}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+m &= \frac{-1-(-3)}{4-0} &&\justif{$-1-(-3)=-1+3$}\\
+m &= \frac{2}{4} &&\\
+m &= \res{\frac{1}{2}} &&\justif{on simplifie par $2$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+m &= \frac{5-5}{1-(-3)} &&\\
+m &= \frac{0}{4} &&\\
+m &= \res{0} &&
+\end{calculs}
+\explique{$A$ et $B$ ont la même ordonnée : la droite $(AB)$ est horizontale.}{on ne
+monte pas}
+\rem{Erreur fréquente : soustraire dans un ordre en haut et dans l'autre en bas. Si l'on
+commence par $B$ au numérateur, on commence aussi par $B$ au dénominateur.}
 \end{exo}
 
 \begin{exo}[Équation d'une droite]
-a) $m=\dfrac{4-1}{2-1}=3$. La droite passe par $A(1\,;1)$ :
+\explique{Comme à la méthode 1 : on calcule le coefficient directeur $m$, puis on trouve
+$p$ avec le point $A$.}{méthode 1}
+\cas{a)}
 \begin{calculs}
-3\times 1+p &= 1\\
-p &= -2
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &&\justif{on écrit la formule}\\
+m &= \frac{4-1}{2-1} &&\justif{on remplace par les coordonnées}\\
+m &= 3 &&
 \end{calculs}
-$\res{y=3x-2}$\par\smallskip
-b) $m=\dfrac{1-5}{1-(-1)}=-2$ ; avec $A$ : $-2\times(-1)+p=5$, donc $p=3$ :
-$\res{y=-2x+3}$\par\smallskip
-c) $m=\dfrac{5-(-3)}{2-(-2)}=2$ ; avec $A$ : $2\times(-2)+p=-3$, donc $p=1$ :
-$\res{y=2x+1}$\par\smallskip
-d) $m=\dfrac{2-0}{6-2}=\dfrac{1}{2}$ ; avec $A$ : $\frac{1}{2}\times 2+p=0$, donc
-$p=-1$ : $\res{y=\frac{1}{2}x-1}$
-\rem{On trouve $m$ d'abord, puis $p$ avec un des deux points.}
+\explique{L'équation est de la forme $y=3x+p$. La droite passe par $A(1\,;1)$ :}{on
+cherche maintenant $p$}\nopagebreak
+\begin{calculs}
+3\times 1+p &= 1 &&\justif{on remplace $x$ par $1$ et $y$ par $1$}\\
+p &= 1-3 &&\\
+p &= -2 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=3x-2}$.}{vérification avec $B$ :
+$3\times 2-2=4$}
+\cas{b)}
+\begin{calculs}
+m &= \frac{1-5}{1-(-1)} &&\justif{attention aux signes}\\
+m &= \frac{-4}{2} &&\\
+m &= -2 &&
+\end{calculs}
+\explique{L'équation est de la forme $y=-2x+p$. La droite passe par $A(-1\,;5)$ :}{}\nopagebreak
+\begin{calculs}
+-2\times(-1)+p &= 5 &&\justif{on remplace $x$ par $-1$ et $y$ par $5$}\\
+2+p &= 5 &&\\
+p &= 3 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=-2x+3}$.}{vérification avec $B$ :
+$-2\times 1+3=1$}
+\cas{c)}
+\begin{calculs}
+m &= \frac{5-(-3)}{2-(-2)} &&\justif{$5+3$ en haut, $2+2$ en bas}\\
+m &= \frac{8}{4} &&\\
+m &= 2 &&
+\end{calculs}
+\explique{L'équation est de la forme $y=2x+p$. La droite passe par $A(-2\,;-3)$ :}{}\nopagebreak
+\begin{calculs}
+2\times(-2)+p &= -3 &&\justif{on remplace $x$ par $-2$ et $y$ par $-3$}\\
+-4+p &= -3 &&\\
+p &= 1 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=2x+1}$.}{vérification avec $B$ :
+$2\times 2+1=5$}
+\cas{d)}
+\begin{calculs}
+m &= \frac{2-0}{6-2} &&\\
+m &= \frac{2}{4} &&\\
+m &= \frac{1}{2} &&\justif{on simplifie par $2$}
+\end{calculs}
+\explique{L'équation est de la forme $y=\frac{1}{2}x+p$. La droite passe par
+$A(2\,;0)$ :}{}\nopagebreak
+\begin{calculs}
+\frac{1}{2}\times 2+p &= 0 &&\justif{on remplace $x$ par $2$ et $y$ par $0$}\\
+1+p &= 0 &&\justif{$\frac{1}{2}\times 2=1$}\\
+p &= -1 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=\frac{1}{2}x-1}$.}{vérification avec
+$B$ : $\frac{1}{2}\times 6-1=2$}
+\rem{Le second point sert de contrôle : ses coordonnées doivent vérifier l'équation
+trouvée.}
 \end{exo}
 
 \begin{exo}[Une fonction affine par deux images]
-1\textdegree) $f(x)=mx+p$ passe par $(2\,;7)$ et $(-1\,;-2)$ :
-$m=\dfrac{7-(-2)}{2-(-1)}=3$.
+\explique{$f(2)=7$ veut dire que la droite qui représente $f$ passe par le point
+$(2\,;7)$ : on se ramène à l'exercice 2.}{une image, c'est un point de la droite}
+\cas{1)}
+\explique{La droite passe par $(2\,;7)$ et $(-1\,;-2)$.}{$f(2)=7$ et $f(-1)=-2$}\nopagebreak
 \begin{calculs}
-3\times 2+p &= 7\\
-p &= 1
+m &= \frac{7-(-2)}{2-(-1)} &&\justif{la formule du coefficient directeur}\\
+m &= \frac{9}{3} &&\\
+m &= 3 &&
 \end{calculs}
-$\res{f(x)=3x+1}$ et $f(10)=30+1=\res{31}$.\par\smallskip
-2\textdegree) $m=\dfrac{0-8}{1-(-3)}=-2$ ; $-2\times 1+p=0$, donc $p=2$ :
-$\res{g(x)=-2x+2}$ et $g(5)=-10+2=\res{-8}$.
+\explique{Donc $f(x)=3x+p$, avec $f(2)=7$ :}{on cherche $p$}\nopagebreak
+\begin{calculs}
+3\times 2+p &= 7 &&\justif{on remplace $x$ par $2$}\\
+6+p &= 7 &&\\
+p &= 1 &&
+\end{calculs}
+\explique{Donc $\res{f(x)=3x+1}$.}{vérification : $f(-1)=-3+1=-2$}\nopagebreak
+\begin{calculs}
+f(10) &= 3\times 10+1 &&\justif{on remplace $x$ par $10$}\\
+f(10) &= \res{31} &&
+\end{calculs}
+\cas{2)}
+\explique{La droite passe par $(-3\,;8)$ et $(1\,;0)$.}{$g(-3)=8$ et $g(1)=0$}\nopagebreak
+\begin{calculs}
+m &= \frac{0-8}{1-(-3)} &&\\
+m &= \frac{-8}{4} &&\\
+m &= -2 &&
+\end{calculs}
+\explique{Donc $g(x)=-2x+p$, avec $g(1)=0$ :}{}\nopagebreak
+\begin{calculs}
+-2\times 1+p &= 0 &&\justif{on remplace $x$ par $1$}\\
+p &= 2 &&
+\end{calculs}
+\explique{Donc $\res{g(x)=-2x+2}$.}{vérification : $g(-3)=6+2=8$}\nopagebreak
+\begin{calculs}
+g(5) &= -2\times 5+2 &&\\
+g(5) &= \res{-8} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Lire des équations]
-On lit $p$ sur l'axe des ordonnées, puis on avance de $1$ et on regarde de combien on
-monte.
-\begin{reponses}
-  \item $(d_{1})$ : $p=-1$, on monte de $2$ : $\res{y=2x-1}$
-  \item $(d_{2})$ : $p=3$, on descend de $1$ : $\res{y=-x+3}$
-  \item $(d_{3})$ : $p=-2$, en avançant de $2$ on monte de $1$ :
-  $\res{y=\frac{1}{2}x-2}$
-\end{reponses}
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Pour chaque droite, on lit $p$ là où elle coupe l'axe des ordonnées (croix), puis on
+part de ce point : on avance et on regarde de combien on monte (flèches vertes).
+
+\smallskip
+$(d_{1})$ : elle coupe l'axe en $-1$, donc $p=-1$ ; on avance de $1$, on monte de $2$,
+donc $m=2$ : $\res{y=2x-1}$.
+
+\smallskip
+$(d_{2})$ : $p=3$ ; on avance de $1$, on descend de $1$, donc $m=-1$ :
+$\res{y=-x+3}$.
+
+\smallskip
+$(d_{3})$ : $p=-2$ ; on avance de $2$, on monte de $1$, donc $m=\frac{1}{2}$ :
+$\res{y=\frac{1}{2}x-2}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.65cm,y=0.65cm]
+  \repere{-3}{-3}{5}{4}
+  \gradx{-2,-1,1,2,3,4} \grady{-2,-1,1,2,3}
+  \begin{scope}
+  \clip (-3,-3) rectangle (5,4);
+  \draw[coulCourbe,line width=1.1pt] (-1,-3)--(2.5,4);
+  \draw[coulCourbeB,line width=1.1pt] (-1,4)--(5,-2);
+  \draw[coulCourbeC,line width=1.1pt] (-2,-3)--(5,0.5);
+  \end{scope}
+  \draw[lecture] (0,-1)--(1,-1);
+  \draw[lecture] (1,-1)--(1,1);
+  \draw[lecture] (0,3)--(1,3);
+  \draw[lecture] (1,3)--(1,2);
+  \draw[lecture] (0,-2)--(2,-2);
+  \draw[lecture] (2,-2)--(2,-1);
+  \path[coulCourbe] (0,-1) node[croix]{};
+  \path[coulCourbeB] (0,3) node[croix]{};
+  \path[coulCourbeC] (0,-2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (1.4,3.6) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize] at (-0.6,2.7) {$(d_{2})$};
+  \node[coulCourbeC,font=\footnotesize] at (4.2,0.8) {$(d_{3})$};
+\end{tikzpicture}
+\end{minipage}
+\rem{Pour $(d_{3})$, avancer de $1$ ne tombe pas sur un nœud du quadrillage : on avance
+de $2$ et on divise ce qu'on monte par $2$.}
 \end{exo}
 
 \partie{Nombre dérivé}
 
 \begin{exo}[Nombre dérivé en $1$]
-a) $f(1)=1+2-1=\res{2}$
+\cas{a)}
 \begin{calculs}
-f(1+h) &= (1+h)^{2}+2(1+h)-1\\
-f(1+h) &= 1+2h+h^{2}+2+2h-1\\
-f(1+h) &= \res{h^{2}+4h+2}
+f(1) &= 1^{2}+2\times 1-1 &&\justif{on remplace $x$ par $1$}\\
+f(1) &= \res{2} &&\\[4pt]
+f(1+h) &= (1+h)^{2}+2(1+h)-1 &&\justif{on remplace $x$ par $(1+h)$}\\
+f(1+h) &= 1+2h+h^{2}+2+2h-1 &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$, puis on développe}\\
+f(1+h) &= \res{h^{2}+4h+2} &&\justif{on réduit}
 \end{calculs}
-b)
+\cas{b)}
 \begin{calculs}
-T(h) &= \frac{h^{2}+4h+2-2}{h}\\
-T(h) &= \frac{\barre{h}\,(h+4)}{\barre{h}}\\
-T(h) &= \res{h+4}
+T(h) &= \frac{f(1+h)-f(1)}{h} &&\justif{la formule, avec $a=1$}\\
+T(h) &= \frac{h^{2}+4h+2-2}{h} &&\justif{on remplace}\\
+T(h) &= \frac{h^{2}+4h}{h} &&\justif{$2-2=0$}\\
+T(h) &= \frac{\barre{h}\,(h+4)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= \res{h+4} &&
 \end{calculs}
-c) Quand $h$ se rapproche de $0$, $h+4$ se rapproche de $4$ : $\res{f'(1)=4}$.
+\cas{c)}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=h+4$ se rapproche de $4$. Donc
+$\res{f'(1)=4}$.}{on remplace $h$ par $0$ dans le résultat simplifié}
+\rem{Contrôle : au numérateur de $T(h)$, les nombres seuls s'annulent toujours ($2-2$) ;
+s'il en reste un, il y a une erreur de calcul.}
 \end{exo}
 
 \begin{exo}[Nombre dérivé en $2$]
-$g(2)=8-6=2$.
+\cas{Résolution}
+\explique{Les deux images d'abord :}{méthode 2}\nopagebreak
 \begin{calculs}
-g(2+h) &= 2(2+h)^{2}-3(2+h)\\
-g(2+h) &= 8+8h+2h^{2}-6-3h\\
-g(2+h) &= 2h^{2}+5h+2\\[3pt]
-T(h) &= \frac{2h^{2}+5h}{h}\\
-T(h) &= 2h+5
+g(2) &= 2\times 2^{2}-3\times 2 &&\justif{on remplace $x$ par $2$}\\
+g(2) &= 8-6 &&\\
+g(2) &= \res{2} &&\\[4pt]
+g(2+h) &= 2(2+h)^{2}-3(2+h) &&\justif{on remplace $x$ par $(2+h)$}\\
+g(2+h) &= 2(4+4h+h^{2})-6-3h &&\justif{on développe d'abord le carré}\\
+g(2+h) &= 8+8h+2h^{2}-6-3h &&\justif{puis on multiplie par $2$}\\
+g(2+h) &= \res{2h^{2}+5h+2} &&\justif{on réduit}
 \end{calculs}
-$\res{g'(2)=5}$
-\rem{$2(2+h)^{2}=2(4+4h+h^{2})$ : on développe le carré avant de multiplier par $2$.}
+\explique{Puis le taux de variation :}{}\nopagebreak
+\begin{calculs}
+T(h) &= \frac{g(2+h)-g(2)}{h} &&\justif{la formule, avec $a=2$}\\
+T(h) &= \frac{2h^{2}+5h+2-2}{h} &&\justif{on remplace}\\
+T(h) &= \frac{\barre{h}\,(2h+5)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= \res{2h+5} &&
+\end{calculs}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=2h+5$ se rapproche de $5$. Donc
+$\res{g'(2)=5}$.}{$2h$ se rapproche de $0$}
+\rem{Erreur fréquente : $2(2+h)^{2}=(4+2h)^{2}$. Le carré passe avant la multiplication
+par $2$ (priorité des puissances).}
 \end{exo}
 
 \begin{exo}[Avec un coefficient négatif]
-$k(1)=-1+5=4$.
+\cas{Résolution}
 \begin{calculs}
-k(1+h) &= -(1+h)^{2}+5(1+h)\\
-k(1+h) &= -1-2h-h^{2}+5+5h\\
-k(1+h) &= -h^{2}+3h+4\\[3pt]
-T(h) &= \frac{-h^{2}+3h}{h}\\
-T(h) &= -h+3
+k(1) &= -1^{2}+5\times 1 &&\justif{$-1^{2}=-1$ : le carré porte sur $1$ seulement}\\
+k(1) &= \res{4} &&\\[4pt]
+k(1+h) &= -(1+h)^{2}+5(1+h) &&\justif{on remplace $x$ par $(1+h)$}\\
+k(1+h) &= -(1+2h+h^{2})+5+5h &&\justif{le $-$ porte sur tout le carré}\\
+k(1+h) &= -1-2h-h^{2}+5+5h &&\justif{on enlève les parenthèses : les signes changent}\\
+k(1+h) &= \res{-h^{2}+3h+4} &&\justif{on réduit}
 \end{calculs}
-$\res{k'(1)=3}$
-\rem{$-(1+h)^{2}$ : le signe $-$ porte sur les trois termes du développement.}
+\begin{calculs}
+T(h) &= \frac{k(1+h)-k(1)}{h} &&\justif{la formule, avec $a=1$}\\
+T(h) &= \frac{-h^{2}+3h+4-4}{h} &&\justif{on remplace}\\
+T(h) &= \frac{\barre{h}\,(-h+3)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= \res{-h+3} &&
+\end{calculs}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=-h+3$ se rapproche de $3$. Donc
+$\res{k'(1)=3}$.}{on remplace $h$ par $0$}
+\rem{Erreur fréquente : $-(1+h)^{2}=-1+2h+h^{2}$. Le signe $-$ change les trois termes du
+développement.}
 \end{exo}
 
 \begin{exo}[À la calculatrice]
+\cas{a)}
+\explique{Pour chaque valeur de $h$, on calcule $f(4+h)=(4+h)^{2}$, on retire
+$f(4)=16$, puis on divise par $h$. Détail pour $h=0{,}1$ :}{on peut taper directement
+l'expression de $T(h)$}\nopagebreak
+\begin{calculs}
+T(0{,}1) &= \frac{4{,}1^{2}-16}{0{,}1} &&\justif{$4+0{,}1=4{,}1$}\\
+T(0{,}1) &= \frac{16{,}81-16}{0{,}1} &&\\
+T(0{,}1) &= \frac{0{,}81}{0{,}1} &&\\
+T(0{,}1) &= 8{,}1 &&\justif{diviser par $0{,}1$, c'est multiplier par $10$}
+\end{calculs}
+\explique{De même pour les deux autres valeurs :}{}\nopagebreak
+\begin{calculs}
+T(1) &= \frac{25-16}{1} = 9 &&\justif{$5^{2}=25$}\\
+T(0{,}01) &= \frac{16{,}0801-16}{0{,}01} = 8{,}01 &&\justif{$4{,}01^{2}=16{,}0801$}
+\end{calculs}
 \begin{center}
 \renewcommand{\arraystretch}{1.4}
 \begin{tabular}{|c|c|c|c|}
 \hline
 $h$ & $1$ & $0{,}1$ & $0{,}01$\\
 \hline
-$T(h)$ & $9$ & $8{,}1$ & $8{,}01$\\
+$T(h)$ & $\res{9}$ & $\res{8{,}1}$ & $\res{8{,}01}$\\
 \hline
 \end{tabular}
 \end{center}
-Par exemple $T(0{,}1)=\dfrac{16{,}81-16}{0{,}1}=8{,}1$. Le tableau suggère
-$\res{f'(4)=8}$.
+\cas{b)}
+\explique{Quand $h$ se rapproche de $0$, $T(h)$ se rapproche de $8$ : le tableau
+suggère $\res{f'(4)=8}$.}{$9$, puis $8{,}1$, puis $8{,}01$ : l'écart à $8$ est divisé
+par $10$ à chaque fois}
 \end{exo}
 
 \partie{Tangente à une courbe}
 
 \begin{exo}[Lire des nombres dérivés]
-On part du point, on avance de $1$ et on lit de combien la tangente monte.
-\deux{$f'(-3)=\res{-2}$}{$f'(-1)=\res{0}$ (horizontale)}
-\deux{$f'(1)=\res{2}$}{$f'(4)=\res{-2}$}
+\begin{center}
+\begin{tikzpicture}[x=0.65cm,y=0.65cm]
+  \repere{-4}{-2}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,2) .. controls (-2.333,0.667) and (-1.667,-1) .. (-1,-1)
+           .. controls (-0.333,-1) and (0.333,-0.333) .. (1,1)
+           .. controls (1.667,2.333) and (2.333,3) .. (3,3)
+           .. controls (3.333,3) and (3.667,2.667) .. (4,2);
+  \draw[coulCourbeB,thick] (-4,4)--(-1.7,-0.6);
+  \draw[coulCourbeB,thick] (-2,-1)--(0,-1);
+  \draw[coulCourbeB,thick] (0,-1)--(2.5,4);
+  \draw[coulCourbeB,thick] (3,4)--(4.9,0.2);
+  \draw[lecture] (-3,2)--(-2,2);
+  \draw[lecture] (-2,2)--(-2,0);
+  \draw[lecture] (1,1)--(2,1);
+  \draw[lecture] (2,1)--(2,3);
+  \draw[lecture] (3,4)--(4,4);
+  \draw[lecture] (4,4)--(4,2);
+  \pt{-3,2}{left}{A}
+  \pt{-1,-1}{below}{B}
+  \pt{1,1}{left}{C}
+  \pt{4,2}{right}{E}
+  \node[coulCourbe,font=\footnotesize] at (2.4,2.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\explique{En $A(-3\,;2)$ : on avance de $1$, on descend de $2$. Donc
+$f'(-3)=\res{-2}$.}{on descend : nombre négatif}
+\explique{En $B(-1\,;-1)$ : la tangente est horizontale. Donc $f'(-1)=\res{0}$.}{on ne
+monte pas}
+\explique{En $C(1\,;1)$ : on avance de $1$, on monte de $2$. Donc
+$f'(1)=\res{2}$.}{la tangente passe par $(2\,;3)$}
+\explique{En $E(4\,;2)$ : la tangente passe par $(3\,;4)$ ; de là, on avance de $1$ et
+on descend de $2$ jusqu'à $E$. Donc $f'(4)=\res{-2}$.}{on part d'un nœud de la
+tangente}
+\rem{On lit $f'(a)$ sur la tangente (une pente), pas sur la courbe : en $C$, $f(1)=1$
+mais $f'(1)=2$.}
 \end{exo}
 
 \begin{exo}[Tracer des tangentes]
-\begin{minipage}[c]{0.5\linewidth}\raggedright
-\small
-$A$ : on avance de $1$, on monte de $2$.\par
-$B$ : on avance de $1$, on descend de $1$.\par
-$C$ : on avance de $2$, on monte de $1$.\par
-$D$ : tangente horizontale.
+\explique{Dans chaque cas, on place le point, puis on part de ce point en suivant le
+nombre dérivé : on avance de $1$ et on monte de $f'(a)$. On trace la droite qui passe par
+les deux points obtenus.}{méthode 3 ; une figure par tangente}
+\cas{a)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $A(0\,;1)$. On avance de $1$ et on monte de $2$ : on arrive en
+$(1\,;3)$.}{$f'(0)=2$}
+\explique{On trace la droite qui passe par ces deux points.}{elle passe aussi par
+$(-1\,;-1)$}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.48\linewidth}\centering
+\begin{minipage}[c]{0.38\linewidth}\centering
 \begin{tikzpicture}[x=0.4cm,y=0.4cm]
-  \repere{-4}{-3}{5}{4}
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
   \begin{scope}
-  \clip (-4,-3) rectangle (5,4);
-  \draw[coulCourbe,thick] (-2,-3)--(1.5,4);
-  \draw[coulCourbeB,thick] (0,4)--(4.5,-0.5);
-  \draw[coulCourbeC,thick] (-4,-2)--(5,2.5);
-  \draw[coulExo,thick] (1.5,-2)--(4.5,-2);
+  \clip (-4,-4) rectangle (4,4);
+  \draw[coulCourbeB,thick] (-2.5,-4)--(1.5,4);
   \end{scope}
+  \draw[lecture] (0,1)--(1,1);
+  \draw[lecture] (1,1)--(1,3);
   \pt{0,1}{left}{A}
-  \pt{1,3}{right}{B}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $B(1\,;3)$. On avance de $1$ et on descend de $1$ : on arrive en
+$(2\,;2)$.}{$f'(1)=-1$ : on descend}
+\explique{On trace la droite qui passe par ces deux points.}{elle passe aussi par
+$(4\,;0)$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \begin{scope}
+  \clip (-4,-4) rectangle (4,4);
+  \draw[coulCourbeB,thick] (-0.5,4.5)--(4.5,-0.5);
+  \end{scope}
+  \draw[lecture] (1,3)--(2,3);
+  \draw[lecture] (2,3)--(2,2);
+  \pt{1,3}{left}{B}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $C(-2\,;-1)$. Monter de $\frac{1}{2}$ ne tombe pas sur le
+quadrillage : on avance de $2$ et on monte de $1$, on arrive en $(0\,;0)$.}{$f'(-2)=\frac{1}{2}$ :
+deux fois plus loin, on monte deux fois plus}
+\explique{On trace la droite qui passe par $C$ et par l'origine.}{elle passe aussi par
+$(2\,;1)$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \draw[coulCourbeB,thick] (-4,-2)--(4,2);
+  \draw[lecture] (-2,-1)--(0,-1);
+  \draw[lecture] (0,-1)--(0,0);
   \pt{-2,-1}{below}{C}
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $D(3\,;-2)$. Comme $f'(3)=0$, on ne monte pas : la tangente est la
+droite horizontale qui passe par $D$.}{pente nulle}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \draw[coulCourbeB,thick] (-4,-2)--(4,-2);
   \pt{3,-2}{below}{D}
 \end{tikzpicture}
 \end{minipage}
+\rem{Une tangente se trace avec deux points sur des nœuds du quadrillage : le point de la
+courbe, puis le point obtenu en suivant la pente. Un seul point et un tracé \og à
+l'\oe il\fg{} ne suffisent pas.}
 \end{exo}
 
 \begin{exo}[Retrouver l'allure d'une courbe]
-\begin{minipage}[c]{0.44\linewidth}\raggedright
-\small
-On trace d'abord un petit morceau de chaque tangente, puis la courbe, qui les
-\og touche\fg{} en $A$, $B$, $C$ et $D$ : un maximum en $B$, un minimum en $D$.
-\end{minipage}\hfill
-\begin{minipage}[c]{0.54\linewidth}\centering
-\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+\cas{Résolution}
+\begin{center}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
   \repere{-4}{-4}{4}{3}
-  \draw[coulCourbeB,thick] (-3.4,-3.2)--(-2.6,-0.8);
-  \draw[coulCourbeB,thick] (-1.7,2)--(-0.3,2);
-  \draw[coulCourbeB,thick] (0.5,1)--(1.5,-1);
-  \draw[coulCourbeB,thick] (2.3,-2)--(3.7,-2);
-  \draw[coulCourbe,line width=1pt]
+  \gradx{-3,-2,-1,1,2,3} \grady{-3,-2,-1,1,2}
+  \draw[coulCourbeB,thick] (-3.6,-3.8)--(-2.2,0.4);
+  \draw[coulCourbeB,thick] (-2,2)--(0,2);
+  \draw[coulCourbeB,thick] (0.3,1.4)--(1.7,-1.4);
+  \draw[coulCourbeB,thick] (2,-2)--(4,-2);
+  \draw[lecture] (-3,-2)--(-2,-2);
+  \draw[lecture] (-2,-2)--(-2,1);
+  \draw[lecture] (1,0)--(2,0);
+  \draw[lecture] (2,0)--(2,-2);
+  \draw[coulCourbe,line width=1.1pt]
     (-3,-2) .. controls (-2.333,0) and (-1.667,2) .. (-1,2)
             .. controls (-0.333,2) and (0.333,1.333) .. (1,0)
             .. controls (1.667,-1.333) and (2.333,-2) .. (3,-2);
   \pt{-3,-2}{left}{A}
   \pt{-1,2}{above}{B}
-  \pt{1,0}{above right}{C}
+  \pt{1,0}{left}{C}
   \pt{3,-2}{below}{D}
+  \node[coulCourbe,font=\footnotesize] at (-0.3,2.6) {$\Cf$};
 \end{tikzpicture}
-\end{minipage}
+\end{center}
+\explique{On place les quatre points, puis on trace un morceau de chaque tangente :}{la
+pente donne le sens}
+\explique{en $A(-3\,;-2)$, on avance de $1$ et on monte de $3$ ;}{$f'(-3)=3$}
+\explique{en $B(-1\,;2)$ et en $D(3\,;-2)$, la tangente est horizontale ;}{$f'(-1)=0$ et
+$f'(3)=0$}
+\explique{en $C(1\,;0)$, on avance de $1$ et on descend de $2$.}{$f'(1)=-2$}
+\explique{On trace enfin une courbe qui passe par les quatre points en \og
+collant\fg{} à chaque tangente : elle monte jusqu'à $B$, puis descend jusqu'à
+$D$.}{plusieurs courbes conviennent ; seuls les points et les tangentes sont
+imposés}
+\rem{Les tangentes d'abord, la courbe ensuite : là où la tangente est horizontale ($B$ et
+$D$), la courbe forme un sommet (maximum en $B$, minimum en $D$).}
 \end{exo}
 
 \partie{Équation de la tangente}
 
 \begin{exo}[Avec un nombre dérivé admis]
-a) $f(4)=16-12+2=6$.
+\cas{a)}
 \begin{calculs}
-y &= f'(4)\,(x-4)+f(4)\\
-y &= 5(x-4)+6\\
-y &= 5x-20+6\\
-y &= \res{5x-14}
+f(4) &= 4^{2}-3\times 4+2 &&\justif{on remplace $x$ par $4$}\\
+f(4) &= 16-12+2 &&\\
+f(4) &= 6 &&
 \end{calculs}
-b) $f(1)=1-3+2=0$.
 \begin{calculs}
-y &= -1(x-1)+0\\
-y &= \res{-x+1}
+y &= f'(4)\,(x-4)+f(4) &&\justif{la formule, avec $a=4$}\\
+y &= 5(x-4)+6 &&\justif{$f'(4)=5$ et $f(4)=6$}\\
+y &= 5x-20+6 &&\justif{on développe}\\
+y &= 5x-14 &&\justif{on réduit}
 \end{calculs}
+\explique{La tangente au point d'abscisse $4$ a pour équation $\res{y=5x-14}$.}{contrôle :
+pour $x=4$, $y=20-14$, soit $6$ : c'est bien $f(4)$}
+\cas{b)}
+\begin{calculs}
+f(1) &= 1^{2}-3\times 1+2 &&\justif{on remplace $x$ par $1$}\\
+f(1) &= 0 &&
+\end{calculs}
+\begin{calculs}
+y &= f'(1)\,(x-1)+f(1) &&\justif{la formule, avec $a=1$}\\
+y &= -1(x-1)+0 &&\justif{$f'(1)=-1$ et $f(1)=0$}\\
+y &= -x+1 &&\justif{on développe}
+\end{calculs}
+\explique{La tangente au point d'abscisse $1$ a pour équation $\res{y=-x+1}$.}{}
 \end{exo}
 
 \begin{exo}[Quatre tangentes]
-On remplace dans $y=f'(a)\,(x-a)+f(a)$.
-\begin{reponses}
-  \item $y=1(x-2)+3$, soit $\res{y=x+1}$
-  \item $y=-2(x+1)+4$, soit $\res{y=-2x+2}$
-  \item $y=0(x-3)-1$, soit $\res{y=-1}$ (horizontale)
-  \item $y=-3(x-0)+5$, soit $\res{y=-3x+5}$
-\end{reponses}
-\rem{b) $x-a=x-(-1)=x+1$ : attention au signe.}
+\explique{Dans chaque cas, on recopie la formule $y=f'(a)\,(x-a)+f(a)$, on remplace,
+puis on développe.}{propriété 1}
+\cas{a)}
+\begin{calculs}
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= 1(x-2)+3 &&\justif{$f'(2)=1$ et $f(2)=3$}\\
+y &= x-2+3 &&\justif{on développe}\\
+y &= \res{x+1} &&\justif{on réduit}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+y &= f'(-1)\,(x-(-1))+f(-1) &&\justif{la formule, avec $a=-1$}\\
+y &= -2(x+1)+4 &&\justif{$x-(-1)=x+1$}\\
+y &= -2x-2+4 &&\justif{on développe}\\
+y &= \res{-2x+2} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+y &= f'(3)\,(x-3)+f(3) &&\justif{la formule, avec $a=3$}\\
+y &= 0\times(x-3)+(-1) &&\justif{$f'(3)=0$ et $f(3)=-1$}\\
+y &= \res{-1} &&\justif{tangente horizontale}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= \res{-3x+5} &&\justif{$x-0=x$}
+\end{calculs}
+\rem{Ne pas inverser les rôles : $f'(a)$, la pente, multiplie $(x-a)$ ; $f(a)$,
+l'ordonnée du point, s'ajoute. Contrôle : pour $x=a$, on doit retrouver $y=f(a)$ ; en b),
+$-2\times(-1)+2=4$.}
 \end{exo}
 
 \begin{exo}[Du taux de variation à la tangente]
-a) $f(2)=-4+6+1=\res{3}$
+\cas{a)}
 \begin{calculs}
-f(2+h) &= -(2+h)^{2}+3(2+h)+1\\
-f(2+h) &= -4-4h-h^{2}+6+3h+1\\
-f(2+h) &= \res{-h^{2}-h+3}
+f(2) &= -2^{2}+3\times 2+1 &&\justif{$-2^{2}=-4$}\\
+f(2) &= \res{3} &&\\[4pt]
+f(2+h) &= -(2+h)^{2}+3(2+h)+1 &&\justif{on remplace $x$ par $(2+h)$}\\
+f(2+h) &= -(4+4h+h^{2})+6+3h+1 &&\justif{identité remarquable}\\
+f(2+h) &= -4-4h-h^{2}+6+3h+1 &&\justif{le $-$ change les trois signes}\\
+f(2+h) &= \res{-h^{2}-h+3} &&\justif{on réduit}
 \end{calculs}
-b)
+\cas{b)}
 \begin{calculs}
-T(h) &= \frac{-h^{2}-h+3-3}{h}\\
-T(h) &= \frac{\barre{h}\,(-h-1)}{\barre{h}}\\
-T(h) &= -h-1
+T(h) &= \frac{f(2+h)-f(2)}{h} &&\justif{la formule, avec $a=2$}\\
+T(h) &= \frac{-h^{2}-h+3-3}{h} &&\justif{on remplace}\\
+T(h) &= \frac{\barre{h}\,(-h-1)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= -h-1 &&
 \end{calculs}
-Quand $h$ se rapproche de $0$ : $\res{f'(2)=-1}$.\par\smallskip
-c)
+\explique{Quand $h$ se rapproche de $0$, $T(h)=-h-1$ se rapproche de $-1$. Donc
+$\res{f'(2)=-1}$.}{on remplace $h$ par $0$}
+\cas{c)}
 \begin{calculs}
-y &= -1(x-2)+3\\
-y &= \res{-x+5}
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= -1(x-2)+3 &&\justif{$f'(2)=-1$ et $f(2)=3$}\\
+y &= -x+2+3 &&\justif{on développe}\\
+y &= -x+5 &&
 \end{calculs}
+\explique{La tangente au point d'abscisse $2$ a pour équation $\res{y=-x+5}$.}{}
 \end{exo}
 
 \partie{Approximation affine}
 
 \begin{exo}[Le carré de $3{,}02$]
-a) $3{,}02$ est proche de $3$ : on remplace $x$ par $3{,}02$ dans $6x-9$.
+\cas{a)}
 \begin{calculs}
-f(3{,}02) &\approx 6\times 3{,}02-9\\
-f(3{,}02) &\approx \res{9{,}12}
+f(3{,}02) &\approx 6\times 3{,}02-9 &&\justif{$3{,}02$ est proche de $3$ : on remplace $x$ dans l'équation de la tangente}\\
+f(3{,}02) &\approx 18{,}12-9 &&\\
+f(3{,}02) &\approx \res{9{,}12} &&
 \end{calculs}
-Valeur exacte : $3{,}02^{2}=9{,}1204$ ; écart de $0{,}0004$.\par\smallskip
-b) $f(2{,}99)\approx 6\times 2{,}99-9=\res{8{,}94}$ ; exacte : $8{,}9401$.
+\begin{calculs}
+f(3{,}02) &= 3{,}02^{2} &&\justif{on remplace $x$ par $3{,}02$ dans $f(x)$}\\
+f(3{,}02) &= 9{,}1204 &&
+\end{calculs}
+\explique{L'écart entre $9{,}12$ et $9{,}1204$ n'est que de $0{,}0004$ :
+l'approximation est très bonne.}{$3{,}02$ est très proche de $3$}
+\cas{b)}
+\begin{calculs}
+f(2{,}99) &\approx 6\times 2{,}99-9 &&\justif{$2{,}99$ est proche de $3$}\\
+f(2{,}99) &\approx 17{,}94-9 &&\\
+f(2{,}99) &\approx \res{8{,}94} &&\\[4pt]
+f(2{,}99) &= 2{,}99^{2} &&\justif{valeur exacte}\\
+f(2{,}99) &= 8{,}9401 &&
+\end{calculs}
+\explique{L'écart n'est que de $0{,}0001$ : l'approximation est encore meilleure.}{$2{,}99$
+est encore plus proche de $3$ que $3{,}02$}
 \end{exo}
 
 \begin{exo}[Une fonction inverse]
-a) $f(2)=\dfrac{1}{2-1}=1$.
+\cas{a)}
 \begin{calculs}
-y &= -1(x-2)+1\\
-y &= \res{-x+3}
+f(2) &= \frac{1}{2-1} &&\justif{on remplace $x$ par $2$}\\
+f(2) &= 1 &&\\[4pt]
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= -1(x-2)+1 &&\justif{$f'(2)=-1$ et $f(2)=1$}\\
+y &= -x+2+1 &&\justif{on développe}\\
+y &= -x+3 &&
 \end{calculs}
-b) $f(2{,}1)\approx -2{,}1+3=\res{0{,}9}$\par\smallskip
-c) $f(2{,}1)=\dfrac{1}{1{,}1}\approx 0{,}909$ : écart d'environ $0{,}009$.
+\explique{La tangente au point d'abscisse $2$ a pour équation $\res{y=-x+3}$.}{}
+\cas{b)}
+\begin{calculs}
+f(2{,}1) &\approx -2{,}1+3 &&\justif{$2{,}1$ est proche de $2$ : on remplace $x$ dans l'équation de la tangente}\\
+f(2{,}1) &\approx \res{0{,}9} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+f(2{,}1) &= \frac{1}{2{,}1-1} &&\justif{on remplace $x$ par $2{,}1$ dans $f(x)$}\\
+f(2{,}1) &= \frac{1}{1{,}1} &&\\
+f(2{,}1) &\approx 0{,}909 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{L'écart entre $0{,}9$ et $0{,}909$ est d'environ $0{,}009$ : l'approximation
+est bonne.}{}
 \end{exo}
 
 \begin{exo}[Une plaque qui se dilate]
-a) $A(10)=100$.
+\cas{a)}
 \begin{calculs}
-y &= 20(x-10)+100\\
-y &= \res{20x-100}
+A(10) &= 10^{2} &&\justif{aire de la plaque de $10$~cm de côté}\\
+A(10) &= 100 &&\\[4pt]
+y &= A'(10)\,(x-10)+A(10) &&\justif{la formule, avec $a=10$ ; ici, $x$ est le côté}\\
+y &= 20(x-10)+100 &&\justif{$A'(10)=20$ et $A(10)=100$}\\
+y &= 20x-200+100 &&\justif{on développe}\\
+y &= 20x-100 &&
 \end{calculs}
-b) $A(10{,}1)\approx 20\times 10{,}1-100=\res{102\text{ cm}^{2}}$\par\smallskip
-c) $10{,}1^{2}=102{,}01$~cm$^{2}$ : l'approximation ne se trompe que de
-$0{,}01$~cm$^{2}$.
+\explique{La tangente au point d'abscisse $10$ a pour équation $\res{y=20x-100}$.}{}
+\cas{b)}
+\begin{calculs}
+A(10{,}1) &\approx 20\times 10{,}1-100 &&\justif{$10{,}1$ est proche de $10$}\\
+A(10{,}1) &\approx 202-100 &&\\
+A(10{,}1) &\approx 102 &&
+\end{calculs}
+\explique{L'aire de la plaque chauffée est d'environ $\res{102\text{ cm}^{2}}$.}{}
+\cas{c)}
+\begin{calculs}
+A(10{,}1) &= 10{,}1^{2} &&\justif{valeur exacte}\\
+A(10{,}1) &= 102{,}01 &&
+\end{calculs}
+\explique{L'aire exacte est $102{,}01$~cm$^{2}$ : l'approximation ne se trompe que de
+$0{,}01$~cm$^{2}$.}{l'écart, $0{,}1^{2}$, est le petit carré du coin}
 \end{exo}
 
 \partie{Fonction dérivée d'une fonction polynôme}
 
 \begin{exo}[Dériver]
-\deux{a) $f'(x)=\res{7}$}{e) $m'(x)=\res{-10x+10}$}
-\deux{b) $g'(x)=\res{-4}$}{f) $p'(x)=\res{3x^{2}+8x-1}$}
-\deux{c) $h'(x)=\res{2x+6}$}{g) $q'(x)=\res{8x^{3}-6x}$}
-\deux{d) $k'(x)=\res{6x-1}$}{h) $r'(x)=\res{-5x^{4}+6x^{2}}$}
-\rem{Un nombre seul (le $-5$ de $7x-5$) a pour dérivée $0$.}
+\explique{On dérive terme par terme avec le tableau de la propriété 3 ; un nombre qui
+multiplie reste devant.}{méthode 6}
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{7} &&\justif{$mx+p$ devient $m$ : le $-5$ disparaît}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= \res{-4} &&\justif{$1$ devient $0$ ; $-4x$ devient $-4$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 2x+6+0 &&\justif{$x^{2}$ devient $2x$ ; $6x$ devient $6$ ; $-2$ devient $0$}\\
+h'(x) &= \res{2x+6} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 3\times 2x-1+0 &&\justif{le $3$ reste devant ; $-x$ devient $-1$}\\
+k'(x) &= \res{6x-1} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= -5\times 2x+10 &&\justif{terme par terme}\\
+m'(x) &= \res{-10x+10} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 3x^{2}+4\times 2x-1 &&\justif{$x^{3}$ devient $3x^{2}$}\\
+p'(x) &= \res{3x^{2}+8x-1} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+q'(x) &= 2\times 4x^{3}-3\times 2x+0 &&\justif{$x^{4}$ devient $4x^{3}$}\\
+q'(x) &= \res{8x^{3}-6x} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+r'(x) &= -5x^{4}+2\times 3x^{2} &&\justif{$x^{5}$ devient $5x^{4}$}\\
+r'(x) &= \res{-5x^{4}+6x^{2}} &&
+\end{calculs}
+\rem{Un nombre seul (le $-5$ de $7x-5$, le $8$ de $3x^{2}-x+8$) a pour dérivée $0$ : il
+disparaît.}
 \end{exo}
 
 \begin{exo}[Degré 3 et plus]
-\begin{reponses}
-  \item $f'(x)=4\times 3x^{2}-6\times 2x+5=\res{12x^{2}-12x+5}$
-  \item $g'(x)=\res{6x^{5}-4x^{3}}$
-  \item $h'(x)=\res{-10x^{4}+3x^{2}-7}$
-  \item $k'(x)=\res{-12x^{3}}$
-  \item $m'(x)=\frac{1}{3}\times 3x^{2}-2=\res{x^{2}-2}$
-\end{reponses}
+\explique{Pour $x^{n}$, l'exposant passe devant et on lui retire $1$.}{propriété 3}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 4\times 3x^{2}-6\times 2x+5-0 &&\justif{terme par terme}\\
+f'(x) &= \res{12x^{2}-12x+5} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= \res{6x^{5}-4x^{3}} &&\justif{$x^{6}$ devient $6x^{5}$ ; $x^{4}$ devient $4x^{3}$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= -2\times 5x^{4}+3x^{2}-7 &&\justif{$-7x$ devient $-7$}\\
+h'(x) &= \res{-10x^{4}+3x^{2}-7} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 0-3\times 4x^{3} &&\justif{$5$ devient $0$}\\
+k'(x) &= \res{-12x^{3}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= \frac{1}{3}\times 3x^{2}-2 &&\justif{le $\frac{1}{3}$ reste devant}\\
+m'(x) &= \res{x^{2}-2} &&\justif{$\frac{1}{3}\times 3=1$}
+\end{calculs}
+\rem{Le nombre devant se garde : la dérivée de $-2x^{5}$ est $-2\times 5x^{4}=-10x^{4}$,
+ni $5x^{4}$ ni $-2x^{4}$.}
 \end{exo}
 
 \begin{exo}[Entraînement]
-\deux{a) $f'(x)=\res{6}$}{e) $m'(x)=\res{-12x^{3}+6}$}
-\deux{b) $g'(x)=\res{-2x+4}$}{f) $p'(x)=\res{10x^{4}-10x}$}
-\deux{c) $h'(x)=\res{15x^{2}-4x}$}{g) $q'(x)=\res{x+3}$}
-\deux{d) $k'(x)=\res{4x^{3}+3x^{2}+2x+1}$}{}
-\deux{h) $r'(x)=\res{x^{3}-1}$}{}
-\rem{g) $\frac{1}{2}\times 2x=x$ ; h) $\frac{1}{4}\times 4x^{3}=x^{3}$.}
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{6} &&\justif{$mx+p$ devient $m$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= -2x+4-0 &&\justif{$-x^{2}$ devient $-2x$}\\
+g'(x) &= \res{-2x+4} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 5\times 3x^{2}-2\times 2x &&\justif{terme par terme}\\
+h'(x) &= \res{15x^{2}-4x} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= \res{4x^{3}+3x^{2}+2x+1} &&\justif{chaque puissance perd $1$ ; $x$ devient $1$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= -3\times 4x^{3}+6 &&\\
+m'(x) &= \res{-12x^{3}+6} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 2\times 5x^{4}-5\times 2x+0 &&\justif{$3$ devient $0$}\\
+p'(x) &= \res{10x^{4}-10x} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+q'(x) &= \frac{1}{2}\times 2x+3 &&\justif{le $\frac{1}{2}$ reste devant}\\
+q'(x) &= \res{x+3} &&\justif{$\frac{1}{2}\times 2=1$}
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+r'(x) &= \frac{1}{4}\times 4x^{3}-1 &&\\
+r'(x) &= \res{x^{3}-1} &&\justif{$\frac{1}{4}\times 4=1$}
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Développer d'abord]
-\begin{reponses}
-  \item $A(x)=x^{2}+3x-4$, donc $A'(x)=\res{2x+3}$
-  \item $B(x)=2x^{2}-5x-3$, donc $B'(x)=\res{4x-5}$
-  \item $C(x)=x^{2}+4x+4$, donc $C'(x)=\res{2x+4}$
-  \item $D(x)=x^{3}-5x$, donc $D'(x)=\res{3x^{2}-5}$
-\end{reponses}
+\explique{Le tableau de la propriété 3 ne donne la dérivée ni d'un produit ni d'un
+carré : on développe d'abord, pour obtenir un polynôme.}{}
+\cas{a)}
+\begin{calculs}
+A(x) &= (x-1)(x+4) &&\justif{on recopie l'expression}\\
+A(x) &= x^{2}+4x-x-4 &&\justif{double distributivité}\\
+A(x) &= x^{2}+3x-4 &&\justif{on réduit}\\
+A'(x) &= \res{2x+3} &&\justif{terme par terme}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B(x) &= (2x+1)(x-3) &&\\
+B(x) &= 2x^{2}-6x+x-3 &&\justif{double distributivité}\\
+B(x) &= 2x^{2}-5x-3 &&\\
+B'(x) &= \res{4x-5} &&\justif{$2\times 2x=4x$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C(x) &= (x+2)^{2} &&\\
+C(x) &= x^{2}+4x+4 &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+C'(x) &= \res{2x+4} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D(x) &= x(x^{2}-5) &&\\
+D(x) &= x^{3}-5x &&\justif{on distribue $x$}\\
+D'(x) &= \res{3x^{2}-5} &&
+\end{calculs}
+\rem{Erreur fréquente : dériver chaque facteur et multiplier, $(x-1)'\times(x+4)'=1$ au
+lieu de $2x+3$.}
 \end{exo}
 
 \begin{exo}[Dérivée et tangentes]
-a) $f'(x)=\res{3x^{2}-2}$\par\smallskip
-b) $f(1)=1-2+1=0$ et $f'(1)=3-2=1$.
+\cas{a)}
 \begin{calculs}
-y &= 1(x-1)+0\\
-y &= \res{x-1}
+f'(x) &= 3x^{2}-2+0 &&\justif{$x^{3}$ devient $3x^{2}$ ; $-2x$ devient $-2$}\\
+f'(x) &= \res{3x^{2}-2} &&
 \end{calculs}
-c) $f(0)=1$ et $f'(0)=-2$ : $y=-2(x-0)+1$, soit $\res{y=-2x+1}$.
+\cas{b)}
+\begin{calculs}
+f(1) &= 1^{3}-2\times 1+1 &&\justif{on remplace $x$ par $1$ dans $f(x)$}\\
+f(1) &= 0 &&\\
+f'(1) &= 3\times 1^{2}-2 &&\justif{on remplace $x$ par $1$ dans $f'(x)$}\\
+f'(1) &= 1 &&
+\end{calculs}
+\begin{calculs}
+y &= f'(1)\,(x-1)+f(1) &&\justif{la formule, avec $a=1$}\\
+y &= 1(x-1)+0 &&\\
+y &= x-1 &&
+\end{calculs}
+\explique{La tangente au point d'abscisse $1$ a pour équation $\res{y=x-1}$.}{}
+\cas{c)}
+\begin{calculs}
+f(0) &= 0-0+1 &&\\
+f(0) &= 1 &&\\
+f'(0) &= 3\times 0^{2}-2 &&\\
+f'(0) &= -2 &&\\[4pt]
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= -2x+1 &&
+\end{calculs}
+\explique{La tangente au point d'abscisse $0$ a pour équation $\res{y=-2x+1}$.}{}
+\rem{Ne pas confondre $f(1)$, calculé avec $f(x)$, et $f'(1)$, calculé avec $f'(x)$.}
 \end{exo}
 
 \partie{Autres fonctions dérivées}
 
 \begin{exo}[Inverse, cosinus, sinus]
-\deux{a) $f'(x)=\res{-\dfrac{4}{x^{2}}}$}{b) $g'(x)=\res{\dfrac{7}{x^{2}}}$}
-\deux{c) $h'(x)=\res{-\sin x+3}$}{d) $k'(x)=\res{5\cos x}$}
-\deux{e) $m'(x)=\res{-2\sin x-3\cos x}$}{}
-\deux{f) $p'(x)=\res{4x^{3}+\dfrac{1}{x^{2}}}$}{g) $q'(x)=\res{-\dfrac{6}{x^{2}}+4x}$}
-\deux{h) $r'(x)=\res{-\cos x+3x^{2}}$}{}
-\rem{Seule la dérivée de $\cos x$ porte un signe $-$ : $(\cos x)'=-\sin x$.}
+\explique{$\frac{1}{x}$ devient $-\frac{1}{x^{2}}$, $\cos x$ devient $-\sin x$, $\sin x$
+devient $\cos x$ ; le nombre qui multiplie reste devant.}{propriété 4}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 4\times\left(-\frac{1}{x^{2}}\right) &&\justif{$\frac{4}{x}=4\times\frac{1}{x}$ : le $4$ reste devant}\\
+f'(x) &= \res{-\frac{4}{x^{2}}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= -7\times\left(-\frac{1}{x^{2}}\right) &&\justif{le $-7$ reste devant}\\
+g'(x) &= \res{\frac{7}{x^{2}}} &&\justif{moins par moins : plus}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \res{-\sin x+3} &&\justif{$\cos x$ devient $-\sin x$ ; $3x$ devient $3$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= \res{5\cos x} &&\justif{$\sin x$ devient $\cos x$, le $5$ reste devant}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= 2\times(-\sin x)-3\cos x &&\justif{terme par terme}\\
+m'(x) &= \res{-2\sin x-3\cos x} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 4x^{3}-\left(-\frac{1}{x^{2}}\right) &&\justif{$x^{4}$ devient $4x^{3}$}\\
+p'(x) &= \res{4x^{3}+\frac{1}{x^{2}}} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+q'(x) &= 6\times\left(-\frac{1}{x^{2}}\right)+2\times 2x &&\\
+q'(x) &= \res{-\frac{6}{x^{2}}+4x} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+r'(x) &= \res{-\cos x+3x^{2}} &&\justif{$-\sin x$ devient $-\cos x$}
+\end{calculs}
+\rem{Seule la dérivée de $\cos x$ porte un signe $-$ : $(\cos x)'=-\sin x$, mais
+$(\sin x)'=\cos x$.}
 \end{exo}
 
 \begin{exo}[Entraînement]
-\deux{a) $f'(x)=\res{-\dfrac{3}{x^{2}}+1}$}{b) $g'(x)=\res{-4\sin x+2x}$}
-\deux{c) $h'(x)=\res{-2\cos x}$}{d) $k'(x)=\res{3x^{2}+\dfrac{5}{x^{2}}}$}
-\deux{e) $m'(x)=\res{\cos x+\sin x}$}{f) $p'(x)=\res{-\dfrac{1}{x^{2}}+3\sin x}$}
-\rem{e) $-\cos x$ a pour dérivée $-(-\sin x)=\sin x$.}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3\times\left(-\frac{1}{x^{2}}\right)+1 &&\justif{$x$ devient $1$}\\
+f'(x) &= \res{-\frac{3}{x^{2}}+1} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= 4\times(-\sin x)+2x &&\\
+g'(x) &= \res{-4\sin x+2x} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \res{-2\cos x} &&\justif{$\sin x$ devient $\cos x$ ; $5$ devient $0$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 3x^{2}-5\times\left(-\frac{1}{x^{2}}\right) &&\\
+k'(x) &= \res{3x^{2}+\frac{5}{x^{2}}} &&\justif{moins par moins : plus}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= \cos x-(-\sin x) &&\justif{$-\cos x$ devient $-(-\sin x)$}\\
+m'(x) &= \res{\cos x+\sin x} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= -\frac{1}{x^{2}}-3\times(-\sin x) &&\\
+p'(x) &= \res{-\frac{1}{x^{2}}+3\sin x} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Tangentes à la courbe de $\frac{2}{x}$]
-a) $f'(x)=2\times\left(-\dfrac{1}{x^{2}}\right)=\res{-\dfrac{2}{x^{2}}}$\par\smallskip
-b) $f(1)=2$ et $f'(1)=-2$.
+\cas{a)}
 \begin{calculs}
-y &= -2(x-1)+2\\
-y &= \res{-2x+4}
+f'(x) &= 2\times\left(-\frac{1}{x^{2}}\right) &&\justif{le $2$ reste devant}\\
+f'(x) &= \res{-\frac{2}{x^{2}}} &&
 \end{calculs}
-c) $f(2)=1$ et $f'(2)=-\dfrac{2}{4}=-\dfrac{1}{2}$.
+\cas{b)}
 \begin{calculs}
-y &= -\tfrac{1}{2}(x-2)+1\\
-y &= \res{-\tfrac{1}{2}x+2}
+f(1) &= \frac{2}{1} = 2 &&\justif{on remplace $x$ par $1$ dans $f(x)$}\\
+f'(1) &= -\frac{2}{1^{2}} = -2 &&\justif{puis dans $f'(x)$}\\[4pt]
+y &= f'(1)\,(x-1)+f(1) &&\justif{la formule, avec $a=1$}\\
+y &= -2(x-1)+2 &&\\
+y &= -2x+2+2 &&\justif{on développe}\\
+y &= -2x+4 &&
 \end{calculs}
+\explique{La tangente au point d'abscisse $1$ a pour équation $\res{y=-2x+4}$.}{}
+\cas{c)}
+\begin{calculs}
+f(2) &= \frac{2}{2} = 1 &&\\
+f'(2) &= -\frac{2}{2^{2}} = -\frac{1}{2} &&\justif{$\frac{2}{4}=\frac{1}{2}$}\\[4pt]
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= -\frac{1}{2}(x-2)+1 &&\\
+y &= -\frac{1}{2}x+1+1 &&\justif{$-\frac{1}{2}\times(-2)=1$}\\
+y &= -\frac{1}{2}x+2 &&
+\end{calculs}
+\explique{La tangente au point d'abscisse $2$ a pour équation
+$\res{y=-\frac{1}{2}x+2}$.}{}
 \end{exo}
 
 \begin{exo}[Sinus et cosinus près de $0$]
-a) $f'(x)=\cos x$, donc $f'(0)=\cos 0=1$ ; $f(0)=\sin 0=0$.
+\cas{a)}
 \begin{calculs}
-y &= 1(x-0)+0\\
-y &= \res{x}
+f'(x) &= \cos x &&\justif{$\sin x$ devient $\cos x$}\\
+f'(0) &= \cos 0 = 1 &&\\
+f(0) &= \sin 0 = 0 &&\\[4pt]
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= 1\times x+0 &&\\
+y &= x &&
 \end{calculs}
-b) $\sin(0{,}1)\approx\res{0{,}1}$ ; la calculatrice donne $0{,}0998\ldots$\par\smallskip
-c) $g'(x)=-\sin x$, donc $g'(0)=\res{0}$ : la tangente est \res{\text{horizontale}},
-d'équation $y=1$ (car $g(0)=1$).
+\explique{La tangente au point d'abscisse $0$ a pour équation $\res{y=x}$.}{}
+\cas{b)}
+\begin{calculs}
+\sin(0{,}1) &\approx 0{,}1 &&\justif{$0{,}1$ est proche de $0$ : on remplace $x$ dans $y=x$}
+\end{calculs}
+\explique{La calculatrice, en radians, donne $\sin(0{,}1)\approx 0{,}0998$ : l'écart est
+d'environ $0{,}0002$. Donc $\sin(0{,}1)\approx\res{0{,}1}$.}{en degrés, on obtiendrait
+une tout autre valeur}
+\cas{c)}
+\begin{calculs}
+g'(x) &= -\sin x &&\justif{$\cos x$ devient $-\sin x$}\\
+g'(0) &= -\sin 0 &&\\
+g'(0) &= \res{0} &&
+\end{calculs}
+\explique{Le nombre dérivé est nul : la tangente au point d'abscisse $0$ est
+\res{horizontale}. Comme $g(0)=\cos 0=1$, elle a pour équation $y=1$.}{près de $0$,
+$\cos x\approx 1$}
 \end{exo}
 
 \partie{Dérivée d'un produit, d'un carré}
 
 \begin{exo}[Des carrés]
-On écrit $u$ et $u'$, puis $2\times u'\times u$.
-\begin{reponses}
-  \item $u=4x+1$, $u'=4$ : $f'(x)=2\times 4\times(4x+1)=\res{32x+8}$
-  \item $u=2-5x$, $u'=-5$ : $g'(x)=2\times(-5)(2-5x)=\res{50x-20}$
-  \item $u=x^{2}+3$, $u'=2x$ : $h'(x)=2\times 2x(x^{2}+3)=\res{4x^{3}+12x}$
-  \item $u=x^{3}-1$, $u'=3x^{2}$ : $k'(x)=2\times 3x^{2}(x^{3}-1)=\res{6x^{5}-6x^{2}}$
-\end{reponses}
+\explique{On écrit $u$ et $u'$, puis on recopie la formule $2\times u'\times u$ et on
+remplace.}{méthode 8}
+\cas{a)}
+\begin{calculs}
+u(x) &= 4x+1 &&\justif{donc $u'(x)=4$}\\[4pt]
+f'(x) &= 2\times u'(x)\times u(x) &&\justif{la formule du carré}\\
+f'(x) &= 2\times 4\times(4x+1) &&\justif{on remplace}\\
+f'(x) &= \res{32x+8} &&\justif{on développe $8(4x+1)$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= 2-5x &&\justif{donc $u'(x)=-5$}\\[4pt]
+g'(x) &= 2\times u'(x)\times u(x) &&\\
+g'(x) &= 2\times(-5)\times(2-5x) &&\justif{on remplace}\\
+g'(x) &= -10(2-5x) &&\\
+g'(x) &= \res{-20+50x} &&\justif{$-10\times(-5x)=+50x$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= x^{2}+3 &&\justif{donc $u'(x)=2x$}\\[4pt]
+h'(x) &= 2\times u'(x)\times u(x) &&\\
+h'(x) &= 2\times 2x\times(x^{2}+3) &&\\
+h'(x) &= 4x(x^{2}+3) &&\\
+h'(x) &= \res{4x^{3}+12x} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(x) &= x^{3}-1 &&\justif{donc $u'(x)=3x^{2}$}\\[4pt]
+k'(x) &= 2\times u'(x)\times u(x) &&\\
+k'(x) &= 2\times 3x^{2}\times(x^{3}-1) &&\\
+k'(x) &= 6x^{2}(x^{3}-1) &&\\
+k'(x) &= \res{6x^{5}-6x^{2}} &&\justif{$x^{2}\times x^{3}=x^{5}$}
+\end{calculs}
+\rem{Erreur fréquente : $\big((4x+1)^{2}\big)'=2(4x+1)$, en oubliant de multiplier par
+$u'=4$.}
 \end{exo}
 
 \begin{exo}[Des produits]
-a) $u=x+2$, $u'=1$ ; $v=3x-1$, $v'=3$.
+\explique{On nomme les deux facteurs $u$ et $v$, on calcule $u'$ et $v'$, puis on recopie
+la formule $u'\times v+u\times v'$ et on remplace.}{méthode 8}
+\cas{a)}
 \begin{calculs}
-f'(x) &= 1\times(3x-1)+(x+2)\times 3\\
-f'(x) &= 3x-1+3x+6\\
-f'(x) &= \res{6x+5}
+u(x) &= x+2 &&\justif{donc $u'(x)=1$}\\
+v(x) &= 3x-1 &&\justif{donc $v'(x)=3$}\\[4pt]
+f'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\justif{la formule du produit}\\
+f'(x) &= 1\times(3x-1)+(x+2)\times 3 &&\justif{on remplace}\\
+f'(x) &= 3x-1+3x+6 &&\justif{on développe}\\
+f'(x) &= \res{6x+5} &&\justif{on réduit}
 \end{calculs}
-b) $u'=2$ ; $v'=2x$.
+\cas{b)}
 \begin{calculs}
-g'(x) &= 2(x^{2}+1)+(2x-3)\times 2x\\
-g'(x) &= 2x^{2}+2+4x^{2}-6x\\
-g'(x) &= \res{6x^{2}-6x+2}
+u(x) &= 2x-3 &&\justif{donc $u'(x)=2$}\\
+v(x) &= x^{2}+1 &&\justif{donc $v'(x)=2x$}\\[4pt]
+g'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+g'(x) &= 2(x^{2}+1)+(2x-3)\times 2x &&\\
+g'(x) &= 2x^{2}+2+4x^{2}-6x &&\\
+g'(x) &= \res{6x^{2}-6x+2} &&
 \end{calculs}
-c) $u=x^{2}$, $u'=2x$ ; $v=4x+5$, $v'=4$ :
-$h'(x)=2x(4x+5)+4x^{2}=\res{12x^{2}+10x}$\par\smallskip
-d) $u'=2x-1$ ; $v'=2x$.
+\cas{c)}
 \begin{calculs}
-k'(x) &= (2x-1)(x^{2}+2)+(x^{2}-x)\times 2x\\
-k'(x) &= 2x^{3}+4x-x^{2}-2+2x^{3}-2x^{2}\\
-k'(x) &= \res{4x^{3}-3x^{2}+4x-2}
+u(x) &= x^{2} &&\justif{donc $u'(x)=2x$}\\
+v(x) &= 4x+5 &&\justif{donc $v'(x)=4$}\\[4pt]
+h'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+h'(x) &= 2x(4x+5)+x^{2}\times 4 &&\\
+h'(x) &= 8x^{2}+10x+4x^{2} &&\\
+h'(x) &= \res{12x^{2}+10x} &&
 \end{calculs}
-e) $u=x$, $u'=1$ ; $v=\sin x$, $v'=\cos x$ : $m'(x)=\res{\sin x+x\cos x}$
+\cas{d)}
+\begin{calculs}
+u(x) &= x^{2}-x &&\justif{donc $u'(x)=2x-1$}\\
+v(x) &= x^{2}+2 &&\justif{donc $v'(x)=2x$}\\[4pt]
+k'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+k'(x) &= (2x-1)(x^{2}+2)+(x^{2}-x)\times 2x &&\\
+k'(x) &= 2x^{3}+4x-x^{2}-2+2x^{3}-2x^{2} &&\justif{double distributivité}\\
+k'(x) &= \res{4x^{3}-3x^{2}+4x-2} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+u(x) &= x &&\justif{donc $u'(x)=1$}\\
+v(x) &= \sin x &&\justif{donc $v'(x)=\cos x$}\\[4pt]
+m'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+m'(x) &= 1\times\sin x+x\times\cos x &&\\
+m'(x) &= \res{\sin x+x\cos x} &&
+\end{calculs}
+\rem{La dérivée d'un produit n'est pas le produit des dérivées : en a), $1\times 3=3$
+serait faux.}
 \end{exo}
 
 \begin{exo}[Entraînement]
-\begin{reponses}
-  \item $f'(x)=3(x-2)+(3x+1)\times 1=\res{6x-5}$
-  \item $g'(x)=2\times 1\times(x+5)=\res{2x+10}$
-  \item $h'(x)=2x(2x+3)+(x^{2}-4)\times 2=\res{6x^{2}+6x-8}$
-  \item $k'(x)=2\times(-2x)(3-x^{2})=\res{4x^{3}-12x}$
-  \item $m'(x)=\res{2x\cos x-x^{2}\sin x}$
-  \item $p'(x)=2(x^{3}+x)+(2x-1)(3x^{2}+1)=\res{8x^{3}-3x^{2}+4x-1}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u(x) &= 3x+1 &&\justif{donc $u'(x)=3$}\\
+v(x) &= x-2 &&\justif{donc $v'(x)=1$}\\[4pt]
+f'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\justif{la formule du produit}\\
+f'(x) &= 3(x-2)+(3x+1)\times 1 &&\\
+f'(x) &= 3x-6+3x+1 &&\\
+f'(x) &= \res{6x-5} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= x+5 &&\justif{donc $u'(x)=1$}\\[4pt]
+g'(x) &= 2\times u'(x)\times u(x) &&\justif{la formule du carré}\\
+g'(x) &= 2\times 1\times(x+5) &&\\
+g'(x) &= \res{2x+10} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= x^{2}-4 &&\justif{donc $u'(x)=2x$}\\
+v(x) &= 2x+3 &&\justif{donc $v'(x)=2$}\\[4pt]
+h'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+h'(x) &= 2x(2x+3)+(x^{2}-4)\times 2 &&\\
+h'(x) &= 4x^{2}+6x+2x^{2}-8 &&\\
+h'(x) &= \res{6x^{2}+6x-8} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(x) &= 3-x^{2} &&\justif{donc $u'(x)=-2x$}\\[4pt]
+k'(x) &= 2\times u'(x)\times u(x) &&\justif{la formule du carré}\\
+k'(x) &= 2\times(-2x)\times(3-x^{2}) &&\\
+k'(x) &= -4x(3-x^{2}) &&\\
+k'(x) &= \res{-12x+4x^{3}} &&\justif{$-4x\times(-x^{2})=+4x^{3}$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+u(x) &= x^{2} &&\justif{donc $u'(x)=2x$}\\
+v(x) &= \cos x &&\justif{donc $v'(x)=-\sin x$}\\[4pt]
+m'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+m'(x) &= 2x\cos x+x^{2}\times(-\sin x) &&\\
+m'(x) &= \res{2x\cos x-x^{2}\sin x} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+u(x) &= 2x-1 &&\justif{donc $u'(x)=2$}\\
+v(x) &= x^{3}+x &&\justif{donc $v'(x)=3x^{2}+1$}\\[4pt]
+p'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+p'(x) &= 2(x^{3}+x)+(2x-1)(3x^{2}+1) &&\\
+p'(x) &= 2x^{3}+2x+6x^{3}+2x-3x^{2}-1 &&\justif{double distributivité}\\
+p'(x) &= \res{8x^{3}-3x^{2}+4x-1} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Deux façons de faire]
-a) $u=x+3$, $u'=1$ ; $v=2x-1$, $v'=2$.
+\cas{a)}
 \begin{calculs}
-f'(x) &= 1\times(2x-1)+(x+3)\times 2\\
-f'(x) &= \res{4x+5}
+u(x) &= x+3 &&\justif{donc $u'(x)=1$}\\
+v(x) &= 2x-1 &&\justif{donc $v'(x)=2$}\\[4pt]
+f'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\justif{la formule du produit}\\
+f'(x) &= 1\times(2x-1)+(x+3)\times 2 &&\\
+f'(x) &= 2x-1+2x+6 &&\\
+f'(x) &= \res{4x+5} &&
 \end{calculs}
-b) $f(x)=2x^{2}-x+6x-3=2x^{2}+5x-3$, donc $f'(x)=\res{4x+5}$.\par\smallskip
-c) Les deux résultats sont \textbf{égaux} : développer permet de vérifier.
+\cas{b)}
+\begin{calculs}
+f(x) &= (x+3)(2x-1) &&\justif{on recopie l'expression}\\
+f(x) &= 2x^{2}-x+6x-3 &&\justif{double distributivité}\\
+f(x) &= 2x^{2}+5x-3 &&\\
+f'(x) &= 2\times 2x+5 &&\justif{terme par terme}\\
+f'(x) &= \res{4x+5} &&
+\end{calculs}
+\cas{c)}
+\explique{Les deux méthodes donnent le même résultat, $4x+5$.}{développer permet de
+vérifier une dérivée de produit}
 \rem{La dérivée d'un produit n'est pas le produit des dérivées : $1\times 2=2$ serait
 faux.}
 \end{exo}
@@ -660,117 +1376,352 @@ faux.}
 \partie{Dérivée de l'inverse, d'un quotient}
 
 \begin{exo}[Des inverses]
-On écrit $v$ et $v'$, puis $-\dfrac{v'}{v^{2}}$.
-\begin{reponses}
-  \item $v'=3$ : $f'(x)=\res{-\dfrac{3}{(3x+2)^{2}}}$
-  \item $v'=-4$ : $g'(x)=-\dfrac{-4}{(1-4x)^{2}}=\res{\dfrac{4}{(1-4x)^{2}}}$
-  \item $v'=2x$ : $h'(x)=\res{-\dfrac{2x}{(x^{2}+1)^{2}}}$
-  \item $k(x)=5\times\dfrac{1}{2x-1}$, $v'=2$ : $k'(x)=\res{-\dfrac{10}{(2x-1)^{2}}}$
-\end{reponses}
+\explique{On écrit $v$ et $v'$, puis on recopie la formule $-\dfrac{v'}{v^{2}}$ et on
+remplace.}{méthode 9}
+\cas{a)}
+\begin{calculs}
+v(x) &= 3x+2 &&\justif{donc $v'(x)=3$}\\[4pt]
+f'(x) &= -\frac{v'(x)}{v(x)^{2}} &&\justif{la formule de l'inverse}\\
+f'(x) &= \res{-\frac{3}{(3x+2)^{2}}} &&\justif{on remplace}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v(x) &= 1-4x &&\justif{donc $v'(x)=-4$}\\[4pt]
+g'(x) &= -\frac{v'(x)}{v(x)^{2}} &&\\
+g'(x) &= -\frac{-4}{(1-4x)^{2}} &&\justif{on remplace}\\
+g'(x) &= \res{\frac{4}{(1-4x)^{2}}} &&\justif{moins par moins : plus}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+v(x) &= x^{2}+1 &&\justif{donc $v'(x)=2x$}\\[4pt]
+h'(x) &= -\frac{v'(x)}{v(x)^{2}} &&\\
+h'(x) &= \res{-\frac{2x}{(x^{2}+1)^{2}}} &&
+\end{calculs}
+\cas{d)}
+\explique{$k(x)=5\times\dfrac{1}{2x-1}$ : le $5$ reste devant.}{comme $\frac{5}{x}=5\times\frac{1}{x}$}\nopagebreak
+\begin{calculs}
+v(x) &= 2x-1 &&\justif{donc $v'(x)=2$}\\[4pt]
+k'(x) &= 5\times\left(-\frac{v'(x)}{v(x)^{2}}\right) &&\\
+k'(x) &= 5\times\left(-\frac{2}{(2x-1)^{2}}\right) &&\\
+k'(x) &= \res{-\frac{10}{(2x-1)^{2}}} &&
+\end{calculs}
+\rem{Le dénominateur $v^{2}$ reste écrit au carré : on ne le développe pas.}
 \end{exo}
 
 \begin{exo}[Des quotients]
-a) $u=x+4$, $u'=1$ ; $v=x-1$, $v'=1$.
+\explique{On écrit $u$, $u'$, $v$ et $v'$, puis on recopie la formule et on
+remplace.}{$\dfrac{u'\times v-u\times v'}{v^{2}}$}
+\cas{a)}
 \begin{calculs}
-f'(x) &= \frac{1\times(x-1)-(x+4)\times 1}{(x-1)^{2}}\\
-f'(x) &= \frac{x-1-x-4}{(x-1)^{2}}\\
-f'(x) &= \res{\frac{-5}{(x-1)^{2}}}
+u(x) &= x+4 &&\justif{donc $u'(x)=1$}\\
+v(x) &= x-1 &&\justif{donc $v'(x)=1$}\\[4pt]
+f'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\justif{la formule du quotient}\\
+f'(x) &= \frac{1\times(x-1)-(x+4)\times 1}{(x-1)^{2}} &&\justif{parenthèses autour de $u(x)$}\\
+f'(x) &= \frac{x-1-x-4}{(x-1)^{2}} &&\justif{le $-$ porte sur $x$ et sur $4$}\\
+f'(x) &= \res{\frac{-5}{(x-1)^{2}}} &&\justif{on réduit}
 \end{calculs}
-b) $g'(x)=\dfrac{2(x+2)-(2x-1)}{(x+2)^{2}}=\res{\dfrac{5}{(x+2)^{2}}}$\par\smallskip
-c) $h'(x)=\dfrac{3(x+1)-3x}{(x+1)^{2}}=\res{\dfrac{3}{(x+1)^{2}}}$\par\smallskip
-d) $u'=2x$ ; $v'=1$.
+\cas{b)}
 \begin{calculs}
-k'(x) &= \frac{2x(x-2)-(x^{2}+1)}{(x-2)^{2}}\\
-k'(x) &= \frac{2x^{2}-4x-x^{2}-1}{(x-2)^{2}}\\
-k'(x) &= \res{\frac{x^{2}-4x-1}{(x-2)^{2}}}
+u(x) &= 2x-1 &&\justif{donc $u'(x)=2$}\\
+v(x) &= x+2 &&\justif{donc $v'(x)=1$}\\[4pt]
+g'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\\
+g'(x) &= \frac{2(x+2)-(2x-1)\times 1}{(x+2)^{2}} &&\\
+g'(x) &= \frac{2x+4-2x+1}{(x+2)^{2}} &&\justif{$-(-1)=+1$}\\
+g'(x) &= \res{\frac{5}{(x+2)^{2}}} &&
 \end{calculs}
-\rem{Des parenthèses autour de $u(x)$ : le $-$ porte sur tout le terme.}
+\cas{c)}
+\begin{calculs}
+u(x) &= 3x &&\justif{donc $u'(x)=3$}\\
+v(x) &= x+1 &&\justif{donc $v'(x)=1$}\\[4pt]
+h'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\\
+h'(x) &= \frac{3(x+1)-3x\times 1}{(x+1)^{2}} &&\\
+h'(x) &= \frac{3x+3-3x}{(x+1)^{2}} &&\\
+h'(x) &= \res{\frac{3}{(x+1)^{2}}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(x) &= x^{2}+1 &&\justif{donc $u'(x)=2x$}\\
+v(x) &= x-2 &&\justif{donc $v'(x)=1$}\\[4pt]
+k'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\\
+k'(x) &= \frac{2x(x-2)-(x^{2}+1)\times 1}{(x-2)^{2}} &&\\
+k'(x) &= \frac{2x^{2}-4x-x^{2}-1}{(x-2)^{2}} &&\justif{on développe le numérateur}\\
+k'(x) &= \res{\frac{x^{2}-4x-1}{(x-2)^{2}}} &&
+\end{calculs}
+\rem{Des parenthèses autour de $u(x)$ : le signe $-$ porte sur tout le terme. En a),
+$-(x+4)=-x-4$, et non $-x+4$.}
 \end{exo}
 
 \begin{exo}[Entraînement]
-\begin{reponses}
-  \item $f'(x)=\res{-\dfrac{1}{(x+5)^{2}}}$
-  \item $g'(x)=3\times\left(-\dfrac{4}{(4x-1)^{2}}\right)=\res{-\dfrac{12}{(4x-1)^{2}}}$
-  \item $h'(x)=\dfrac{(x+2)-(x-3)}{(x+2)^{2}}=\res{\dfrac{5}{(x+2)^{2}}}$
-  \item $k'(x)=\dfrac{8x-12-8x-2}{(2x-3)^{2}}=\res{\dfrac{-14}{(2x-3)^{2}}}$
-  \quad (numérateur : $4(2x-3)-(4x+1)\times 2$)
-  \item $m'(x)=2\times\left(-\dfrac{2x}{(x^{2}+4)^{2}}\right)=\res{-\dfrac{4x}{(x^{2}+4)^{2}}}$
-  \item $p'(x)=\dfrac{2x(x+1)-x^{2}}{(x+1)^{2}}=\res{\dfrac{x^{2}+2x}{(x+1)^{2}}}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+v(x) &= x+5 &&\justif{donc $v'(x)=1$}\\[4pt]
+f'(x) &= -\frac{v'(x)}{v(x)^{2}} &&\justif{la formule de l'inverse}\\
+f'(x) &= \res{-\frac{1}{(x+5)^{2}}} &&
+\end{calculs}
+\cas{b)}
+\explique{$g(x)=3\times\dfrac{1}{4x-1}$ : le $3$ reste devant.}{}\nopagebreak
+\begin{calculs}
+v(x) &= 4x-1 &&\justif{donc $v'(x)=4$}\\[4pt]
+g'(x) &= 3\times\left(-\frac{4}{(4x-1)^{2}}\right) &&\\
+g'(x) &= \res{-\frac{12}{(4x-1)^{2}}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= x-3 &&\justif{donc $u'(x)=1$}\\
+v(x) &= x+2 &&\justif{donc $v'(x)=1$}\\[4pt]
+h'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\justif{la formule du quotient}\\
+h'(x) &= \frac{1\times(x+2)-(x-3)\times 1}{(x+2)^{2}} &&\\
+h'(x) &= \frac{x+2-x+3}{(x+2)^{2}} &&\justif{$-(-3)=+3$}\\
+h'(x) &= \res{\frac{5}{(x+2)^{2}}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(x) &= 4x+1 &&\justif{donc $u'(x)=4$}\\
+v(x) &= 2x-3 &&\justif{donc $v'(x)=2$}\\[4pt]
+k'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\\
+k'(x) &= \frac{4(2x-3)-(4x+1)\times 2}{(2x-3)^{2}} &&\\
+k'(x) &= \frac{8x-12-8x-2}{(2x-3)^{2}} &&\\
+k'(x) &= \res{\frac{-14}{(2x-3)^{2}}} &&
+\end{calculs}
+\cas{e)}
+\explique{$m(x)=2\times\dfrac{1}{x^{2}+4}$ : le $2$ reste devant.}{}\nopagebreak
+\begin{calculs}
+v(x) &= x^{2}+4 &&\justif{donc $v'(x)=2x$}\\[4pt]
+m'(x) &= 2\times\left(-\frac{2x}{(x^{2}+4)^{2}}\right) &&\\
+m'(x) &= \res{-\frac{4x}{(x^{2}+4)^{2}}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+u(x) &= x^{2} &&\justif{donc $u'(x)=2x$}\\
+v(x) &= x+1 &&\justif{donc $v'(x)=1$}\\[4pt]
+p'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\\
+p'(x) &= \frac{2x(x+1)-x^{2}\times 1}{(x+1)^{2}} &&\\
+p'(x) &= \frac{2x^{2}+2x-x^{2}}{(x+1)^{2}} &&\\
+p'(x) &= \res{\frac{x^{2}+2x}{(x+1)^{2}}} &&
+\end{calculs}
+\rem{Un nombre seul au numérateur (b et e) : la formule de l'inverse suffit, le nombre
+reste devant.}
 \end{exo}
 
 \begin{exo}[Quotient et tangente]
-a) $u=2x+1$, $u'=2$ ; $v=x-1$, $v'=1$.
+\cas{a)}
 \begin{calculs}
-f'(x) &= \frac{2(x-1)-(2x+1)\times 1}{(x-1)^{2}}\\
-f'(x) &= \frac{2x-2-2x-1}{(x-1)^{2}}\\
-f'(x) &= \res{\frac{-3}{(x-1)^{2}}}
+u(x) &= 2x+1 &&\justif{donc $u'(x)=2$}\\
+v(x) &= x-1 &&\justif{donc $v'(x)=1$}\\[4pt]
+f'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\justif{la formule du quotient}\\
+f'(x) &= \frac{2(x-1)-(2x+1)\times 1}{(x-1)^{2}} &&\\
+f'(x) &= \frac{2x-2-2x-1}{(x-1)^{2}} &&\\
+f'(x) &= \res{\frac{-3}{(x-1)^{2}}} &&
 \end{calculs}
-b) $f(2)=\dfrac{5}{1}=5$ et $f'(2)=\dfrac{-3}{1}=-3$.
+\cas{b)}
 \begin{calculs}
-y &= -3(x-2)+5\\
-y &= \res{-3x+11}
+f(2) &= \frac{2\times 2+1}{2-1} = 5 &&\justif{on remplace $x$ par $2$ dans $f(x)$}\\
+f'(2) &= \frac{-3}{(2-1)^{2}} = -3 &&\justif{puis dans $f'(x)$}\\[4pt]
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= -3(x-2)+5 &&\\
+y &= -3x+6+5 &&\justif{on développe}\\
+y &= -3x+11 &&
 \end{calculs}
+\explique{La tangente au point d'abscisse $2$ a pour équation $\res{y=-3x+11}$.}{}
 \end{exo}
 
 \partie{Fonctions composées}
 
 \begin{exo}[Des puissances]
-On écrit $u$, $u'$ et $n$, puis $n\times u'\times u^{n-1}$.
-\begin{reponses}
-  \item $u'=3$, $n=4$ : $f'(x)=\res{12(3x-2)^{3}}$
-  \item $u'=2x$, $n=3$ : $g'(x)=\res{6x(x^{2}+1)^{2}}$
-  \item $u'=-2$, $n=5$ : $h'(x)=\res{-10(1-2x)^{4}}$
-  \item $u'=3x^{2}+1$, $n=2$ : $k'(x)=\res{2(3x^{2}+1)(x^{3}+x)}$
-\end{reponses}
+\explique{On écrit $u$, $u'$ et $n$, puis on recopie la formule
+$n\times u'\times u^{n-1}$ et on remplace ; on ne développe pas.}{méthode 10}
+\cas{a)}
+\begin{calculs}
+u(x) &= 3x-2 &&\justif{donc $u'(x)=3$ ; ici $n=4$}\\[4pt]
+f'(x) &= 4\times u'(x)\times u(x)^{3} &&\justif{la formule de $u^{n}$}\\
+f'(x) &= 4\times 3\times(3x-2)^{3} &&\justif{on remplace}\\
+f'(x) &= \res{12(3x-2)^{3}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= x^{2}+1 &&\justif{donc $u'(x)=2x$ ; ici $n=3$}\\[4pt]
+g'(x) &= 3\times u'(x)\times u(x)^{2} &&\\
+g'(x) &= 3\times 2x\times(x^{2}+1)^{2} &&\\
+g'(x) &= \res{6x(x^{2}+1)^{2}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= 1-2x &&\justif{donc $u'(x)=-2$ ; ici $n=5$}\\[4pt]
+h'(x) &= 5\times u'(x)\times u(x)^{4} &&\\
+h'(x) &= 5\times(-2)\times(1-2x)^{4} &&\\
+h'(x) &= \res{-10(1-2x)^{4}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(x) &= x^{3}+x &&\justif{donc $u'(x)=3x^{2}+1$ ; ici $n=2$}\\[4pt]
+k'(x) &= 2\times u'(x)\times u(x)^{1} &&\justif{$u^{1}=u$ : c'est la formule du carré}\\
+k'(x) &= \res{2(3x^{2}+1)(x^{3}+x)} &&
+\end{calculs}
+\rem{Erreur fréquente : oublier $u'$. En a), $4(3x-2)^{3}$ est faux : il manque le
+facteur $3$.}
 \end{exo}
 
 \begin{exo}[Cosinus et sinus composés]
-\begin{reponses}
-  \item $u=4x$, $u'=4$ : $f'(x)=\res{-4\sin(4x)}$
-  \item $u'=2$ : $g'(x)=\res{2\cos(2x+3)}$
-  \item $u'=5$ : $h'(x)=3\times(-5)\sin(5x-1)=\res{-15\sin(5x-1)}$
-  \item $u'=100$ : $k'(t)=2\times 100\cos(100t)=\res{200\cos(100t)}$
-\end{reponses}
+\explique{On écrit $u$ et $u'$ ; $\cos(u)$ devient $-u'\times\sin(u)$, $\sin(u)$ devient
+$u'\times\cos(u)$.}{propriété 7}
+\cas{a)}
+\begin{calculs}
+u(x) &= 4x &&\justif{donc $u'(x)=4$}\\[4pt]
+f'(x) &= -u'(x)\times\sin\big(u(x)\big) &&\justif{la formule de $\cos(u)$}\\
+f'(x) &= \res{-4\sin(4x)} &&\justif{on remplace}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= 2x+3 &&\justif{donc $u'(x)=2$}\\[4pt]
+g'(x) &= u'(x)\times\cos\big(u(x)\big) &&\justif{la formule de $\sin(u)$}\\
+g'(x) &= \res{2\cos(2x+3)} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= 5x-1 &&\justif{donc $u'(x)=5$}\\[4pt]
+h'(x) &= 3\times\big(-5\sin(5x-1)\big) &&\justif{la formule de $\cos(u)$ ; le $3$ reste devant}\\
+h'(x) &= \res{-15\sin(5x-1)} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(t) &= 100t &&\justif{la variable est $t$ ; $u'(t)=100$}\\[4pt]
+k'(t) &= 2\times 100\cos(100t) &&\justif{la formule de $\sin(u)$ ; le $2$ reste devant}\\
+k'(t) &= \res{200\cos(100t)} &&
+\end{calculs}
 \end{exo}
 
 \begin{exo}[Entraînement]
-\begin{reponses}
-  \item $f'(x)=3\times 5(5x+2)^{2}=\res{15(5x+2)^{2}}$
-  \item $g'(x)=\res{4(2x-3)(x^{2}-3x)^{3}}$
-  \item $h'(x)=\res{-3\sin(3x-2)}$
-  \item $u=x^{2}$, $u'=2x$ : $k'(x)=4\times 2x\cos(x^{2})=\res{8x\cos(x^{2})}$
-  \item $m'(t)=5\times(-100)\sin(100t+1)=\res{-500\sin(100t+1)}$
-  \item $u'=-1$ : $p'(x)=\res{-6(2-x)^{5}}$
-\end{reponses}
+\cas{a)}
+\begin{calculs}
+u(x) &= 5x+2 &&\justif{donc $u'(x)=5$ ; ici $n=3$}\\[4pt]
+f'(x) &= 3\times u'(x)\times u(x)^{2} &&\justif{la formule de $u^{n}$}\\
+f'(x) &= 3\times 5\times(5x+2)^{2} &&\\
+f'(x) &= \res{15(5x+2)^{2}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u(x) &= x^{2}-3x &&\justif{donc $u'(x)=2x-3$ ; ici $n=4$}\\[4pt]
+g'(x) &= 4\times u'(x)\times u(x)^{3} &&\\
+g'(x) &= \res{4(2x-3)(x^{2}-3x)^{3}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+u(x) &= 3x-2 &&\justif{donc $u'(x)=3$}\\[4pt]
+h'(x) &= -u'(x)\times\sin\big(u(x)\big) &&\justif{la formule de $\cos(u)$}\\
+h'(x) &= \res{-3\sin(3x-2)} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+u(x) &= x^{2} &&\justif{donc $u'(x)=2x$}\\[4pt]
+k'(x) &= 4\times 2x\cos(x^{2}) &&\justif{la formule de $\sin(u)$ ; le $4$ reste devant}\\
+k'(x) &= \res{8x\cos(x^{2})} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+u(t) &= 100t+1 &&\justif{donc $u'(t)=100$}\\[4pt]
+m'(t) &= 5\times\big(-100\sin(100t+1)\big) &&\justif{la formule de $\cos(u)$}\\
+m'(t) &= \res{-500\sin(100t+1)} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+u(x) &= 2-x &&\justif{donc $u'(x)=-1$ ; ici $n=6$}\\[4pt]
+p'(x) &= 6\times u'(x)\times u(x)^{5} &&\\
+p'(x) &= 6\times(-1)\times(2-x)^{5} &&\\
+p'(x) &= \res{-6(2-x)^{5}} &&
+\end{calculs}
+\rem{En f), $u'=-1$ : le signe $-$ ne s'oublie pas, même si l'on n'écrit pas le $1$.}
 \end{exo}
 
 \begin{exo}[Un piston]
-a) $u=2t$, $u'=2$ : $p'(t)=6\times(-2)\sin(2t)=\res{-12\sin(2t)}$\par\smallskip
-b) $p'(0)=-12\sin 0=\res{0\text{ cm/s}}$ : au départ, le piston est immobile.\par\smallskip
-c) $\sin(2t)$ est entre $-1$ et $1$, donc $p'(t)$ est entre $-12$ et $12$ : au plus
-$\res{12\text{ cm/s}}$.
+\cas{a)}
+\begin{calculs}
+u(t) &= 2t &&\justif{donc $u'(t)=2$}\\[4pt]
+p'(t) &= 6\times\big(-2\sin(2t)\big) &&\justif{la formule de $\cos(u)$ ; le $6$ reste devant}\\
+p'(t) &= \res{-12\sin(2t)} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+p'(0) &= -12\sin(2\times 0) &&\justif{on remplace $t$ par $0$}\\
+p'(0) &= -12\times 0 &&\justif{$\sin 0=0$}\\
+p'(0) &= 0 &&
+\end{calculs}
+\explique{À l'instant $t=0$, la vitesse du piston est $\res{0\text{ cm/s}}$ : il est
+immobile.}{il est au bout de sa course, à $6$~cm}
+\cas{c)}
+\explique{$\sin(2t)$ est compris entre $-1$ et $1$, donc $p'(t)=-12\sin(2t)$ est compris
+entre $-12$ et $12$.}{on multiplie par $-12$}
+\explique{La plus grande vitesse possible du piston est $\res{12\text{ cm/s}}$ (en valeur
+absolue).}{atteinte quand $\sin(2t)$ vaut $1$ ou $-1$}
 \end{exo}
 
 \begin{exo}[Dérivées en vrac]
-\begin{reponses}
-  \item Somme : $f'(x)=\res{12x^{3}+\dfrac{2}{x^{2}}}$
-  \item Produit : $g'(x)=2x(x-3)+(x^{2}+1)=\res{3x^{2}-6x+1}$
-  \item Puissance : $h'(x)=3\times 2(2x+5)^{2}=\res{6(2x+5)^{2}}$
-  \item Inverse : $k'(x)=4\times\left(-\dfrac{2x}{(x^{2}+3)^{2}}\right)=\res{-\dfrac{8x}{(x^{2}+3)^{2}}}$
-  \item Quotient : $m'(x)=\dfrac{(x^{2}+1)-(x-1)\times 2x}{(x^{2}+1)^{2}}
-  =\res{\dfrac{-x^{2}+2x+1}{(x^{2}+1)^{2}}}$
-  \item Produit : $p'(x)=\res{\cos x-x\sin x}$
-\end{reponses}
+\explique{On reconnaît d'abord la forme (somme, produit, puissance, inverse, quotient),
+puis on applique la formule correspondante.}{les tableaux des propriétés 3 à 7}
+\cas{a)}
+\explique{Une somme : on dérive terme par terme.}{}\nopagebreak
+\begin{calculs}
+f'(x) &= 3\times 4x^{3}-2\times\left(-\frac{1}{x^{2}}\right) &&\justif{$\frac{1}{x}$ devient $-\frac{1}{x^{2}}$}\\
+f'(x) &= \res{12x^{3}+\frac{2}{x^{2}}} &&
+\end{calculs}
+\cas{b)}
+\explique{Un produit $u\times v$.}{}\nopagebreak
+\begin{calculs}
+u(x) &= x^{2}+1 &&\justif{donc $u'(x)=2x$}\\
+v(x) &= x-3 &&\justif{donc $v'(x)=1$}\\[4pt]
+g'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+g'(x) &= 2x(x-3)+(x^{2}+1)\times 1 &&\\
+g'(x) &= 2x^{2}-6x+x^{2}+1 &&\\
+g'(x) &= \res{3x^{2}-6x+1} &&
+\end{calculs}
+\cas{c)}
+\explique{Une puissance $u^{3}$.}{}\nopagebreak
+\begin{calculs}
+u(x) &= 2x+5 &&\justif{donc $u'(x)=2$ ; ici $n=3$}\\[4pt]
+h'(x) &= 3\times u'(x)\times u(x)^{2} &&\\
+h'(x) &= 3\times 2\times(2x+5)^{2} &&\\
+h'(x) &= \res{6(2x+5)^{2}} &&
+\end{calculs}
+\cas{d)}
+\explique{Un inverse : $k(x)=4\times\dfrac{1}{x^{2}+3}$.}{le $4$ reste devant}\nopagebreak
+\begin{calculs}
+v(x) &= x^{2}+3 &&\justif{donc $v'(x)=2x$}\\[4pt]
+k'(x) &= 4\times\left(-\frac{v'(x)}{v(x)^{2}}\right) &&\\
+k'(x) &= 4\times\left(-\frac{2x}{(x^{2}+3)^{2}}\right) &&\\
+k'(x) &= \res{-\frac{8x}{(x^{2}+3)^{2}}} &&
+\end{calculs}
+\cas{e)}
+\explique{Un quotient $\dfrac{u}{v}$.}{}\nopagebreak
+\begin{calculs}
+u(x) &= x-1 &&\justif{donc $u'(x)=1$}\\
+v(x) &= x^{2}+1 &&\justif{donc $v'(x)=2x$}\\[4pt]
+m'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\\
+m'(x) &= \frac{1\times(x^{2}+1)-(x-1)\times 2x}{(x^{2}+1)^{2}} &&\\
+m'(x) &= \frac{x^{2}+1-2x^{2}+2x}{(x^{2}+1)^{2}} &&\justif{le $-$ porte sur $2x^{2}-2x$}\\
+m'(x) &= \res{\frac{-x^{2}+2x+1}{(x^{2}+1)^{2}}} &&
+\end{calculs}
+\cas{f)}
+\explique{Un produit $u\times v$.}{}\nopagebreak
+\begin{calculs}
+u(x) &= x &&\justif{donc $u'(x)=1$}\\
+v(x) &= \cos x &&\justif{donc $v'(x)=-\sin x$}\\[4pt]
+p'(x) &= u'(x)\,v(x)+u(x)\,v'(x) &&\\
+p'(x) &= 1\times\cos x+x\times(-\sin x) &&\\
+p'(x) &= \res{\cos x-x\sin x} &&
+\end{calculs}
 \end{exo}
 
 \partie{Dérivée et sens de variation}
 
 \begin{exo}[Du signe de $f'$ aux variations]
-$f'(x)<0$ : $f$ décroît ; $f'(x)>0$ : $f$ croît.
+\cas{Résolution}
+\explique{Là où $f'(x)<0$, $f$ est décroissante ; là où $f'(x)>0$, $f$ est
+croissante.}{propriété 8}
+\explique{On place les images de l'énoncé au bout des flèches : $f$ décroît de $2$ à
+$-3$, croît de $-3$ à $4$, puis décroît de $4$ à $1$.}{une flèche va d'une valeur à la
+suivante}\nopagebreak
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-4$,$-1$,$3$,$5$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-4$,$-1$,$3$,$5$}
   \tkzTabLine{,-,z,+,z,-,}
   \tkzTabVar{+/$2$,-/$-3$,+/$4$,-/$1$}
 \end{tikzpicture}
@@ -778,12 +1729,29 @@ $f'(x)<0$ : $f$ décroît ; $f'(x)>0$ : $f$ croît.
 \end{exo}
 
 \begin{exo}[Un trinôme]
-a) $f'(x)=\res{2x-6}$ ; $2x-6=0$ pour $x=3$. Affine de coefficient $2>0$ : négatif
-avant $3$, positif après.\par\smallskip
-b) $f(0)=5$ ; $f(3)=9-18+5=-4$ ; $f(6)=36-36+5=5$.
+\cas{a)}
+\begin{calculs}
+f'(x) &= 2x-6+0 &&\justif{terme par terme}\\
+f'(x) &= \res{2x-6} &&
+\end{calculs}
+\explique{On cherche quand $f'(x)$ s'annule :}{}\nopagebreak
+\begin{calculs}
+2x-6 &= 0 &&\\
+2x &= 6 &&\justif{on ajoute $6$}\\
+x &= 3 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$2x-6$ est affine, de coefficient directeur $2>0$ : négatif avant $3$, positif
+après.}{signe d'une expression affine}
+\cas{b)}
+\explique{On calcule les images des bornes et de $3$ :}{elles complètent le tableau}\nopagebreak
+\begin{calculs}
+f(0) &= 5 &&\\
+f(3) &= 9-18+5 = -4 &&\\
+f(6) &= 36-36+5 = 5 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$3$,$6$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$3$,$6$}
   \tkzTabLine{,-,z,+,}
   \tkzTabVar{+/$5$,-/$-4$,+/$5$}
 \end{tikzpicture}
@@ -791,60 +1759,97 @@ b) $f(0)=5$ ; $f(3)=9-18+5=-4$ ; $f(6)=36-36+5=5$.
 \end{exo}
 
 \begin{exo}[Un polynôme de degré 3]
-a) $f'(x)=\res{3x^{2}-6x}$\par\smallskip
-b) $a=3$, $b=-6$, $c=0$.
+\cas{a)}
 \begin{calculs}
-\Delta &= (-6)^{2}-4\times 3\times 0\\
-\Delta &= 36\\
-x_{1} &= \frac{6-6}{6} = 0\\
-x_{2} &= \frac{6+6}{6} = 2
+f'(x) &= 3x^{2}-3\times 2x+0 &&\justif{terme par terme}\\
+f'(x) &= \res{3x^{2}-6x} &&
 \end{calculs}
-Du signe de $a=3>0$ à l'extérieur des racines.\par\smallskip
-c) $f(-1)=-1-3+1=-3$ ; $f(0)=1$ ; $f(2)=8-12+1=-3$ ; $f(3)=27-27+1=1$.
+\cas{b)}
+\explique{$f'(x)$ est un trinôme : $a=3$, $b=-6$ et $c=0$.}{on cherche ses racines
+(chapitre 3)}\nopagebreak
+\begin{calculs}
+\Delta &= b^{2}-4ac &&\justif{le discriminant}\\
+\Delta &= (-6)^{2}-4\times 3\times 0 &&\\
+\Delta &= 36 &&\justif{$\Delta>0$ : deux racines}\\[4pt]
+x_{1} &= \frac{6-6}{6} = 0 &&\justif{$\frac{-b-\sqrt{\Delta}}{2a}$, avec $\sqrt{36}=6$}\\
+x_{2} &= \frac{6+6}{6} = 2 &&\justif{$\frac{-b+\sqrt{\Delta}}{2a}$}
+\end{calculs}
+\explique{$f'(x)$ est du signe de $a=3$, donc positif, à l'extérieur des racines, et
+négatif entre elles.}{signe d'un trinôme}
+\cas{c)}
+\explique{On calcule les images des bornes et des racines :}{}\nopagebreak
+\begin{calculs}
+f(-1) &= -1-3+1 = -3 &&\justif{$(-1)^{3}=-1$ et $(-1)^{2}=1$}\\
+f(0) &= 1 &&\\
+f(2) &= 8-12+1 = -3 &&\\
+f(3) &= 27-27+1 = 1 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-1$,$0$,$2$,$3$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-1$,$0$,$2$,$3$}
   \tkzTabLine{,+,z,-,z,+,}
   \tkzTabVar{-/$-3$,+/$1$,-/$-3$,+/$1$}
 \end{tikzpicture}
 \end{center}
-\rem{Plus rapide : $3x^{2}-6x=3x(x-2)$, racines $0$ et $2$.}
+\rem{Plus rapide, quand $c=0$ : $3x^{2}-6x=3x(x-2)$, qui s'annule en $0$ et en $2$.}
 \end{exo}
 
 \begin{exo}[Un coefficient négatif]
-a) $g'(x)=\res{-6x^{2}+6x+12}$\par\smallskip
-b)
+\cas{a)}
 \begin{calculs}
-\Delta &= 6^{2}-4\times(-6)\times 12\\
-\Delta &= 324\\
-x_{1} &= \frac{-6+18}{-12} = -1\\
-x_{2} &= \frac{-6-18}{-12} = 2
+g'(x) &= -2\times 3x^{2}+3\times 2x+12-0 &&\justif{terme par terme}\\
+g'(x) &= \res{-6x^{2}+6x+12} &&
 \end{calculs}
-Du signe de $a=-6<0$ (négatif) à l'extérieur des racines, positif entre elles.
-\par\smallskip
-c) $g(-2)=16+12-24-5=-1$ ; $g(-1)=2+3-12-5=-12$ ; $g(2)=-16+12+24-5=15$ ;
-$g(3)=-54+27+36-5=4$.
+\cas{b)}
+\explique{$g'(x)$ est un trinôme : $a=-6$, $b=6$ et $c=12$.}{on cherche ses racines}\nopagebreak
+\begin{calculs}
+\Delta &= 6^{2}-4\times(-6)\times 12 &&\justif{$b^{2}-4ac$}\\
+\Delta &= 36+288 &&\\
+\Delta &= 324 &&\justif{$\sqrt{324}=18$}\\[4pt]
+x_{1} &= \frac{-6+18}{-12} = -1 &&\justif{$2a=-12$}\\
+x_{2} &= \frac{-6-18}{-12} = 2 &&
+\end{calculs}
+\explique{$g'(x)$ est du signe de $a=-6$, donc négatif, à l'extérieur des racines, et
+positif entre elles.}{signe d'un trinôme}
+\cas{c)}
+\begin{calculs}
+g(-2) &= 16+12-24-5 = -1 &&\justif{$-2\times(-2)^{3}=-2\times(-8)=16$}\\
+g(-1) &= 2+3-12-5 = -12 &&\\
+g(2) &= -16+12+24-5 = 15 &&\\
+g(3) &= -54+27+36-5 = 4 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-2$,$-1$,$2$,$3$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-2$,$-1$,$2$,$3$}
   \tkzTabLine{,-,z,+,z,-,}
   \tkzTabVar{+/$-1$,-/$-12$,+/$15$,-/$4$}
 \end{tikzpicture}
 \end{center}
+\rem{Avec $a<0$, le trinôme est négatif à l'extérieur des racines : les signes sont
+inversés par rapport à l'exercice 42.}
 \end{exo}
 
 \begin{exo}[Un quotient]
-a) $u=2x+1$, $u'=2$ ; $v=x+1$, $v'=1$.
+\cas{a)}
 \begin{calculs}
-f'(x) &= \frac{2(x+1)-(2x+1)\times 1}{(x+1)^{2}}\\
-f'(x) &= \frac{2x+2-2x-1}{(x+1)^{2}}\\
-f'(x) &= \frac{1}{(x+1)^{2}}
+u(x) &= 2x+1 &&\justif{donc $u'(x)=2$}\\
+v(x) &= x+1 &&\justif{donc $v'(x)=1$}\\[4pt]
+f'(x) &= \frac{u'(x)\,v(x)-u(x)\,v'(x)}{v(x)^{2}} &&\justif{la formule du quotient}\\
+f'(x) &= \frac{2(x+1)-(2x+1)\times 1}{(x+1)^{2}} &&\\
+f'(x) &= \frac{2x+2-2x-1}{(x+1)^{2}} &&\\
+f'(x) &= \frac{1}{(x+1)^{2}} &&\justif{c'est l'expression demandée}
 \end{calculs}
-b) Un carré est positif : $f'(x)>0$, donc $f$ est \res{\text{croissante}} sur
-$\intff{0}{4}$. $f(0)=1$ et $f(4)=\dfrac{9}{5}$.
+\cas{b)}
+\explique{Le numérateur $1$ est positif et le dénominateur $(x+1)^{2}$ est un carré, non
+nul sur $\intff{0}{4}$ : $f'(x)>0$. Donc $f$ est \res{croissante} sur
+$\intff{0}{4}$.}{propriété 8}\nopagebreak
+\begin{calculs}
+f(0) &= \frac{1}{1} = 1 &&\justif{images des bornes}\\
+f(4) &= \frac{9}{5} &&\justif{$\frac{2\times 4+1}{4+1}$}
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=2.4]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$4$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=3]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$4$}
   \tkzTabLine{,+,}
   \tkzTabVar{-/$1$,+/$\frac{9}{5}$}
 \end{tikzpicture}
@@ -852,32 +1857,76 @@ $\intff{0}{4}$. $f(0)=1$ et $f(4)=\dfrac{9}{5}$.
 \end{exo}
 
 \begin{exo}[Étude complète et tracé]
-a) $f'(x)=\res{3x^{2}-3}$ ; $\Delta=0-4\times 3\times(-3)=36$, racines
-$\dfrac{0\pm 6}{6}$ : $-1$ et $1$. Positif à l'extérieur ($a=3>0$).\par\smallskip
-b) $f(-2)=-2$ ; $f(-1)=2$ ; $f(1)=-2$ ; $f(2)=2$.
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{3x^{2}-3} &&\justif{$-3x$ devient $-3$}
+\end{calculs}
+\explique{$f'(x)$ est un trinôme : $a=3$, $b=0$ et $c=-3$.}{}\nopagebreak
+\begin{calculs}
+\Delta &= 0^{2}-4\times 3\times(-3) &&\\
+\Delta &= 36 &&\\[4pt]
+x_{1} &= \frac{0-6}{6} = -1 &&\justif{$\sqrt{36}=6$}\\
+x_{2} &= \frac{0+6}{6} = 1 &&
+\end{calculs}
+\explique{$f'(x)$ est du signe de $a=3$, donc positif, à l'extérieur des racines, et
+négatif entre elles.}{}
+\cas{b)}
+\begin{calculs}
+f(-2) &= -8+6 = -2 &&\\
+f(-1) &= -1+3 = 2 &&\\
+f(1) &= 1-3 = -2 &&\\
+f(2) &= 8-6 = 2 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-2$,$-1$,$1$,$2$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-2$,$-1$,$1$,$2$}
   \tkzTabLine{,+,z,-,z,+,}
   \tkzTabVar{-/$-2$,+/$2$,-/$-2$,+/$2$}
 \end{tikzpicture}
 \end{center}
-c) $f(0)=0$ et $f'(0)=-3$ : $\res{y=-3x}$.\par\smallskip
-\begin{minipage}[c]{0.5\linewidth}\raggedright
-d) Valeurs : \par
-$f(-2)=-2$ ; $f(-1)=2$ ;\par
-$f(0)=0$ ; $f(1)=-2$ ;\par
-$f(2)=2$.\par\smallskip
-e) Tangentes horizontales en $-1$ et en $1$.
+\cas{c)}
+\begin{calculs}
+f(0) &= 0 &&\\
+f'(0) &= -3 &&\justif{$3\times 0^{2}-3$}\\[4pt]
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= -3x &&
+\end{calculs}
+\explique{La tangente $T$ a pour équation $\res{y=-3x}$.}{}
+\cas{d)}
+\explique{Les valeurs viennent des questions b) et c) :}{}\nopagebreak
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
+\hline
+$f(x)$ & $\res{-2}$ & $\res{2}$ & $\res{0}$ & $\res{-2}$ & $\res{2}$\\
+\hline
+\end{tabular}
+\end{center}
+\cas{e)}
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+\explique{On trace $T$ avec deux points : l'origine, puis $(1\,;-3)$ (on avance de $1$,
+on descend de $3$).}{$y=-3x$}
+\explique{On place les cinq points du tableau de valeurs, puis on trace $\Cf$ : tangente
+horizontale en $-1$ et en $1$ (extremums), tangente $T$ en $0$.}{la courbe suit le
+tableau de variations}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
   \repere{-3}{-4}{3}{4}
+  \gradx{-2,-1,1,2} \grady{-3,-2,-1,1,2,3}
   \draw[coulCourbeB,thick] (-1.3,3.9)--(1.3,-3.9);
-  \draw[coulCourbe,line width=1pt,domain=-2:2,samples=50] plot (\x,{\x*\x*\x-3*\x});
+  \draw[coulCourbe,line width=1.1pt]
+    (-2,-2) .. controls (-1.667,1) and (-1.333,2) .. (-1,2)
+            .. controls (-0.667,2) and (-0.333,1) .. (0,0)
+            .. controls (0.333,-1) and (0.667,-2) .. (1,-2)
+            .. controls (1.333,-2) and (1.667,-1) .. (2,2);
   \path[coulCourbe] (-2,-2) node[croix]{} (-1,2) node[croix]{} (0,0) node[croix]{}
     (1,-2) node[croix]{} (2,2) node[croix]{};
-  \node[coulCourbeB,font=\footnotesize] at (-1.8,3.4) {$T$};
+  \path[coulCourbeB] (1,-3) node[croix]{};
+  \node[coulCourbeB,font=\footnotesize] at (-1.5,3.3) {$T$};
+  \node[coulCourbe,font=\footnotesize] at (2.4,1.2) {$\Cf$};
 \end{tikzpicture}
 \end{minipage}
 \end{exo}
@@ -885,92 +1934,194 @@ e) Tangentes horizontales en $-1$ et en $1$.
 \partie{Problèmes concrets : maximum et minimum}
 
 \begin{exo}[Un coût minimal]
-a) $C'(q)=\res{2q-30}$\par\smallskip
-b) $2q-30=0$ pour $q=15$ ; coefficient $2>0$ : négatif puis positif.
-$C(0)=300$ ; $C(15)=225-450+300=75$ ; $C(25)=625-750+300=175$.
+\cas{a)}
+\begin{calculs}
+C'(q) &= 2q-30+0 &&\justif{la variable s'appelle $q$ au lieu de $x$}\\
+C'(q) &= \res{2q-30} &&
+\end{calculs}
+\cas{b)}
+\explique{On cherche quand $C'(q)$ s'annule :}{}\nopagebreak
+\begin{calculs}
+2q-30 &= 0 &&\\
+2q &= 30 &&\\
+q &= 15 &&
+\end{calculs}
+\explique{$2q-30$ est affine, de coefficient directeur $2>0$ : négatif avant $15$,
+positif après.}{signe d'une expression affine}\nopagebreak
+\begin{calculs}
+C(0) &= 300 &&\\
+C(15) &= 225-450+300 = 75 &&\justif{$15^{2}-30\times 15+300$}\\
+C(25) &= 625-750+300 = 175 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=2]{$q$/0.8,$C'(q)$/0.8,$C(q)$/1.6}{$0$,$15$,$25$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$q$/0.8,$C'(q)$/0.8,$C(q)$/1.6}{$0$,$15$,$25$}
   \tkzTabLine{,-,z,+,}
   \tkzTabVar{+/$300$,-/$75$,+/$175$}
 \end{tikzpicture}
 \end{center}
-c) Coût minimal de $\res{75\text{ €}}$ pour $q=15$, soit \res{150} pièces.
-\rem{$q$ compte des dizaines : $15$ dizaines font $150$ pièces.}
+\cas{c)}
+\explique{Le coût est minimal pour $q=15$ dizaines, soit \res{150 pièces} ; il vaut
+alors \res{75~\euro}.}{$C'$ s'annule en $15$ en passant de $-$ à $+$ : un minimum}
+\rem{$q$ compte des dizaines de pièces : on répond à la question posée, en pièces.}
 \end{exo}
 
 \begin{exo}[La boîte la plus grande]
-a) $(12-2x)^{2}=144-48x+4x^{2}$, donc
-$V(x)=x(4x^{2}-48x+144)=4x^{3}-48x^{2}+144x$.\par\smallskip
-b) $V'(x)=\res{12x^{2}-96x+144}$\par\smallskip
-c)
+\cas{a)}
 \begin{calculs}
-\Delta &= 96^{2}-4\times 12\times 144\\
-\Delta &= 2\,304\\
-x_{1} &= \frac{96-48}{24} = 2\\
-x_{2} &= \frac{96+48}{24} = 6
+V(x) &= x(12-2x)^{2} &&\justif{on recopie l'expression}\\
+V(x) &= x(144-48x+4x^{2}) &&\justif{$(a-b)^{2}=a^{2}-2ab+b^{2}$ : $2\times 12\times 2x=48x$}\\
+V(x) &= 144x-48x^{2}+4x^{3} &&\justif{on distribue $x$}\\
+V(x) &= 4x^{3}-48x^{2}+144x &&\justif{c'est l'expression demandée}
 \end{calculs}
-$a=12>0$ : positif sur $\intff{0}{2}$, négatif sur $\intff{2}{6}$.\par\smallskip
-d) $V(0)=0$ ; $V(2)=2\times 8^{2}=128$ ; $V(6)=0$.
+\cas{b)}
+\begin{calculs}
+V'(x) &= 4\times 3x^{2}-48\times 2x+144 &&\justif{terme par terme}\\
+V'(x) &= \res{12x^{2}-96x+144} &&
+\end{calculs}
+\cas{c)}
+\explique{$V'(x)$ est un trinôme : $a=12$, $b=-96$ et $c=144$.}{}\nopagebreak
+\begin{calculs}
+\Delta &= (-96)^{2}-4\times 12\times 144 &&\\
+\Delta &= 9\,216-6\,912 &&\\
+\Delta &= 2\,304 &&\justif{$\sqrt{2\,304}=48$}\\[4pt]
+x_{1} &= \frac{96-48}{24} = 2 &&\\
+x_{2} &= \frac{96+48}{24} = 6 &&
+\end{calculs}
+\explique{$V'(x)$ est du signe de $a=12$, donc positif, à l'extérieur des racines, et
+négatif entre elles : positif sur $\intff{0}{2}$, négatif sur $\intff{2}{6}$.}{$6$ est
+à la fois une racine et la borne}
+\rem{Plus simple : $V'(x)=12(x^{2}-8x+12)$, et l'on cherche les racines de
+$x^{2}-8x+12$, avec des nombres plus petits.}
+\cas{d)}
+\begin{calculs}
+V(0) &= 0 &&\\
+V(2) &= 2\times 8^{2} = 128 &&\justif{avec la forme de départ : $12-2\times 2=8$}\\
+V(6) &= 6\times 0^{2} = 0 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=2]{$x$/0.8,$V'(x)$/0.8,$V(x)$/1.6}{$0$,$2$,$6$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$x$/0.8,$V'(x)$/0.8,$V(x)$/1.6}{$0$,$2$,$6$}
   \tkzTabLine{,+,z,-,z}
   \tkzTabVar{-/$0$,+/$128$,-/$0$}
 \end{tikzpicture}
 \end{center}
-e) Volume maximal de $\res{128\text{ cm}^{3}}$ pour $\res{x=2\text{ cm}}$.
+\cas{e)}
+\explique{Le volume est maximal pour $\res{x=2}$~cm ; il vaut alors
+$\res{128\text{ cm}^{3}}$.}{$V'$ s'annule en $2$ en passant de $+$ à $-$ : un maximum}
 \end{exo}
 
 \begin{exo}[Le tambour d'une machine à laver]
-a) $N'(t)=-0{,}5\times 2t+20=\res{-t+20}$\par\smallskip
-b) Le tambour s'arrête quand sa vitesse est nulle : $-t+20=0$, soit
-$\res{t=20\text{ s}}$.\par\smallskip
-c) $N(20)=-0{,}5\times 400+400=\res{200}$ tours.
-\rem{Entre $0$ et $20$~s, $N'(t)>0$ : le nombre de tours augmente, le tambour tourne.}
+\cas{a)}
+\begin{calculs}
+N'(t) &= -0{,}5\times 2t+20 &&\justif{la variable s'appelle $t$}\\
+N'(t) &= \res{-t+20} &&
+\end{calculs}
+\cas{b)}
+\explique{Le tambour s'arrête quand sa vitesse de rotation est nulle :}{$N'(t)=0$}\nopagebreak
+\begin{calculs}
+-t+20 &= 0 &&\\
+-t &= -20 &&\\
+t &= 20 &&
+\end{calculs}
+\explique{Le tambour s'arrête au bout de $\res{20}$ secondes.}{avant, $-t+20>0$ : il
+tourne}
+\cas{c)}
+\begin{calculs}
+N(20) &= -0{,}5\times 20^{2}+20\times 20 &&\justif{on remplace $t$ par $20$}\\
+N(20) &= -200+400 &&\\
+N(20) &= 200 &&
+\end{calculs}
+\explique{Jusqu'à l'arrêt, le tambour a fait $\res{200}$ tours.}{$N$ est maximal en
+$20$ : le nombre de tours n'augmente plus}
 \end{exo}
 
 \partie{Résoudre une équation $f(x)=k$}
 
 \begin{exo}[Nombre de solutions]
-Sur chaque intervalle où $f$ varie dans un seul sens, on regarde si $k$ est entre les
-deux valeurs extrêmes.
-\begin{reponses}
-  \item $f(x)=0$ : \res{3} solutions, dans $\intoo{-3}{0}$, $\intoo{0}{2}$ et
-  $\intoo{2}{4}$.
-  \item $f(x)=3$ : \res{2} solutions, dans $\intoo{-3}{0}$ et $\intoo{0}{2}$ (sur
-  $\intff{2}{4}$, $f$ ne dépasse pas $1$).
-  \item $f(x)=-3$ : \res{2} solutions, dans $\intoo{0}{2}$ et $\intoo{2}{4}$ (sur
-  $\intff{-3}{0}$, $f$ reste au-dessus de $-2$).
-  \item $f(x)=6$ : \res{0} solution ($6$ est plus grand que le maximum $5$).
-\end{reponses}
+\explique{Sur chaque intervalle où $f$ varie dans un seul sens, l'équation $f(x)=k$ a une
+solution si $k$ est compris entre les deux valeurs aux bouts de la flèche, aucune
+sinon.}{propriété 10, intervalle par intervalle}
+\cas{a)}
+\explique{$0$ est entre $-2$ et $5$, entre $5$ et $-4$, entre $-4$ et $1$ : une solution
+sur chacun des trois intervalles. $\res{3}$ solutions, dans $\intoo{-3}{0}$,
+$\intoo{0}{2}$ et $\intoo{2}{4}$.}{trois flèches qui croisent la valeur $0$}
+\cas{b)}
+\explique{$3$ est entre $-2$ et $5$, entre $5$ et $-4$, mais pas entre $-4$ et $1$.
+$\res{2}$ solutions, dans $\intoo{-3}{0}$ et $\intoo{0}{2}$.}{sur $\intff{2}{4}$, $f$ ne
+dépasse pas $1$}
+\cas{c)}
+\explique{$-3$ n'est pas entre $-2$ et $5$, mais il est entre $5$ et $-4$ et entre $-4$ et
+$1$. $\res{2}$ solutions, dans $\intoo{0}{2}$ et $\intoo{2}{4}$.}{sur $\intff{-3}{0}$, $f$
+reste au-dessus de $-2$}
+\cas{d)}
+\explique{Le maximum de $f$ est $5$ : $f(x)$ n'atteint jamais $6$. $\res{0}$ solution.}{$6$
+n'est entre les bouts d'aucune flèche}
 \end{exo}
 
 \begin{exo}[Une seule solution]
-a) $f'(x)=3x^{2}+1$ : un carré est positif, donc $f'(x)>0$ et $f$ est strictement
-croissante.\par\smallskip
-b) $f(0)=-3$ et $f(2)=8+2-3=7$ : $0$ est entre $-3$ et $7$, donc l'équation a une
-seule solution $\alpha$.\par\smallskip
-c) $f(1)=-1$ et $f(2)=7$, donc $1<\alpha<2$ ; $f(1{,}2)=-0{,}072$ et
-$f(1{,}3)=0{,}497$, donc $\res{1{,}2<\alpha<1{,}3}$.
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3x^{2}+1 &&\justif{terme par terme}
+\end{calculs}
+\explique{Un carré est positif, donc $3x^{2}+1>0$ : $f$ est strictement croissante sur
+$\intff{0}{2}$.}{$f'(x)>0$ : $f$ croît}
+\cas{b)}
+\begin{calculs}
+f(0) &= -3 &&\justif{les images des bornes}\\
+f(2) &= 8+2-3 = 7 &&
+\end{calculs}
+\explique{$f$ est strictement croissante et $0$ est compris entre $-3$ et $7$ :
+l'équation $f(x)=0$ a une seule solution $\alpha$ dans $\intff{0}{2}$.}{théorème des
+valeurs intermédiaires}
+\cas{c)}
+\explique{Tableau de valeurs avec un pas de $1$ : $f(1)=-1$ et $f(2)=7$. Donc
+$1<\alpha<2$.}{$f(x)$ passe de négatif à positif}
+\explique{Pas de $0{,}1$ à partir de $1$ : $f(1{,}2)=-0{,}072$ et $f(1{,}3)=0{,}497$.
+Donc $\res{1{,}2<\alpha<1{,}3}$.}{on recommence entre $1$ et $2$}
 \end{exo}
 
 \begin{exo}[Trois solutions]
-a) $g'(x)=\res{3x^{2}-12}$ ; $\Delta=0-4\times 3\times(-12)=144$, racines
-$\dfrac{0\pm 12}{6}$ : $-2$ et $2$. Positif à l'extérieur ($a=3>0$).\par\smallskip
-b) $g(-4)=-16$ ; $g(-2)=16$ ; $g(2)=-16$ ; $g(4)=16$.
+\cas{a)}
+\begin{calculs}
+g'(x) &= \res{3x^{2}-12} &&\justif{$-12x$ devient $-12$}
+\end{calculs}
+\explique{$g'(x)$ est un trinôme : $a=3$, $b=0$ et $c=-12$.}{}\nopagebreak
+\begin{calculs}
+\Delta &= 0^{2}-4\times 3\times(-12) &&\\
+\Delta &= 144 &&\justif{$\sqrt{144}=12$}\\[4pt]
+x_{1} &= \frac{0-12}{6} = -2 &&\\
+x_{2} &= \frac{0+12}{6} = 2 &&
+\end{calculs}
+\explique{$g'(x)$ est du signe de $a=3$, donc positif, à l'extérieur des racines, et
+négatif entre elles.}{signe d'un trinôme}
+\cas{b)}
+\begin{calculs}
+g(-4) &= -64+48 = -16 &&\\
+g(-2) &= -8+24 = 16 &&\\
+g(2) &= 8-24 = -16 &&\\
+g(4) &= 64-48 = 16 &&
+\end{calculs}
 \begin{center}
-\begin{tikzpicture}[scale=0.75]
-  \tkzTabInit[lgt=1.4,espcl=1.6]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-4$,$-2$,$2$,$4$}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-4$,$-2$,$2$,$4$}
   \tkzTabLine{,+,z,-,z,+,}
   \tkzTabVar{-/$-16$,+/$16$,-/$-16$,+/$16$}
 \end{tikzpicture}
 \end{center}
-c) Sur chacun des trois intervalles, $g$ varie dans un seul sens entre $-16$ et $16$,
-et $5$ est entre les deux : \res{3} solutions.\par\smallskip
-d) La plus grande est dans $\intoo{2}{4}$ : $g(3)=-9$ et $g(4)=16$, donc
-$3<\alpha<4$ ; $g(3{,}6)=3{,}456$ et $g(3{,}7)=6{,}253$ encadrent $5$, donc
-$\res{3{,}6<\alpha<3{,}7}$.
+\cas{c)}
+\explique{Sur chacun des trois intervalles, $g$ varie dans un seul sens entre $-16$ et
+$16$, et $5$ est compris entre $-16$ et $16$ : une solution sur chacun. L'équation
+$g(x)=5$ a $\res{3}$ solutions dans $\intff{-4}{4}$.}{propriété 10, trois fois}
+\cas{d)}
+\explique{La plus grande solution, notée $\alpha$, est dans $\intff{2}{4}$, où $g$ est
+strictement croissante.}{}
+\explique{Pas de $1$ : $g(3)=-9$ et $g(4)=16$. Donc $3<\alpha<4$.}{$g(x)$ passe
+au-dessus de $5$}
+\explique{Pas de $0{,}1$ à partir de $3$ : $g(3{,}6)=3{,}456$ et $g(3{,}7)=6{,}253$.
+Donc $\res{3{,}6<\alpha<3{,}7}$.}{on compare à $5$, et non à $0$}
+\rem{Erreur fréquente : chercher où $g(x)$ change de signe, comme pour $g(x)=0$. Ici, on
+cherche où $g(x)$ dépasse $5$.}
 \end{exo}
 
 \end{document}
