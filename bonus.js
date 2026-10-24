@@ -6,7 +6,8 @@
    renvoie une promesse résolue à la fin ; un clic, une touche Échap passent l'animation.
    courbe : identifiant de FDM_BONUS.courbes (sinon au hasard, jamais deux fois la même
    de suite) ; reduit : version sans mouvement (par défaut, le réglage « réduire les
-   animations » de l'appareil) ; nom : nom de la courbe sous le tracé.
+   animations » de l'appareil) ; nom : nom de la courbe sous le tracé ; mot: false : la
+   courbe seule, sans « BONUS N°k » (visiteurs sans lien personnel).
    FDM_BONUS.dessin(id, taille) : tracés « d » de la courbe dans un carré (vignettes).
    Page d'essai : scripts/site/bonus_test.html. */
 (function () {
@@ -100,6 +101,14 @@
     return p;
   }
 
+  // la Terre fait un tour du Soleil (rayon 1) pendant que la Lune fait n tours de la
+  // Terre (rayon r) ; vraies proportions : r = 0,00257 et n = 13,37 (mois sidéraux par an),
+  // presque un cercle (r n² < 1, pas de boucle) ; fausses proportions retenues : r = 0,12
+  // et n = 13, de petites boucles (r n² > 1 ; r = 0,3 : boucles trop grandes)
+  function lune(r, n) {
+    return param(function (t) { return [cos(t) + r * cos(n * t), sin(t) + r * sin(n * t)]; }, 0, TAU, 2400);
+  }
+
   var COURBES = [
     {id: 'cardioide', nom: 'Cardioïde', f: function () {
       return [param(function (t) { return [2 * sin(t) - sin(2 * t), 2 * cos(t) - cos(2 * t)]; }, 0, TAU, 900)]; }},
@@ -115,10 +124,10 @@
     {id: 'lissajous', nom: 'Courbe de Lissajous', f: function () {
       var c = auHasard([[3, 2], [5, 4], [3, 4], [5, 6]]);
       return [param(function (t) { return [cos(c[0] * t), sin(c[1] * t)]; }, 0, TAU, 1600)]; }},
-    // deux tours seulement : sur les douze, les points s'espaçaient et le tracé filait trop vite
-    {id: 'papillon', nom: 'Papillon de Temple H. Fay', duree: 8000, f: function () {
+    // un seul tour, un seul papillon : sur les douze, ils se superposent
+    {id: 'papillon', nom: 'Papillon de Temple H. Fay', f: function () {
       return [polaire(function (t) {
-        return Math.exp(sin(t)) - 2 * cos(4 * t) + Math.pow(sin((2 * t - PI) / 24), 5); }, 0, 4 * PI, 1600)]; }},
+        return Math.exp(sin(t)) - 2 * cos(4 * t) + Math.pow(sin((2 * t - PI) / 24), 5); }, 0, TAU, 1200)]; }},
     {id: 'strophoide', nom: 'Strophoïde droite', f: function () {
       return [param(function (t) { var d = t * t + 1; return [(t * t - 1) / d, t * (t * t - 1) / d]; }, -2.4, 2.4, 900)]; }},
     {id: 'cornu', nom: 'Spirale de Cornu', duree: 7500, f: function () { return [cornu()]; }},
@@ -144,7 +153,27 @@
     {id: 'or', nom: "Spirale d'or", f: function () {
       return [polaire(function (t) { return Math.pow(PHI, 2 * t / PI); }, -3 * PI, 3.5 * PI, 1500)]; }},
     {id: 'fermat', nom: 'Spirale de Fermat', duree: 7500, f: function () { return [fermat()]; }},
-    {id: 'fibonacci', nom: 'Spirale de Fibonacci', duree: 8000, f: function () { return [fibonacci()]; }}
+    {id: 'fibonacci', nom: 'Spirale de Fibonacci', duree: 8000, f: function () { return [fibonacci()]; }},
+    {id: 'lune', nom: 'La Lune autour du Soleil (fausses proportions)', duree: 8000, f: function () {
+      return [lune(0.12, 13)]; }},
+    {id: 'coeur', nom: "Cœur d'Eugène Beutel", f: function () {
+      return [param(function (t) { return [cos(t), sin(t) + sqrt(Math.abs(cos(t)))]; }, -PI / 2, 3 * PI / 2, 1600)]; }},
+    {id: 'parabole', nom: 'Parabole', duree: 4500, f: function () {
+      return [param(function (t) { return [t, t * t]; }, -2, 2, 600)]; }},
+    {id: 'hyperbole', nom: 'Hyperbole', f: function () {
+      return [-1, 1].map(function (e) {
+        return param(function (t) { return [e * Math.cosh(t), e * Math.sinh(t)]; }, -1.9, 1.9, 500); }); }},
+    {id: 'cochleoide', nom: 'Cochléoïde', duree: 7500, f: function () {
+      return [polaire(function (t) { return t ? sin(t) / t : 1; }, -5 * PI, 5 * PI, 2400)]; }},
+    {id: 'serpentine', nom: 'Cubique serpentine', duree: 5000, f: function () {
+      return [param(function (t) { return [t, 6 * t / (t * t + 2.25)]; }, -6, 6, 800)]; }},
+    {id: 'limacon', nom: 'Limaçon de Pascal', f: function () {
+      return [polaire(function (t) { return 1 + 2 * cos(t); }, 0, TAU, 900)]; }},
+    {id: 'scarabee', nom: 'Scarabée', f: function () {
+      return [polaire(function (t) { return 2 * cos(2 * t) - 0.5 * cos(t); }, 0, TAU, 1200)]; }},
+    {id: 'trochoide', nom: 'Trochoïde', duree: 7000, f: function () {
+      var k = auHasard([1.6, 2.2]);
+      return [param(function (t) { return [t - k * sin(t), 1 - k * cos(t)]; }, 0, 6 * PI, 1500)]; }}
   ];
   function trouver(id) {
     for (var i = 0; i < COURBES.length; i++) if (COURBES[i].id === id) return COURBES[i];
@@ -366,7 +395,8 @@
     derniere = courbe.id;
     var reduit = o.reduit != null ? o.reduit
       : !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    var S = construire('Bonus n°' + numero + ' obtenu'), vue = S.vue, px = S.px;
+    var avecMot = o.mot !== false;
+    var S = construire(avecMot ? 'Bonus n°' + numero + ' obtenu' : courbe.nom), vue = S.vue, px = S.px;
     document.body.appendChild(S.racine);
 
     // boucle d'animation : une liste de tâches appelées à chaque image
@@ -464,7 +494,7 @@
       }
       e.textContent = texte;
     });
-    var echT = pointsTexte(texte, '700 ' + taille.toFixed(1) + 'px ' + POLICE, 500, yTexte, reduit ? 0 : 900);
+    var echT = pointsTexte(texte, '700 ' + taille.toFixed(1) + 'px ' + POLICE, 500, yTexte, reduit || !avecMot ? 0 : 900);
 
     function motScintille(ms, montee) {
       return etape(ms, function (p, dt) {
@@ -576,7 +606,7 @@
       if (passer) return finir();
       S.gCourbe.remove();
       await etape(900);
-      if (passer) return finir();
+      if (passer || !avecMot) return finir();
 
       // 5. BONUS N°k scintille, puis se consume
       await motScintille(1600, true);
@@ -594,7 +624,18 @@
     async function sansMouvement() {
       await nuitTombe(700);
       if (passer) return finir();
-      await etape(700, function (p) { mot.setAttribute('opacity', lisse(p).toFixed(3)); });
+      // sans le mot : la courbe, déjà tracée, et son nom
+      var cible = mot;
+      if (!avecMot) {
+        cible = el('g', {opacity: 0, fill: 'none', stroke: '#ffd86b', 'stroke-width': (2.4 * px).toFixed(2),
+                         'stroke-linejoin': 'round'}, S.gCourbe);
+        ajuster(courbe.f(), 500, 450, 760, 640).forEach(function (q) { el('path', {d: versD(q)}, cible); });
+        if (o.nom !== false) S.gNom.textContent = courbe.nom;
+      }
+      await etape(700, function (p) {
+        cible.setAttribute('opacity', lisse(p).toFixed(3));
+        if (!avecMot) S.gNom.setAttribute('opacity', (0.75 * lisse(p)).toFixed(3));
+      });
       if (passer) return finir();
       await etape(1800);
       return finir();

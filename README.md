@@ -31,10 +31,11 @@ Les documents sont conçus par l'auteur avec l'aide d'une IA générative, puis 
 ## Contenu du dépôt
 
 - `<niveau>/<chapitre>/` : PDF, sources .tex, pages HTML et figures ;
-- `index.html`, `methodes.html` : entrées par chapitre et par méthode ;
+- `index.html`, `index/` : entrées par chapitre et par l'index
+  (index des méthodes, index thématique) ;
 - `marteau.js` : bouton « exercice fait » des exercices (totaux de tous les
   élèves, sans donnée personnelle) ;
-- `bonus.js` : animation d'un bonus obtenu en mode élève ;
+- `bonus.js` : animation d'un bonus obtenu en mode élève (visiteurs : tous les 10 exercices différents) ;
 - `eleve.js` : mode élève (lien personnel envoyé par le professeur ; le
   serveur des compteurs ne connaît qu'un code, jamais le nom de l'élève) ;
 - `katex/`, `count.js` : composants tiers (voir LICENSE).

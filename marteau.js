@@ -9,7 +9,9 @@
    l'élève par le serveur, une seule fois par exercice ; une fois compté, le carré
    s'ouvre par la droite et le mot-code sort de la boîte (à recopier sur le cahier) ;
    l'exercice qui donne un bonus lance ensuite l'animation du bonus (bonus.js, chargé
-   à ce moment-là, à côté de marteau.js). */
+   à ce moment-là, à côté de marteau.js).
+   Visiteur sans lien personnel : la même animation tous les MARTEAU_CONFIG.palier (10)
+   exercices différents faits sur l'appareil : la courbe seule, sans « BONUS N°k ». */
 (function () {
   'use strict';
   var CFG = window.MARTEAU_CONFIG || {};
@@ -20,13 +22,14 @@
     ouverture: 380, defilement: 650
   }, CFG.durees);
   var ACCELERE = CFG.accelere || 0.5;
+  var PALIER = CFG.palier || 10;
   var API = window.MARTEAU_API || null;
   var CLE = 'fdm-marteau:v1:';
   var ICI = document.currentScript ? document.currentScript.src : '';
 
   // animation du bonus (bonus.js) : script chargé au premier bonus seulement
-  function jouerBonus(numero, sobre) {
-    var lancer = function () { window.FDM_BONUS.jouer({numero: numero, reduit: sobre}); };
+  function jouerBonus(numero, sobre, mot) {
+    var lancer = function () { window.FDM_BONUS.jouer({numero: numero, reduit: sobre, mot: mot !== false}); };
     if (window.FDM_BONUS) return lancer();
     if (!ICI) return;
     var s = document.createElement('script');
@@ -43,6 +46,20 @@
     var n = memoire[id] || 0;
     try { var v = parseInt(localStorage.getItem(CLE + id), 10); if (v > n) n = v; } catch (e) {}
     return n;
+  }
+  // visiteur : nombre d'exercices différents faits sur l'appareil
+  function nombreFaits() {
+    var ids = {};
+    for (var id in memoire) if (memoire[id] > 0) ids[id] = 1;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k.indexOf(CLE) !== 0) continue;
+        k = k.slice(CLE.length);
+        if (k !== 'jeton' && k.indexOf('t:') !== 0 && parseInt(localStorage.getItem(CLE + k), 10) > 0) ids[k] = 1;
+      }
+    } catch (e) {}
+    return Object.keys(ids).length;
   }
   function ecrire(id, n) {
     memoire[id] = n;
@@ -354,7 +371,7 @@
       try { await clicEleve(btn, eleve()); } finally { btn.mtEnCours = false; }
       return;
     }
-    var id = btn.dataset.exo, sobre = reduit();
+    var id = btn.dataset.exo, sobre = reduit(), nouveau = Donnees.personnel(id) === 0;
     try {
       if (sobre) await new Promise(function (r) { setTimeout(r, 300); }); // pas de double compte
       else await animer(btn, Donnees.personnel(id) > 0);
@@ -366,6 +383,10 @@
       annoncer('Exercice compté comme fait.');
       btn.mtEnCours = false;
     }
+    // un exercice de plus (pas le même refait) : animation tous les PALIER exercices
+    var total = nouveau ? nombreFaits() : 0;
+    if (total && total % PALIER === 0)
+      setTimeout(function () { jouerBonus(total / PALIER, sobre, false); }, 900);
   }
 
   var tous = [];
