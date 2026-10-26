@@ -1,0 +1,625 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{bottom=1cm}
+
+\setlength{\espaceexo}{4pt}
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=1pt,topsep=1pt}
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+
+\titrefiche{Seconde --- Ensembles de nombres et racines carrées}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Les ensembles de nombres}
+
+\exo[Nature d'un nombre]
+Pour chaque nombre, dire à quels ensembles il appartient, puis donner sa nature (le plus
+petit ensemble auquel il appartient).
+\[
+  -\dfrac{27}{9} \qquad \dfrac{11}{8} \qquad \dfrac{5}{12} \qquad \sqrt{64} \qquad
+  -0{,}35 \qquad 3{,}2\times 10^{2}
+\]
+
+\exo[Appartient ou non]
+Recopier et compléter par $\in$ ou $\notin$.
+\begin{enumerate}[label=\alph*)]
+  \item $-6\ \ldots\ \mathbb{N}$ \qquad $0\ \ldots\ \mathbb{N}$ \qquad $-\dfrac{12}{4}\ \ldots\ \mathbb{Z}$
+  \item $\dfrac{4}{5}\ \ldots\ \mathbb{D}$ \qquad $\dfrac{1}{3}\ \ldots\ \mathbb{D}$ \qquad $10^{-3}\ \ldots\ \mathbb{D}$
+  \item $\sqrt{2}\ \ldots\ \mathbb{Q}$ \qquad $\pi\ \ldots\ \R$ \qquad $\dfrac{7}{1}\ \ldots\ \mathbb{N}$
+\end{enumerate}
+
+\exo[Trouver un exemple]
+Donner un exemple de nombre :
+\begin{enumerate}[label=\alph*)]
+  \item entier relatif qui n'est pas un entier naturel ;
+  \item décimal qui n'est pas un entier ;
+  \item rationnel qui n'est pas décimal ;
+  \item réel qui n'est pas rationnel ;
+  \item entier naturel écrit sous la forme d'une fraction.
+\end{enumerate}
+
+\exo[Décimal ou non]
+\begin{enumerate}[label=\alph*)]
+  \item En posant la division à la main, dire si chaque nombre est décimal :
+    $\dfrac{13}{8}$ ; $\dfrac{4}{15}$.
+  \item Poser la division de $2$ par $7$ jusqu'au douzième chiffre après la virgule. Que
+    remarque-t-on sur les restes, puis sur les chiffres ?
+\end{enumerate}
+
+\partiefiche{Multiples et diviseurs}
+
+\exo[Multiples et diviseurs]
+\begin{enumerate}[label=\alph*)]
+  \item $98$ est-il un multiple de $7$ ?
+  \item $160$ est-il un multiple de $7$ ? Donner le plus grand multiple de $7$ inférieur
+    ou égal à $160$.
+  \item Donner tous les diviseurs de $40$.
+  \item Donner les diviseurs communs à $40$ et $56$, puis rendre la fraction
+    $\dfrac{40}{56}$ irréductible.
+\end{enumerate}
+
+\exo[Critères de divisibilité]
+Pour chaque nombre $2\,310$ ; $4\,185$ ; $738$ ; $1\,052$ ; $945$, dire s'il est divisible
+par $2$, par $3$, par $5$, par $9$, par $10$.
+
+\exo[Fractions irréductibles]
+Pour chaque fraction, décomposer le numérateur et le dénominateur en produits, puis
+simplifier pour la rendre irréductible.
+\[
+  \dfrac{24}{36} \qquad \dfrac{45}{75} \qquad \dfrac{28}{63} \qquad \dfrac{60}{84}
+\]
+
+\exo[Journée sportive]
+Pour une journée sportive, le lycée répartit ses $126$ élèves de seconde et ses $84$ élèves
+de première en équipes identiques : chaque équipe a le même nombre d'élèves de seconde et
+le même nombre d'élèves de première, et tous les élèves jouent.
+\begin{enumerate}[label=\alph*)]
+  \item Peut-on former $7$ équipes ? $5$ équipes ?
+  \item Donner tous les nombres d'équipes possibles.
+  \item Quel est le plus grand nombre d'équipes ? Combien d'élèves de seconde et de
+    première compte alors chaque équipe ?
+\end{enumerate}
+
+\exo[Algorithme : plus grand multiple]
+$a$ et $b$ sont deux entiers naturels, avec $a\ne 0$.
+\begin{python}
+def plus_grand_multiple(a, b):
+    m = 0
+    while m + a <= b:
+        m = m + a
+    return m
+\end{python}
+\begin{enumerate}[label=\alph*)]
+  \item Pour $a=7$ et $b=30$, donner les valeurs successives de \texttt{m}, puis ce que
+    renvoie la fonction.
+  \item Que renvoie \texttt{plus\_grand\_multiple(9, 100)} ?
+  \item Que fait cette fonction ?
+  \item En Python, \texttt{b \% a} est le reste de la division de $b$ par $a$. Compléter
+    la fonction, qui doit renvoyer \texttt{True} quand $b$ est un multiple de $a$ :
+\end{enumerate}
+\begin{center}
+\texttt{\textbf{\color{coulMeth}def} est\_multiple(a, b):}\\
+\texttt{\ \ \ \ \textbf{\color{coulMeth}return} b \% a == .....}
+\end{center}
+
+\partiefiche{Démontrer avec des multiples}
+
+\exo[Démontrer qu'un nombre est un multiple]
+$n$ désigne un entier. On pose $A=14n+21$, $B=9n+30$ et $C=20n-15$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $A$, $B$ et $C$ pour $n=1$, puis pour $n=2$.
+  \item Démontrer que $A$ est un multiple de $7$, que $B$ est un multiple de $3$ et que
+    $C$ est un multiple de $5$.
+\end{enumerate}
+
+\exo[Sommes, différences, produits]
+Pour chaque affirmation, la tester sur deux exemples, puis la démontrer :
+\begin{enumerate}[label=\alph*)]
+  \item la différence de deux multiples de $7$ est un multiple de $7$ ;
+  \item la somme de quatre entiers consécutifs est un multiple de $2$ ;
+  \item le produit d'un multiple de $2$ par un multiple de $3$ est un multiple de $6$.
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Tester chaque affirmation sur des exemples, puis dire si elle est vraie ou fausse :
+démontrer celles qui sont vraies, donner un contre-exemple pour celles qui sont fausses.
+\begin{enumerate}[label=\alph*)]
+  \item La somme de deux multiples de $4$ est un multiple de $4$.
+  \item Un multiple de $6$ est un multiple de $3$.
+  \item Un multiple de $3$ est un multiple de $6$.
+  \item La somme de deux entiers consécutifs est un multiple de $2$.
+  \item Un diviseur de $12$ est aussi un diviseur de $36$.
+\end{enumerate}
+
+\partiefiche{Nombres pairs et impairs}
+
+\exo[Forme $2k$ ou $2k+1$]
+Écrire chaque entier sous la forme $2k$ ou $2k+1$, avec $k$ entier :
+\[
+  98 \qquad 157 \qquad 0 \qquad 1\,001 \qquad -7
+\]
+
+\exo[Pair ou impair]
+$n$ désigne un entier. On pose :
+\[
+  A=6n+8 \qquad B=10n+7
+\]
+\[
+  C=4n-3 \qquad D=2n^{2}+2n+1
+\]
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $A$, $B$, $C$ et $D$ pour $n=1$, puis pour $n=2$ : sont-ils pairs ou
+    impairs ?
+  \item Pour chaque expression, démontrer qu'elle est paire ou qu'elle est impaire.
+\end{enumerate}
+
+\exo[Démontrer une règle]
+Pour chaque affirmation, la tester sur deux exemples, puis la démontrer :
+\begin{enumerate}[label=\alph*)]
+  \item le produit d'un entier pair par un entier quelconque est pair ;
+  \item le produit de deux entiers impairs est impair ;
+  \item la somme de deux entiers consécutifs est impaire.
+\end{enumerate}
+
+\exo[L'affirmation de Lina]
+Lina affirme : \og la somme de trois entiers impairs est paire\fg.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $1+3+5$ et $7+9+11$. Que penser de l'affirmation de Lina ?
+  \item Démontrer que la somme de trois entiers impairs est toujours impaire.
+\end{enumerate}
+
+\partiefiche{Démonstrations : nombres pairs et impairs}
+
+\exo[Carré d'un entier pair]
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $4^{2}$, $6^{2}$ et $10^{2}$. Que remarque-t-on ?
+  \item Démontrer que le carré d'un entier pair est pair.
+  \item Avec la propriété 4 du cours, que peut-on dire de la parité d'un entier et de
+    celle de son carré ?
+\end{enumerate}
+
+\exo[En séparant les cas]
+$n$ désigne un entier. On pose ${A=n^{2}+3n}$, ${B=n^{2}-n}$ et ${C=n^{2}+n+1}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $A$, $B$ et $C$ pour $n=2$, puis pour $n=3$.
+  \item Démontrer que, pour tout entier $n$, $A$ est pair.
+  \item Démontrer que, pour tout entier $n$, $B$ est pair.
+  \item Démontrer que, pour tout entier $n$, $C$ est impair.
+\end{enumerate}
+
+\exo[Carré d'un impair moins un]
+$a$ est un entier impair : $a=2k+1$, avec $k$ entier.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $a^{2}-1$ pour $a=7$, puis pour $a=11$. Ces nombres sont-ils des
+    multiples de $8$ ?
+  \item Démontrer que $a^{2}-1=4(k^{2}+k)$.
+  \item À l'aide de l'exemple corrigé de la méthode 6, démontrer que $a^{2}-1$ est un
+    multiple de $8$.
+\end{enumerate}
+
+\exo[Vrai ou faux sur la parité]
+Tester chaque affirmation pour $n=1$, $n=2$ et $n=3$, puis dire si elle est vraie ou
+fausse, et justifier.
+\begin{enumerate}[label=\alph*)]
+  \item Pour tout entier $n$, $n^{2}+1$ est impair.
+  \item Pour tout entier $n$, $4n+7$ est impair.
+  \item Pour tout entier $n$, $n^{2}+2n$ est pair.
+  \item Pour tout entier $n$, $n(n+1)(n+2)$ est pair.
+\end{enumerate}
+
+\partiefiche{Démonstration par l'absurde}
+
+\exo[Les anniversaires]
+Une classe de seconde compte $35$ élèves. Démontrer par l'absurde que :
+\begin{enumerate}[label=\alph*)]
+  \item au moins deux élèves sont nés le même mois ;
+  \item au moins trois élèves sont nés le même mois.
+\end{enumerate}
+
+\exo[Fractions non décimales]
+Démontrer par l'absurde que chaque nombre n'est pas décimal.
+\[
+  \dfrac{4}{3} \qquad \dfrac{7}{9} \qquad \dfrac{1}{6}
+\]
+
+\exo[Pas de plus grand, pas de plus petit]
+Démontrer par l'absurde que :
+\begin{enumerate}[label=\alph*)]
+  \item il n'existe pas de plus grand entier impair ;
+  \item il n'existe pas de plus petit nombre réel strictement positif.
+\end{enumerate}
+
+\partiefiche{Nombres irrationnels}
+
+\exo[$\sqrt{6}$ est irrationnel]
+Par l'absurde, on suppose que $\sqrt{6}=\dfrac{a}{b}$, où $\dfrac{a}{b}$ est une fraction
+irréductible d'entiers positifs.
+\begin{enumerate}[label=\alph*)]
+  \item Démontrer que $a^{2}=6b^{2}$, puis que $a$ est pair.
+  \item On pose $a=2k$. Démontrer que $2k^{2}=3b^{2}$.
+  \item Démontrer que $b$ est pair (si $b$ était impair, que dire de $3b^{2}$ ?).
+  \item Conclure.
+\end{enumerate}
+
+\exo[À partir de $\sqrt{2}$]
+On sait que $\sqrt{2}$ est irrationnel. Démontrer par l'absurde que chaque nombre est
+irrationnel.
+\[
+  3\sqrt{2} \qquad 1+\sqrt{2} \qquad \dfrac{\sqrt{2}}{5}
+\]
+
+\exo[Encadrer un nombre réel]
+\begin{enumerate}[label=\alph*)]
+  \item Sans la touche $\sqrt{\phantom{a}}$, encadrer $\sqrt{7}$ par deux décimaux
+    d'amplitude $0{,}1$, puis $0{,}01$, en calculant des carrés.
+  \item Avec la calculatrice, encadrer $\pi$ et $\sqrt{11}$ par deux décimaux d'amplitude
+    $10^{-3}$.
+\end{enumerate}
+
+\exo[Algorithme : encadrer $\sqrt{2}$ par balayage]
+\begin{python}
+def encadrement(p):
+    x = 1
+    while (x + p)**2 <= 2:
+        x = x + p
+    return x, x + p
+\end{python}
+\begin{enumerate}[label=\alph*)]
+  \item Pour \texttt{p = 0.1}, donner les valeurs successives de \texttt{x}, puis ce que
+    renvoie la fonction.
+  \item Que renvoie \texttt{encadrement(0.01)} ? Quelle est l'amplitude de l'encadrement ?
+  \item Modifier la fonction pour qu'elle encadre $\sqrt{3}$.
+\end{enumerate}
+
+\partiefiche{Calculer avec les racines carrées}
+
+\exo[Avec la définition]
+Calculer :
+\[
+  A=\sqrt{121} \qquad B=\sqrt{0} \qquad C=\big(\sqrt{6}\big)^{2}
+\]
+\[
+  D=\sqrt{5^{2}} \qquad E=\sqrt{\dfrac{16}{25}} \qquad F=\sqrt{4\times 9}
+\]
+
+\exo[Produits, quotients, carrés]
+Calculer :
+\begin{enumerate}[label=\alph*)]
+  \item $G=\sqrt{5}\times\sqrt{20}$ \qquad $H=\sqrt{3}\times\sqrt{48}$ \qquad
+    $I=\dfrac{\sqrt{72}}{\sqrt{2}}$
+  \item $J=\big(3\sqrt{2}\big)^{2}$ \qquad $K=\big(-2\sqrt{7}\big)^{2}$ \qquad
+    $L=4\sqrt{3}\times\big(-2\sqrt{3}\big)$
+\end{enumerate}
+
+\exo[L'erreur d'Inès]
+Inès écrit : $\sqrt{25+144}=5+12$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $\sqrt{25+144}$. Inès a-t-elle raison ?
+  \item Trouver deux nombres positifs $a$ et $b$ tels que $\sqrt{a+b}=\sqrt{a}+\sqrt{b}$.
+\end{enumerate}
+
+\exo[Deux carrés]
+On dispose de deux carrés, de côtés $6$~cm et $8$~cm.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer l'aire de chaque carré.
+  \item Un troisième carré a pour aire la somme de ces deux aires. Calculer son côté.
+  \item Même question avec deux carrés de côtés $2$~cm et $3$~cm : donner la valeur
+    exacte du côté, puis un encadrement d'amplitude $0{,}1$.
+\end{enumerate}
+
+\partiefiche{Transformer et réduire des expressions}
+
+\exo[Forme $a\sqrt{b}$]
+Écrire sous la forme $a\sqrt{b}$, avec $b$ entier le plus petit possible :
+\[
+  \sqrt{8} \quad \sqrt{50} \quad \sqrt{75} \quad \sqrt{98} \quad \sqrt{180} \quad
+  2\sqrt{12} \quad 5\sqrt{40}
+\]
+
+\exo[Réduire]
+Réduire :
+\begin{enumerate}[label=\alph*)]
+  \item $A=3\sqrt{5}+7\sqrt{5}-4\sqrt{5}$ \qquad $B=\sqrt{2}-6\sqrt{2}$
+  \item $C=5\sqrt{3}-8+2\sqrt{3}+1$ \qquad $D=\sqrt{27}+\sqrt{12}$
+  \item $E=\sqrt{45}-2\sqrt{20}+\sqrt{80}$ \qquad $F=\sqrt{50}+\sqrt{18}-\sqrt{8}$
+  \item $G=\sqrt{12}+\sqrt{50}$
+\end{enumerate}
+
+\exo[Un rectangle]
+Un rectangle a pour longueur $\sqrt{50}$~cm et pour largeur $\sqrt{18}$~cm.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer son périmètre, sous la forme $a\sqrt{2}$.
+  \item Calculer son aire.
+\end{enumerate}
+
+\exo[Un triangle rectangle]
+Le triangle $ABC$ est rectangle en $A$, avec $AB=2$~cm et $AC=4$~cm.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $BC$, sous la forme $a\sqrt{b}$.
+  \item Calculer le périmètre du triangle, puis son aire.
+\end{enumerate}
+
+\partiefiche{Simplifier des expressions avec des racines}
+
+\exo[Développer et réduire]
+Développer et réduire :
+\begin{enumerate}[label=\alph*)]
+  \item $A=\sqrt{2}\big(5-\sqrt{2}\big)$ \qquad $B=\big(3+\sqrt{5}\big)\big(2-\sqrt{5}\big)$
+  \item $C=\big(\sqrt{3}+2\big)^{2}$ \qquad $D=\big(2\sqrt{5}-1\big)^{2}$
+  \item $E=\big(\sqrt{6}-\sqrt{2}\big)\big(\sqrt{6}+\sqrt{2}\big)$ \qquad
+    $F=\big(1+\sqrt{7}\big)\big(1-\sqrt{7}\big)$
+\end{enumerate}
+
+\exo[Sans racine au dénominateur]
+Écrire sans racine carrée au dénominateur :
+\[
+  \dfrac{4}{\sqrt{2}} \qquad \dfrac{9}{\sqrt{3}} \qquad \dfrac{1}{\sqrt{5}} \qquad
+  \dfrac{7}{2\sqrt{7}} \qquad \dfrac{6}{5\sqrt{3}}
+\]
+
+\exo[Des nombres entiers]
+\begin{enumerate}[label=\alph*)]
+  \item Démontrer que chaque nombre est un entier :
+    $A=\dfrac{\sqrt{98}}{\sqrt{2}}$ ; \ $B=\big(\sqrt{5}+1\big)^{2}+\big(\sqrt{5}-1\big)^{2}$ ;
+    \ $C=\big(2+\sqrt{3}\big)\big(2-\sqrt{3}\big)$.
+  \item En déduire que $\dfrac{1}{2+\sqrt{3}}=2-\sqrt{3}$.
+  \item Quelle est la nature de $D=\big(\sqrt{3}+1\big)^{2}-2\sqrt{3}$ ?
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

@@ -1,0 +1,1256 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 6 --- Ensembles de nombres et racines carrées --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\renewcommand{\res}[1]{\leavevmode{\color{coulRep}#1}}
+\newcommand{\gris}[1]{\leavevmode{\small\itshape\color{black!60}#1}}
+
+\begin{document}
+
+\entetefiche{Chapitre 6 --- Ensembles de nombres et racines carrées}{Seconde}
+
+\partie{Les ensembles de nombres}
+
+\begin{exo}[Nature d'un nombre]
+\cas{$-\dfrac{27}{9}$}
+\begin{calculs}
+-\dfrac{27}{9} &= -3 &&\justif{$27=3\times 9$ : la division tombe juste}
+\end{calculs}
+\explique{$-3\in\mathbb{Z}$, donc aussi à $\mathbb{D}$, $\mathbb{Q}$ et $\R$ ; $-3\notin\mathbb{N}$.
+Sa nature est \res{$\mathbb{Z}$}.}{un entier négatif n'est pas naturel}
+
+\cas{$\dfrac{11}{8}$}
+\begin{calculs}
+\dfrac{11}{8} &= 1{,}375 &&\justif{la division tombe juste}
+\end{calculs}
+\explique{$1{,}375$ n'est pas entier : sa nature est \res{$\mathbb{D}$} (il appartient aussi
+à $\mathbb{Q}$ et à $\R$).}{trois chiffres après la virgule : un nombre fini}
+
+\cas{$\dfrac{5}{12}$}
+\begin{calculs}
+\dfrac{5}{12} &= 0{,}41666\ldots &&\justif{le chiffre $6$ se répète sans fin}
+\end{calculs}
+\explique{Ce n'est pas un décimal, mais un quotient de deux entiers : sa nature est
+\res{$\mathbb{Q}$} (il appartient aussi à $\R$).}{}
+
+\cas{$\sqrt{64}$}
+\begin{calculs}
+\sqrt{64} &= 8 &&\justif{$8^{2}=64$ et $8$ est positif}
+\end{calculs}
+\explique{Sa nature est \res{$\mathbb{N}$} : il appartient aux cinq ensembles.}{on calcule
+avant de conclure : une racine peut être un entier}
+
+\cas{$-0{,}35$}
+\explique{Deux chiffres après la virgule : sa nature est \res{$\mathbb{D}$} (il appartient
+aussi à $\mathbb{Q}$ et à $\R$, pas à $\mathbb{Z}$).}{un décimal peut être négatif}
+
+\cas{$3{,}2\times 10^{2}$}
+\begin{calculs}
+3{,}2\times 10^{2} &= 320 &&\justif{multiplier par $100$ : la virgule avance de deux rangs}
+\end{calculs}
+\explique{Sa nature est \res{$\mathbb{N}$}.}{l'écriture scientifique cache un entier}
+\end{exo}
+
+\begin{exo}[Appartient ou non]
+\cas{a)}
+\explique{\res{$-6\notin\mathbb{N}$} ; \res{$0\in\mathbb{N}$} ; \res{$-\dfrac{12}{4}\in\mathbb{Z}$}.}{$0$
+est un entier naturel ; $-\frac{12}{4}=-3$}
+\cas{b)}
+\explique{\res{$\dfrac{4}{5}\in\mathbb{D}$} ; \res{$\dfrac{1}{3}\notin\mathbb{D}$} ;
+\res{$10^{-3}\in\mathbb{D}$}.}{$\frac{4}{5}=0{,}8$ ; $\frac{1}{3}$ : propriété 5 du cours ;
+$10^{-3}=0{,}001$}
+\cas{c)}
+\explique{\res{$\sqrt{2}\notin\mathbb{Q}$} ; \res{$\pi\in\R$} ; \res{$\dfrac{7}{1}\in\mathbb{N}$}.}{$\sqrt{2}$
+est irrationnel (propriété 6) ; tout nombre est réel ; $\frac{7}{1}=7$}
+\end{exo}
+
+\begin{exo}[Trouver un exemple]
+\gris{Il y a beaucoup de bonnes réponses ; en voici une pour chaque question.}
+\cas{a)}
+\explique{\res{$-5$}}{entier négatif : il est dans $\mathbb{Z}$, pas dans $\mathbb{N}$}
+\cas{b)}
+\explique{\res{$2{,}5$}}{un chiffre après la virgule, et ce n'est pas un entier}
+\cas{c)}
+\explique{\res{$\dfrac{1}{3}$}}{quotient d'entiers, et non décimal (propriété 5)}
+\cas{d)}
+\explique{\res{$\sqrt{2}$}}{irrationnel (propriété 6)}
+\cas{e)}
+\explique{\res{$\dfrac{8}{2}$}}{$\frac{8}{2}=4$, un entier naturel écrit comme une fraction}
+\end{exo}
+
+\begin{exo}[Décimal ou non]
+\cas{a)}
+\explique{$\dfrac{13}{8}$ : on divise $13$ par $8$.}{à chaque étape, on abaisse un $0$ et on
+divise le reste par $8$}
+\begin{calculs}
+13 &= 8\times 1+5 &&\justif{chiffre des unités : $1$ ; reste $5$}\\
+50 &= 8\times 6+2 &&\justif{1\textsuperscript{er} chiffre après la virgule : $6$}\\
+20 &= 8\times 2+4 &&\justif{2\textsuperscript{e} chiffre : $2$}\\
+40 &= 8\times 5 &&\justif{3\textsuperscript{e} chiffre : $5$ ; reste $0$ : la division s'arrête}
+\end{calculs}
+\explique{$\dfrac{13}{8}=1{,}625$ : \res{c'est un nombre décimal}.}{la division tombe juste}
+\explique{$\dfrac{4}{15}$ : on divise $4$ par $15$.}{}
+\begin{calculs}
+4 &= 15\times 0+4 &&\justif{chiffre des unités : $0$}\\
+40 &= 15\times 2+10 &&\justif{1\textsuperscript{er} chiffre après la virgule : $2$}\\
+100 &= 15\times 6+10 &&\justif{2\textsuperscript{e} chiffre : $6$ ; le reste $10$ revient}
+\end{calculs}
+\explique{Le reste $10$ revient sans fin : $\dfrac{4}{15}=0{,}2666\ldots$ \res{n'est pas
+décimal}.}{la division ne s'arrête jamais}
+
+\cas{b)}
+\begin{calculs}
+20 &= 7\times 2+6 &&\justif{$2=7\times 0+2$ : $0$ unité ; puis 1\textsuperscript{er} chiffre $2$}\\
+60 &= 7\times 8+4 &&\justif{chiffre $8$}\\
+40 &= 7\times 5+5 &&\justif{chiffre $5$}\\
+50 &= 7\times 7+1 &&\justif{chiffre $7$}\\
+10 &= 7\times 1+3 &&\justif{chiffre $1$}\\
+30 &= 7\times 4+2 &&\justif{chiffre $4$ ; reste $2$ : on retrouve le point de départ}
+\end{calculs}
+\explique{Le reste $2$ revient : la suite des restes $6$ ; $4$ ; $5$ ; $1$ ; $3$ ; $2$
+recommence, et les chiffres avec elle.}{dans une division par $7$, il n'y a que six restes
+non nuls possibles}
+\explique{\res{$\dfrac{2}{7}=0{,}285714\,285714\ldots$} : le bloc $285714$ se répète sans
+fin.}{}
+\explique{Conclusion : $\dfrac{2}{7}$ n'est pas décimal, et ses chiffres se répètent par
+blocs.}{c'est le cas de tout rationnel non décimal}
+\end{exo}
+
+\partie{Multiples et diviseurs}
+
+\begin{exo}[Multiples et diviseurs]
+\cas{a)}
+\begin{calculs}
+98\div 7 &= 14 &&\justif{la division tombe juste}
+\end{calculs}
+\explique{$98=7\times 14$ avec $14$ entier : \res{$98$ est un multiple de $7$}.}{on revient à
+la définition}
+\cas{b)}
+\begin{calculs}
+160\div 7 &\approx 22{,}86 &&\justif{le quotient n'est pas entier}
+\end{calculs}
+\explique{\res{$160$ n'est pas un multiple de $7$}.}{}
+\begin{calculs}
+7\times 22 &= 154 &&\justif{on garde la partie entière du quotient, $22$}\\
+7\times 23 &= 161 &&\justif{le multiple suivant dépasse $160$}
+\end{calculs}
+\explique{Le plus grand multiple de $7$ inférieur ou égal à $160$ est \res{$154$}.}{}
+\cas{c)}
+\begin{calculs}
+40 &= 1\times 40 &&\justif{on cherche les diviseurs par paires}\\
+40 &= 2\times 20 &&\\
+40 &= 4\times 10 &&\justif{$3$ ne divise pas $40$}\\
+40 &= 5\times 8 &&\justif{$6$ ne divise pas $40$, et $7\times 7=49$ dépasse $40$ : on s'arrête}
+\end{calculs}
+\explique{Les diviseurs de $40$ sont \res{$\ens{1\,;2\,;4\,;5\,;8\,;10\,;20\,;40}$}.}{on les
+range dans l'ordre}
+\cas{d)}
+\begin{calculs}
+56 &= 1\times 56 &&\\
+56 &= 2\times 28 &&\\
+56 &= 4\times 14 &&\justif{$3$ ne divise pas $56$}\\
+56 &= 7\times 8 &&\justif{$5$ et $6$ ne divisent pas $56$ ; $8\times 8=64$ dépasse $56$}
+\end{calculs}
+\explique{Diviseurs communs à $40$ et $56$ : \res{$\ens{1\,;2\,;4\,;8}$}.}{on garde ceux des
+deux listes}
+\begin{calculs}
+\dfrac{40}{56} &= \dfrac{5\times\barre{8}}{7\times\barre{8}} &&\justif{on fait apparaître le plus grand diviseur commun, $8$}\\
+\dfrac{40}{56} &= \res{\dfrac{5}{7}} &&\justif{$5$ et $7$ n'ont que $1$ comme diviseur commun}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Critères de divisibilité]
+\explique{$2\,310$ : divisible par \res{$2$ ; $3$ ; $5$ ; $10$}, pas par $9$.}{se termine par
+$0$ ; somme des chiffres $2+3+1+0=6$, multiple de $3$ mais pas de $9$}
+\explique{$4\,185$ : divisible par \res{$3$ ; $5$ ; $9$}, pas par $2$ ni par $10$.}{se termine
+par $5$ ; somme $4+1+8+5=18$, multiple de $9$ (donc de $3$)}
+\explique{$738$ : divisible par \res{$2$ ; $3$ ; $9$}, pas par $5$ ni par $10$.}{se termine
+par $8$ ; somme $7+3+8=18$}
+\explique{$1\,052$ : divisible par \res{$2$} seulement.}{se termine par $2$ ; somme
+$1+0+5+2=8$, ni multiple de $3$ ni de $9$}
+\explique{$945$ : divisible par \res{$3$ ; $5$ ; $9$}, pas par $2$ ni par $10$.}{se termine
+par $5$ ; somme $9+4+5=18$}
+\rem{Un multiple de $9$ est toujours un multiple de $3$ ($9k=3\times 3k$) : quand la somme des
+chiffres est un multiple de $9$, le nombre est divisible par $9$ et par $3$.}
+\end{exo}
+
+\begin{exo}[Fractions irréductibles]
+\cas{$\dfrac{24}{36}$}
+\begin{calculs}
+\dfrac{24}{36} &= \dfrac{2\times 2\times 2\times 3}{2\times 2\times 3\times 3} &&\justif{on décompose : $24=4\times 6$ et $36=4\times 9$}\\
+\dfrac{24}{36} &= \dfrac{\barre{2}\times\barre{2}\times 2\times\barre{3}}{\barre{2}\times\barre{2}\times\barre{3}\times 3} &&\justif{on barre les facteurs communs}\\
+\dfrac{24}{36} &= \res{\dfrac{2}{3}} &&
+\end{calculs}
+\cas{$\dfrac{45}{75}$}
+\begin{calculs}
+\dfrac{45}{75} &= \dfrac{3\times 3\times 5}{3\times 5\times 5} &&\justif{$45=9\times 5$ et $75=3\times 25$}\\
+\dfrac{45}{75} &= \dfrac{3\times\barre{3}\times\barre{5}}{\barre{3}\times\barre{5}\times 5} &&\\
+\dfrac{45}{75} &= \res{\dfrac{3}{5}} &&
+\end{calculs}
+\cas{$\dfrac{28}{63}$}
+\begin{calculs}
+\dfrac{28}{63} &= \dfrac{2\times 2\times 7}{3\times 3\times 7} &&\justif{$28=4\times 7$ et $63=9\times 7$}\\
+\dfrac{28}{63} &= \dfrac{2\times 2\times\barre{7}}{3\times 3\times\barre{7}} &&\\
+\dfrac{28}{63} &= \res{\dfrac{4}{9}} &&
+\end{calculs}
+\cas{$\dfrac{60}{84}$}
+\begin{calculs}
+\dfrac{60}{84} &= \dfrac{2\times 2\times 3\times 5}{2\times 2\times 3\times 7} &&\justif{$60=4\times 15$ et $84=4\times 21$}\\
+\dfrac{60}{84} &= \dfrac{\barre{2}\times\barre{2}\times\barre{3}\times 5}{\barre{2}\times\barre{2}\times\barre{3}\times 7} &&\\
+\dfrac{60}{84} &= \res{\dfrac{5}{7}} &&
+\end{calculs}
+\rem{On décompose jusqu'à ne plus pouvoir : sinon un facteur commun reste caché, et la
+fraction obtenue n'est pas irréductible.}
+\end{exo}
+
+\begin{exo}[Journée sportive]
+\gris{Le nombre d'équipes doit diviser à la fois $126$ et $84$ : c'est un diviseur commun.}
+\cas{a)}
+\begin{calculs}
+126\div 7 &= 18 &&\justif{la division tombe juste}\\
+84\div 7 &= 12 &&
+\end{calculs}
+\explique{\res{On peut former $7$ équipes}, de $18$ élèves de seconde et $12$ de
+première.}{}
+\explique{$126$ ne se termine ni par $0$ ni par $5$ : \res{on ne peut pas former $5$
+équipes}.}{critère de divisibilité par $5$}
+\cas{b)}
+\explique{Diviseurs de $126$ : $\ens{1\,;2\,;3\,;6\,;7\,;9\,;14\,;18\,;21\,;42\,;63\,;126}$.}{paires
+$1\times 126$ ; $2\times 63$ ; $3\times 42$ ; $6\times 21$ ; $7\times 18$ ; $9\times 14$}
+\explique{Diviseurs de $84$ : $\ens{1\,;2\,;3\,;4\,;6\,;7\,;12\,;14\,;21\,;28\,;42\,;84}$.}{paires
+$1\times 84$ ; $2\times 42$ ; $3\times 28$ ; $4\times 21$ ; $6\times 14$ ; $7\times 12$}
+\explique{Nombres d'équipes possibles : \res{$1$ ; $2$ ; $3$ ; $6$ ; $7$ ; $14$ ; $21$ ou
+$42$}.}{les diviseurs communs}
+\cas{c)}
+\explique{Le plus grand est \res{$42$ équipes}.}{le plus grand diviseur commun}
+\begin{calculs}
+126\div 42 &= 3 &&\justif{élèves de seconde par équipe}\\
+84\div 42 &= 2 &&\justif{élèves de première par équipe}
+\end{calculs}
+\explique{Conclusion : chaque équipe compte \res{$3$ élèves de seconde et $2$ de
+première}.}{}
+\end{exo}
+
+\begin{exo}[Algorithme : plus grand multiple]
+\cas{a)}
+\explique{\texttt{m} prend les valeurs $0$ ; $7$ ; $14$ ; $21$ ; $28$.}{tant que
+$\texttt{m}+7\le 30$, on ajoute $7$}
+\explique{Avec $\texttt{m}=28$ : $28+7=35$ dépasse $30$, la boucle s'arrête. La fonction
+renvoie \res{$28$}.}{}
+\cas{b)}
+\explique{Elle renvoie \res{$99$}.}{$9\times 11=99\le 100$, et $99+9=108$ dépasse $100$}
+\cas{c)}
+\explique{Elle renvoie \res{le plus grand multiple de $a$ inférieur ou égal à $b$}.}{elle
+ajoute $a$ tant qu'on ne dépasse pas $b$}
+\cas{d)}
+\explique{\texttt{return b \% a == \res{0}}}{$b$ est un multiple de $a$ quand le reste de
+la division de $b$ par $a$ est nul}
+\end{exo}
+
+\partie{Démontrer avec des multiples}
+
+\begin{exo}[Démontrer qu'un nombre est un multiple]
+\cas{a)}
+\explique{Pour $n=1$ : $A=35$ ; $B=39$ ; $C=5$.}{$14+21$ ; $9+30$ ; $20-15$}
+\explique{Pour $n=2$ : $A=49$ ; $B=48$ ; $C=25$.}{$28+21$ ; $18+30$ ; $40-15$}
+\explique{$35$ et $49$ sont des multiples de $7$ ; $39$ et $48$ de $3$ ; $5$ et $25$ de
+$5$.}{les exemples vont dans le sens de la question b)}
+\cas{b)}
+\begin{calculs}
+A &= 14n+21 &&\\
+A &= 7\times 2n+7\times 3 &&\justif{on fait apparaître $7$ dans chaque terme}\\
+A &= 7(2n+3) &&\justif{on factorise par $7$}\\
+A &= 7v &&\justif{on pose $v=2n+3$, entier}
+\end{calculs}
+\explique{Conclusion : $A$ est \res{un multiple de $7$}.}{}
+\begin{calculs}
+B &= 9n+30 &&\\
+B &= 3(3n+10) &&\justif{$9=3\times 3$ et $30=3\times 10$}\\
+B &= 3v &&\justif{on pose $v=3n+10$, entier}
+\end{calculs}
+\explique{Conclusion : $B$ est \res{un multiple de $3$}.}{}
+\begin{calculs}
+C &= 20n-15 &&\\
+C &= 5(4n-3) &&\justif{$20=5\times 4$ et $15=5\times 3$}\\
+C &= 5v &&\justif{on pose $v=4n-3$, entier}
+\end{calculs}
+\explique{Conclusion : $C$ est \res{un multiple de $5$}.}{}
+\end{exo}
+
+\begin{exo}[Sommes, différences, produits]
+\cas{a)}
+\explique{Test : $35-14=21$ et $21=7\times 3$ ; $70-21=49$ et $49=7\times 7$.}{deux exemples}
+\explique{Soit $m$ et $p$ deux multiples de $7$ : $m=7k$ et $p=7k'$, avec $k$ et $k'$
+entiers.}{deux lettres différentes}
+\begin{calculs}
+m-p &= 7k-7k' &&\justif{on remplace $m$ et $p$}\\
+m-p &= 7(k-k') &&\justif{on factorise par $7$}\\
+m-p &= 7v &&\justif{on pose $v=k-k'$, entier}
+\end{calculs}
+\explique{Conclusion : \res{la différence de deux multiples de $7$ est un multiple de
+$7$}.}{}
+\cas{b)}
+\explique{Test : $1+2+3+4=10$ ; $5+6+7+8=26$ : deux nombres pairs, multiples de $2$.}{}
+\begin{calculs}
+S &= n+(n+1)+(n+2)+(n+3) &&\justif{quatre entiers consécutifs}\\
+S &= 4n+6 &&\justif{$1+2+3=6$}\\
+S &= 2(2n+3) &&\justif{on factorise par $2$}\\
+S &= 2v &&\justif{on pose $v=2n+3$, entier}
+\end{calculs}
+\explique{Conclusion : \res{la somme de quatre entiers consécutifs est un multiple de
+$2$}.}{}
+\cas{c)}
+\explique{Test : $4\times 9=36$ et $36=6\times 6$ ; $10\times 15=150$ et $150=6\times 25$.}{}
+\explique{Soit $m=2k$ un multiple de $2$ et $p=3k'$ un multiple de $3$.}{}
+\begin{calculs}
+m\times p &= 2k\times 3k' &&\justif{on remplace $m$ et $p$}\\
+m\times p &= 6kk' &&\justif{on regroupe les nombres : $2\times 3=6$}\\
+m\times p &= 6v &&\justif{on pose $v=kk'$, entier}
+\end{calculs}
+\explique{Conclusion : \res{le produit est un multiple de $6$}.}{}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{a)}
+\explique{Test : $8+12=20$ ; $4+16=20$ : multiples de $4$.}{}
+\begin{calculs}
+4k+4k' &= 4(k+k') &&\justif{deux multiples de $4$ : $4k$ et $4k'$}\\
+4k+4k' &= 4v &&\justif{on pose $v=k+k'$, entier}
+\end{calculs}
+\explique{Conclusion : \res{vrai}.}{même démonstration que la propriété 2, avec $4$}
+\cas{b)}
+\explique{Test : $12=3\times 4$ ; $30=3\times 10$.}{}
+\begin{calculs}
+6k &= 3\times 2k &&\justif{un multiple de $6$ s'écrit $6k$ ; $6=3\times 2$}\\
+6k &= 3v &&\justif{on pose $v=2k$, entier}
+\end{calculs}
+\explique{Conclusion : \res{vrai}.}{}
+\cas{c)}
+\explique{Contre-exemple : $9$ est un multiple de $3$, mais pas de $6$.}{$9=3\times 3$ ; $9\div 6=1{,}5$}
+\explique{Conclusion : \res{faux}.}{un seul contre-exemple suffit}
+\cas{d)}
+\explique{Contre-exemple : $1+2=3$, qui n'est pas un multiple de $2$.}{}
+\explique{Conclusion : \res{faux}.}{la somme de deux entiers consécutifs est même toujours
+impaire (exercice 15)}
+\cas{e)}
+\explique{Test : les diviseurs de $12$ sont $1$ ; $2$ ; $3$ ; $4$ ; $6$ ; $12$, et chacun divise $36$.}{}
+\explique{Soit $d$ un diviseur de $12$ : $12=d\times k$, avec $k$ entier.}{}
+\begin{calculs}
+36 &= 3\times 12 &&\\
+36 &= 3\times d\times k &&\justif{on remplace $12$}\\
+36 &= d\times v &&\justif{on pose $v=3k$, entier}
+\end{calculs}
+\explique{Conclusion : \res{vrai}, $d$ est aussi un diviseur de $36$.}{}
+\end{exo}
+
+\partie{Nombres pairs et impairs}
+
+\begin{exo}[Forme $2k$ ou $2k+1$]
+\begin{calculs}
+98 &= \res{2\times 49} &&\justif{pair}\\
+157 &= \res{2\times 78+1} &&\justif{$156=2\times 78$ : impair}\\
+0 &= \res{2\times 0} &&\justif{$0$ est pair}\\
+1\,001 &= \res{2\times 500+1} &&\justif{impair}\\
+-7 &= \res{2\times(-4)+1} &&\justif{$-8+1=-7$ : impair, avec $k=-4$}
+\end{calculs}
+\rem{Pour un entier négatif impair, $k$ est négatif : $-7=2\times(-3)-1$ n'est pas de la
+forme $2k+1$, il faut aller jusqu'au pair qui précède, $-8$.}
+\end{exo}
+
+\begin{exo}[Pair ou impair]
+\cas{a)}
+\explique{Pour $n=1$ : $A=14$ ; $B=17$ ; $C=1$ ; $D=5$.}{$6+8$ ; $10+7$ ; $4-3$ ; $2+2+1$}
+\explique{Pour $n=2$ : $A=20$ ; $B=27$ ; $C=5$ ; $D=13$.}{$12+8$ ; $20+7$ ; $8-3$ ; $8+4+1$}
+\explique{$A$ semble pair ; $B$, $C$ et $D$ semblent impairs.}{des exemples ne démontrent
+rien, mais ils disent quoi démontrer}
+\cas{b)}
+\begin{calculs}
+A &= 6n+8 &&\\
+A &= 2(3n+4) &&\justif{on factorise par $2$}\\
+A &= 2v &&\justif{on pose $v=3n+4$, entier}
+\end{calculs}
+\explique{Conclusion : \res{$A$ est pair}.}{}
+\begin{calculs}
+B &= 10n+7 &&\\
+B &= 10n+6+1 &&\justif{on met de côté $1$ pour que le reste soit pair}\\
+B &= 2(5n+3)+1 &&\\
+B &= 2v+1 &&\justif{on pose $v=5n+3$, entier}
+\end{calculs}
+\explique{Conclusion : \res{$B$ est impair}.}{}
+\begin{calculs}
+C &= 4n-3 &&\\
+C &= 4n-4+1 &&\justif{$-3=-4+1$}\\
+C &= 2(2n-2)+1 &&\\
+C &= 2v+1 &&\justif{on pose $v=2n-2$, entier}
+\end{calculs}
+\explique{Conclusion : \res{$C$ est impair}.}{}
+\begin{calculs}
+D &= 2n^{2}+2n+1 &&\\
+D &= 2(n^{2}+n)+1 &&\justif{on factorise les deux premiers termes par $2$}\\
+D &= 2v+1 &&\justif{on pose $v=n^{2}+n$, entier}
+\end{calculs}
+\explique{Conclusion : \res{$D$ est impair}.}{}
+\end{exo}
+
+\begin{exo}[Démontrer une règle]
+\cas{a)}
+\explique{Test : $4\times 3=12$ ; $6\times 5=30$ : pairs.}{}
+\explique{Soit $a=2k$ un entier pair et $n$ un entier.}{}
+\begin{calculs}
+a\times n &= 2k\times n &&\\
+a\times n &= 2(kn) &&\\
+a\times n &= 2v &&\justif{on pose $v=kn$, entier}
+\end{calculs}
+\explique{Conclusion : \res{le produit est pair}.}{}
+\cas{b)}
+\explique{Test : $3\times 5=15$ ; $7\times 9=63$ : impairs.}{}
+\explique{Soit $a=2k+1$ et $b=2k'+1$, avec $k$ et $k'$ entiers.}{deux lettres différentes}
+\begin{calculs}
+a\times b &= (2k+1)(2k'+1) &&\\
+a\times b &= 4kk'+2k+2k'+1 &&\justif{double distributivité}\\
+a\times b &= 2(2kk'+k+k')+1 &&\justif{on factorise les trois premiers termes par $2$}\\
+a\times b &= 2v+1 &&\justif{on pose $v=2kk'+k+k'$, entier}
+\end{calculs}
+\explique{Conclusion : \res{le produit de deux entiers impairs est impair}.}{}
+\cas{c)}
+\explique{Test : $3+4=7$ ; $10+11=21$ : impairs.}{}
+\begin{calculs}
+n+(n+1) &= 2n+1 &&\justif{deux entiers consécutifs : $n$ et $n+1$}
+\end{calculs}
+\explique{Conclusion : \res{la somme de deux entiers consécutifs est impaire}.}{forme $2k+1$
+avec $k=n$}
+\end{exo}
+
+\begin{exo}[L'affirmation de Lina]
+\cas{a)}
+\begin{calculs}
+1+3+5 &= 9 &&\justif{impair}\\
+7+9+11 &= 27 &&\justif{impair}
+\end{calculs}
+\explique{\res{L'affirmation de Lina est fausse} : $1+3+5=9$ est un contre-exemple.}{un
+seul contre-exemple suffit}
+\cas{b)}
+\explique{Soit $a=2k+1$ ; $b=2k'+1$ ; $c=2k''+1$, avec $k$ ; $k'$ ; $k''$ entiers.}{trois
+lettres différentes}
+\begin{calculs}
+a+b+c &= 2k+1+2k'+1+2k''+1 &&\\
+a+b+c &= 2k+2k'+2k''+2+1 &&\justif{$3=2+1$ : on met de côté $1$}\\
+a+b+c &= 2(k+k'+k''+1)+1 &&\\
+a+b+c &= 2v+1 &&\justif{on pose $v=k+k'+k''+1$, entier}
+\end{calculs}
+\explique{Conclusion : \res{la somme de trois entiers impairs est toujours impaire}.}{}
+\end{exo}
+
+\partie{Démonstrations : nombres pairs et impairs}
+
+\begin{exo}[Carré d'un entier pair]
+\cas{a)}
+\explique{$4^{2}=16$ ; $6^{2}=36$ ; $10^{2}=100$ : les carrés de ces entiers pairs sont
+pairs.}{}
+\cas{b)}
+\explique{Soit $a=2k$ un entier pair.}{}
+\begin{calculs}
+a^{2} &= (2k)^{2} &&\\
+a^{2} &= 4k^{2} &&\justif{$(2k)^{2}=2^{2}\times k^{2}$}\\
+a^{2} &= 2(2k^{2}) &&\\
+a^{2} &= 2v &&\justif{on pose $v=2k^{2}$, entier}
+\end{calculs}
+\explique{Conclusion : \res{le carré d'un entier pair est pair}.}{}
+\cas{c)}
+\explique{Un entier pair a un carré pair (question b), un entier impair a un carré impair
+(propriété 4) : \res{un entier et son carré ont la même parité}.}{}
+\end{exo}
+
+\begin{exo}[En séparant les cas]
+\cas{a)}
+\explique{Pour $n=2$ : $A=10$ ; $B=2$ ; $C=7$.}{$4+6$ ; $4-2$ ; $4+2+1$}
+\explique{Pour $n=3$ : $A=18$ ; $B=6$ ; $C=13$.}{$9+9$ ; $9-3$ ; $9+3+1$}
+\cas{b)}
+\begin{calculs}
+A &= (2k)^{2}+3\times 2k &&\justif{1\textsuperscript{er} cas : $n=2k$}\\
+A &= 4k^{2}+6k &&\\
+A &= 2(2k^{2}+3k) &&\\
+A &= 2v &&\justif{on pose $v=2k^{2}+3k$ : pair}\\[4pt]
+A &= (2k+1)^{2}+3(2k+1) &&\justif{2\textsuperscript{e} cas : $n=2k+1$}\\
+A &= 4k^{2}+4k+1+6k+3 &&\justif{identité remarquable ; distributivité}\\
+A &= 4k^{2}+10k+4 &&\\
+A &= 2(2k^{2}+5k+2) &&\\
+A &= 2w &&\justif{on pose $w=2k^{2}+5k+2$ : pair}
+\end{calculs}
+\explique{Conclusion : dans les deux cas, \res{$A$ est pair}.}{}
+\cas{c)}
+\begin{calculs}
+B &= (2k)^{2}-2k &&\justif{1\textsuperscript{er} cas : $n=2k$}\\
+B &= 4k^{2}-2k &&\\
+B &= 2(2k^{2}-k) &&\\
+B &= 2v &&\justif{on pose $v=2k^{2}-k$ : pair}\\[4pt]
+B &= (2k+1)^{2}-(2k+1) &&\justif{2\textsuperscript{e} cas : $n=2k+1$}\\
+B &= 4k^{2}+4k+1-2k-1 &&\justif{parenthèses : on soustrait tout $2k+1$}\\
+B &= 4k^{2}+2k &&\\
+B &= 2(2k^{2}+k) &&\\
+B &= 2w &&\justif{on pose $w=2k^{2}+k$ : pair}
+\end{calculs}
+\explique{Conclusion : dans les deux cas, \res{$B$ est pair}.}{}
+\cas{d)}
+\begin{calculs}
+C &= (2k)^{2}+2k+1 &&\justif{1\textsuperscript{er} cas : $n=2k$}\\
+C &= 2(2k^{2}+k)+1 &&\\
+C &= 2v+1 &&\justif{on pose $v=2k^{2}+k$ : impair}\\[4pt]
+C &= (2k+1)^{2}+(2k+1)+1 &&\justif{2\textsuperscript{e} cas : $n=2k+1$}\\
+C &= 4k^{2}+4k+1+2k+1+1 &&\\
+C &= 4k^{2}+6k+3 &&\\
+C &= 2(2k^{2}+3k+1)+1 &&\justif{$3=2+1$}\\
+C &= 2w+1 &&\justif{on pose $w=2k^{2}+3k+1$ : impair}
+\end{calculs}
+\explique{Conclusion : dans les deux cas, \res{$C$ est impair}.}{}
+\rem{Plus rapide : $C=(n^{2}+n)+1$, et $n^{2}+n$ est pair (exemple de la méthode 6) ;
+pair $+\,1$ donne un nombre impair.}
+\end{exo}
+
+\begin{exo}[Carré d'un impair moins un]
+\cas{a)}
+\begin{calculs}
+7^{2}-1 &= 48 &&\justif{$48=8\times 6$ : multiple de $8$}\\
+11^{2}-1 &= 120 &&\justif{$120=8\times 15$ : multiple de $8$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+a^{2}-1 &= (2k+1)^{2}-1 &&\justif{on remplace $a$}\\
+a^{2}-1 &= 4k^{2}+4k+1-1 &&\justif{identité remarquable}\\
+a^{2}-1 &= 4k^{2}+4k &&\\
+a^{2}-1 &= 4(k^{2}+k) &&\justif{on factorise par $4$}
+\end{calculs}
+\cas{c)}
+\explique{D'après l'exemple corrigé de la méthode 6 (avec $k$ à la place de $n$),
+$k^{2}+k$ est pair : $k^{2}+k=2v$, avec $v$ entier.}{}
+\begin{calculs}
+a^{2}-1 &= 4\times 2v &&\justif{on remplace $k^{2}+k$}\\
+a^{2}-1 &= 8v &&
+\end{calculs}
+\explique{Conclusion : \res{$a^{2}-1$ est un multiple de $8$}.}{pour $a=7$ : $k=3$ et
+$v=6$ ; on retrouve $48=8\times 6$}
+\end{exo}
+
+\begin{exo}[Vrai ou faux sur la parité]
+\cas{a)}
+\explique{Test : pour $n=1$ ; $2$ ; $3$, $n^{2}+1$ vaut $2$ ; $5$ ; $10$.}{}
+\explique{Pour $n=1$, $n^{2}+1=2$ est pair : contre-exemple.}{}
+\explique{Conclusion : \res{faux}.}{$n^{2}+1$ est impair seulement quand $n$ est pair}
+\cas{b)}
+\explique{Test : $4n+7$ vaut $11$ ; $15$ ; $19$.}{}
+\begin{calculs}
+4n+7 &= 4n+6+1 &&\\
+4n+7 &= 2(2n+3)+1 &&\\
+4n+7 &= 2v+1 &&\justif{on pose $v=2n+3$, entier}
+\end{calculs}
+\explique{Conclusion : \res{vrai}.}{}
+\cas{c)}
+\explique{Test : $n^{2}+2n$ vaut $3$ ; $8$ ; $15$.}{}
+\explique{Pour $n=1$, $n^{2}+2n=3$ est impair : contre-exemple.}{}
+\explique{Conclusion : \res{faux}.}{}
+\cas{d)}
+\explique{Test : $n(n+1)(n+2)$ vaut $6$ ; $24$ ; $60$.}{}
+\explique{$n(n+1)=n^{2}+n$ est pair (exemple de la méthode 6) : $n(n+1)=2v$, avec $v$
+entier.}{}
+\begin{calculs}
+n(n+1)(n+2) &= 2v(n+2) &&\\
+n(n+1)(n+2) &= 2w &&\justif{on pose $w=v(n+2)$, entier}
+\end{calculs}
+\explique{Conclusion : \res{vrai}.}{un produit qui contient un facteur pair est pair}
+\end{exo}
+
+\partie{Démonstration par l'absurde}
+
+\begin{exo}[Les anniversaires]
+\cas{a)}
+\explique{Supposons qu'aucun mois ne compte deux élèves : chaque mois compte au plus un
+élève.}{on suppose le contraire}
+\explique{La classe compterait alors au plus $12$ élèves.}{$12$ mois, un élève au plus par
+mois}
+\explique{Or elle en compte $35$ : c'est impossible.}{}
+\explique{Conclusion : \res{au moins deux élèves sont nés le même mois}.}{}
+\cas{b)}
+\explique{Supposons que chaque mois compte au plus deux élèves.}{on suppose le contraire}
+\begin{calculs}
+12\times 2 &= 24 &&\justif{nombre maximal d'élèves}
+\end{calculs}
+\explique{La classe compterait au plus $24$ élèves, alors qu'elle en compte $35$ : c'est
+impossible.}{}
+\explique{Conclusion : \res{au moins trois élèves sont nés le même mois}.}{}
+\end{exo}
+
+\begin{exo}[Fractions non décimales]
+\cas{$\dfrac{4}{3}$}
+\explique{Supposons $\dfrac{4}{3}=\dfrac{a}{10^{p}}$, avec $a$ entier et $p$ entier
+naturel.}{on suppose le contraire}
+\begin{calculs}
+4\times 10^{p} &= 3a &&\justif{produit en croix}
+\end{calculs}
+\explique{Donc $4\times 10^{p}$ est un multiple de $3$.}{}
+\explique{Or $4\times 10^{p}$ s'écrit avec un $4$ suivi de zéros.}{$4\times 10^{2}=400$}
+\explique{La somme de ses chiffres vaut $4$.}{}
+\explique{$4$ n'est pas un multiple de $3$ : c'est impossible.}{critère de divisibilité par
+$3$}
+\explique{Conclusion : \res{$\dfrac{4}{3}$ n'est pas décimal}.}{}
+\cas{$\dfrac{7}{9}$}
+\explique{Supposons $\dfrac{7}{9}=\dfrac{a}{10^{p}}$.}{}
+\begin{calculs}
+7\times 10^{p} &= 9a &&\justif{produit en croix}
+\end{calculs}
+\explique{Donc $7\times 10^{p}$ est un multiple de $9$.}{}
+\explique{Or la somme de ses chiffres vaut $7$.}{un $7$ suivi de zéros}
+\explique{$7$ n'est pas un multiple de $9$ : c'est impossible.}{critère de divisibilité par
+$9$}
+\explique{Conclusion : \res{$\dfrac{7}{9}$ n'est pas décimal}.}{}
+\cas{$\dfrac{1}{6}$}
+\explique{Supposons $\dfrac{1}{6}=\dfrac{a}{10^{p}}$.}{}
+\begin{calculs}
+10^{p} &= 6a &&\justif{produit en croix}\\
+10^{p} &= 3\times 2a &&\justif{$6=3\times 2$}
+\end{calculs}
+\explique{Donc $10^{p}$ est un multiple de $3$.}{$2a$ est un entier}
+\explique{Or la somme des chiffres de $10^{p}$ vaut $1$.}{}
+\explique{$1$ n'est pas un multiple de $3$ : c'est impossible.}{}
+\explique{Conclusion : \res{$\dfrac{1}{6}$ n'est pas décimal}.}{}
+\end{exo}
+
+\begin{exo}[Pas de plus grand, pas de plus petit]
+\cas{a)}
+\explique{Supposons qu'il existe un plus grand entier impair $N=2k+1$, avec $k$ entier.}{on
+suppose le contraire}
+\begin{calculs}
+N+2 &= 2k+3 &&\justif{l'entier impair suivant}\\
+N+2 &= 2(k+1)+1 &&\\
+N+2 &= 2v+1 &&\justif{on pose $v=k+1$, entier : $N+2$ est impair}
+\end{calculs}
+\explique{$N+2$ est impair et plus grand que $N$ : c'est impossible, puisque $N$ est le plus
+grand.}{}
+\explique{Conclusion : \res{il n'existe pas de plus grand entier impair}.}{}
+\cas{b)}
+\explique{Supposons qu'il existe un plus petit nombre réel strictement positif, noté $x$.}{on
+suppose le contraire}
+\explique{Le nombre $\dfrac{x}{2}$ est strictement positif et plus petit que $x$.}{la moitié
+d'un nombre positif est positive, et plus petite que lui}
+\explique{C'est impossible, puisque $x$ est le plus petit.}{}
+\explique{Conclusion : \res{il n'existe pas de plus petit réel strictement positif}.}{}
+\end{exo}
+
+\partie{Nombres irrationnels}
+
+\begin{exo}[$\sqrt{6}$ est irrationnel]
+\cas{a)}
+\begin{calculs}
+\sqrt{6} &= \dfrac{a}{b} &&\\
+6 &= \dfrac{a^{2}}{b^{2}} &&\justif{on élève au carré}\\
+a^{2} &= 6b^{2} &&\justif{produit en croix}\\
+a^{2} &= 2\times 3b^{2} &&\justif{$a^{2}$ est pair}
+\end{calculs}
+\explique{$a^{2}$ est pair, donc $a$ est pair.}{conséquence de la propriété 4}
+\cas{b)}
+\begin{calculs}
+(2k)^{2} &= 6b^{2} &&\justif{on remplace $a$}\\
+4k^{2} &= 6b^{2} &&\\
+2k^{2} &= 3b^{2} &&\justif{on divise par $2$}
+\end{calculs}
+\cas{c)}
+\explique{$3b^{2}=2k^{2}$ est pair.}{question b)}
+\explique{Si $b$ était impair, $b^{2}$ serait impair (propriété 4), et $3b^{2}$ aussi : produit
+de deux impairs (exercice 15).}{}
+\explique{C'est impossible : $b$ est pair.}{}
+\cas{d)}
+\explique{$a$ et $b$ sont pairs : $2$ est un diviseur commun, alors que $\dfrac{a}{b}$ est
+irréductible. C'est impossible.}{la supposition était fausse}
+\explique{Conclusion : \res{$\sqrt{6}$ est irrationnel}.}{}
+\end{exo}
+
+\begin{exo}[À partir de $\sqrt{2}$]
+\cas{$3\sqrt{2}$}
+\explique{Supposons $3\sqrt{2}=\dfrac{a}{b}$, avec $a$ et $b$ entiers, $b\ne 0$.}{on
+suppose le contraire}
+\begin{calculs}
+\sqrt{2} &= \dfrac{a}{3b} &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$a$ et $3b$ sont des entiers : $\sqrt{2}$ serait rationnel. C'est impossible.}{propriété
+6}
+\explique{Conclusion : \res{$3\sqrt{2}$ est irrationnel}.}{}
+\cas{$1+\sqrt{2}$}
+\explique{Supposons $1+\sqrt{2}=\dfrac{a}{b}$.}{}
+\begin{calculs}
+\sqrt{2} &= \dfrac{a}{b}-1 &&\justif{on soustrait $1$}\\
+\sqrt{2} &= \dfrac{a-b}{b} &&\justif{même dénominateur}
+\end{calculs}
+\explique{$a-b$ et $b$ sont des entiers : $\sqrt{2}$ serait rationnel. C'est impossible.}{}
+\explique{Conclusion : \res{$1+\sqrt{2}$ est irrationnel}.}{}
+\cas{$\dfrac{\sqrt{2}}{5}$}
+\explique{Supposons $\dfrac{\sqrt{2}}{5}=\dfrac{a}{b}$.}{}
+\begin{calculs}
+\sqrt{2} &= \dfrac{5a}{b} &&\justif{on multiplie par $5$}
+\end{calculs}
+\explique{$5a$ et $b$ sont des entiers : c'est impossible.}{}
+\explique{Conclusion : \res{$\dfrac{\sqrt{2}}{5}$ est irrationnel}.}{}
+\rem{La démarche : on isole $\sqrt{2}$, et on montre qu'il serait un quotient d'entiers.}
+\end{exo}
+
+\begin{exo}[Encadrer un nombre réel]
+\cas{a)}
+\begin{calculs}
+2{,}6^{2} &= 6{,}76 &&\justif{plus petit que $7$}\\
+2{,}7^{2} &= 7{,}29 &&\justif{plus grand que $7$}
+\end{calculs}
+\explique{$6{,}76<7<7{,}29$, donc \res{$2{,}6<\sqrt{7}<2{,}7$}.}{nombres positifs : le plus
+grand carré vient du plus grand nombre}
+\begin{calculs}
+2{,}64^{2} &= 6{,}9696 &&\justif{on balaie de $0{,}01$ en $0{,}01$ à partir de $2{,}6$}\\
+2{,}65^{2} &= 7{,}0225 &&\justif{plus grand que $7$}
+\end{calculs}
+\explique{\res{$2{,}64<\sqrt{7}<2{,}65$}.}{$2{,}63^{2}=6{,}9169$ était encore plus petit que $7$}
+\cas{b)}
+\explique{La calculatrice affiche $\pi\approx 3{,}14159$ : \res{$3{,}141<\pi<3{,}142$}.}{on
+garde trois chiffres après la virgule, puis on ajoute $0{,}001$}
+\explique{Elle affiche $\sqrt{11}\approx 3{,}31662$ : \res{$3{,}316<\sqrt{11}<3{,}317$}.}{}
+\end{exo}
+
+\begin{exo}[Algorithme : encadrer $\sqrt{2}$ par balayage]
+\cas{a)}
+\begin{calculs}
+1{,}1^{2} &= 1{,}21 &&\justif{$\le 2$ : \texttt{x} devient $1{,}1$}\\
+1{,}2^{2} &= 1{,}44 &&\justif{\texttt{x} devient $1{,}2$}\\
+1{,}3^{2} &= 1{,}69 &&\justif{\texttt{x} devient $1{,}3$}\\
+1{,}4^{2} &= 1{,}96 &&\justif{\texttt{x} devient $1{,}4$}\\
+1{,}5^{2} &= 2{,}25 &&\justif{dépasse $2$ : la boucle s'arrête}
+\end{calculs}
+\explique{\texttt{x} prend les valeurs $1$ ; $1{,}1$ ; $1{,}2$ ; $1{,}3$ ; $1{,}4$, et la
+fonction renvoie \res{$1{,}4$ et $1{,}5$} : $1{,}4<\sqrt{2}<1{,}5$.}{Python affiche
+\texttt{1.4000000000000001} : les calculs de l'ordinateur sont approchés}
+\cas{b)}
+\explique{Elle renvoie \res{$1{,}41$ et $1{,}42$} : $1{,}41<\sqrt{2}<1{,}42$, encadrement
+d'amplitude \res{$0{,}01$}.}{$1{,}41^{2}=1{,}9881$ et $1{,}42^{2}=2{,}0164$}
+\cas{c)}
+\explique{On remplace $2$ par $3$ dans la condition :\\
+\res{\mbox{\texttt{while (x + p)**2 <= 3:}}}}{on cherche les nombres dont le carré reste inférieur
+ou égal à $3$}
+\end{exo}
+
+\besoinplace{28\baselineskip}
+\partie{Calculer avec les racines carrées}
+
+\begin{exo}[Avec la définition]
+\begin{calculs}
+A &= \sqrt{121} &&\\
+A &= \res{11} &&\justif{$11^{2}=121$}\\[4pt]
+B &= \sqrt{0} &&\\
+B &= \res{0} &&\justif{$0^{2}=0$}\\[4pt]
+C &= \big(\sqrt{6}\big)^{2} &&\\
+C &= \res{6} &&\justif{définition : $\big(\sqrt{a}\big)^{2}=a$}\\[4pt]
+D &= \sqrt{5^{2}} &&\\
+D &= \res{5} &&\justif{$\sqrt{a^{2}}=a$ pour $a$ positif}\\[4pt]
+E &= \sqrt{\dfrac{16}{25}} &&\\
+E &= \dfrac{\sqrt{16}}{\sqrt{25}} &&\justif{racine d'un quotient}\\
+E &= \res{\dfrac{4}{5}} &&\\[4pt]
+F &= \sqrt{4\times 9} &&\\
+F &= \sqrt{36} &&\\
+F &= \res{6} &&\justif{ou $\sqrt{4}\times\sqrt{9}=2\times 3$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Produits, quotients, carrés]
+\cas{a)}
+\begin{calculs}
+G &= \sqrt{5}\times\sqrt{20} &&\\
+G &= \sqrt{100} &&\justif{racine d'un produit : $5\times 20=100$}\\
+G &= \res{10} &&\\[4pt]
+H &= \sqrt{3}\times\sqrt{48} &&\\
+H &= \sqrt{144} &&\justif{$3\times 48=144$}\\
+H &= \res{12} &&\\[4pt]
+I &= \dfrac{\sqrt{72}}{\sqrt{2}} &&\\
+I &= \sqrt{36} &&\justif{racine d'un quotient : $72\div 2=36$}\\
+I &= \res{6} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+J &= \big(3\sqrt{2}\big)^{2} &&\\
+J &= 3^{2}\times\big(\sqrt{2}\big)^{2} &&\justif{chaque facteur au carré}\\
+J &= 9\times 2 &&\\
+J &= \res{18} &&\\[4pt]
+K &= \big(-2\sqrt{7}\big)^{2} &&\\
+K &= (-2)^{2}\times\big(\sqrt{7}\big)^{2} &&\\
+K &= 4\times 7 &&\justif{$(-2)^{2}=4$ : un carré est positif}\\
+K &= \res{28} &&\\[4pt]
+L &= 4\sqrt{3}\times\big(-2\sqrt{3}\big) &&\\
+L &= 4\times(-2)\times\sqrt{3}\times\sqrt{3} &&\justif{on regroupe les nombres et les racines}\\
+L &= -8\times 3 &&\\
+L &= \res{-24} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[L'erreur d'Inès]
+\cas{a)}
+\begin{calculs}
+\sqrt{25+144} &= \sqrt{169} &&\justif{on calcule d'abord la somme}\\
+\sqrt{25+144} &= 13 &&\justif{$13^{2}=169$}
+\end{calculs}
+\explique{Or $5+12=17$ : \res{Inès a tort}.}{la racine d'une somme n'est pas la somme des
+racines}
+\cas{b)}
+\explique{Avec $a=0$ et $b=9$ : $\sqrt{0+9}=3$ et $\sqrt{0}+\sqrt{9}=3$.}{c'est vrai dès que
+l'un des deux nombres vaut $0$}
+\explique{Par exemple \res{$a=0$ et $b=9$}.}{}
+\end{exo}
+
+\begin{exo}[Deux carrés]
+\cas{a)}
+\begin{calculs}
+6^{2} &= 36 &&\justif{aire du premier carré, en cm$^{2}$}\\
+8^{2} &= 64 &&\justif{aire du second}
+\end{calculs}
+\explique{Les aires sont \res{$36$~cm$^{2}$ et $64$~cm$^{2}$}.}{}
+\cas{b)}
+\begin{calculs}
+36+64 &= 100 &&\justif{aire du troisième carré}\\
+\sqrt{100} &= 10 &&\justif{son côté est le nombre positif dont le carré vaut $100$}
+\end{calculs}
+\explique{Le côté mesure \res{$10$~cm}.}{et non $6+8=14$~cm}
+\cas{c)}
+\begin{calculs}
+2^{2}+3^{2} &= 13 &&\justif{$4+9$}
+\end{calculs}
+\explique{Le côté mesure \res{$\sqrt{13}$~cm}.}{valeur exacte}
+\begin{calculs}
+3{,}6^{2} &= 12{,}96 &&\justif{plus petit que $13$}\\
+3{,}7^{2} &= 13{,}69 &&\justif{plus grand que $13$}
+\end{calculs}
+\explique{\res{$3{,}6<\sqrt{13}<3{,}7$}.}{}
+\end{exo}
+
+\partie{Transformer et réduire des expressions}
+
+\begin{exo}[Forme $a\sqrt{b}$]
+\begin{calculs}
+\sqrt{8} &= \sqrt{4\times 2} &&\justif{$4$ : plus grand carré qui divise $8$}\\
+\sqrt{8} &= \res{2\sqrt{2}} &&\\[4pt]
+\sqrt{50} &= \sqrt{25\times 2} &&\\
+\sqrt{50} &= \res{5\sqrt{2}} &&\\[4pt]
+\sqrt{75} &= \sqrt{25\times 3} &&\\
+\sqrt{75} &= \res{5\sqrt{3}} &&\\[4pt]
+\sqrt{98} &= \sqrt{49\times 2} &&\\
+\sqrt{98} &= \res{7\sqrt{2}} &&\\[4pt]
+\sqrt{180} &= \sqrt{36\times 5} &&\justif{$36$, et non $4$ ou $9$ : le plus grand carré}\\
+\sqrt{180} &= \res{6\sqrt{5}} &&\\[4pt]
+2\sqrt{12} &= 2\times\sqrt{4\times 3} &&\\
+2\sqrt{12} &= 2\times 2\sqrt{3} &&\\
+2\sqrt{12} &= \res{4\sqrt{3}} &&\\[4pt]
+5\sqrt{40} &= 5\times\sqrt{4\times 10} &&\justif{$10$ ne contient plus de carré}\\
+5\sqrt{40} &= 5\times 2\sqrt{10} &&\\
+5\sqrt{40} &= \res{10\sqrt{10}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Réduire]
+\cas{a)}
+\begin{calculs}
+A &= 3\sqrt{5}+7\sqrt{5}-4\sqrt{5} &&\\
+A &= (3+7-4)\sqrt{5} &&\justif{même racine : on factorise}\\
+A &= \res{6\sqrt{5}} &&\\[4pt]
+B &= \sqrt{2}-6\sqrt{2} &&\justif{$\sqrt{2}$ compte pour $1\sqrt{2}$}\\
+B &= \res{-5\sqrt{2}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+C &= 5\sqrt{3}-8+2\sqrt{3}+1 &&\\
+C &= 5\sqrt{3}+2\sqrt{3}-8+1 &&\justif{on regroupe les racines, puis les entiers}\\
+C &= \res{7\sqrt{3}-7} &&\\[4pt]
+D &= \sqrt{27}+\sqrt{12} &&\\
+D &= 3\sqrt{3}+2\sqrt{3} &&\justif{$27=9\times 3$ ; $12=4\times 3$}\\
+D &= \res{5\sqrt{3}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+E &= \sqrt{45}-2\sqrt{20}+\sqrt{80} &&\\
+E &= 3\sqrt{5}-2\times 2\sqrt{5}+4\sqrt{5} &&\justif{$45=9\times 5$ ; $20=4\times 5$ ; $80=16\times 5$}\\
+E &= 3\sqrt{5}-4\sqrt{5}+4\sqrt{5} &&\\
+E &= \res{3\sqrt{5}} &&\\[4pt]
+F &= \sqrt{50}+\sqrt{18}-\sqrt{8} &&\\
+F &= 5\sqrt{2}+3\sqrt{2}-2\sqrt{2} &&\justif{$50=25\times 2$ ; $18=9\times 2$ ; $8=4\times 2$}\\
+F &= \res{6\sqrt{2}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+G &= \sqrt{12}+\sqrt{50} &&\\
+G &= \res{2\sqrt{3}+5\sqrt{2}} &&\justif{$\sqrt{3}$ et $\sqrt{2}$ ne se regroupent pas}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Un rectangle]
+\cas{a)}
+\begin{calculs}
+P &= 2\big(\sqrt{50}+\sqrt{18}\big) &&\justif{périmètre : $2\times(\text{longueur}+\text{largeur})$}\\
+P &= 2\big(5\sqrt{2}+3\sqrt{2}\big) &&\justif{méthode 10}\\
+P &= 2\times 8\sqrt{2} &&\\
+P &= 16\sqrt{2} &&
+\end{calculs}
+\explique{Le périmètre mesure \res{$16\sqrt{2}$~cm}.}{$16\sqrt{2}\approx 22{,}6$~cm}
+\cas{b)}
+\begin{calculs}
+\mathcal{A} &= \sqrt{50}\times\sqrt{18} &&\justif{aire : longueur $\times$ largeur}\\
+\mathcal{A} &= \sqrt{900} &&\justif{racine d'un produit : $50\times 18=900$}\\
+\mathcal{A} &= 30 &&
+\end{calculs}
+\explique{L'aire vaut \res{$30$~cm$^{2}$}.}{les racines ont disparu}
+\end{exo}
+
+\begin{exo}[Un triangle rectangle]
+\cas{a)}
+\begin{calculs}
+BC^{2} &= AB^{2}+AC^{2} &&\justif{théorème de Pythagore, dans $ABC$ rectangle en $A$}\\
+BC^{2} &= 4+16 &&\\
+BC^{2} &= 20 &&\\
+BC &= \sqrt{20} &&\justif{une longueur est positive}\\
+BC &= 2\sqrt{5} &&\justif{$20=4\times 5$}
+\end{calculs}
+\explique{\res{$BC=2\sqrt{5}$~cm}.}{}
+\cas{b)}
+\begin{calculs}
+P &= 2+4+2\sqrt{5} &&\\
+P &= 6+2\sqrt{5} &&\justif{$6$ et $2\sqrt{5}$ ne se regroupent pas}
+\end{calculs}
+\explique{Le périmètre mesure \res{$6+2\sqrt{5}$~cm}.}{}
+\begin{calculs}
+\mathcal{A} &= \dfrac{AB\times AC}{2} &&\justif{les deux côtés de l'angle droit}\\
+\mathcal{A} &= \dfrac{2\times 4}{2} &&\\
+\mathcal{A} &= 4 &&
+\end{calculs}
+\explique{L'aire vaut \res{$4$~cm$^{2}$}.}{}
+\end{exo}
+
+\partie{Simplifier des expressions avec des racines}
+
+\begin{exo}[Développer et réduire]
+\cas{a)}
+\begin{calculs}
+A &= \sqrt{2}\big(5-\sqrt{2}\big) &&\\
+A &= 5\sqrt{2}-\sqrt{2}\times\sqrt{2} &&\justif{distributivité simple}\\
+A &= \res{5\sqrt{2}-2} &&\\[4pt]
+B &= \big(3+\sqrt{5}\big)\big(2-\sqrt{5}\big) &&\\
+B &= 6-3\sqrt{5}+2\sqrt{5}-5 &&\justif{double distributivité ; $\sqrt{5}\times\sqrt{5}=5$}\\
+B &= \res{1-\sqrt{5}} &&\justif{$6-5=1$ ; $-3\sqrt{5}+2\sqrt{5}=-\sqrt{5}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+C &= \big(\sqrt{3}+2\big)^{2} &&\justif{$(a+b)^{2}$ avec $a=\sqrt{3}$ et $b=2$}\\
+C &= 3+2\times\sqrt{3}\times 2+4 &&\\
+C &= \res{7+4\sqrt{3}} &&\\[4pt]
+D &= \big(2\sqrt{5}-1\big)^{2} &&\justif{$(a-b)^{2}$ avec $a=2\sqrt{5}$ et $b=1$}\\
+D &= \big(2\sqrt{5}\big)^{2}-2\times 2\sqrt{5}\times 1+1 &&\\
+D &= 20-4\sqrt{5}+1 &&\justif{$\big(2\sqrt{5}\big)^{2}=4\times 5$}\\
+D &= \res{21-4\sqrt{5}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+E &= \big(\sqrt{6}-\sqrt{2}\big)\big(\sqrt{6}+\sqrt{2}\big) &&\justif{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+E &= 6-2 &&\\
+E &= \res{4} &&\\[4pt]
+F &= \big(1+\sqrt{7}\big)\big(1-\sqrt{7}\big) &&\\
+F &= 1-7 &&\\
+F &= \res{-6} &&
+\end{calculs}
+\rem{Erreur fréquente : $\big(2\sqrt{5}\big)^{2}=2\times 5$. Le $2$ aussi est au carré :
+$4\times 5=20$.}
+\end{exo}
+
+\begin{exo}[Sans racine au dénominateur]
+\begin{calculs}
+\dfrac{4}{\sqrt{2}} &= \dfrac{4\fois{\sqrt{2}}}{\sqrt{2}\fois{\sqrt{2}}} &&\justif{on multiplie en haut et en bas par $\sqrt{2}$}\\
+\dfrac{4}{\sqrt{2}} &= \dfrac{4\sqrt{2}}{2} &&\\
+\dfrac{4}{\sqrt{2}} &= \res{2\sqrt{2}} &&\\[4pt]
+\dfrac{9}{\sqrt{3}} &= \dfrac{9\sqrt{3}}{3} &&\justif{même démarche}\\
+\dfrac{9}{\sqrt{3}} &= \res{3\sqrt{3}} &&\\[4pt]
+\dfrac{1}{\sqrt{5}} &= \res{\dfrac{\sqrt{5}}{5}} &&\\[4pt]
+\dfrac{7}{2\sqrt{7}} &= \dfrac{7\sqrt{7}}{2\times 7} &&\justif{seule la racine passe en haut}\\
+\dfrac{7}{2\sqrt{7}} &= \res{\dfrac{\sqrt{7}}{2}} &&\justif{on simplifie par $7$}\\[4pt]
+\dfrac{6}{5\sqrt{3}} &= \dfrac{6\sqrt{3}}{5\times 3} &&\\
+\dfrac{6}{5\sqrt{3}} &= \res{\dfrac{2\sqrt{3}}{5}} &&\justif{on simplifie par $3$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Des nombres entiers]
+\cas{a)}
+\begin{calculs}
+A &= \dfrac{\sqrt{98}}{\sqrt{2}} &&\\
+A &= \sqrt{49} &&\justif{racine d'un quotient}\\
+A &= \res{7} &&\\[4pt]
+B &= \big(\sqrt{5}+1\big)^{2}+\big(\sqrt{5}-1\big)^{2} &&\\
+B &= 5+2\sqrt{5}+1+5-2\sqrt{5}+1 &&\justif{identités remarquables}\\
+B &= \res{12} &&\justif{les termes $2\sqrt{5}$ s'annulent}\\[4pt]
+C &= \big(2+\sqrt{3}\big)\big(2-\sqrt{3}\big) &&\\
+C &= 4-3 &&\justif{$(a+b)(a-b)=a^{2}-b^{2}$}\\
+C &= \res{1} &&
+\end{calculs}
+\explique{Conclusion : $A$, $B$ et $C$ sont des entiers.}{}
+\cas{b)}
+\explique{$\big(2+\sqrt{3}\big)\big(2-\sqrt{3}\big)=1$ (question a).}{}
+\explique{On divise les deux membres par $2+\sqrt{3}$, qui n'est pas nul : \res{$2-\sqrt{3}=\dfrac{1}{2+\sqrt{3}}$}.}{$2-\sqrt{3}$
+est l'inverse de $2+\sqrt{3}$}
+\cas{c)}
+\begin{calculs}
+D &= \big(\sqrt{3}+1\big)^{2}-2\sqrt{3} &&\\
+D &= 3+2\sqrt{3}+1-2\sqrt{3} &&\\
+D &= 4 &&
+\end{calculs}
+\explique{Conclusion : $D=4$, sa nature est \res{$\mathbb{N}$}.}{une expression avec des
+racines peut être un entier}
+\end{exo}
+
+\end{document}
