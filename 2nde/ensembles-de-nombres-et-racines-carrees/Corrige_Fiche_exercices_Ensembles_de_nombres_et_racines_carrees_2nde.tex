@@ -258,6 +258,16 @@
 \renewcommand{\res}[1]{\leavevmode{\color{coulRep}#1}}
 \newcommand{\gris}[1]{\leavevmode{\small\itshape\color{black!60}#1}}
 
+\usepackage{xlop}
+\opset{decimalsepsymbol={,}}
+\newcommand{\divpose}[3]{\begin{tikzpicture}
+  \node{\opdiv[maxdivstep=#1,safedivstep=false,displayintermediary=all]{#2}{#3}};
+  \end{tikzpicture}}
+\newenvironment{division}{\par\smallskip\noindent\begin{minipage}[t]{0.6\linewidth}\vspace{0pt}\raggedright}%
+  {\end{minipage}\hfill}
+\newenvironment{figdivision}{\begin{minipage}[t]{0.36\linewidth}\vspace{0pt}\centering}%
+  {\end{minipage}\par\smallskip}
+
 \begin{document}
 
 \entetefiche{Chapitre 6 --- Ensembles de nombres et racines carrées}{Seconde}
@@ -269,8 +279,9 @@
 \begin{calculs}
 -\dfrac{27}{9} &= -3 &&\justif{$27=3\times 9$ : la division tombe juste}
 \end{calculs}
-\explique{$-3\in\mathbb{Z}$, donc aussi à $\mathbb{D}$, $\mathbb{Q}$ et $\R$ ; $-3\notin\mathbb{N}$.
-Sa nature est \res{$\mathbb{Z}$}.}{un entier négatif n'est pas naturel}
+\explique{$-3$ appartient à $\mathbb{Z}$, donc aussi à $\mathbb{D}$, $\mathbb{Q}$ et $\R$ ;
+$-3\notin\mathbb{N}$. Sa nature est \res{$\mathbb{Z}$}.}{un entier négatif n'est pas
+naturel}
 
 \cas{$\dfrac{11}{8}$}
 \begin{calculs}
@@ -301,7 +312,8 @@ aussi à $\mathbb{Q}$ et à $\R$, pas à $\mathbb{Z}$).}{un décimal peut être 
 \begin{calculs}
 3{,}2\times 10^{2} &= 320 &&\justif{multiplier par $100$ : la virgule avance de deux rangs}
 \end{calculs}
-\explique{Sa nature est \res{$\mathbb{N}$}.}{l'écriture scientifique cache un entier}
+\explique{$320$ appartient aux cinq ensembles : sa nature est \res{$\mathbb{N}$}.}{l'écriture
+scientifique cache un entier}
 \end{exo}
 
 \begin{exo}[Appartient ou non]
@@ -333,36 +345,54 @@ est irrationnel (propriété 6) ; tout nombre est réel ; $\frac{7}{1}=7$}
 
 \begin{exo}[Décimal ou non]
 \cas{a)}
-\explique{$\dfrac{13}{8}$ : on divise $13$ par $8$.}{à chaque étape, on abaisse un $0$ et on
-divise le reste par $8$}
-\begin{calculs}
-13 &= 8\times 1+5 &&\justif{chiffre des unités : $1$ ; reste $5$}\\
-50 &= 8\times 6+2 &&\justif{1\textsuperscript{er} chiffre après la virgule : $6$}\\
-20 &= 8\times 2+4 &&\justif{2\textsuperscript{e} chiffre : $2$}\\
-40 &= 8\times 5 &&\justif{3\textsuperscript{e} chiffre : $5$ ; reste $0$ : la division s'arrête}
-\end{calculs}
-\explique{$\dfrac{13}{8}=1{,}625$ : \res{c'est un nombre décimal}.}{la division tombe juste}
-\explique{$\dfrac{4}{15}$ : on divise $4$ par $15$.}{}
-\begin{calculs}
-4 &= 15\times 0+4 &&\justif{chiffre des unités : $0$}\\
-40 &= 15\times 2+10 &&\justif{1\textsuperscript{er} chiffre après la virgule : $2$}\\
-100 &= 15\times 6+10 &&\justif{2\textsuperscript{e} chiffre : $6$ ; le reste $10$ revient}
-\end{calculs}
-\explique{Le reste $10$ revient sans fin : $\dfrac{4}{15}=0{,}2666\ldots$ \res{n'est pas
-décimal}.}{la division ne s'arrête jamais}
+\begin{division}
+On divise $13$ par $8$ : $13=8\times 1+5$, le chiffre des unités est $1$, le reste $5$.
+
+\smallskip
+On écrit la virgule au quotient, puis, à chaque étape, on abaisse un $0$ à côté du reste
+et on divise par $8$ : $50$ donne $6$ (reste $2$), $20$ donne $2$ (reste $4$), $40$ donne $5$
+(reste $0$).
+
+\smallskip
+Le reste $0$ arrête la division : $\dfrac{13}{8}=1{,}625$, \res{c'est un nombre
+décimal}.
+\end{division}
+\begin{figdivision}
+\divpose{4}{13}{8}
+\end{figdivision}
+
+\begin{division}
+On divise $4$ par $15$ : $0$ unité, reste $4$.
+
+\smallskip
+$40$ donne $2$ (reste $10$), puis $100$ donne $6$ (reste $10$), puis encore $100$ : le reste
+$10$ revient à chaque étape.
+
+\smallskip
+La division ne s'arrête jamais : $\dfrac{4}{15}=0{,}2666\ldots$ \res{n'est pas décimal}.
+\end{division}
+\begin{figdivision}
+\divpose{4}{4}{15}
+\end{figdivision}
 
 \cas{b)}
-\begin{calculs}
-20 &= 7\times 2+6 &&\justif{$2=7\times 0+2$ : $0$ unité ; puis 1\textsuperscript{er} chiffre $2$}\\
-60 &= 7\times 8+4 &&\justif{chiffre $8$}\\
-40 &= 7\times 5+5 &&\justif{chiffre $5$}\\
-50 &= 7\times 7+1 &&\justif{chiffre $7$}\\
-10 &= 7\times 1+3 &&\justif{chiffre $1$}\\
-30 &= 7\times 4+2 &&\justif{chiffre $4$ ; reste $2$ : on retrouve le point de départ}
-\end{calculs}
-\explique{Le reste $2$ revient : la suite des restes $6$ ; $4$ ; $5$ ; $1$ ; $3$ ; $2$
-recommence, et les chiffres avec elle.}{dans une division par $7$, il n'y a que six restes
-non nuls possibles}
+\begin{division}
+$2$ divisé par $7$ : $0$ unité, reste $2$. Puis on abaisse un $0$ à chaque étape :
+$20$ donne $2$ (reste $6$) ; $60$ donne $8$ (reste $4$) ; $40$ donne $5$ (reste $5$) ;
+$50$ donne $7$ (reste $1$) ; $10$ donne $1$ (reste $3$) ; $30$ donne $4$ (reste $2$).
+
+\smallskip
+On retrouve le reste $2$ du départ : la suite des restes $6$ ; $4$ ; $5$ ; $1$ ; $3$ ; $2$
+recommence, et les chiffres du quotient avec elle (le $7$\textsuperscript{e} chiffre est de
+nouveau $2$).
+
+\smallskip
+\gris{Dans une division par $7$, il n'y a que six restes non nuls possibles : un reste
+revient forcément.}
+\end{division}
+\begin{figdivision}
+\divpose{8}{2}{7}
+\end{figdivision}
 \explique{\res{$\dfrac{2}{7}=0{,}285714\,285714\ldots$} : le bloc $285714$ se répète sans
 fin.}{}
 \explique{Conclusion : $\dfrac{2}{7}$ n'est pas décimal, et ses chiffres se répètent par
@@ -543,7 +573,8 @@ m-p &= 7v &&\justif{on pose $v=k-k'$, entier}
 \explique{Conclusion : \res{la différence de deux multiples de $7$ est un multiple de
 $7$}.}{}
 \cas{b)}
-\explique{Test : $1+2+3+4=10$ ; $5+6+7+8=26$ : deux nombres pairs, multiples de $2$.}{}
+\explique{Test : $1+2+3+4=10$ et $10=2\times 5$ ; $5+6+7+8=26$ et $26=2\times 13$ : deux
+multiples de $2$.}{}
 \begin{calculs}
 S &= n+(n+1)+(n+2)+(n+3) &&\justif{quatre entiers consécutifs}\\
 S &= 4n+6 &&\justif{$1+2+3=6$}\\
@@ -583,8 +614,7 @@ m\times p &= 6v &&\justif{on pose $v=kk'$, entier}
 \explique{Conclusion : \res{faux}.}{un seul contre-exemple suffit}
 \cas{d)}
 \explique{Contre-exemple : $1+2=3$, qui n'est pas un multiple de $2$.}{}
-\explique{Conclusion : \res{faux}.}{la somme de deux entiers consécutifs est même toujours
-impaire (exercice 15)}
+\explique{Conclusion : \res{faux}.}{un seul contre-exemple suffit}
 \cas{e)}
 \explique{Test : les diviseurs de $12$ sont $1$ ; $2$ ; $3$ ; $4$ ; $6$ ; $12$, et chacun divise $36$.}{}
 \explique{Soit $d$ un diviseur de $12$ : $12=d\times k$, avec $k$ entier.}{}
@@ -606,8 +636,8 @@ impaire (exercice 15)}
 1\,001 &= \res{2\times 500+1} &&\justif{impair}\\
 -7 &= \res{2\times(-4)+1} &&\justif{$-8+1=-7$ : impair, avec $k=-4$}
 \end{calculs}
-\rem{Pour un entier négatif impair, $k$ est négatif : $-7=2\times(-3)-1$ n'est pas de la
-forme $2k+1$, il faut aller jusqu'au pair qui précède, $-8$.}
+\rem{Pour $-7$, on part du nombre pair juste avant, $-8$ : $-7=-8+1$. Écrire
+$-7=2\times(-3)-1$ ne convient pas : la forme demandée est $2k$ \textbf{plus} $1$.}
 \end{exo}
 
 \begin{exo}[Pair ou impair]
