@@ -19,10 +19,23 @@
   };
   var LONGUEUR_MAX = 7000;   // adresse encodée : au-delà, certaines IA tronquent ou refusent
 
+  // adresse de la page (celle de faire-des-maths.fr sur la copie de la Forge), avec
+  // l'ancre de l'exercice, de la méthode ou de la partie qui précède le bouton
+  function adressePage(d) {
+    var c = document.querySelector('link[rel="canonical"]');
+    var a = (c ? c.href : location.href).split('#')[0].split('?')[0], ancre = '';
+    document.querySelectorAll('[id]').forEach(function (e) {
+      if (/^(exercice|methode|partie)-\d+$/.test(e.id) &&
+          (d.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_PRECEDING)) ancre = e.id;
+    });
+    return ancre ? a + '#' + ancre : a;
+  }
+
   function texte(d, question) {
     var s = d.dataset;
     var t = 'Je suis élève de ' + s.niveau + '. Je travaille le chapitre « ' + s.chapitre +
-      ' » de mon cours de mathématiques. Voici ' + s.genre + (s.titre ? ' (« ' + s.titre + ' »)' : '') +
+      ' » de mon cours de mathématiques, sur le site de mon professeur, Faire des maths ' +
+      '(faire-des-maths.fr). Page : ' + adressePage(d) + '\n\nVoici ' + s.genre + (s.titre ? ' (« ' + s.titre + ' »)' : '') +
       ', écrit en LaTeX ([figure] : une figure qui n\'est pas jointe ; \\cas, \\justif, \\explique, ' +
       '\\res : mise en page de mon professeur).\n\n```latex\n' + s.source + '\n```\n';
     if (s.corrige) t += '\nVoici le corrigé de mon professeur :\n\n```latex\n' + s.corrige + '\n```\n';
