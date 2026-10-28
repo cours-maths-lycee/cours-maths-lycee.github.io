@@ -3,6 +3,10 @@ pages:
   image: alpine:3.20
   script:
     - mkdir .public && cp -r * .public && mv .public public
+    - >-
+      find public -type f \( -name '*.html' -o -name '*.css' -o -name '*.js'
+      -o -name '*.svg' -o -name '*.json' -o -name '*.txt' -o -name '*.xml' \)
+      -exec sh -c 'for f; do gzip -9 -c "$f" > "$f.gz"; done' _ {} +
   artifacts:
     paths:
       - public
