@@ -120,7 +120,11 @@
      la phrase entendue correspondante (les deux histoires restent synchronisées).
      Avec un enregistrement (data-audio, fait par outils/gen_audio.py) : la priorité, synchronisé par data-temps
      (début de chaque phrase entendue, en secondes) ; sans data-temps, ou lecture par l'enseignant :
-     une phrase toutes les data-pas secondes. */
+     une phrase toutes les data-pas secondes.
+     data-mode="suite" : les deux histoires l'une après l'autre (l'écrite, une phrase toutes les
+     data-pas secondes, puis l'entendue en entier), pour comparer avec la manche simultanée.
+     data-mode="cadence" : en même temps, mais une phrase écrite et une phrase entendue toutes les
+     data-pas secondes (silence après chaque phrase entendue) : même temps total que la manche « suite ». */
   function choisirVoix() {
     if (!('speechSynthesis' in window)) return null;
     var voix = speechSynthesis.getVoices().filter(function (v) { return /^fr/i.test(v.lang); });
@@ -142,10 +146,12 @@
     var phrases = textes('.defi-ecrit'), orales = textes('.defi-oral');
     var pas = parseFloat(el.getAttribute('data-pas')) || 6;
     var src = el.getAttribute('data-audio');
+    var suite = el.getAttribute('data-mode') === 'suite', cadence = el.getAttribute('data-mode') === 'cadence';
     el.querySelectorAll('.defi-ecrit, .defi-oral').forEach(function (n) { n.hidden = true; });
 
     var scene = document.createElement('div'); scene.className = 'defi-scene'; scene.setAttribute('aria-live', 'polite');
-    scene.innerHTML = '<p class="defi-phrase">Lis l\'histoire qui va s\'afficher ici <strong>et</strong> écoute celle qui sera racontée. Pas de retour en arrière&nbsp;!</p>';
+    scene.innerHTML = '<p class="defi-phrase">Lis l\'histoire qui va s\'afficher ici ' + (suite ? '<strong>puis</strong>' : '<strong>et</strong>') +
+      ' écoute celle qui sera racontée. Pas de retour en arrière&nbsp;!</p>';
     var barre = document.createElement('div'); barre.className = 'defi-barre'; barre.innerHTML = '<span></span>';
     var cmd = document.createElement('div'); cmd.className = 'defi-commandes';
     var go = document.createElement('button'); go.type = 'button'; go.className = 'defi-go'; go.textContent = 'Démarrer le défi';
@@ -198,6 +204,43 @@
       var ici = session;
       el.classList.add('en-cours'); go.disabled = true;
       var v = audioOk ? null : choisirVoix();
+      if (suite) {
+        // l'histoire écrite, puis l'histoire entendue
+        phrases.forEach(function (_, i) { minuteurs.push(setTimeout(function () { if (ici === session) afficher(i); }, i * pas * 1000)); });
+        minuteurs.push(setTimeout(function () {
+          if (ici !== session) return;
+          scene.innerHTML = '<p class="defi-phrase visible">Maintenant, écoute.</p>';
+          var fin = function () { if (ici === session) minuteurs.push(setTimeout(terminer, 2500)); };
+          if (audioOk) { audio.onended = fin; audio.play().catch(function () {}); }
+          else if (v) orales.forEach(function (t, i) {
+            var u = new SpeechSynthesisUtterance(t); u.voice = v; u.lang = v.lang; u.rate = .95;
+            if (i === orales.length - 1) u.onend = fin;
+            speechSynthesis.speak(u);
+          });
+          else minuteurs.push(setTimeout(terminer, orales.length * pas * 1000));
+        }, phrases.length * pas * 1000));
+        return;
+      }
+      var temps = (el.getAttribute('data-temps') || '').split(',').map(parseFloat);
+      if (cadence && orales.length === phrases.length && (v || (audioOk && temps.length === phrases.length))) {
+        // en même temps, au rythme de la manche « suite » : toutes les data-pas secondes,
+        // une phrase écrite et la phrase entendue correspondante, puis un silence
+        phrases.forEach(function (_, i) {
+          minuteurs.push(setTimeout(function () {
+            if (ici !== session) return;
+            afficher(i);
+            if (v) {
+              var u = new SpeechSynthesisUtterance(orales[i]); u.voice = v; u.lang = v.lang; u.rate = .95;
+              speechSynthesis.speak(u);
+              return;
+            }
+            audio.currentTime = temps[i]; audio.play().catch(function () {});
+            if (i < temps.length - 1) minuteurs.push(setTimeout(function () { audio.pause(); }, (temps[i + 1] - temps[i]) * 1000));
+          }, i * pas * 1000));
+        });
+        minuteurs.push(setTimeout(function () { if (ici === session) terminer(); }, phrases.length * pas * 1000));
+        return;
+      }
       if (v && orales.length === phrases.length) {
         // synchronisé : la phrase écrite i apparaît au début de la phrase entendue i
         orales.forEach(function (t, i) {
@@ -210,7 +253,6 @@
         });
         return;
       }
-      var temps = (el.getAttribute('data-temps') || '').split(',').map(parseFloat);
       if (audioOk && temps.length === phrases.length) {
         // enregistrement synchronisé : data-temps donne le début de chaque phrase entendue
         audio.onended = function () { if (ici === session) minuteurs.push(setTimeout(terminer, 2500)); };
