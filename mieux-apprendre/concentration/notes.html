@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notes du présentateur : améliorer sa concentration</title>
+<meta name="description" content="Notes du présentateur de l'atelier « Améliorer sa concentration » (Mieux apprendre, atelier 1), diapositive par diapositive. Faire des maths.">
+<link rel="stylesheet" href="../commun/polices/polices.css">
+<link rel="stylesheet" href="../commun/formation.css">
+<style>
+  /* Notes lues dans le diaporama (index.html) : une seule source, rien à recopier. */
+  @page { size: A4 portrait; margin: 14mm 15mm 12mm; }
+  html, body { background: #fff; margin: 0; }
+  body { font-family: var(--f-texte); color: var(--encre); font-size: 10.5pt; line-height: 1.4; }
+  main { max-width: 180mm; margin: 0 auto; padding: 8mm 16px 16mm; }
+  h1 { font-family: var(--f-titre); font-weight: 400; font-size: 26pt; margin: 0 0 1mm; }
+  .surtitre { font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: 9pt; color: var(--bleu); }
+  .diapo { border-top: .4mm solid var(--encre); padding: 2.5mm 0 1.5mm; break-inside: avoid; }
+  .diapo h2 { font-size: 11.5pt; margin: 0 0 1mm; display: flex; gap: 3mm; align-items: baseline; }
+  .diapo h2 .n { font-family: var(--f-titre); font-weight: 400; font-size: 14pt; background: var(--jaune);
+                 border: .35mm solid var(--encre); border-radius: 1.5mm; padding: 0 2mm; min-width: 7mm; text-align: center; }
+  .diapo.partie h2 { color: var(--bleu); }
+  .diapo p { margin: 0 0 1mm; }
+  .vide { color: var(--gris); font-style: italic; }
+  @media print { main { padding: 0; } a { color: inherit; text-decoration: none; } }
+</style>
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://faire-des-maths.fr/mieux-apprendre/concentration/notes.html">
+</head>
+<body>
+<main>
+  <span class="surtitre">Mieux apprendre · atelier 1 · notes du présentateur</span>
+  <h1>Améliorer sa concentration</h1>
+  <p><a href="./">← Retour au diaporama</a></p>
+  <div id="notes"><p class="vide">Chargement des notes…</p></div>
+</main>
+<script>
+(function () {
+  var cible = document.getElementById('notes');
+  fetch('index.html').then(function (r) { return r.text(); }).then(function (t) {
+    var doc = new DOMParser().parseFromString(t, 'text/html');
+    cible.innerHTML = '';
+    doc.querySelectorAll('.slides > section').forEach(function (s, i) {
+      var titre = s.querySelector('h1, h2'), num = s.querySelector('.num'), etiquette = s.querySelector('.etiquette');
+      var nom = (num ? num.textContent.trim() + ' : ' : etiquette ? etiquette.textContent.trim() + ' : ' : '') +
+                (titre ? titre.textContent.replace(/\s+/g, ' ').trim() : '');
+      var d = document.createElement('section');
+      d.className = 'diapo' + (s.classList.contains('partie') ? ' partie' : '');
+      var h = document.createElement('h2');
+      h.innerHTML = '<span class="n"></span><span></span>';
+      h.firstChild.textContent = i + 1; h.lastChild.textContent = nom;
+      d.appendChild(h);
+      var n = s.querySelector('aside.notes');
+      var lignes = n ? n.textContent.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean) : [];
+      if (!lignes.length) { var v = document.createElement('p'); v.className = 'vide'; v.textContent = 'Pas de note.'; d.appendChild(v); }
+      lignes.forEach(function (l) { var p = document.createElement('p'); p.textContent = l; d.appendChild(p); });
+      cible.appendChild(d);
+    });
+  }).catch(function () { cible.innerHTML = '<p class="vide">Notes indisponibles : ouvrir la page par un serveur web.</p>'; });
+})();
+</script>
+<script>
+var gcForge = /\.forge\.apps\.education\.fr$/.test(location.hostname) ? 'forge/' : '';
+window.goatcounter = {path: function (p) {
+  p = p.replace(/(^|\/)index\.html$/, '$1') || '/';
+  return gcForge ? gcForge + p.replace(/^\//, '') : p; }};
+</script>
+<script data-goatcounter="https://maths-destombe.goatcounter.com/count" async src="../../count.js"></script>
+<script>
+document.addEventListener('click', function (e) {
+  var a = e.target.closest('a[href]');
+  if (!a || !/\.(pdf|tex)(#|$)/i.test(a.getAttribute('href'))) return;
+  var nom = a.getAttribute('href').split('#')[0];
+  if (window.goatcounter && window.goatcounter.count)
+    window.goatcounter.count({path: gcForge + nom.split('/').pop(), title: nom, event: true});
+});
+</script>
+</body>
+</html>
