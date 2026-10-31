@@ -270,11 +270,12 @@
   }
 
   /* ---------- Test « retenir des mots », avec puis sans musique
-     <div class="memo" data-duree="60" data-musique="ID YouTube" data-debut="0:00">
+     <div class="memo" data-duree="60,30,60" data-musique="ID YouTube" data-debut="0:00">
        <ol class="memo-serie" data-avec-musique><li>mot</li>…</ol>   manche 1, avec musique
        <ol class="memo-serie"><li>mot</li>…</ol>                    manche 2, sans musique
      </div>
-     Chaque manche : mémoriser (mots affichés), retenir (mots cachés), écrire, puis correction.
+     Chaque manche : mémoriser (mots affichés), retenir (mots cachés), écrire, puis correction ;
+     data-duree : la durée de chaque étape en secondes (une seule valeur : la même pour les trois).
      La musique (data-musique) a son propre bouton, indépendant du test : on la lance,
      on attend qu'elle joue, puis on démarre la manche. Elle est préparée dès que la diapositive
      s'affiche, pour que la lecture parte tout de suite au clic. */
@@ -285,7 +286,7 @@
         musique: ol.hasAttribute('data-avec-musique')
       };
     });
-    var duree = parseFloat(el.getAttribute('data-duree')) || 60;
+    var durees = (el.getAttribute('data-duree') || '60').split(',').map(function (d) { return parseFloat(d) || 60; });
     var idMusique = el.getAttribute('data-musique'), debutMusique = secondes(el.getAttribute('data-debut')) || 0;
     var PHASES = ['Mémorise les mots', 'Garde-les en tête, sans rien écrire', 'Écris tous les mots dont tu te souviens'];
     el.querySelectorAll('.memo-serie').forEach(function (n) { n.hidden = true; });
@@ -385,7 +386,7 @@
       else scene.innerHTML = '<p class="memo-consigne grand">' + (i === 1 ? 'Retiens les mots.' : 'À toi : écris les mots sur ta feuille.') + '</p>';
       cmd.innerHTML = '';
       bouton('Étape suivante', function () { fin(i); }, 'discret');
-      var reste = duree;
+      var reste = durees[Math.min(i, durees.length - 1)];
       function affiche() { chrono.textContent = Math.floor(reste / 60) + ':' + ('0' + (reste % 60)).slice(-2); }
       affiche();
       minuteur = setInterval(function () { reste--; affiche(); if (reste <= 0) fin(i); }, 1000);
@@ -647,6 +648,8 @@
     if (!panneauNotes || panneauNotes.hidden) return;
     var corps = panneauNotes.querySelector('.corps'), n = deck.getCurrentSlide().querySelector('aside.notes');
     corps.innerHTML = '';
+    // notes en deux blocs (<h3>Présentation</h3>, <h3>Culture générale</h3>, des <p>) : recopiées telles quelles
+    if (n && n.querySelector('p')) { corps.innerHTML = n.innerHTML; corps.scrollTop = 0; return; }
     var lignes = n ? n.textContent.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean) : [];
     if (!lignes.length) lignes = ['Pas de note pour cette diapositive.'];
     lignes.forEach(function (l) { var q = document.createElement('p'); q.textContent = l; corps.appendChild(q); });

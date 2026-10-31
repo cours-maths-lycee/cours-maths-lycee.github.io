@@ -15,12 +15,14 @@
   main { max-width: 180mm; margin: 0 auto; padding: 8mm 16px 16mm; }
   h1 { font-family: var(--f-titre); font-weight: 400; font-size: 26pt; margin: 0 0 1mm; }
   .surtitre { font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: 9pt; color: var(--bleu); }
-  .diapo { border-top: .4mm solid var(--encre); padding: 2.5mm 0 1.5mm; break-inside: avoid; }
+  .diapo { border-top: .4mm solid var(--encre); padding: 2.5mm 0 1.5mm; }
+  .diapo h2 { break-after: avoid; }
   .diapo h2 { font-size: 11.5pt; margin: 0 0 1mm; display: flex; gap: 3mm; align-items: baseline; }
   .diapo h2 .n { font-family: var(--f-titre); font-weight: 400; font-size: 14pt; background: var(--jaune);
                  border: .35mm solid var(--encre); border-radius: 1.5mm; padding: 0 2mm; min-width: 7mm; text-align: center; }
   .diapo.partie h2 { color: var(--bleu); }
   .diapo p { margin: 0 0 1mm; }
+  .diapo h3 { margin: 2mm 0 .8mm; font-size: 8.5pt; letter-spacing: .1em; text-transform: uppercase; color: var(--bleu); break-after: avoid; }
   .vide { color: var(--gris); font-style: italic; }
   .diapo p.video { color: var(--gris); font-size: 9.5pt; }
   #sources { border-top: .4mm solid var(--encre); margin-top: 4mm; padding-top: 2.5mm; font-size: 9.5pt; }
@@ -59,8 +61,11 @@
       h.firstChild.textContent = i + 1; h.lastChild.textContent = nom;
       d.appendChild(h);
       var n = s.querySelector('aside.notes');
-      var lignes = n ? n.textContent.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean) : [];
-      if (!lignes.length) { var v = document.createElement('p'); v.className = 'vide'; v.textContent = 'Pas de note.'; d.appendChild(v); }
+      // notes en deux blocs (Présentation, Culture générale) : titres et paragraphes recopiés
+      var blocs = n && n.querySelector('p');
+      if (blocs) Array.prototype.forEach.call(n.children, function (e) { d.appendChild(e.cloneNode(true)); });
+      var lignes = (n && !blocs) ? n.textContent.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean) : [];
+      if (!blocs && !lignes.length) { var v = document.createElement('p'); v.className = 'vide'; v.textContent = 'Pas de note.'; d.appendChild(v); }
       lignes.forEach(function (l) { var p = document.createElement('p'); p.textContent = l; d.appendChild(p); });
       s.querySelectorAll('.extrait').forEach(function (e) {
         var p = document.createElement('p'); p.className = 'video';
