@@ -816,14 +816,29 @@ window.goatcounter = {path: function (p) {
   return gcForge ? gcForge + p.replace(/^\//, '') : p; }};
 </script>
 <script data-goatcounter="https://maths-destombe.goatcounter.com/count" async src="../../count.js"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="2bfcd12c-46c7-4923-bfde-f06bc5730ac9" data-domains="faire-des-maths.fr,www.faire-des-maths.fr,faire-des-maths.forge.apps.education.fr"></script>
 <script>
+function umTrack(nom, donnees) {
+  if (window.umami && window.umami.track) window.umami.track(nom, donnees);
+}
 document.addEventListener('click', function (e) {
   var a = e.target.closest('a[href]');
   if (!a || !/\.(pdf|tex)(#|$)/i.test(a.getAttribute('href'))) return;
   var nom = a.getAttribute('href').split('#')[0];
   if (window.goatcounter && window.goatcounter.count)
     window.goatcounter.count({path: gcForge + nom.split('/').pop(), title: nom, event: true});
+  umTrack(/\.tex$/i.test(nom) ? 'tex' : 'pdf', {fichier: nom.split('/').pop()});
 });
+document.addEventListener('toggle', function (e) {
+  var d = e.target;
+  if (!d.open || !d.classList) return;
+  var types = {'avj': 'ouverture AVJ', 'corrige': 'ouverture corrigé', 'exercices': 'ouverture fiche',
+               'reponses': 'ouverture réponses', 'ia': 'ouverture IA'};
+  for (var c in types) if (d.classList.contains(c)) {
+    umTrack(types[c], {page: location.pathname.replace(/index\.html$/, '')});
+    return;
+  }
+}, true);
 </script>
 <script>
 // ouvre le corrigé (ou la correction) visé par l'adresse, ex. cours.html#corrige-12
