@@ -254,105 +254,354 @@
 \setlength{\parindent}{0pt}
 \setlength{\jot}{5pt}
 
+\usepackage{xlop}
+\opset{decimalsepsymbol={,}}
+\newcommand{\divpose}[3]{\begin{tikzpicture}
+  \node{\opdiv[maxdivstep=#1,safedivstep=false,displayintermediary=all]{#2}{#3}};
+  \end{tikzpicture}}
+\newenvironment{division}{\par\smallskip\noindent\begin{minipage}[t]{0.62\linewidth}\vspace{0pt}\raggedright}%
+  {\end{minipage}\hfill}
+\newenvironment{figdivision}{\begin{minipage}[t]{0.34\linewidth}\vspace{0pt}\centering}%
+  {\end{minipage}\par\smallskip}
+
 \begin{document}
 
 \entetefiche{Chapitre 1 --- Fractions et puissances}{Seconde}
 
-\partie{Nombres relatifs et priorités}
+\partie{Développement décimal limité et illimité d'une fraction}
 
-\begin{exo}[Calculs sur les relatifs]
+\begin{exo}[Développement décimal]
+\explique{On pose la division : on écrit la virgule au quotient, puis, à chaque étape, on
+abaisse un $0$ à côté du reste. Si un reste devient nul, la division s'arrête ; si un
+reste revient, les mêmes chiffres reviennent.}{méthode 1 du cours}
+\cas{A}
+\begin{division}
 \begin{calculs}
-A &= -9-7 &&\justif{deux nombres négatifs : on ajoute leurs distances à zéro, $9$ et $7$}\\
-A &= \res{-16} &&\justif{on garde le signe moins}
+3 &= 0\times 8+3 &&\justif{$0$ unité, reste $3$}\\
+30 &= 3\times 8+6 &&\justif{chiffre $3$, reste $6$}\\
+60 &= 7\times 8+4 &&\justif{chiffre $7$, reste $4$}\\
+40 &= 5\times 8+0 &&\justif{reste $0$ : la division s'arrête}\\
+A &= \res{0{,}375} &&\justif{développement limité}
 \end{calculs}
+\end{division}
+\begin{figdivision}
+\divpose{4}{3}{8}
+\end{figdivision}
+\cas{B}
+\begin{division}
 \begin{calculs}
-B &= 14-(-11) &&\justif{on recopie}\\
-B &= 14+11 &&\justif{soustraire $-11$, c'est ajouter son opposé $11$}\\
-B &= \res{25} &&
+2 &= 0\times 9+2 &&\justif{$0$ unité, reste $2$}\\
+20 &= 2\times 9+2 &&\justif{chiffre $2$, reste $2$ : le même reste}\\
+B &= \res{0{,}222\ldots} &&\justif{illimité, de période $2$}
 \end{calculs}
+\end{division}
+\begin{figdivision}
+\divpose{4}{2}{9}
+\end{figdivision}
+\cas{C}
+\begin{division}
 \begin{calculs}
-C &= -6\times 7 &&\justif{signes contraires : le produit est négatif}\\
-C &= \res{-42} &&\justif{$6\times 7=42$}
+5 &= 0\times 6+5 &&\justif{$0$ unité, reste $5$}\\
+50 &= 8\times 6+2 &&\justif{chiffre $8$, reste $2$}\\
+20 &= 3\times 6+2 &&\justif{chiffre $3$, reste $2$ : le même reste}\\
+C &= \res{0{,}8333\ldots} &&\justif{illimité, de période $3$}
 \end{calculs}
+\explique{Le $8$ ne revient pas : la période commence au deuxième chiffre.}{}
+\end{division}
+\begin{figdivision}
+\divpose{5}{5}{6}
+\end{figdivision}
+\cas{D}
+\begin{division}
 \begin{calculs}
-D &= (-8)\times(-5) &&\justif{même signe : le produit est positif}\\
-D &= \res{40} &&\justif{$8\times 5=40$}
+4 &= 0\times 7+4 &&\justif{$0$ unité, reste $4$}\\
+40 &= 5\times 7+5 &&\justif{chiffre $5$, reste $5$}\\
+50 &= 7\times 7+1 &&\justif{chiffre $7$, reste $1$}\\
+10 &= 1\times 7+3 &&\justif{chiffre $1$, reste $3$}\\
+30 &= 4\times 7+2 &&\justif{chiffre $4$, reste $2$}\\
+20 &= 2\times 7+6 &&\justif{chiffre $2$, reste $6$}\\
+60 &= 8\times 7+4 &&\justif{reste $4$ : le premier reste}\\
+D &= \res{0{,}571428\,5\ldots} &&\justif{illimité, de période $571428$}
 \end{calculs}
-\begin{calculs}
-E &= \dfrac{-(-27)}{-9} &&\justif{on recopie}\\
-E &= \dfrac{27}{-9} &&\justif{l'opposé de $-27$ est $27$}\\
-E &= \res{-3} &&\justif{signes contraires : le quotient est négatif ; $27\div 9=3$}
-\end{calculs}
-\begin{calculs}
-F &= -13+(-4) &&\justif{ajouter $-4$, c'est soustraire $4$}\\
-F &= -13-4 &&\\
-F &= \res{-17} &&\justif{deux nombres négatifs : on ajoute $13$ et $4$}
-\end{calculs}
-\rem{Erreur fréquente : écrire $-9-7=16$ en pensant \og moins par moins donne plus\fg.
-Cette règle vaut pour un \emph{produit} ou un \emph{quotient}, jamais pour une somme :
-dans $A$, on perd $9$ puis encore $7$.}
+\end{division}
+\begin{figdivision}
+\divpose{8}{4}{7}
+\end{figdivision}
+\rem{En divisant par $7$, il n'y a que six restes non nuls possibles ($1$ à $6$) : la
+période a au plus six chiffres.}
 \end{exo}
 
-\begin{exo}[Priorités de calcul]
+\begin{exo}[Valeurs approchées]
+\explique{On écrit le développement décimal avec un chiffre de plus que la précision
+demandée ; on coupe (par défaut), puis on ajoute $1$ au dernier chiffre gardé (par
+excès).}{méthode 2 du cours}
+\cas{1)}
 \begin{calculs}
-A &= 8^{2}-3\times(-6) &&\justif{on recopie}\\
-A &= 64-3\times(-6) &&\justif{la puissance d'abord : $8^{2}=8\times 8=64$}\\
-A &= 64-(-18) &&\justif{puis le produit : signes contraires, négatif}\\
-A &= 64+18 &&\justif{soustraire $-18$, c'est ajouter $18$}\\
-A &= \res{82} &&
+5 &= 0\times 7+5 &&\justif{on pose la division}\\
+50 &= 7\times 7+1 &&\justif{chiffre $7$, reste $1$}\\
+10 &= 1\times 7+3 &&\justif{chiffre $1$, reste $3$}\\
+30 &= 4\times 7+2 &&\justif{chiffre $4$ : assez de chiffres}\\
+A &= 0{,}714\ldots &&
 \end{calculs}
+\explique{Au dixième : \res{$0{,}7$ par défaut, $0{,}8$ par excès} ; au centième :
+\res{$0{,}71$ par défaut, $0{,}72$ par excès}.}{}
 \begin{calculs}
-B &= -7-4^{2} &&\justif{la puissance passe avant la soustraction}\\
-B &= -7-16 &&\justif{$4^{2}=16$ ; le moins devant reste une soustraction}\\
-B &= \res{-23} &&
+11 &= 1\times 6+5 &&\justif{partie entière $1$, reste $5$}\\
+50 &= 8\times 6+2 &&\justif{chiffre $8$, reste $2$}\\
+20 &= 3\times 6+2 &&\justif{chiffre $3$, puis le même reste}\\
+B &= 1{,}833\ldots &&
 \end{calculs}
-\rem{Dans $B$, le carré ne porte que sur $4$ : on ne calcule pas $(-4)^{2}$.}
+\explique{Au dixième : \res{$1{,}8$ par défaut, $1{,}9$ par excès} ; au centième :
+\res{$1{,}83$ par défaut, $1{,}84$ par excès}.}{}
 \begin{calculs}
-C &= 6+(-9+5)\times 4 &&\justif{la parenthèse d'abord}\\
-C &= 6+(-4)\times 4 &&\justif{$-9+5=-4$}\\
-C &= 6+(-16) &&\justif{puis le produit, avant l'addition}\\
-C &= \res{-10} &&\justif{signes contraires : $16-6=10$, signe de $-16$}
+40 &= 4\times 9+4 &&\justif{après $4=0\times 9+4$, le reste $4$ revient toujours}\\
+C &= 0{,}444\ldots &&
 \end{calculs}
-\rem{Erreur fréquente : calculer $6+(-4)=2$, puis $2\times 4=8$. Le produit passe
-avant l'addition.}
+\explique{Au dixième : \res{$0{,}4$ par défaut, $0{,}5$ par excès} ; au centième :
+\res{$0{,}44$ par défaut, $0{,}45$ par excès}.}{}
 \begin{calculs}
-D &= -36\div(-4)\times 2^{2} &&\justif{la puissance d'abord}\\
-D &= -36\div(-4)\times 4 &&\justif{division et produit : de gauche à droite}\\
-D &= 9\times 4 &&\justif{$(-36)\div(-4)=9$ : même signe, positif}\\
-D &= \res{36} &&
+17 &= 2\times 8+1 &&\justif{partie entière $2$, reste $1$}\\
+10 &= 1\times 8+2 &&\justif{chiffre $1$, reste $2$}\\
+20 &= 2\times 8+4 &&\justif{chiffre $2$, reste $4$}\\
+40 &= 5\times 8+0 &&\justif{chiffre $5$, reste $0$}\\
+D &= 2{,}125 &&
 \end{calculs}
-\rem{Dans $D$, on ne commence pas par $(-4)\times 4$ : division et multiplication ont
-la même priorité, on les fait dans l'ordre où elles sont écrites.}
+\explique{Au dixième : \res{$2{,}1$ par défaut, $2{,}2$ par excès} ; au centième :
+\res{$2{,}12$ par défaut, $2{,}13$ par excès}.}{même un développement limité a des
+valeurs approchées}
+\cas{2)}
+\begin{calculs}
+1{,}83 &< \dfrac{11}{6}<1{,}84 &&\justif{valeur par défaut à gauche, par excès à droite}
+\end{calculs}
+\cas{3)}
+\explique{\res{$0{,}71$ est la valeur approchée par défaut de $\frac57$ au centième.}}{on
+dit de quel nombre, de quel côté et à quelle précision}
 \end{exo}
 
-\begin{exo}[Parenthèses]
+\begin{exo}[Ranger des nombres]
+\cas{1)}
 \begin{calculs}
-A &= 20-4\times(3-8) &&\justif{la parenthèse d'abord}\\
-A &= 20-4\times(-5) &&\justif{$3-8=-5$}\\
-A &= 20-(-20) &&\justif{puis le produit : $4\times(-5)=-20$}\\
-A &= 20+20 &&\justif{soustraire $-20$, c'est ajouter $20$}\\
-A &= \res{40} &&
+\dfrac{5}{8} &= \res{0{,}625} &&\justif{$50=6\times 8+2$ ; $20=2\times 8+4$ ; $40=5\times 8$ : limité}\\
+\dfrac{7}{11} &= \res{0{,}6363\ldots} &&\justif{$70=6\times 11+4$ ; $40=3\times 11+7$ : le reste $7$ revient}\\
+\dfrac{2}{3} &= \res{0{,}666\ldots} &&\justif{$20=6\times 3+2$ : le reste $2$ revient toujours}
 \end{calculs}
-\rem{Erreur fréquente : calculer $20-4=16$ avant le produit. Le $4$ est d'abord
-multiplié par la parenthèse.}
+\cas{2)}
+\explique{Tous les nombres commencent par $0{,}6$ : on compare le chiffre des centièmes,
+puis celui des millièmes.}{$0{,}6=0{,}600$ ; $0{,}63=0{,}630$}
 \begin{calculs}
-B &= 5\times(-3)+2^{3} &&\justif{on recopie}\\
-B &= 5\times(-3)+8 &&\justif{la puissance : $2^{3}=2\times 2\times 2=8$, et non $2\times 3$}\\
-B &= -15+8 &&\justif{puis le produit}\\
-B &= \res{-7} &&\justif{signes contraires : $15-8=7$, signe de $-15$}
+0{,}600 &< 0{,}625<0{,}630<0{,}636\ldots<0{,}666\ldots &&\justif{on écrit trois chiffres après la virgule}
 \end{calculs}
+\explique{\res{$0{,}6<\frac58<0{,}63<\frac{7}{11}<\frac23$.}}{}
+\rem{Erreur fréquente : croire que $0{,}63>\frac{7}{11}$ parce que $\frac{7}{11}$ commence
+aussi par $0{,}63$. Le chiffre suivant, $6$, rend $\frac{7}{11}$ plus grand.}
+\end{exo}
+
+\begin{exo}[Du développement décimal à la fraction]
+\cas{1)}
 \begin{calculs}
-C &= -48\div\bigl(2\times(-3)\bigr) &&\justif{la parenthèse d'abord}\\
-C &= -48\div(-6) &&\justif{$2\times(-3)=-6$}\\
-C &= \res{8} &&\justif{même signe : le quotient est positif}
+100x &= \res{23{,}2323\ldots} &&\justif{multiplier par $100$ décale la virgule de deux rangs}
 \end{calculs}
+\cas{2)}
 \begin{calculs}
-D &= 3-2\times\bigl(5-(1-6)\bigr) &&\justif{la parenthèse la plus intérieure d'abord}\\
-D &= 3-2\times\bigl(5-(-5)\bigr) &&\justif{$1-6=-5$}\\
-D &= 3-2\times 10 &&\justif{$5-(-5)=5+5=10$}\\
-D &= 3-20 &&\justif{le produit avant la soustraction}\\
-D &= \res{-17} &&
+100x-x &= 23{,}2323\ldots-0{,}2323\ldots &&\justif{les chiffres après la virgule sont les mêmes}\\
+100x-x &= 23 &&\justif{ils s'annulent}\\
+99x &= \res{23} &&\justif{$100x-x=99x$}
 \end{calculs}
+\cas{3)}
+\begin{calculs}
+x &= \res{\dfrac{23}{99}} &&\justif{on divise par $99$}
+\end{calculs}
+\explique{Vérification : $230=2\times 99+32$, puis $320=3\times 99+23$ ; on retrouve le
+reste $23$, donc $\frac{23}{99}=0{,}2323\ldots$}{}
+\cas{4)}
+\begin{calculs}
+10y &= 7{,}777\ldots &&\justif{la période a un chiffre : on multiplie par $10$}\\
+10y-y &= 7{,}777\ldots-0{,}777\ldots &&\\
+9y &= 7 &&\\
+y &= \res{\dfrac{7}{9}} &&
+\end{calculs}
+\cas{5)}
+\begin{calculs}
+100z &= 41{,}4141\ldots &&\justif{la période a deux chiffres : on multiplie par $100$}\\
+100z-z &= 41{,}4141\ldots-0{,}4141\ldots &&\\
+99z &= 41 &&\\
+z &= \res{\dfrac{41}{99}} &&
+\end{calculs}
+\rem{On multiplie par $10$, $100$, $1~000$\ldots{} selon que la période a $1$, $2$, $3$\ldots{}
+chiffres : les parties après la virgule sont alors les mêmes et disparaissent dans la
+différence.}
+\end{exo}
+
+\partie{Simplification de fractions}
+
+\begin{exo}[Décomposer en facteurs premiers]
+\explique{On divise par le plus petit nombre premier possible, puis on recommence avec le
+quotient, jusqu'à $1$.}{critères : $2$ si le chiffre des unités est pair, $3$ si la somme
+des chiffres est un multiple de $3$, $5$ si le nombre finit par $0$ ou $5$}
+\cas{a)}
+\[
+\renewcommand{\arraystretch}{1.3}
+\begin{array}{r|l}
+48 & 2 \justif{$48$ est pair}\\
+24 & 2\\
+12 & 2\\
+6 & 2\\
+3 & 3 \justif{$3$ est premier}\\
+1 &
+\end{array}
+\]
+\explique{\res{$48=2\times 2\times 2\times 2\times 3$}}{}
+\cas{b)}
+\[
+\renewcommand{\arraystretch}{1.3}
+\begin{array}{r|l}
+75 & 3 \justif{impair ; $7+5=12$, multiple de $3$}\\
+25 & 5 \justif{finit par $5$}\\
+5 & 5\\
+1 &
+\end{array}
+\]
+\explique{\res{$75=3\times 5\times 5$}}{}
+\cas{c)}
+\[
+\renewcommand{\arraystretch}{1.3}
+\begin{array}{r|l}
+120 & 2\\
+60 & 2\\
+30 & 2\\
+15 & 3 \justif{$1+5=6$}\\
+5 & 5\\
+1 &
+\end{array}
+\]
+\explique{\res{$120=2\times 2\times 2\times 3\times 5$}}{}
+\cas{d)}
+\[
+\renewcommand{\arraystretch}{1.3}
+\begin{array}{r|l}
+252 & 2\\
+126 & 2\\
+63 & 3 \justif{$6+3=9$}\\
+21 & 3\\
+7 & 7 \justif{$7$ est premier}\\
+1 &
+\end{array}
+\]
+\explique{\res{$252=2\times 2\times 3\times 3\times 7$}}{}
+\cas{e)}
+\[
+\renewcommand{\arraystretch}{1.3}
+\begin{array}{r|l}
+98 & 2\\
+49 & 7 \justif{ni $3$ ($4+9=13$) ni $5$ : on essaie $7$}\\
+7 & 7\\
+1 &
+\end{array}
+\]
+\explique{\res{$98=2\times 7\times 7$}}{}
+\cas{f)}
+\[
+\renewcommand{\arraystretch}{1.3}
+\begin{array}{r|l}
+1\,155 & 3 \justif{$1+1+5+5=12$, multiple de $3$}\\
+385 & 5 \justif{$3+8+5=16$ : pas $3$ ; finit par $5$}\\
+77 & 7 \justif{$77=7\times 11$}\\
+11 & 11 \justif{$11$ est premier}\\
+1 &
+\end{array}
+\]
+\explique{\res{$1~155=3\times 5\times 7\times 11$}}{}
+\rem{On essaie toujours le même diviseur avant de passer au suivant : $48$ se divise
+quatre fois de suite par $2$.}
+\end{exo}
+
+\begin{exo}[Simplifier avec le PGCD]
+\explique{On écrit les deux décompositions l'une sous l'autre ; le PGCD est le produit
+des facteurs communs ; on les barre en haut et en bas.}{méthode 4 du cours}
+\cas{A}
+\begin{calculs}
+\mathrm{PGCD}(48\,;120) &= 2\times 2\times 2\times 3=24 &&\justif{$48=2\times 2\times 2\times 2\times 3$ et $120=2\times 2\times 2\times 3\times 5$}\\
+A &= \dfrac{\barre{2}\times\barre{2}\times\barre{2}\times 2\times\barre{3}}{\barre{2}\times\barre{2}\times\barre{2}\times\barre{3}\times 5} &&\justif{on barre trois $2$ et le $3$}\\
+A &= \res{\dfrac{2}{5}} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+\mathrm{PGCD}(75\,;120) &= 3\times 5=15 &&\justif{$75=3\times 5\times 5$}\\
+B &= \dfrac{\barre{3}\times\barre{5}\times 5}{2\times 2\times 2\times\barre{3}\times\barre{5}} &&\\
+B &= \res{\dfrac{5}{8}} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+\mathrm{PGCD}(98\,;252) &= 2\times 7=14 &&\justif{$98=2\times 7\times 7$ et $252=2\times 2\times 3\times 3\times 7$}\\
+C &= \dfrac{\barre{2}\times\barre{7}\times 7}{\barre{2}\times 2\times 3\times 3\times\barre{7}} &&\justif{un seul $7$ est commun}\\
+C &= \res{\dfrac{7}{18}} &&\justif{$2\times 3\times 3=18$}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+\mathrm{PGCD}(120\,;252) &= 2\times 2\times 3=12 &&\justif{deux $2$ et un $3$ communs}\\
+D &= \dfrac{\barre{2}\times\barre{2}\times 2\times\barre{3}\times 5}{\barre{2}\times\barre{2}\times\barre{3}\times 3\times 7} &&\\
+D &= \res{\dfrac{10}{21}} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+\mathrm{PGCD}(252\,;1\,155) &= 3\times 7=21 &&\justif{$1~155=3\times 5\times 7\times 11$}\\
+E &= \dfrac{2\times 2\times\barre{3}\times 3\times\barre{7}}{\barre{3}\times 5\times\barre{7}\times 11} &&\\
+E &= \res{\dfrac{12}{55}} &&\justif{$2\times 2\times 3=12$ et $5\times 11=55$}
+\end{calculs}
+\cas{F}
+\begin{calculs}
+\mathrm{PGCD}(75\,;1\,155) &= 3\times 5=15 &&\\
+F &= \dfrac{\barre{3}\times\barre{5}\times 5}{\barre{3}\times\barre{5}\times 7\times 11} &&\\
+F &= \res{\dfrac{5}{77}} &&
+\end{calculs}
+\rem{Après avoir barré les facteurs communs, il ne reste aucun facteur commun : la
+fraction obtenue est irréductible.}
+\end{exo}
+
+\begin{exo}[Premier ou non ?]
+\explique{On essaie de diviser par $2$, $3$, $5$ et $7$ ; si aucune division ne tombe
+juste, le nombre est premier.}{au-delà, $11\times 11=121$ dépasse déjà $100$}
+\begin{itemize}
+  \item \res{$17$ est premier}, car il n'est divisible ni par $2$, ni par $3$, ni par
+        $5$, ni par $7$.
+  \item \res{$21$ n'est pas premier}, car $21=3\times 7$.
+  \item \res{$29$ est premier}, car il n'est divisible ni par $2$, ni par $3$ ($2+9=11$),
+        ni par $5$, ni par $7$ ($29=4\times 7+1$).
+  \item \res{$51$ n'est pas premier}, car $5+1=6$ : $51=3\times 17$.
+  \item \res{$91$ n'est pas premier}, car $91=7\times 13$.
+  \item \res{$97$ est premier}, car il n'est divisible ni par $2$, ni par $3$ ($9+7=16$),
+        ni par $5$, ni par $7$ ($97=13\times 7+6$).
+\end{itemize}
+\rem{Erreur fréquente : croire que $51$ et $91$ sont premiers parce qu'ils sont impairs.
+Un nombre impair peut avoir des diviseurs, comme $3$ ou $7$.}
+\end{exo}
+
+\begin{exo}[Les colis de l'association]
+\cas{1)}
+\explique{$84=7\times 12$ et $126=7\times 18$ : \res{elle peut préparer $7$ colis}, de
+$12$ cahiers et $18$ stylos.}{il faut que $7$ divise $84$ et $126$}
+\explique{$126\div 4=31{,}5$ : \res{elle ne peut pas préparer $4$ colis}.}{les stylos ne
+se répartissent pas, même si $84=4\times 21$}
+\cas{2)}
+\begin{calculs}
+84 &= \res{2\times 2\times 3\times 7} &&\justif{divisions successives : $84$, $42$, $21$, $7$, $1$}\\
+126 &= \res{2\times 3\times 3\times 7} &&\justif{$126$, $63$, $21$, $7$, $1$}
+\end{calculs}
+\cas{3)}
+\explique{Le nombre de colis divise $84$ et $126$ : le plus grand possible est leur
+PGCD.}{un diviseur commun}
+\begin{calculs}
+\mathrm{PGCD}(84\,;126) &= 2\times 3\times 7 &&\justif{facteurs communs : un $2$, un $3$ et le $7$}\\
+\mathrm{PGCD}(84\,;126) &= 42 &&
+\end{calculs}
+\explique{\res{Elle peut préparer au plus $42$ colis.}}{}
+\cas{4)}
+\begin{calculs}
+\text{cahiers par colis} &= 84\div 42=2 &&\\
+\text{stylos par colis} &= 126\div 42=3 &&
+\end{calculs}
+\explique{\res{Chaque colis contient $2$ cahiers et $3$ stylos.}}{contrôle : $42\times 2=84$ et
+$42\times 3=126$}
 \end{exo}
 
 \partie{Additionner et soustraire des fractions}
@@ -519,7 +768,7 @@ dans le résultat. Pour $C$ avec $x=4$ : $2-\frac33=1$ et $\frac{7-4}{3}=1$.}
 
 \begin{exo}[Simplifier avant de calculer]
 \explique{On fixe d'abord le signe en comptant les signes moins, puis on décompose
-chaque nombre en produit de petits facteurs pour barrer les facteurs communs.}{on
+chaque nombre en produit de facteurs premiers (partie II) pour barrer les facteurs communs.}{on
 n'effectue pas les produits : les nombres resteraient grands}
 \begin{calculs}
 A &= \dfrac{-4\times 9}{6\times 10} &&\justif{un seul signe moins : le résultat est négatif}\\
@@ -529,9 +778,9 @@ A &= \res{-\dfrac{3}{5}} &&
 \end{calculs}
 \begin{calculs}
 B &= \dfrac{24\times(-35)}{(-21)\times 10} &&\justif{deux signes moins : le résultat est positif}\\
-B &= \dfrac{2\times 3\times 4\times 5\times 7}{3\times 7\times 2\times 5} &&\justif{$24=2\times 3\times 4$ ; $35=5\times 7$ ; $21=3\times 7$ ; $10=2\times 5$}\\
-B &= \dfrac{\barre{2}\times\barre{3}\times 4\times\barre{5}\times\barre{7}}{\barre{3}\times\barre{7}\times\barre{2}\times\barre{5}} &&\justif{tout le dénominateur se barre : il reste $1$ en bas}\\
-B &= \res{4} &&\justif{$\frac41=4$}
+B &= \dfrac{2\times 2\times 2\times 3\times 5\times 7}{3\times 7\times 2\times 5} &&\justif{facteurs premiers : $24=2\times 2\times 2\times 3$ ; $35=5\times 7$ ; $21=3\times 7$ ; $10=2\times 5$}\\
+B &= \dfrac{\barre{2}\times 2\times 2\times\barre{3}\times\barre{5}\times\barre{7}}{\barre{3}\times\barre{7}\times\barre{2}\times\barre{5}} &&\justif{tout le dénominateur se barre : il reste $1$ en bas}\\
+B &= \res{4} &&\justif{$2\times 2=4$}
 \end{calculs}
 \begin{calculs}
 C &= \dfrac{26\times(-9)}{15\times 39} &&\justif{un seul signe moins : le résultat est négatif}\\
@@ -552,8 +801,8 @@ bien plus difficile à voir. On décompose d'abord, on barre ensuite.}
 \begin{exo}[Simplifier avec des lettres]
 \begin{calculs}
 A &= \dfrac{15\times 8\times 14}{35\times 6\times 4} &&\justif{on recopie}\\
-A &= \dfrac{3\times 5\times 2\times 4\times 2\times 7}{5\times 7\times 2\times 3\times 4} &&\justif{$15=3\times 5$ ; $8=2\times 4$ ; $14=2\times 7$ ; $35=5\times 7$ ; $6=2\times 3$}\\
-A &= \dfrac{\barre{3}\times\barre{5}\times\barre{2}\times\barre{4}\times 2\times\barre{7}}{\barre{5}\times\barre{7}\times\barre{2}\times\barre{3}\times\barre{4}} &&\justif{il ne reste qu'un $2$ en haut}\\
+A &= \dfrac{3\times 5\times 2\times 2\times 2\times 2\times 7}{5\times 7\times 2\times 3\times 2\times 2} &&\justif{facteurs premiers : $8=2\times 2\times 2$ ; $14=2\times 7$ ; $4=2\times 2$}\\
+A &= \dfrac{\barre{3}\times\barre{5}\times\barre{2}\times\barre{2}\times\barre{2}\times 2\times\barre{7}}{\barre{5}\times\barre{7}\times\barre{2}\times\barre{3}\times\barre{2}\times\barre{2}} &&\justif{il ne reste qu'un $2$ en haut}\\
 A &= \res{2} &&
 \end{calculs}
 \begin{calculs}
@@ -1428,7 +1677,7 @@ D &= \res{y^{3}} &&
 
 \begin{exo}[Toutes les règles]
 \explique{On développe d'abord les puissances de puissances et les puissances de
-produits, puis on traite chaque base à part.}{même démarche que la méthode 12 du cours}
+produits, puis on traite chaque base à part.}{même démarche que la méthode 13 du cours}
 \begin{calculs}
 A &= \dfrac{(5^{2})^{-2}\times 3}{(5\times 3)^{-3}} &&\justif{on recopie}\\
 A &= \dfrac{5^{-4}\times 3^{1}}{5^{-3}\times 3^{-3}} &&\justif{$(5^{2})^{-2}=5^{2\times(-2)}$ ; $(5\times 3)^{-3}=5^{-3}\times 3^{-3}$}\\
