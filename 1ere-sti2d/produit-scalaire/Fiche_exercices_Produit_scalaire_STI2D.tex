@@ -1,0 +1,925 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+
+\ShorthandsOff
+\tikzset{
+  vecteur/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbe},
+  vecteurB/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeB},
+  vecteurC/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeC},
+  aide/.style={dashed,black!45,line width=0.6pt},
+  fig/.style={line width=0.8pt,black!75},
+  axe/.style={aide,-{Stealth[length=2.2mm]}},
+  deplacement/.style={-{Stealth[length=2.6mm]},line width=1.1pt,black!75},
+}
+\ShorthandsOn
+
+\newcommand{\solidetire}[4]{%
+\begin{tikzpicture}[scale=0.7]
+  \draw[fig,fill=black!6] (-0.7,-0.45) rectangle (0.7,0.45);
+  \draw[axe] (-1.6,0) -- (6.2,0);
+  \draw[deplacement] (0,0) -- node[pos=0.6,below,font=\footnotesize]{déplacement\,: #4} (5,0);
+  \draw (1.5,0) arc (0:#1:1.5);
+  \node[font=\footnotesize,anchor=west] at ({1.55*cos(#1/2)},{1.55*sin(#1/2)}) {$#1^{\circ}$};
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{#2\,: #3} ({3.4*cos(#1)},{3.4*sin(#1)});
+  \pt{0,0}{below left}{G}
+\end{tikzpicture}}
+
+\newcommand{\troisforces}[6]{%
+\begin{tikzpicture}[scale=0.7]
+  \draw[fig,fill=black!6] (-0.7,-0.45) rectangle (0.7,0.45);
+  \draw[axe] (-3.2,0) -- (6.2,0);
+  \draw[deplacement] (0,0) -- node[pos=0.6,below,font=\footnotesize]{déplacement\,: #6} (5,0);
+  \draw (1.5,0) arc (0:#1:1.5);
+  \node[font=\footnotesize,anchor=west] at ({1.55*cos(#1/2)},{1.55*sin(#1/2)}) {#2};
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{#3} ({3.2*cos(#1)},{3.2*sin(#1)});
+  \draw[vecteurB] (0,0) -- node[pos=0.8,right,font=\footnotesize]{#4} (0,-2.4);
+  \draw[vecteurC] (0,0) -- node[pos=0.8,above,font=\footnotesize]{#5} (-2.6,0);
+  \pt{0,0}{below left}{G}
+\end{tikzpicture}}
+
+\newcommand{\vecteuraxe}[1]{%
+\begin{tikzpicture}[scale=0.55]
+  \draw[axe] (-2.6,0) -- (4.2,0) node[right,font=\footnotesize]{axe};
+  \draw[deplacement] (0,0) -- node[pos=0.8,below,font=\footnotesize]{$\vec{u}$} (2.5,0);
+  \draw (1.1,0) arc (0:#1:1.1);
+  \node[font=\footnotesize,anchor=west] at ({1.2*cos(#1/2)},{1.2*sin(#1/2)}) {$#1^{\circ}$};
+  \draw[vecteur] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{v}$} ({3*cos(#1)},{3*sin(#1)});
+\end{tikzpicture}}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STI2D --- Produit scalaire}{Fiche d'exercices du chapitre}
+
+\begin{multicols*}{2}\raggedcolumns
+
+\partiefiche{Coordonnées d'un vecteur}
+
+\exo[Lire et tracer]
+Dans le repère ci-dessous :
+\begin{enumerate}[label=\alph*)]
+  \item tracer les vecteurs $\vect{AB}$, $\vect{CD}$ et $\vect{EF}$, puis lire leurs
+        coordonnées ;
+  \item tracer les représentants d'origine $G$ des vecteurs $\vec{u}\coord{2}{3}$ et
+        $\vec{v}\coord{-1}{-2}$.
+\end{enumerate}
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-4}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-3,-2,-1,1,2,3}
+  \pt{-3,1}{above left}{A} \pt{1,3}{above}{B} \pt{2,-1}{below}{C} \pt{4,2}{above}{D}
+  \pt{-2,-2}{below left}{E} \pt{1,-3}{below right}{F} \pt{-3,-1}{below left}{G}
+\end{tikzpicture}
+\end{center}
+
+\exo[Calculer des coordonnées]
+On donne les points $K(3\,;-1)$, $L(-2\,;4)$, $M(0\,;-5)$ et $N(-4\,;-3)$. Calculer les
+coordonnées des vecteurs $\vect{KL}$, $\vect{LK}$, $\vect{MN}$, $\vect{NK}$ et $\vect{LM}$.
+
+\exo[Relation de Chasles]
+\rappel{relation de Chasles : $\vect{AB}+\vect{BC}=\vect{AC}$ (l'arrivée du premier
+vecteur est le départ du second) ; $\vect{BA}=-\vect{AB}$.}
+Écrire chaque expression avec un seul vecteur.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AB}+\vect{BC}$
+  \item $\vect{MN}+\vect{NE}+\vect{EF}$
+  \item $\vect{CA}+\vect{AB}$
+  \item $\vect{AB}+\vect{BA}$
+  \item $\vect{AC}-\vect{BC}$
+  \item $\vect{KL}+\vect{MK}$
+\end{enumerate}
+
+\exo[Le trajet d'un drone]
+Un drone vole à hauteur constante. Le repère est en mètres : l'axe des abscisses est
+dirigé vers l'est, celui des ordonnées vers le nord.
+\begin{enumerate}[label=\alph*)]
+  \item Le drone part de $D(2\,;1)$ et avance de $5$~m vers l'est et de $3$~m vers le
+        sud. Donner les coordonnées du vecteur $\vec{u}$ de ce déplacement, puis du point
+        d'arrivée $E$.
+  \item Il rejoint ensuite le point $F(-1\,;4)$. Calculer les coordonnées de
+        $\vect{EF}$, puis décrire ce déplacement par une phrase complète (« le drone
+        avance de … vers … »).
+\end{enumerate}
+
+\partiefiche{Somme de vecteurs, produit par un nombre réel}
+
+\exo[Calculer avec les coordonnées]
+On donne $\vec{u}\coord{2}{-3}$, $\vec{v}\coord{-4}{1}$ et $\vec{w}\coord{0}{2}$. Calculer
+les coordonnées des vecteurs :
+\begin{enumerate}[label=\alph*)]
+  \item $\vec{u}+\vec{v}$ ;
+  \item $\vec{u}-\vec{v}$ ;
+  \item $4\vec{w}$ ;
+  \item $2\vec{u}+3\vec{v}$ ;
+  \item $\vec{u}-2\vec{v}+\vec{w}$.
+\end{enumerate}
+
+\exo[Avec des points]
+On donne $A(-1\,;2)$, $B(3\,;0)$ et $C(1\,;-4)$. Calculer les coordonnées des vecteurs
+$\vect{AB}+\vect{AC}$, $2\vect{AB}$, $\vect{AB}-\vect{BC}$ et $3\vect{AC}-2\vect{AB}$.
+
+\exo[Trouver un vecteur]
+Pour chaque cas, calculer les coordonnées du vecteur inconnu, en posant ses
+coordonnées $x$ et $y$.
+\begin{enumerate}[label=\alph*)]
+  \item $\vec{u}\coord{1}{-2}$ ; trouver $\vec{v}$ tel que $\vec{u}+\vec{v}\coord{3}{4}$.
+  \item $\vec{a}\coord{-3}{5}$ ; trouver $\vec{b}$ tel que $\vec{a}+\vec{b}\coord{0}{-1}$.
+  \item $\vec{u}\coord{1}{-2}$ ; trouver $\vec{w}$ tel que $2\vec{u}+\vec{w}\coord{5}{1}$.
+\end{enumerate}
+
+\exo[Deux remorqueurs]
+Deux remorqueurs tirent un navire, placé en $O$, avec les forces $\vec{F_{1}}\coord{3}{2}$
+et $\vec{F_{2}}\coord{4}{-1}$ (en kN, un carreau pour $1$~kN).
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \quadrillage{-0.5}{-2.5}{10.5}{3.5}
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{$\vec{F_{1}}$} (3,2);
+  \draw[vecteurB] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{F_{2}}$} (4,-1);
+  \pt{0,0}{left}{O}
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les coordonnées de la résultante $\vec{R}=\vec{F_{1}}+\vec{F_{2}}$.
+  \item Tracer $\vec{R}$ sur la figure, en traçant $\vec{F_{2}}$ à la suite de
+        $\vec{F_{1}}$.
+  \item Un troisième remorqueur ajoute une force $\vec{F_{3}}$ pour que la résultante des
+        trois forces soit $\coord{10}{0}$. Calculer les coordonnées de $\vec{F_{3}}$.
+\end{enumerate}
+
+\partiefiche{Parallélogramme et coordonnées d'un point}
+
+\exo[Point défini par une égalité]
+On donne $A(2\,;-1)$, $B(4\,;2)$, $C(0\,;5)$ et $\vec{u}\coord{-3}{4}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les coordonnées du point $E$ tel que $\vect{AE}=\vec{u}$.
+  \item Calculer les coordonnées du point $D$ tel que $ABCD$ soit un parallélogramme.
+  \item Calculer les coordonnées du point $F$ tel que $\vect{BF}=\vect{AC}$.
+\end{enumerate}
+
+\exo[Parallélogramme ou non]
+Pour chaque quadrilatère, dire s'il est un parallélogramme, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item $ABCD$, avec $A(-2\,;1)$, $B(1\,;3)$, $C(4\,;0)$ et $D(1\,;-2)$.
+  \item $EFGH$, avec $E(0\,;0)$, $F(2\,;3)$, $G(5\,;4)$ et $H(3\,;2)$.
+\end{enumerate}
+
+\exo[Un portique]
+Le cadre d'un portique de levage a la forme d'un parallélogramme $ABCD$. Dans un repère
+en décimètres, trois fixations sont placées en $A(0\,;0)$, $B(6\,;1)$ et $C(8\,;5)$.
+\begin{enumerate}[label=\alph*)]
+  \item Placer les points $A$, $B$ et $C$ dans un repère (un carreau pour $1$~dm).
+  \item Calculer les coordonnées de la quatrième fixation $D$, puis placer $D$ et
+        vérifier sur la figure.
+  \item Un renfort relie $C$ à un point $G$ tel que $ABGC$ soit aussi un
+        parallélogramme. Calculer les coordonnées de $G$, puis placer $G$.
+\end{enumerate}
+
+\partiefiche{Colinéarité de deux vecteurs}
+
+\exo[Colinéaires ou non]
+Pour chaque couple de vecteurs, dire s'ils sont colinéaires : on cherche d'abord un
+multiple évident, sinon on calcule le déterminant.
+\begin{enumerate}[label=\alph*)]
+  \item $\vec{u}\coord{3}{-1}$ et $\vec{v}\coord{-9}{3}$
+  \item $\vec{u}\coord{2}{5}$ et $\vec{v}\coord{4}{11}$
+  \item $\vec{u}\coord{6}{4}$ et $\vec{v}\coord{9}{6}$
+  \item $\vec{u}\coord{-4}{10}$ et $\vec{v}\coord{2}{-5}$
+  \item $\vec{u}\coord{5}{3}$ et $\vec{v}\coord{8}{5}$
+\end{enumerate}
+
+\exo[Trouver une coordonnée]
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le nombre réel $m$ pour que $\vec{u}\coord{4}{-6}$ et $\vec{v}\coord{m}{9}$
+        soient colinéaires.
+  \item Même question pour $\vec{a}\coord{3}{m}$ et $\vec{b}\coord{6}{8}$.
+\end{enumerate}
+
+\exo[Avec des phrases]
+On donne $\vec{u}\coord{-2}{4}$.
+\begin{enumerate}[label=\alph*)]
+  \item Donner les coordonnées de deux vecteurs colinéaires à $\vec{u}$, l'un de même
+        sens, l'autre de sens contraire.
+  \item Le vecteur $\vec{w}\coord{3}{-7}$ est-il colinéaire à $\vec{u}$ ? Répondre par une
+        phrase complète, justifiée par un calcul.
+\end{enumerate}
+
+\exo[Deux forces sur une pièce]
+Une pièce mécanique subit deux forces $\vec{F_{1}}\coord{6}{-4}$ et
+$\vec{F_{2}}\coord{-3}{2}$ (en newtons).
+\begin{enumerate}[label=\alph*)]
+  \item Les forces $\vec{F_{1}}$ et $\vec{F_{2}}$ ont-elles la même direction ? Le même
+        sens ?
+  \item Calculer les coordonnées de la résultante $\vec{R}=\vec{F_{1}}+\vec{F_{2}}$.
+  \item La résultante $\vec{R}$ a-t-elle la même direction que $\vec{F_{1}}$ ?
+\end{enumerate}
+
+\partiefiche{Droites parallèles, points alignés}
+
+\exo[Parallèles, alignés]
+On donne $A(-1\,;-2)$, $B(1\,;2)$, $C(3\,;-1)$, $D(4\,;1)$, $E(3\,;6)$ et $F(0\,;1)$.
+\begin{enumerate}[label=\alph*)]
+  \item Les droites $(AB)$ et $(CD)$ sont-elles parallèles ?
+  \item Les points $A$, $B$ et $E$ sont-ils alignés ?
+  \item Les points $A$, $B$ et $F$ sont-ils alignés ?
+\end{enumerate}
+
+\exo[Droites données par une équation]
+\rappel{la droite d'équation cartésienne $ax+by+c=0$ a pour vecteur directeur
+$\vec{u}\coord{-b}{a}$.}
+Pour chaque couple de droites, donner un vecteur directeur de chacune, puis dire si les
+droites sont parallèles.
+\begin{enumerate}[label=\alph*)]
+  \item $(d_{1})$ : $2x-y+3=0$ et $(d_{2})$ : $4x-2y-1=0$
+  \item $(d_{3})$ : $x+3y-2=0$ et $(d_{4})$ : $2x+5y=0$
+  \item $(d_{5})$ : $3x-6y+1=0$ et $(d_{6})$ : $-x+2y+4=0$
+\end{enumerate}
+
+\exo[La trajectoire d'un robot]
+Un robot d'entrepôt va en ligne droite de $A(1\,;2)$ à $B(5\,;4)$ (repère en mètres), puis
+continue tout droit.
+\begin{enumerate}[label=\alph*)]
+  \item Passera-t-il par le point $C(11\,;7)$ ?
+  \item Passera-t-il par le point $D(9\,;7)$ ?
+\end{enumerate}
+Répondre à chaque question par une phrase complète.
+
+\exo[Un trapèze]
+On donne $A(0\,;0)$, $B(6\,;2)$, $C(5\,;5)$ et $D(2\,;4)$.
+\begin{enumerate}[label=\alph*)]
+  \item Montrer que les droites $(AB)$ et $(DC)$ sont parallèles.
+  \item Les droites $(AD)$ et $(BC)$ sont-elles parallèles ?
+  \item En déduire la nature du quadrilatère $ABCD$.
+\end{enumerate}
+
+\partiefiche{Coordonnées du milieu d'un segment}
+
+\exo[Calculer des milieux]
+Pour chaque segment, calculer les coordonnées de son milieu.
+\begin{enumerate}[label=\alph*)]
+  \item $[AB]$, avec $A(2\,;5)$ et $B(6\,;-1)$
+  \item $[CD]$, avec $C(-3\,;4)$ et $D(1\,;-2)$
+  \item $[EF]$, avec $E(-5\,;-2)$ et $F(1\,;4)$
+\end{enumerate}
+
+\exo[Retrouver une extrémité]
+\begin{enumerate}[label=\alph*)]
+  \item $K(1\,;3)$ est le milieu de $[AB]$, avec $A(-2\,;5)$. Calculer les coordonnées
+        de $B$.
+  \item $M(0\,;-1)$ est le milieu de $[CD]$, avec $C(3\,;2)$. Calculer les coordonnées
+        de $D$.
+\end{enumerate}
+
+\exo[Le centre d'un parallélogramme]
+On donne $A(-1\,;1)$, $B(3\,;0)$ et $C(5\,;3)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les coordonnées du point $D$ tel que $ABCD$ soit un parallélogramme.
+  \item Calculer les coordonnées du milieu de $[AC]$, puis du milieu de $[BD]$.
+        Que constate-t-on ?
+\end{enumerate}
+
+\partiefiche{Norme d'un vecteur}
+
+\exo[Normes et distances]
+Le repère est orthonormé.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer la norme des vecteurs $\vec{u}\coord{5}{12}$, $\vec{v}\coord{-3}{0}$ et
+        $\vec{w}\coord{2}{-2}$.
+  \item On donne $A(1\,;-2)$ et $B(4\,;2)$. Calculer la distance $AB$.
+  \item On donne $C(-1\,;3)$ et $D(2\,;1)$. Calculer $CD$, puis en donner une valeur
+        approchée au centième.
+\end{enumerate}
+
+\exo[Nature d'un triangle]
+Le repère est orthonormé. On donne $A(1\,;0)$, $B(5\,;2)$ et $C(3\,;6)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les longueurs $AB$, $AC$ et $BC$.
+  \item Montrer que le triangle $ABC$ est isocèle, puis qu'il est rectangle.
+\end{enumerate}
+
+\exo[Les haubans d'une antenne]
+\begin{minipage}[t]{0.52\linewidth}\raggedright
+Une antenne verticale $[OS]$ est tenue par deux câbles $[SA]$ et $[SB]$. Dans un repère
+orthonormé en mètres, $O(0\,;0)$, $S(0\,;12)$, $A(5\,;0)$ et $B(-9\,;0)$.
+Calculer la longueur de chaque câble, puis la longueur totale de câble.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.44\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.2]
+  \draw[fig] (-10,0) -- (6,0);
+  \draw[line width=1.6pt,black!70] (0,0) -- (0,12);
+  \draw[coulCourbe,line width=0.9pt] (0,12) -- (5,0);
+  \draw[coulCourbe,line width=0.9pt] (0,12) -- (-9,0);
+  \pt{0,0}{below}{O} \pt{0,12}{above}{S} \pt{5,0}{below}{A} \pt{-9,0}{below}{B}
+\end{tikzpicture}
+\end{minipage}
+
+\partiefiche{Définition du produit scalaire}
+
+\exo[Avec un angle]
+Pour chaque cas, calculer $\vec{u}\cdot\vec{v}$, sachant que $\alpha$ est l'angle entre
+$\vec{u}$ et $\vec{v}$.
+\begin{enumerate}[label=\alph*)]
+  \item $\norme{\vec{u}}=5$, $\norme{\vec{v}}=4$ et $\alpha=60^{\circ}$
+  \item $\norme{\vec{u}}=3$, $\norme{\vec{v}}=6$ et $\alpha=120^{\circ}$
+  \item $\norme{\vec{u}}=2$, $\norme{\vec{v}}=7$ et $\alpha=90^{\circ}$ ; que peut-on dire
+        des vecteurs $\vec{u}$ et $\vec{v}$ ? (phrase complète)
+  \item $\norme{\vec{u}}=4$, $\norme{\vec{v}}=5$ et $\alpha=35^{\circ}$ (au dixième)
+\end{enumerate}
+
+\exo[Dans des triangles]
+\begin{enumerate}[label=\alph*)]
+  \item $ABC$ est un triangle équilatéral de côté $5$. Calculer $\vect{AB}\cdot\vect{AC}$.
+  \item Dans le triangle $EFG$, $EF=4$, $EG=6$ et $\widehat{FEG}=120^{\circ}$. Calculer
+        $\vect{EF}\cdot\vect{EG}$.
+  \item $RST$ est un triangle rectangle en $R$. Calculer $\vect{RS}\cdot\vect{RT}$.
+\end{enumerate}
+
+\exo[Le travail d'une force]
+\rappel{le travail d'une force $\vec{F}$ d'intensité $F$ (en N), pour un déplacement de
+longueur $d$ (en m) qui fait un angle $\alpha$ avec la force, est
+$W=F\times d\times\cos(\alpha)$ (en J).}
+\begin{enumerate}[label=\alph*)]
+  \item Un enfant tire un traîneau sur $25$~m avec une force de $40$~N qui fait un angle de
+        $35^{\circ}$ avec le déplacement (schéma ci-dessous). Calculer le travail de la
+        force, au dixième.
+  \begin{center}
+  \solidetire{35}{$\vec{F}$}{$40$~N}{$25$~m}
+  \end{center}
+  \item Un remonte-pente tire un skieur sur $200$~m avec une force de $300$~N qui fait un
+        angle de $20^{\circ}$ avec le déplacement. Faire un schéma comme celui du a), puis
+        calculer le travail de la force, au dixième.
+\end{enumerate}
+
+\partiefiche{Produit scalaire et projeté orthogonal}
+
+\exo[Dans un rectangle]
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+$ABCD$ est un rectangle avec $AB=5$ et $AD=3$. Calculer :
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$ ;
+  \item $\vect{AD}\cdot\vect{AC}$ ;
+  \item $\vect{AB}\cdot\vect{AD}$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.42]
+  \draw[fig] (0,0) -- (5,0) -- (5,3) -- (0,3) -- cycle;
+  \draw[aide] (0,0) -- (5,3);
+  \pt{0,0}{below left}{A} \pt{5,0}{below right}{B} \pt{5,3}{above right}{C}
+  \pt{0,3}{above left}{D}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Dans un carré]
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+$ABCD$ est un carré de côté $4$, de centre $O$ ; $I$ est le milieu de $[AB]$. Calculer :
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$ ;
+  \item $\vect{AB}\cdot\vect{AO}$ ;
+  \item $\vect{AB}\cdot\vect{AD}$ ;
+  \item $\vect{AD}\cdot\vect{AO}$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.5]
+  \draw[fig] (0,0) -- (4,0) -- (4,4) -- (0,4) -- cycle;
+  \draw[aide] (0,0) -- (4,4) (4,0) -- (0,4);
+  \draw[aide] (2,2) -- (2,0);
+  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{4,4}{above right}{C}
+  \pt{0,4}{above left}{D} \pt{2,2}{above}{O} \pt{2,0}{below}{I}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Avec le projeté]
+Dans chaque triangle, $H$ est le projeté orthogonal du troisième sommet sur la droite
+qui porte le premier vecteur.
+\begin{center}
+\begin{tikzpicture}[scale=0.45]
+  \draw[aide] (4,3) -- (4,0);
+  \draw[black!60] (4,0.35) -- (3.65,0.35) -- (3.65,0);
+  \draw[fig] (0,0) -- (6,0) -- (4,3) -- cycle;
+  \pt{0,0}{below left}{E} \pt{6,0}{below right}{F} \pt{4,3}{above}{G} \pt{4,0}{below}{H}
+  \node[font=\footnotesize] at (3,-1.8) {$EF=6$ et $EH=4$};
+\end{tikzpicture}
+\hspace{0.6cm}
+\begin{tikzpicture}[scale=0.45]
+  \draw[aide] (-2,0) -- (0,0);
+  \draw[aide] (-2,3) -- (-2,0);
+  \draw[black!60] (-2,0.35) -- (-1.65,0.35) -- (-1.65,0);
+  \draw[fig] (0,0) -- (3,0) -- (-2,3) -- cycle;
+  \pt{0,0}{below}{K} \pt{3,0}{below right}{L} \pt{-2,3}{above}{M} \pt{-2,0}{below}{H}
+  \node[font=\footnotesize] at (0.5,-1.8) {$KL=3$ et $KH=2$};
+\end{tikzpicture}
+\end{center}
+Calculer $\vect{EF}\cdot\vect{EG}$, puis $\vect{KL}\cdot\vect{KM}$.
+
+\exo[Projection d'un vecteur sur un axe]
+\begin{enumerate}[label=\alph*)]
+  \item Sur un axe dirigé par $\vec{u}$, avec $\norme{\vec{u}}=3$, le vecteur $\vec{v}$
+        de norme $10$ fait un angle de $30^{\circ}$ avec $\vec{u}$. Calculer la projection
+        $p$ de $\vec{v}$ sur l'axe, au centième, puis $\vec{u}\cdot\vec{v}$, au dixième.
+  \item Même question avec $\norme{\vec{u}}=4$, $\norme{\vec{v}}=6$ et un angle de
+        $120^{\circ}$.
+\end{enumerate}
+\begin{center}
+\vecteuraxe{30}\hspace{0.4cm}\vecteuraxe{120}
+\end{center}
+
+\partiefiche{Produit scalaire dans un repère orthonormé}
+
+\exo[Avec les coordonnées]
+Le repère est orthonormé.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $\vec{u}\cdot\vec{v}$ pour $\vec{u}\coord{2}{5}$ et $\vec{v}\coord{3}{-1}$.
+  \item Calculer $\vec{a}\cdot\vec{b}$ pour $\vec{a}\coord{-4}{2}$ et $\vec{b}\coord{1}{2}$.
+        Que peut-on dire de ces vecteurs ? (phrase complète)
+  \item On donne $A(0\,;1)$, $B(3\,;2)$ et $C(2\,;5)$. Calculer $\vect{AB}\cdot\vect{AC}$.
+\end{enumerate}
+
+\exo[Perpendiculaires ou non]
+Le repère est orthonormé. Pour chaque cas, dire si les droites sont perpendiculaires.
+\begin{enumerate}[label=\alph*)]
+  \item $(AB)$ et $(CD)$, avec $A(1\,;2)$, $B(3\,;6)$, $C(0\,;5)$ et $D(4\,;3)$.
+  \item $(EF)$ et $(GH)$, avec $E(-2\,;0)$, $F(1\,;1)$, $G(0\,;3)$ et $H(2\,;-2)$.
+\end{enumerate}
+
+\exo[Parallèles, perpendiculaires ou ni l'un ni l'autre]
+Le repère est orthonormé. Pour chaque couple de droites, donner un vecteur directeur de
+chacune (vecteur $\vec{u}\coord{-b}{a}$ pour $ax+by+c=0$), puis dire si les droites sont
+parallèles, perpendiculaires, ou ni l'un ni l'autre.
+\begin{enumerate}[label=\alph*)]
+  \item $(d_{1})$ : $2x+y-1=0$ et $(d_{2})$ : $x-2y+3=0$
+  \item $(d_{3})$ : $3x-y=0$ et $(d_{4})$ : $x+2y-5=0$
+  \item $(d_{5})$ : $4x-3y+2=0$ et $(d_{6})$ : $3x+4y-1=0$
+  \item $(d_{7})$ : $x-y=0$ et $(d_{8})$ : $2x-2y+5=0$
+\end{enumerate}
+
+\exo[Un triangle rectangle]
+Le repère est orthonormé. On donne $K(-1\,;1)$, $L(3\,;3)$ et $M(4\,;1)$.
+Le triangle $KLM$ est-il rectangle en $L$ ? Répondre par une phrase complète.
+
+\exo[L'équerrage d'un cadre]
+Un menuisier vérifie un cadre de porte $ABCD$. Dans un repère orthonormé en
+centimètres, $A(0\,;0)$, $B(120\,;9)$ et $D(-6\,;80)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les coordonnées des vecteurs $\vect{AB}$ et $\vect{AD}$.
+  \item Le cadre a-t-il un angle droit en $A$ ?
+  \item Calculer les coordonnées du point $C$ tel que $ABCD$ soit un parallélogramme.
+  \item Le menuisier mesure les deux diagonales. Calculer $AC$ et $BD$ au dixième ;
+        que constate-t-on ?
+\end{enumerate}
+
+\partiefiche{Propriétés du produit scalaire}
+
+\exo[Développer]
+On donne $\norme{\vec{u}}=2$, $\norme{\vec{v}}=5$ et $\vec{u}\cdot\vec{v}=3$. Calculer :
+\begin{enumerate}[label=\alph*)]
+  \item $\vec{u}\cdot(\vec{u}+\vec{v})$ ;
+  \item $(\vec{u}+\vec{v})\cdot(\vec{u}-\vec{v})$ ;
+  \item $(3\vec{u})\cdot(-2\vec{v})$ ;
+  \item $\norme{\vec{u}+\vec{v}}^{2}$, puis $\norme{\vec{u}+\vec{v}}$ au centième ;
+  \item $\norme{\vec{u}-\vec{v}}^{2}$.
+\end{enumerate}
+
+\exo[Changer l'ordre, le sens]
+On sait que $\vect{AB}\cdot\vect{AC}=8$. Calculer $\vect{AC}\cdot\vect{AB}$,
+$\vect{AB}\cdot\vect{CA}$, $(2\vect{AB})\cdot\vect{AC}$ et $\vect{BA}\cdot(3\vect{AC})$.
+
+\exo[Dans un rectangle]
+$ABCD$ est un rectangle avec $AB=6$ et $AD=4$ ; $I$ est le milieu de $[DC]$.
+\begin{enumerate}[label=\alph*)]
+  \item Faire une figure.
+  \item Avec la relation de Chasles, montrer que $\vect{AC}=\vect{AB}+\vect{AD}$ et que
+        $\vect{AI}=\vect{AD}+\frac{1}{2}\vect{AB}$.
+  \item Que valent $\vect{AB}\cdot\vect{AB}$, $\vect{AD}\cdot\vect{AD}$ et
+        $\vect{AB}\cdot\vect{AD}$ ?
+  \item En développant, calculer $\vect{AC}\cdot\vect{AI}$.
+\end{enumerate}
+
+\partiefiche{Travail d'une force}
+
+\exo[Une caisse tirée]
+Une caisse avance de $8$~m sur un sol horizontal. Elle est tirée par une corde
+($\vec{F}$ : $300$~N, à $25^{\circ}$ du sol) ; elle subit son poids ($\vec{P}$ :
+$500$~N) et le frottement du sol ($\vec{f}$ : $120$~N, opposé au déplacement).
+\begin{center}
+\troisforces{25}{$25^{\circ}$}{$\vec{F}$}{$\vec{P}$}{$\vec{f}$}{$8$~m}
+\end{center}
+Calculer, au dixième, le travail du poids, de la traction et du frottement, puis le
+travail de la résultante des trois forces.
+
+\exo[Moteur, résistant ou nul]
+Une force de $100$~N s'exerce sur un objet qui se déplace de $5$~m. Pour chaque angle
+$\alpha$ entre la force et le déplacement, calculer le travail au dixième, puis dire par
+une phrase complète s'il est moteur, résistant ou nul.
+\begin{enumerate}[label=\alph*)]
+  \item $\alpha=30^{\circ}$
+  \item $\alpha=90^{\circ}$
+  \item $\alpha=150^{\circ}$
+  \item $\alpha=180^{\circ}$
+\end{enumerate}
+
+\exo[Sur une piste en pente]
+Un chariot de $700$~N est hissé sur $150$~m le long d'une piste inclinée de $20^{\circ}$,
+par un câble ($\vec{T}$ : $400$~N, à $15^{\circ}$ de la piste). La réaction $\vec{R}$ de
+la piste lui est perpendiculaire.
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+  \draw[fig] (-1,0) -- (8,0);
+  \draw (2,0) arc (0:20:2);
+  \node[font=\footnotesize,anchor=west] at (2.05,0.35) {$20^{\circ}$};
+  \begin{scope}[rotate=20]
+    \draw[fig] (0,0) -- (8.5,0);
+    \draw[fig,fill=black!6] (3.3,0) rectangle (4.7,0.9);
+    \draw[axe] (2,0.45) -- (9,0.45);
+    \draw[deplacement] (4,0.45) -- node[pos=0.55,below right,font=\footnotesize]{déplacement\,: $150$~m} (7.8,0.45);
+    \draw[vecteur] (4,0.45) -- node[pos=0.75,above left,font=\footnotesize]{$\vec{T}$} ++({3*cos(15)},{3*sin(15)});
+    \draw[vecteurC] (4,0.45) -- node[pos=0.8,left,font=\footnotesize]{$\vec{R}$} ++(0,2.2);
+    \pt{4,0.45}{below left}{G}
+  \end{scope}
+  \draw[vecteurB] ({4*cos(20)-0.45*sin(20)},{4*sin(20)+0.45*cos(20)}) -- node[pos=0.8,left,font=\footnotesize]{$\vec{P}$} ++(0,-2.6);
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item L'angle entre le poids $\vec{P}$ et le déplacement mesure $110^{\circ}$.
+        Calculer le travail du poids, au dixième. Est-il moteur ou résistant ?
+  \item Calculer le travail de la traction $\vec{T}$, au dixième.
+  \item Que vaut le travail de la réaction $\vec{R}$ ? Justifier.
+  \item En déduire le travail de la résultante des trois forces.
+\end{enumerate}
+
+\exo[Un wagonnet]
+Un wagonnet avance de $50$~m sur un rail rectiligne, tiré par un câble qui exerce une
+force de $800$~N dont la direction fait un angle de $15^{\circ}$ avec le rail. Faire le schéma (solide, centre de gravité, axe
+du déplacement, force), puis calculer, au dixième, la projection de la force sur l'axe
+du rail et le travail de la force.
+
+\partiefiche{Calcul d'un angle}
+
+\exo[Angle entre deux vecteurs]
+Le repère est orthonormé. Pour chaque couple de vecteurs, calculer l'angle qu'ils
+forment, au dixième de degré.
+\begin{enumerate}[label=\alph*)]
+  \item $\vec{u}\coord{2}{1}$ et $\vec{v}\coord{1}{3}$
+  \item $\vec{a}\coord{3}{-1}$ et $\vec{b}\coord{1}{2}$
+  \item $\vec{c}\coord{-2}{1}$ et $\vec{d}\coord{3}{1}$
+\end{enumerate}
+
+\exo[Les angles d'un triangle]
+Le repère est orthonormé. On donne $A(0\,;0)$, $B(4\,;0)$ et $C(2\,;3)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer l'angle $\widehat{BAC}$, au dixième de degré.
+  \item Calculer de même l'angle $\widehat{ABC}$.
+  \item En déduire l'angle $\widehat{ACB}$, puis la nature du triangle $ABC$.
+\end{enumerate}
+
+\exo[Une porte renforcée]
+\begin{minipage}[t]{0.5\linewidth}\raggedright
+Une porte rectangulaire $OEKA$ mesure $3$~m sur $2$~m. Pour la renforcer, on fixe deux
+barres $[OB]$ et $[OD]$, avec $B(1\,;2)$ et $D(3\,;1{,}5)$ (repère orthonormé en
+mètres, d'origine $O$). Le renfort est efficace si l'angle $\alpha=\widehat{BOD}$ est
+compris entre $35^{\circ}$ et $45^{\circ}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=1]
+  \draw[fig,fill=black!4] (0,0) rectangle (3,2);
+  \draw[coulCourbe,line width=1.1pt] (0,0) -- (1,2);
+  \draw[coulCourbe,line width=1.1pt] (0,0) -- (3,1.5);
+  \draw (0.35,0.175) arc (26.57:63.43:0.39);
+  \node[font=\footnotesize] at (0.5,0.55) {$\alpha$};
+  \pt{0,0}{below left}{O} \pt{3,0}{below right}{E} \pt{3,2}{above right}{K}
+  \pt{0,2}{above left}{A} \pt{1,2}{above}{B} \pt{3,1.5}{right}{D}
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les coordonnées de $\vect{OB}$ et de $\vect{OD}$, puis les longueurs $OB$
+        et $OD$, au centième.
+  \item Calculer $\vect{OB}\cdot\vect{OD}$.
+  \item Calculer l'angle $\alpha$, au dixième de degré. Le renfort est-il efficace ?
+\end{enumerate}
+
+\partiefiche{Théorème d'Al-Kashi}
+
+\exo[Calculer un côté]
+\rappel{théorème d'Al-Kashi : dans un triangle $ABC$,
+$BC^{2}=AB^{2}+AC^{2}-2\times AB\times AC\times\cos\big(\widehat{BAC}\big)$.}
+Pour chaque triangle $ABC$, calculer $BC$ (au centième si besoin).
+\begin{enumerate}[label=\alph*)]
+  \item $AB=3$, $AC=5$ et $\widehat{BAC}=60^{\circ}$
+  \item $AB=5$, $AC=3$ et $\widehat{BAC}=120^{\circ}$
+  \item $AB=7$, $AC=10$ et $\widehat{BAC}=40^{\circ}$
+\end{enumerate}
+
+\exo[Un bras de robot]
+\begin{minipage}[t]{0.52\linewidth}\raggedright
+Le bras d'un robot est formé de deux segments articulés en $C$ : $[SC]$ de $50$~cm et
+$[CP]$ de $40$~cm. Calculer la distance $SP$ entre l'épaule $S$ et la pince $P$, au
+dixième, quand l'angle $\widehat{SCP}$ mesure $100^{\circ}$, puis quand il mesure
+$60^{\circ}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.44\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.55]
+  \draw[line width=1.8pt,black!65] (0,0) -- (5,0) -- (5.69,3.94);
+  \draw[aide] (0,0) -- (5.69,3.94);
+  \draw (4.3,0) arc (180:80:0.7);
+  \node[font=\footnotesize] at (4.1,0.75) {$100^{\circ}$};
+  \pt{0,0}{below left}{S} \pt{5,0}{below right}{C} \pt{5.69,3.94}{above}{P}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Deux bateaux]
+\begin{minipage}[t]{0.52\linewidth}\raggedright
+Deux bateaux partent en même temps du port $O$, en ligne droite, sur deux routes qui font
+entre elles un angle de $50^{\circ}$. Une heure plus tard, le premier est en $A$, à
+$12$~km du port, et le second en $B$, à $9$~km du port. Calculer la distance $AB$ entre
+les deux bateaux, au centième.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.44\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.28]
+  \draw[fig] (0,0) -- node[below,font=\footnotesize]{$12$~km} (12,0);
+  \draw[fig] (0,0) -- node[above left,font=\footnotesize]{$9$~km} ({9*cos(50)},{9*sin(50)});
+  \draw[aide] (12,0) -- ({9*cos(50)},{9*sin(50)});
+  \draw (2.5,0) arc (0:50:2.5);
+  \node[font=\footnotesize] at (4.1,1.7) {$50^{\circ}$};
+  \pt{0,0}{below left}{O} \pt{12,0}{below right}{A} \pt{{9*cos(50)},{9*sin(50)}}{above}{B}
+\end{tikzpicture}
+\end{minipage}
+
+\end{multicols*}
+
+\end{document}
