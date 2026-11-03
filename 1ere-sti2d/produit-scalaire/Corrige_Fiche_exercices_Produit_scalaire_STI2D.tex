@@ -1,0 +1,1844 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 6 --- Produit scalaire --- corrigé}{1\textsuperscript{re} STI2D}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\let\partieligne\partie
+\renewcommand{\partie}[1]{\besoinplace{16\baselineskip}\partieligne{#1}}
+\BeforeBeginEnvironment{exo}{\besoinplace{10\baselineskip}}
+\setlength{\parindent}{0pt}
+
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+
+\ShorthandsOff
+\tikzset{
+  vecteur/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbe},
+  vecteurB/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeB},
+  vecteurC/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeC},
+  resultante/.style={-{Stealth[length=2.6mm]},line width=1.3pt,coulRep},
+  aide/.style={dashed,black!45,line width=0.6pt},
+  fig/.style={line width=0.8pt,black!75},
+  axe/.style={aide,-{Stealth[length=2.2mm]}},
+  deplacement/.style={-{Stealth[length=2.6mm]},line width=1.1pt,black!75},
+}
+\ShorthandsOn
+
+\newcommand{\solidetire}[4]{%
+\begin{tikzpicture}[scale=0.75]
+  \draw[fig,fill=black!6] (-0.7,-0.45) rectangle (0.7,0.45);
+  \draw[axe] (-1.6,0) -- (6.2,0);
+  \draw[deplacement] (0,0) -- node[pos=0.6,below,font=\footnotesize]{déplacement\,: #4} (5,0);
+  \draw (2.6,0) arc (0:#1:2.6);
+  \node[font=\footnotesize,anchor=west] at ({2.65*cos(#1/2)},{2.65*sin(#1/2)}) {$#1^{\circ}$};
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{#2\,: #3} ({3.4*cos(#1)},{3.4*sin(#1)});
+  \pt{0,0}{below left}{G}
+\end{tikzpicture}}
+
+\newcommand{\vecteuraxe}[1]{%
+\begin{tikzpicture}[scale=0.7]
+  \draw[axe] (-2.6,0) -- (4.2,0) node[right,font=\footnotesize]{axe};
+  \draw[aide] ({3*cos(#1)},{3*sin(#1)}) -- ({3*cos(#1)},-0.35);
+  \draw[red,line width=1.6pt] (0,-0.35) -- node[below,font=\footnotesize]{$p$} ({3*cos(#1)},-0.35);
+  \draw[deplacement] (0,0) -- (2.5,0) node[above right,font=\footnotesize]{$\vec{u}$};
+  \draw (1.1,0) arc (0:#1:1.1);
+  \node[font=\footnotesize,anchor=west] at ({1.6*cos(#1/2)},{1.6*sin(#1/2)}) {$#1^{\circ}$};
+  \draw[vecteur] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{v}$} ({3*cos(#1)},{3*sin(#1)});
+\end{tikzpicture}}
+
+\begin{document}
+
+\entetefiche{Chapitre 6 --- Produit scalaire}{Première STI2D}
+
+\partie{Coordonnées d'un vecteur}
+
+\begin{exo}[Lire et tracer]
+\cas{a)}
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+\explique{On trace chaque flèche de son point de départ à son point d'arrivée, puis on
+compte les carreaux.}{d'abord vers la droite ou la gauche, puis vers le haut ou le bas}
+\begin{calculs}
+\vect{AB} & \res{\coord{4}{2}} &&\justif{de $A$ à $B$ : $4$ à droite, $2$ vers le haut}\\
+\vect{CD} & \res{\coord{2}{3}} &&\justif{$2$ à droite, $3$ vers le haut}\\
+\vect{EF} & \res{\coord{3}{-1}} &&\justif{$3$ à droite, $1$ vers le bas}
+\end{calculs}
+\cas{b)}
+\explique{Depuis $G$, on avance de $2$ vers la droite et de $3$ vers le haut : c'est la
+pointe de $\vec{u}$.}{$x=2$ puis $y=3$}
+\explique{Depuis $G$, on avance de $1$ vers la gauche et de $2$ vers le bas : c'est la
+pointe de $\vec{v}$.}{coordonnées négatives : à gauche, vers le bas}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.68cm,y=0.68cm]
+  \repere{-5}{-4}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-3,-2,-1,1,2,3}
+  \draw[vecteur] (-3,1) -- node[midway,above left,font=\footnotesize]{$\vect{AB}$} (1,3);
+  \draw[vecteur] (2,-1) -- node[midway,right,font=\footnotesize]{$\vect{CD}$} (4,2);
+  \draw[vecteur] (-2,-2) -- node[midway,below,font=\footnotesize]{$\vect{EF}$} (1,-3);
+  \draw[vecteurB] (-3,-1) -- node[pos=0.6,right,font=\footnotesize]{$\vec{u}$} (-1,2);
+  \draw[vecteurB] (-3,-1) -- node[midway,left,font=\footnotesize]{$\vec{v}$} (-4,-3);
+  \pt{-3,1}{above left}{A} \pt{1,3}{above}{B} \pt{2,-1}{below}{C} \pt{4,2}{above}{D}
+  \pt{-2,-2}{below left}{E} \pt{1,-3}{below right}{F} \pt{-3,-1}{below right}{G}
+\end{tikzpicture}
+\end{minipage}
+\rem{Erreur fréquente : lire d'abord la verticale. On écrit toujours l'abscisse (le
+déplacement horizontal) en haut de la colonne.}
+\end{exo}
+
+\begin{exo}[Calculer des coordonnées]
+\explique{Pour chaque vecteur : arrivée moins départ, l'abscisse en haut, l'ordonnée en
+bas.}{propriété 1}
+\cas{$\vect{KL}$}
+\begin{calculs}
+\vect{KL} & \coord{-2-3}{4-(-1)} &&\justif{arrivée $L(-2\,;4)$ moins départ $K(3\,;-1)$}\\
+\vect{KL} & \res{\coord{-5}{5}} &&\justif{$4-(-1)=4+1$}
+\end{calculs}
+\cas{$\vect{LK}$}
+\begin{calculs}
+\vect{LK} & \coord{3-(-2)}{-1-4} &&\justif{on échange départ et arrivée}\\
+\vect{LK} & \res{\coord{5}{-5}} &&\justif{l'opposé de $\vect{KL}$}
+\end{calculs}
+\cas{$\vect{MN}$}
+\begin{calculs}
+\vect{MN} & \coord{-4-0}{-3-(-5)} &&\justif{arrivée $N$, départ $M$}\\
+\vect{MN} & \res{\coord{-4}{2}} &&\justif{$-3+5=2$}
+\end{calculs}
+\cas{$\vect{NK}$}
+\begin{calculs}
+\vect{NK} & \coord{3-(-4)}{-1-(-3)} &&\justif{arrivée $K$, départ $N$}\\
+\vect{NK} & \res{\coord{7}{2}} &&\justif{$3+4=7$ et $-1+3=2$}
+\end{calculs}
+\cas{$\vect{LM}$}
+\begin{calculs}
+\vect{LM} & \coord{0-(-2)}{-5-4} &&\justif{arrivée $M$, départ $L$}\\
+\vect{LM} & \res{\coord{2}{-9}} &&
+\end{calculs}
+\rem{Erreur fréquente : faire « départ moins arrivée ». Contrôle : $\vect{LK}$ a des
+coordonnées opposées à celles de $\vect{KL}$.}
+\end{exo}
+
+\begin{exo}[Relation de Chasles]
+\explique{On cherche des vecteurs « bout à bout » : l'arrivée de l'un est le départ du
+suivant ; on les range dans cet ordre au besoin.}{$\vect{AB}+\vect{BC}=\vect{AC}$}
+\cas{a)}
+\begin{calculs}
+\vect{AB}+\vect{BC} &= \res{\vect{AC}} &&\justif{l'arrivée $B$ du premier est le départ du second}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{MN}+\vect{NE}+\vect{EF} &= \vect{ME}+\vect{EF} &&\justif{$\vect{MN}+\vect{NE}=\vect{ME}$}\\
+\vect{MN}+\vect{NE}+\vect{EF} &= \res{\vect{MF}} &&\justif{on recommence avec $E$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vect{CA}+\vect{AB} &= \res{\vect{CB}} &&\justif{on passe par $A$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\vect{AB}+\vect{BA} &= \vect{AA} &&\justif{aller de $A$ à $B$, puis revenir en $A$}\\
+\vect{AB}+\vect{BA} &= \res{\vec{0}} &&\justif{on est revenu au point de départ}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\vect{AC}-\vect{BC} &= \vect{AC}+\vect{CB} &&\justif{$-\vect{BC}=\vect{CB}$}\\
+\vect{AC}-\vect{BC} &= \res{\vect{AB}} &&\justif{bout à bout, en passant par $C$}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+\vect{KL}+\vect{MK} &= \vect{MK}+\vect{KL} &&\justif{on range : l'ordre d'une somme ne compte pas}\\
+\vect{KL}+\vect{MK} &= \res{\vect{ML}} &&\justif{on passe par $K$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $\vect{KL}+\vect{MK}=\vect{KK}$. La relation de Chasles
+ne s'applique que si l'arrivée du premier vecteur est le départ du second.}
+\end{exo}
+
+\begin{exo}[Le trajet d'un drone]
+\cas{a)}
+\explique{Vers l'est, c'est vers la droite ($x>0$) ; vers le sud, c'est vers le bas
+($y<0$).}{définition 1 : un vecteur décrit un déplacement}
+\begin{calculs}
+\vec{u} & \res{\coord{5}{-3}} &&\justif{$5$~m vers l'est, $3$~m vers le sud}
+\end{calculs}
+\explique{Le point d'arrivée $E$ : on ajoute le déplacement aux coordonnées de
+$D(2\,;1)$.}{$x_{E}=2+5$ et $y_{E}=1-3$}
+\explique{Le drone arrive en $\res{E(7\,;-2)}$.}{}
+\cas{b)}
+\begin{calculs}
+\vect{EF} & \coord{-1-7}{4-(-2)} &&\justif{arrivée $F(-1\,;4)$ moins départ $E(7\,;-2)$}\\
+\vect{EF} & \res{\coord{-8}{6}} &&
+\end{calculs}
+\explique{Le drone avance de $\res{8}$~m vers l'ouest, puis de $\res{6}$~m vers le
+nord.}{$-8$ : vers l'ouest ; $6$ : vers le nord}
+\end{exo}
+
+\partie{Somme de vecteurs, produit par un nombre réel}
+
+\begin{exo}[Calculer avec les coordonnées]
+\cas{a)}
+\begin{calculs}
+\vec{u}+\vec{v} & \coord{2+(-4)}{-3+1} &&\justif{abscisses ensemble, ordonnées ensemble}\\
+\vec{u}+\vec{v} & \res{\coord{-2}{-2}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vec{u}-\vec{v} & \coord{2-(-4)}{-3-1} &&\justif{on soustrait de la même façon}\\
+\vec{u}-\vec{v} & \res{\coord{6}{-4}} &&\justif{$2+4=6$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+4\vec{w} & \coord{4\times 0}{4\times 2} &&\justif{chaque coordonnée est multipliée par $4$}\\
+4\vec{w} & \res{\coord{0}{8}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+2\vec{u} & \coord{4}{-6} &&\justif{d'abord chaque produit : $2\times 2$ et $2\times(-3)$}\\
+3\vec{v} & \coord{-12}{3} &&\justif{$3\times(-4)$ et $3\times 1$}\\
+2\vec{u}+3\vec{v} & \coord{4+(-12)}{-6+3} &&\justif{puis la somme}\\
+2\vec{u}+3\vec{v} & \res{\coord{-8}{-3}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+2\vec{v} & \coord{-8}{2} &&\justif{d'abord le produit}\\
+\vec{u}-2\vec{v}+\vec{w} & \coord{2-(-8)+0}{-3-2+2} &&\justif{puis on calcule de gauche à droite}\\
+\vec{u}-2\vec{v}+\vec{w} & \res{\coord{10}{-3}} &&
+\end{calculs}
+\rem{Erreur fréquente en e) : $2-(-8)$ vaut $2+8=10$, pas $-6$.}
+\end{exo}
+
+\begin{exo}[Avec des points]
+\explique{On calcule d'abord les vecteurs avec les points (arrivée moins départ), puis on
+fait les opérations.}{comme à la méthode 3 c)}
+\begin{calculs}
+\vect{AB} & \coord{3-(-1)}{0-2} &&\justif{arrivée $B$, départ $A$}\\
+\vect{AB} & \coord{4}{-2} &&\\
+\vect{AC} & \coord{1-(-1)}{-4-2} &&\\
+\vect{AC} & \coord{2}{-6} &&\\
+\vect{BC} & \coord{1-3}{-4-0} &&\\
+\vect{BC} & \coord{-2}{-4} &&
+\end{calculs}
+\cas{$\vect{AB}+\vect{AC}$}
+\begin{calculs}
+\vect{AB}+\vect{AC} & \coord{4+2}{-2+(-6)} &&\justif{abscisses ensemble, ordonnées ensemble}\\
+\vect{AB}+\vect{AC} & \res{\coord{6}{-8}} &&
+\end{calculs}
+\cas{$2\vect{AB}$}
+\begin{calculs}
+2\vect{AB} & \res{\coord{8}{-4}} &&\justif{$2\times 4$ et $2\times(-2)$}
+\end{calculs}
+\cas{$\vect{AB}-\vect{BC}$}
+\begin{calculs}
+\vect{AB}-\vect{BC} & \coord{4-(-2)}{-2-(-4)} &&\justif{attention aux doubles signes}\\
+\vect{AB}-\vect{BC} & \res{\coord{6}{2}} &&
+\end{calculs}
+\cas{$3\vect{AC}-2\vect{AB}$}
+\begin{calculs}
+3\vect{AC} & \coord{6}{-18} &&\justif{d'abord les produits}\\
+3\vect{AC}-2\vect{AB} & \coord{6-8}{-18-(-4)} &&\justif{avec $2\vect{AB}\coord{8}{-4}$}\\
+3\vect{AC}-2\vect{AB} & \res{\coord{-2}{-14}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Trouver un vecteur]
+\explique{On pose les coordonnées inconnues $x$ et $y$, puis on écrit une équation pour
+les abscisses et une pour les ordonnées.}{méthode 3 d)}
+\cas{a)}
+\explique{On pose $\vec{v}\coord{x}{y}$.}{}
+\begin{calculs}
+\vec{u}+\vec{v} & \coord{1+x}{-2+y} &&\justif{abscisses ensemble, ordonnées ensemble}\\
+1+x &= 3 &&\justif{les abscisses sont égales}\\
+x &= 2 &&\justif{on retranche $1$}\\
+-2+y &= 4 &&\justif{les ordonnées sont égales}\\
+y &= 6 &&\justif{on ajoute $2$}
+\end{calculs}
+\explique{$\res{\vec{v}\coord{2}{6}}$.}{on vérifie : $1+2=3$ et $-2+6=4$}
+\cas{b)}
+\explique{On pose $\vec{b}\coord{x}{y}$.}{}
+\begin{calculs}
+\vec{a}+\vec{b} & \coord{-3+x}{5+y} &&\\
+-3+x &= 0 &&\justif{les abscisses sont égales}\\
+x &= 3 &&\justif{on ajoute $3$}\\
+5+y &= -1 &&\justif{les ordonnées sont égales}\\
+y &= -6 &&\justif{on retranche $5$}
+\end{calculs}
+\explique{$\res{\vec{b}\coord{3}{-6}}$.}{on vérifie : $-3+3=0$ et $5-6=-1$}
+\cas{c)}
+\explique{On calcule d'abord $2\vec{u}$, puis on pose $\vec{w}\coord{x}{y}$.}{}
+\begin{calculs}
+2\vec{u} & \coord{2}{-4} &&\justif{$2\times 1$ et $2\times(-2)$}\\
+2\vec{u}+\vec{w} & \coord{2+x}{-4+y} &&
+\end{calculs}
+\begin{calculs}
+2+x &= 5 &&\justif{les abscisses sont égales}\\
+x &= 3 &&\\
+-4+y &= 1 &&\justif{les ordonnées sont égales}\\
+y &= 5 &&
+\end{calculs}
+\explique{$\res{\vec{w}\coord{3}{5}}$.}{on vérifie : $2+3=5$ et $-4+5=1$}
+\end{exo}
+
+\begin{exo}[Deux remorqueurs]
+\cas{a)}
+\begin{calculs}
+\vec{R} & \coord{3+4}{2+(-1)} &&\justif{$\vec{R}=\vec{F_{1}}+\vec{F_{2}}$ : abscisses ensemble, ordonnées ensemble}\\
+\vec{R} & \res{\coord{7}{1}} &&\justif{en kN}
+\end{calculs}
+\cas{b)}
+\begin{minipage}[t]{0.5\linewidth}\raggedright
+\explique{On trace un représentant de $\vec{F_{2}}$ à la suite de $\vec{F_{1}}$ :
+depuis la pointe de $\vec{F_{1}}$, $4$ carreaux à droite et $1$ vers le bas. $\vec{R}$
+va de $O$ à la pointe de ce représentant.}{la somme se trace « bout à bout »}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \quadrillage{-0.5}{-2.5}{10.5}{3.5}
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{$\vec{F_{1}}$} (3,2);
+  \draw[vecteurB] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{F_{2}}$} (4,-1);
+  \draw[vecteurB] (3,2) -- node[midway,above right,font=\footnotesize]{$\vec{F_{2}}$} (7,1);
+  \draw[resultante] (0,0) -- node[pos=0.7,below,font=\footnotesize]{$\vec{R}$} (7,1);
+  \pt{0,0}{left}{O}
+\end{tikzpicture}
+\end{minipage}
+\explique{On lit $\vec{R}\coord{7}{1}$ sur la figure : c'est bien le résultat du a).}{la
+figure contrôle le calcul}
+\cas{c)}
+\explique{On pose $\vec{F_{3}}\coord{x}{y}$. La résultante des trois forces est
+$\vec{R}+\vec{F_{3}}$.}{$\vec{F_{1}}+\vec{F_{2}}=\vec{R}$, calculé au a)}
+\begin{calculs}
+\vec{R}+\vec{F_{3}} & \coord{7+x}{1+y} &&\\
+7+x &= 10 &&\justif{les abscisses sont égales}\\
+x &= 3 &&\\
+1+y &= 0 &&\justif{les ordonnées sont égales}\\
+y &= -1 &&
+\end{calculs}
+\explique{Le troisième remorqueur tire avec la force $\res{\vec{F_{3}}\coord{3}{-1}}$
+(en kN).}{on vérifie : $7+3=10$ et $1-1=0$}
+\end{exo}
+
+\partie{Parallélogramme et coordonnées d'un point}
+
+\begin{exo}[Point défini par une égalité]
+\cas{a)}
+\explique{On pose $E(x\,;y)$.}{l'égalité de deux vecteurs donne deux équations}
+\begin{calculs}
+\vect{AE} & \coord{x-2}{y-(-1)} &&\justif{arrivée $E$ moins départ $A$}\\
+x-2 &= -3 &&\justif{les abscisses sont égales}\\
+x &= -1 &&\justif{on ajoute $2$}\\
+y+1 &= 4 &&\justif{les ordonnées sont égales}\\
+y &= 3 &&\justif{on retranche $1$}
+\end{calculs}
+\explique{Le point $E$ a pour coordonnées $\res{(-1\,;3)}$.}{on conclut}
+\cas{b)}
+\explique{$ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$. On pose
+$D(x\,;y)$.}{propriété 3}
+\begin{calculs}
+\vect{AB} & \coord{4-2}{2-(-1)} &&\justif{arrivée moins départ}\\
+\vect{AB} & \coord{2}{3} &&\\
+\vect{DC} & \coord{0-x}{5-y} &&\justif{arrivée $C$ moins départ $D$}
+\end{calculs}
+\begin{calculs}
+-x &= 2 &&\justif{les abscisses sont égales}\\
+x &= -2 &&\\
+5-y &= 3 &&\justif{les ordonnées sont égales}\\
+-y &= -2 &&\justif{on retranche $5$}\\
+y &= 2 &&
+\end{calculs}
+\explique{Le point $D$ a pour coordonnées $\res{(-2\,;2)}$.}{on conclut}
+\cas{c)}
+\explique{On pose $F(x\,;y)$.}{même démarche qu'au a)}
+\begin{calculs}
+\vect{AC} & \coord{0-2}{5-(-1)} &&\justif{d'abord le vecteur connu}\\
+\vect{AC} & \coord{-2}{6} &&\\
+\vect{BF} & \coord{x-4}{y-2} &&\justif{arrivée $F$ moins départ $B$}
+\end{calculs}
+\begin{calculs}
+x-4 &= -2 &&\justif{les abscisses sont égales}\\
+x &= 2 &&\\
+y-2 &= 6 &&\justif{les ordonnées sont égales}\\
+y &= 8 &&
+\end{calculs}
+\explique{Le point $F$ a pour coordonnées $\res{(2\,;8)}$.}{on conclut}
+\rem{Erreur fréquente au b) : écrire $\vect{AB}=\vect{CD}$. Dans $ABCD$, les côtés
+$[AB]$ et $[DC]$ sont parcourus dans le même sens.}
+\end{exo}
+
+\begin{exo}[Parallélogramme ou non]
+\explique{Un quadrilatère $ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$ : on
+calcule les deux vecteurs et on les compare.}{propriété 3}
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \coord{1-(-2)}{3-1} &&\justif{arrivée moins départ}\\
+\vect{AB} & \coord{3}{2} &&\\
+\vect{DC} & \coord{4-1}{0-(-2)} &&\justif{arrivée $C$, départ $D$}\\
+\vect{DC} & \coord{3}{2} &&
+\end{calculs}
+\explique{$\vect{AB}=\vect{DC}$ : $\res{ABCD}$ \res{est un parallélogramme}.}{mêmes
+coordonnées}
+\cas{b)}
+\begin{calculs}
+\vect{EF} & \coord{2-0}{3-0} &&\\
+\vect{EF} & \coord{2}{3} &&\\
+\vect{HG} & \coord{5-3}{4-2} &&\justif{arrivée $G$, départ $H$}\\
+\vect{HG} & \coord{2}{2} &&
+\end{calculs}
+\explique{Les ordonnées sont différentes : $\vect{EF}\neq\vect{HG}$, donc
+$\res{EFGH}$ \res{n'est pas un parallélogramme}.}{$3\neq 2$}
+\end{exo}
+
+\begin{exo}[Un portique]
+\cas{a)}
+\begin{minipage}[t]{0.4\linewidth}\raggedright
+On place $A(0\,;0)$, $B(6\,;1)$ et $C(8\,;5)$, un carreau pour $1$~dm.
+
+\smallskip
+{\small\itshape\color{black!60}Les points $D$ et $G$ sont placés aux questions b) et
+c).}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.57\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-1}{-1}{15}{7}
+  \gradx{2,4,6,8,10,12,14} \grady{1,2,3,4,5,6}
+  \draw[fig,coulCourbe] (0,0) -- (6,1) -- (8,5) -- (2,4) -- cycle;
+  \draw[fig,coulCourbeB] (6,1) -- (14,6) -- (8,5);
+  \pt{0,0}{below left}{A} \pt{6,1}{below right}{B} \pt{8,5}{above}{C}
+  \pt{2,4}{above left}{D} \pt{14,6}{above}{G}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\explique{$ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$. On pose
+$D(x\,;y)$.}{propriété 3}
+\begin{calculs}
+\vect{AB} & \coord{6}{1} &&\justif{$6-0$ et $1-0$}\\
+\vect{DC} & \coord{8-x}{5-y} &&\justif{arrivée $C$ moins départ $D$}
+\end{calculs}
+\begin{calculs}
+8-x &= 6 &&\justif{les abscisses sont égales}\\
+x &= 2 &&\\
+5-y &= 1 &&\justif{les ordonnées sont égales}\\
+y &= 4 &&
+\end{calculs}
+\explique{La quatrième fixation est $\res{D(2\,;4)}$. Sur la figure, $[AB]$ et $[DC]$
+sont bien parallèles et de même longueur.}{vérification sur la figure}
+\cas{c)}
+\explique{$ABGC$ est un parallélogramme quand $\vect{AB}=\vect{CG}$. On pose
+$G(x\,;y)$.}{on lit les sommets dans l'ordre : $A$, $B$, $G$, $C$}
+\begin{calculs}
+\vect{CG} & \coord{x-8}{y-5} &&\justif{arrivée $G$ moins départ $C$}\\
+x-8 &= 6 &&\justif{avec $\vect{AB}\coord{6}{1}$}\\
+x &= 14 &&\\
+y-5 &= 1 &&\\
+y &= 6 &&
+\end{calculs}
+\explique{Le point $G$ a pour coordonnées $\res{(14\,;6)}$ ; on le place sur la
+figure.}{dans $ABGC$, $[AB]$ et $[CG]$ sont parcourus dans le même sens}
+\end{exo}
+
+\partie{Colinéarité de deux vecteurs}
+
+\begin{exo}[Colinéaires ou non]
+\cas{a)}
+\explique{$-9=(-3)\times 3$ et $3=(-3)\times(-1)$, donc $\vec{v}=-3\vec{u}$ : les
+vecteurs \res{sont colinéaires}.}{même multiplicateur $-3$ pour les deux coordonnées}
+\cas{b)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 2\times 11-5\times 4 &&\justif{pas de multiple évident : $xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 22-20 &&\\
+\det(\vec{u}\,;\vec{v}) &= 2 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : les vecteurs \res{ne sont pas
+colinéaires}.}{$2\neq 0$}
+\cas{c)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 6\times 6-4\times 9 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 36-36 &&\\
+\det(\vec{u}\,;\vec{v}) &= 0 &&
+\end{calculs}
+\explique{Le déterminant est nul : les vecteurs \res{sont colinéaires}.}{en effet,
+$\vec{v}=1{,}5\,\vec{u}$}
+\cas{d)}
+\explique{$2=(-0{,}5)\times(-4)$ et $-5=(-0{,}5)\times 10$, donc $\vec{v}=-0{,}5\,\vec{u}$ :
+les vecteurs \res{sont colinéaires}.}{ou bien : $\vec{u}=-2\vec{v}$}
+\cas{e)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 5\times 5-3\times 8 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 25-24 &&\\
+\det(\vec{u}\,;\vec{v}) &= 1 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : les vecteurs \res{ne sont pas
+colinéaires}.}{$1\neq 0$ : « presque », mais non}
+\rem{Le déterminant est toujours possible ; le multiple évident est plus rapide quand on
+le voit.}
+\end{exo}
+
+\begin{exo}[Trouver une coordonnée]
+\explique{Les vecteurs sont colinéaires quand leur déterminant est nul : on écrit le
+déterminant, puis on résout l'équation.}{méthode 5 e)}
+\cas{a)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 4\times 9-(-6)\times m &&\justif{$xy'-yx'$, avec $x'=m$}\\
+\det(\vec{u}\,;\vec{v}) &= 36+6m &&\\
+36+6m &= 0 &&\justif{le déterminant doit être nul}\\
+6m &= -36 &&\justif{on retranche $36$}\\
+m &= -6 &&\justif{on divise par $6$}
+\end{calculs}
+\explique{Pour $\res{m=-6}$, les vecteurs sont colinéaires.}{on vérifie :
+$\vec{v}\coord{-6}{9}=-1{,}5\,\vec{u}$}
+\cas{b)}
+\begin{calculs}
+\det(\vec{a}\,;\vec{b}) &= 3\times 8-m\times 6 &&\justif{$xy'-yx'$, avec $y=m$}\\
+\det(\vec{a}\,;\vec{b}) &= 24-6m &&\\
+24-6m &= 0 &&\justif{le déterminant doit être nul}\\
+-6m &= -24 &&\\
+m &= 4 &&\justif{on divise par $-6$}
+\end{calculs}
+\explique{Pour $\res{m=4}$, les vecteurs sont colinéaires.}{on vérifie :
+$\vec{b}\coord{6}{8}=2\vec{a}$, avec $\vec{a}\coord{3}{4}$}
+\end{exo}
+
+\begin{exo}[Avec des phrases]
+\cas{a)}
+\explique{On multiplie les deux coordonnées de $\vec{u}$ par un même nombre réel : positif
+pour le même sens, négatif pour le sens contraire.}{définition 2 : $k>0$ ou $k<0$}
+\begin{calculs}
+2\vec{u} & \res{\coord{-4}{8}} &&\justif{$k=2>0$ : même sens}\\
+-\vec{u} & \res{\coord{2}{-4}} &&\justif{$k=-1<0$ : sens contraire}
+\end{calculs}
+\rem{Beaucoup d'autres réponses sont justes : $3\vec{u}$, $-2\vec{u}$, $0{,}5\,\vec{u}$…}
+\cas{b)}
+\explique{On ne voit pas de multiple évident : on calcule le déterminant.}{pour passer
+de $-2$ à $3$, il faudrait multiplier par $-1{,}5$ ; or $4\times(-1{,}5)=-6$, et non
+$-7$}
+\begin{calculs}
+\det(\vec{u}\,;\vec{w}) &= (-2)\times(-7)-4\times 3 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{w}) &= 14-12 &&\\
+\det(\vec{u}\,;\vec{w}) &= 2 &&
+\end{calculs}
+\explique{\res{Le déterminant de $\vec{u}$ et $\vec{w}$ vaut $2$, il n'est pas nul : les
+vecteurs $\vec{u}$ et $\vec{w}$ ne sont pas colinéaires.}}{la phrase dit le calcul et la
+conclusion}
+\end{exo}
+
+\begin{exo}[Deux forces sur une pièce]
+\cas{a)}
+\explique{$6=(-2)\times(-3)$ et $-4=(-2)\times 2$, donc $\vec{F_{1}}=-2\vec{F_{2}}$.}{même
+multiplicateur $-2$}
+\explique{Les forces sont colinéaires : elles ont \res{la même direction}. Le
+multiplicateur $-2$ est négatif : elles sont \res{de sens contraires}.}{définition 2}
+\cas{b)}
+\begin{calculs}
+\vec{R} & \coord{6+(-3)}{-4+2} &&\justif{abscisses ensemble, ordonnées ensemble}\\
+\vec{R} & \res{\coord{3}{-2}} &&\justif{en newtons}
+\end{calculs}
+\cas{c)}
+\explique{$6=2\times 3$ et $-4=2\times(-2)$, donc $\vec{F_{1}}=2\vec{R}$ : $\vec{R}$ et
+$\vec{F_{1}}$ sont colinéaires.}{multiplicateur $2>0$}
+\explique{\res{Oui}, la résultante a la même direction que $\vec{F_{1}}$ (et le même
+sens).}{la plus forte des deux forces l'emporte}
+\end{exo}
+
+\partie{Droites parallèles, points alignés}
+
+\begin{exo}[Parallèles, alignés]
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \coord{1-(-1)}{2-(-2)} &&\justif{on calcule les deux vecteurs}\\
+\vect{AB} & \coord{2}{4} &&\\
+\vect{CD} & \coord{4-3}{1-(-1)} &&\\
+\vect{CD} & \coord{1}{2} &&
+\end{calculs}
+\begin{calculs}
+\det(\vect{AB}\,;\vect{CD}) &= 2\times 2-4\times 1 &&\justif{puis leur déterminant}\\
+\det(\vect{AB}\,;\vect{CD}) &= 0 &&
+\end{calculs}
+\explique{$\vect{AB}$ et $\vect{CD}$ sont colinéaires : les droites $(AB)$ et $(CD)$
+\res{sont parallèles}.}{propriété 5 ; en effet, $\vect{AB}=2\vect{CD}$}
+\cas{b)}
+\begin{calculs}
+\vect{AE} & \coord{3-(-1)}{6-(-2)} &&\justif{$\vect{AB}\coord{2}{4}$ est déjà calculé}\\
+\vect{AE} & \coord{4}{8} &&\\
+\det(\vect{AB}\,;\vect{AE}) &= 2\times 8-4\times 4 &&\\
+\det(\vect{AB}\,;\vect{AE}) &= 0 &&
+\end{calculs}
+\explique{$\vect{AB}$ et $\vect{AE}$ sont colinéaires : les points $A$, $B$ et $E$
+\res{sont alignés}.}{propriété 5}
+\cas{c)}
+\begin{calculs}
+\vect{AF} & \coord{0-(-1)}{1-(-2)} &&\justif{arrivée moins départ}\\
+\vect{AF} & \coord{1}{3} &&\\
+\det(\vect{AB}\,;\vect{AF}) &= 2\times 3-4\times 1 &&\\
+\det(\vect{AB}\,;\vect{AF}) &= 2 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : les points $A$, $B$ et $F$ \res{ne sont pas
+alignés}.}{$2\neq 0$}
+\end{exo}
+
+\begin{exo}[Droites données par une équation]
+\explique{Pour $ax+by+c=0$, un vecteur directeur est $\vec{u}\coord{-b}{a}$ ; deux
+droites sont parallèles quand leurs vecteurs directeurs sont colinéaires.}{méthode 6 d)}
+\cas{a)}
+\begin{calculs}
+\vec{u_{1}} & \coord{1}{2} &&\justif{$a=2$ et $b=-1$ : $-b=1$}\\
+\vec{u_{2}} & \coord{2}{4} &&\justif{$a=4$ et $b=-2$}\\
+\det(\vec{u_{1}}\,;\vec{u_{2}}) &= 1\times 4-2\times 2 &&\justif{$xy'-yx'$}\\
+\det(\vec{u_{1}}\,;\vec{u_{2}}) &= 0 &&
+\end{calculs}
+\explique{$(d_{1})$ et $(d_{2})$ \res{sont parallèles}.}{en effet,
+$\vec{u_{2}}=2\vec{u_{1}}$}
+\cas{b)}
+\begin{calculs}
+\vec{u_{3}} & \coord{-3}{1} &&\justif{$a=1$ et $b=3$ : $-b=-3$}\\
+\vec{u_{4}} & \coord{-5}{2} &&\justif{$a=2$ et $b=5$}\\
+\det(\vec{u_{3}}\,;\vec{u_{4}}) &= (-3)\times 2-1\times(-5) &&\\
+\det(\vec{u_{3}}\,;\vec{u_{4}}) &= -6+5 &&\\
+\det(\vec{u_{3}}\,;\vec{u_{4}}) &= -1 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : $(d_{3})$ et $(d_{4})$ \res{ne sont pas
+parallèles}.}{$-1\neq 0$}
+\cas{c)}
+\begin{calculs}
+\vec{u_{5}} & \coord{6}{3} &&\justif{$a=3$ et $b=-6$ : $-b=6$}\\
+\vec{u_{6}} & \coord{-2}{-1} &&\justif{$a=-1$ et $b=2$ : $-b=-2$}\\
+\det(\vec{u_{5}}\,;\vec{u_{6}}) &= 6\times(-1)-3\times(-2) &&\\
+\det(\vec{u_{5}}\,;\vec{u_{6}}) &= -6+6 &&\\
+\det(\vec{u_{5}}\,;\vec{u_{6}}) &= 0 &&
+\end{calculs}
+\explique{$(d_{5})$ et $(d_{6})$ \res{sont parallèles}.}{en effet,
+$\vec{u_{5}}=-3\vec{u_{6}}$}
+\rem{Erreur fréquente : prendre $\coord{a}{b}$ au lieu de $\coord{-b}{a}$ ; on change
+de place les deux coefficients, et le signe de $b$.}
+\end{exo}
+
+\begin{exo}[La trajectoire d'un robot]
+\explique{Le robot passe par un point quand ce point est aligné avec $A$ et $B$.}{propriété
+5 : $\vect{AB}$ et $\vect{AC}$ colinéaires}
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \coord{4}{2} &&\justif{$5-1$ et $4-2$}\\
+\vect{AC} & \coord{10}{5} &&\justif{$11-1$ et $7-2$}\\
+\det(\vect{AB}\,;\vect{AC}) &= 4\times 5-2\times 10 &&\\
+\det(\vect{AB}\,;\vect{AC}) &= 0 &&
+\end{calculs}
+\explique{\res{Les points $A$, $B$ et $C$ sont alignés : le robot passera par le point
+$C$.}}{$\vect{AC}=2{,}5\,\vect{AB}$}
+\cas{b)}
+\begin{calculs}
+\vect{AD} & \coord{8}{5} &&\justif{$9-1$ et $7-2$}\\
+\det(\vect{AB}\,;\vect{AD}) &= 4\times 5-2\times 8 &&\\
+\det(\vect{AB}\,;\vect{AD}) &= 4 &&
+\end{calculs}
+\explique{\res{Les points $A$, $B$ et $D$ ne sont pas alignés : le robot ne passera pas
+par le point $D$.}}{$4\neq 0$}
+\end{exo}
+
+\begin{exo}[Un trapèze]
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \coord{6}{2} &&\justif{$6-0$ et $2-0$}\\
+\vect{DC} & \coord{3}{1} &&\justif{$5-2$ et $5-4$}\\
+\det(\vect{AB}\,;\vect{DC}) &= 6\times 1-2\times 3 &&\\
+\det(\vect{AB}\,;\vect{DC}) &= 0 &&
+\end{calculs}
+\explique{$\vect{AB}$ et $\vect{DC}$ sont colinéaires : les droites $(AB)$ et $(DC)$
+\res{sont parallèles}.}{en effet, $\vect{AB}=2\vect{DC}$}
+\cas{b)}
+\begin{calculs}
+\vect{AD} & \coord{2}{4} &&\justif{$2-0$ et $4-0$}\\
+\vect{BC} & \coord{-1}{3} &&\justif{$5-6$ et $5-2$}\\
+\det(\vect{AD}\,;\vect{BC}) &= 2\times 3-4\times(-1) &&\\
+\det(\vect{AD}\,;\vect{BC}) &= 10 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : $(AD)$ et $(BC)$ \res{ne sont pas
+parallèles}.}{$10\neq 0$}
+\cas{c)}
+\explique{$ABCD$ a deux côtés parallèles, $[AB]$ et $[DC]$, mais pas les deux autres :
+c'est un \res{trapèze}, qui n'est pas un parallélogramme.}{de plus $AB=2\,DC$ : les
+bases n'ont pas la même longueur}
+\end{exo}
+
+\partie{Coordonnées du milieu d'un segment}
+
+\begin{exo}[Calculer des milieux]
+\explique{Les coordonnées du milieu sont les moyennes des coordonnées des
+extrémités.}{propriété 6}
+\cas{a)}
+\begin{calculs}
+x_{I} &= \frac{2+6}{2} &&\justif{moyenne des abscisses}\\
+x_{I} &= 4 &&\\
+y_{I} &= \frac{5+(-1)}{2} &&\justif{moyenne des ordonnées}\\
+y_{I} &= 2 &&
+\end{calculs}
+\explique{Le milieu $I$ de $[AB]$ est $\res{(4\,;2)}$.}{on conclut}
+\cas{b)}
+\begin{calculs}
+x_{J} &= \frac{-3+1}{2} &&\\
+x_{J} &= -1 &&\\
+y_{J} &= \frac{4+(-2)}{2} &&\\
+y_{J} &= 1 &&
+\end{calculs}
+\explique{Le milieu $J$ de $[CD]$ est $\res{(-1\,;1)}$.}{}
+\cas{c)}
+\begin{calculs}
+x_{K} &= \frac{-5+1}{2} &&\\
+x_{K} &= -2 &&\\
+y_{K} &= \frac{-2+4}{2} &&\\
+y_{K} &= 1 &&
+\end{calculs}
+\explique{Le milieu $K$ de $[EF]$ est $\res{(-2\,;1)}$.}{}
+\end{exo}
+
+\begin{exo}[Retrouver une extrémité]
+\explique{On écrit la formule du milieu avec les coordonnées inconnues, puis on résout
+une équation par coordonnée.}{méthode 7 b)}
+\cas{a)}
+\begin{calculs}
+\frac{-2+x_{B}}{2} &= 1 &&\justif{l'abscisse de $K$}\\
+-2+x_{B} &= 2 &&\justif{on multiplie par $2$}\\
+x_{B} &= 4 &&\justif{on ajoute $2$}\\
+\frac{5+y_{B}}{2} &= 3 &&\justif{l'ordonnée de $K$}\\
+5+y_{B} &= 6 &&\\
+y_{B} &= 1 &&
+\end{calculs}
+\explique{Le point $B$ a pour coordonnées $\res{(4\,;1)}$.}{on vérifie :
+$\frac{-2+4}{2}=1$ et $\frac{5+1}{2}=3$}
+\cas{b)}
+\begin{calculs}
+\frac{3+x_{D}}{2} &= 0 &&\justif{l'abscisse de $M$}\\
+3+x_{D} &= 0 &&\justif{on multiplie par $2$}\\
+x_{D} &= -3 &&\\
+\frac{2+y_{D}}{2} &= -1 &&\justif{l'ordonnée de $M$}\\
+2+y_{D} &= -2 &&\\
+y_{D} &= -4 &&
+\end{calculs}
+\explique{Le point $D$ a pour coordonnées $\res{(-3\,;-4)}$.}{on vérifie :
+$\frac{3-3}{2}=0$ et $\frac{2-4}{2}=-1$}
+\end{exo}
+
+\begin{exo}[Le centre d'un parallélogramme]
+\cas{a)}
+\explique{$ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$. On pose
+$D(x\,;y)$.}{propriété 3}
+\begin{calculs}
+\vect{AB} & \coord{4}{-1} &&\justif{$3-(-1)$ et $0-1$}\\
+\vect{DC} & \coord{5-x}{3-y} &&\justif{arrivée $C$ moins départ $D$}
+\end{calculs}
+\begin{calculs}
+5-x &= 4 &&\justif{les abscisses sont égales}\\
+x &= 1 &&\\
+3-y &= -1 &&\justif{les ordonnées sont égales}\\
+y &= 4 &&
+\end{calculs}
+\explique{Le point $D$ a pour coordonnées $\res{(1\,;4)}$.}{on conclut}
+\cas{b)}
+\begin{calculs}
+x_{I} &= \frac{-1+5}{2} &&\justif{$I$, milieu de $[AC]$}\\
+x_{I} &= 2 &&\\
+y_{I} &= \frac{1+3}{2} &&\\
+y_{I} &= 2 &&
+\end{calculs}
+\begin{calculs}
+x_{J} &= \frac{3+1}{2} &&\justif{$J$, milieu de $[BD]$}\\
+x_{J} &= 2 &&\\
+y_{J} &= \frac{0+4}{2} &&\\
+y_{J} &= 2 &&
+\end{calculs}
+\explique{$I$ et $J$ sont le même point $\res{(2\,;2)}$ : les diagonales $[AC]$ et
+$[BD]$ \res{ont le même milieu}.}{c'est le centre du parallélogramme}
+\end{exo}
+
+\partie{Norme d'un vecteur}
+
+\begin{exo}[Normes et distances]
+\cas{a)}
+\begin{calculs}
+\norme{\vec{u}} &= \sqrt{5^{2}+12^{2}} &&\justif{$\sqrt{x^{2}+y^{2}}$}\\
+\norme{\vec{u}} &= \sqrt{25+144} &&\\
+\norme{\vec{u}} &= \sqrt{169} &&\\
+\norme{\vec{u}} &= \res{13} &&
+\end{calculs}
+\begin{calculs}
+\norme{\vec{v}} &= \sqrt{(-3)^{2}+0^{2}} &&\justif{parenthèses autour de $-3$}\\
+\norme{\vec{v}} &= \sqrt{9} &&\\
+\norme{\vec{v}} &= \res{3} &&\justif{$\vec{v}$ est horizontal : $3$ carreaux}
+\end{calculs}
+\begin{calculs}
+\norme{\vec{w}} &= \sqrt{2^{2}+(-2)^{2}} &&\\
+\norme{\vec{w}} &= \res{\sqrt{8}} &&\justif{$4+4$ ; environ $2{,}83$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{AB} & \coord{3}{4} &&\justif{$4-1$ et $2-(-2)$}\\
+AB &= \sqrt{3^{2}+4^{2}} &&\justif{la norme de $\vect{AB}$}\\
+AB &= \sqrt{25} &&\\
+AB &= \res{5} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vect{CD} & \coord{3}{-2} &&\justif{$2-(-1)$ et $1-3$}\\
+CD &= \sqrt{3^{2}+(-2)^{2}} &&\\
+CD &= \res{\sqrt{13}} &&\\
+CD &\approx \res{3{,}61} &&\justif{à la calculatrice}
+\end{calculs}
+\rem{Erreur fréquente : $(-2)^{2}=4$, et non $-4$ ; une norme est toujours positive.}
+\end{exo}
+
+\begin{exo}[Nature d'un triangle]
+\cas{a)}
+\explique{On calcule les trois côtés, un par un.}{méthode 8 c)}
+\begin{calculs}
+\vect{AB} & \coord{4}{2} &&\justif{$5-1$ et $2-0$}\\
+AB &= \sqrt{4^{2}+2^{2}} &&\\
+AB &= \res{\sqrt{20}} &&
+\end{calculs}
+\begin{calculs}
+\vect{AC} & \coord{2}{6} &&\justif{$3-1$ et $6-0$}\\
+AC &= \sqrt{2^{2}+6^{2}} &&\\
+AC &= \res{\sqrt{40}} &&
+\end{calculs}
+\begin{calculs}
+\vect{BC} & \coord{-2}{4} &&\justif{$3-5$ et $6-2$}\\
+BC &= \sqrt{(-2)^{2}+4^{2}} &&\\
+BC &= \res{\sqrt{20}} &&
+\end{calculs}
+\cas{b)}
+\explique{$AB=BC$ : le triangle $ABC$ est \res{isocèle en $B$}.}{deux côtés égaux, issus de
+$B$}
+\begin{calculs}
+AB^{2}+BC^{2} &= 20+20 &&\justif{la somme des carrés des deux côtés égaux}\\
+AB^{2}+BC^{2} &= 40 &&\\
+AC^{2} &= 40 &&\justif{le carré du plus grand côté}
+\end{calculs}
+\explique{$AB^{2}+BC^{2}=AC^{2}$ : d'après la réciproque du théorème de Pythagore, le
+triangle $ABC$ est \res{rectangle en $B$}.}{l'angle droit est en face du plus grand
+côté}
+\end{exo}
+
+\begin{exo}[Les haubans d'une antenne]
+\begin{calculs}
+\vect{SA} & \coord{5}{-12} &&\justif{$5-0$ et $0-12$}\\
+SA &= \sqrt{5^{2}+(-12)^{2}} &&\\
+SA &= \sqrt{25+144} &&\\
+SA &= \sqrt{169} &&\\
+SA &= 13 &&
+\end{calculs}
+\begin{calculs}
+\vect{SB} & \coord{-9}{-12} &&\justif{$-9-0$ et $0-12$}\\
+SB &= \sqrt{(-9)^{2}+(-12)^{2}} &&\\
+SB &= \sqrt{81+144} &&\\
+SB &= \sqrt{225} &&\\
+SB &= 15 &&
+\end{calculs}
+\explique{Les câbles mesurent $\res{13}$~m et $\res{15}$~m, soit $\res{28}$~m de câble
+en tout.}{$13+15=28$}
+\end{exo}
+
+\partie{Définition du produit scalaire}
+
+\begin{exo}[Avec un angle]
+\cas{a)}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= \norme{\vec{u}}\times\norme{\vec{v}}\times\cos(\alpha) &&\justif{on recopie la définition}\\
+\vec{u}\cdot\vec{v} &= 5\times 4\times 0{,}5 &&\justif{$\cos(60^{\circ})=0{,}5$}\\
+\vec{u}\cdot\vec{v} &= \res{10} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= 3\times 6\times\cos(120^{\circ}) &&\justif{normes et cosinus}\\
+\vec{u}\cdot\vec{v} &= 18\times(-0{,}5) &&\justif{$\cos(120^{\circ})=-0{,}5$}\\
+\vec{u}\cdot\vec{v} &= \res{-9} &&\justif{angle obtus : produit scalaire négatif}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= 2\times 7\times\cos(90^{\circ}) &&\\
+\vec{u}\cdot\vec{v} &= 14\times 0 &&\justif{$\cos(90^{\circ})=0$}\\
+\vec{u}\cdot\vec{v} &= \res{0} &&
+\end{calculs}
+\explique{\res{Le produit scalaire est nul : les vecteurs $\vec{u}$ et $\vec{v}$ sont
+orthogonaux.}}{propriété 7}
+\cas{d)}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= 4\times 5\times\cos(35^{\circ}) &&\\
+\vec{u}\cdot\vec{v} &\approx \res{16{,}4} &&\justif{à la calculatrice, en mode degré}
+\end{calculs}
+\rem{Vérifier que la calculatrice est en mode degré : $\cos(60)$ doit afficher $0{,}5$.}
+\end{exo}
+
+\begin{exo}[Dans des triangles]
+\cas{a)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= AB\times AC\times\cos\big(\widehat{BAC}\big) &&\justif{même origine $A$}\\
+\vect{AB}\cdot\vect{AC} &= 5\times 5\times 0{,}5 &&\justif{les angles d'un triangle équilatéral mesurent $60^{\circ}$}\\
+\vect{AB}\cdot\vect{AC} &= \res{12{,}5} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{EF}\cdot\vect{EG} &= EF\times EG\times\cos\big(\widehat{FEG}\big) &&\justif{même origine $E$}\\
+\vect{EF}\cdot\vect{EG} &= 4\times 6\times(-0{,}5) &&\justif{$\cos(120^{\circ})=-0{,}5$}\\
+\vect{EF}\cdot\vect{EG} &= \res{-12} &&
+\end{calculs}
+\cas{c)}
+\explique{L'angle $\widehat{SRT}$ est droit : $\cos(90^{\circ})=0$, donc
+$\vect{RS}\cdot\vect{RT}=\res{0}$.}{propriété 7 : les côtés $[RS]$ et $[RT]$ sont
+perpendiculaires}
+\end{exo}
+
+\begin{exo}[Le travail d'une force]
+\cas{a)}
+\begin{calculs}
+W &= F\times d\times\cos(\alpha) &&\justif{on recopie la formule}\\
+W &= 40\times 25\times\cos(35^{\circ}) &&\justif{force $\times$ déplacement $\times$ cosinus}\\
+W &\approx 819{,}2 &&\justif{à la calculatrice, en degrés}
+\end{calculs}
+\explique{Le travail de la force vaut environ $\res{819{,}2}$~J.}{on conclut avec
+l'unité}
+\cas{b)}
+\begin{center}
+\solidetire{20}{$\vec{F}$}{$300$~N}{$200$~m}
+\end{center}
+\explique{Le schéma : le skieur (solide) et son centre de gravité $G$, l'axe du
+déplacement en pointillé, le déplacement de $200$~m, la force de $300$~N à
+$20^{\circ}$.}{la force et le déplacement partent de $G$}
+\begin{calculs}
+W &= 300\times 200\times\cos(20^{\circ}) &&\justif{force $\times$ déplacement $\times$ cosinus}\\
+W &\approx 56\,381{,}6 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{Le travail de la force vaut environ $\res{56\,381{,}6}$~J.}{soit environ
+$56$~kJ}
+\end{exo}
+
+\partie{Produit scalaire et projeté orthogonal}
+
+\begin{exo}[Dans un rectangle]
+\explique{On repère le projeté orthogonal de l'extrémité du second vecteur sur la droite
+qui porte le premier.}{méthode 10}
+\cas{a)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= \vect{AB}\cdot\vect{AB} &&\justif{$B$ est le projeté de $C$ sur $(AB)$}\\
+\vect{AB}\cdot\vect{AC} &= AB^{2} &&\justif{carré scalaire}\\
+\vect{AB}\cdot\vect{AC} &= \res{25} &&\justif{$5^{2}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{AD}\cdot\vect{AC} &= \vect{AD}\cdot\vect{AD} &&\justif{$D$ est le projeté de $C$ sur $(AD)$}\\
+\vect{AD}\cdot\vect{AC} &= AD^{2} &&\\
+\vect{AD}\cdot\vect{AC} &= \res{9} &&\justif{$3^{2}$}
+\end{calculs}
+\cas{c)}
+\explique{$\vect{AB}\cdot\vect{AD}=\res{0}$.}{les côtés $[AB]$ et $[AD]$ sont
+perpendiculaires (propriété 7)}
+\end{exo}
+
+\begin{exo}[Dans un carré]
+\cas{a)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= \vect{AB}\cdot\vect{AB} &&\justif{$B$ est le projeté de $C$ sur $(AB)$}\\
+\vect{AB}\cdot\vect{AC} &= AB^{2} &&\\
+\vect{AB}\cdot\vect{AC} &= \res{16} &&\justif{$4^{2}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AO} &= \vect{AB}\cdot\vect{AI} &&\justif{$I$ est le projeté de $O$ sur $(AB)$}\\
+\vect{AB}\cdot\vect{AO} &= AB\times AI &&\justif{$\vect{AB}$ et $\vect{AI}$ ont le même sens}\\
+\vect{AB}\cdot\vect{AO} &= 4\times 2 &&\justif{$I$ milieu de $[AB]$ : $AI=2$}\\
+\vect{AB}\cdot\vect{AO} &= \res{8} &&
+\end{calculs}
+\cas{c)}
+\explique{$\vect{AB}\cdot\vect{AD}=\res{0}$.}{les côtés d'un carré sont perpendiculaires}
+\cas{d)}
+\explique{Le projeté de $O$ sur $(AD)$ est le milieu $J$ de $[AD]$, avec
+$AJ=2$.}{comme $I$ sur $(AB)$ : $O$ est au milieu du carré}
+\begin{calculs}
+\vect{AD}\cdot\vect{AO} &= \vect{AD}\cdot\vect{AJ} &&\justif{on remplace $O$ par son projeté}\\
+\vect{AD}\cdot\vect{AO} &= AD\times AJ &&\justif{même sens}\\
+\vect{AD}\cdot\vect{AO} &= 4\times 2 &&\\
+\vect{AD}\cdot\vect{AO} &= \res{8} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Avec le projeté]
+\cas{$\vect{EF}\cdot\vect{EG}$}
+\begin{calculs}
+\vect{EF}\cdot\vect{EG} &= \vect{EF}\cdot\vect{EH} &&\justif{$H$ est le projeté de $G$ sur $(EF)$}\\
+\vect{EF}\cdot\vect{EG} &= EF\times EH &&\justif{$\vect{EF}$ et $\vect{EH}$ ont le même sens}\\
+\vect{EF}\cdot\vect{EG} &= 6\times 4 &&\\
+\vect{EF}\cdot\vect{EG} &= \res{24} &&
+\end{calculs}
+\cas{$\vect{KL}\cdot\vect{KM}$}
+\begin{calculs}
+\vect{KL}\cdot\vect{KM} &= \vect{KL}\cdot\vect{KH} &&\justif{$H$ est le projeté de $M$ sur $(KL)$}\\
+\vect{KL}\cdot\vect{KM} &= -KL\times KH &&\justif{$\vect{KH}$ va dans le sens contraire de $\vect{KL}$}\\
+\vect{KL}\cdot\vect{KM} &= -3\times 2 &&\\
+\vect{KL}\cdot\vect{KM} &= \res{-6} &&
+\end{calculs}
+\rem{Le signe se lit sur la figure : projeté du côté du premier vecteur, produit positif ;
+de l'autre côté de l'origine, produit négatif (angle obtus).}
+\end{exo}
+
+\begin{exo}[Projection d'un vecteur sur un axe]
+\cas{a)}
+\begin{center}
+\vecteuraxe{30}
+\end{center}
+\explique{La projection $p$ est l'« ombre » de $\vec{v}$ sur l'axe (en rouge), du côté de
+$\vec{u}$ : elle est positive.}{on projette l'extrémité de $\vec{v}$
+perpendiculairement à l'axe}
+\begin{calculs}
+p &= \norme{\vec{v}}\times\cos(30^{\circ}) &&\justif{projection d'un vecteur sur un axe}\\
+p &= 10\times\cos(30^{\circ}) &&\\
+p &\approx \res{8{,}66} &&\justif{à la calculatrice, en degrés}\\
+\vec{u}\cdot\vec{v} &= \norme{\vec{u}}\times p &&\justif{norme de $\vec{u}$ $\times$ projection de $\vec{v}$}\\
+\vec{u}\cdot\vec{v} &= 3\times 10\times\cos(30^{\circ}) &&\justif{valeur exacte de $p$ : on ne cumule pas les arrondis}\\
+\vec{u}\cdot\vec{v} &\approx \res{26{,}0} &&\justif{à la calculatrice}
+\end{calculs}
+\cas{b)}
+\begin{center}
+\vecteuraxe{120}
+\end{center}
+\explique{L'« ombre » de $\vec{v}$ tombe du côté opposé à $\vec{u}$ : la projection est
+négative.}{l'angle est obtus}
+\begin{calculs}
+p &= \norme{\vec{v}}\times\cos(120^{\circ}) &&\justif{projection d'un vecteur sur un axe}\\
+p &= 6\times(-0{,}5) &&\justif{$\cos(120^{\circ})=-0{,}5$}\\
+p &= \res{-3} &&\\
+\vec{u}\cdot\vec{v} &= \norme{\vec{u}}\times p &&\justif{norme de $\vec{u}$ $\times$ projection de $\vec{v}$}\\
+\vec{u}\cdot\vec{v} &= 4\times(-3) &&\\
+\vec{u}\cdot\vec{v} &= \res{-12} &&
+\end{calculs}
+\end{exo}
+
+\partie{Produit scalaire dans un repère orthonormé}
+
+\begin{exo}[Avec les coordonnées]
+\cas{a)}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= xx'+yy' &&\justif{on recopie la formule (repère orthonormé)}\\
+\vec{u}\cdot\vec{v} &= 2\times 3+5\times(-1) &&\justif{abscisses multipliées, plus ordonnées multipliées}\\
+\vec{u}\cdot\vec{v} &= 6-5 &&\\
+\vec{u}\cdot\vec{v} &= \res{1} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vec{a}\cdot\vec{b} &= (-4)\times 1+2\times 2 &&\justif{$xx'+yy'$}\\
+\vec{a}\cdot\vec{b} &= -4+4 &&\\
+\vec{a}\cdot\vec{b} &= \res{0} &&
+\end{calculs}
+\explique{\res{Le produit scalaire est nul : les vecteurs $\vec{a}$ et $\vec{b}$ sont
+orthogonaux.}}{propriété 7}
+\cas{c)}
+\begin{calculs}
+\vect{AB} & \coord{3}{1} &&\justif{d'abord les coordonnées : $3-0$ et $2-1$}\\
+\vect{AC} & \coord{2}{4} &&\justif{$2-0$ et $5-1$}\\
+\vect{AB}\cdot\vect{AC} &= 3\times 2+1\times 4 &&\justif{$xx'+yy'$}\\
+\vect{AB}\cdot\vect{AC} &= \res{10} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Perpendiculaires ou non]
+\explique{Les droites $(AB)$ et $(CD)$ sont perpendiculaires quand
+$\vect{AB}\cdot\vect{CD}=0$.}{méthode 12}
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \coord{2}{4} &&\justif{$3-1$ et $6-2$}\\
+\vect{CD} & \coord{4}{-2} &&\justif{$4-0$ et $3-5$}\\
+\vect{AB}\cdot\vect{CD} &= 2\times 4+4\times(-2) &&\justif{$xx'+yy'$}\\
+\vect{AB}\cdot\vect{CD} &= 0 &&
+\end{calculs}
+\explique{Le produit scalaire est nul : $(AB)$ et $(CD)$ \res{sont
+perpendiculaires}.}{vecteurs orthogonaux}
+\cas{b)}
+\begin{calculs}
+\vect{EF} & \coord{3}{1} &&\justif{$1-(-2)$ et $1-0$}\\
+\vect{GH} & \coord{2}{-5} &&\justif{$2-0$ et $-2-3$}\\
+\vect{EF}\cdot\vect{GH} &= 3\times 2+1\times(-5) &&\\
+\vect{EF}\cdot\vect{GH} &= 1 &&
+\end{calculs}
+\explique{Le produit scalaire n'est pas nul : $(EF)$ et $(GH)$ \res{ne sont pas
+perpendiculaires}.}{$1\neq 0$ : l'angle est presque droit, mais pas droit}
+\end{exo}
+
+\begin{exo}[Parallèles, perpendiculaires ou ni l'un ni l'autre]
+\explique{Pour chaque couple : les vecteurs directeurs $\coord{-b}{a}$, puis le
+déterminant (parallèles s'il est nul), puis le produit scalaire (perpendiculaires s'il
+est nul).}{méthodes 6 d) et 12 d)}
+\cas{a)}
+\begin{calculs}
+\vec{u_{1}} & \coord{-1}{2} &&\justif{$a=2$ et $b=1$}\\
+\vec{u_{2}} & \coord{2}{1} &&\justif{$a=1$ et $b=-2$}
+\end{calculs}
+\begin{calculs}
+\det(\vec{u_{1}}\,;\vec{u_{2}}) &= (-1)\times 1-2\times 2 &&\justif{$xy'-yx'$}\\
+\det(\vec{u_{1}}\,;\vec{u_{2}}) &= -5 &&\justif{pas nul : pas parallèles}\\
+\vec{u_{1}}\cdot\vec{u_{2}} &= (-1)\times 2+2\times 1 &&\justif{$xx'+yy'$}\\
+\vec{u_{1}}\cdot\vec{u_{2}} &= 0 &&
+\end{calculs}
+\explique{$(d_{1})$ et $(d_{2})$ \res{sont perpendiculaires}.}{vecteurs directeurs
+orthogonaux}
+\cas{b)}
+\begin{calculs}
+\vec{u_{3}} & \coord{1}{3} &&\justif{$a=3$ et $b=-1$}\\
+\vec{u_{4}} & \coord{-2}{1} &&\justif{$a=1$ et $b=2$}
+\end{calculs}
+\begin{calculs}
+\det(\vec{u_{3}}\,;\vec{u_{4}}) &= 1\times 1-3\times(-2) &&\\
+\det(\vec{u_{3}}\,;\vec{u_{4}}) &= 7 &&\justif{pas nul : pas parallèles}\\
+\vec{u_{3}}\cdot\vec{u_{4}} &= 1\times(-2)+3\times 1 &&\\
+\vec{u_{3}}\cdot\vec{u_{4}} &= 1 &&\justif{pas nul : pas perpendiculaires}
+\end{calculs}
+\explique{$(d_{3})$ et $(d_{4})$ ne sont \res{ni parallèles ni
+perpendiculaires}.}{elles se coupent sans faire un angle droit}
+\cas{c)}
+\begin{calculs}
+\vec{u_{5}} & \coord{3}{4} &&\justif{$a=4$ et $b=-3$}\\
+\vec{u_{6}} & \coord{-4}{3} &&\justif{$a=3$ et $b=4$}
+\end{calculs}
+\begin{calculs}
+\det(\vec{u_{5}}\,;\vec{u_{6}}) &= 3\times 3-4\times(-4) &&\\
+\det(\vec{u_{5}}\,;\vec{u_{6}}) &= 25 &&\justif{pas nul : pas parallèles}\\
+\vec{u_{5}}\cdot\vec{u_{6}} &= 3\times(-4)+4\times 3 &&\\
+\vec{u_{5}}\cdot\vec{u_{6}} &= 0 &&
+\end{calculs}
+\explique{$(d_{5})$ et $(d_{6})$ \res{sont perpendiculaires}.}{produit scalaire nul}
+\cas{d)}
+\begin{calculs}
+\vec{u_{7}} & \coord{1}{1} &&\justif{$a=1$ et $b=-1$}\\
+\vec{u_{8}} & \coord{2}{2} &&\justif{$a=2$ et $b=-2$}\\
+\det(\vec{u_{7}}\,;\vec{u_{8}}) &= 1\times 2-1\times 2 &&\\
+\det(\vec{u_{7}}\,;\vec{u_{8}}) &= 0 &&
+\end{calculs}
+\explique{$(d_{7})$ et $(d_{8})$ \res{sont parallèles}.}{$\vec{u_{8}}=2\vec{u_{7}}$ ;
+inutile de calculer le produit scalaire}
+\end{exo}
+
+\begin{exo}[Un triangle rectangle]
+\explique{Le triangle est rectangle en $L$ quand les côtés issus de $L$ sont
+perpendiculaires.}{méthode 12 c)}
+\begin{calculs}
+\vect{LK} & \coord{-4}{-2} &&\justif{$-1-3$ et $1-3$}\\
+\vect{LM} & \coord{1}{-2} &&\justif{$4-3$ et $1-3$}\\
+\vect{LK}\cdot\vect{LM} &= (-4)\times 1+(-2)\times(-2) &&\justif{$xx'+yy'$}\\
+\vect{LK}\cdot\vect{LM} &= -4+4 &&\\
+\vect{LK}\cdot\vect{LM} &= 0 &&
+\end{calculs}
+\explique{\res{Le produit scalaire $\vect{LK}\cdot\vect{LM}$ est nul : les droites $(LK)$
+et $(LM)$ sont perpendiculaires, donc le triangle $KLM$ est rectangle en $L$.}}{les deux
+vecteurs partent de $L$}
+\end{exo}
+
+\begin{exo}[L'équerrage d'un cadre]
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \res{\coord{120}{9}} &&\justif{$A$ est l'origine : les coordonnées de $B$}\\
+\vect{AD} & \res{\coord{-6}{80}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AD} &= 120\times(-6)+9\times 80 &&\justif{$xx'+yy'$}\\
+\vect{AB}\cdot\vect{AD} &= -720+720 &&\\
+\vect{AB}\cdot\vect{AD} &= 0 &&
+\end{calculs}
+\explique{Le produit scalaire est nul : $(AB)$ et $(AD)$ sont perpendiculaires, le cadre
+\res{a un angle droit en $A$}.}{même si les côtés ne sont pas « droits » dans le repère}
+\cas{c)}
+\explique{$ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$. On pose
+$C(x\,;y)$.}{propriété 3}
+\begin{calculs}
+\vect{DC} & \coord{x-(-6)}{y-80} &&\justif{arrivée $C$ moins départ $D$}\\
+x+6 &= 120 &&\justif{les abscisses sont égales}\\
+x &= 114 &&\\
+y-80 &= 9 &&\justif{les ordonnées sont égales}\\
+y &= 89 &&
+\end{calculs}
+\explique{Le point $C$ a pour coordonnées $\res{(114\,;89)}$.}{on conclut}
+\cas{d)}
+\begin{calculs}
+\vect{AC} & \coord{114}{89} &&\justif{$114-0$ et $89-0$}\\
+AC &= \sqrt{114^{2}+89^{2}} &&\justif{la norme de $\vect{AC}$}\\
+AC &= \sqrt{20\,917} &&\justif{$12\,996+7921$}\\
+AC &\approx \res{144{,}6} &&\justif{à la calculatrice}
+\end{calculs}
+\begin{calculs}
+\vect{BD} & \coord{-126}{71} &&\justif{$-6-120$ et $80-9$}\\
+BD &= \sqrt{(-126)^{2}+71^{2}} &&\\
+BD &= \sqrt{20\,917} &&\justif{$15\,876+5041$}\\
+BD &\approx \res{144{,}6} &&
+\end{calculs}
+\explique{Les deux diagonales \res{ont la même longueur}, comme celles d'un
+rectangle.}{un parallélogramme avec un angle droit est un rectangle}
+\rem{C'est le contrôle des menuisiers : un cadre est d'équerre quand ses diagonales sont
+égales.}
+\end{exo}
+
+\partie{Propriétés du produit scalaire}
+
+\begin{exo}[Développer]
+\explique{On développe comme avec des nombres, puis on remplace
+$\vec{u}\cdot\vec{u}$ par $\norme{\vec{u}}^{2}$.}{méthode 13}
+\cas{a)}
+\begin{calculs}
+\vec{u}\cdot(\vec{u}+\vec{v}) &= \vec{u}\cdot\vec{u}+\vec{u}\cdot\vec{v} &&\justif{on développe}\\
+\vec{u}\cdot(\vec{u}+\vec{v}) &= \norme{\vec{u}}^{2}+\vec{u}\cdot\vec{v} &&\justif{carré scalaire}\\
+\vec{u}\cdot(\vec{u}+\vec{v}) &= 4+3 &&\justif{$2^{2}=4$}\\
+\vec{u}\cdot(\vec{u}+\vec{v}) &= \res{7} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+(\vec{u}+\vec{v})\cdot(\vec{u}-\vec{v}) &= \norme{\vec{u}}^{2}-\norme{\vec{v}}^{2} &&\justif{identité remarquable}\\
+(\vec{u}+\vec{v})\cdot(\vec{u}-\vec{v}) &= 4-25 &&\justif{$5^{2}=25$}\\
+(\vec{u}+\vec{v})\cdot(\vec{u}-\vec{v}) &= \res{-21} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+(3\vec{u})\cdot(-2\vec{v}) &= 3\times(-2)\times(\vec{u}\cdot\vec{v}) &&\justif{les nombres sortent}\\
+(3\vec{u})\cdot(-2\vec{v}) &= -6\times 3 &&\\
+(3\vec{u})\cdot(-2\vec{v}) &= \res{-18} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\norme{\vec{u}+\vec{v}}^{2} &= \norme{\vec{u}}^{2}+2\,\vec{u}\cdot\vec{v}+\norme{\vec{v}}^{2} &&\justif{identité remarquable}\\
+\norme{\vec{u}+\vec{v}}^{2} &= 4+2\times 3+25 &&\\
+\norme{\vec{u}+\vec{v}}^{2} &= \res{35} &&\\
+\norme{\vec{u}+\vec{v}} &= \sqrt{35} &&\justif{une norme est positive}\\
+\norme{\vec{u}+\vec{v}} &\approx \res{5{,}92} &&\justif{à la calculatrice}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\norme{\vec{u}-\vec{v}}^{2} &= \norme{\vec{u}}^{2}-2\,\vec{u}\cdot\vec{v}+\norme{\vec{v}}^{2} &&\justif{identité remarquable, avec un moins}\\
+\norme{\vec{u}-\vec{v}}^{2} &= 4-2\times 3+25 &&\\
+\norme{\vec{u}-\vec{v}}^{2} &= \res{23} &&
+\end{calculs}
+\rem{Erreur fréquente : $\norme{\vec{u}+\vec{v}}^{2}=\norme{\vec{u}}^{2}+\norme{\vec{v}}^{2}$,
+en oubliant le double produit $2\,\vec{u}\cdot\vec{v}$.}
+\end{exo}
+
+\begin{exo}[Changer l'ordre, le sens]
+\cas{$\vect{AC}\cdot\vect{AB}$}
+\begin{calculs}
+\vect{AC}\cdot\vect{AB} &= \vect{AB}\cdot\vect{AC} &&\justif{l'ordre ne compte pas}\\
+\vect{AC}\cdot\vect{AB} &= \res{8} &&
+\end{calculs}
+\cas{$\vect{AB}\cdot\vect{CA}$}
+\begin{calculs}
+\vect{AB}\cdot\vect{CA} &= \vect{AB}\cdot(-\vect{AC}) &&\justif{$\vect{CA}=-\vect{AC}$ : on retourne le vecteur}\\
+\vect{AB}\cdot\vect{CA} &= -\vect{AB}\cdot\vect{AC} &&\justif{le nombre $-1$ sort}\\
+\vect{AB}\cdot\vect{CA} &= \res{-8} &&
+\end{calculs}
+\cas{$(2\vect{AB})\cdot\vect{AC}$}
+\begin{calculs}
+(2\vect{AB})\cdot\vect{AC} &= 2\times(\vect{AB}\cdot\vect{AC}) &&\justif{le nombre $2$ sort}\\
+(2\vect{AB})\cdot\vect{AC} &= \res{16} &&
+\end{calculs}
+\cas{$\vect{BA}\cdot(3\vect{AC})$}
+\begin{calculs}
+\vect{BA}\cdot(3\vect{AC}) &= (-\vect{AB})\cdot(3\vect{AC}) &&\justif{$\vect{BA}=-\vect{AB}$}\\
+\vect{BA}\cdot(3\vect{AC}) &= -3\times(\vect{AB}\cdot\vect{AC}) &&\justif{les nombres $-1$ et $3$ sortent}\\
+\vect{BA}\cdot(3\vect{AC}) &= \res{-24} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Dans un rectangle]
+\cas{a)}
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+  \draw[fig] (0,0) -- (6,0) -- (6,4) -- (0,4) -- cycle;
+  \draw[vecteur] (0,0) -- node[pos=0.6,below right,font=\footnotesize]{$\vect{AC}$} (6,4);
+  \draw[vecteurB] (0,0) -- node[pos=0.55,left,font=\footnotesize]{$\vect{AI}$} (3,4);
+  \pt{0,0}{below left}{A} \pt{6,0}{below right}{B} \pt{6,4}{above right}{C}
+  \pt{0,4}{above left}{D} \pt{3,4}{above}{I}
+  \node[font=\footnotesize,below] at (3,0) {$6$};
+  \node[font=\footnotesize,left] at (0,2) {$4$};
+\end{tikzpicture}
+\end{center}
+\cas{b)}
+\begin{calculs}
+\vect{AC} &= \vect{AB}+\vect{BC} &&\justif{relation de Chasles : on passe par $B$}\\
+\vect{AC} &= \vect{AB}+\vect{AD} &&\justif{$ABCD$ est un rectangle : $\vect{BC}=\vect{AD}$}
+\end{calculs}
+\begin{calculs}
+\vect{AI} &= \vect{AD}+\vect{DI} &&\justif{relation de Chasles : on passe par $D$}\\
+\vect{AI} &= \vect{AD}+\tfrac{1}{2}\vect{DC} &&\justif{$I$ est le milieu de $[DC]$}\\
+\vect{AI} &= \vect{AD}+\tfrac{1}{2}\vect{AB} &&\justif{$\vect{DC}=\vect{AB}$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AB} &= AB^{2} &&\justif{carré scalaire}\\
+\vect{AB}\cdot\vect{AB} &= \res{36} &&\\
+\vect{AD}\cdot\vect{AD} &= \res{16} &&\justif{$4^{2}$}\\
+\vect{AB}\cdot\vect{AD} &= \res{0} &&\justif{les côtés $[AB]$ et $[AD]$ sont perpendiculaires}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\vect{AC}\cdot\vect{AI} &= (\vect{AB}+\vect{AD})\cdot\big(\vect{AD}+\tfrac{1}{2}\vect{AB}\big) &&\justif{avec le b)}\\
+\vect{AC}\cdot\vect{AI} &= \vect{AB}\cdot\vect{AD}+\tfrac{1}{2}\vect{AB}\cdot\vect{AB}+\vect{AD}\cdot\vect{AD}+\tfrac{1}{2}\vect{AD}\cdot\vect{AB} &&\justif{on développe}\\
+\vect{AC}\cdot\vect{AI} &= 0+\tfrac{1}{2}\times 36+16+0 &&\justif{avec le c)}\\
+\vect{AC}\cdot\vect{AI} &= \res{34} &&\justif{$18+16$}
+\end{calculs}
+\rem{Contrôle avec un repère : $A(0\,;0)$, $C(6\,;4)$ et $I(3\,;4)$ donnent
+$\vect{AC}\cdot\vect{AI}=6\times 3+4\times 4=34$ (non exigé).}
+\end{exo}
+
+\partie{Travail d'une force}
+
+\begin{exo}[Une caisse tirée]
+\explique{Pour chaque force : $W=F\times d\times\cos(\alpha)$, avec l'angle entre la force et
+le déplacement.}{propriété 11}
+\cas{Le poids}
+\begin{calculs}
+W_{P} &= 500\times 8\times\cos(90^{\circ}) &&\justif{le poids est vertical, le déplacement horizontal}\\
+W_{P} &= 500\times 8\times 0 &&\justif{$\cos(90^{\circ})=0$}\\
+W_{P} &= \res{0} &&
+\end{calculs}
+\cas{La traction}
+\begin{calculs}
+W_{F} &= 300\times 8\times\cos(25^{\circ}) &&\justif{force $\times$ déplacement $\times$ cosinus}\\
+W_{F} &\approx \res{2175{,}1} &&\justif{à la calculatrice, en degrés}
+\end{calculs}
+\cas{Le frottement}
+\begin{calculs}
+W_{f} &= 120\times 8\times\cos(180^{\circ}) &&\justif{force opposée au déplacement : $180^{\circ}$}\\
+W_{f} &= 960\times(-1) &&\justif{$\cos(180^{\circ})=-1$}\\
+W_{f} &= \res{-960} &&\justif{travail négatif : le frottement freine}
+\end{calculs}
+\cas{La résultante}
+\begin{calculs}
+W &= W_{P}+W_{F}+W_{f} &&\justif{somme des travaux (travail de la résultante)}\\
+W &\approx 0+2175{,}1-960 &&\\
+W &\approx \res{1215{,}1} &&
+\end{calculs}
+\explique{Le poids ne travaille pas, la traction fournit environ $2175{,}1$~J, le
+frottement en retire $960$ : le travail de la résultante vaut environ
+$\res{1215{,}1}$~J.}{on conclut avec l'unité}
+\end{exo}
+
+\begin{exo}[Moteur, résistant ou nul]
+\explique{Dans chaque cas : $W=100\times 5\times\cos(\alpha)=500\times\cos(\alpha)$.}{force
+$\times$ déplacement $\times$ cosinus}
+\cas{a)}
+\begin{calculs}
+W &= 500\times\cos(30^{\circ}) &&\\
+W &\approx 433{,}0 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{\res{Le travail vaut environ $433{,}0$~J ; il est positif : il est
+moteur.}}{angle aigu : la force aide le déplacement}
+\cas{b)}
+\begin{calculs}
+W &= 500\times\cos(90^{\circ}) &&\\
+W &= 0 &&\justif{$\cos(90^{\circ})=0$}
+\end{calculs}
+\explique{\res{Le travail est nul : la force est perpendiculaire au
+déplacement.}}{elle ne fait ni avancer ni freiner}
+\cas{c)}
+\begin{calculs}
+W &= 500\times\cos(150^{\circ}) &&\\
+W &\approx -433{,}0 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{\res{Le travail vaut environ $-433{,}0$~J ; il est négatif : il est
+résistant.}}{angle obtus : la force freine}
+\cas{d)}
+\begin{calculs}
+W &= 500\times\cos(180^{\circ}) &&\\
+W &= 500\times(-1) &&\justif{$\cos(180^{\circ})=-1$}\\
+W &= -500 &&
+\end{calculs}
+\explique{\res{Le travail vaut $-500$~J ; il est résistant : la force est opposée au
+déplacement.}}{c'est le cas du frottement}
+\rem{Le signe du travail est celui de $\cos(\alpha)$ : positif si l'angle est aigu, nul
+s'il est droit, négatif s'il est obtus.}
+\end{exo}
+
+\begin{exo}[Sur une piste en pente]
+\cas{a)}
+\begin{calculs}
+W_{P} &= P\times d\times\cos(110^{\circ}) &&\justif{l'angle entre le poids et le déplacement}\\
+W_{P} &= 700\times 150\times\cos(110^{\circ}) &&\\
+W_{P} &\approx \res{-35\,912{,}1} &&\justif{à la calculatrice : $\cos(110^{\circ})<0$}
+\end{calculs}
+\explique{Le travail du poids est négatif : il est \res{résistant}.}{le poids retient le
+chariot qui monte}
+\cas{b)}
+\begin{calculs}
+W_{T} &= 400\times 150\times\cos(15^{\circ}) &&\justif{l'angle entre le câble et la piste}\\
+W_{T} &\approx \res{57\,955{,}5} &&\justif{à la calculatrice}
+\end{calculs}
+\cas{c)}
+\explique{La réaction $\vec{R}$ est perpendiculaire à la piste, donc au déplacement :
+$\cos(90^{\circ})=0$ et $W_{R}=\res{0}$.}{une force perpendiculaire au déplacement ne
+travaille pas}
+\cas{d)}
+\begin{calculs}
+W &= W_{P}+W_{T}+W_{R} &&\justif{somme des travaux}\\
+W &\approx -35\,912{,}1+57\,955{,}5+0 &&\\
+W &\approx \res{22\,043{,}4} &&
+\end{calculs}
+\explique{Le travail de la résultante vaut environ $\res{22\,043{,}4}$~J : il est
+positif, le chariot monte.}{on conclut avec l'unité}
+\rem{L'angle de $110^{\circ}$ vient de la pente : le poids est vertical, la piste fait
+$20^{\circ}$ avec l'horizontale, donc $90^{\circ}+20^{\circ}$ entre le poids et le
+déplacement.}
+\end{exo}
+
+\begin{exo}[Un wagonnet]
+\begin{center}
+\solidetire{15}{$\vec{F}$}{$800$~N}{$50$~m}
+\end{center}
+\explique{Le schéma : le wagonnet et son centre de gravité $G$, l'axe du rail en
+pointillé, le déplacement de $50$~m sur l'axe, la force de $800$~N à
+$15^{\circ}$.}{tout part de $G$}
+\begin{calculs}
+p &= \norme{\vec{F}}\times\cos(15^{\circ}) &&\justif{la projection de la force sur l'axe}\\
+p &= 800\times\cos(15^{\circ}) &&\\
+p &\approx \res{772{,}7} &&\justif{à la calculatrice, en degrés}\\
+W &= 50\times 800\times\cos(15^{\circ}) &&\justif{déplacement $\times$ projection}\\
+W &\approx \res{38\,637{,}0} &&
+\end{calculs}
+\explique{La projection de la force vaut environ $\res{772{,}7}$~N ; le travail,
+environ $\res{38\,637{,}0}$~J.}{seule la projection fait avancer le wagonnet}
+\end{exo}
+
+\partie{Calcul d'un angle}
+
+\begin{exo}[Angle entre deux vecteurs]
+\explique{On calcule le produit scalaire et les deux normes, puis
+$\cos(\alpha)=\frac{\vec{u}\cdot\vec{v}}{\norme{\vec{u}}\times\norme{\vec{v}}}$, puis
+l'angle avec la touche $\cos^{-1}$.}{propriété 12, méthode 15}
+\cas{a)}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= 2\times 1+1\times 3 &&\justif{$xx'+yy'$}\\
+\vec{u}\cdot\vec{v} &= 5 &&\\
+\norme{\vec{u}} &= \sqrt{5} &&\justif{$\sqrt{4+1}$}\\
+\norme{\vec{v}} &= \sqrt{10} &&\justif{$\sqrt{1+9}$}
+\end{calculs}
+\begin{calculs}
+\cos(\alpha) &= \frac{5}{\sqrt{5}\times\sqrt{10}} &&\justif{on remplace dans la formule}\\
+\cos(\alpha) &\approx 0{,}7071 &&\justif{à la calculatrice}\\
+\alpha &\approx \res{45{,}0^{\circ}} &&\justif{touche $\cos^{-1}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vec{a}\cdot\vec{b} &= 3\times 1+(-1)\times 2 &&\\
+\vec{a}\cdot\vec{b} &= 1 &&\\
+\norme{\vec{a}} &= \sqrt{10} &&\justif{$\sqrt{9+1}$}\\
+\norme{\vec{b}} &= \sqrt{5} &&\justif{$\sqrt{1+4}$}
+\end{calculs}
+\begin{calculs}
+\cos(\alpha) &= \frac{1}{\sqrt{10}\times\sqrt{5}} &&\\
+\cos(\alpha) &\approx 0{,}1414 &&\\
+\alpha &\approx \res{81{,}9^{\circ}} &&\justif{presque un angle droit}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vec{c}\cdot\vec{d} &= (-2)\times 3+1\times 1 &&\\
+\vec{c}\cdot\vec{d} &= -5 &&\justif{négatif : angle obtus}\\
+\norme{\vec{c}} &= \sqrt{5} &&\\
+\norme{\vec{d}} &= \sqrt{10} &&
+\end{calculs}
+\begin{calculs}
+\cos(\alpha) &= \frac{-5}{\sqrt{5}\times\sqrt{10}} &&\\
+\cos(\alpha) &\approx -0{,}7071 &&\\
+\alpha &\approx \res{135{,}0^{\circ}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Les angles d'un triangle]
+\cas{a)}
+\begin{calculs}
+\vect{AB} & \coord{4}{0} &&\justif{les deux vecteurs issus de $A$}\\
+\vect{AC} & \coord{2}{3} &&
+\end{calculs}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= 4\times 2+0\times 3 &&\\
+\vect{AB}\cdot\vect{AC} &= 8 &&\\
+AB &= 4 &&\\
+AC &= \sqrt{13} &&\justif{$\sqrt{4+9}$}
+\end{calculs}
+\begin{calculs}
+\cos\big(\widehat{BAC}\big) &= \frac{8}{4\times\sqrt{13}} &&\justif{propriété 12}\\
+\cos\big(\widehat{BAC}\big) &\approx 0{,}5547 &&\\
+\widehat{BAC} &\approx \res{56{,}3^{\circ}} &&\justif{touche $\cos^{-1}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{BA} & \coord{-4}{0} &&\justif{les deux vecteurs issus de $B$}\\
+\vect{BC} & \coord{-2}{3} &&\justif{$2-4$ et $3-0$}
+\end{calculs}
+\begin{calculs}
+\vect{BA}\cdot\vect{BC} &= (-4)\times(-2)+0\times 3 &&\\
+\vect{BA}\cdot\vect{BC} &= 8 &&\\
+BA &= 4 &&\\
+BC &= \sqrt{13} &&\justif{$\sqrt{4+9}$}
+\end{calculs}
+\begin{calculs}
+\cos\big(\widehat{ABC}\big) &= \frac{8}{4\times\sqrt{13}} &&\justif{le même calcul qu'au a)}\\
+\widehat{ABC} &\approx \res{56{,}3^{\circ}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\widehat{ACB} &\approx 180-56{,}3-56{,}3 &&\justif{la somme des angles d'un triangle vaut $180^{\circ}$}\\
+\widehat{ACB} &\approx \res{67{,}4^{\circ}} &&
+\end{calculs}
+\explique{Les angles en $A$ et en $B$ sont égaux : le triangle $ABC$ est \res{isocèle en
+$C$}.}{on le voit aussi : $CA=CB=\sqrt{13}$}
+\end{exo}
+
+\begin{exo}[Une porte renforcée]
+\cas{a)}
+\begin{calculs}
+\vect{OB} & \res{\coord{1}{2}} &&\justif{$O$ est l'origine du repère}\\
+\vect{OD} & \res{\coord{3}{1{,}5}} &&
+\end{calculs}
+\begin{calculs}
+OB &= \sqrt{1^{2}+2^{2}} &&\\
+OB &= \sqrt{5} &&\\
+OB &\approx \res{2{,}24} &&\justif{en mètres}\\
+OD &= \sqrt{3^{2}+1{,}5^{2}} &&\\
+OD &= \sqrt{11{,}25} &&\justif{$9+2{,}25$}\\
+OD &\approx \res{3{,}35} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{OB}\cdot\vect{OD} &= 1\times 3+2\times 1{,}5 &&\justif{$xx'+yy'$}\\
+\vect{OB}\cdot\vect{OD} &= \res{6} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\cos(\alpha) &= \frac{6}{\sqrt{5}\times\sqrt{11{,}25}} &&\justif{valeurs exactes des longueurs}\\
+\cos(\alpha) &= 0{,}8 &&\justif{$\sqrt{5}\times\sqrt{11{,}25}=\sqrt{56{,}25}=7{,}5$}\\
+\alpha &\approx \res{36{,}9^{\circ}} &&\justif{touche $\cos^{-1}$}
+\end{calculs}
+\explique{$36{,}9^{\circ}$ est compris entre $35^{\circ}$ et $45^{\circ}$ : \res{le renfort
+est efficace}.}{on répond à la question posée}
+\rem{Avec les longueurs arrondies, $\frac{6}{2{,}24\times 3{,}35}\approx 0{,}7996$ donne
+aussi $36{,}9^{\circ}$ ; mieux vaut garder les valeurs exactes.}
+\end{exo}
+
+\partie{Théorème d'Al-Kashi}
+
+\begin{exo}[Calculer un côté]
+\cas{a)}
+\begin{calculs}
+BC^{2} &= AB^{2}+AC^{2}-2\times AB\times AC\times\cos\big(\widehat{BAC}\big) &&\justif{on recopie le théorème}\\
+BC^{2} &= 3^{2}+5^{2}-2\times 3\times 5\times 0{,}5 &&\justif{$\cos(60^{\circ})=0{,}5$}\\
+BC^{2} &= 9+25-15 &&\\
+BC^{2} &= 19 &&\\
+BC &= \sqrt{19} &&\justif{une longueur est positive}\\
+BC &\approx \res{4{,}36} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+BC^{2} &= 5^{2}+3^{2}-2\times 5\times 3\times(-0{,}5) &&\justif{$\cos(120^{\circ})=-0{,}5$}\\
+BC^{2} &= 25+9+15 &&\justif{moins par moins : plus}\\
+BC^{2} &= 49 &&\\
+BC &= \res{7} &&\justif{$\sqrt{49}$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+BC^{2} &= 7^{2}+10^{2}-2\times 7\times 10\times\cos(40^{\circ}) &&\justif{théorème d'Al-Kashi}\\
+BC^{2} &= 149-140\times\cos(40^{\circ}) &&\\
+BC^{2} &\approx 41{,}75 &&\justif{à la calculatrice}\\
+BC &\approx \res{6{,}46} &&\justif{on prend la racine carrée}
+\end{calculs}
+\rem{Erreur fréquente en b) : oublier que $\cos(120^{\circ})$ est négatif, et trouver
+$BC^{2}=19$. Un angle obtus donne un troisième côté plus long.}
+\end{exo}
+
+\begin{exo}[Un bras de robot]
+\explique{Dans le triangle $SCP$, on connaît les deux côtés issus de $C$ et l'angle en
+$C$ : on applique le théorème d'Al-Kashi en $C$.}{on repère les deux côtés et l'angle
+entre eux}
+\cas{Angle de $100^{\circ}$}
+\begin{calculs}
+SP^{2} &= CS^{2}+CP^{2}-2\times CS\times CP\times\cos\big(\widehat{SCP}\big) &&\justif{le théorème, écrit en $C$}\\
+SP^{2} &= 50^{2}+40^{2}-2\times 50\times 40\times\cos(100^{\circ}) &&\\
+SP^{2} &= 4100-4000\times\cos(100^{\circ}) &&\justif{$2500+1600$}\\
+SP^{2} &\approx 4794{,}6 &&\justif{$\cos(100^{\circ})<0$ : on ajoute}\\
+SP &\approx \res{69{,}2} &&\justif{en centimètres}
+\end{calculs}
+\cas{Angle de $60^{\circ}$}
+\begin{calculs}
+SP^{2} &= 4100-4000\times 0{,}5 &&\justif{$\cos(60^{\circ})=0{,}5$}\\
+SP^{2} &= 2100 &&\\
+SP &\approx \res{45{,}8} &&
+\end{calculs}
+\explique{La pince est à environ $\res{69{,}2}$~cm de l'épaule quand l'angle mesure
+$100^{\circ}$, et à environ $\res{45{,}8}$~cm quand il mesure $60^{\circ}$.}{plus le bras
+se replie, plus la pince se rapproche}
+\end{exo}
+
+\begin{exo}[Deux bateaux]
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+\explique{Dans le triangle $OAB$, on connaît les deux côtés issus du port, $OA=12$~km et
+$OB=9$~km, et l'angle entre eux, $\widehat{AOB}=50^{\circ}$ : on cherche le troisième
+côté $AB$.}{deux côtés et l'angle entre eux : Al-Kashi}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.4\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.3]
+  \draw[fig] (0,0) -- node[below,font=\footnotesize]{$12$~km} (12,0);
+  \draw[fig] (0,0) -- node[above left,font=\footnotesize]{$9$~km} ({9*cos(50)},{9*sin(50)});
+  \draw[aide] (12,0) -- ({9*cos(50)},{9*sin(50)});
+  \draw (2.5,0) arc (0:50:2.5);
+  \node[font=\footnotesize] at (3.9,1.6) {$50^{\circ}$};
+  \pt{0,0}{below left}{O} \pt{12,0}{below right}{A} \pt{{9*cos(50)},{9*sin(50)}}{above}{B}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+AB^{2} &= OA^{2}+OB^{2}-2\times OA\times OB\times\cos\big(\widehat{AOB}\big) &&\justif{théorème d'Al-Kashi, en $O$}\\
+AB^{2} &= 12^{2}+9^{2}-2\times 12\times 9\times\cos(50^{\circ}) &&\\
+AB^{2} &= 225-216\times\cos(50^{\circ}) &&\justif{$144+81$}\\
+AB^{2} &\approx 86{,}16 &&\justif{à la calculatrice}\\
+AB &\approx \res{9{,}28} &&
+\end{calculs}
+\explique{Les deux bateaux sont à environ $\res{9{,}28}$~km l'un de l'autre.}{on conclut
+avec l'unité}
+\end{exo}
+
+\end{document}
