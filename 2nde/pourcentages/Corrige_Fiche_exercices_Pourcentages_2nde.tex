@@ -1,0 +1,1196 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 7 --- Pourcentages --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\renewcommand{\res}[1]{\leavevmode{\color{coulRep}#1}}
+
+\begin{document}
+
+\entetefiche{Chapitre 7 --- Pourcentages}{Seconde}
+
+\partie{Appliquer et calculer un pourcentage}
+
+\begin{exo}[Prendre un pourcentage]
+\explique{Prendre $t\,\%$ d'une quantité, c'est la multiplier par
+$\dfrac{t}{100}$.}{définition 1 du cours}
+\cas{a)}
+\begin{calculs}
+10\,\%\text{ de }340 &= 0{,}1\times 340 = \res{34} &&\justif{$10\,\%$ : le dixième}\\
+25\,\%\text{ de }48 &= 0{,}25\times 48 = \res{12} &&\justif{$25\,\%$ : le quart}\\
+50\,\%\text{ de }3\,600 &= 0{,}5\times 3\,600 = \res{1\,800} &&\justif{$50\,\%$ : la moitié}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+15\,\%\text{ de }260 &= 0{,}15\times 260 = \res{39} &&\justif{$\frac{15}{100}=0{,}15$}\\
+8\,\%\text{ de }75 &= 0{,}08\times 75 = \res{6} &&\justif{$\frac{8}{100}=0{,}08$, pas $0{,}8$}\\
+3{,}5\,\%\text{ de }400 &= 0{,}035\times 400 = \res{14} &&\justif{$\frac{3{,}5}{100}=0{,}035$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+200\,\%\text{ de }17 &= 2\times 17 = \res{34} &&\justif{$200\,\%$ : le double}\\
+120\,\%\text{ de }45 &= 1{,}2\times 45 = \res{54} &&\justif{plus de $100\,\%$ : plus que $45$}\\
+0{,}5\,\%\text{ de }1\,800 &= 0{,}005\times 1\,800 = \res{9} &&\justif{$\frac{0{,}5}{100}=0{,}005$}
+\end{calculs}
+\rem{Erreur fréquente : écrire $8\,\%=0{,}8$. On divise par $100$ : la virgule recule de
+deux rangs, $8\,\%=0{,}08$.}
+\end{exo}
+
+\begin{exo}[Appliquer un pourcentage]
+\cas{a)}
+\begin{calculs}
+42\,\%\text{ de }1\,150 &= 0{,}42\times 1\,150 &&\justif{on prend $42\,\%$ de l'effectif}\\
+42\,\%\text{ de }1\,150 &= 483
+\end{calculs}
+\explique{Le lycée compte \res{$483$ demi-pensionnaires}.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+\text{réduction} &= 0{,}15\times 420 &&\justif{la réduction est $15\,\%$ du prix}\\
+\text{réduction} &= 63\\
+\text{prix payé} &= 420-63 &&\justif{on retire la réduction}\\
+\text{prix payé} &= 357
+\end{calculs}
+\explique{La réduction est de \res{$63$~€} ; le téléphone est payé
+\res{$357$~€}.}{une phrase par question}
+\cas{c)}
+\explique{$65\,\%$ du fichier est téléchargé : il reste $100\,\%-65\,\%=35\,\%$ du
+fichier.}{on cherche ce qui \emph{reste}}
+\begin{calculs}
+35\,\%\text{ de }360 &= 0{,}35\times 360\\
+35\,\%\text{ de }360 &= 126
+\end{calculs}
+\explique{Il reste \res{$126$~Mo} à télécharger.}{autre voie : $0{,}65\times 360=234$~Mo
+téléchargés, puis $360-234=126$}
+\end{exo}
+
+\begin{exo}[Calculer un pourcentage]
+\explique{On divise l'effectif concerné par l'effectif total, puis on écrit le quotient en
+centièmes.}{méthode 2 du cours}
+\cas{a)}
+\explique{La classe compte $18+7=25$ élèves qui ont répondu.}{l'effectif total n'est pas
+écrit : on le calcule}
+\begin{calculs}
+\dfrac{18}{25} &= 0{,}72 &&\justif{les bonnes réponses, divisées par le total}\\
+\dfrac{18}{25} &= 72\,\% &&\justif{$0{,}72=\frac{72}{100}$}
+\end{calculs}
+\explique{\res{$72\,\%$} des élèves ont répondu juste.}{diviser par $7$ serait une erreur :
+$7$ n'est pas le total}
+\cas{b)}
+\begin{calculs}
+\dfrac{40}{320} &= 0{,}125 &&\justif{les embauches, divisées par l'effectif de départ}\\
+\dfrac{40}{320} &= 12{,}5\,\%
+\end{calculs}
+\explique{Les embauches représentent \res{$12{,}5\,\%$} de l'effectif de départ.}{on
+conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+\dfrac{288}{1\,600} &= 0{,}18 &&\justif{les courses, divisées par le salaire}\\
+\dfrac{288}{1\,600} &= 18\,\%
+\end{calculs}
+\explique{Les courses représentent \res{$18\,\%$} du salaire.}{on conclut par une phrase}
+\end{exo}
+
+\begin{exo}[Comparer des pourcentages]
+\cas{a)}
+\begin{calculs}
+\dfrac{12}{30} &= 0{,}4 &&\justif{classe A}\\
+\dfrac{12}{30} &= 40\,\%\\
+\dfrac{13}{35} &\approx 0{,}3714 &&\justif{classe B (calculatrice : $0{,}371428\ldots$)}\\
+\dfrac{13}{35} &\approx 37{,}1\,\% &&\justif{arrondi au dixième}\\
+\dfrac{11}{28} &\approx 0{,}3929 &&\justif{classe C (calculatrice : $0{,}392857\ldots$)}\\
+\dfrac{11}{28} &\approx 39{,}3\,\%
+\end{calculs}
+\explique{A : \res{$40\,\%$} ; B : environ \res{$37{,}1\,\%$} ; C : environ
+\res{$39{,}3\,\%$}.}{}
+\cas{b)}
+\explique{Rangement : \res{A, puis C, puis B}. La classe B a le plus d'élèves de théâtre
+($13$), mais elle est la dernière : \res{non}.}{on compare les pourcentages, pas les
+effectifs : les classes n'ont pas la même taille}
+\end{exo}
+
+\begin{exo}[Lire un tableau]
+\cas{a)}
+\begin{calculs}
+\dfrac{504}{1\,200} &= 0{,}42 = \res{42\,\%} &&\justif{bus}\\
+\dfrac{156}{1\,200} &= 0{,}13 = \res{13\,\%} &&\justif{vélo}\\
+\dfrac{300}{1\,200} &= 0{,}25 = \res{25\,\%} &&\justif{à pied}\\
+\dfrac{240}{1\,200} &= 0{,}2 = \res{20\,\%} &&\justif{voiture}
+\end{calculs}
+\explique{Vérification : $42+13+25+20=100$.}{les modes ne se recoupent pas : les
+pourcentages font $100\,\%$}
+\cas{b)}
+\explique{\res{$\dfrac{300}{1\,200}$ est la proportion des élèves du lycée qui viennent à
+pied : un quart d'entre eux, soit $25\,\%$.}}{population de référence : les $1\,200$
+élèves ; sous-population : ceux qui viennent à pied}
+\end{exo}
+
+\begin{exo}[La TVA]
+\cas{a)}
+\begin{calculs}
+\text{TVA} &= 0{,}2\times 240 &&\justif{$20\,\%$ du prix HT}\\
+\text{TVA} &= 48\\
+\text{prix TTC} &= 240+48 &&\justif{on ajoute la TVA au prix HT}\\
+\text{prix TTC} &= 288
+\end{calculs}
+\explique{La TVA est de \res{$48$~€} ; le bureau coûte \res{$288$~€} TTC.}{une phrase par
+question}
+\cas{b)}
+\begin{calculs}
+\text{TVA} &= 0{,}2\times 85\\
+\text{TVA} &= 17\\
+\text{prix TTC} &= 85+17\\
+\text{prix TTC} &= 102
+\end{calculs}
+\explique{La TVA est de \res{$17$~€} ; la chaise coûte \res{$102$~€} TTC.}{dans la partie IV,
+on le fera en une multiplication : $85\times 1{,}2=102$}
+\end{exo}
+
+\partie{Proportions}
+
+\begin{exo}[Effectif, proportion, effectif total]
+\cas{a)}
+\explique{Population de référence : les $320$ licenciés ; sous-population : les
+mineurs.}{on repère d'abord les deux populations}
+\begin{calculs}
+n &= p\times N &&\justif{on cherche l'effectif de la sous-population}\\
+n &= 0{,}35\times 320\\
+n &= 112
+\end{calculs}
+\explique{Le club compte \res{$112$ licenciés mineurs}.}{on conclut par une phrase}
+\cas{b)}
+\explique{Population de référence : les $320$ licenciés ; sous-population : les $144$
+femmes.}{}
+\begin{calculs}
+p &= \dfrac{n}{N} &&\justif{on cherche une proportion}\\
+p &= \dfrac{144}{320}\\
+p &= 0{,}45\\
+p &= 45\,\%
+\end{calculs}
+\explique{Les femmes représentent \res{$45\,\%$} des licenciés.}{on conclut par une phrase}
+\cas{c)}
+\explique{Population de référence : les $144$ femmes ; sous-population : les $72$
+mineures.}{la population de référence a changé}
+\begin{calculs}
+p &= \dfrac{72}{144} &&\justif{$\frac{n}{N}$}\\
+p &= 0{,}5\\
+p &= 50\,\%
+\end{calculs}
+\explique{\res{$50\,\%$} des femmes sont mineures, contre $35\,\%$ dans tout le club :
+\res{les femmes du club sont plus souvent mineures}.}{on compare deux proportions}
+\cas{d)}
+\explique{Population de référence : les licenciés du second club, en nombre $N$ inconnu ;
+sous-population : les $54$ mineurs.}{c'est $N$ qu'on cherche}
+\begin{calculs}
+p\times N &= n &&\justif{propriété 2 du cours}\\
+0{,}3\times N &= 54\\
+N &= \dfrac{54}{0{,}3} &&\justif{on divise les deux membres par $0{,}3$}\\
+N &= 180
+\end{calculs}
+\explique{Ce club compte \res{$180$ licenciés}.}{vérification : $0{,}3\times 180=54$}
+\end{exo}
+
+\begin{exo}[Population de référence]
+\cas{a)}
+\explique{\res{La population de référence est l'ensemble des $2{,}4$ millions de voitures
+vendues dans l'année. La sous-population est celle des $360\,000$ voitures
+électriques.}}{la sous-population est une partie de la population de référence}
+\cas{b)}
+\explique{$2{,}4$ millions $=2\,400\,000$.}{on écrit les deux effectifs dans la même unité}
+\begin{calculs}
+p &= \dfrac{360\,000}{2\,400\,000} &&\justif{$\frac{n}{N}$}\\
+p &= 0{,}15\\
+p &= 15\,\%
+\end{calculs}
+\explique{Les voitures électriques représentent \res{$15\,\%$} des ventes.}{on conclut par
+une phrase}
+\end{exo}
+
+\begin{exo}[Retrouver l'effectif total]
+\explique{Dans les trois cas, on connaît la proportion $p$ et l'effectif $n$ de la
+sous-population : on cherche $N$, avec $p\times N=n$.}{propriété 2 du cours}
+\cas{a)}
+\begin{calculs}
+0{,}015\times N &= 300 &&\justif{$1{,}5\,\%=0{,}015$}\\
+N &= \dfrac{300}{0{,}015} &&\justif{on divise par $0{,}015$}\\
+N &= 20\,000
+\end{calculs}
+\explique{La population compte \res{$20\,000$ insectes}.}{vérification :
+$0{,}015\times 20\,000=300$}
+\cas{b)}
+\begin{calculs}
+0{,}6\times N &= 4{,}8 &&\justif{en milliards}\\
+N &= \dfrac{4{,}8}{0{,}6}\\
+N &= 8
+\end{calculs}
+\explique{Cela suppose une population mondiale de \res{$8$ milliards} d'habitants.}{on
+garde l'unité : des milliards}
+\cas{c)}
+\begin{calculs}
+0{,}6\times N &= 21\\
+N &= \dfrac{21}{0{,}6}\\
+N &= 35
+\end{calculs}
+\explique{La classe compte \res{$35$ élèves}.}{vérification : $0{,}6\times 35=21$}
+\rem{Erreur fréquente : calculer $60\,\%$ de $21$. Le nombre $21$ est une partie de la
+classe, pas la classe entière.}
+\end{exo}
+
+\begin{exo}[Un budget]
+\cas{a)}
+\explique{Le loyer est une partie du salaire $N$, inconnu.}{$p=0{,}4$ et $n=640$}
+\begin{calculs}
+0{,}4\times N &= 640\\
+N &= \dfrac{640}{0{,}4} &&\justif{on divise par $0{,}4$}\\
+N &= 1\,600
+\end{calculs}
+\explique{Le salaire de Yanis est de \res{$1\,600$~€}.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+\text{charges} &= 0{,}08\times 1\,600 &&\justif{$8\,\%$ du salaire trouvé en a)}\\
+\text{charges} &= 128
+\end{calculs}
+\explique{Les charges s'élèvent à \res{$128$~€}.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+\dfrac{640+128}{1\,600} &= \dfrac{768}{1\,600} &&\justif{loyer et charges, divisés par le salaire}\\
+\dfrac{640+128}{1\,600} &= 0{,}48\\
+\dfrac{640+128}{1\,600} &= 48\,\%
+\end{calculs}
+\explique{Le loyer et les charges représentent \res{$48\,\%$} du salaire.}{plus simple :
+$40\,\%+8\,\%=48\,\%$}
+\rem{On peut ajouter ces deux pourcentages parce qu'ils portent sur le même total, le
+salaire. Des évolutions successives, elles, ne s'ajoutent pas (partie VI).}
+\end{exo}
+
+\begin{exo}[Vérifier une information]
+\cas{a)}
+\begin{calculs}
+0{,}03\times N &= 1{,}2 &&\justif{en millions ; $3\,\%$ de la population}\\
+N &= \dfrac{1{,}2}{0{,}03}\\
+N &= 40
+\end{calculs}
+\explique{Le pays compterait \res{$40$ millions d'habitants}.}{}
+\cas{b)}
+\begin{calculs}
+\dfrac{1{,}2}{68} &\approx 0{,}0176 &&\justif{calculatrice : $0{,}017647\ldots$}\\
+\dfrac{1{,}2}{68} &\approx 1{,}8\,\% &&\justif{arrondi au dixième}
+\end{calculs}
+\explique{Environ \res{$1{,}8\,\%$} de la population a eu la grippe, et non
+$3\,\%$.}{l'affirmation du journal est fausse}
+\end{exo}
+
+\partie{Proportions échelonnées}
+
+\begin{exo}[Pourcentage d'un pourcentage]
+\explique{Prendre un pourcentage d'un pourcentage, c'est multiplier les deux
+proportions.}{propriété 3 du cours}
+\begin{calculs}
+20\,\%\text{ de }40\,\% &= 0{,}2\times 0{,}4 = 0{,}08\\
+20\,\%\text{ de }40\,\% &= \res{8\,\%}\\
+50\,\%\text{ de }30\,\% &= 0{,}5\times 0{,}3 = 0{,}15\\
+50\,\%\text{ de }30\,\% &= \res{15\,\%}\\
+10\,\%\text{ de }5\,\% &= 0{,}1\times 0{,}05 = 0{,}005\\
+10\,\%\text{ de }5\,\% &= \res{0{,}5\,\%}
+\end{calculs}
+\rem{Le résultat est plus petit que chacun des deux pourcentages : on prend une partie
+d'une partie.}
+\end{exo}
+
+\begin{exo}[Association sportive]
+\cas{a)}
+\explique{Les joueurs de badminton sont une partie des inscrits, qui sont une partie des
+élèves.}{on repère les populations emboîtées}
+\begin{calculs}
+p &= p_1\times p_2 &&\justif{propriété 3}\\
+p &= 0{,}2\times 0{,}45 &&\justif{$20\,\%$ des inscrits, $45\,\%$ des élèves}\\
+p &= 0{,}09\\
+p &= 9\,\%
+\end{calculs}
+\explique{\res{$9\,\%$} des élèves du lycée font du badminton à l'association
+sportive.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+n &= p\times N &&\justif{proportion trouvée en a)}\\
+n &= 0{,}09\times 1\,200\\
+n &= 108
+\end{calculs}
+\explique{Cela représente \res{$108$ élèves}.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+\text{inscrits} &= 0{,}45\times 1\,200 &&\justif{$45\,\%$ des élèves}\\
+\text{inscrits} &= 540\\
+\text{badminton} &= 0{,}2\times 540 &&\justif{$20\,\%$ des inscrits}\\
+\text{badminton} &= 108
+\end{calculs}
+\explique{On retrouve \res{$108$ élèves}.}{les deux méthodes concordent}
+\end{exo}
+
+\begin{exo}[Populations emboîtées]
+\cas{a)}
+\begin{calculs}
+p &= 0{,}35\times 0{,}8 &&\justif{pommes $\subset$ fruits $\subset$ compote}\\
+p &= 0{,}28\\
+p &= 28\,\%
+\end{calculs}
+\explique{La compote contient \res{$28\,\%$} de pommes.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+p &= 0{,}4\times 0{,}25 &&\justif{acidulés à la fraise $\subset$ fraise $\subset$ sachet}\\
+p &= 0{,}1\\
+n &= 0{,}1\times 300 &&\justif{$n=p\times N$}\\
+n &= 30
+\end{calculs}
+\explique{Le sachet contient \res{$30$ bonbons acidulés à la fraise}.}{vérification :
+$75$ à la fraise, dont $0{,}4\times 75=30$}
+\cas{c)}
+\explique{Trois populations emboîtées dans celle des habitants : on multiplie les trois
+proportions.}{la propriété se prolonge}
+\begin{calculs}
+p &= 0{,}25\times 0{,}6\times 0{,}75 &&\justif{du plus petit groupe au plus grand}\\
+p &= 0{,}1125\\
+p &= 11{,}25\,\%\\
+n &= 0{,}1125\times 48\,000 &&\justif{$n=p\times N$}\\
+n &= 5\,400
+\end{calculs}
+\explique{\res{$11{,}25\,\%$} des habitants roulent en voiture électrique, soit
+\res{$5\,400$ habitants}.}{une phrase par question}
+\end{exo}
+
+\begin{exo}[Tableau croisé]
+\cas{a)}
+\explique{On calcule d'abord le nombre de filles, puis celui des garçons.}{on part du
+total, $600$}
+\begin{calculs}
+\text{filles} &= 0{,}55\times 600 = 330\\
+\text{garçons} &= 600-330 = 270\\
+\text{filles droitières} &= 0{,}9\times 330 = 297 &&\justif{$90\,\%$ des filles}\\
+\text{filles gauchères} &= 330-297 = 33\\
+\text{garçons gauchers} &= 0{,}1\times 270 = 27 &&\justif{$10\,\%$ des garçons}\\
+\text{garçons droitiers} &= 270-27 = 243
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Gauchers & Droitiers & Total\\
+\hline
+Filles & \res{$33$} & \res{$297$} & \res{$330$}\\
+\hline
+Garçons & \res{$27$} & \res{$243$} & \res{$270$}\\
+\hline
+Total & \res{$60$} & \res{$540$} & $600$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $60+540=600$.}{la dernière ligne s'obtient en additionnant les
+colonnes}
+\cas{b)}
+\begin{calculs}
+p &= \dfrac{33}{600} &&\justif{lu dans le tableau}\\
+p &= 0{,}055\\
+p &= 5{,}5\,\%
+\end{calculs}
+\explique{Par une proportion échelonnée : les gauchères sont $10\,\%$ des filles, qui sont
+$55\,\%$ des élèves.}{$100\,\%-90\,\%=10\,\%$ des filles sont gauchères}
+\begin{calculs}
+p &= 0{,}1\times 0{,}55\\
+p &= 0{,}055
+\end{calculs}
+\explique{Les filles gauchères représentent \res{$5{,}5\,\%$} des élèves du collège.}{les
+deux calculs concordent}
+\cas{c)}
+\begin{calculs}
+p &= \dfrac{60}{600}\\
+p &= 0{,}1\\
+p &= 10\,\%
+\end{calculs}
+\explique{\res{$10\,\%$} des élèves du collège sont gauchers.}{on conclut par une phrase}
+\end{exo}
+
+\partie{Coefficient multiplicateur}
+
+\begin{exo}[Taux et coefficient multiplicateur]
+\cas{a)}
+\explique{$C_m=1+t$, où le taux $t$ est positif pour une hausse ($t=0{,}15$ pour
+$+15\,\%$), négatif pour une baisse ($t=-0{,}04$ pour $-4\,\%$).}{propriété 4 du cours}
+\begin{calculs}
+C_m &= 1+0{,}15 = \res{1{,}15} &&\justif{hausse de $15\,\%$}\\
+C_m &= 1-0{,}04 = \res{0{,}96} &&\justif{baisse de $4\,\%$}\\
+C_m &= 1+1{,}2 = \res{2{,}2} &&\justif{hausse de $120\,\%$ : $\frac{120}{100}=1{,}2$}\\
+C_m &= 1-0{,}6 = \res{0{,}4} &&\justif{baisse de $60\,\%$}\\
+C_m &= 1-0{,}123 = \res{0{,}877} &&\justif{baisse de $12{,}3\,\%$ : $\frac{12{,}3}{100}=0{,}123$}
+\end{calculs}
+\cas{b)}
+\explique{On écrit $C_m$ sous la forme $1+t$ : le taux $t$ est positif (hausse) ou
+négatif (baisse).}{méthode 5 du cours}
+\begin{calculs}
+C_m &= 1{,}03 = 1+0{,}03 &&\justif{taux d'évolution : \res{$+3\,\%$}}\\
+C_m &= 0{,}72 = 1-0{,}28 &&\justif{taux d'évolution : \res{$-28\,\%$}}\\
+C_m &= 2 = 1+1 &&\justif{taux d'évolution : \res{$+100\,\%$} (doubler)}\\
+C_m &= 0{,}995 = 1-0{,}005 &&\justif{taux d'évolution : \res{$-0{,}5\,\%$}}
+\end{calculs}
+\rem{Erreur fréquente : lire $0{,}72$ comme une baisse de $72\,\%$. C'est ce qui
+\emph{reste} : $72\,\%$ de la valeur, donc une baisse de $28\,\%$.}
+\end{exo}
+
+\begin{exo}[En phrases]
+\begin{calculs}
+1{,}08 &= 1+0{,}08 &&\justif{\res{Multiplier par $1{,}08$, c'est augmenter de $8\,\%$.}}\\
+0{,}92 &= 1-0{,}08 &&\justif{\res{Multiplier par $0{,}92$, c'est diminuer de $8\,\%$.}}\\
+1{,}5 &= 1+0{,}5 &&\justif{\res{Multiplier par $1{,}5$, c'est augmenter de $50\,\%$.}}\\
+0{,}3 &= 1-0{,}7 &&\justif{\res{Multiplier par $0{,}3$, c'est diminuer de $70\,\%$.}}
+\end{calculs}
+\rem{Un coefficient plus grand que $1$ traduit une hausse ; plus petit que $1$, une
+baisse.}
+\end{exo}
+
+\begin{exo}[Valeur d'arrivée]
+\explique{Valeur d'arrivée : $V_1=V_0\times C_m$.}{propriété 4 du cours}
+\cas{a)}
+\begin{calculs}
+V_1 &= V_0\times C_m\\
+V_1 &= 24\,000\times 1{,}05 &&\justif{hausse de $5\,\%$ : $C_m=1+0{,}05$}\\
+V_1 &= 25\,200
+\end{calculs}
+\explique{La ville compte \res{$25\,200$ habitants}.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+V_1 &= 75\times 0{,}8 &&\justif{réduction de $20\,\%$ : $C_m=1-0{,}2$}\\
+V_1 &= 60
+\end{calculs}
+\explique{Les chaussures coûtent \res{$60$~€}.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+V_1 &= 3\,500\times 0{,}88 &&\justif{baisse de $12\,\%$ : $C_m=1-0{,}12$}\\
+V_1 &= 3\,080
+\end{calculs}
+\explique{\res{$3\,080$ accidents} ont eu lieu l'année suivante.}{on conclut par une phrase}
+\end{exo}
+
+\begin{exo}[Valeur de départ]
+\explique{On cherche $V_0$ : on écrit $V_0\times C_m=V_1$, puis on divise par
+$C_m$.}{méthode 6 du cours}
+\cas{a)}
+\begin{calculs}
+V_0\times C_m &= V_1\\
+V_0\times 1{,}08 &= 27 &&\justif{hausse de $8\,\%$ : $C_m=1+0{,}08$}\\
+V_0 &= \dfrac{27}{1{,}08} &&\justif{on divise par $C_m$}\\
+V_0 &= 25
+\end{calculs}
+\explique{L'abonnement coûtait \res{$25$~€}.}{vérification : $25\times 1{,}08=27$}
+\cas{b)}
+\begin{calculs}
+V_0\times 0{,}95 &= 19 &&\justif{baisse de $5\,\%$ : $C_m=1-0{,}05$}\\
+V_0 &= \dfrac{19}{0{,}95}\\
+V_0 &= 20
+\end{calculs}
+\explique{La température moyenne d'août était de \res{$20$~°C}.}{vérification :
+$20\times 0{,}95=19$}
+\cas{c)}
+\begin{calculs}
+V_0\times 1{,}2 &= 150 &&\justif{la TVA est une hausse de $20\,\%$ du prix HT}\\
+V_0 &= \dfrac{150}{1{,}2}\\
+V_0 &= 125
+\end{calculs}
+\explique{Le lit coûte \res{$125$~€} HT.}{retirer $20\,\%$ de $150$ donnerait $120$ : faux}
+\cas{d)}
+\explique{Ici, on connaît l'augmentation ($27$~€), pas le nouveau prix : $27$~€ sont
+$18\,\%$ du prix de départ.}{c'est la partie II : $p\times N=n$}
+\begin{calculs}
+0{,}18\times V_0 &= 27\\
+V_0 &= \dfrac{27}{0{,}18}\\
+V_0 &= 150
+\end{calculs}
+\explique{Le vélo coûtait \res{$150$~€} avant la hausse.}{il coûte maintenant
+$150+27=177$~€, et $150\times 1{,}18=177$}
+\end{exo}
+
+\begin{exo}[Les soldes]
+\cas{a)}
+\begin{calculs}
+V_1 &= 225\times 0{,}8 &&\justif{réduction de $20\,\%$ : $C_m=1-0{,}2$}\\
+V_1 &= 180
+\end{calculs}
+\explique{Léo aurait payé \res{$180$~€}.}{on cherche la valeur d'arrivée}
+\cas{b)}
+\begin{calculs}
+V_0\times 0{,}8 &= 240 &&\justif{on cherche la valeur de départ}\\
+V_0 &= \dfrac{240}{0{,}8}\\
+V_0 &= 300
+\end{calculs}
+\explique{Inès aurait payé \res{$300$~€}.}{ajouter $20\,\%$ à $240$ donnerait $288$ : faux}
+\end{exo}
+
+\partie{Calculer un taux d'évolution}
+
+\begin{exo}[Taux d'évolution]
+\explique{Variation absolue : $V_1-V_0$ ; taux d'évolution :
+$t=\dfrac{V_1-V_0}{V_0}$.}{propriété 5 du cours}
+\cas{a)}
+\begin{calculs}
+V_1-V_0 &= 3\,040-3\,200 &&\justif{$V_0=3\,200$ (départ) et $V_1=3\,040$ (arrivée)}\\
+V_1-V_0 &= -160\\
+t &= \dfrac{-160}{3\,200} &&\justif{on divise par la valeur de départ}\\
+t &= -0{,}05\\
+t &= -5\,\%
+\end{calculs}
+\explique{La commune perd \res{$160$ habitants} : sa population baisse de
+\res{$5\,\%$}.}{$t$ négatif : une baisse}
+\cas{b)}
+\begin{calculs}
+V_1-V_0 &= 2\,100-1\,500\\
+V_1-V_0 &= 600\\
+t &= \dfrac{600}{1\,500}\\
+t &= 0{,}4\\
+t &= 40\,\%
+\end{calculs}
+\explique{La production augmente de \res{$600$ vélos}, soit \res{$40\,\%$}.}{$t$ positif :
+une hausse}
+\cas{c)}
+\begin{calculs}
+V_1-V_0 &= 1\,782-1\,650\\
+V_1-V_0 &= 132\\
+t &= \dfrac{132}{1\,650}\\
+t &= 0{,}08\\
+t &= 8\,\%
+\end{calculs}
+\explique{Le salaire augmente de \res{$132$~€}, soit \res{$8\,\%$}.}{on conclut par une
+phrase}
+\cas{d)}
+\begin{calculs}
+V_1-V_0 &= 19{,}1-18{,}4\\
+V_1-V_0 &= 0{,}7\\
+t &= \dfrac{0{,}7}{18{,}4}\\
+t &\approx 0{,}0380 &&\justif{calculatrice : $0{,}038043\ldots$}\\
+t &\approx 3{,}8\,\% &&\justif{arrondi au dixième de pourcentage}
+\end{calculs}
+\explique{Le plein augmente de \res{$0{,}70$~€}, soit environ \res{$3{,}8\,\%$}.}{on
+conclut par une phrase}
+\end{exo}
+
+\begin{exo}[Deux façons de dire]
+\cas{a)}
+\begin{calculs}
+V_1-V_0 &= 460-400 &&\justif{variation absolue}\\
+V_1-V_0 &= 60\\
+t &= \dfrac{60}{400} &&\justif{taux d'évolution}\\
+t &= 0{,}15\\
+t &= 15\,\%
+\end{calculs}
+\cas{b)}
+\explique{\res{Le club a gagné $60$ adhérents.}}{la variation absolue a l'unité de la
+grandeur : des adhérents}
+\explique{\res{Le nombre d'adhérents du club a augmenté de $15\,\%$.}}{le taux n'a pas
+d'unité : un pourcentage}
+\end{exo}
+
+\begin{exo}[Du coefficient au taux]
+\cas{a)}
+\begin{calculs}
+C_m &= \dfrac{V_1}{V_0} &&\justif{rappel de l'énoncé}\\
+C_m &= \dfrac{144}{120}\\
+C_m &= 1{,}2\\
+t &= C_m-1\\
+t &= 1{,}2-1\\
+t &= 0{,}2
+\end{calculs}
+\explique{$C_m=\res{1{,}2}$ et $t=\res{20\,\%}$ : le prix augmente de $20\,\%$.}{même
+résultat que $\frac{144-120}{120}$}
+\cas{b)}
+\begin{calculs}
+C_m &= \dfrac{200}{250}\\
+C_m &= 0{,}8\\
+t &= 0{,}8-1\\
+t &= -0{,}2
+\end{calculs}
+\explique{$C_m=\res{0{,}8}$ et $t=\res{-20\,\%}$ : le stock baisse de $20\,\%$.}{$t$
+négatif : une baisse}
+\cas{c)}
+\begin{calculs}
+t &= C_m-1\\
+t &= 1{,}5-1\\
+t &= 0{,}5
+\end{calculs}
+\explique{$t=\res{50\,\%}$ : le prix augmente de $50\,\%$.}{}
+\cas{d)}
+\begin{calculs}
+t &= 0{,}65-1\\
+t &= -0{,}35
+\end{calculs}
+\explique{$t=\res{-35\,\%}$ : le prix baisse de $35\,\%$.}{même lecture que $0{,}65=1-0{,}35$}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{150-120}{120} &&\justif{on divise par la valeur de départ, $120$}\\
+t &= \dfrac{30}{120}\\
+t &= 0{,}25
+\end{calculs}
+\explique{\res{Faux} : le prix augmente de $25\,\%$. L'augmentation vaut $30$~€, pas
+$30\,\%$.}{ne pas confondre variation absolue et taux}
+\cas{b)}
+\begin{calculs}
+C_m &= \dfrac{150}{120}\\
+C_m &= 1{,}25
+\end{calculs}
+\explique{\res{Vrai}.}{cohérent avec a) : $1{,}25=1+0{,}25$}
+\cas{c)}
+\begin{calculs}
+t &= \dfrac{200-250}{250}\\
+t &= \dfrac{-50}{250}\\
+t &= -0{,}2
+\end{calculs}
+\explique{\res{Faux} : le stock baisse de $20\,\%$.}{diviser par $200$ (la valeur
+d'arrivée) donnerait $25\,\%$ : c'est l'erreur}
+\cas{d)}
+\begin{calculs}
+t &= \dfrac{-60}{300}\\
+t &= -0{,}2
+\end{calculs}
+\explique{\res{Vrai} : la population baisse de $20\,\%$.}{la variation absolue est $-60$}
+\end{exo}
+
+\begin{exo}[Deux magasins]
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{408-480}{480} &&\justif{magasin A}\\
+t &= \dfrac{-72}{480}\\
+t &= -0{,}15
+\end{calculs}
+\explique{Le magasin A baisse son prix de $15\,\%$, le magasin B de $14\,\%$ : la plus forte
+baisse est dans le \res{magasin A}.}{on compare les taux}
+\cas{b)}
+\begin{calculs}
+V_1 &= 500\times 0{,}86 &&\justif{magasin B : baisse de $14\,\%$, $C_m=1-0{,}14$}\\
+V_1 &= 430
+\end{calculs}
+\explique{Le téléviseur coûte $408$~€ dans le magasin A et $430$~€ dans le B : il est le
+moins cher dans le \res{magasin A}.}{on compare les prix}
+\end{exo}
+
+\begin{exo}[Une entreprise qui embauche]
+\cas{a)}
+\begin{calculs}
+\text{salariés} &= 250+30\\
+\text{salariés} &= 280
+\end{calculs}
+\explique{L'entreprise compte \res{$280$ salariés}.}{}
+\cas{b)}
+\begin{calculs}
+\dfrac{30}{250} &= 0{,}12 &&\justif{les embauches, divisées par l'effectif de départ}\\
+\dfrac{30}{250} &= 12\,\%
+\end{calculs}
+\explique{Les embauches représentent \res{$12\,\%$} de l'effectif de départ.}{c'est aussi
+le taux d'évolution de la première année}
+\cas{c)}
+\begin{calculs}
+\text{salariés} &= 280+14\\
+\text{salariés} &= 294
+\end{calculs}
+\explique{L'entreprise compte \res{$294$ salariés}.}{}
+\cas{d)}
+\begin{calculs}
+t &= \dfrac{294-250}{250} &&\justif{de $V_0=250$ à $V_1=294$}\\
+t &= \dfrac{44}{250}\\
+t &= 0{,}176\\
+t &= 17{,}6\,\%
+\end{calculs}
+\explique{Le nombre de salariés augmente de \res{$17{,}6\,\%$} en deux ans.}{on divise
+toujours par la valeur de départ, $250$}
+\end{exo}
+
+\partie{Évolutions successives}
+
+\begin{exo}[Taux global]
+\explique{Le coefficient multiplicateur global est le produit des coefficients :
+$C_m=C_{m1}\times C_{m2}$.}{propriété 6 du cours}
+\cas{a)}
+\begin{calculs}
+C_m &= 1{,}25\times 1{,}1 &&\justif{$1+0{,}25$, puis $1+0{,}1$}\\
+C_m &= 1{,}375\\
+C_m &= 1+0{,}375
+\end{calculs}
+\explique{Hausse globale de \res{$37{,}5\,\%$} (et non de $35\,\%$).}{$0{,}375=37{,}5\,\%$}
+\cas{b)}
+\begin{calculs}
+C_m &= 1{,}3\times 0{,}7 &&\justif{$1+0{,}3$, puis $1-0{,}3$}\\
+C_m &= 0{,}91\\
+C_m &= 1-0{,}09
+\end{calculs}
+\explique{Baisse globale de \res{$9\,\%$} : les deux évolutions ne se compensent
+pas.}{$0{,}09=9\,\%$}
+\cas{c)}
+\begin{calculs}
+C_m &= 0{,}6\times 0{,}9 &&\justif{$1-0{,}4$, puis $1-0{,}1$}\\
+C_m &= 0{,}54\\
+C_m &= 1-0{,}46
+\end{calculs}
+\explique{Baisse globale de \res{$46\,\%$} (et non de $50\,\%$).}{$0{,}46=46\,\%$}
+\cas{d)}
+\begin{calculs}
+C_m &= 1{,}02\times 0{,}99 &&\justif{$1+0{,}02$, puis $1-0{,}01$}\\
+C_m &= 1{,}0098\\
+C_m &= 1+0{,}0098
+\end{calculs}
+\explique{Hausse globale de \res{$0{,}98\,\%$}.}{$0{,}0098=0{,}98\,\%$}
+\end{exo}
+
+\begin{exo}[Un ticket de transport]
+\cas{a)}
+\begin{calculs}
+C_m &= C_{m1}\times C_{m2} &&\justif{propriété 6}\\
+C_m &= 1{,}3\times 0{,}9 &&\justif{hausse de $30\,\%$, puis baisse de $10\,\%$}\\
+C_m &= 1{,}17\\
+C_m &= 1+0{,}17
+\end{calculs}
+\explique{Le taux d'évolution global est de \res{$+17\,\%$} (et non de $+20\,\%$).}{}
+\cas{b)}
+\begin{calculs}
+V_2 &= V_0\times C_m &&\justif{avec le coefficient global}\\
+V_2 &= 25\times 1{,}17\\
+V_2 &= 29{,}25
+\end{calculs}
+\explique{L'abonnement coûte \res{$29{,}25$~€}.}{vérification : $25\times 1{,}3=32{,}5$, puis
+$32{,}5\times 0{,}9=29{,}25$}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{a)}
+\begin{calculs}
+C_m &= 1{,}12\times 0{,}88\\
+C_m &= 0{,}9856\\
+C_m &= 1-0{,}0144
+\end{calculs}
+\explique{\res{Faux} : le prix baisse d'environ $1{,}4\,\%$.}{la baisse porte sur un prix
+déjà augmenté}
+\cas{b)}
+\begin{calculs}
+C_m &= 0{,}93\times 0{,}8 = 0{,}744 &&\justif{$7\,\%$ puis $20\,\%$}\\
+C_m &= 0{,}8\times 0{,}93 = 0{,}744 &&\justif{$20\,\%$ puis $7\,\%$}
+\end{calculs}
+\explique{\res{Vrai} : l'ordre d'une multiplication ne change pas le résultat.}{les deux
+coefficients sont les mêmes}
+\cas{c)}
+\begin{calculs}
+C_m &= 1{,}06\times 1{,}08\\
+C_m &= 1{,}1448\\
+C_m &= 1+0{,}1448
+\end{calculs}
+\explique{\res{Faux} : la hausse est de $14{,}48\,\%$, un peu plus que $14\,\%$.}{la seconde
+hausse porte sur un prix déjà augmenté}
+\cas{d)}
+\begin{calculs}
+C_m &= 1{,}1\times 1{,}15\\
+C_m &= 1{,}265\\
+C_m &= 1+0{,}265
+\end{calculs}
+\explique{\res{Faux} : le prix augmente de $26{,}5\,\%$, plus qu'un quart ($25\,\%$).}{on
+n'ajoute pas les pourcentages}
+\end{exo}
+
+\begin{exo}[Le fleuriste]
+\begin{calculs}
+C_m &= 1{,}4\times 0{,}7 &&\justif{hausse de $40\,\%$, puis réduction de $30\,\%$}\\
+C_m &= 0{,}98\\
+V_2 &= 8\times 0{,}98 &&\justif{prix de vente final d'un pot}\\
+V_2 &= 7{,}84
+\end{calculs}
+\explique{Le fleuriste vend $7{,}84$~€ un pot acheté $8$~€ : \res{oui, il vend à
+perte}.}{$C_m=0{,}98$, plus petit que $1$ : une baisse globale de $2\,\%$}
+\end{exo}
+
+\begin{exo}[La valeur d'une voiture]
+\cas{a)}
+\begin{calculs}
+V_1 &= 18\,000\times 0{,}8 &&\justif{baisse de $20\,\%$ : $C_m=1-0{,}2$}\\
+V_1 &= 14\,400\\
+V_2 &= 14\,400\times 0{,}85 &&\justif{baisse de $15\,\%$ : $C_m=1-0{,}15$}\\
+V_2 &= 12\,240
+\end{calculs}
+\explique{La voiture vaut \res{$14\,400$~€} au bout d'un an, \res{$12\,240$~€} au bout de
+deux ans.}{}
+\cas{b)}
+\begin{calculs}
+V_3 &= 12\,240\times 0{,}85\\
+V_3 &= 10\,404
+\end{calculs}
+\explique{Elle vaut \res{$10\,404$~€} au bout de trois ans.}{}
+\cas{c)}
+\begin{calculs}
+C_m &= 0{,}8\times 0{,}85\times 0{,}85 &&\justif{trois évolutions successives}\\
+C_m &= 0{,}578\\
+C_m &= 1-0{,}422
+\end{calculs}
+\explique{Le taux d'évolution global est d'environ \res{$-42{,}2\,\%$}.}{vérification :
+$18\,000\times 0{,}578=10\,404$}
+\end{exo}
+
+\partie{Évolution réciproque}
+
+\begin{exo}[Revenir au départ]
+\explique{Le coefficient de l'évolution réciproque est l'inverse :
+$C'_m=\dfrac{1}{C_m}$.}{propriété 7 du cours}
+\cas{a)}
+\begin{calculs}
+C'_m &= \dfrac{1}{0{,}8} &&\justif{baisse de $20\,\%$ : $C_m=1-0{,}2$}\\
+C'_m &= 1{,}25\\
+C'_m &= 1+0{,}25
+\end{calculs}
+\explique{Il faut une \res{hausse de $25\,\%$}.}{et non de $20\,\%$}
+\cas{b)}
+\begin{calculs}
+C'_m &= \dfrac{1}{2} &&\justif{hausse de $100\,\%$ : $C_m=1+1$}\\
+C'_m &= 0{,}5\\
+C'_m &= 1-0{,}5
+\end{calculs}
+\explique{Il faut une \res{baisse de $50\,\%$} : diviser par deux compense le
+doublement.}{}
+\cas{c)}
+\begin{calculs}
+C'_m &= \dfrac{1}{0{,}55} &&\justif{baisse de $45\,\%$ : $C_m=1-0{,}45$}\\
+C'_m &\approx 1{,}8182 &&\justif{calculatrice : $1{,}818181\ldots$}\\
+C'_m &\approx 1+0{,}8182
+\end{calculs}
+\explique{Il faut une \res{hausse d'environ $81{,}8\,\%$}.}{}
+\cas{d)}
+\begin{calculs}
+C'_m &= \dfrac{1}{1{,}3} &&\justif{hausse de $30\,\%$ : $C_m=1+0{,}3$}\\
+C'_m &\approx 0{,}7692 &&\justif{calculatrice : $0{,}769230\ldots$}\\
+C'_m &\approx 1-0{,}2308
+\end{calculs}
+\explique{Il faut une \res{baisse d'environ $23{,}1\,\%$}.}{}
+\end{exo}
+
+\begin{exo}[Un village]
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{3\,000-2\,500}{2\,500}\\
+t &= \dfrac{500}{2\,500}\\
+t &= 0{,}2
+\end{calculs}
+\explique{La population augmente de \res{$20\,\%$}.}{}
+\cas{b)}
+\begin{calculs}
+C'_m &= \dfrac{1}{1{,}2} &&\justif{hausse de $20\,\%$ : $C_m=1+0{,}2$}\\
+C'_m &\approx 0{,}8333 &&\justif{calculatrice : $0{,}833333\ldots$}\\
+C'_m &\approx 1-0{,}1667
+\end{calculs}
+\explique{Une \res{baisse d'environ $16{,}7\,\%$} ramènerait le village à $2\,500$
+habitants.}{autre voie : $\frac{2\,500-3\,000}{3\,000}\approx -0{,}1667$}
+\end{exo}
+
+\begin{exo}[Aller et retour]
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{26-20}{20} = 0{,}3 &&\justif{taux d'évolution : $+30\,\%$}\\
+C_m &= 1+0{,}3 = 1{,}3\\
+C'_m &= \dfrac{1}{1{,}3} \approx 0{,}7692 &&\justif{inverse de $C_m$}\\
+C'_m &\approx 1-0{,}2308
+\end{calculs}
+\explique{Taux : \res{$+30\,\%$} ; $C_m=\res{1{,}3}$ ; évolution réciproque : \res{baisse
+d'environ $23{,}1\,\%$}.}{}
+\cas{b)}
+\begin{calculs}
+t &= \dfrac{39-52}{52} = -0{,}25 &&\justif{taux d'évolution : $-25\,\%$}\\
+C_m &= 1-0{,}25 = 0{,}75\\
+C'_m &= \dfrac{1}{0{,}75} \approx 1{,}3333\\
+C'_m &\approx 1+0{,}3333
+\end{calculs}
+\explique{Taux : \res{$-25\,\%$} ; $C_m=\res{0{,}75}$ ; évolution réciproque : \res{hausse
+d'environ $33{,}3\,\%$}.}{vérification : $39\times 1{,}3333\approx 52$}
+\end{exo}
+
+\begin{exo}[Plus de chocolat pour le même prix]
+\explique{La quantité est multipliée par $1{,}25$ pour le même prix : le prix du kilo est
+divisé par $1{,}25$, c'est-à-dire multiplié par $\dfrac{1}{1{,}25}$.}{c'est l'évolution
+réciproque d'une hausse de $25\,\%$}
+\begin{calculs}
+C'_m &= \dfrac{1}{1{,}25}\\
+C'_m &= 0{,}8\\
+C'_m &= 1-0{,}2
+\end{calculs}
+\explique{Le prix du kilo de chocolat a baissé de \res{$20\,\%$} (et non de
+$25\,\%$).}{exemple : $10$~€ pour $1$~kg, puis $10$~€ pour $1{,}25$~kg, soit $8$~€ le kilo}
+\end{exo}
+
+\begin{exo}[Retrouver un prix]
+\cas{a)}
+\begin{calculs}
+C_m &= 1{,}1\times 0{,}8 &&\justif{hausse de $10\,\%$, puis baisse de $20\,\%$}\\
+C_m &= 0{,}88\\
+C_m &= 1-0{,}12
+\end{calculs}
+\explique{$C_m=\res{0{,}88}$ : baisse globale de \res{$12\,\%$}.}{}
+\cas{b)}
+\begin{calculs}
+V_0\times C_m &= V_2 &&\justif{on cherche la valeur de départ}\\
+V_0\times 0{,}88 &= 352\\
+V_0 &= \dfrac{352}{0{,}88}\\
+V_0 &= 400
+\end{calculs}
+\explique{Le casque coûtait \res{$400$~€}.}{vérification : $400\times 1{,}1=440$, puis
+$440\times 0{,}8=352$}
+\cas{c)}
+\begin{calculs}
+C'_m &= \dfrac{1}{0{,}88}\\
+C'_m &\approx 1{,}1364 &&\justif{calculatrice : $1{,}136363\ldots$}\\
+C'_m &\approx 1+0{,}1364
+\end{calculs}
+\explique{Une \res{hausse d'environ $13{,}6\,\%$} ramènerait le prix à $400$~€.}{et non de
+$12\,\%$}
+\end{exo}
+
+\end{document}

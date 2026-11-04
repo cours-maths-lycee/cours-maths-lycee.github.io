@@ -1,0 +1,1091 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\nobreak}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+\makeatother
+
+\chapitrecours{7}{Pourcentages}
+\niveaucours{Seconde}
+\titrecours{POURCENTAGES}{Cours --- Seconde}
+
+\begin{document}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, théorèmes), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Appliquer et calculer un pourcentage}
+
+\begin{definitionbox}[Définition 1 --- Prendre un pourcentage]
+Prendre $t\,\%$ d'une quantité, c'est multiplier cette quantité par $\dfrac{t}{100}$.
+
+\smallskip
+Par exemple, $20\,\%$ de $45$ : $\dfrac{20}{100}\times 45=0{,}2\times 45=9$.
+\end{definitionbox}
+
+\begin{remarquebox}
+$100\,\%$ d'une quantité, c'est toute la quantité ; $50\,\%$, c'est la moitié ;
+$25\,\%$, le quart ; $200\,\%$, le double.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 1 --- Appliquer un pourcentage]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Un lycée compte $1\,250$ élèves, dont $36\,\%$ sont demi-pensionnaires.
+        Combien d'élèves sont demi-pensionnaires ?
+  \item Une console de jeux coûte $380$~€ ; elle a une réduction de
+        $15\,\%$. Calculer le montant de la réduction, puis le prix payé.
+  \item Calculer $4{,}5\,\%$ de $2\,000$, puis $150\,\%$ de $40$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+36\,\%\text{ de }1\,250 &= \dfrac{36}{100}\times 1\,250 &\qquad& \rem{prendre $36\,\%$, c'est multiplier par $\frac{36}{100}$}\\
+36\,\%\text{ de }1\,250 &= 0{,}36\times 1\,250 && \rem{$\frac{36}{100}=0{,}36$}\\
+36\,\%\text{ de }1\,250 &= 450 &&
+\end{calculs}
+\explique{Le lycée compte $450$ demi-pensionnaires.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+\text{réduction} &= 15\,\%\text{ de }380 &\qquad& \rem{la réduction est $15\,\%$ du prix}\\
+\text{réduction} &= 0{,}15\times 380 && \rem{$\frac{15}{100}=0{,}15$}\\
+\text{réduction} &= 57 &&\\
+\text{prix payé} &= 380-57 && \rem{on retire la réduction du prix}\\
+\text{prix payé} &= 323 &&
+\end{calculs}
+\explique{La réduction est de $57$~€ ; la console est payée $323$~€.}{une phrase
+par question}
+\cas{c)}
+\begin{calculs}
+4{,}5\,\%\text{ de }2\,000 &= 0{,}045\times 2\,000 &\qquad& \rem{$\frac{4{,}5}{100}=0{,}045$}\\
+4{,}5\,\%\text{ de }2\,000 &= 90 &&\\
+150\,\%\text{ de }40 &= 1{,}5\times 40 && \rem{$\frac{150}{100}=1{,}5$ : plus de $100\,\%$, plus que $40$}\\
+150\,\%\text{ de }40 &= 60 &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Un village compte $1\,400$ habitants, dont $45\,\%$ ont moins de $30$ ans.
+        Combien d'habitants ont moins de $30$ ans ?
+  \item Un jean coûte $60$~€ ; il a une réduction de $30\,\%$. Calculer le
+        montant de la réduction, puis le prix payé.
+  \item Calculer $2{,}5\,\%$ de $800$, puis $120\,\%$ de $35$.
+\end{questions}
+\reponse{a)~$630$ habitants ;\; b)~réduction $18$~€, prix payé $42$~€ ;\; c)~$20$ et $42$.}
+\end{methodebox}
+
+\afaire{exercices 1 et 2}
+
+\begin{proprietebox}[Propriété 1 --- Quel pourcentage ?]
+Dans un groupe de $N$ individus, $n$ ont un caractère commun. Ils représentent
+$\dfrac{n}{N}$ du groupe ; écrit en centièmes, ce quotient donne le pourcentage.
+
+\smallskip
+Par exemple, $3$ élèves sur $4$ : $\dfrac{3}{4}=0{,}75=\dfrac{75}{100}=75\,\%$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 2 --- Calculer un pourcentage]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Dans une classe de $25$ élèves, $9$ font du théâtre. Quel pourcentage des
+        élèves font du théâtre ?
+  \item Sur un salaire de $1\,600$~€, Inès paie un loyer de $520$~€. Quel
+        pourcentage de son salaire représente son loyer ?
+  \item Le club de foot A compte $18$ filles sur $40$ licenciés ; le club B,
+        $27$ filles sur $75$ licenciés. Quel club a la plus forte part de filles ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\dfrac{9}{25} &= 0{,}36 &\qquad& \rem{les $9$ élèves, divisés par l'effectif de la classe}\\
+\dfrac{9}{25} &= 36\,\% && \rem{$0{,}36=\frac{36}{100}$}
+\end{calculs}
+\explique{$36\,\%$ des élèves font du théâtre.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+\dfrac{520}{1\,600} &= 0{,}325 &\qquad& \rem{le loyer, divisé par le salaire (calculatrice)}\\
+\dfrac{520}{1\,600} &= 32{,}5\,\% && \rem{$0{,}325=\frac{32{,}5}{100}$}
+\end{calculs}
+\explique{Le loyer représente $32{,}5\,\%$ du salaire.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+\dfrac{18}{40} &= 0{,}45 &\qquad& \rem{club A}\\
+\dfrac{18}{40} &= 45\,\% &&\\
+\dfrac{27}{75} &= 0{,}36 && \rem{club B}\\
+\dfrac{27}{75} &= 36\,\% &&
+\end{calculs}
+\explique{$45\,\%>36\,\%$ : le club A a la plus forte part de filles, alors qu'il
+en compte moins.}{on compare les pourcentages, pas les effectifs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Dans une classe de $35$ élèves, $21$ viennent au lycée en bus. Quel
+        pourcentage des élèves vient en bus ?
+  \item Sur un budget mensuel de $1\,850$~€, une famille dépense $296$~€ en
+        transports. Quel pourcentage du budget représentent les transports ?
+  \item Le lycée A compte $84$ internes sur $600$ élèves ; le lycée B, $117$
+        internes sur $900$ élèves. Quel lycée a la plus forte part d'internes ?
+\end{questions}
+\reponse{a)~$60\,\%$ ;\; b)~$16\,\%$ ;\; c)~A : $14\,\%$ et B : $13\,\%$, donc le lycée A.}
+\end{methodebox}
+
+\afaire{exercices 3 à 6}
+
+\partiecours{Proportions}
+
+\begin{definitionbox}[Définition 2 --- Proportion]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+La \textbf{population de référence} est le groupe entier, d'effectif $N$ ; une
+\textbf{sous-population} en est une partie, d'effectif $n$.
+
+\smallskip
+La \textbf{proportion} de la sous-population dans la population de référence est
+\[p=\dfrac{n}{N}.\]
+C'est un nombre compris entre $0$ et $1$, qu'on écrit en fraction, en écriture
+décimale ou en pourcentage.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}
+  \draw[thick,coulDef] (0,0) rectangle (3.6,2.3);
+  \node[font=\footnotesize,anchor=north west] at (0.05,2.3) {population : $N$};
+  \draw[thick,fill=coulDef!15] (2,0.95) ellipse (1.2 and 0.6);
+  \node[font=\footnotesize,align=center] at (2,0.95) {sous-population\\ $n$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Effectif et effectif total]
+Quand on connaît la proportion $p$ :
+\begin{itemize}
+  \item l'effectif de la sous-population est $n=p\times N$ (c'est la méthode 1) ;
+  \item l'effectif total $N$ vérifie $p\times N=n$, donc $N=\dfrac{n}{p}$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Associer effectif, proportion et effectif total]
+\etapeexemples
+Un club d'escalade compte $240$ licenciés, dont $45\,\%$ sont mineurs. Parmi les
+licenciés, $96$ sont des femmes, et $48$ d'entre elles sont mineures.
+\begin{questions}[label=\alph*)]
+  \item Combien de licenciés sont mineurs ?
+  \item Quelle est la proportion de femmes parmi les licenciés ?
+  \item Quelle est la proportion de mineures parmi les femmes ? La comparer à la
+        proportion de mineurs dans tout le club.
+  \item Un autre club compte $63$ licenciés mineurs, soit $35\,\%$ de ses
+        licenciés. Combien ce club a-t-il de licenciés ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Population de référence : les $240$ licenciés ; sous-population : les
+mineurs.}{on repère d'abord les deux populations}
+\begin{calculs}
+n &= p\times N &\qquad& \rem{on cherche l'effectif de la sous-population}\\
+n &= 0{,}45\times 240 &&\\
+n &= 108 &&
+\end{calculs}
+\explique{Le club compte $108$ licenciés mineurs.}{on conclut par une phrase}
+\cas{b)}
+\explique{Population de référence : les $240$ licenciés ; sous-population : les
+$96$ femmes.}{}
+\begin{calculs}
+p &= \dfrac{n}{N} &\qquad& \rem{on cherche une proportion}\\
+p &= \dfrac{96}{240} &&\\
+p &= 0{,}4 &&\\
+p &= 40\,\% &&
+\end{calculs}
+\explique{Les femmes représentent $40\,\%$ des licenciés.}{on conclut par une phrase}
+\cas{c)}
+\explique{Population de référence : les $96$ femmes ; sous-population : les $48$
+mineures.}{la population de référence a changé}
+\begin{calculs}
+p &= \dfrac{48}{96} &\qquad& \rem{$\frac{n}{N}$}\\
+p &= 0{,}5 &&\\
+p &= 50\,\% &&
+\end{calculs}
+\explique{$50\,\%$ des femmes sont mineures, contre $45\,\%$ dans tout le club : les
+femmes du club sont plus souvent mineures.}{on compare deux proportions}
+\cas{d)}
+\explique{Population de référence : les licenciés du second club, en nombre $N$
+inconnu ; sous-population : les $63$ mineurs.}{c'est $N$ qu'on cherche}
+\begin{calculs}
+p\times N &= n &\qquad& \rem{la formule de la propriété 2}\\
+0{,}35\times N &= 63 &&\\
+N &= \dfrac{63}{0{,}35} && \rem{on divise les deux membres par $0{,}35$}\\
+N &= 180 &&
+\end{calculs}
+\explique{Ce club compte $180$ licenciés.}{on peut vérifier : $0{,}35\times 180=63$}
+\end{correction}
+
+\etape{À vous de jouer}
+Un lycée compte $800$ élèves, dont $30\,\%$ sont externes. Parmi les élèves,
+$440$ sont des filles, et $154$ d'entre elles sont externes.
+\begin{questions}[label=\alph*)]
+  \item Combien d'élèves sont externes ?
+  \item Quelle est la proportion de filles parmi les élèves ?
+  \item Quelle est la proportion d'externes parmi les filles ? La comparer à la
+        proportion d'externes dans tout le lycée.
+  \item Un autre lycée compte $91$ latinistes, soit $14\,\%$ de ses élèves.
+        Combien ce lycée a-t-il d'élèves ?
+\end{questions}
+\reponse{a)~$240$ ;\; b)~$55\,\%$ ;\; c)~$35\,\%$, plus que $30\,\%$ ;\; d)~$650$ élèves.}
+\end{methodebox}
+
+\afaire{exercices 7 à 11}
+
+\partiecours{Proportions échelonnées}
+
+\begin{exemplebox}[Exemple --- Un pourcentage d'un pourcentage]
+Dans un car de $50$ passagers, $40\,\%$ sont des scolaires, et $60\,\%$ des
+scolaires sont des filles.
+\begin{calculs}
+\text{scolaires} &= 0{,}4\times 50 &\qquad& \rem{$40\,\%$ des passagers}\\
+\text{scolaires} &= 20 &&\\
+\text{filles scolaires} &= 0{,}6\times 20 && \rem{$60\,\%$ des scolaires}\\
+\text{filles scolaires} &= 12 &&
+\end{calculs}
+Dans le car, la proportion de filles scolaires est $\dfrac{12}{50}=0{,}24$ ; or
+$0{,}6\times 0{,}4=0{,}24$ : il suffisait de multiplier les deux proportions.
+\end{exemplebox}
+
+\begin{proprietebox}[Propriété 3 --- Proportions échelonnées]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+$A$ est une partie de $B$, et $B$ une partie de $C$.
+\begin{itemize}
+  \item $p_1$ est la proportion de $A$ dans $B$ ;
+  \item $p_2$ est la proportion de $B$ dans $C$.
+\end{itemize}
+Alors la proportion de $A$ dans $C$ est $p=p_1\times p_2$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}
+  \draw[thick,fill=coulProp!8] (0,0) ellipse (1.9 and 1.15);
+  \draw[thick,fill=coulProp!20] (0.45,-0.1) ellipse (1.25 and 0.8);
+  \draw[thick,fill=coulProp!40] (0.8,-0.15) ellipse (0.6 and 0.45);
+  \node at (-1.35,0.2) {$C$};
+  \node at (-0.4,0.15) {$B$};
+  \node at (0.8,-0.15) {$A$};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\demo{On note $n_A$, $n_B$ et $n_C$ les effectifs de $A$, de $B$ et de $C$.}
+\begin{calculs}
+p &= \dfrac{n_A}{n_C} &\qquad& \rem{proportion de $A$ dans $C$}\\
+p &= \dfrac{n_A}{n_B}\times\dfrac{n_B}{n_C} && \rem{en simplifiant par $n_B$, on retrouve $\frac{n_A}{n_C}$}\\
+p &= p_1\times p_2 && \rem{$\frac{n_A}{n_B}=p_1$ et $\frac{n_B}{n_C}=p_2$}
+\end{calculs}
+Conclusion : la proportion de $A$ dans $C$ est le produit $p_1\times p_2$.
+
+\begin{methodebox}[Méthode 4 --- Calculer une proportion échelonnée]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Dans un lycée, $40\,\%$ des élèves sont inscrits à l'association sportive,
+        et $35\,\%$ des inscrits font du volley-ball. Quelle proportion des élèves
+        du lycée fait du volley-ball à l'association sportive ?
+  \item Ce lycée compte $1\,500$ élèves. Combien font du volley-ball à
+        l'association sportive ?
+  \item Dans une ville, $50\,\%$ des habitants ont un vélo ; $60\,\%$ d'entre eux
+        vont au travail à vélo, et $30\,\%$ de ces derniers ont un vélo électrique.
+        Quelle proportion des habitants va au travail en vélo électrique ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Les volleyeurs sont une partie des inscrits, qui sont une partie des
+élèves.}{on repère les populations emboîtées}
+\begin{calculs}
+p &= p_1\times p_2 &\qquad& \rem{propriété 3}\\
+p &= 0{,}35\times 0{,}4 && \rem{$35\,\%$ des inscrits, $40\,\%$ des élèves}\\
+p &= 0{,}14 &&\\
+p &= 14\,\% &&
+\end{calculs}
+\explique{$14\,\%$ des élèves du lycée font du volley-ball à l'association
+sportive.}{on conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+n &= p\times N &\qquad& \rem{proportion trouvée en a)}\\
+n &= 0{,}14\times 1\,500 &&\\
+n &= 210 &&
+\end{calculs}
+\explique{$210$ élèves font du volley-ball à l'association sportive.}{on conclut
+par une phrase}
+\cas{c)}
+\explique{Trois populations emboîtées dans celle des habitants : on multiplie les
+trois proportions.}{la propriété se prolonge}
+\begin{calculs}
+p &= 0{,}3\times 0{,}6\times 0{,}5 &\qquad& \rem{du plus petit groupe au plus grand}\\
+p &= 0{,}09 &&\\
+p &= 9\,\% &&
+\end{calculs}
+\explique{$9\,\%$ des habitants vont au travail en vélo électrique.}{on conclut
+par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Dans une entreprise, $60\,\%$ des salariés viennent en train, et $45\,\%$ de
+        ceux-ci ont un abonnement annuel. Quelle proportion des salariés vient en
+        train avec un abonnement annuel ?
+  \item Cette entreprise compte $2\,400$ salariés. Combien viennent en train avec
+        un abonnement annuel ?
+  \item Dans un lycée, $80\,\%$ des élèves ont un téléphone portable ; $75\,\%$
+        d'entre eux ont une application de révision, et $40\,\%$ de ces derniers
+        l'utilisent chaque jour. Quelle proportion des élèves utilise chaque jour
+        une application de révision ?
+\end{questions}
+\reponse{a)~$27\,\%$ ;\; b)~$648$ salariés ;\; c)~$24\,\%$.}
+\end{methodebox}
+
+\afaire{exercices 12 à 15}
+
+\partiecours{Coefficient multiplicateur}
+
+Dans la méthode 1, la console à $380$~€, qui a une réduction de $15\,\%$, coûte
+$380-57=323$~€. On paie $100\,\%-15\,\%=85\,\%$ du prix : une seule multiplication
+suffit, $0{,}85\times 380=323$.
+
+\begin{definitionbox}[Définition 3 --- Taux d'évolution]
+Une hausse de $15\,\%$ a pour \textbf{taux d'évolution} $t=+15\,\%=0{,}15$ ; une baisse
+de $15\,\%$ a pour taux d'évolution $t=-15\,\%=-0{,}15$.
+
+\smallskip
+Le taux d'évolution est positif pour une hausse, négatif pour une baisse.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 4 --- Coefficient multiplicateur]
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+Une évolution de taux $t$ multiplie la valeur par $C_m=1+t$, le
+\textbf{coefficient multiplicateur} de l'évolution : la valeur de départ $V_0$
+devient $V_1=V_0\times C_m$.
+
+\smallskip
+Hausse de $15\,\%$ : $C_m=1+0{,}15=1{,}15$ ; baisse de $15\,\%$ :
+$C_m=1-0{,}15=0{,}85$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}
+  \node (a) at (0,0) {$V_0$};
+  \node (b) at (2.6,0) {$V_1$};
+  \draw[->,thick,coulProp] (a) to[bend left=40]
+    node[above,font=\footnotesize]{$\times\,C_m$} (b);
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\demo{Pour une baisse, $t$ est négatif : ajouter $t\times V_0$, c'est retirer.}
+\begin{calculs}
+V_1 &= V_0+t\times V_0 &\qquad& \rem{on ajoute $t\times V_0$ : $15\,\%$ de $V_0$ si $t=0{,}15$ (partie I)}\\
+V_1 &= V_0\times(1+t) && \rem{on factorise par $V_0$}
+\end{calculs}
+Conclusion : une évolution de taux $t$ multiplie la valeur par $1+t$.
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{12pt}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Évolution} & \textbf{Taux $t$} & \textbf{Coefficient $C_m=1+t$}\\
+\hline
+hausse de $12\,\%$ & $0{,}12$ & $1+0{,}12=1{,}12$\\
+\hline
+hausse de $5\,\%$ & $0{,}05$ & $1+0{,}05=1{,}05$\\
+\hline
+baisse de $30\,\%$ & $-0{,}3$ & $1-0{,}3=0{,}7$\\
+\hline
+baisse de $2\,\%$ & $-0{,}02$ & $1-0{,}02=0{,}98$\\
+\hline
+\end{tabular}}
+\end{center}
+Un coefficient $C_m$ plus grand que $1$ traduit une hausse ; plus petit que $1$, une baisse.
+
+\begin{methodebox}[Méthode 5 --- Passer du taux d'évolution au coefficient multiplicateur, et inversement]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Donner le coefficient multiplicateur $C_m$ d'une hausse de $8\,\%$.
+  \item Donner le coefficient multiplicateur $C_m$ d'une baisse de $35\,\%$.
+  \item Un prix est multiplié par $1{,}4$. Quel est son taux d'évolution ?
+  \item Un prix est multiplié par $0{,}93$. Quel est son taux d'évolution ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+C_m &= 1+t &\qquad& \rem{propriété 4}\\
+C_m &= 1+0{,}08 && \rem{hausse de $8\,\%$ : $t=0{,}08$}\\
+C_m &= 1{,}08 &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+C_m &= 1+t &\qquad& \rem{propriété 4}\\
+C_m &= 1-0{,}35 && \rem{baisse de $35\,\%$ : $t=-0{,}35$}\\
+C_m &= 0{,}65 &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C_m &= 1{,}4 &\qquad& \rem{plus grand que $1$ : une hausse}\\
+C_m &= 1+0{,}4 && \rem{on écrit $C_m$ sous la forme $1+t$}
+\end{calculs}
+\explique{$t=0{,}4=+40\,\%$ : le prix augmente de $40\,\%$.}{on conclut par une phrase}
+\cas{d)}
+\begin{calculs}
+C_m &= 0{,}93 &\qquad& \rem{plus petit que $1$ : une baisse}\\
+C_m &= 1-0{,}07 && \rem{on écrit $C_m$ sous la forme $1+t$, avec $t$ négatif}
+\end{calculs}
+\explique{$t=-0{,}07=-7\,\%$ : le prix baisse de $7\,\%$.}{on conclut par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Donner le coefficient multiplicateur $C_m$ d'une hausse de $7\,\%$.
+  \item Donner le coefficient multiplicateur $C_m$ d'une baisse de $22\,\%$.
+  \item Un prix est multiplié par $1{,}15$. Quel est son taux d'évolution ?
+  \item Un prix est multiplié par $0{,}6$. Quel est son taux d'évolution ?
+\end{questions}
+\reponse{a)~$1{,}07$ ;\; b)~$0{,}78$ ;\; c)~$+15\,\%$ ;\; d)~$-40\,\%$.}
+\end{methodebox}
+
+\afaire{exercices 16 et 17}
+
+\begin{methodebox}[Méthode 6 --- Calculer une valeur d'arrivée ou de départ]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item La console à $380$~€ a une réduction de $15\,\%$. Calculer le prix payé avec le
+        coefficient multiplicateur.
+  \item Un loyer de $650$~€ augmente de $3\,\%$. Calculer le nouveau loyer.
+  \item Après une hausse de $20\,\%$, un vélo coûte $540$~€. Quel était son prix
+        avant la hausse ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+V_1 &= V_0\times C_m &\qquad& \rem{la valeur d'arrivée est cherchée}\\
+V_1 &= 380\times 0{,}85 && \rem{baisse de $15\,\%$ : $C_m=1-0{,}15$}\\
+V_1 &= 323 &&
+\end{calculs}
+\explique{La console est payée $323$~€, comme dans la méthode 1.}{une seule
+multiplication}
+\cas{b)}
+\begin{calculs}
+V_1 &= V_0\times C_m &\qquad&\\
+V_1 &= 650\times 1{,}03 && \rem{hausse de $3\,\%$ : $C_m=1+0{,}03$}\\
+V_1 &= 669{,}5 &&
+\end{calculs}
+\explique{Le nouveau loyer est de $669{,}50$~€.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+V_0\times C_m &= V_1 &\qquad& \rem{c'est la valeur de départ qui est cherchée}\\
+V_0\times 1{,}2 &= 540 && \rem{hausse de $20\,\%$ : $C_m=1+0{,}2$}\\
+V_0 &= \dfrac{540}{1{,}2} && \rem{on divise par $C_m$}\\
+V_0 &= 450 &&
+\end{calculs}
+\explique{Le vélo coûtait $450$~€ avant la hausse.}{retirer $20\,\%$ de $540$
+donnerait $432$ : faux}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Un manteau à $240$~€ est soldé de $25\,\%$. Calculer le prix soldé avec le
+        coefficient multiplicateur.
+  \item Un salaire de $1\,500$~€ augmente de $4\,\%$. Calculer le nouveau salaire.
+  \item Après une baisse de $10\,\%$, un casque coûte $63$~€. Quel était son prix
+        avant la baisse ?
+\end{questions}
+\reponse{a)~$180$~€ ;\; b)~$1\,560$~€ ;\; c)~$70$~€.}
+\end{methodebox}
+
+\afaire{exercices 18 à 20}
+
+\partiecours{Calculer un taux d'évolution}
+
+\begin{definitionbox}[Définition 4 --- Variation absolue]
+Une grandeur passe de la valeur de départ $V_0$ à la valeur d'arrivée $V_1$. Sa
+\textbf{variation absolue} est $V_1-V_0$ ; elle a l'unité de la grandeur.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 5 --- Calculer un taux d'évolution]
+Le taux d'évolution (partie IV) de $V_0$ à $V_1$ est
+\[t=\dfrac{V_1-V_0}{V_0}.\]
+Il n'a pas d'unité et s'écrit souvent en pourcentage ; positif pour une hausse,
+négatif pour une baisse.
+\end{proprietebox}
+
+\begin{remarquebox}
+On a toujours $C_m=1+t$ (propriété 4) : une hausse de $12{,}5\,\%$ a pour coefficient
+$1{,}125$ ; une baisse de $15\,\%$, $1+(-0{,}15)=0{,}85$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer un taux d'évolution]
+\etapeexemples
+Pour chaque grandeur, calculer le taux d'évolution, en pourcentage.
+\begin{questions}[label=\alph*)]
+  \item Un abonnement de musique en ligne passe de $12$~€ à $13{,}50$~€ par mois.
+  \item Un musée reçoit $48\,000$ visiteurs une année, puis $40\,800$ l'année
+        suivante.
+  \item Une commune passe de $2\,400$ à $2\,530$ habitants (arrondir au dixième de
+        pourcentage).
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+t &= \dfrac{V_1-V_0}{V_0} &\qquad& \rem{$V_0=12$ (départ) et $V_1=13{,}5$ (arrivée)}\\
+t &= \dfrac{13{,}5-12}{12} &&\\
+t &= \dfrac{1{,}5}{12} && \rem{variation absolue : $1{,}50$~€}\\
+t &= 0{,}125 &&\\
+t &= 12{,}5\,\% &&
+\end{calculs}
+\explique{L'abonnement augmente de $12{,}5\,\%$.}{$t$ positif : une hausse}
+\cas{b)}
+\begin{calculs}
+t &= \dfrac{V_1-V_0}{V_0} &\qquad& \rem{on divise toujours par la valeur de départ}\\
+t &= \dfrac{40\,800-48\,000}{48\,000} &&\\
+t &= \dfrac{-7\,200}{48\,000} &&\\
+t &= -0{,}15 &&\\
+t &= -15\,\% &&
+\end{calculs}
+\explique{La fréquentation du musée baisse de $15\,\%$.}{$t$ négatif : une baisse}
+\cas{c)}
+\begin{calculs}
+t &= \dfrac{V_1-V_0}{V_0} &\qquad&\\
+t &= \dfrac{2\,530-2\,400}{2\,400} &&\\
+t &= \dfrac{130}{2\,400} &&\\
+t &\approx 0{,}0542 && \rem{calculatrice : $0{,}054166\dots$}\\
+t &\approx 5{,}4\,\% && \rem{arrondi au dixième de pourcentage}
+\end{calculs}
+\explique{La population augmente d'environ $5{,}4\,\%$.}{on conclut par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque grandeur, calculer le taux d'évolution, en pourcentage.
+\begin{questions}[label=\alph*)]
+  \item Une place de cinéma passe de $15$~€ à $16{,}80$~€.
+  \item Une ligne de bus transporte $25\,000$ voyageurs un mois, puis $21\,000$ le
+        mois suivant.
+  \item Un club passe de $1\,800$ à $1\,950$ adhérents (arrondir au dixième de
+        pourcentage).
+\end{questions}
+\reponse{a)~$+12\,\%$ ;\; b)~$-16\,\%$ ;\; c)~environ $+8{,}3\,\%$.}
+\end{methodebox}
+
+\afaire{exercices 21 à 26}
+
+\partiecours{Évolutions successives}
+
+Un article à $100$~€ augmente de $20\,\%$ : il coûte $120$~€. Puis il baisse de
+$20\,\%$ : il coûte $120\times 0{,}8=96$~€, et non $100$~€. Des pourcentages
+successifs ne s'ajoutent pas.
+
+\begin{proprietebox}[Propriété 6 --- Évolutions successives]
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+Quand une valeur subit deux évolutions successives, de coefficients $C_{m1}$
+puis $C_{m2}$, le \textbf{coefficient multiplicateur global} est le produit
+\[C_m=C_{m1}\times C_{m2}.\]
+De même pour trois évolutions ou plus.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.44\linewidth}\centering
+\begin{tikzpicture}
+  \node (a) at (0,0) {$V_0$};
+  \node (b) at (2.2,0) {$V_1$};
+  \node (c) at (4.4,0) {$V_2$};
+  \draw[->,thick,coulProp] (a) to[bend left=40]
+    node[above,font=\footnotesize]{$\times\,C_{m1}$} (b);
+  \draw[->,thick,coulProp] (b) to[bend left=40]
+    node[above,font=\footnotesize]{$\times\,C_{m2}$} (c);
+  \draw[->,thick,coulExo] (a) to[bend right=30]
+    node[below,font=\footnotesize]{$\times\,C_{m1}\times C_{m2}$} (c);
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\demo{}
+\begin{calculs}
+V_2 &= V_1\times C_{m2} &\qquad& \rem{seconde évolution}\\
+V_2 &= V_0\times C_{m1}\times C_{m2} && \rem{première évolution : $V_1=V_0\times C_{m1}$}
+\end{calculs}
+Conclusion : passer de $V_0$ à $V_2$, c'est multiplier par
+$C_{m1}\times C_{m2}$.
+
+\begin{methodebox}[Méthode 8 --- Calculer un taux d'évolution global]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Un prix augmente de $25\,\%$, puis baisse de $12\,\%$. Quelle est son
+        évolution globale ?
+  \item Le nombre d'abonnés d'un journal baisse de $10\,\%$ par an pendant trois
+        ans. Quelle est son évolution globale ?
+  \item Un plat à $80$~€ augmente de $5\,\%$ deux années de suite. Quelle est son
+        évolution globale ? Quel est son prix final ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+C_m &= C_{m1}\times C_{m2} &\qquad& \rem{propriété 6}\\
+C_m &= 1{,}25\times 0{,}88 && \rem{$1+0{,}25$, puis $1-0{,}12$}\\
+C_m &= 1{,}1 &&\\
+C_m &= 1+0{,}1 && \rem{on écrit $C_m$ sous la forme $1+\dots$}
+\end{calculs}
+\explique{Le prix augmente globalement de $10\,\%$ (et non de $25\,\%-12\,\%=13\,\%$).}{$0{,}1=10\,\%$}
+\cas{b)}
+\begin{calculs}
+C_m &= 0{,}9\times 0{,}9\times 0{,}9 &\qquad& \rem{trois baisses de $10\,\%$ : $1-0{,}1$}\\
+C_m &= 0{,}729 &&\\
+C_m &= 1-0{,}271 && \rem{on écrit $C_m$ sous la forme $1-\dots$}
+\end{calculs}
+\explique{Le nombre d'abonnés baisse globalement de $27{,}1\,\%$ (et non de
+$30\,\%$).}{$0{,}271=27{,}1\,\%$}
+\cas{c)}
+\begin{calculs}
+C_m &= 1{,}05\times 1{,}05 &\qquad& \rem{deux hausses de $5\,\%$}\\
+C_m &= 1{,}1025 &&\\
+C_m &= 1+0{,}1025 &&
+\end{calculs}
+\explique{Le prix augmente globalement de $10{,}25\,\%$.}{$0{,}1025=10{,}25\,\%$}
+\begin{calculs}
+V_2 &= V_0\times C_m &\qquad& \rem{valeur d'arrivée, avec le coefficient global}\\
+V_2 &= 80\times 1{,}1025 &&\\
+V_2 &= 88{,}2 &&
+\end{calculs}
+\explique{Le plat coûte $88{,}20$~€.}{on conclut par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Un prix augmente de $50\,\%$, puis baisse de $20\,\%$. Quelle est son
+        évolution globale ?
+  \item La valeur d'une voiture baisse de $20\,\%$ par an pendant trois ans.
+        Quelle est son évolution globale ?
+  \item Une carte de transport à $60$~€ augmente de $10\,\%$ deux années de suite.
+        Quelle est son évolution globale ? Quel est son prix final ?
+\end{questions}
+\reponse{a)~hausse de $20\,\%$ ;\; b)~baisse de $48{,}8\,\%$ ;\; c)~hausse de $21\,\%$,
+prix final $72{,}60$~€.}
+\end{methodebox}
+
+\afaire{exercices 27 à 31}
+
+\partiecours{Évolution réciproque}
+
+Dans la partie VI, une baisse de $20\,\%$ n'a pas compensé une hausse de $20\,\%$.
+Quelle évolution ramène une valeur à son point de départ ?
+
+\begin{definitionbox}[Définition 5 --- Évolution réciproque]
+Une valeur passe de $V_0$ à $V_1$. L'\textbf{évolution réciproque} est celle qui
+ramène $V_1$ à $V_0$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 7 --- Coefficient de l'évolution réciproque]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Le coefficient multiplicateur de l'évolution réciproque est l'inverse de celui de
+l'évolution de départ :
+\[C'_m=\dfrac{1}{C_m}.\]
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}
+  \node (a) at (0,0) {$V_0$};
+  \node (b) at (2.6,0) {$V_1$};
+  \draw[->,thick,coulProp] (a) to[bend left=40]
+    node[above,font=\footnotesize]{$\times\,C_m$} (b);
+  \draw[->,thick,coulExo] (b) to[bend left=40]
+    node[below,font=\footnotesize]{$\times\,\dfrac{1}{C_m}$} (a);
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\demo{}
+\begin{calculs}
+V_0\times C_m &= V_1 &\qquad& \rem{l'évolution de départ}\\
+V_0 &= \dfrac{V_1}{C_m} && \rem{on divise par $C_m$}\\
+V_0 &= V_1\times\dfrac{1}{C_m} &&
+\end{calculs}
+Conclusion : pour revenir de $V_1$ à $V_0$, on multiplie par $\dfrac{1}{C_m}$.
+
+\begin{methodebox}[Méthode 9 --- Calculer un taux d'évolution réciproque]
+\etapeexemples
+Pour chaque évolution, quelle évolution ramène la valeur à son point de départ ?
+\begin{questions}[label=\alph*)]
+  \item Les ventes d'un magasin baissent de $20\,\%$.
+  \item Le prix d'un appartement augmente de $60\,\%$.
+  \item Le prix du kilo de cerises augmente de $15\,\%$ (arrondir au dixième de
+        pourcentage).
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+C'_m &= \dfrac{1}{C_m} &\qquad& \rem{inverse de $C_m$}\\
+C'_m &= \dfrac{1}{0{,}8} && \rem{baisse de $20\,\%$ : $C_m=1-0{,}2$}\\
+C'_m &= 1{,}25 &&\\
+C'_m &= 1+0{,}25 && \rem{on écrit $C_m$ sous la forme $1+\dots$}
+\end{calculs}
+\explique{Il faut une hausse de $25\,\%$ pour compenser la baisse de $20\,\%$.}{on
+conclut par une phrase}
+\cas{b)}
+\begin{calculs}
+C'_m &= \dfrac{1}{C_m} &\qquad&\\
+C'_m &= \dfrac{1}{1{,}6} && \rem{hausse de $60\,\%$ : $C_m=1+0{,}6$}\\
+C'_m &= 0{,}625 &&\\
+C'_m &= 1-0{,}375 && \rem{on écrit $C_m$ sous la forme $1-\dots$}
+\end{calculs}
+\explique{Il faut une baisse de $37{,}5\,\%$ pour compenser la hausse de
+$60\,\%$.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+C'_m &= \dfrac{1}{1{,}15} &\qquad& \rem{hausse de $15\,\%$ : $C_m=1+0{,}15$}\\
+C'_m &\approx 0{,}8696 && \rem{calculatrice : $0{,}869565\dots$}\\
+C'_m &\approx 1-0{,}1304 &&
+\end{calculs}
+\explique{Il faut une baisse d'environ $13{,}0\,\%$ pour compenser la hausse de
+$15\,\%$.}{$0{,}1304\approx 13{,}0\,\%$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque évolution, quelle évolution ramène la valeur à son point de départ ?
+\begin{questions}[label=\alph*)]
+  \item Le nombre de clients d'un restaurant baisse de $50\,\%$.
+  \item Le prix d'un forfait de ski augmente de $25\,\%$.
+  \item Le prix d'un ordinateur baisse de $30\,\%$ (arrondir au dixième de
+        pourcentage).
+\end{questions}
+\reponse{a)~hausse de $100\,\%$ ;\; b)~baisse de $20\,\%$ ;\; c)~hausse d'environ
+$42{,}9\,\%$.}
+\end{methodebox}
+
+\afaire{exercices 32 à 36}
+
+\end{document}

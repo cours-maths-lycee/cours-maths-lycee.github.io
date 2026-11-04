@@ -1,0 +1,640 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{bottom=1cm}
+
+\setlength{\espaceexo}{4pt}
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=1pt,topsep=1pt}
+
+\begin{document}
+
+\titrefiche{Seconde --- Pourcentages}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Appliquer et calculer un pourcentage}
+
+\exo[Prendre un pourcentage]
+Calculer, à la main ou à la calculatrice :
+\begin{enumerate}[label=\alph*)]
+  \item $10\,\%$ de $340$ ;\; $25\,\%$ de $48$ ;\; $50\,\%$ de $3\,600$ ;
+  \item $15\,\%$ de $260$ ;\; $8\,\%$ de $75$ ;\; $3{,}5\,\%$ de $400$ ;
+  \item $200\,\%$ de $17$ ;\; $120\,\%$ de $45$ ;\; $0{,}5\,\%$ de $1\,800$.
+\end{enumerate}
+
+\exo[Appliquer un pourcentage]
+\begin{enumerate}[label=\alph*)]
+  \item Un lycée compte $1\,150$ élèves, dont $42\,\%$ sont demi-pensionnaires.
+        Combien d'élèves sont demi-pensionnaires ?
+  \item Un téléphone coûte $420$~€ ; il a une réduction de $15\,\%$. Calculer
+        le montant de la réduction, puis le prix payé.
+  \item Le téléchargement d'un fichier de $360$~Mo en est à $65\,\%$. Combien
+        de Mo reste-t-il à télécharger ?
+\end{enumerate}
+
+\exo[Calculer un pourcentage]
+\begin{enumerate}[label=\alph*)]
+  \item À une question d'un QCM, $18$ élèves ont répondu juste et $7$ ont
+        répondu faux. Quel pourcentage des élèves a répondu juste ?
+  \item Une entreprise de $320$ salariés embauche $40$ personnes. Quel
+        pourcentage de l'effectif de départ représentent les embauches ?
+  \item Sur un salaire de $1\,600$~€, Malo dépense $288$~€ en courses. Quel
+        pourcentage de son salaire représentent les courses ?
+\end{enumerate}
+
+\exo[Comparer des pourcentages]
+Dans la classe A, $12$ élèves sur $30$ suivent l'option théâtre ; dans la classe
+B, $13$ sur $35$ ; dans la classe C, $11$ sur $28$.
+\begin{enumerate}[label=\alph*)]
+  \item Pour chaque classe A, B et C, calculer le pourcentage d'élèves qui
+        suivent l'option (arrondir au dixième).
+  \item Ranger les classes de la plus forte part d'élèves de théâtre à la plus
+        faible. La classe qui a le plus d'élèves de théâtre est-elle la
+        première ?
+\end{enumerate}
+
+\exo[Lire un tableau]
+Les $1\,200$ élèves d'un lycée ont indiqué comment ils viennent au lycée.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Mode & bus & vélo & à pied & voiture & total\\
+\hline
+Élèves & $504$ & $156$ & $300$ & $240$ & $1\,200$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Pour chaque mode de transport, calculer le pourcentage d'élèves qui
+        l'utilisent.
+  \item Écrire une phrase qui explique ce que représente le quotient
+        $\dfrac{300}{1\,200}$ dans ce contexte.
+\end{enumerate}
+
+\exo[La TVA]
+La TVA est une taxe de $20\,\%$ ajoutée au prix hors taxe (HT) ; on obtient le
+prix toutes taxes comprises (TTC).
+\begin{enumerate}[label=\alph*)]
+  \item Un bureau coûte $240$~€ HT. Calculer le montant de la TVA, puis le prix
+        TTC.
+  \item Même question pour une chaise à $85$~€ HT.
+\end{enumerate}
+
+\partiefiche{Proportions}
+
+\exo[Effectif, proportion, effectif total]
+Un club de natation compte $320$ licenciés, dont $35\,\%$ sont mineurs. Parmi
+les licenciés, $144$ sont des femmes, et $72$ d'entre elles sont mineures.
+\begin{enumerate}[label=\alph*)]
+  \item Combien de licenciés sont mineurs ?
+  \item Quelle est la proportion de femmes parmi les licenciés ?
+  \item Quelle est la proportion de mineures parmi les femmes ? La comparer à
+        la proportion de mineurs dans tout le club.
+  \item Un autre club compte $54$ licenciés mineurs, soit $30\,\%$ de ses
+        licenciés. Combien ce club a-t-il de licenciés ?
+\end{enumerate}
+
+\exo[Population de référence]
+Un constructeur vend $2{,}4$ millions de voitures en un an, dont $360\,000$
+voitures électriques.
+\begin{enumerate}[label=\alph*)]
+  \item Quelle est la population de référence ? Quelle est la sous-population ?
+        Répondre par deux phrases.
+  \item Calculer la proportion de voitures électriques, en pourcentage.
+\end{enumerate}
+
+\exo[Retrouver l'effectif total]
+\begin{enumerate}[label=\alph*)]
+  \item Dans une population d'insectes, $300$ insectes portent un gène rare ;
+        ils représentent $1{,}5\,\%$ de la population. Combien la population
+        compte-t-elle d'insectes ?
+  \item Un réseau social annonce $4{,}8$ milliards d'utilisateurs, soit $60\,\%$
+        de la population mondiale. Quelle population mondiale cela suppose-t-il ?
+  \item Une classe compte $21$ filles, soit $60\,\%$ des élèves. Combien la
+        classe compte-t-elle d'élèves ?
+\end{enumerate}
+
+\exo[Un budget]
+Le loyer de Yanis, $640$~€, représente $40\,\%$ de son salaire.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le salaire de Yanis.
+  \item Ses charges représentent $8\,\%$ de son salaire. Calculer leur montant.
+  \item Quel pourcentage de son salaire représentent le loyer et les charges
+        ensemble ?
+\end{enumerate}
+
+\exo[Vérifier une information]
+Un journal affirme : « $1{,}2$ million de personnes ont eu la grippe cet hiver,
+soit $3\,\%$ de la population. »
+\begin{enumerate}[label=\alph*)]
+  \item Si l'affirmation était juste, quelle serait la population du pays ?
+  \item Le pays compte en réalité $68$ millions d'habitants. Quel pourcentage de
+        la population a eu la grippe (arrondir au dixième) ?
+\end{enumerate}
+
+\partiefiche{Proportions échelonnées}
+
+\exo[Pourcentage d'un pourcentage]
+Calculer :\; $20\,\%$ de $40\,\%$ ;\; $50\,\%$ de $30\,\%$ ;\; $10\,\%$ de $5\,\%$.
+
+\exo[Association sportive]
+Dans un lycée de $1\,200$ élèves, $45\,\%$ des élèves sont inscrits à
+l'association sportive, et $20\,\%$ des inscrits font du badminton.
+\begin{enumerate}[label=\alph*)]
+  \item Quelle proportion des élèves du lycée fait du badminton à
+        l'association sportive ?
+  \item Combien d'élèves cela représente-t-il ?
+  \item Vérifier ce résultat en calculant d'abord le nombre d'inscrits.
+\end{enumerate}
+
+\exo[Populations emboîtées]
+\begin{enumerate}[label=\alph*)]
+  \item Une compote contient $80\,\%$ de fruits, dont $35\,\%$ de pommes. Quel
+        est le pourcentage de pommes dans la compote ?
+  \item Dans un sachet de $300$ bonbons, $25\,\%$ sont à la fraise, et $40\,\%$
+        de ceux-ci sont acidulés. Combien le sachet contient-il de bonbons
+        acidulés à la fraise ?
+  \item Une ville compte $48\,000$ habitants ; $75\,\%$ sont majeurs, $60\,\%$
+        des majeurs ont le permis de conduire, et $25\,\%$ de ces derniers
+        roulent en voiture électrique. Quelle proportion des habitants roule en
+        voiture électrique ? Combien d'habitants cela représente-t-il ?
+\end{enumerate}
+
+\exo[Tableau croisé]
+Un collège compte $600$ élèves ; $55\,\%$ sont des filles, et $90\,\%$ des
+filles sont droitières. Parmi les garçons, $10\,\%$ sont gauchers.
+\begin{enumerate}[label=\alph*)]
+  \item Recopier et compléter le tableau d'effectifs.
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Gauchers & Droitiers & Total\\
+\hline
+Filles & & & \\
+\hline
+Garçons & & & \\
+\hline
+Total & & & $600$\\
+\hline
+\end{tabular}
+\end{center}
+  \item Quelle est la proportion de filles gauchères dans le collège ? La
+        retrouver par une proportion échelonnée.
+  \item Quelle est la proportion de gauchers dans le collège ?
+\end{enumerate}
+
+\partiefiche{Coefficient multiplicateur}
+
+\exo[Taux et coefficient multiplicateur]
+\begin{enumerate}[label=\alph*)]
+  \item Pour chaque évolution, donner le coefficient multiplicateur $C_m$ :
+        hausse de $15\,\%$ ;\; baisse de $4\,\%$ ;\; hausse de $120\,\%$ ;\;
+        baisse de $60\,\%$ ;\; baisse de $12{,}3\,\%$.
+  \item Pour chaque coefficient multiplicateur, donner le taux d'évolution :
+        $C_m=1{,}03$ ;\; $C_m=0{,}72$ ;\; $C_m=2$ ;\; $C_m=0{,}995$.
+\end{enumerate}
+
+\exo[En phrases]
+Pour chaque coefficient multiplicateur, écrire une phrase qui décrit
+l'évolution, sur le modèle : « Multiplier par $1{,}25$, c'est augmenter de
+$25\,\%$. »
+\[
+  1{,}08 \qquad 0{,}92 \qquad 1{,}5 \qquad 0{,}3
+\]
+
+\exo[Valeur d'arrivée]
+Pour chaque situation, calculer la nouvelle valeur avec le coefficient
+multiplicateur.
+\begin{enumerate}[label=\alph*)]
+  \item Une ville de $24\,000$ habitants gagne $5\,\%$ d'habitants.
+  \item Des chaussures à $75$~€ ont une réduction de $20\,\%$.
+  \item Dans un département, $3\,500$ accidents de la route ont eu lieu une
+        année ; leur nombre baisse de $12\,\%$ l'année suivante.
+\end{enumerate}
+
+\exo[Valeur de départ]
+\begin{enumerate}[label=\alph*)]
+  \item Après une hausse de $8\,\%$, un abonnement coûte $27$~€. Quel était son
+        prix avant la hausse ?
+  \item En septembre, la température moyenne d'une ville est de $19$~°C, en
+        baisse de $5\,\%$ par rapport à août. Quelle était la température
+        moyenne en août ?
+  \item Un lit coûte $150$~€ TTC, avec une TVA de $20\,\%$. Quel est son prix
+        HT ?
+  \item Après une hausse de $18\,\%$, le prix d'un vélo a augmenté de $27$~€.
+        Quel était son prix avant la hausse ?
+\end{enumerate}
+
+\exo[Les soldes]
+Pendant les soldes, un magasin fait une réduction de $20\,\%$ sur tous ses
+articles.
+\begin{enumerate}[label=\alph*)]
+  \item Léo a dépensé $225$~€ juste avant les soldes. Combien aurait-il payé
+        pendant les soldes ?
+  \item Inès a dépensé $240$~€ pendant les soldes. Combien aurait-elle payé
+        avant les soldes ?
+\end{enumerate}
+
+\partiefiche{Calculer un taux d'évolution}
+
+\exo[Taux d'évolution]
+Pour chaque grandeur, calculer la variation absolue, puis le taux d'évolution
+en pourcentage.
+\begin{enumerate}[label=\alph*)]
+  \item Une commune passe de $3\,200$ à $3\,040$ habitants.
+  \item Une usine produit $1\,500$ vélos une année, puis $2\,100$ l'année
+        suivante.
+  \item Un salaire passe de $1\,650$~€ à $1\,782$~€.
+  \item Un plein de carburant passe de $18{,}40$~€ à $19{,}10$~€ (arrondir au
+        dixième de pourcentage).
+\end{enumerate}
+
+\exo[Deux façons de dire]
+Un club passe de $400$ à $460$ adhérents.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer la variation absolue et le taux d'évolution.
+  \item Écrire une phrase qui donne la variation absolue, puis une phrase qui
+        donne le taux d'évolution.
+\end{enumerate}
+
+\exo[Du coefficient au taux]
+Une valeur passe de $V_0$ à $V_1$ : on a $V_1=V_0\times C_m$, donc
+$C_m=\dfrac{V_1}{V_0}$, et le taux d'évolution est $t=C_m-1$.
+\begin{enumerate}[label=\alph*)]
+  \item Un prix passe de $120$~€ à $144$~€. Calculer $C_m$, puis $t$.
+  \item Un stock passe de $250$~kg à $200$~kg. Calculer $C_m$, puis $t$.
+  \item Un prix est multiplié par $1{,}5$. Calculer $t$.
+  \item Un prix est multiplié par $0{,}65$. Calculer $t$.
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Pour chaque affirmation, dire si elle est vraie ou fausse, et justifier.
+\begin{enumerate}[label=\alph*)]
+  \item Un prix passe de $120$~€ à $150$~€ : il augmente de $30\,\%$.
+  \item Un prix passe de $120$~€ à $150$~€ : il est multiplié par $1{,}25$.
+  \item Un stock passe de $250$~kg à $200$~kg : il baisse de $25\,\%$.
+  \item Un village de $300$ habitants en perd $60$ : sa population baisse de
+        $20\,\%$.
+\end{enumerate}
+
+\exo[Deux magasins]
+Un même téléviseur est vendu dans deux magasins. Dans le magasin A, son prix
+passe de $480$~€ à $408$~€. Dans le magasin B, il coûtait $500$~€ et baisse de
+$14\,\%$.
+\begin{enumerate}[label=\alph*)]
+  \item Dans quel magasin la baisse est-elle la plus forte, en pourcentage ?
+  \item Dans quel magasin le téléviseur est-il le moins cher ?
+\end{enumerate}
+
+\exo[Une entreprise qui embauche]
+Une entreprise compte $250$ salariés. Elle embauche $30$ personnes une année,
+puis $14$ l'année suivante.
+\begin{enumerate}[label=\alph*)]
+  \item Combien l'entreprise compte-t-elle de salariés après la première
+        année ?
+  \item Quel pourcentage de l'effectif de départ représentent les $30$
+        embauches ?
+  \item Combien l'entreprise compte-t-elle de salariés après la seconde année ?
+  \item Calculer le taux d'évolution du nombre de salariés sur les deux années.
+\end{enumerate}
+
+\partiefiche{Évolutions successives}
+
+\exo[Taux global]
+Pour chaque cas, calculer le coefficient multiplicateur global, puis le taux
+d'évolution global.
+\begin{enumerate}[label=\alph*)]
+  \item Hausse de $25\,\%$, puis hausse de $10\,\%$.
+  \item Hausse de $30\,\%$, puis baisse de $30\,\%$.
+  \item Baisse de $40\,\%$, puis baisse de $10\,\%$.
+  \item Hausse de $2\,\%$, puis baisse de $1\,\%$.
+\end{enumerate}
+
+\exo[Un ticket de transport]
+Le prix d'un abonnement de transport augmente de $30\,\%$ ; jugée trop forte,
+la hausse est suivie d'une baisse de $10\,\%$.
+\begin{enumerate}[label=\alph*)]
+  \item Quel est le taux d'évolution global ?
+  \item L'abonnement coûtait $25$~€. Combien coûte-t-il après les deux
+        évolutions ?
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Pour chaque affirmation, dire si elle est vraie ou fausse, et justifier.
+\begin{enumerate}[label=\alph*)]
+  \item Une hausse de $12\,\%$ suivie d'une baisse de $12\,\%$ ne change pas le
+        prix.
+  \item Une réduction de $7\,\%$ puis de $20\,\%$ donne le même prix qu'une
+        réduction de $20\,\%$ puis de $7\,\%$.
+  \item Une hausse de $6\,\%$ puis de $8\,\%$ fait une hausse de $14\,\%$.
+  \item « Une hausse de $10\,\%$ en mars, puis de $15\,\%$ en septembre : le prix
+        a augmenté d'un quart sur l'année. »
+\end{enumerate}
+
+\exo[Le fleuriste]
+Un fleuriste achète des orchidées $8$~€ le pot. Il augmente ce prix de
+$40\,\%$ pour les vendre, puis, pour les fêtes, fait une réduction de $30\,\%$
+sur son prix de vente. Vend-il ses orchidées à perte ?
+
+\exo[La valeur d'une voiture]
+Une voiture neuve coûte $18\,000$~€. Elle perd $20\,\%$ de sa valeur la
+première année, puis $15\,\%$ par an les années suivantes.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer sa valeur au bout d'un an, puis de deux ans.
+  \item Calculer sa valeur au bout de trois ans.
+  \item Quel est le taux d'évolution global sur les trois ans (arrondir au
+        dixième de pourcentage) ?
+\end{enumerate}
+
+\partiefiche{Évolution réciproque}
+
+\exo[Revenir au départ]
+Pour chaque évolution, quelle évolution ramène la valeur à son point de
+départ ? Arrondir au dixième de pourcentage si besoin.
+\begin{enumerate}[label=\alph*)]
+  \item Baisse de $20\,\%$.
+  \item Hausse de $100\,\%$.
+  \item Baisse de $45\,\%$.
+  \item Hausse de $30\,\%$.
+\end{enumerate}
+
+\exo[Un village]
+La population d'un village passe de $2\,500$ à $3\,000$ habitants en un an.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le taux d'évolution de la population.
+  \item Quelle baisse, en pourcentage, ramènerait le village à $2\,500$
+        habitants (arrondir au dixième) ?
+\end{enumerate}
+
+\exo[Aller et retour]
+Pour chaque prix, calculer le taux d'évolution, le coefficient multiplicateur
+$C_m$, puis le taux de l'évolution qui ramène au prix de départ (arrondir au
+dixième de pourcentage).
+\begin{enumerate}[label=\alph*)]
+  \item Un prix passe de $20$~€ à $26$~€.
+  \item Un prix passe de $52$~€ à $39$~€.
+\end{enumerate}
+
+\exo[Plus de chocolat pour le même prix]
+Pour le même prix, une tablette de chocolat contient $25\,\%$ de chocolat en
+plus. De quel pourcentage le prix du kilo de chocolat a-t-il baissé ? On pourra
+prendre un exemple : $10$~€ pour $1$~kg.
+
+\exo[Retrouver un prix]
+Un casque a subi une hausse de $10\,\%$, puis une baisse de $20\,\%$ ; il coûte
+maintenant $352$~€.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le coefficient multiplicateur global et le taux d'évolution
+        global.
+  \item Quel était le prix du casque avant les deux évolutions ?
+  \item Quelle évolution ramènerait le prix à sa valeur de départ (arrondir au
+        dixième de pourcentage) ?
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
