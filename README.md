@@ -17,7 +17,7 @@ Des documents prêts à l'emploi pour enseigner et pour apprendre :
   détaillé ;
 - une version élève du cours, à compléter en classe.
 
-Les documents sont conçus par l'auteur avec l'aide d'une IA générative, puis relus et testés en classe.
+Les documents sont conçus par l'auteur avec l'aide d'une IA générative, puis relus et, lorsque l'auteur enseigne le niveau, testés en classe.
 
 ## Comment s'en servir
 
