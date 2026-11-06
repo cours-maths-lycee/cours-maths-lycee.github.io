@@ -267,9 +267,15 @@
 \newcommand{\divpose}[3]{\begin{tikzpicture}
   \node{\opdiv[maxdivstep=#1,safedivstep=false,displayintermediary=all]{#2}{#3}};
   \end{tikzpicture}}
-\newenvironment{division}{\par\smallskip\noindent\begin{minipage}[t]{0.62\linewidth}\vspace{0pt}\raggedright}%
+\newcommand{\divposesuite}[3]{\begin{tikzpicture}
+  \node[inner sep=0pt](d){\opdiv[maxdivstep=#1,safedivstep=false,displayintermediary=all]{#2}{#3}};
+  \node[anchor=base west,inner sep=1pt] at ([yshift=-1.8\baselineskip]d.north east) {\ldots};
+  \pgfmathsetmacro{\colonne}{#1+(#2>9?2:1)-0.5}
+  \node[anchor=base,inner sep=0pt] at ([xshift=\colonne*2ex,yshift=-\baselineskip]d.south west) {\ldots};
+  \end{tikzpicture}}
+\newenvironment{division}[1][0.62]{\par\smallskip\noindent\begin{minipage}[t]{#1\linewidth}\vspace{0pt}\raggedright}%
   {\end{minipage}\hfill}
-\newenvironment{figdivision}{\begin{minipage}[t]{0.34\linewidth}\vspace{0pt}\centering}%
+\newenvironment{figdivision}[1][0.34]{\begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering}%
   {\end{minipage}\par\smallskip}
 
 \begin{document}
@@ -280,15 +286,12 @@
 
 \begin{exo}[Développement décimal]
 \explique{On pose la division : on écrit la virgule au quotient, puis, à chaque étape, on
-abaisse un $0$ à côté du reste. Si un reste devient nul, la division s'arrête ; si un
-reste revient, les mêmes chiffres reviennent.}{méthode 1 du cours}
+abaisse un $0$ à côté du reste. Si un reste vaut $0$, la division se termine ; si un reste
+déjà obtenu revient, elle ne se termine pas : les mêmes chiffres reviennent sans fin.}{méthode 1 du cours}
 \cas{A}
 \begin{division}
+Le reste $0$ apparaît : la division se termine.
 \begin{calculs}
-3 &= 0\times 8+3 &&\justif{$0$ unité, reste $3$}\\
-30 &= 3\times 8+6 &&\justif{chiffre $3$, reste $6$}\\
-60 &= 7\times 8+4 &&\justif{chiffre $7$, reste $4$}\\
-40 &= 5\times 8+0 &&\justif{reste $0$ : la division s'arrête}\\
 A &= \res{0{,}375} &&\justif{développement limité}
 \end{calculs}
 \par\smallskip
@@ -299,49 +302,40 @@ Donc $A$ est un \res{nombre rationnel décimal}.
 \end{figdivision}
 \cas{B}
 \begin{division}
+Le reste $2$ revient : la division ne se termine pas, le chiffre $2$ revient sans fin.
 \begin{calculs}
-2 &= 0\times 9+2 &&\justif{$0$ unité, reste $2$}\\
-20 &= 2\times 9+2 &&\justif{chiffre $2$, reste $2$ : le même reste}\\
 B &= \res{0{,}222\ldots} &&\justif{illimité, de période $2$}
 \end{calculs}
 \par\smallskip
 Donc $B$ est un \res{nombre rationnel non décimal}.
 \end{division}
 \begin{figdivision}
-\divpose{4}{2}{9}
+\divposesuite{4}{2}{9}
 \end{figdivision}
 \cas{C}
 \begin{division}
+Le reste $2$ revient : la division ne se termine pas, le chiffre $3$ revient sans fin.
 \begin{calculs}
-5 &= 0\times 6+5 &&\justif{$0$ unité, reste $5$}\\
-50 &= 8\times 6+2 &&\justif{chiffre $8$, reste $2$}\\
-20 &= 3\times 6+2 &&\justif{chiffre $3$, reste $2$ : le même reste}\\
 C &= \res{0{,}8333\ldots} &&\justif{illimité, de période $3$}
 \end{calculs}
-\explique{Le $8$ ne revient pas : la période commence au deuxième chiffre.}{}
+\explique{Le chiffre $8$ ne revient pas : la période commence au deuxième chiffre.}{}
 \par\smallskip
 Donc $C$ est un \res{nombre rationnel non décimal}.
 \end{division}
 \begin{figdivision}
-\divpose{5}{5}{6}
+\divposesuite{5}{5}{6}
 \end{figdivision}
 \cas{D}
-\begin{division}
+\begin{division}[0.5]
+Après six restes différents, le reste $4$ du départ revient : la division ne se termine pas, on repart sur~$57\ldots$
 \begin{calculs}
-4 &= 0\times 7+4 &&\justif{$0$ unité, reste $4$}\\
-40 &= 5\times 7+5 &&\justif{chiffre $5$, reste $5$}\\
-50 &= 7\times 7+1 &&\justif{chiffre $7$, reste $1$}\\
-10 &= 1\times 7+3 &&\justif{chiffre $1$, reste $3$}\\
-30 &= 4\times 7+2 &&\justif{chiffre $4$, reste $2$}\\
-20 &= 2\times 7+6 &&\justif{chiffre $2$, reste $6$}\\
-60 &= 8\times 7+4 &&\justif{reste $4$ : le premier reste}\\
-D &= \res{0{,}571428\,5\ldots} &&\justif{illimité, de période $571428$}
+D &= \res{0{,}571428\,57\ldots} &&\justif{illimité, de période $571428$}
 \end{calculs}
 \par\smallskip
 Donc $D$ est un \res{nombre rationnel non décimal}.
 \end{division}
-\begin{figdivision}
-\divpose{8}{4}{7}
+\begin{figdivision}[0.47]
+\divposesuite{9}{4}{7}
 \end{figdivision}
 \rem{En divisant par $7$, il n'y a que six restes non nuls possibles ($1$ à $6$) : la
 période a au plus six chiffres.}
@@ -352,39 +346,47 @@ période a au plus six chiffres.}
 demandée ; on coupe (par défaut), puis on ajoute $1$ au dernier chiffre gardé (par
 excès).}{méthode 2 du cours}
 \cas{1)}
+\begin{division}
 \begin{calculs}
-5 &= 0\times 7+5 &&\justif{on pose la division}\\
-50 &= 7\times 7+1 &&\justif{chiffre $7$, reste $1$}\\
-10 &= 1\times 7+3 &&\justif{chiffre $1$, reste $3$}\\
-30 &= 4\times 7+2 &&\justif{chiffre $4$ : assez de chiffres}\\
-A &= 0{,}714\ldots &&
+A &= 0{,}714\ldots &&\justif{assez de chiffres : on s'arrête}
 \end{calculs}
 \explique{Au dixième : \res{$0{,}7$ par défaut, $0{,}8$ par excès} ; au centième :
 \res{$0{,}71$ par défaut, $0{,}72$ par excès}.}{}
+\end{division}
+\begin{figdivision}
+\divposesuite{4}{5}{7}
+\end{figdivision}
+\begin{division}
 \begin{calculs}
-11 &= 1\times 6+5 &&\justif{partie entière $1$, reste $5$}\\
-50 &= 8\times 6+2 &&\justif{chiffre $8$, reste $2$}\\
-20 &= 3\times 6+2 &&\justif{chiffre $3$, puis le même reste}\\
-B &= 1{,}833\ldots &&
+B &= 1{,}833\ldots &&\justif{le reste $2$ revient}
 \end{calculs}
 \explique{Au dixième : \res{$1{,}8$ par défaut, $1{,}9$ par excès} ; au centième :
 \res{$1{,}83$ par défaut, $1{,}84$ par excès}.}{}
+\end{division}
+\begin{figdivision}
+\divposesuite{4}{11}{6}
+\end{figdivision}
+\begin{division}
 \begin{calculs}
-40 &= 4\times 9+4 &&\justif{après $4=0\times 9+4$, le reste $4$ revient toujours}\\
-C &= 0{,}444\ldots &&
+C &= 0{,}444\ldots &&\justif{le reste $4$ revient}
 \end{calculs}
 \explique{Au dixième : \res{$0{,}4$ par défaut, $0{,}5$ par excès} ; au centième :
 \res{$0{,}44$ par défaut, $0{,}45$ par excès}.}{}
+\end{division}
+\begin{figdivision}
+\divposesuite{4}{4}{9}
+\end{figdivision}
+\begin{division}
 \begin{calculs}
-17 &= 2\times 8+1 &&\justif{partie entière $2$, reste $1$}\\
-10 &= 1\times 8+2 &&\justif{chiffre $1$, reste $2$}\\
-20 &= 2\times 8+4 &&\justif{chiffre $2$, reste $4$}\\
-40 &= 5\times 8+0 &&\justif{chiffre $5$, reste $0$}\\
-D &= 2{,}125 &&
+D &= 2{,}125 &&\justif{le reste $0$ apparaît : la division se termine}
 \end{calculs}
 \explique{Au dixième : \res{$2{,}1$ par défaut, $2{,}2$ par excès} ; au centième :
 \res{$2{,}12$ par défaut, $2{,}13$ par excès}.}{même un développement limité a des
 valeurs approchées}
+\end{division}
+\begin{figdivision}
+\divpose{4}{17}{8}
+\end{figdivision}
 \cas{2)}
 \begin{calculs}
 1{,}83 &< \dfrac{11}{6}<1{,}84 &&\justif{valeur par défaut à gauche, par excès à droite}
@@ -396,11 +398,30 @@ dit de quel nombre, de quel côté et à quelle précision}
 
 \begin{exo}[Ranger des nombres]
 \cas{1)}
+\begin{division}
 \begin{calculs}
-\dfrac{5}{8} &= \res{0{,}625} &&\justif{$50=6\times 8+2$ ; $20=2\times 8+4$ ; $40=5\times 8$ : limité}\\
-\dfrac{7}{11} &= \res{0{,}6363\ldots} &&\justif{$70=6\times 11+4$ ; $40=3\times 11+7$ : le reste $7$ revient}\\
-\dfrac{2}{3} &= \res{0{,}666\ldots} &&\justif{$20=6\times 3+2$ : le reste $2$ revient toujours}
+\dfrac{5}{8} &= \res{0{,}625} &&\justif{le reste $0$ apparaît : développement limité}
 \end{calculs}
+\end{division}
+\begin{figdivision}
+\divpose{4}{5}{8}
+\end{figdivision}
+\begin{division}
+\begin{calculs}
+\dfrac{7}{11} &= \res{0{,}6363\ldots} &&\justif{le reste $7$ revient}
+\end{calculs}
+\end{division}
+\begin{figdivision}
+\divposesuite{5}{7}{11}
+\end{figdivision}
+\begin{division}
+\begin{calculs}
+\dfrac{2}{3} &= \res{0{,}666\ldots} &&\justif{le reste $2$ revient}
+\end{calculs}
+\end{division}
+\begin{figdivision}
+\divposesuite{4}{2}{3}
+\end{figdivision}
 \cas{2)}
 \explique{Tous les nombres commencent par $0{,}6$ : on compare le chiffre des centièmes,
 puis celui des millièmes.}{$0{,}6=0{,}600$ ; $0{,}63=0{,}630$}
@@ -427,8 +448,13 @@ aussi par $0{,}63$. Le chiffre suivant, $6$, rend $\frac{7}{11}$ plus grand.}
 \begin{calculs}
 x &= \res{\dfrac{23}{99}} &&\justif{on divise par $99$}
 \end{calculs}
-\explique{Vérification : $230=2\times 99+32$, puis $320=3\times 99+23$ ; on retrouve le
-reste $23$, donc $\frac{23}{99}=0{,}2323\ldots$}{}
+\begin{division}
+Vérification en posant la division : on retrouve le reste $23$, donc
+$\frac{23}{99}=0{,}2323\ldots$
+\end{division}
+\begin{figdivision}
+\divposesuite{5}{23}{99}
+\end{figdivision}
 \cas{4)}
 \begin{calculs}
 10y &= 7{,}777\ldots &&\justif{la période a un chiffre : on multiplie par $10$}\\
