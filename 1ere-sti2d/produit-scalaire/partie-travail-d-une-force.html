@@ -123,6 +123,26 @@ details.reponses>div{color:var(--doux);font-style:italic;font-size:.95rem;
 .formule,.formules{margin:.4rem 0 .5rem 1.2em;overflow-x:auto;overflow-y:hidden;padding:.15em 0}
 .formules{display:flex;flex-wrap:wrap;gap:.5rem 2.2rem;align-items:baseline}
 @media (max-width:700px){.formule,.formules{margin-left:.4em}}
+/* mode présentateur en demi-largeur (conteneur « lecture ») : quand la place manque, mêmes
+   dispositions que sur téléphone, le @media ne voyant que la largeur de la fenêtre ;
+   740 : un cran de A+ en 1920 fait déjà défiler des calculs avec l'explication à droite */
+@container lecture (max-width:740px){
+  .large{display:none}
+  .etroit{display:inline}
+  .calculs{grid-template-columns:max-content minmax(0,1fr);margin-left:.4em}
+  .calculs.equiv{grid-template-columns:minmax(0,1fr)}
+  .calculs.equiv .g{text-align:left}
+  .calculs.equiv .g:empty{display:none}
+  .calculs.equiv .d{padding-left:1.4em}
+  .calculs.equiv .x{padding-left:2.4em}
+  .calculs .seul{grid-column:1/-1}
+  .calculs .x{grid-column:1/-1;padding-left:1em;margin-top:-.2rem}
+  .calculs .x:empty{display:none}
+  .explique{grid-template-columns:1fr}
+  .explique .x{padding-left:1em}
+  .explique .x:empty{display:none}
+  .formule,.formules{margin-left:.4em}
+}
 .km.court .katex{white-space:nowrap}
 .katex{font-size:1.08em}
 .res{color:var(--rep)}
@@ -234,7 +254,7 @@ a.bouton{display:inline-block;padding:.5rem .9rem;border-radius:6px;background:v
 /* mode présentateur (scripts/site/presentateur.js) : projeter une partie en classe */
 .presentateur-entrer{float:right;font:inherit;font-size:.8rem;color:inherit;background:none;
   border:1px solid currentColor;border-radius:4px;padding:0 .5em;cursor:pointer}
-.presentateur-quitter{display:none}
+.presentateur-boutons{display:none}
 @media (max-width:700px){.presentateur-entrer{display:none}}   /* on ne projette pas depuis un téléphone */
 html.presentateur{color-scheme:light}
 html.presentateur .bandeau,html.presentateur .eleve-bandeau,html.presentateur footer,
@@ -243,10 +263,19 @@ html.presentateur .marteau,html.presentateur .marteau-etat,html.presentateur .su
 html.presentateur .presentateur-entrer{display:none}
 html.presentateur main.lecture{max-width:none;padding:.3rem 10px 1.5rem}
 html.presentateur h1.titre-partie{margin-top:0}
-html.presentateur .presentateur-quitter{display:block;position:fixed;top:6px;right:10px;z-index:10;
+html.presentateur .presentateur-boutons{display:flex;gap:6px;position:fixed;top:6px;right:10px;z-index:10}
+.presentateur-boutons button{
   font:.8rem system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--doux);background:var(--carte);
   border:1px solid var(--trait);border-radius:4px;padding:.15em .6em;cursor:pointer;opacity:.6}
-html.presentateur .presentateur-quitter:hover,html.presentateur .presentateur-quitter:focus-visible{opacity:1}
+.presentateur-boutons button:hover,.presentateur-boutons button:focus-visible{opacity:1}
+.presentateur-boutons button:disabled{opacity:.25;cursor:default}
+/* demi-largeur : cours à gauche, trait noir au centre, moitié droite blanche pour le tableau blanc
+   (pas de barre de défilement dans la partie où l'on écrit : la molette et le clavier restent actifs) */
+html.presentateur-demi{background:#fff;scrollbar-width:none}
+html.presentateur-demi::-webkit-scrollbar{display:none}
+html.presentateur-demi body{width:50vw;background:#fff}
+html.presentateur-demi body::after{content:"";position:fixed;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:#000}
+html.presentateur-demi main.lecture{margin:0;padding-right:16px;container:lecture/inline-size}
 
 /* encadré « En ligne » : l'autre page HTML du chapitre */
 .telecharger.exos{background:var(--exo-fond)}
