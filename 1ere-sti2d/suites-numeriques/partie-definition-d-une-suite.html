@@ -263,19 +263,35 @@ html.presentateur .marteau,html.presentateur .marteau-etat,html.presentateur .su
 html.presentateur .presentateur-entrer{display:none}
 html.presentateur main.lecture{max-width:none;padding:.3rem 10px 1.5rem}
 html.presentateur h1.titre-partie{margin-top:0}
-html.presentateur .presentateur-boutons{display:flex;gap:6px;position:fixed;top:6px;right:10px;z-index:10}
+/* boutons : petite icône en bas à droite (le haut de l'image est souvent coupé), menu au survol ou au clic */
+html.presentateur .presentateur-boutons{display:block;position:fixed;bottom:4px;right:4px;z-index:10}
+.presentateur-menu{display:none;flex-direction:column;align-items:flex-end;gap:4px;padding-bottom:4px}
+.presentateur-menu div{display:flex;gap:4px}
+.presentateur-menu [hidden]{display:none}
+.presentateur-boutons:hover .presentateur-menu,.presentateur-boutons.ouvert .presentateur-menu{display:flex}
+.presentateur-boutons:has(:focus-visible) .presentateur-menu{display:flex}
 .presentateur-boutons button{
-  font:.8rem system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--doux);background:var(--carte);
-  border:1px solid var(--trait);border-radius:4px;padding:.15em .6em;cursor:pointer;opacity:.6}
-.presentateur-boutons button:hover,.presentateur-boutons button:focus-visible{opacity:1}
-.presentateur-boutons button:disabled{opacity:.25;cursor:default}
-/* demi-largeur : cours à gauche, trait noir au centre, moitié droite blanche pour le tableau blanc
+  font:.8rem system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#000;background:#fff;
+  border:1px solid #888;border-radius:4px;padding:.15em .6em;cursor:pointer}
+.presentateur-boutons button:disabled{color:#aaa;cursor:default}
+.presentateur-boutons button[aria-pressed="true"]{color:#fff;background:#000;border-color:#000}
+.presentateur-boutons .presentateur-icone{display:block;margin-left:auto;padding:0 .35em;opacity:.5}
+.presentateur-boutons:hover .presentateur-icone,.presentateur-boutons .presentateur-icone:focus-visible{opacity:1}
+/* demi-largeur : cours à gauche, trait noir déplaçable (--partage), zone blanche à droite pour le tableau blanc
    (pas de barre de défilement dans la partie où l'on écrit : la molette et le clavier restent actifs) */
+.presentateur-trait,.presentateur-tableau{display:none}
 html.presentateur-demi{background:#fff;scrollbar-width:none}
 html.presentateur-demi::-webkit-scrollbar{display:none}
-html.presentateur-demi body{width:50vw;background:#fff}
-html.presentateur-demi body::after{content:"";position:fixed;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:#000}
+html.presentateur-demi body{width:calc(var(--partage,.5)*100vw);background:#fff}
 html.presentateur-demi main.lecture{margin:0;padding-right:16px;container:lecture/inline-size}
+html.presentateur-demi .presentateur-trait{display:block;position:fixed;top:0;bottom:0;left:calc(var(--partage,.5)*100vw);
+  width:17px;margin-left:-8.5px;z-index:8;cursor:col-resize;touch-action:none;
+  background:linear-gradient(#000,#000) center/3px 100% no-repeat}
+html.presentateur-demi .presentateur-tableau{display:block;position:fixed;top:0;bottom:0;right:0;
+  left:calc(var(--partage,.5)*100vw);z-index:5;pointer-events:none}
+.presentateur-tableau svg{display:block}
+.presentateur-tableau text{fill:#000}
+.presentateur-tableau .nom-axe{font-style:italic}
 
 /* encadré « En ligne » : l'autre page HTML du chapitre */
 .telecharger.exos{background:var(--exo-fond)}
