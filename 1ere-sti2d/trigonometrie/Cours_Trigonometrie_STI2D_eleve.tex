@@ -1,0 +1,1587 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.1}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \\[2pt]{\small\itshape Version élève}
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{7}{Trigonométrie}
+\niveaucours{1\textsuperscript{re} STI2D}
+\titrecours{TRIGONOMÉTRIE}{Cours --- Première STI2D}
+
+\begin{document}
+
+\ShorthandsOff
+\tikzset{
+  lecture/.style={dashed,black!60,line width=0.6pt},
+  sens/.style={-{Stealth[length=1.8mm]},line width=0.9pt,coulCourbeB},
+  sensB/.style={-{Stealth[length=1.8mm]},line width=0.9pt,coulCourbeC},
+}
+\newcommand{\cerclenu}{%
+  \draw[-{Stealth[length=2mm]},thick] (-1.3,0)--(1.3,0) node[below,font=\scriptsize,inner sep=2pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.3)--(0,1.3) node[right,font=\scriptsize,inner sep=2pt]{$y$};
+  \draw[line width=0.9pt] (0,0) circle (1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};}
+\newcommand{\cerclebase}{\cerclenu
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$1$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$-1$};
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (0,1) {$1$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (0,-1) {$-1$};}
+\newcommand{\cerclerep}{\cerclenu
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$0$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (1,0) {$2\pi$};
+  \node[above left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$\pi$};}
+\newcommand{\cerclearc}[3]{%
+  \begin{tikzpicture}[x=0.95cm,y=0.95cm]
+    \cerclenu
+    \draw[-{Stealth[length=2.4mm]},red,line width=1.8pt] (1,0) arc (0:#1:1);
+    \node[red,font=\footnotesize,inner sep=1pt,fill=white] at ({1.32*cos(#1+14)},{1.32*sin(#1+14)}) {#2};
+  \end{tikzpicture}\par\smallskip{\small #3}}
+\newcommand{\figasso}[5]{\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  #5\cerclerep\ptc{#1}{#2}\ptc{#3}{#4}\end{tikzpicture}}
+\newcommand{\cote}[5]{%
+  \path[coulCourbeB] (#1,#3) node[croix]{} (#2,#3) node[croix]{};
+  \draw[lecture] (#1,#3)--(#1,{#4+0.3}) (#2,#3)--(#2,{#4+0.3});
+  \draw[{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]},coulCourbeB,line width=0.8pt] (#1,#4)--(#2,#4)
+    node[pos=0.3,above,fill=white,font=\footnotesize,inner sep=1pt] {#5};}
+\newcommand{\rayons}[1]{\foreach \a in {#1}{%
+  \draw[grille] (0,0)--({cos(\a)},{sin(\a)});}}
+\newcommand{\ptc}[2]{%
+  \path[coulCourbeB] ({cos(#1)},{sin(#1)}) node[croix]{};
+  \node[font=\scriptsize,inner sep=1pt,align=center] at ({1.3*cos(#1)},{1.3*sin(#1)}) {#2};}
+\newcommand{\verticale}[1]{\draw[lecture] ({cos(#1)},-1.15)--({cos(#1)},1.15);}
+\newcommand{\horizontale}[1]{\draw[lecture] (-1.15,{sin(#1)})--(1.15,{sin(#1)});}
+\newcommand{\lien}[2]{\draw[lecture] ({cos(#1)},{sin(#1)})--({cos(#2)},{sin(#2)});}
+\newcommand{\lierx}[1]{\draw[lecture] ({cos(#1)},{sin(#1)})--({cos(#1)},0);}
+\newcommand{\liery}[1]{\draw[lecture] ({cos(#1)},{sin(#1)})--(0,{sin(#1)});}
+\newcommand{\valx}[2]{\pgfmathtruncatemacro{\q}{cos(#1)>0?1:0}%
+  \draw[coulCourbeB,line width=1pt] ({cos(#1)},0.05)--({cos(#1)},-0.05);
+  \ifnum\q=1 \node[below left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};
+  \else \node[below right,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};\fi}
+\newcommand{\valy}[2]{%
+  \draw[coulCourbeB,line width=1pt] (0.05,{sin(#1)})--(-0.05,{sin(#1)});
+  \node[left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,{sin(#1)}) {#2};}
+\newcommand{\equacos}[4]{\begin{tikzpicture}[x=1.5cm,y=1.5cm]
+  \cerclebase\verticale{#1}\valx{#1}{#4}\ptc{#1}{#2}\ptc{-#1}{#3}\end{tikzpicture}}
+\newcommand{\equasin}[5]{\begin{tikzpicture}[x=1.5cm,y=1.5cm]
+  \cerclebase\horizontale{#1}\valy{#1}{#5}\ptc{#1}{#3}\ptc{#2}{#4}\end{tikzpicture}}
+\newcommand{\equapt}[4]{\begin{tikzpicture}[x=1.5cm,y=1.5cm]
+  \cerclebase\verticale{#1}\horizontale{#1}\valx{#1}{#3}\valy{#1}{#4}\ptc{#1}{#2}\end{tikzpicture}}
+\newcommand{\cerclept}[3]{\begin{tikzpicture}[x=1.5cm,y=1.5cm]
+  \cerclebase#3\ptc{#1}{#2}\end{tikzpicture}}
+\newcommand{\ptstable}[1]{\foreach \a in {-150,-135,-120,-90,-60,-45,-30,0,30,45,60,90,120,135,150,180}{%
+  \path[coulCourbeB] ({\a*pi/180},{#1(\a)}) node[croix]{};}}
+\newcommand{\arcsens}[4][sens]{%
+  \draw[#1] ({#4*cos(#2)},{#4*sin(#2)}) arc (#2:#3:#4);}
+\newcommand{\cerclemesure}[4]{%
+  \begin{tikzpicture}[x=1.25cm,y=1.25cm]
+    \rayons{#1}\cerclerep
+    \arcsens{#3}{#2}{0.55}
+    \ptc{#2}{#4}
+  \end{tikzpicture}}
+\newcommand{\figassociee}[3]{%
+  \begin{tikzpicture}[x=1.25cm,y=1.25cm]
+    #3\cerclerep
+    \ptc{35}{$x$}
+    \ptc{#1}{#2}
+  \end{tikzpicture}}
+\newcommand{\reperetrigo}[2]{%
+  \foreach \k in {#1,...,#2}{\draw[grille] ({\k*pi/6},-1.5)--({\k*pi/6},1.5);}
+  \foreach \j in {-3,...,3}{\draw[grille] ({#1*pi/6},{\j/2})--({#2*pi/6},{\j/2});}
+  \draw[-{Stealth[length=2mm]},thick] ({#1*pi/6},0)--({#2*pi/6+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.5)--(0,1.8)
+    node[below left=-1pt,font=\footnotesize]{$y$};
+  \node[above left,font=\scriptsize,inner sep=1pt,outer sep=1pt] at (0,1) {$1$};
+  \foreach \j/\l in {0.5/\frac{1}{2},-0.5/-\frac{1}{2},-1/-1}{%
+    \node[left,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,\j) {$\l$};}}
+\newcommand{\gradpi}[2][below]{\foreach \k/\l in {#2}{%
+  \draw ({\k*pi/6},0.05)--({\k*pi/6},-0.05);
+  \node[#1,font=\scriptsize,inner sep=1pt,outer sep=2.5pt,fill=white] at ({\k*pi/6},0) {$\l$};}}
+\newcommand{\gradcos}{%
+  \gradpi{-12/-2\pi,-6/-\pi,6/\pi,12/2\pi}
+  \gradpi[below left]{-9/-\frac{3\pi}{2},3/\frac{\pi}{2}}
+  \gradpi[below right]{-3/-\frac{\pi}{2},9/\frac{3\pi}{2}}}
+\newcommand{\gradsin}{%
+  \gradpi{-9/-\frac{3\pi}{2},-3/-\frac{\pi}{2},3/\frac{\pi}{2},9/\frac{3\pi}{2}}
+  \gradpi[below left]{-12/-2\pi,-6/-\pi,6/\pi}
+  \gradpi[below right]{12/2\pi}}
+\newcommand{\courbecos}[2]{\draw[coulCourbe,line width=1.1pt]
+  plot[domain=#1*pi/6:#2*pi/6,samples=121] (\x,{cos(\x r)});}
+\newcommand{\courbesin}[2]{\draw[coulCourbe,line width=1.1pt]
+  plot[domain=#1*pi/6:#2*pi/6,samples=121] (\x,{sin(\x r)});}
+\newcommand{\droiteh}[4]{\draw[coulCourbeB,line width=0.8pt]
+  ({#1*pi/6},#3)--({#2*pi/6},#3) node[right,font=\footnotesize]{#4};
+  \ifdim#3pt=0.5pt\node[left,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,0.5) {$\frac{1}{2}$};\fi
+  \ifdim#3pt=-0.5pt\node[left,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,-0.5) {$-\frac{1}{2}$};\fi}
+\newcommand{\lirex}[2]{\draw[lecture] ({#1*pi/6},#2)--({#1*pi/6},0);
+  \path[coulCourbeB] ({#1*pi/6},#2) node[croix]{};}
+\newcommand{\interaxe}[3][red]{\draw[#1,line width=1.8pt] ({#2*pi/6},0)--({#3*pi/6},0);}
+\newcommand{\motif}[2]{\begin{scope}
+  \clip (-5,-3.4) rectangle (5,3.4);
+  \foreach \d in {#1}{\draw[coulCourbe,line width=1.1pt,shift={(\d,0)}] #2;}
+  \end{scope}}
+\newcommand{\figsignal}[7]{\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-5}{#1}{5}{#2}
+  \gradx{#3}\grady{-2,2}
+  #4
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at #5 {#6};
+  #7
+  \end{tikzpicture}}
+\newcommand{\sigtriangle}{\motif{-12,-6,0,6}{(0,-2)--(3,2)--(6,-2)}}%
+\newcommand{\sigcarre}{\motif{-8,-4,0,4}{(0,-2)--(0,2)--(2,2)--(2,-2)--(4,-2)}}%
+\newcommand{\sigrampe}{\motif{-6,-4,-2,0,2,4}{(0,-2)--(2,2)--(2,-2)}}%
+\newcommand{\sigamorti}{\motif{-8,-4,0,4}{(0,-2)--(0,3)
+  --plot[domain=0:2,samples=60] (\x,{2+exp(-2.5*\x)*cos(540*\x)})
+  --(2,-3)--plot[domain=2:4,samples=60] (\x,{-2-exp(-2.5*(\x-2))*cos(540*(\x-2))})}}%
+\newcommand{\sigdeforme}{\motif{-8,-4,0,4}{(0,0) .. controls (0.3,0.45) and (0.6,2) .. (1,2)
+  .. controls (1.4,2) and (1.7,1.45) .. (2,1) .. controls (2.3,0.55) and (2.6,-1) .. (3,-1)
+  .. controls (3.4,-1) and (3.7,-0.45) .. (4,0)}}
+\newcommand{\sigdeformeb}{\motif{-6,-3,0,3}{(0,2) .. controls (0.6,2) and (1.4,-2) .. (2,-2)
+  .. controls (2.4,-2) and (2.6,2) .. (3,2)}}
+\newcommand{\reperet}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt,font=\footnotesize]{$t$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt,font=\footnotesize]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\courbet}[3]{\draw[coulCourbe,line width=1.1pt]
+  plot[domain=#1:#2,samples=121] (\x,{#3});}
+\newcommand{\gradt}[1]{\foreach \k in {#1}{%
+  \draw (\k,0.1)--(\k,-0.1);
+  \node[below,font=\scriptsize,inner sep=1pt,outer sep=2.5pt,fill=white] at (\k,0) {$\k$};}}
+\newcommand{\sinusoidepts}[3]{%
+  \begin{tikzpicture}[x=0.5cm,y=0.5cm]
+    \reperet{-5}{-4}{5}{4}
+    \courbet{-4}{4}{#1}
+    \gradt{-4,-2,2,4}\grady{#2}
+    \foreach \u/\v in {#3}{\path[coulCourbeB] (\u,\v) node[croix]{};}
+  \end{tikzpicture}}
+\ShorthandsOn
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, théorèmes), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\smallskip
+Sur cette feuille, seuls les \textbf{énoncés} des exemples figurent : la résolution,
+signalée par la mention \emph{(au tableau)}, est à rédiger dans le cahier.
+
+\end{remarquebox}
+
+\partiecours{Cercle trigonométrique et radian}
+
+\begin{definitionbox}[Définition 1 --- Cercle trigonométrique]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Dans un repère orthonormé $(O\,;x\,;y)$, le \textbf{cercle trigonométrique} est le
+cercle de centre $O$ et de rayon $1$.
+
+\smallskip
+On le parcourt à partir du point de départ, de coordonnées $(1\,;0)$.
+\begin{itemize}
+  \item Le \textbf{sens direct} (pour les angles positifs) est le sens contraire des
+  aiguilles d'une montre.
+  \item L'autre sens est le \textbf{sens indirect} (pour les angles négatifs).
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.40\linewidth}\centering
+\begin{tikzpicture}[x=1.15cm,y=1.15cm]
+  \cerclenu
+  \draw[-{Stealth[length=2mm]},red,line width=1.1pt] (20:1.22) arc (20:70:1.22);
+  \draw[-{Stealth[length=2mm]},line width=1.1pt] (-20:1.22) arc (-20:-70:1.22);
+  \node[red,font=\footnotesize,anchor=south west,inner sep=1pt] at (48:1.32) {$+$ sens direct};
+  \node[font=\footnotesize,anchor=north west,inner sep=1pt] at (-48:1.32) {$-$ sens indirect};
+  \path[coulCourbeB] (1,0) node[croix]{};
+  \draw[-{Stealth[length=1.6mm]},coulCourbeB,line width=0.8pt] (1.45,0.42)--(1.05,0.06);
+  \node[coulCourbeB,font=\scriptsize,anchor=south west,inner sep=1pt] at (1.42,0.4) {départ};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Radian]
+Un cercle de rayon $r$ a pour périmètre $p=2\pi r$. Le cercle trigonométrique a pour
+rayon $1$ : son périmètre vaut $2\pi\times 1$, soit $2\pi$. Un tour complet mesure donc
+$360^{\circ}$ ou $2\pi$ \textbf{radians} (rad).
+
+\smallskip
+Sur ce cercle, la mesure en radians d'un angle est la \textbf{longueur de l'arc parcouru}
+à partir du point de départ (en rouge) :
+
+\medskip
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{90}{$\frac{\pi}{2}$}{un quart de tour}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{180}{$\pi$}{un demi-tour}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{270}{$\frac{3\pi}{2}$}{trois quarts de tour}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{359.9}{$2\pi$}{un tour complet}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Degrés et radians]
+\begin{minipage}[c]{0.50\linewidth}\raggedright
+Les mesures en degrés et en radians sont proportionnelles : $180^{\circ}$ valent $\pi$ rad.
+
+\smallskip
+Sur la figure : les degrés à l'extérieur du cercle, les radians à l'intérieur (en rouge).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=2.1cm,y=2.1cm]
+  \foreach \a in {30,45,60}{\draw[grille] (0,0)--({cos(\a)},{sin(\a)});}
+  \cerclenu
+  \foreach \a/\d/\r in {30/30/\frac{\pi}{6},45/45/\frac{\pi}{4},60/60/\frac{\pi}{3},
+      90/90/\frac{\pi}{2},180/180/\pi,270/270/\frac{3\pi}{2}}{%
+    \path[coulCourbeB] ({cos(\a)},{sin(\a)}) node[croix]{};
+    \node[font=\footnotesize,inner sep=1pt,fill=white] at ({1.17*cos(\a)},{1.17*sin(\a)}) {$\d^{\circ}$};
+    \node[red,font=\footnotesize,inner sep=1pt,fill=white] at ({0.8*cos(\a)},{0.8*sin(\a)}) {$\r$};}
+  \path[coulCourbeB] (1,0) node[croix]{};
+  \node[font=\footnotesize,anchor=south west,inner sep=1pt] at (1.03,0.03) {$0^{\circ}$ ou $360^{\circ}$};
+  \node[red,font=\footnotesize,anchor=south east,inner sep=1pt] at (0.97,0.03) {$0$ ou $2\pi$};
+\end{tikzpicture}
+\end{minipage}
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{10pt}
+\begin{tabular}{|m{1.5cm}|*{7}{>{\centering\arraybackslash}m{0.8cm}|}}
+\hline
+Degrés & $0$ & $30$ & $45$ & $60$ & $90$ & $180$ & $360$\\
+\hline
+Radians & $0$ & $\dfrac{\pi}{6}$ & $\dfrac{\pi}{4}$ & $\dfrac{\pi}{3}$ & $\dfrac{\pi}{2}$ & $\pi$ & $2\pi$\\
+\hline
+\end{tabular}}
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Convertir des degrés en radians et des radians en degrés]
+\etapeexemples
+Le bras d'un robot pivote. Convertir chaque rotation :
+\begin{questions}[label=\alph*)]
+  \item $40^{\circ}$, en radians ;
+  \item $150^{\circ}$, en radians ;
+  \item $\dfrac{5\pi}{12}$ rad, en degrés ;
+  \item $\dfrac{7\pi}{9}$ rad, en degrés.
+\end{questions}
+
+\etape{À vous de jouer}
+Une roue tourne. Convertir chaque rotation : a)~$70^{\circ}$, en radians ;
+b)~$225^{\circ}$, en radians ; c)~$\dfrac{7\pi}{6}$ rad, en degrés ;
+d)~$\dfrac{4\pi}{9}$ rad, en degrés.
+
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Mesures d'un angle orienté}
+
+\begin{definitionbox}[Définition 3 --- Mesure d'un angle orienté]
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+On part du point de coordonnées $(1\,;0)$ et on tourne jusqu'au point $M$ du cercle
+trigonométrique. La longueur parcourue est une \textbf{mesure de l'angle orienté} formé
+par le demi-axe $[Ox)$ et $[OM)$ :
+\begin{itemize}
+  \item positive dans le sens direct ;
+  \item négative dans le sens indirect.
+\end{itemize}
+On dit que cette mesure est le nombre réel associé au point $M$.
+
+\smallskip
+Chaque point du cercle a une mesure positive et une mesure négative, qui aboutissent au
+même endroit : par exemple, $\dfrac{\pi}{2}$ et $-\dfrac{3\pi}{2}$ pour le point $M$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  \cerclerep
+  \arcsens{0}{90}{0.72}
+  \arcsens[sensB]{0}{-270}{0.45}
+  \ptc{90}{$M\quad\ $}
+  \node[coulCourbeB,font=\scriptsize] at (0.78,0.78) {$\frac{\pi}{2}$};
+  \node[coulCourbeC,font=\scriptsize] at (-0.55,-0.55) {$-\frac{3\pi}{2}$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Plusieurs mesures pour un même point]
+Faire un tour de plus ou de moins ramène au même point. Si $x$ est une mesure d'un angle
+orienté, alors $x+2\pi$, $x-2\pi$, $x+4\pi$\ldots{} en sont aussi : toutes ses mesures
+s'écrivent $x+2k\pi$, où $k$ est un entier relatif (le nombre de tours).
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 2 --- Lire les mesures d'un point du cercle]
+\etapeexemples
+\begin{minipage}[c]{0.40\linewidth}\raggedright
+Pour chaque point $A$ et $B$ de la figure, lire :
+\begin{questions}[label=\alph*)]
+  \item sa mesure dans le sens direct, entre $0$ et $2\pi$ ;
+  \item sa mesure dans le sens indirect, entre $-2\pi$ et $0$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+Huitièmes de tour\par
+\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  \rayons{0,45,...,315}\cerclerep
+  \ptc{135}{$A$}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+Sixièmes de tour\par
+\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  \rayons{0,60,...,300}\cerclerep
+  \ptc{300}{$B$}
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.40\linewidth}\raggedright
+Pour chaque point $C$ et $D$ de la figure, lire :
+\begin{questions}[label=\alph*)]
+  \item sa mesure dans le sens direct, entre $0$ et $2\pi$ ;
+  \item sa mesure dans le sens indirect, entre $-2\pi$ et $0$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+Huitièmes de tour\par
+\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  \rayons{0,45,...,315}\cerclerep
+  \ptc{225}{$C$}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+Douzièmes de tour\par
+\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  \rayons{0,30,...,330}\cerclerep
+  \ptc{150}{$D$}
+\end{tikzpicture}
+\end{minipage}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 3 --- Placer sur le cercle le point associé à un nombre réel]
+\etapeexemples
+Placer sur le cercle trigonométrique le point associé à chaque nombre réel :
+\begin{center}
+$A$ associé à $\dfrac{5\pi}{6}$ \qquad $B$ associé à $-\dfrac{2\pi}{3}$ \qquad
+$C$ associé à $\dfrac{13\pi}{6}$ \qquad $D$ associé à $-\dfrac{7\pi}{2}$
+\end{center}
+
+\etape{À vous de jouer}
+Placer sur le cercle trigonométrique le point associé à chaque nombre réel :
+\begin{center}
+$E$ associé à $\dfrac{2\pi}{3}$ \qquad $F$ associé à $-\dfrac{3\pi}{4}$ \qquad
+$G$ associé à $\dfrac{17\pi}{6}$ \qquad $H$ associé à $-\dfrac{5\pi}{2}$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Mesure principale d'un angle orienté}
+
+Un même point a une infinité de mesures : on en choisit une, toujours la même.
+
+\begin{definitionbox}[Définition 4 --- Mesure principale]
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+La \textbf{mesure principale} d'un angle orienté est sa seule mesure comprise dans
+l'intervalle $\intof{-\pi}{\pi}$.
+
+\smallskip
+Les points du haut du cercle ont une mesure principale positive, ceux du bas une mesure
+principale négative.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  \cerclerep
+  \draw[coulCourbeB,line width=1.5pt] (1,0) arc (0:180:1);
+  \draw[coulCourbeC,line width=1.5pt] (1,0) arc (0:-180:1);
+  \node[coulCourbeB,font=\scriptsize] at (0.45,0.45) {$+$};
+  \node[coulCourbeC,font=\scriptsize] at (0.45,-0.45) {$-$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 4 --- Déterminer la mesure principale d'un angle orienté]
+\etapeexemples
+Déterminer la mesure principale de chaque angle orienté, de mesure :
+\begin{center}
+a)~$\dfrac{8\pi}{3}$ \qquad b)~$-\dfrac{7\pi}{6}$ \qquad c)~$\dfrac{29\pi}{4}$ \qquad d)~$7\pi$
+\end{center}
+
+\etape{À vous de jouer}
+Déterminer la mesure principale de chaque angle orienté, de mesure :
+\begin{center}
+a)~$\dfrac{11\pi}{3}$ \qquad b)~$-\dfrac{13\pi}{6}$ \qquad c)~$\dfrac{35\pi}{4}$ \qquad d)~$9\pi$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 9 à 12}
+
+\partiecours{Cosinus et sinus d'un nombre réel}
+
+\begin{definitionbox}[Définition 5 --- Cosinus et sinus d'un nombre réel]
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+Soit $M$ le point du cercle trigonométrique associé au nombre réel $x$.
+\begin{itemize}
+  \item Le \textbf{cosinus} de $x$, noté $\cos(x)$, est l'abscisse de $M$.
+  \item Le \textbf{sinus} de $x$, noté $\sin(x)$, est l'ordonnée de $M$.
+\end{itemize}
+Entre $0$ et $\dfrac{\pi}{2}$, on retrouve le cosinus et le sinus du triangle rectangle
+$OHM$, d'angle $\alpha=\widehat{HOM}$, car l'hypoténuse $OM$ vaut $1$ :
+\begin{calculs}
+\cos(\alpha) &= \dfrac{OH}{OM} &\qquad& \rem{côté adjacent sur hypoténuse}\\
+\cos(\alpha) &= \dfrac{OH}{1} && \rem{$OM$ vaut $1$}\\
+\cos(\alpha) &= OH &&
+\end{calculs}
+De même, $\sin(\alpha)=\dfrac{MH}{OM}$, soit $\sin(\alpha)=MH$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\begin{tikzpicture}[x=1.7cm,y=1.7cm]
+  \cerclebase
+  \draw[red,line width=0.8pt] (0.3,0) arc (0:50:0.3);
+  \node[red,font=\scriptsize] at (25:0.42) {$\alpha$};
+  \draw[black!70] (0,0)--({cos(50)},{sin(50)});
+  \draw[lecture] ({cos(50)},{sin(50)})--({cos(50)},0);
+  \draw[lecture] ({cos(50)},{sin(50)})--(0,{sin(50)});
+  \draw[coulCourbeB,line width=1.6pt] (0,0)--({cos(50)},0);
+  \draw[coulCourbeC,line width=1.6pt] (0,0)--(0,{sin(50)});
+  \ptc{50}{$M$}
+  \node[font=\scriptsize,above right,inner sep=1pt] at ({cos(50)},0) {$H$};
+  \node[coulCourbeB,font=\scriptsize,below] at ({cos(50)/2},0) {$\cos(x)$};
+  \node[coulCourbeC,font=\scriptsize,left] at (0,{sin(50)/2}) {$\sin(x)$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 3 --- Encadrement et relation]
+Pour tout nombre réel $x$ :
+\begin{center}
+$-1\le\cos(x)\le 1$ \qquad $-1\le\sin(x)\le 1$ \qquad $\cos^{2}(x)+\sin^{2}(x)=1$
+\end{center}
+où $\cos^{2}(x)$ désigne $\big(\cos(x)\big)^{2}$. Et comme un tour ramène au même point :
+\begin{center}
+$\cos(x+2\pi)=\cos(x)$ \qquad $\sin(x+2\pi)=\sin(x)$
+\end{center}
+\demo{Le point $M$ est sur un cercle de rayon $1$ : ses coordonnées sont entre $-1$ et $1$.
+Le triangle $OHM$ est rectangle en $H$ :}
+\begin{calculs}
+OH^{2}+HM^{2} &= OM^{2} &\qquad& \rem{théorème de Pythagore}\\
+\cos^{2}(x)+\sin^{2}(x) &= 1 && \rem{$OM$ vaut $1$}
+\end{calculs}
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 4 --- Valeurs remarquables]
+\begin{minipage}[c]{0.60\linewidth}\centering
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{7pt}
+\begin{tabular}{|>{\centering\arraybackslash}m{1.2cm}|*{6}{>{\centering\arraybackslash}m{0.65cm}|}}
+\hline
+$x$ & $0$ & $\dfrac{\pi}{6}$ & $\dfrac{\pi}{4}$ & $\dfrac{\pi}{3}$ & $\dfrac{\pi}{2}$ & $\pi$\\
+\hline
+$\cos(x)$ & $1$ & $\dfrac{\sqrt{3}}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{1}{2}$ & $0$ & $-1$\\
+\hline
+$\sin(x)$ & $0$ & $\dfrac{1}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{\sqrt{3}}{2}$ & $1$ & $0$\\
+\hline
+\end{tabular}}
+
+\medskip
+{\raggedright À retenir avec l'image du quart de cercle : le cosinus diminue de $1$ à $0$
+quand $x$ augmente, le sinus augmente de $0$ à $1$.
+
+\smallskip
+Pour situer les valeurs : $\dfrac{\sqrt{2}}{2}\approx 0{,}71$ et
+$\dfrac{\sqrt{3}}{2}\approx 0{,}87$, donc $\dfrac{1}{2}<\dfrac{\sqrt{2}}{2}<\dfrac{\sqrt{3}}{2}$.\par}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=4cm,y=4cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(1.2,0);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,1.2);
+  \draw[line width=0.9pt] (1,0) arc (0:90:1);
+  \foreach \a/\l/\c/\s in {30/\frac{\pi}{6}/\frac{\sqrt{3}}{2}/\frac{1}{2},
+      45/\frac{\pi}{4}/\frac{\sqrt{2}}{2}/\frac{\sqrt{2}}{2},
+      60/\frac{\pi}{3}/\frac{1}{2}/\frac{\sqrt{3}}{2}}{%
+    \draw[lecture] ({cos(\a)},0)--({cos(\a)},{sin(\a)})--(0,{sin(\a)});
+    \draw[grille] (0,0)--({cos(\a)},{sin(\a)});
+    \path[coulCourbeB] ({cos(\a)},{sin(\a)}) node[croix]{};
+    \node[font=\scriptsize] at ({1.12*cos(\a)},{1.12*sin(\a)}) {$\l$};
+    \node[coulCourbeB,font=\scriptsize,below,inner sep=2pt] at ({cos(\a)},0) {$\c$};
+    \node[coulCourbeC,font=\scriptsize,left,inner sep=2pt] at (0,{sin(\a)}) {$\s$};}
+  \node[font=\scriptsize,below,inner sep=2pt] at (1,0) {$1$};
+  \node[font=\scriptsize,left,inner sep=2pt] at (0,1) {$1$};
+  \node[font=\scriptsize,below left,inner sep=2pt] at (0,0) {$O$};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Déterminer un cosinus ou un sinus à l'aide de la mesure principale]
+\etapeexemples
+Déterminer la valeur exacte de :
+\begin{center}
+a)~$\cos\left(\dfrac{\pi}{4}\right)$ \qquad b)~$\sin\left(\dfrac{13\pi}{6}\right)$ \qquad
+c)~$\cos(9\pi)$ \qquad d)~$\sin\left(-\dfrac{3\pi}{2}\right)$
+\end{center}
+
+\etape{À vous de jouer}
+Déterminer la valeur exacte de :
+\begin{center}
+a)~$\cos\left(\dfrac{\pi}{3}\right)$ \qquad b)~$\sin\left(\dfrac{25\pi}{6}\right)$ \qquad
+c)~$\cos(7\pi)$ \qquad d)~$\sin\left(-\dfrac{7\pi}{2}\right)$
+\end{center}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 6 --- Calculer une expression avec des cosinus et des sinus]
+\etapeexemples
+Calculer la valeur exacte de :
+\begin{questions}[label=\alph*)]
+  \item $f(x)=4\cos(x)-2\sin(x)$, pour $x=\dfrac{\pi}{6}$ ;
+  \item $g(x)=\sin^{2}(x)$, pour $x=\dfrac{\pi}{4}$ ;
+  \item $h(x)=\cos(2x)$, pour $x=\dfrac{\pi}{6}$.
+\end{questions}
+
+\etape{À vous de jouer}
+Calculer la valeur exacte de :
+\begin{questions}[label=\alph*)]
+  \item $k(x)=2\cos(x)+6\sin(x)$, pour $x=\dfrac{\pi}{6}$ ;
+  \item $m(x)=\cos^{2}(x)$, pour $x=\dfrac{\pi}{6}$ ;
+  \item $n(x)=\sin(2x)$, pour $x=\dfrac{\pi}{4}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 13 à 16}
+
+\partiecours{Angles associés}
+
+Le tableau s'arrête à $\pi$ et ne donne rien pour $\dfrac{2\pi}{3}$ ou $-\dfrac{\pi}{4}$ :
+ces points sont les symétriques de points connus, leurs coordonnées s'en déduisent.
+
+\begin{proprietebox}[Propriété 5 --- Angles associés]
+Pour tout nombre réel $x$, on lit sur le cercle :
+
+\medskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figassociee{-35}{$-x$}{\draw[coulCourbeC,line width=0.8pt] (-1.2,0)--(1.2,0);\lien{35}{-35}\liery{35}\liery{-35}}\par
+{\small symétrie d'axe $(Ox)$ :\\ même cosinus, sinus opposés}\par\smallskip
+$\cos(-x)=\cos(x)$\par
+$\sin(-x)=-\sin(x)$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figassociee{145}{$\pi-x$}{\draw[coulCourbeC,line width=0.8pt] (0,-1.2)--(0,1.2);\lien{35}{145}\lierx{35}\lierx{145}}\par
+{\small symétrie d'axe $(Oy)$ :\\ même sinus, cosinus opposés}\par\smallskip
+$\cos(\pi-x)=-\cos(x)$\par
+$\sin(\pi-x)=\sin(x)$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figassociee{215}{$\pi+x$}{\lien{35}{215}\lierx{35}\liery{35}\lierx{215}\liery{215}}\par
+{\small symétrie de centre $O$ :\\ cosinus opposés, sinus opposés}\par\smallskip
+$\cos(\pi+x)=-\cos(x)$\par
+$\sin(\pi+x)=-\sin(x)$
+\end{minipage}
+
+\medskip
+\bigskip
+\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figassociee{55}{$\frac{\pi}{2}-x\quad$}{\draw[coulCourbeC,line width=0.8pt] (-1.1,-1.1)--(1.1,1.1);\lien{35}{55}\liery{35}\lierx{55}}\par
+{\small symétrie d'axe la droite $y=x$ :\\ cosinus et sinus s'échangent}\par\smallskip
+$\cos\left(\dfrac{\pi}{2}-x\right)=\sin(x)$\par\smallskip
+$\sin\left(\dfrac{\pi}{2}-x\right)=\cos(x)$
+\end{minipage}\hspace{1.5cm}
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figassociee{125}{$\frac{\pi}{2}+x$}{\draw[lecture] (0,0)--({cos(35)},{sin(35)}); \draw[lecture] (0,0)--({cos(125)},{sin(125)});\liery{35}\lierx{125}}\par
+{\small quart de tour de centre $O$ :\\ ils s'échangent, un signe change}\par\smallskip
+$\cos\left(\dfrac{\pi}{2}+x\right)=-\sin(x)$\par\smallskip
+$\sin\left(\dfrac{\pi}{2}+x\right)=\cos(x)$
+\end{minipage}
+\hfill\null
+
+\medskip
+Ces formules ne s'apprennent pas par cœur une à une : on dessine la figure et on regarde
+si l'abscisse et l'ordonnée changent de signe ou s'échangent.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer un cosinus ou un sinus à l'aide d'un angle associé]
+\etapeexemples
+Déterminer la valeur exacte de :
+\begin{center}
+a)~$\cos\left(\dfrac{3\pi}{4}\right)$ \qquad b)~$\sin\left(\dfrac{2\pi}{3}\right)$ \qquad
+c)~$\sin\left(\dfrac{7\pi}{6}\right)$ \qquad d)~$\cos\left(-\dfrac{\pi}{6}\right)$
+\end{center}
+
+\etape{À vous de jouer}
+Déterminer la valeur exacte de :
+\begin{center}
+a)~$\cos\left(\dfrac{5\pi}{6}\right)$ \qquad b)~$\sin\left(\dfrac{3\pi}{4}\right)$ \qquad
+c)~$\sin\left(\dfrac{5\pi}{4}\right)$ \qquad d)~$\cos\left(-\dfrac{\pi}{4}\right)$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 17 à 20}
+
+\partiecours{Simplifier une expression à l'aide des angles associés}
+
+Les formules de la propriété 5 servent aussi quand $x$ n'a pas de valeur : on remplace
+chaque terme, puis on réduit.
+
+\begin{methodebox}[Méthode 8 --- Simplifier une expression à l'aide des angles associés]
+\etapeexemples
+Pour tout nombre réel $x$, simplifier :
+\begin{center}
+$A(x)=\cos(\pi-x)+\cos(-x)$ \qquad
+$B(x)=\sin\left(\dfrac{\pi}{2}-x\right)+\cos(\pi+x)+\sin(-x)$\\[4pt]
+$C(x)=\cos\left(\dfrac{\pi}{2}+x\right)+3\sin(\pi-x)$
+\end{center}
+
+\etape{À vous de jouer}
+Pour tout nombre réel $x$, simplifier :
+\begin{center}
+$D(x)=\sin(\pi+x)+\sin(\pi-x)$ \qquad
+$E(x)=\cos\left(\dfrac{\pi}{2}-x\right)+\cos(\pi+x)+\cos(-x)$\\[4pt]
+$F(x)=\sin\left(\dfrac{\pi}{2}+x\right)+4\cos(\pi-x)$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 21 à 24}
+
+\partiecours{Le cercle trigonométrique complet}
+
+\begin{proprietebox}[Le cercle complet et son tableau de valeurs]
+Les symétries donnent seize points, chacun avec sa mesure principale. Les pointillés
+verticaux relient les points de même cosinus, les pointillés horizontaux ceux de même sinus.
+Ce cercle est l'outil de tout le chapitre : \textbf{il faut savoir le refaire}.
+\begin{center}
+\begin{tikzpicture}[x=3.7cm,y=3.7cm]
+  \foreach \a in {30,45,60}{%
+    \draw[lecture] ({cos(\a)},{-sin(\a)})--({cos(\a)},{sin(\a)});
+    \draw[lecture] ({-cos(\a)},{-sin(\a)})--({-cos(\a)},{sin(\a)});
+    \draw[lecture] ({-cos(\a)},{sin(\a)})--({cos(\a)},{sin(\a)});
+    \draw[lecture] ({-cos(\a)},{-sin(\a)})--({cos(\a)},{-sin(\a)});}
+  \cerclebase
+  \path[coulCourbeB] (1,0) node[croix]{} (0,1) node[croix]{} (-1,0) node[croix]{} (0,-1) node[croix]{};
+  \node[font=\footnotesize,inner sep=1pt] at (1.1,0.09) {$0$};
+  \node[font=\footnotesize,inner sep=1pt] at (-1.1,0.09) {$\pi$};
+  \node[font=\footnotesize,inner sep=1pt] at (-0.12,1.12) {$\frac{\pi}{2}$};
+  \node[font=\footnotesize,inner sep=1pt] at (-0.16,-1.12) {$-\frac{\pi}{2}$};
+  \foreach \a/\l in {30/\frac{\pi}{6},45/\frac{\pi}{4},60/\frac{\pi}{3},
+     120/\frac{2\pi}{3},135/\frac{3\pi}{4},150/\frac{5\pi}{6},
+     -30/-\frac{\pi}{6},-45/-\frac{\pi}{4},-60/-\frac{\pi}{3},
+     -120/-\frac{2\pi}{3},-135/-\frac{3\pi}{4},-150/-\frac{5\pi}{6}}{%
+    \path[coulCourbeB] ({cos(\a)},{sin(\a)}) node[croix]{};
+    \node[font=\footnotesize,inner sep=1pt] at ({1.13*cos(\a)},{1.13*sin(\a)}) {$\l$};}
+  \foreach \v/\l in {0.5/\frac{1}{2},0.866/\frac{\sqrt{3}}{2},-0.5/-\frac{1}{2},-0.866/-\frac{\sqrt{3}}{2}}{%
+    \draw (\v,0.02)--(\v,-0.02);
+    \node[below,font=\footnotesize,inner sep=1pt,outer sep=2pt,coulCourbeB,fill=white] at (\v,0) {$\l$};
+    \draw (0.02,\v)--(-0.02,\v);
+    \node[left,font=\footnotesize,inner sep=1pt,outer sep=2pt,coulCourbeC,fill=white] at (0,\v) {$\l$};}
+  \foreach \v/\l in {0.707/\frac{\sqrt{2}}{2},-0.707/-\frac{\sqrt{2}}{2}}{%
+    \draw (\v,0.02)--(\v,-0.02);
+    \node[above,font=\footnotesize,inner sep=1pt,outer sep=2pt,coulCourbeB,fill=white] at (\v,0) {$\l$};
+    \draw (0.02,\v)--(-0.02,\v);
+    \node[right,font=\footnotesize,inner sep=1pt,outer sep=2pt,coulCourbeC,fill=white] at (0,\v) {$\l$};}
+\end{tikzpicture}
+\end{center}
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|>{\centering\arraybackslash}m{1.2cm}|*{9}{>{\centering\arraybackslash}m{1.15cm}|}}
+\hline
+$x$ & $0$ & $\dfrac{\pi}{6}$ & $\dfrac{\pi}{4}$ & $\dfrac{\pi}{3}$ & $\dfrac{\pi}{2}$ & $\dfrac{2\pi}{3}$ & $\dfrac{3\pi}{4}$ & $\dfrac{5\pi}{6}$ & $\pi$\\
+\hline
+$\cos(x)$ & $1$ & $\dfrac{\sqrt{3}}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{1}{2}$ & $0$ & $-\dfrac{1}{2}$ & $-\dfrac{\sqrt{2}}{2}$ & $-\dfrac{\sqrt{3}}{2}$ & $-1$\\
+\hline
+$\sin(x)$ & $0$ & $\dfrac{1}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{\sqrt{3}}{2}$ & $1$ & $\dfrac{\sqrt{3}}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{1}{2}$ & $0$\\
+\hline
+\end{tabular}
+
+\medskip
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|>{\centering\arraybackslash}m{1.2cm}|*{7}{>{\centering\arraybackslash}m{1.15cm}|}}
+\hline
+$x$ & $-\dfrac{\pi}{6}$ & $-\dfrac{\pi}{4}$ & $-\dfrac{\pi}{3}$ & $-\dfrac{\pi}{2}$ & $-\dfrac{2\pi}{3}$ & $-\dfrac{3\pi}{4}$ & $-\dfrac{5\pi}{6}$\\
+\hline
+$\cos(x)$ & $\dfrac{\sqrt{3}}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{1}{2}$ & $0$ & $-\dfrac{1}{2}$ & $-\dfrac{\sqrt{2}}{2}$ & $-\dfrac{\sqrt{3}}{2}$\\
+\hline
+$\sin(x)$ & $-\dfrac{1}{2}$ & $-\dfrac{\sqrt{2}}{2}$ & $-\dfrac{\sqrt{3}}{2}$ & $-1$ & $-\dfrac{\sqrt{3}}{2}$ & $-\dfrac{\sqrt{2}}{2}$ & $-\dfrac{1}{2}$\\
+\hline
+\end{tabular}}
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Retrouver la mesure principale d'après le cosinus et le sinus]
+\etapeexemples
+Déterminer la mesure principale de l'angle orienté de mesure $x$ tel que :
+\begin{questions}[label=\alph*)]
+  \item $\cos(x)=-\dfrac{1}{2}$ et $\sin(x)=\dfrac{\sqrt{3}}{2}$ ;
+  \item $\cos(x)=\dfrac{\sqrt{2}}{2}$ et $\sin(x)=-\dfrac{\sqrt{2}}{2}$ ;
+  \item $\cos(x)=0$ et $\sin(x)=-1$.
+\end{questions}
+
+\etape{À vous de jouer}
+Déterminer la mesure principale de l'angle orienté de mesure $x$ tel que :
+\begin{questions}[label=\alph*)]
+  \item $\cos(x)=-\dfrac{\sqrt{3}}{2}$ et $\sin(x)=\dfrac{1}{2}$ ;
+  \item $\cos(x)=\dfrac{1}{2}$ et $\sin(x)=-\dfrac{\sqrt{3}}{2}$ ;
+  \item $\cos(x)=-1$ et $\sin(x)=0$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 25 à 27}
+
+\partiecours{Équations avec des cosinus et des sinus}
+
+Résoudre $\cos(x)=a$, c'est chercher les points du cercle d'abscisse $a$, sur une droite
+verticale ; résoudre $\sin(x)=a$, c'est chercher les points d'ordonnée $a$, sur une droite
+horizontale. Ces équations se résolvent avec le \textbf{cercle complet} de la partie VII sous
+les yeux : il est donné dans les exercices ; en DS, il est à compléter.
+
+\begin{methodebox}[Méthode 10 --- Résoudre $\cos(x)=a$ ou $\sin(x)=a$ sur un intervalle]
+\etapeexemples
+Résoudre, à l'aide du cercle complet, sur l'intervalle $\intof{-\pi}{\pi}$ :
+\begin{center}
+a)~$\cos(x)=\dfrac{1}{2}$ \qquad b)~$\sin(x)=\dfrac{\sqrt{2}}{2}$ \qquad
+c)~$\sin(x)=-\dfrac{1}{2}$ \qquad d)~$\cos(x)=-1$ \qquad e)~$\sin(x)=2$
+\end{center}
+puis sur un autre intervalle :
+\begin{center}
+f)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ sur $\intff{0}{2\pi}$ \qquad
+g)~$\sin(x)=-\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$\\[4pt]
+h)~$\cos(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$
+\end{center}
+
+\etape{À vous de jouer}
+Résoudre, à l'aide du cercle complet, sur l'intervalle $\intof{-\pi}{\pi}$ :
+\begin{center}
+a)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ \qquad b)~$\sin(x)=\dfrac{\sqrt{3}}{2}$ \qquad
+c)~$\sin(x)=-\dfrac{\sqrt{2}}{2}$ \qquad d)~$\cos(x)=1$ \qquad e)~$\cos(x)=-3$
+\end{center}
+puis sur un autre intervalle :
+\begin{center}
+f)~$\cos(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$ \qquad
+g)~$\sin(x)=-\dfrac{1}{2}$ sur $\intff{0}{2\pi}$\\[4pt]
+h)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ sur $\intff{-2\pi}{2\pi}$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 28 à 30}
+
+\partiecours{Fonctions cosinus et sinus}
+
+\begin{definitionbox}[Définition 6 --- Fonctions cosinus et sinus, période]
+La \textbf{fonction cosinus} associe à tout nombre réel $x$ le nombre $\cos(x)$ ; la
+\textbf{fonction sinus} lui associe $\sin(x)$. Leurs courbes s'appellent des
+\textbf{sinusoïdes}.
+
+\smallskip
+Une fonction $f$ est \textbf{périodique de période $T$} si $f(x+T)=f(x)$ pour tout
+nombre réel $x$ : sa courbe reproduit le même morceau sur chaque intervalle de longueur $T$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Période et variations]
+Chaque colonne du tableau de valeurs de la partie VII, qui vient du cercle trigonométrique,
+donne un point de la courbe (les croix) : par exemple, $\cos\left(\dfrac{\pi}{3}\right)=\dfrac{1}{2}$
+donne le point de coordonnées $\left(\dfrac{\pi}{3}\,;\dfrac{1}{2}\right)$ sur la courbe du cosinus.
+
+\smallskip
+Comme $\cos(x+2\pi)=\cos(x)$ et $\sin(x+2\pi)=\sin(x)$, les fonctions cosinus et sinus sont
+périodiques de période $2\pi$ : le morceau de $\intff{-\pi}{\pi}$ se répète. Dans les repères
+ci-dessous, un carreau vaut $\dfrac{\pi}{6}$ en abscisse et $\dfrac{1}{2}$ en ordonnée.
+\begin{center}
+\begin{tikzpicture}[x=1.2cm,y=1.2cm]
+  \reperetrigo{-12}{12}\courbecos{-12}{12}\gradcos\ptstable{cos}
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.2,1.25) {$y=\cos(x)$};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[x=1.2cm,y=1.2cm]
+  \reperetrigo{-12}{12}\courbesin{-12}{12}\gradsin\ptstable{sin}
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (3.3,1.25) {$y=\sin(x)$};
+\end{tikzpicture}
+\end{center}
+Le tableau de valeurs donne aussi le sens de variation : quand $x$ va de $-\pi$ à $0$,
+$\cos(x)$ monte de $-1$ à $1$, puis redescend à $-1$ quand $x$ va de $0$ à $\pi$.
+Tableaux de variation sur une période, $\intff{-\pi}{\pi}$ :
+
+\medskip
+\begin{minipage}[t]{0.48\linewidth}\centering
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=2.2]{$x$/1,$\cos(x)$/2}{$-\pi$,$0$,$\pi$}
+  \tkzTabVar{-/$-1$,+/$1$,-/$-1$}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\centering
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=1.5]{$x$/1.3,$\sin(x)$/2}{$-\pi$,$-\dfrac{\pi}{2}$,$\dfrac{\pi}{2}$,$\pi$}
+  \tkzTabVar{+/$0$,-/$-1$,+/$1$,-/$0$}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Dresser le tableau de variation sur un autre intervalle]
+\etapeexemples
+Dresser le tableau de variation, à l'aide des courbes de la propriété 6 :
+\begin{questions}[label=\alph*)]
+  \item de la fonction cosinus sur $\intff{0}{2\pi}$ ;
+  \item de la fonction sinus sur $\intff{-\dfrac{\pi}{2}}{\dfrac{3\pi}{2}}$ ;
+  \item de la fonction cosinus sur $\intff{2\pi}{4\pi}$.
+\end{questions}
+
+\etape{À vous de jouer}
+Dresser le tableau de variation :
+\begin{questions}[label=\alph*)]
+  \item de la fonction cosinus sur $\intff{-2\pi}{0}$ ;
+  \item de la fonction sinus sur $\intff{\dfrac{\pi}{2}}{\dfrac{5\pi}{2}}$ ;
+  \item de la fonction cosinus sur $\intff{4\pi}{6\pi}$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 12 --- Lire la période d'une fonction sur sa courbe]
+\etapeexemples
+En électricité, beaucoup de signaux sont périodiques sans être des sinusoïdes. Lire la
+période de chaque signal $f$, $g$ et $h$, dont voici les courbes.
+
+\smallskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small a)~signal triangulaire}\par\smallskip
+\figsignal{-3}{3}{-3,3}{\sigtriangle}{(-4.3,2.5)}{$\Cf$}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small b)~signal carré}\par\smallskip
+\figsignal{-3}{3}{-4,-2,2,4}{\sigcarre}{(-3,-2.6)}{$\Cg$}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small c)~sinusoïde déformée}\par\smallskip
+\figsignal{-3}{3}{-3,1}{\sigdeforme}{(-4.3,-2.5)}{$\mathcal{C}_{h}$}{}
+\end{minipage}
+
+\etape{À vous de jouer}
+Lire la période de chaque signal $k$, $m$ et $n$, dont voici les courbes.
+
+\smallskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small a)~signal en dents de scie}\par\smallskip
+\figsignal{-3}{3}{-4,-2,2,4}{\sigrampe}{(-3.3,-2.6)}{$\mathcal{C}_{k}$}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small b)~signal carré amorti}\par\smallskip
+\figsignal{-4}{4}{-4,-2,2,4}{\sigamorti}{(-3,-3.5)}{$\mathcal{C}_{m}$}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small c)~sinusoïde déformée}\par\smallskip
+\figsignal{-3}{3}{-3,3}{\sigdeformeb}{(-1.5,2.6)}{$\mathcal{C}_{n}$}{}
+\end{minipage}
+
+\end{methodebox}
+
+\afaire{exercices 31 à 34}
+
+\partiecours{Résolution graphique d'équations et d'inéquations}
+
+Comme pour toute fonction, on lit les solutions sur la courbe : les abscisses de ses points
+d'intersection avec une droite horizontale. La courbe montre d'un seul coup toutes les
+solutions d'un intervalle.
+
+\begin{methodebox}[Méthode 13 --- Résoudre graphiquement une équation ou une inéquation]
+\etapeexemples
+Un carreau vaut $\dfrac{\pi}{6}$ en abscisse et $\dfrac{1}{2}$ en ordonnée. Résoudre graphiquement chaque équation, puis chaque inéquation :
+\begin{questions}[label=\alph*)]
+  \item $\cos(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ ;
+  \item $\sin(x)=-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ ;
+  \item $\sin(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$ ;
+  \item $\cos(x)\ge\dfrac{1}{2}$ sur $\intff{-\pi}{\pi}$ ;
+  \item $\sin(x)<\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ ;
+  \item $\cos(x)\le-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$.
+\end{questions}
+\begin{center}
+\begin{tikzpicture}[x=1.2cm,y=1.2cm]
+  \reperetrigo{-12}{12}\courbecos{-12}{12}\gradcos
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.2,1.25) {$y=\cos(x)$};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[x=1.2cm,y=1.2cm]
+  \reperetrigo{-12}{12}\courbesin{-12}{12}\gradsin
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (3.3,1.25) {$y=\sin(x)$};
+\end{tikzpicture}
+\end{center}
+
+\etape{À vous de jouer}
+Résoudre graphiquement, à l'aide des courbes ci-dessus :
+\begin{center}
+a)~$\cos(x)=-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ \qquad
+b)~$\sin(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ \qquad
+c)~$\cos(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$\\[4pt]
+d)~$\cos(x)\ge-\dfrac{1}{2}$ sur $\intff{-\pi}{\pi}$ \qquad
+e)~$\sin(x)>-\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ \qquad
+f)~$\sin(x)\ge\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 35 à 38}
+
+\partiecours{Fonctions paires et impaires}
+
+\begin{definitionbox}[Définition 7 --- Fonction paire, fonction impaire]
+\begin{minipage}[t]{0.48\linewidth}\raggedright
+Une fonction $f$ est \textbf{paire} si, pour tout nombre réel $x$ :
+\[ f(-x)=f(x) \]
+Sa courbe est symétrique par rapport à l'axe des ordonnées.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\raggedright
+Une fonction $f$ est \textbf{impaire} si, pour tout nombre réel $x$ :
+\[ f(-x)=-f(x) \]
+Sa courbe est symétrique par rapport à l'origine du repère.
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 7 --- Parité du cosinus et du sinus]
+D'après les angles associés (propriété 5), $\cos(-x)=\cos(x)$ et $\sin(-x)=-\sin(x)$ :
+la fonction cosinus est \textbf{paire} et la fonction sinus est \textbf{impaire}. On le voit sur
+leurs courbes (propriété 6).
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 14 --- Reconnaître sur la courbe une fonction paire ou impaire]
+\etapeexemples
+Dire si chaque fonction $f$, $g$ et $h$ est paire, impaire ou ni l'une ni l'autre.
+
+\smallskip
+\begin{minipage}[c]{0.32\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-1,1,3}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,-2) .. controls (-2.4,-1) and (-1.6,2) .. (-1,2)
+    .. controls (-0.6,2) and (-0.4,1) .. (0,1)
+    .. controls (0.4,1) and (0.6,2) .. (1,2)
+    .. controls (1.6,2) and (2.4,-1) .. (3,-2);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.5,2.3) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.32\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-1,1,3}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,1) .. controls (-2.3,0.4) and (-1.7,-2) .. (-1,-2)
+    .. controls (-0.4,-2) and (0.4,2) .. (1,2)
+    .. controls (1.7,2) and (2.3,-0.4) .. (3,-1);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.5,2.3) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.32\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-1,1,3}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,-2) .. controls (-2,-1) and (-1,2) .. (0,2)
+    .. controls (1,2) and (2,-0.4) .. (3,-1);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.5,2.3) {$\mathcal{C}_{h}$};
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+Dire si chaque fonction $k$, $m$ et $n$ est paire, impaire ou ni l'une ni l'autre.
+
+\smallskip
+\begin{minipage}[c]{0.32\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-1,1,3}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,3) .. controls (-2.2,1) and (-1,-1) .. (0,-1)
+    .. controls (1,-1) and (2.2,1) .. (3,3);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (1,2.4) {$\mathcal{C}_{k}$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.32\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-1,1,3}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,-2) .. controls (-2.4,-1) and (-1.6,1) .. (-1,1)
+    .. controls (-0.5,1) and (0.5,-1) .. (1,-1)
+    .. controls (1.6,-1) and (2.4,1) .. (3,2);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.4,2.6) {$\mathcal{C}_{m}$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.32\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-1,1,2,3}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,1) .. controls (-2.4,1.6) and (-1.6,3) .. (-1,3)
+    .. controls (0,3) and (1,-2) .. (2,-2)
+    .. controls (2.4,-2) and (2.7,-0.6) .. (3,0);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.5,2.3) {$\mathcal{C}_{n}$};
+\end{tikzpicture}
+\end{minipage}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 15 --- Démontrer qu'une fonction est paire ou impaire]
+\textbf{But :} montrer que $f(-x)=f(x)$ si $f$ est paire, ou que $f(-x)=-f(x)$ si $f$ est impaire.
+Pour cela, on remplace $x$ par $-x$ dans la fonction.
+\etapeexemples
+Ces fonctions sont définies sur $\R$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que $f(x)=x^{2}+3\cos(x)$ est paire.
+  \item Démontrer que $g(x)=2x-\sin(x)$ est impaire.
+  \item Démontrer que $h(x)=\sin(3x)-x$ est impaire.
+\end{questions}
+
+\etape{À vous de jouer}
+Ces fonctions sont définies sur $\R$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que $k(x)=x^{2}-2\cos(x)$ est paire.
+  \item Démontrer que $m(x)=3x+\sin(x)$ est impaire.
+  \item Démontrer que $n(x)=\sin(2x)+x$ est impaire.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 16 --- Compléter une courbe par parité et périodicité]
+\etapeexemples
+\begin{minipage}[c]{0.50\linewidth}\raggedright
+La fonction $f$ est paire et périodique de période $4$. Voici sa courbe sur $\intff{0}{2}$.
+Compléter la courbe sur $\intff{-4}{4}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,-2,2,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (0,2) .. controls (0.7,2) and (1.3,-2) .. (2,-2);
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.50\linewidth}\raggedright
+La fonction $g$ est impaire et périodique de période $4$. Voici sa courbe sur $\intff{0}{2}$.
+Compléter la courbe sur $\intff{-4}{4}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,-2,2,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (0,0) .. controls (0.35,0.7) and (0.65,2) .. (1,2)
+    .. controls (1.35,2) and (1.65,0.7) .. (2,0);
+\end{tikzpicture}
+\end{minipage}
+
+\end{methodebox}
+
+\afaire{exercices 39 à 41}
+
+\partiecours{Équations du type $\cos(kx)=a$}
+
+Dans $\cos(2x)$, l'angle est $2x$. On résout d'abord sur le cercle, pour l'angle tout entier, qu'on nomme
+$X$, puis on revient à $x$. Attention : $X$ ne parcourt pas le même intervalle que $x$.
+
+\begin{methodebox}[Méthode 17 --- Résoudre $\cos(kx)=a$ ou $\sin(kx)=a$ sur un intervalle]
+\etapeexemples
+Résoudre, à l'aide du cercle complet :
+\begin{questions}[label=\alph*)]
+  \item $\cos(2x)=\dfrac{1}{2}$ sur $\intff{0}{\pi}$ ;
+  \item $\sin(3x)=1$ sur $\intff{-\pi}{\pi}$ ;
+  \item $\cos\left(\dfrac{x}{2}\right)=0$ sur $\intff{0}{4\pi}$.
+\end{questions}
+
+\etape{À vous de jouer}
+Résoudre, à l'aide du cercle complet :
+\begin{questions}[label=\alph*)]
+  \item $\cos(2x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{\pi}$ ;
+  \item $\sin(3x)=-1$ sur $\intff{-\pi}{\pi}$ ;
+  \item $\cos\left(\dfrac{x}{2}\right)=\dfrac{1}{2}$ sur $\intff{0}{4\pi}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 42 à 44}
+
+\partiecours{Fonctions sinusoïdales : amplitude, période, phase}
+
+La tension d'une prise de courant, le son d'un haut-parleur, la vibration d'un moteur :
+ces grandeurs oscillent au cours du temps et se décrivent toutes par un cosinus ou un sinus.
+
+\begin{definitionbox}[Définition 8 --- Fonction sinusoïdale]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Une \textbf{fonction sinusoïdale} du temps $t$ s'écrit
+\begin{center}
+$A\cos(\omega t+\varphi)$ \quad ou \quad $A\sin(\omega t+\varphi)$
+\end{center}
+où $A$ et $\omega$ sont des nombres positifs et $\varphi$ un nombre réel.
+\begin{itemize}
+  \item $A$ est l'\textbf{amplitude} : la valeur maximale.
+  \item $\omega$ est la \textbf{pulsation}, en rad/s.
+  \item $\omega t+\varphi$ est la \textbf{phase instantanée}.
+  \item $\varphi$ est la \textbf{phase à l'origine}, en rad.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \reperet{-1}{-3}{7}{3}
+  \gradx{1,5}\grady{2}
+  \courbet{-1}{7}{2*sin(90*\x)}
+  \draw[red,line width=1.4pt] (1,0)--(1,2);
+  \node[red,font=\footnotesize,left,inner sep=2pt] at (1,1.1) {$A$};
+  \draw[{Stealth[length=1.8mm]}-{Stealth[length=1.8mm]},coulCourbeC,line width=0.9pt] (1,2.5)--(5,2.5);
+  \node[coulCourbeC,font=\footnotesize,above,inner sep=1.5pt,fill=white] at (3,2.5) {$T$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 8 --- Période et fréquence]
+Une fonction sinusoïdale de pulsation $\omega$ a pour \textbf{période} $T=\dfrac{2\pi}{\omega}$.
+Si $t$ est en secondes, sa \textbf{fréquence}, en hertz (Hz), vaut $\dfrac{1}{T}$ : c'est le
+nombre de périodes par seconde.
+
+\smallskip
+\demo{Quand $t$ augmente de $T$, la phase augmente d'un tour :}
+\begin{calculs}
+\omega(t+T)+\varphi &= \omega t+\omega T+\varphi &\qquad& \rem{on développe}\\
+\omega(t+T)+\varphi &= \omega t+\omega\times\dfrac{2\pi}{\omega}+\varphi && \rem{on remplace $T$}\\
+\omega(t+T)+\varphi &= \omega t+\varphi+2\pi && \rem{un tour de plus : même cosinus, même sinus}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 18 --- Lire l'amplitude et la phase, calculer la période]
+\etapeexemples
+Pour chaque fonction, donner l'amplitude, la pulsation et la phase à l'origine, puis calculer
+la période :
+\begin{questions}[label=\alph*)]
+  \item la tension d'une prise de courant, en volts, $t$ en secondes : $u(t)=325\cos(100\pi t)$ (donner aussi la fréquence) ;
+  \item $v(t)=3\sin\left(2t+\dfrac{\pi}{4}\right)$ ;
+  \item $w(t)=5\cos\left(\dfrac{\pi}{2}t-\dfrac{\pi}{3}\right)$.
+\end{questions}
+
+\etape{À vous de jouer}
+Pour chaque fonction, donner l'amplitude, la pulsation et la phase à l'origine, puis calculer
+la période :
+\begin{questions}[label=\alph*)]
+  \item la tension du réseau électrique américain, en volts, $t$ en secondes : $u(t)=170\cos(120\pi t)$ (donner aussi la fréquence) ;
+  \item $v(t)=4\sin\left(3t+\dfrac{\pi}{6}\right)$ ;
+  \item $w(t)=2\cos\left(\dfrac{\pi}{4}t-\dfrac{\pi}{2}\right)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 45 à 47}
+
+\partiecours{Courbe d'une fonction sinusoïdale}
+
+La courbe d'une fonction sinusoïdale oscille entre $-A$ et $A$ et se répète à chaque période.
+La phase à l'origine la décale le long de l'axe du temps.
+
+\begin{methodebox}[Méthode 19 --- Tracer la courbe d'une fonction sinusoïdale]
+\etapeexemples
+Pour chaque fonction $g$ et $h$, calculer les images de $0$, $1$, $2$, $3$ et $4$, puis tracer sa
+courbe sur $\intff{-4}{4}$ :
+\begin{center}
+$g(t)=2\sin\left(\dfrac{\pi}{2}t\right)$ \qquad $h(t)=2\cos\left(\dfrac{\pi}{2}t+\dfrac{\pi}{2}\right)$
+\end{center}
+
+\etape{À vous de jouer}
+Pour chaque fonction $k$ et $m$, calculer les images de $0$, $1$, $2$, $3$ et $4$, puis tracer sa
+courbe sur $\intff{-4}{4}$ :
+\begin{center}
+$k(t)=3\sin\left(\dfrac{\pi}{2}t\right)$ \qquad $m(t)=3\cos\left(\dfrac{\pi}{2}t+\dfrac{\pi}{2}\right)$
+\end{center}
+
+\end{methodebox}
+
+\afaire{exercices 48 à 52}
+
+\end{document}

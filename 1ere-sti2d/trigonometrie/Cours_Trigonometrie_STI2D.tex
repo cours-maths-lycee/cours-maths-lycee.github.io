@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.0}
+\def\lyceeversion{1.1}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
@@ -412,6 +412,23 @@
   \node[below left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$-1$};
   \node[above right,font=\scriptsize,inner sep=1.5pt] at (0,1) {$1$};
   \node[below right,font=\scriptsize,inner sep=1.5pt] at (0,-1) {$-1$};}
+\newcommand{\cerclerep}{\cerclenu
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$0$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (1,0) {$2\pi$};
+  \node[above left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$\pi$};}
+\newcommand{\cerclearc}[3]{%
+  \begin{tikzpicture}[x=0.95cm,y=0.95cm]
+    \cerclenu
+    \draw[-{Stealth[length=2.4mm]},red,line width=1.8pt] (1,0) arc (0:#1:1);
+    \node[red,font=\footnotesize,inner sep=1pt,fill=white] at ({1.32*cos(#1+14)},{1.32*sin(#1+14)}) {#2};
+  \end{tikzpicture}\par\smallskip{\small #3}}
+\newcommand{\figasso}[5]{\begin{tikzpicture}[x=1.25cm,y=1.25cm]
+  #5\cerclerep\ptc{#1}{#2}\ptc{#3}{#4}\end{tikzpicture}}
+\newcommand{\cote}[5]{%
+  \path[coulCourbeB] (#1,#3) node[croix]{} (#2,#3) node[croix]{};
+  \draw[lecture] (#1,#3)--(#1,{#4+0.3}) (#2,#3)--(#2,{#4+0.3});
+  \draw[{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]},coulCourbeB,line width=0.8pt] (#1,#4)--(#2,#4)
+    node[pos=0.3,above,fill=white,font=\footnotesize,inner sep=1pt] {#5};}
 \newcommand{\rayons}[1]{\foreach \a in {#1}{%
   \draw[grille] (0,0)--({cos(\a)},{sin(\a)});}}
 \newcommand{\ptc}[2]{%
@@ -443,13 +460,13 @@
   \draw[#1] ({#4*cos(#2)},{#4*sin(#2)}) arc (#2:#3:#4);}
 \newcommand{\cerclemesure}[4]{%
   \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-    \rayons{#1}\cerclebase
+    \rayons{#1}\cerclerep
     \arcsens{#3}{#2}{0.55}
     \ptc{#2}{#4}
   \end{tikzpicture}}
 \newcommand{\figassociee}[3]{%
   \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-    #3\cerclebase
+    #3\cerclerep
     \ptc{35}{$x$}
     \ptc{#1}{#2}
   \end{tikzpicture}}
@@ -489,6 +506,24 @@
   \clip (-5,-3.4) rectangle (5,3.4);
   \foreach \d in {#1}{\draw[coulCourbe,line width=1.1pt,shift={(\d,0)}] #2;}
   \end{scope}}
+\newcommand{\figsignal}[7]{\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-5}{#1}{5}{#2}
+  \gradx{#3}\grady{-2,2}
+  #4
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at #5 {#6};
+  #7
+  \end{tikzpicture}}
+\newcommand{\sigtriangle}{\motif{-12,-6,0,6}{(0,-2)--(3,2)--(6,-2)}}%
+\newcommand{\sigcarre}{\motif{-8,-4,0,4}{(0,-2)--(0,2)--(2,2)--(2,-2)--(4,-2)}}%
+\newcommand{\sigrampe}{\motif{-6,-4,-2,0,2,4}{(0,-2)--(2,2)--(2,-2)}}%
+\newcommand{\sigamorti}{\motif{-8,-4,0,4}{(0,-2)--(0,3)
+  --plot[domain=0:2,samples=60] (\x,{2+exp(-2.5*\x)*cos(540*\x)})
+  --(2,-3)--plot[domain=2:4,samples=60] (\x,{-2-exp(-2.5*(\x-2))*cos(540*(\x-2))})}}%
+\newcommand{\sigdeforme}{\motif{-8,-4,0,4}{(0,0) .. controls (0.3,0.45) and (0.6,2) .. (1,2)
+  .. controls (1.4,2) and (1.7,1.45) .. (2,1) .. controls (2.3,0.55) and (2.6,-1) .. (3,-1)
+  .. controls (3.4,-1) and (3.7,-0.45) .. (4,0)}}
+\newcommand{\sigdeformeb}{\motif{-6,-3,0,3}{(0,2) .. controls (0.6,2) and (1.4,-2) .. (2,-2)
+  .. controls (2.4,-2) and (2.6,2) .. (3,2)}}
 \newcommand{\reperet}[4]{%
   \draw[grille,step=1] (#1,#2) grid (#3,#4);
   \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt,font=\footnotesize]{$t$};
@@ -499,12 +534,6 @@
 \newcommand{\gradt}[1]{\foreach \k in {#1}{%
   \draw (\k,0.1)--(\k,-0.1);
   \node[below,font=\scriptsize,inner sep=1pt,outer sep=2.5pt,fill=white] at (\k,0) {$\k$};}}
-\newcommand{\sinusoide}[2]{%
-  \begin{tikzpicture}[x=0.5cm,y=0.5cm]
-    \reperet{-5}{-4}{5}{4}
-    \courbet{-4}{4}{#1}
-    \gradt{-4,-2,2,4}\grady{#2}
-  \end{tikzpicture}}
 \newcommand{\sinusoidepts}[3]{%
   \begin{tikzpicture}[x=0.5cm,y=0.5cm]
     \reperet{-5}{-4}{5}{4}
@@ -524,48 +553,78 @@ vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
 
 \partiecours{Cercle trigonométrique et radian}
 
-Une roue, une pale d'éolienne, le bras d'un robot : tout ce qui tourne se décrit
-sur un cercle de rayon $1$, avec une unité d'angle adaptée, le radian.
-
 \begin{definitionbox}[Définition 1 --- Cercle trigonométrique]
-\begin{minipage}[c]{0.66\linewidth}\raggedright
+\begin{minipage}[c]{0.58\linewidth}\raggedright
 Dans un repère orthonormé $(O\,;x\,;y)$, le \textbf{cercle trigonométrique} est le
 cercle de centre $O$ et de rayon $1$.
 
 \smallskip
-On le parcourt à partir du point de coordonnées $(1\,;0)$. Le \textbf{sens direct} est le sens
-contraire des aiguilles d'une montre ; l'autre sens est le \textbf{sens indirect}.
+On le parcourt à partir du point de départ, de coordonnées $(1\,;0)$.
+\begin{itemize}
+  \item Le \textbf{sens direct} (pour les angles positifs) est le sens contraire des
+  aiguilles d'une montre.
+  \item L'autre sens est le \textbf{sens indirect} (pour les angles négatifs).
+\end{itemize}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.30\linewidth}\centering
-\begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \cerclebase
-  \arcsens{10}{80}{0.7}
-  \node[coulCourbeB,font=\scriptsize] at (0.3,0.2) {direct};
+\begin{minipage}[c]{0.40\linewidth}\centering
+\begin{tikzpicture}[x=1.15cm,y=1.15cm]
+  \cerclenu
+  \draw[-{Stealth[length=2mm]},red,line width=1.1pt] (20:1.22) arc (20:70:1.22);
+  \draw[-{Stealth[length=2mm]},line width=1.1pt] (-20:1.22) arc (-20:-70:1.22);
+  \node[red,font=\footnotesize,anchor=south west,inner sep=1pt] at (48:1.32) {$+$ sens direct};
+  \node[font=\footnotesize,anchor=north west,inner sep=1pt] at (-48:1.32) {$-$ sens indirect};
+  \path[coulCourbeB] (1,0) node[croix]{};
+  \draw[-{Stealth[length=1.6mm]},coulCourbeB,line width=0.8pt] (1.45,0.42)--(1.05,0.06);
+  \node[coulCourbeB,font=\scriptsize,anchor=south west,inner sep=1pt] at (1.42,0.4) {départ};
 \end{tikzpicture}
 \end{minipage}
 \end{definitionbox}
 
 \begin{definitionbox}[Définition 2 --- Radian]
-\begin{minipage}[c]{0.66\linewidth}\raggedright
-Le rayon vaut $1$ : le cercle trigonométrique a pour longueur $2\pi\times 1$, soit
-$2\pi$. Un tour complet mesure donc $360^{\circ}$ ou $2\pi$ \textbf{radians} (rad).
+Un cercle de rayon $r$ a pour périmètre $p=2\pi r$. Le cercle trigonométrique a pour
+rayon $1$ : son périmètre vaut $2\pi\times 1$, soit $2\pi$. Un tour complet mesure donc
+$360^{\circ}$ ou $2\pi$ \textbf{radians} (rad).
 
 \smallskip
-Sur ce cercle, la mesure en radians d'un angle est la longueur de l'arc parcouru.
+Sur ce cercle, la mesure en radians d'un angle est la \textbf{longueur de l'arc parcouru}
+à partir du point de départ (en rouge) :
+
+\medskip
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{90}{$\frac{\pi}{2}$}{un quart de tour}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.30\linewidth}\centering
-\begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \cerclebase
-  \draw[red,line width=1.6pt] (1,0) arc (0:60:1);
-  \draw[lecture] (0,0)--({cos(60)},{sin(60)});
-  \ptc{60}{$M$}
-  \node[red,font=\scriptsize,right] at ({cos(30)},{sin(30)}) {arc};
-\end{tikzpicture}
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{180}{$\pi$}{un demi-tour}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{270}{$\frac{3\pi}{2}$}{trois quarts de tour}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.24\linewidth}\centering
+\cerclearc{359.9}{$2\pi$}{un tour complet}
 \end{minipage}
 \end{definitionbox}
 
 \begin{proprietebox}[Propriété 1 --- Degrés et radians]
+\begin{minipage}[c]{0.50\linewidth}\raggedright
 Les mesures en degrés et en radians sont proportionnelles : $180^{\circ}$ valent $\pi$ rad.
+
+\smallskip
+Sur la figure : les degrés à l'extérieur du cercle, les radians à l'intérieur (en rouge).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.48\linewidth}\centering
+\begin{tikzpicture}[x=2.1cm,y=2.1cm]
+  \foreach \a in {30,45,60}{\draw[grille] (0,0)--({cos(\a)},{sin(\a)});}
+  \cerclenu
+  \foreach \a/\d/\r in {30/30/\frac{\pi}{6},45/45/\frac{\pi}{4},60/60/\frac{\pi}{3},
+      90/90/\frac{\pi}{2},180/180/\pi,270/270/\frac{3\pi}{2}}{%
+    \path[coulCourbeB] ({cos(\a)},{sin(\a)}) node[croix]{};
+    \node[font=\footnotesize,inner sep=1pt,fill=white] at ({1.17*cos(\a)},{1.17*sin(\a)}) {$\d^{\circ}$};
+    \node[red,font=\footnotesize,inner sep=1pt,fill=white] at ({0.8*cos(\a)},{0.8*sin(\a)}) {$\r$};}
+  \path[coulCourbeB] (1,0) node[croix]{};
+  \node[font=\footnotesize,anchor=south west,inner sep=1pt] at (1.03,0.03) {$0^{\circ}$ ou $360^{\circ}$};
+  \node[red,font=\footnotesize,anchor=south east,inner sep=1pt] at (0.97,0.03) {$0$ ou $2\pi$};
+\end{tikzpicture}
+\end{minipage}
 \begin{center}
 {\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{10pt}
 \begin{tabular}{|m{1.5cm}|*{7}{>{\centering\arraybackslash}m{0.8cm}|}}
@@ -621,6 +680,8 @@ d)~$\dfrac{4\pi}{9}$ rad, en degrés.
 \reponse{a)~$\dfrac{7\pi}{18}$ rad ;\; b)~$\dfrac{5\pi}{4}$ rad ;\; c)~$210^{\circ}$ ;\; d)~$80^{\circ}$.}
 \end{methodebox}
 
+\afaire{exercices 1 à 4}
+
 \partiecours{Mesures d'un angle orienté}
 
 \begin{definitionbox}[Définition 3 --- Mesure d'un angle orienté]
@@ -633,10 +694,14 @@ par le demi-axe $[Ox)$ et $[OM)$ :
   \item négative dans le sens indirect.
 \end{itemize}
 On dit que cette mesure est le nombre réel associé au point $M$.
+
+\smallskip
+Chaque point du cercle a une mesure positive et une mesure négative, qui aboutissent au
+même endroit : par exemple, $\dfrac{\pi}{2}$ et $-\dfrac{3\pi}{2}$ pour le point $M$.
 \end{minipage}\hfill
 \begin{minipage}[c]{0.30\linewidth}\centering
 \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \cerclebase
+  \cerclerep
   \arcsens{0}{90}{0.72}
   \arcsens[sensB]{0}{-270}{0.45}
   \ptc{90}{$M\quad\ $}
@@ -664,14 +729,14 @@ Pour chaque point $A$ et $B$ de la figure, lire :
 \begin{minipage}[c]{0.28\linewidth}\centering
 Huitièmes de tour\par
 \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \rayons{0,45,...,315}\cerclebase
+  \rayons{0,45,...,315}\cerclerep
   \ptc{135}{$A$}
 \end{tikzpicture}
 \end{minipage}\hfill
 \begin{minipage}[c]{0.28\linewidth}\centering
 Sixièmes de tour\par
 \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \rayons{0,60,...,300}\cerclebase
+  \rayons{0,60,...,300}\cerclerep
   \ptc{300}{$B$}
 \end{tikzpicture}
 \end{minipage}
@@ -695,14 +760,14 @@ Pour chaque point $C$ et $D$ de la figure, lire :
 \begin{minipage}[c]{0.28\linewidth}\centering
 Huitièmes de tour\par
 \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \rayons{0,45,...,315}\cerclebase
+  \rayons{0,45,...,315}\cerclerep
   \ptc{225}{$C$}
 \end{tikzpicture}
 \end{minipage}\hfill
 \begin{minipage}[c]{0.28\linewidth}\centering
 Douzièmes de tour\par
 \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \rayons{0,30,...,330}\cerclebase
+  \rayons{0,30,...,330}\cerclerep
   \ptc{150}{$D$}
 \end{tikzpicture}
 \end{minipage}
@@ -764,6 +829,8 @@ $G$ associé à $\dfrac{17\pi}{6}$ \qquad $H$ associé à $-\dfrac{5\pi}{2}$
 \reponse{$G$ est le point associé à $\dfrac{5\pi}{6}$ ;\; $H$ est le point associé à $-\dfrac{\pi}{2}$.}
 \end{methodebox}
 
+\afaire{exercices 5 à 8}
+
 \partiecours{Mesure principale d'un angle orienté}
 
 Un même point a une infinité de mesures : on en choisit une, toujours la même.
@@ -779,10 +846,9 @@ principale négative.
 \end{minipage}\hfill
 \begin{minipage}[c]{0.30\linewidth}\centering
 \begin{tikzpicture}[x=1.25cm,y=1.25cm]
-  \cerclebase
+  \cerclerep
   \draw[coulCourbeB,line width=1.5pt] (1,0) arc (0:180:1);
   \draw[coulCourbeC,line width=1.5pt] (1,0) arc (0:-180:1);
-  \node[coulCourbeB,font=\scriptsize] at (-1.2,0.18) {$\pi$};
   \node[coulCourbeB,font=\scriptsize] at (0.45,0.45) {$+$};
   \node[coulCourbeC,font=\scriptsize] at (0.45,-0.45) {$-$};
 \end{tikzpicture}
@@ -799,7 +865,7 @@ a)~$\dfrac{8\pi}{3}$ \qquad b)~$-\dfrac{7\pi}{6}$ \qquad c)~$\dfrac{29\pi}{4}$ \
 \cas{a)}
 \begin{calculs}
 2\pi &= \dfrac{6\pi}{3} &\qquad& \rem{un tour, écrit avec le dénominateur $3$}\\
-\dfrac{8\pi}{3}-\dfrac{6\pi}{3} &= \dfrac{2\pi}{3} && \rem{on retire un tour}
+\dfrac{8\pi}{3}-\dfrac{6\pi}{3} &= \dfrac{2\pi}{3} && \rem{on retire un tour : on reste au même endroit du cercle}
 \end{calculs}
 \explique{La mesure principale est $\dfrac{2\pi}{3}$.}{$\tfrac{2\pi}{3}$ est bien dans $\intof{-\pi}{\pi}$}
 \cas{b)}
@@ -830,6 +896,8 @@ a)~$\dfrac{11\pi}{3}$ \qquad b)~$-\dfrac{13\pi}{6}$ \qquad c)~$\dfrac{35\pi}{4}$
 \reponse{a)~$-\dfrac{\pi}{3}$ ;\; b)~$-\dfrac{\pi}{6}$ ;\; c)~$\dfrac{3\pi}{4}$ ;\; d)~$\pi$.}
 \end{methodebox}
 
+\afaire{exercices 9 à 12}
+
 \partiecours{Cosinus et sinus d'un nombre réel}
 
 \begin{definitionbox}[Définition 5 --- Cosinus et sinus d'un nombre réel]
@@ -839,12 +907,20 @@ Soit $M$ le point du cercle trigonométrique associé au nombre réel $x$.
   \item Le \textbf{cosinus} de $x$, noté $\cos(x)$, est l'abscisse de $M$.
   \item Le \textbf{sinus} de $x$, noté $\sin(x)$, est l'ordonnée de $M$.
 \end{itemize}
-Entre $0$ et $\dfrac{\pi}{2}$, on retrouve le cosinus et le sinus du triangle rectangle :
-dans le triangle $OHM$, l'hypoténuse $OM$ vaut $1$.
+Entre $0$ et $\dfrac{\pi}{2}$, on retrouve le cosinus et le sinus du triangle rectangle
+$OHM$, d'angle $\alpha=\widehat{HOM}$, car l'hypoténuse $OM$ vaut $1$ :
+\begin{calculs}
+\cos(\alpha) &= \dfrac{OH}{OM} &\qquad& \rem{côté adjacent sur hypoténuse}\\
+\cos(\alpha) &= \dfrac{OH}{1} && \rem{$OM$ vaut $1$}\\
+\cos(\alpha) &= OH &&
+\end{calculs}
+De même, $\sin(\alpha)=\dfrac{MH}{OM}$, soit $\sin(\alpha)=MH$.
 \end{minipage}\hfill
 \begin{minipage}[c]{0.30\linewidth}\centering
 \begin{tikzpicture}[x=1.7cm,y=1.7cm]
   \cerclebase
+  \draw[red,line width=0.8pt] (0.3,0) arc (0:50:0.3);
+  \node[red,font=\scriptsize] at (25:0.42) {$\alpha$};
   \draw[black!70] (0,0)--({cos(50)},{sin(50)});
   \draw[lecture] ({cos(50)},{sin(50)})--({cos(50)},0);
   \draw[lecture] ({cos(50)},{sin(50)})--(0,{sin(50)});
@@ -890,7 +966,11 @@ $\sin(x)$ & $0$ & $\dfrac{1}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{\sqrt{3}}{2}$
 
 \medskip
 {\raggedright À retenir avec l'image du quart de cercle : le cosinus diminue de $1$ à $0$
-quand $x$ augmente, le sinus augmente de $0$ à $1$.\par}
+quand $x$ augmente, le sinus augmente de $0$ à $1$.
+
+\smallskip
+Pour situer les valeurs : $\dfrac{\sqrt{2}}{2}\approx 0{,}71$ et
+$\dfrac{\sqrt{3}}{2}\approx 0{,}87$, donc $\dfrac{1}{2}<\dfrac{\sqrt{2}}{2}<\dfrac{\sqrt{3}}{2}$.\par}
 \end{minipage}\hfill
 \begin{minipage}[c]{0.36\linewidth}\centering
 \begin{tikzpicture}[x=4cm,y=4cm]
@@ -992,6 +1072,8 @@ Calculer la valeur exacte de :
 \reponse{a)~$\sqrt{3}+3$ ;\; b)~$\dfrac{3}{4}$ ;\; c)~$1$.}
 \end{methodebox}
 
+\afaire{exercices 13 à 16}
+
 \partiecours{Angles associés}
 
 Le tableau s'arrête à $\pi$ et ne donne rien pour $\dfrac{2\pi}{3}$ ou $-\dfrac{\pi}{4}$ :
@@ -1050,29 +1132,49 @@ a)~$\cos\left(\dfrac{3\pi}{4}\right)$ \qquad b)~$\sin\left(\dfrac{2\pi}{3}\right
 c)~$\sin\left(\dfrac{7\pi}{6}\right)$ \qquad d)~$\cos\left(-\dfrac{\pi}{6}\right)$
 \end{center}
 \begin{correction}
-\cas{a)}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
 \begin{calculs}
 \cos\left(\dfrac{3\pi}{4}\right) &= \cos\left(\pi-\dfrac{\pi}{4}\right) &\qquad& \rem{$\tfrac{4\pi}{4}-\tfrac{\pi}{4}$ vaut $\tfrac{3\pi}{4}$}\\
 \cos\left(\dfrac{3\pi}{4}\right) &= -\cos\left(\dfrac{\pi}{4}\right) && \rem{$\cos(\pi-x)=-\cos(x)$}\\
 \cos\left(\dfrac{3\pi}{4}\right) &= -\dfrac{\sqrt{2}}{2} && \rem{valeur du tableau}
 \end{calculs}
-\cas{b)}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\figasso{45}{$\frac{\pi}{4}$}{135}{$\frac{3\pi}{4}$}{\lien{45}{135}\lierx{45}\lierx{135}}
+\end{minipage}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
 \begin{calculs}
 \sin\left(\dfrac{2\pi}{3}\right) &= \sin\left(\pi-\dfrac{\pi}{3}\right) &\qquad& \rem{$\tfrac{3\pi}{3}-\tfrac{\pi}{3}$ vaut $\tfrac{2\pi}{3}$}\\
 \sin\left(\dfrac{2\pi}{3}\right) &= \sin\left(\dfrac{\pi}{3}\right) && \rem{$\sin(\pi-x)=\sin(x)$}\\
 \sin\left(\dfrac{2\pi}{3}\right) &= \dfrac{\sqrt{3}}{2} && \rem{valeur du tableau}
 \end{calculs}
-\cas{c)}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\figasso{60}{$\frac{\pi}{3}$}{120}{$\frac{2\pi}{3}$}{\lien{60}{120}\liery{60}}
+\end{minipage}
+\cas{c)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
 \begin{calculs}
 \sin\left(\dfrac{7\pi}{6}\right) &= \sin\left(\pi+\dfrac{\pi}{6}\right) &\qquad& \rem{$\tfrac{6\pi}{6}+\tfrac{\pi}{6}$ vaut $\tfrac{7\pi}{6}$}\\
 \sin\left(\dfrac{7\pi}{6}\right) &= -\sin\left(\dfrac{\pi}{6}\right) && \rem{$\sin(\pi+x)=-\sin(x)$}\\
 \sin\left(\dfrac{7\pi}{6}\right) &= -\dfrac{1}{2} && \rem{valeur du tableau}
 \end{calculs}
-\cas{d)}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\figasso{30}{$\frac{\pi}{6}$}{210}{$\frac{7\pi}{6}$}{\lien{30}{210}\liery{30}\liery{210}}
+\end{minipage}
+\cas{d)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
 \begin{calculs}
 \cos\left(-\dfrac{\pi}{6}\right) &= \cos\left(\dfrac{\pi}{6}\right) &\qquad& \rem{$\cos(-x)=\cos(x)$}\\
 \cos\left(-\dfrac{\pi}{6}\right) &= \dfrac{\sqrt{3}}{2} && \rem{valeur du tableau}
 \end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\figasso{30}{$\frac{\pi}{6}$}{-30}{$-\frac{\pi}{6}$}{\lien{30}{-30}\lierx{30}}
+\end{minipage}
 \end{correction}
 
 \etape{À vous de jouer}
@@ -1083,6 +1185,13 @@ c)~$\sin\left(\dfrac{5\pi}{4}\right)$ \qquad d)~$\cos\left(-\dfrac{\pi}{4}\right
 \end{center}
 \reponse{a)~$-\dfrac{\sqrt{3}}{2}$ ;\; b)~$\dfrac{\sqrt{2}}{2}$ ;\; c)~$-\dfrac{\sqrt{2}}{2}$ ;\; d)~$\dfrac{\sqrt{2}}{2}$.}
 \end{methodebox}
+
+\afaire{exercices 17 à 20}
+
+\partiecours{Simplifier une expression à l'aide des angles associés}
+
+Les formules de la propriété 5 servent aussi quand $x$ n'a pas de valeur : on remplace
+chaque terme, puis on réduit.
 
 \begin{methodebox}[Méthode 8 --- Simplifier une expression à l'aide des angles associés]
 \etapeexemples
@@ -1122,6 +1231,10 @@ $F(x)=\sin\left(\dfrac{\pi}{2}+x\right)+4\cos(\pi-x)$
 \end{center}
 \reponse{$D(x)=0$ ;\; $E(x)=\sin(x)$ ;\; $F(x)=-3\cos(x)$.}
 \end{methodebox}
+
+\afaire{exercices 21 à 24}
+
+\partiecours{Le cercle trigonométrique complet}
 
 \begin{proprietebox}[Le cercle complet et son tableau de valeurs]
 Les symétries donnent seize points, chacun avec sa mesure principale. Les pointillés
@@ -1184,146 +1297,7 @@ $\sin(x)$ & $-\dfrac{1}{2}$ & $-\dfrac{\sqrt{2}}{2}$ & $-\dfrac{\sqrt{3}}{2}$ & 
 \end{center}
 \end{proprietebox}
 
-\partiecours{Équations avec des cosinus et des sinus}
-
-Résoudre $\cos(x)=a$, c'est chercher les points du cercle d'abscisse $a$, sur une droite
-verticale ; résoudre $\sin(x)=a$, c'est chercher les points d'ordonnée $a$, sur une droite
-horizontale. Ces équations se résolvent avec le \textbf{cercle complet} de la partie V sous
-les yeux : il est donné dans les exercices ; en DS, il est à compléter.
-
-\begin{methodebox}[Méthode 9 --- Résoudre $\cos(x)=a$ ou $\sin(x)=a$ sur $\intof{-\pi}{\pi}$]
-\etapeexemples
-Résoudre sur l'intervalle $\intof{-\pi}{\pi}$, à l'aide du cercle complet :
-\begin{center}
-a)~$\cos(x)=\dfrac{1}{2}$ \qquad b)~$\sin(x)=\dfrac{\sqrt{2}}{2}$ \qquad
-c)~$\cos(x)=-\dfrac{\sqrt{3}}{2}$\\[4pt]
-d)~$\sin(x)=-\dfrac{1}{2}$ \qquad e)~$\cos(x)=-1$ \qquad f)~$\sin(x)=2$
-\end{center}
-\begin{correction}
-\cas{a)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $\dfrac{1}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{le cosinus se lit sur l'axe des abscisses}
-\explique{Elle coupe le cercle en deux points, associés à $\dfrac{\pi}{3}$ et $-\dfrac{\pi}{3}$.}{lecture sur le cercle complet}
-\explique{$S=\ens{-\dfrac{\pi}{3}\,;\dfrac{\pi}{3}}$.}{une solution par point}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equacos{60}{$\frac{\pi}{3}$}{$-\frac{\pi}{3}$}{$\frac{1}{2}$}
-\end{minipage}
-\cas{b)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $\dfrac{\sqrt{2}}{2}$ sur l'axe des ordonnées et on trace la droite horizontale.}{le sinus se lit sur l'axe des ordonnées}
-\explique{Elle coupe le cercle en deux points, associés à $\dfrac{\pi}{4}$ et $\dfrac{3\pi}{4}$.}{lecture sur le cercle complet}
-\explique{$S=\ens{\dfrac{\pi}{4}\,;\dfrac{3\pi}{4}}$.}{une solution par point}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equasin{45}{135}{$\frac{\pi}{4}$}{$\frac{3\pi}{4}$}{$\frac{\sqrt{2}}{2}$}
-\end{minipage}
-\cas{c)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $-\dfrac{\sqrt{3}}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{valeur négative : à gauche de $O$}
-\explique{Elle coupe le cercle en deux points, associés à $\dfrac{5\pi}{6}$ et $-\dfrac{5\pi}{6}$.}{on les lit directement sur le cercle complet}
-\explique{$S=\ens{-\dfrac{5\pi}{6}\,;\dfrac{5\pi}{6}}$.}{une solution par point}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equacos{150}{$\frac{5\pi}{6}$}{$-\frac{5\pi}{6}$}{$-\frac{\sqrt{3}}{2}$}
-\end{minipage}
-\cas{d)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $-\dfrac{1}{2}$ sur l'axe des ordonnées et on trace la droite horizontale.}{valeur négative : au-dessous de $O$}
-\explique{Elle coupe le cercle en deux points, associés à $-\dfrac{\pi}{6}$ et $-\dfrac{5\pi}{6}$.}{on les lit directement sur le cercle complet}
-\explique{$S=\ens{-\dfrac{5\pi}{6}\,;-\dfrac{\pi}{6}}$.}{une solution par point}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equasin{-30}{-150}{$-\frac{\pi}{6}$}{$-\frac{5\pi}{6}$}{$-\frac{1}{2}$}
-\end{minipage}
-\cas{e)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{La droite verticale passant par $-1$ touche le cercle en un seul point.}{le point le plus à gauche du cercle}
-\explique{$S=\ens{\pi}$.}{une seule solution}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\cerclept{180}{$\pi$}{\verticale{180}}
-\end{minipage}
-\cas{f)}
-\explique{Il n'y a aucune solution.}{la droite horizontale passant par $2$ ne rencontre pas le cercle : un sinus ne dépasse jamais $1$}
-\end{correction}
-
-\etape{À vous de jouer}
-Résoudre sur l'intervalle $\intof{-\pi}{\pi}$, à l'aide du cercle complet :
-\begin{center}
-a)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ \qquad b)~$\sin(x)=\dfrac{\sqrt{3}}{2}$ \qquad
-c)~$\cos(x)=-\dfrac{1}{2}$\\[4pt]
-d)~$\sin(x)=-\dfrac{\sqrt{2}}{2}$ \qquad e)~$\cos(x)=1$ \qquad f)~$\cos(x)=-3$
-\end{center}
-\reponse{a)~$\ens{-\dfrac{\pi}{4}\,;\dfrac{\pi}{4}}$ ;\; b)~$\ens{\dfrac{\pi}{3}\,;\dfrac{2\pi}{3}}$ ;\;
-c)~$\ens{-\dfrac{2\pi}{3}\,;\dfrac{2\pi}{3}}$ ;\; d)~$\ens{-\dfrac{3\pi}{4}\,;-\dfrac{\pi}{4}}$ ;\;
-e)~$\ens{0}$ ;\; f)~aucune solution.}
-\end{methodebox}
-
-\begin{methodebox}[Méthode 10 --- Résoudre $\cos(x)=a$ ou $\sin(x)=a$ sur un autre intervalle]
-\etapeexemples
-Résoudre, à l'aide du cercle complet :
-\begin{questions}[label=\alph*)]
-  \item $\cos(x)=\dfrac{\sqrt{2}}{2}$ sur $\intff{0}{2\pi}$ ;
-  \item $\sin(x)=-\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$ ;
-  \item $\cos(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$.
-\end{questions}
-\begin{correction}
-\cas{a)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $\dfrac{\sqrt{2}}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{le cosinus se lit sur l'axe des abscisses}
-\explique{Elle coupe le cercle en deux points, de mesures principales $\dfrac{\pi}{4}$ et $-\dfrac{\pi}{4}$.}{lecture sur le cercle complet}
-\explique{$\dfrac{\pi}{4}$ est dans $\intff{0}{2\pi}$, mais pas $-\dfrac{\pi}{4}$.}{on compare à l'intervalle demandé}
-\begin{calculs}
--\dfrac{\pi}{4}+\dfrac{8\pi}{4} &= \dfrac{7\pi}{4} &\quad& \rem{on ajoute un tour : même point}
-\end{calculs}
-\explique{$S=\ens{\dfrac{\pi}{4}\,;\dfrac{7\pi}{4}}$.}{une solution par point, dans l'intervalle demandé}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equacos{45}{$\frac{\pi}{4}$}{$\frac{7\pi}{4}$}{$\frac{\sqrt{2}}{2}$}
-\end{minipage}
-\cas{b)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $-\dfrac{\sqrt{3}}{2}$ sur l'axe des ordonnées et on trace la droite horizontale.}{le sinus se lit sur l'axe des ordonnées}
-\explique{Elle coupe le cercle en deux points, de mesures principales $-\dfrac{\pi}{3}$ et $-\dfrac{2\pi}{3}$.}{lecture sur le cercle complet}
-\explique{Aucune n'est dans $\intff{0}{2\pi}$.}{elles sont négatives : on ajoute un tour à chacune}
-\begin{calculs}
--\dfrac{\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{5\pi}{3} &\quad& \rem{même point, autre mesure}\\
--\dfrac{2\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{4\pi}{3} && \rem{même point, autre mesure}
-\end{calculs}
-\explique{$S=\ens{\dfrac{4\pi}{3}\,;\dfrac{5\pi}{3}}$.}{on range les solutions}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equasin{-60}{-120}{$\frac{5\pi}{3}$}{$\frac{4\pi}{3}$}{$-\frac{\sqrt{3}}{2}$}
-\end{minipage}
-\cas{c)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On place $\dfrac{1}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{le cosinus se lit sur l'axe des abscisses}
-\explique{Elle coupe le cercle en deux points, de mesures principales $\dfrac{\pi}{3}$ et $-\dfrac{\pi}{3}$.}{lecture sur le cercle complet}
-\explique{Les deux sont dans $\intff{-2\pi}{2\pi}$, qui couvre deux tours : chaque point a une seconde mesure.}{deux tours : deux solutions par point}
-\begin{calculs}
-\dfrac{\pi}{3}-\dfrac{6\pi}{3} &= -\dfrac{5\pi}{3} &\quad& \rem{un tour de moins}\\
--\dfrac{\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{5\pi}{3} && \rem{un tour de plus}
-\end{calculs}
-\explique{$S=\ens{-\dfrac{5\pi}{3}\,;-\dfrac{\pi}{3}\,;\dfrac{\pi}{3}\,;\dfrac{5\pi}{3}}$.}{quatre solutions}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equacos{60}{$\frac{\pi}{3}$\\$-\frac{5\pi}{3}$}{$-\frac{\pi}{3}$\\$\frac{5\pi}{3}$}{$\frac{1}{2}$}
-\end{minipage}
-\end{correction}
-
-\etape{À vous de jouer}
-Résoudre, à l'aide du cercle complet :
-\begin{questions}[label=\alph*)]
-  \item $\cos(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$ ;
-  \item $\sin(x)=-\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ ;
-  \item $\cos(x)=\dfrac{\sqrt{2}}{2}$ sur $\intff{-2\pi}{2\pi}$.
-\end{questions}
-\reponse{a)~$\ens{\dfrac{\pi}{6}\,;\dfrac{11\pi}{6}}$ ;\; b)~$\ens{\dfrac{7\pi}{6}\,;\dfrac{11\pi}{6}}$ ;\;
-c)~$\ens{-\dfrac{7\pi}{4}\,;-\dfrac{\pi}{4}\,;\dfrac{\pi}{4}\,;\dfrac{7\pi}{4}}$.}
-\end{methodebox}
-
-\begin{methodebox}[Méthode 11 --- Retrouver la mesure principale d'après le cosinus et le sinus]
+\begin{methodebox}[Méthode 9 --- Retrouver la mesure principale d'après le cosinus et le sinus]
 \etapeexemples
 Déterminer la mesure principale de l'angle orienté de mesure $x$ tel que :
 \begin{questions}[label=\alph*)]
@@ -1370,6 +1344,129 @@ Déterminer la mesure principale de l'angle orienté de mesure $x$ tel que :
 \reponse{a)~$\dfrac{5\pi}{6}$ ;\; b)~$-\dfrac{\pi}{3}$ ;\; c)~$\pi$.}
 \end{methodebox}
 
+\afaire{exercices 25 à 27}
+
+\partiecours{Équations avec des cosinus et des sinus}
+
+Résoudre $\cos(x)=a$, c'est chercher les points du cercle d'abscisse $a$, sur une droite
+verticale ; résoudre $\sin(x)=a$, c'est chercher les points d'ordonnée $a$, sur une droite
+horizontale. Ces équations se résolvent avec le \textbf{cercle complet} de la partie VII sous
+les yeux : il est donné dans les exercices ; en DS, il est à compléter.
+
+\begin{methodebox}[Méthode 10 --- Résoudre $\cos(x)=a$ ou $\sin(x)=a$ sur un intervalle]
+\etapeexemples
+Résoudre, à l'aide du cercle complet, sur l'intervalle $\intof{-\pi}{\pi}$ :
+\begin{center}
+a)~$\cos(x)=\dfrac{1}{2}$ \qquad b)~$\sin(x)=\dfrac{\sqrt{2}}{2}$ \qquad
+c)~$\sin(x)=-\dfrac{1}{2}$ \qquad d)~$\cos(x)=-1$ \qquad e)~$\sin(x)=2$
+\end{center}
+puis sur un autre intervalle :
+\begin{center}
+f)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ sur $\intff{0}{2\pi}$ \qquad
+g)~$\sin(x)=-\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$\\[4pt]
+h)~$\cos(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$
+\end{center}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{On place $\dfrac{1}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{le cosinus se lit sur l'axe des abscisses}
+\explique{Elle coupe le cercle en deux points, associés à $\dfrac{\pi}{3}$ et $-\dfrac{\pi}{3}$.}{lecture sur le cercle complet}
+\explique{$S=\ens{-\dfrac{\pi}{3}\,;\dfrac{\pi}{3}}$.}{une solution par point}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equacos{60}{$\frac{\pi}{3}$}{$-\frac{\pi}{3}$}{$\frac{1}{2}$}
+\end{minipage}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{On place $\dfrac{\sqrt{2}}{2}$ sur l'axe des ordonnées et on trace la droite horizontale.}{le sinus se lit sur l'axe des ordonnées}
+\explique{Elle coupe le cercle en deux points, associés à $\dfrac{\pi}{4}$ et $\dfrac{3\pi}{4}$.}{lecture sur le cercle complet}
+\explique{$S=\ens{\dfrac{\pi}{4}\,;\dfrac{3\pi}{4}}$.}{une solution par point}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equasin{45}{135}{$\frac{\pi}{4}$}{$\frac{3\pi}{4}$}{$\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\cas{c)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{On place $-\dfrac{1}{2}$ sur l'axe des ordonnées et on trace la droite horizontale.}{valeur négative : au-dessous de $O$}
+\explique{Elle coupe le cercle en deux points, associés à $-\dfrac{\pi}{6}$ et $-\dfrac{5\pi}{6}$.}{on les lit directement sur le cercle complet}
+\explique{$S=\ens{-\dfrac{5\pi}{6}\,;-\dfrac{\pi}{6}}$.}{une solution par point}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equasin{-30}{-150}{$-\frac{\pi}{6}$}{$-\frac{5\pi}{6}$}{$-\frac{1}{2}$}
+\end{minipage}
+\cas{d)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{La droite verticale passant par $-1$ touche le cercle en un seul point.}{le point le plus à gauche du cercle}
+\explique{$S=\ens{\pi}$.}{une seule solution}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\cerclept{180}{$\pi$}{\verticale{180}}
+\end{minipage}
+\cas{e)}
+\explique{Il n'y a aucune solution.}{la droite horizontale passant par $2$ ne rencontre pas le cercle : un sinus ne dépasse jamais $1$}
+\cas{f)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{On place $\dfrac{\sqrt{2}}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{le cosinus se lit sur l'axe des abscisses}
+\explique{Elle coupe le cercle en deux points, de mesures principales $\dfrac{\pi}{4}$ et $-\dfrac{\pi}{4}$.}{lecture sur le cercle complet}
+\explique{$\dfrac{\pi}{4}$ est dans $\intff{0}{2\pi}$, mais pas $-\dfrac{\pi}{4}$.}{on compare à l'intervalle demandé}
+\begin{calculs}
+-\dfrac{\pi}{4}+\dfrac{8\pi}{4} &= \dfrac{7\pi}{4} &\quad& \rem{on ajoute un tour : même point}
+\end{calculs}
+\explique{$S=\ens{\dfrac{\pi}{4}\,;\dfrac{7\pi}{4}}$.}{une solution par point, dans l'intervalle demandé}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equacos{45}{$\frac{\pi}{4}$}{$\frac{7\pi}{4}$}{$\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\cas{g)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{On place $-\dfrac{\sqrt{3}}{2}$ sur l'axe des ordonnées et on trace la droite horizontale.}{le sinus se lit sur l'axe des ordonnées}
+\explique{Elle coupe le cercle en deux points, de mesures principales $-\dfrac{\pi}{3}$ et $-\dfrac{2\pi}{3}$.}{lecture sur le cercle complet}
+\explique{Aucune n'est dans $\intff{0}{2\pi}$.}{elles sont négatives : on ajoute un tour à chacune}
+\begin{calculs}
+-\dfrac{\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{5\pi}{3} &\quad& \rem{même point, autre mesure}\\
+-\dfrac{2\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{4\pi}{3} && \rem{même point, autre mesure}
+\end{calculs}
+\explique{$S=\ens{\dfrac{4\pi}{3}\,;\dfrac{5\pi}{3}}$.}{on range les solutions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equasin{-60}{-120}{$\frac{5\pi}{3}$}{$\frac{4\pi}{3}$}{$-\frac{\sqrt{3}}{2}$}
+\end{minipage}
+\cas{h)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{On place $\dfrac{1}{2}$ sur l'axe des abscisses et on trace la droite verticale.}{le cosinus se lit sur l'axe des abscisses}
+\explique{Elle coupe le cercle en deux points, de mesures principales $\dfrac{\pi}{3}$ et $-\dfrac{\pi}{3}$.}{lecture sur le cercle complet}
+\explique{Les deux sont dans $\intff{-2\pi}{2\pi}$, qui couvre deux tours : chaque point a une seconde mesure.}{deux tours : deux solutions par point}
+\begin{calculs}
+\dfrac{\pi}{3}-\dfrac{6\pi}{3} &= -\dfrac{5\pi}{3} &\quad& \rem{un tour de moins}\\
+-\dfrac{\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{5\pi}{3} && \rem{un tour de plus}
+\end{calculs}
+\explique{$S=\ens{-\dfrac{5\pi}{3}\,;-\dfrac{\pi}{3}\,;\dfrac{\pi}{3}\,;\dfrac{5\pi}{3}}$.}{quatre solutions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equacos{60}{$\frac{\pi}{3}$\\$-\frac{5\pi}{3}$}{$-\frac{\pi}{3}$\\$\frac{5\pi}{3}$}{$\frac{1}{2}$}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+Résoudre, à l'aide du cercle complet, sur l'intervalle $\intof{-\pi}{\pi}$ :
+\begin{center}
+a)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ \qquad b)~$\sin(x)=\dfrac{\sqrt{3}}{2}$ \qquad
+c)~$\sin(x)=-\dfrac{\sqrt{2}}{2}$ \qquad d)~$\cos(x)=1$ \qquad e)~$\cos(x)=-3$
+\end{center}
+puis sur un autre intervalle :
+\begin{center}
+f)~$\cos(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$ \qquad
+g)~$\sin(x)=-\dfrac{1}{2}$ sur $\intff{0}{2\pi}$\\[4pt]
+h)~$\cos(x)=\dfrac{\sqrt{2}}{2}$ sur $\intff{-2\pi}{2\pi}$
+\end{center}
+\reponse{a)~$\ens{-\dfrac{\pi}{4}\,;\dfrac{\pi}{4}}$ ;\; b)~$\ens{\dfrac{\pi}{3}\,;\dfrac{2\pi}{3}}$ ;\;
+c)~$\ens{-\dfrac{3\pi}{4}\,;-\dfrac{\pi}{4}}$ ;\; d)~$\ens{0}$ ;\; e)~aucune solution ;\;
+f)~$\ens{\dfrac{\pi}{6}\,;\dfrac{11\pi}{6}}$ ;\; g)~$\ens{\dfrac{7\pi}{6}\,;\dfrac{11\pi}{6}}$ ;\;
+h)~$\ens{-\dfrac{7\pi}{4}\,;-\dfrac{\pi}{4}\,;\dfrac{\pi}{4}\,;\dfrac{7\pi}{4}}$.}
+\end{methodebox}
+
+\afaire{exercices 28 à 30}
+
 \partiecours{Fonctions cosinus et sinus}
 
 \begin{definitionbox}[Définition 6 --- Fonctions cosinus et sinus, période]
@@ -1383,7 +1480,7 @@ nombre réel $x$ : sa courbe reproduit le même morceau sur chaque intervalle de
 \end{definitionbox}
 
 \begin{proprietebox}[Propriété 6 --- Période et variations]
-Chaque colonne du tableau de valeurs de la partie V, qui vient du cercle trigonométrique,
+Chaque colonne du tableau de valeurs de la partie VII, qui vient du cercle trigonométrique,
 donne un point de la courbe (les croix) : par exemple, $\cos\left(\dfrac{\pi}{3}\right)=\dfrac{1}{2}$
 donne le point de coordonnées $\left(\dfrac{\pi}{3}\,;\dfrac{1}{2}\right)$ sur la courbe du cosinus.
 
@@ -1422,7 +1519,7 @@ Tableaux de variation sur une période, $\intff{-\pi}{\pi}$ :
 \end{minipage}
 \end{proprietebox}
 
-\begin{methodebox}[Méthode 12 --- Dresser le tableau de variation sur un autre intervalle]
+\begin{methodebox}[Méthode 11 --- Dresser le tableau de variation sur un autre intervalle]
 \etapeexemples
 Dresser le tableau de variation, à l'aide des courbes de la propriété 6 :
 \begin{questions}[label=\alph*)]
@@ -1476,62 +1573,65 @@ b)~décroissante de $1$ à $-1$ sur $\intff{\dfrac{\pi}{2}}{\dfrac{3\pi}{2}}$, c
 c)~décroissante de $1$ à $-1$ sur $\intff{4\pi}{5\pi}$, croissante de $-1$ à $1$ sur $\intff{5\pi}{6\pi}$.}
 \end{methodebox}
 
-\begin{methodebox}[Méthode 13 --- Lire la période d'une fonction sur sa courbe]
+\begin{methodebox}[Méthode 12 --- Lire la période d'une fonction sur sa courbe]
 \etapeexemples
-Lire la période de chaque fonction $f$ et $g$, dont voici les courbes.
+En électricité, beaucoup de signaux sont périodiques sans être des sinusoïdes. Lire la
+période de chaque signal $f$, $g$ et $h$, dont voici les courbes.
 
 \smallskip
-\begin{minipage}[c]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.6cm,y=0.6cm]
-  \repere{-5}{-3}{5}{3}
-  \gradx{-4,-2,2,4}\grady{-2,2}
-  \motif{-8,-4,0,4}{(0,0) .. controls (0.35,0.7) and (0.65,2) .. (1,2)
-    .. controls (1.35,2) and (1.65,0.7) .. (2,0)
-    .. controls (2.35,-0.7) and (2.65,-2) .. (3,-2)
-    .. controls (3.35,-2) and (3.65,-0.7) .. (4,0)}
-  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-4,2.5) {$\Cf$};
-\end{tikzpicture}
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small a)~signal triangulaire}\par\smallskip
+\figsignal{-3}{3}{-3,3}{\sigtriangle}{(-4.3,2.5)}{$\Cf$}{}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.6cm,y=0.6cm]
-  \repere{-5}{-3}{5}{3}
-  \gradx{-4,-2,2,4}\grady{-2,2}
-  \motif{-6,-4,-2,0,2,4}{(0,1) .. controls (0.35,1) and (0.65,-1) .. (1,-1)
-    .. controls (1.35,-1) and (1.65,1) .. (2,1)}
-  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-4,2.5) {$\Cg$};
-\end{tikzpicture}
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small b)~signal carré}\par\smallskip
+\figsignal{-3}{3}{-4,-2,2,4}{\sigcarre}{(-3,-2.6)}{$\Cg$}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small c)~sinusoïde déformée}\par\smallskip
+\figsignal{-3}{3}{-3,1}{\sigdeforme}{(-4.3,-2.5)}{$\mathcal{C}_{h}$}{}
 \end{minipage}
 \begin{correction}
-\cas{Fonction $f$}
-\explique{La période de $f$ est $4$.}{le même morceau revient tous les $4$ carreaux : par exemple, $\Cf$ monte en passant par $0$ en $x=0$, puis en $x=4$}
-\cas{Fonction $g$}
-\explique{La période de $g$ est $2$.}{les maximums sont en $x=0$, $x=2$, $x=4$ : ils reviennent tous les $2$ carreaux}
+\cas{Résolution}\par\nopagebreak
+\explique{On repère un point de la courbe, en général un maximum, puis le même point sur la période suivante.}{la cote entre les deux points mesure une période}
+
+\smallskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figsignal{-3}{3}{-3,3}{\sigtriangle}{(-4.3,2.5)}{$\Cf$}{\cote{-3}{3}{2}{2.6}{$6$}}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figsignal{-3}{3}{-4,-2,2,4}{\sigcarre}{(-3,-2.6)}{$\Cg$}{\cote{0}{4}{2}{2.6}{$4$}}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\figsignal{-3}{3}{-3,1}{\sigdeforme}{(-4.3,-2.5)}{$\mathcal{C}_{h}$}{\cote{-3}{1}{2}{2.6}{$4$}}
+\end{minipage}
+
+\smallskip
+\explique{a)~La période de $f$ est $6$.}{deux maximums successifs, en $x=-3$ et $x=3$ : $3-(-3)$ vaut $6$}
+\explique{b)~La période de $g$ est $4$.}{on repère le début du palier haut, en $x=0$, puis en $x=4$}
+\explique{c)~La période de $h$ est $4$.}{deux maximums successifs, en $x=-3$ et $x=1$ : $1-(-3)$ vaut $4$}
 \end{correction}
 
 \etape{À vous de jouer}
-Lire la période de chaque fonction $h$ et $k$, dont voici les courbes.
+Lire la période de chaque signal $k$, $m$ et $n$, dont voici les courbes.
 
 \smallskip
-\begin{minipage}[c]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.6cm,y=0.6cm]
-  \repere{-5}{-3}{5}{3}
-  \gradx{-3,3}\grady{-2,2}
-  \motif{-6,-3,0,3}{(0,-1) .. controls (0.35,-1) and (0.65,2) .. (1,2)
-    .. controls (1.7,2) and (2.3,-1) .. (3,-1)}
-  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-4,2.5) {$\mathcal{C}_{h}$};
-\end{tikzpicture}
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small a)~signal en dents de scie}\par\smallskip
+\figsignal{-3}{3}{-4,-2,2,4}{\sigrampe}{(-3.3,-2.6)}{$\mathcal{C}_{k}$}{}
 \end{minipage}\hfill
-\begin{minipage}[c]{0.48\linewidth}\centering
-\begin{tikzpicture}[x=0.6cm,y=0.6cm]
-  \repere{-5}{-3}{5}{3}
-  \gradx{-4,-2,2,4}\grady{-2,2}
-  \motif{-8,-4,0,4}{(0,2) .. controls (0.35,2) and (0.65,-1) .. (1,-1)
-    .. controls (2,-1) and (3,2) .. (4,2)}
-  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-3.5,-2.5) {$\mathcal{C}_{k}$};
-\end{tikzpicture}
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small b)~signal carré amorti}\par\smallskip
+\figsignal{-4}{4}{-4,-2,2,4}{\sigamorti}{(-3,-3.5)}{$\mathcal{C}_{m}$}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+{\small c)~sinusoïde déformée}\par\smallskip
+\figsignal{-3}{3}{-3,3}{\sigdeformeb}{(-1.5,2.6)}{$\mathcal{C}_{n}$}{}
 \end{minipage}
-\reponse{La période de $h$ est $3$ ;\; la période de $k$ est $4$.}
+\reponse{La période de $k$ est $2$ ;\; celle de $m$ est $4$ ;\; celle de $n$ est $3$.}
 \end{methodebox}
+
+\afaire{exercices 31 à 34}
 
 \partiecours{Résolution graphique d'équations et d'inéquations}
 
@@ -1539,13 +1639,16 @@ Comme pour toute fonction, on lit les solutions sur la courbe : les abscisses de
 d'intersection avec une droite horizontale. La courbe montre d'un seul coup toutes les
 solutions d'un intervalle.
 
-\begin{methodebox}[Méthode 14 --- Résoudre graphiquement une équation]
+\begin{methodebox}[Méthode 13 --- Résoudre graphiquement une équation ou une inéquation]
 \etapeexemples
-Un carreau vaut $\dfrac{\pi}{6}$ en abscisse et $\dfrac{1}{2}$ en ordonnée. Résoudre graphiquement :
+Un carreau vaut $\dfrac{\pi}{6}$ en abscisse et $\dfrac{1}{2}$ en ordonnée. Résoudre graphiquement chaque équation, puis chaque inéquation :
 \begin{questions}[label=\alph*)]
   \item $\cos(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ ;
   \item $\sin(x)=-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ ;
-  \item $\sin(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$.
+  \item $\sin(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$ ;
+  \item $\cos(x)\ge\dfrac{1}{2}$ sur $\intff{-\pi}{\pi}$ ;
+  \item $\sin(x)<\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ ;
+  \item $\cos(x)\le-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$.
 \end{questions}
 \begin{center}
 \begin{tikzpicture}[x=1.2cm,y=1.2cm]
@@ -1594,30 +1697,7 @@ Un carreau vaut $\dfrac{\pi}{6}$ en abscisse et $\dfrac{1}{2}$ en ordonnée. Ré
   \gradpi{2/\frac{\pi}{3},4/\frac{2\pi}{3},12/2\pi}
 \end{tikzpicture}
 \end{minipage}
-\end{correction}
-
-\etape{À vous de jouer}
-Résoudre graphiquement, à l'aide des courbes ci-dessus :
-\begin{center}
-a)~$\cos(x)=-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ \qquad
-b)~$\sin(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ \qquad
-c)~$\cos(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$
-\end{center}
-\reponse{a)~$\ens{-\dfrac{4\pi}{3}\,;-\dfrac{2\pi}{3}\,;\dfrac{2\pi}{3}\,;\dfrac{4\pi}{3}}$ ;\;
-b)~$\ens{-\dfrac{11\pi}{6}\,;-\dfrac{7\pi}{6}\,;\dfrac{\pi}{6}\,;\dfrac{5\pi}{6}}$ ;\;
-c)~$\ens{\dfrac{\pi}{6}\,;\dfrac{11\pi}{6}}$.}
-\end{methodebox}
-
-\begin{methodebox}[Méthode 15 --- Résoudre graphiquement une inéquation]
-\etapeexemples
-Résoudre graphiquement, à l'aide des courbes de la méthode 14 :
-\begin{questions}[label=\alph*)]
-  \item $\cos(x)\ge\dfrac{1}{2}$ sur $\intff{-\pi}{\pi}$ ;
-  \item $\sin(x)<\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ ;
-  \item $\cos(x)\le-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$.
-\end{questions}
-\begin{correction}
-\cas{a)}\par\nopagebreak
+\cas{d)}\par\nopagebreak
 \begin{minipage}[c]{0.42\linewidth}\raggedright
 \explique{$S=\intff{-\dfrac{\pi}{3}}{\dfrac{\pi}{3}}$.}{la courbe est sur ou au-dessus de la droite ; crochets fermés à cause de $\ge$}
 \end{minipage}\hfill
@@ -1630,7 +1710,7 @@ Résoudre graphiquement, à l'aide des courbes de la méthode 14 :
   \gradpi{-6/-\pi,-2/-\frac{\pi}{3},2/\frac{\pi}{3},6/\pi}
 \end{tikzpicture}
 \end{minipage}
-\cas{b)}\par\nopagebreak
+\cas{e)}\par\nopagebreak
 \begin{minipage}[c]{0.42\linewidth}\raggedright
 \explique{$S=\intfo{0}{\dfrac{\pi}{6}}\cup\intof{\dfrac{5\pi}{6}}{2\pi}$.}{la courbe est au-dessous de la droite, en deux morceaux ; crochets ouverts à cause de $<$}
 \end{minipage}\hfill
@@ -1643,7 +1723,7 @@ Résoudre graphiquement, à l'aide des courbes de la méthode 14 :
   \gradpi{1/\frac{\pi}{6},5/\frac{5\pi}{6},12/2\pi}
 \end{tikzpicture}
 \end{minipage}
-\cas{c)}\par\nopagebreak
+\cas{f)}\par\nopagebreak
 \explique{$S=\intff{-\dfrac{4\pi}{3}}{-\dfrac{2\pi}{3}}\cup\intff{\dfrac{2\pi}{3}}{\dfrac{4\pi}{3}}$.}{la courbe est sur ou au-dessous de la droite}
 \begin{center}
 \begin{tikzpicture}[x=1.2cm,y=1.2cm]
@@ -1657,16 +1737,24 @@ Résoudre graphiquement, à l'aide des courbes de la méthode 14 :
 \end{correction}
 
 \etape{À vous de jouer}
-Résoudre graphiquement, à l'aide des courbes de la méthode 14 :
+Résoudre graphiquement, à l'aide des courbes ci-dessus :
 \begin{center}
-a)~$\cos(x)\ge-\dfrac{1}{2}$ sur $\intff{-\pi}{\pi}$ \qquad
-b)~$\sin(x)>-\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ \qquad
-c)~$\sin(x)\ge\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$
+a)~$\cos(x)=-\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ \qquad
+b)~$\sin(x)=\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$ \qquad
+c)~$\cos(x)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{2\pi}$\\[4pt]
+d)~$\cos(x)\ge-\dfrac{1}{2}$ sur $\intff{-\pi}{\pi}$ \qquad
+e)~$\sin(x)>-\dfrac{1}{2}$ sur $\intff{0}{2\pi}$ \qquad
+f)~$\sin(x)\ge\dfrac{1}{2}$ sur $\intff{-2\pi}{2\pi}$
 \end{center}
-\reponse{a)~$\intff{-\dfrac{2\pi}{3}}{\dfrac{2\pi}{3}}$ ;\;
-b)~$\intfo{0}{\dfrac{7\pi}{6}}\cup\intof{\dfrac{11\pi}{6}}{2\pi}$ ;\;
-c)~$\intff{-\dfrac{11\pi}{6}}{-\dfrac{7\pi}{6}}\cup\intff{\dfrac{\pi}{6}}{\dfrac{5\pi}{6}}$.}
+\reponse{a)~$\ens{-\dfrac{4\pi}{3}\,;-\dfrac{2\pi}{3}\,;\dfrac{2\pi}{3}\,;\dfrac{4\pi}{3}}$ ;\;
+b)~$\ens{-\dfrac{11\pi}{6}\,;-\dfrac{7\pi}{6}\,;\dfrac{\pi}{6}\,;\dfrac{5\pi}{6}}$ ;\;
+c)~$\ens{\dfrac{\pi}{6}\,;\dfrac{11\pi}{6}}$ ;\;
+d)~$\intff{-\dfrac{2\pi}{3}}{\dfrac{2\pi}{3}}$ ;\;
+e)~$\intfo{0}{\dfrac{7\pi}{6}}\cup\intof{\dfrac{11\pi}{6}}{2\pi}$ ;\;
+f)~$\intff{-\dfrac{11\pi}{6}}{-\dfrac{7\pi}{6}}\cup\intff{\dfrac{\pi}{6}}{\dfrac{5\pi}{6}}$.}
 \end{methodebox}
+
+\afaire{exercices 35 à 38}
 
 \partiecours{Fonctions paires et impaires}
 
@@ -1689,7 +1777,7 @@ la fonction cosinus est \textbf{paire} et la fonction sinus est \textbf{impaire}
 leurs courbes (propriété 6).
 \end{proprietebox}
 
-\begin{methodebox}[Méthode 16 --- Reconnaître sur la courbe une fonction paire ou impaire]
+\begin{methodebox}[Méthode 14 --- Reconnaître sur la courbe une fonction paire ou impaire]
 \etapeexemples
 Dire si chaque fonction $f$, $g$ et $h$ est paire, impaire ou ni l'une ni l'autre.
 
@@ -1769,7 +1857,7 @@ Dire si chaque fonction $k$, $m$ et $n$ est paire, impaire ou ni l'une ni l'autr
 \reponse{$k$ est paire ;\; $m$ est impaire ;\; $n$ n'est ni paire ni impaire.}
 \end{methodebox}
 
-\begin{methodebox}[Méthode 17 --- Démontrer qu'une fonction est paire ou impaire]
+\begin{methodebox}[Méthode 15 --- Démontrer qu'une fonction est paire ou impaire]
 \textbf{But :} montrer que $f(-x)=f(x)$ si $f$ est paire, ou que $f(-x)=-f(x)$ si $f$ est impaire.
 Pour cela, on remplace $x$ par $-x$ dans la fonction.
 \etapeexemples
@@ -1816,7 +1904,7 @@ Ces fonctions sont définies sur $\R$.
 \reponse{a)~$k(-x)=k(x)$ ;\; b)~$m(-x)=-m(x)$ ;\; c)~$n(-x)=-n(x)$.}
 \end{methodebox}
 
-\begin{methodebox}[Méthode 18 --- Compléter une courbe par parité et périodicité]
+\begin{methodebox}[Méthode 16 --- Compléter une courbe par parité et périodicité]
 \etapeexemples
 \begin{minipage}[c]{0.50\linewidth}\raggedright
 La fonction $f$ est paire et périodique de période $4$. Voici sa courbe sur $\intff{0}{2}$.
@@ -1863,12 +1951,14 @@ Compléter la courbe sur $\intff{-4}{4}$.
 \reponse{La courbe passe par $(-3\,;2)$, $(-2\,;0)$, $(-1\,;-2)$, $(0\,;0)$, $(1\,;2)$, $(2\,;0)$, $(3\,;-2)$ et $(4\,;0)$.}
 \end{methodebox}
 
-\partiecours{Équations du type $\cos(3x)=a$}
+\afaire{exercices 39 à 41}
+
+\partiecours{Équations du type $\cos(kx)=a$}
 
 Dans $\cos(2x)$, l'angle est $2x$. On résout d'abord sur le cercle, pour l'angle tout entier, qu'on nomme
 $X$, puis on revient à $x$. Attention : $X$ ne parcourt pas le même intervalle que $x$.
 
-\begin{methodebox}[Méthode 19 --- Résoudre $\cos(kx)=a$ ou $\sin(kx)=a$ sur un intervalle]
+\begin{methodebox}[Méthode 17 --- Résoudre $\cos(kx)=a$ ou $\sin(kx)=a$ sur un intervalle]
 \etapeexemples
 Résoudre, à l'aide du cercle complet :
 \begin{questions}[label=\alph*)]
@@ -1938,62 +2028,11 @@ Résoudre, à l'aide du cercle complet :
   \item $\sin(3x)=-1$ sur $\intff{-\pi}{\pi}$ ;
   \item $\cos\left(\dfrac{x}{2}\right)=\dfrac{1}{2}$ sur $\intff{0}{4\pi}$.
 \end{questions}
-\reponse{a)~$\ens{\dfrac{\pi}{12}\,;\dfrac{11\pi}{12}}$ ;\; b)~$\ens{-\dfrac{5\pi}{6}\,;-\dfrac{\pi}{6}\,;\dfrac{\pi}{2}}$ ;\; c)~$\ens{\dfrac{2\pi}{3}\,;\dfrac{10\pi}{3}}$.}
+\reponse{a)~$\ens{\dfrac{\pi}{12}\,;\dfrac{11\pi}{12}}$ ;\; b)~$\ens{-\dfrac{5\pi}{6}\,;-\dfrac{\pi}{6}\,;\dfrac{\pi}{2}}$ ;\;
+c)~$\ens{\dfrac{2\pi}{3}\,;\dfrac{10\pi}{3}}$.}
 \end{methodebox}
 
-\begin{methodebox}[Méthode 20 --- Résoudre une équation dont l'angle contient un terme en plus]
-\etapeexemples
-Résoudre, à l'aide du cercle complet :
-\begin{questions}[label=\alph*)]
-  \item $\sin\left(x+\dfrac{\pi}{6}\right)=1$ sur $\intff{-\pi}{\pi}$ ;
-  \item $\sin\left(2x-\dfrac{\pi}{2}\right)=\dfrac{1}{2}$ sur $\intff{0}{\pi}$.
-\end{questions}
-\begin{correction}
-\cas{a)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On pose $X=x+\dfrac{\pi}{6}$.}{on nomme l'angle}
-\explique{$X$ va de $-\dfrac{5\pi}{6}$ à $\dfrac{7\pi}{6}$.}{on ajoute $\tfrac{\pi}{6}$ aux bornes $-\pi$ et $\pi$}
-\explique{$\sin(X)=1$ donne $X=\dfrac{\pi}{2}$.}{sur le cercle : le point tout en haut, seul dans cet intervalle}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\cerclept{90}{$\frac{\pi}{2}\qquad$}{\horizontale{90}}
-\end{minipage}
-\begin{calculs}
-x+\dfrac{\pi}{6} &= \dfrac{\pi}{2} &\qquad& \rem{on revient à $x$}\\
-x &= \dfrac{3\pi}{6}-\dfrac{\pi}{6} && \rem{on retire $\tfrac{\pi}{6}$ de chaque côté}\\
-x &= \dfrac{\pi}{3} && \rem{$\tfrac{2\pi}{6}$ se simplifie}
-\end{calculs}
-\explique{$S=\ens{\dfrac{\pi}{3}}$.}{la valeur est bien dans $\intff{-\pi}{\pi}$}
-\cas{b)}\par\nopagebreak
-\begin{minipage}[c]{0.68\linewidth}\raggedright
-\explique{On pose $X=2x-\dfrac{\pi}{2}$.}{on nomme l'angle}
-\explique{$X$ va de $-\dfrac{\pi}{2}$ à $\dfrac{3\pi}{2}$.}{on remplace $x$ par les bornes $0$ et $\pi$}
-\explique{$\sin(X)=\dfrac{1}{2}$ donne $X=\dfrac{\pi}{6}$ ou $X=\dfrac{5\pi}{6}$.}{sur le cercle : la droite horizontale passant par $\tfrac{1}{2}$}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.28\linewidth}\centering
-\equasin{30}{150}{$\frac{\pi}{6}$}{$\frac{5\pi}{6}$}{$\frac{1}{2}$}
-\end{minipage}
-\begin{calculs}
-2x-\dfrac{\pi}{2} &= \dfrac{\pi}{6} &\qquad& \rem{premier cas}\\
-2x &= \dfrac{\pi}{6}+\dfrac{3\pi}{6} && \rem{on ajoute $\tfrac{\pi}{2}$, soit $\tfrac{3\pi}{6}$}\\
-2x &= \dfrac{2\pi}{3} && \rem{$\tfrac{4\pi}{6}$ se simplifie}\\
-x &= \dfrac{\pi}{3} && \rem{on divise par $2$}\\
-2x-\dfrac{\pi}{2} &= \dfrac{5\pi}{6} && \rem{second cas}\\
-2x &= \dfrac{5\pi}{6}+\dfrac{3\pi}{6} && \rem{on ajoute $\tfrac{3\pi}{6}$}\\
-2x &= \dfrac{4\pi}{3} && \rem{$\tfrac{8\pi}{6}$ se simplifie}\\
-x &= \dfrac{2\pi}{3} && \rem{on divise par $2$}
-\end{calculs}
-\explique{$S=\ens{\dfrac{\pi}{3}\,;\dfrac{2\pi}{3}}$.}{les deux valeurs sont bien dans $\intff{0}{\pi}$}
-\end{correction}
-
-\etape{À vous de jouer}
-Résoudre, à l'aide du cercle complet :
-\begin{questions}[label=\alph*)]
-  \item $\cos\left(x-\dfrac{\pi}{6}\right)=1$ sur $\intff{-\pi}{\pi}$ ;
-  \item $\sin\left(2x-\dfrac{\pi}{2}\right)=\dfrac{\sqrt{3}}{2}$ sur $\intff{0}{\pi}$.
-\end{questions}
-\reponse{a)~$\ens{\dfrac{\pi}{6}}$ ;\; b)~$\ens{\dfrac{5\pi}{12}\,;\dfrac{7\pi}{12}}$.}
-\end{methodebox}
+\afaire{exercices 42 à 44}
 
 \partiecours{Fonctions sinusoïdales : amplitude, période, phase}
 
@@ -2041,7 +2080,7 @@ nombre de périodes par seconde.
 \end{calculs}
 \end{proprietebox}
 
-\begin{methodebox}[Méthode 21 --- Lire l'amplitude et la phase, calculer la période]
+\begin{methodebox}[Méthode 18 --- Lire l'amplitude et la phase, calculer la période]
 \etapeexemples
 Pour chaque fonction, donner l'amplitude, la pulsation et la phase à l'origine, puis calculer
 la période :
@@ -2087,12 +2126,14 @@ la période :
 b)~$4$ ; $3$ ; $\dfrac{\pi}{6}$ ; $T=\dfrac{2\pi}{3}$ ;\; c)~$2$ ; $\dfrac{\pi}{4}$ ; $-\dfrac{\pi}{2}$ ; $T=8$.}
 \end{methodebox}
 
+\afaire{exercices 45 à 47}
+
 \partiecours{Courbe d'une fonction sinusoïdale}
 
 La courbe d'une fonction sinusoïdale oscille entre $-A$ et $A$ et se répète à chaque période.
 La phase à l'origine la décale le long de l'axe du temps.
 
-\begin{methodebox}[Méthode 22 --- Tracer la courbe d'une fonction sinusoïdale]
+\begin{methodebox}[Méthode 19 --- Tracer la courbe d'une fonction sinusoïdale]
 \etapeexemples
 Pour chaque fonction $g$ et $h$, calculer les images de $0$, $1$, $2$, $3$ et $4$, puis tracer sa
 courbe sur $\intff{-4}{4}$ :
@@ -2139,76 +2180,6 @@ $k(t)=3\sin\left(\dfrac{\pi}{2}t\right)$ \qquad $m(t)=3\cos\left(\dfrac{\pi}{2}t
 \reponse{Images de $k$ : $0$ ; $3$ ; $0$ ; $-3$ ; $0$ ;\; images de $m$ : $0$ ; $-3$ ; $0$ ; $3$ ; $0$.}
 \end{methodebox}
 
-\begin{methodebox}[Méthode 23 --- Retrouver l'expression d'une fonction sinusoïdale sur sa courbe]
-\etapeexemples
-Retrouver l'expression de chaque fonction, avec $\varphi$ dans $\intof{-\pi}{\pi}$ :
-
-\smallskip
-\begin{minipage}[t]{0.32\linewidth}\centering
-a)~$f(t)=A\cos(\omega t+\varphi)$\par\smallskip
-\sinusoide{3*cos(90*\x)}{-3,3}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.32\linewidth}\centering
-b)~$g(t)=A\sin(\omega t+\varphi)$\par\smallskip
-\sinusoide{2*sin(180*\x+90)}{-2,2}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.32\linewidth}\centering
-c)~$h(t)=A\cos(\omega t+\varphi)$\par\smallskip
-\sinusoide{2*cos(90*\x+90)}{-2,2}
-\end{minipage}
-\begin{correction}
-\cas{a)}
-\explique{$A=3$ et $T=4$.}{le maximum ; deux maximums de suite sont en $t=0$ et $t=4$}
-\begin{calculs}
-\omega &= \dfrac{2\pi}{T} &\qquad& \rem{la formule de la période, à l'envers}\\
-\omega &= \dfrac{\pi}{2} && \rem{$\tfrac{2\pi}{4}$ se simplifie}\\
-f(0) &= 3\cos(\varphi) && \rem{en $t=0$, il reste la phase}\\
-3\cos(\varphi) &= 3 && \rem{on lit $f(0)=3$ sur la courbe}\\
-\cos(\varphi) &= 1 && \rem{on divise par $3$}\\
-\varphi &= 0 && \rem{le point $(1\,;0)$}
-\end{calculs}
-\explique{$f(t)=3\cos\left(\dfrac{\pi}{2}t\right)$.}{on remplace $A$, $\omega$ et $\varphi$}
-\cas{b)}
-\explique{$A=2$ et $T=2$.}{deux maximums de suite sont en $t=0$ et $t=2$}
-\begin{calculs}
-\omega &= \dfrac{2\pi}{T} &\qquad& \rem{la formule}\\
-\omega &= \pi && \rem{$\tfrac{2\pi}{2}$ se simplifie}\\
-2\sin(\varphi) &= 2 && \rem{on lit $g(0)=2$ sur la courbe}\\
-\sin(\varphi) &= 1 && \rem{on divise par $2$}\\
-\varphi &= \dfrac{\pi}{2} && \rem{le point tout en haut du cercle}
-\end{calculs}
-\explique{$g(t)=2\sin\left(\pi t+\dfrac{\pi}{2}\right)$.}{on remplace $A$, $\omega$ et $\varphi$}
-\cas{c)}
-\explique{$A=2$ et $T=4$, donc $\omega=\dfrac{\pi}{2}$.}{deux maximums de suite sont en $t=-1$ et $t=3$}
-\begin{calculs}
-2\cos(\varphi) &= 0 &\qquad& \rem{on lit $h(0)=0$ sur la courbe}\\
-\cos(\varphi) &= 0 && \rem{deux valeurs possibles : $-\tfrac{\pi}{2}$ et $\tfrac{\pi}{2}$}\\
-h(1) &= 2\cos\left(\dfrac{\pi}{2}+\varphi\right) && \rem{un second point pour choisir}\\
-2\cos\left(\dfrac{\pi}{2}+\varphi\right) &= -2 && \rem{on lit $h(1)=-2$ sur la courbe}\\
-\cos\left(\dfrac{\pi}{2}+\varphi\right) &= -1 && \rem{donc $\tfrac{\pi}{2}+\varphi$ vaut $\pi$}\\
-\varphi &= \dfrac{\pi}{2} && \rem{$-\tfrac{\pi}{2}$ donnerait $\cos(0)=1$ : ne convient pas}
-\end{calculs}
-\explique{$h(t)=2\cos\left(\dfrac{\pi}{2}t+\dfrac{\pi}{2}\right)$.}{on remplace $A$, $\omega$ et $\varphi$}
-\end{correction}
-
-\etape{À vous de jouer}
-Retrouver l'expression de chaque fonction, avec $\varphi$ dans $\intof{-\pi}{\pi}$ :
-
-\smallskip
-\begin{minipage}[t]{0.32\linewidth}\centering
-a)~$k(t)=A\cos(\omega t+\varphi)$\par\smallskip
-\sinusoide{2*cos(180*\x)}{-2,2}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.32\linewidth}\centering
-b)~$m(t)=A\sin(\omega t+\varphi)$\par\smallskip
-\sinusoide{3*sin(90*\x+90)}{-3,3}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.32\linewidth}\centering
-c)~$n(t)=A\cos(\omega t+\varphi)$\par\smallskip
-\sinusoide{3*cos(90*\x-90)}{-3,3}
-\end{minipage}
-\reponse{a)~$k(t)=2\cos(\pi t)$ ;\; b)~$m(t)=3\sin\left(\dfrac{\pi}{2}t+\dfrac{\pi}{2}\right)$ ;\;
-c)~$n(t)=3\cos\left(\dfrac{\pi}{2}t-\dfrac{\pi}{2}\right)$.}
-\end{methodebox}
+\afaire{exercices 48 à 52}
 
 \end{document}

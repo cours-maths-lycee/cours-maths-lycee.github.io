@@ -1,0 +1,971 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+
+\ShorthandsOff
+\tikzset{lecture/.style={dashed,black!60,line width=0.6pt}}
+\newcommand{\cerclenu}{%
+  \draw[-{Stealth[length=2mm]},thick] (-1.3,0)--(1.3,0) node[below,font=\scriptsize,inner sep=2pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.3)--(0,1.3) node[right,font=\scriptsize,inner sep=2pt]{$y$};
+  \draw[line width=0.9pt] (0,0) circle (1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};}
+\newcommand{\cerclebase}{\cerclenu
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$1$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$-1$};
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (0,1) {$1$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (0,-1) {$-1$};}
+\newcommand{\cerclerep}{\cerclenu
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$0$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (1,0) {$2\pi$};
+  \node[above left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$\pi$};}
+\newcommand{\rayons}[1]{\foreach \a in {#1}{\draw[grille] (0,0)--({cos(\a)},{sin(\a)});}}
+\newcommand{\ptc}[2]{%
+  \path[coulCourbeB] ({cos(#1)},{sin(#1)}) node[croix]{};
+  \node[font=\scriptsize,inner sep=1pt] at ({1.25*cos(#1)},{1.25*sin(#1)}) {#2};}
+\newcommand{\reperetrigo}[2]{%
+  \foreach \k in {#1,...,#2}{\draw[grille] ({\k*pi/6},-1.5)--({\k*pi/6},1.5);}
+  \foreach \j in {-3,...,3}{\draw[grille] ({#1*pi/6},{\j/2})--({#2*pi/6},{\j/2});}
+  \draw[-{Stealth[length=2mm]},thick] ({#1*pi/6},0)--({#2*pi/6+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.5)--(0,1.8)
+    node[below left=-1pt,font=\footnotesize]{$y$};
+  \foreach \j/\l in {1/1,0.5/\frac{1}{2},-0.5/-\frac{1}{2},-1/-1}{%
+    \node[left,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,\j) {$\l$};}}
+\newcommand{\gradpi}[2][below]{\foreach \k/\l in {#2}{%
+  \draw ({\k*pi/6},0.05)--({\k*pi/6},-0.05);
+  \node[#1,font=\scriptsize,inner sep=1pt,outer sep=2pt,fill=white] at ({\k*pi/6},0) {$\l$};}}
+\newcommand{\courbetrigo}[1]{\draw[coulCourbe,line width=1.1pt]
+  plot[domain=-2*pi:2*pi,samples=121] (\x,{#1(\x r)});}
+\newcommand{\motif}[2]{\begin{scope}
+  \clip (-5,-3.4) rectangle (5,3.4);
+  \foreach \d in {#1}{\draw[coulCourbe,line width=1.1pt,shift={(\d,0)}] #2;}
+  \end{scope}}
+\newcommand{\figsignal}[6]{\begin{tikzpicture}[x=0.38cm,y=0.38cm]
+  \repere{-5}{#1}{5}{#2}
+  \gradx{#3}\grady{-2,2}
+  #4
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at #5 {#6};
+  \end{tikzpicture}}
+\newcommand{\sigtriangle}{\motif{-8,-4,0,4}{(0,-2)--(2,2)--(4,-2)}}%
+\newcommand{\sigcarre}{\motif{-12,-6,0,6}{(0,-2)--(0,2)--(3,2)--(3,-2)--(6,-2)}}%
+\newcommand{\sigrampe}{\motif{-8,-4,0,4}{(0,-2)--(4,2)--(4,-2)}}%
+\newcommand{\sigamorti}{\motif{-10,-5,0,5}{(0,-2)--(0,3)
+  --plot[domain=0:2.5,samples=60] (\x,{2+exp(-2*\x)*cos(540*\x)})
+  --(2.5,-3)--plot[domain=2.5:5,samples=60] (\x,{-2-exp(-2*(\x-2.5))*cos(540*(\x-2.5))})}}%
+\newcommand{\sigdeforme}{\motif{-10,-5,0,5}{(0,-2) .. controls (0.4,-2) and (0.6,2) .. (1,2)
+  .. controls (2,2) and (4,-2) .. (5,-2)}}
+\ShorthandsOn
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STI2D --- Trigonométrie}{Fiche d'exercices du chapitre}
+
+\begin{multicols*}{2}\raggedcolumns
+
+\partiefiche{Cercle trigonométrique et radian}
+
+\exo[Des degrés aux radians]
+Convertir chaque angle en radians : a)~$20^{\circ}$ ; b)~$100^{\circ}$ ;
+c)~$210^{\circ}$ ; d)~$330^{\circ}$ ; e)~$135^{\circ}$.
+
+\exo[Des radians aux degrés]
+Convertir chaque angle en degrés : a)~$\frac{2\pi}{5}$ ; b)~$\frac{5\pi}{12}$ ;
+c)~$\frac{7\pi}{4}$ ; d)~$\frac{11\pi}{9}$ ; e)~$\frac{3\pi}{10}$.
+
+\exo[Tableau de proportionnalité]
+Compléter le tableau.
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Degrés & $180$ & $36$ & & $240$ & \\
+\hline
+Radians & $\pi$ & & $\dfrac{5\pi}{6}$ & & $\dfrac{\pi}{12}$\\
+\hline
+\end{tabular}}
+\end{center}
+
+\exo[Moteur pas à pas]
+Un moteur pas à pas de robot fait un tour complet en $200$ pas identiques.
+\begin{enumerate}[label=\alph*)]
+  \item Combien de degrés mesure un pas ?
+  \item Exprimer un pas en radians.
+  \item De combien de radians l'arbre tourne-t-il en $50$ pas ? en $150$ pas ?
+\end{enumerate}
+
+\partiefiche{Mesures d'un angle orienté}
+
+\exo[Lire les mesures d'un point]
+Pour chaque point $E$ et $F$ de la figure, lire sa mesure dans le sens direct, entre
+$0$ et $2\pi$, puis sa mesure dans le sens indirect, entre $-2\pi$ et $0$.
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \rayons{0,45,...,315}\cerclerep\ptc{315}{$E$}
+  \node[font=\footnotesize] at (0,1.65) {huitièmes de tour};
+\end{tikzpicture}\hspace{0.6cm}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \rayons{0,30,...,330}\cerclerep\ptc{240}{$F$}
+  \node[font=\footnotesize] at (0,1.65) {douzièmes de tour};
+\end{tikzpicture}
+\end{center}
+
+\exo[Placer des points]
+Sur le cercle ci-dessous (rayons tous les $\frac{\pi}{12}$), placer le point associé à
+chaque nombre réel :
+\begin{center}
+$A$ : $\frac{\pi}{4}$ \quad $B$ : $-\frac{5\pi}{6}$ \quad $C$ : $\frac{7\pi}{3}$ \quad
+$D$ : $-\frac{3\pi}{2}$ \quad $G$ : $\frac{11\pi}{4}$ \quad $H$ : $5\pi$
+\end{center}
+\begin{center}
+\begin{tikzpicture}[x=1.3cm,y=1.3cm]
+  \rayons{0,15,...,345}\cerclerep
+\end{tikzpicture}
+\end{center}
+
+\exo[Même point, autre mesure]
+Tracer un cercle trigonométrique de rayon $3$ cm et y placer le point associé à
+chaque nombre réel ci-dessous. Regrouper ensuite les nombres associés au même point.
+\begin{center}
+$\frac{\pi}{3}$ \quad $\frac{3\pi}{4}$ \quad $-\frac{\pi}{2}$ \quad $\frac{7\pi}{3}$ \quad
+$-\frac{5\pi}{4}$ \quad $\frac{3\pi}{2}$ \quad $-\frac{5\pi}{3}$ \quad $\frac{11\pi}{4}$ \quad
+$\frac{7\pi}{2}$
+\end{center}
+
+\exo[D'autres mesures]
+Pour chaque angle orienté, de mesure $\frac{\pi}{6}$, $-\frac{3\pi}{4}$ et
+$\frac{2\pi}{3}$, donner deux autres mesures : l'une avec un tour de plus, l'autre avec
+un tour de moins.
+
+\partiefiche{Mesure principale d'un angle orienté}
+
+\exo[Mesure principale]
+Tracer un cercle trigonométrique de rayon $3$ cm. Pour chaque angle orienté ci-dessous,
+déterminer la mesure principale, puis placer le point associé sur le cercle :
+a)~$\frac{9\pi}{4}$ ; b)~$-\frac{5\pi}{3}$ ; c)~$\frac{17\pi}{6}$ ; d)~$\frac{23\pi}{4}$ ;
+e)~$-\frac{11\pi}{2}$ ; f)~$15\pi$.
+
+\exo[Compléter les pointillés]
+Compléter, puis donner la mesure principale de l'angle.
+\begin{enumerate}[label=\alph*)]
+  \item $2\pi=\frac{\ldots\pi}{4}$, donc $\frac{31\pi}{4}-4\times\frac{8\pi}{4}=\frac{\ldots\pi}{4}$.
+  \item $2\pi=\frac{\ldots\pi}{6}$, donc $-\frac{29\pi}{6}+2\times\frac{12\pi}{6}=\frac{\ldots\pi}{6}$.
+  \item $2\pi=\frac{\ldots\pi}{3}$, donc $\frac{40\pi}{3}-\ldots\times\frac{6\pi}{3}=\frac{\ldots\pi}{3}$.
+\end{enumerate}
+
+\exo[L'intrus]
+Dans chaque liste, toutes les mesures sauf une sont celles d'un même angle orienté.
+Trouver l'intrus, puis la mesure principale de l'angle.
+\begin{enumerate}[label=\alph*)]
+  \item $\frac{13\pi}{6}$ \quad $-\frac{11\pi}{6}$ \quad $\frac{7\pi}{6}$ \quad
+        $\frac{25\pi}{6}$ \quad $-\frac{23\pi}{6}$
+  \item $\frac{9\pi}{4}$ \quad $-\frac{15\pi}{4}$ \quad $\frac{17\pi}{4}$ \quad
+        $-\frac{7\pi}{4}$ \quad $\frac{5\pi}{4}$
+\end{enumerate}
+
+\exo[Pale d'éolienne]
+Depuis sa mise en route, une pale d'éolienne a tourné de $\frac{35\pi}{3}$ radians, dans
+le sens direct.
+\begin{enumerate}[label=\alph*)]
+  \item Combien de tours complets a-t-elle faits ?
+  \item Déterminer la mesure principale de sa position.
+\end{enumerate}
+
+\partiefiche{Cosinus et sinus d'un nombre réel}
+
+\exo[Valeurs exactes]
+Déterminer la valeur exacte de : a)~$\cos\left(\frac{7\pi}{3}\right)$ ;
+b)~$\sin\left(\frac{9\pi}{2}\right)$ ; c)~$\cos(11\pi)$ ;
+d)~$\sin\left(-\frac{7\pi}{4}\right)$ ; e)~$\cos\left(-\frac{11\pi}{3}\right)$.
+
+\exo[Cosinus connu, sinus cherché]
+\begin{enumerate}[label=\alph*)]
+  \item Le nombre réel $x$ est entre $0$ et $\frac{\pi}{2}$, et $\cos(x)=0{,}6$. Calculer
+        $\sin^{2}(x)$, puis $\sin(x)$.
+  \item Existe-t-il un nombre réel $y$ tel que $\sin(y)=1{,}5$ ? Justifier.
+\end{enumerate}
+
+\exo[Calculer une expression]
+Calculer la valeur exacte de :
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=6\cos(x)+2\sin(x)$, pour $x=\frac{\pi}{3}$ ;
+  \item $g(x)=\cos^{2}(x)$, pour $x=\frac{\pi}{4}$ ;
+  \item $h(x)=\sin(3x)$, pour $x=\frac{\pi}{6}$ ;
+  \item $k(x)=\cos(x)\times\sin(x)$, pour $x=\frac{\pi}{3}$ ;
+  \item $m(x)=\cos(2x)$, pour $x=\frac{\pi}{2}$.
+\end{enumerate}
+
+\exo[Bras de grue]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Le bras d'une grue mesure $20$ m ; il fait un angle de $\frac{\pi}{3}$ avec
+l'horizontale. Calculer la valeur exacte, puis une valeur approchée au dixième :
+\begin{enumerate}[label=\alph*)]
+  \item de la portée $OH$ ;
+  \item de la hauteur $HM$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.40\linewidth}\centering
+\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \draw[thick] (-0.2,0)--(1.2,0);
+  \draw[line width=1.6pt,coulCourbe] (0,0)--({cos(60)},{sin(60)});
+  \draw[lecture] ({cos(60)},{sin(60)})--({cos(60)},0);
+  \draw (0.3,0) arc (0:60:0.3);
+  \node[font=\scriptsize] at (30:0.45) {$\frac{\pi}{3}$};
+  \node[font=\scriptsize,below] at (0,0) {$O$};
+  \node[font=\scriptsize,below] at ({cos(60)},0) {$H$};
+  \node[font=\scriptsize,above right] at ({cos(60)},{sin(60)}) {$M$};
+  \node[font=\scriptsize,coulCourbe,above left] at ({cos(60)/2},{sin(60)/2}) {$20$ m};
+\end{tikzpicture}
+\end{minipage}
+
+\partiefiche{Angles associés}
+
+\exo[Lire les symétries]
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Le point $M$ est associé à $\frac{\pi}{6}$ : ses coordonnées sont
+$\left(\frac{\sqrt{3}}{2}\,;\frac{1}{2}\right)$. Pour chaque point $N$, $R$ et $S$ :
+\begin{enumerate}[label=\alph*)]
+  \item dire de quelle symétrie il est l'image de $M$ ;
+  \item donner le nombre réel associé, entre $-\pi$ et $\pi$ ;
+  \item donner son cosinus et son sinus.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=1.15cm,y=1.15cm]
+  \draw[lecture] ({cos(30)},{sin(30)})--({cos(30)},{-sin(30)});
+  \draw[lecture] ({cos(30)},{sin(30)})--({-cos(30)},{sin(30)});
+  \draw[lecture] ({cos(30)},{sin(30)})--({-cos(30)},{-sin(30)});
+  \cerclerep
+  \ptc{30}{$M$}\ptc{-30}{$N$}\ptc{150}{$R$}\ptc{210}{$S$}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[À l'aide d'un angle associé]
+Déterminer la valeur exacte de chaque nombre, à l'aide d'un angle associé :
+a)~$\cos\left(\frac{2\pi}{3}\right)$ ; b)~$\sin\left(\frac{5\pi}{6}\right)$ ;
+c)~$\cos\left(\frac{5\pi}{4}\right)$ ; d)~$\sin\left(-\frac{\pi}{3}\right)$ ;
+e)~$\cos\left(\frac{7\pi}{6}\right)$ ; f)~$\sin\left(\frac{3\pi}{4}\right)$.
+
+\exo[Un angle hors du tableau]
+On donne $\cos\left(\frac{\pi}{5}\right)\approx 0{,}81$ et
+$\sin\left(\frac{\pi}{5}\right)\approx 0{,}59$. En déduire une valeur approchée de :
+a)~$\cos\left(-\frac{\pi}{5}\right)$ ; b)~$\sin\left(\frac{4\pi}{5}\right)$ ;
+c)~$\cos\left(\frac{6\pi}{5}\right)$ ; d)~$\cos\left(\frac{3\pi}{10}\right)$.
+
+\exo[Le dire en phrase]
+Les points $M$ et $N$ du cercle trigonométrique sont associés à $\frac{\pi}{7}$ et à
+$\frac{6\pi}{7}$.
+\begin{enumerate}[label=\alph*)]
+  \item Vérifier que $\frac{6\pi}{7}$ vaut $\pi-\frac{\pi}{7}$.
+  \item Compléter par une phrase : « $M$ et $N$ sont symétriques par rapport à
+        \ldots{} ; ils ont donc le même \ldots{} et des \ldots{} opposés. »
+  \item Écrire $\sin\left(\frac{6\pi}{7}\right)$ et $\cos\left(\frac{6\pi}{7}\right)$ à
+        l'aide de $\sin\left(\frac{\pi}{7}\right)$ et de $\cos\left(\frac{\pi}{7}\right)$.
+\end{enumerate}
+
+\partiefiche{Simplifier une expression à l'aide des angles associés}
+
+\exo[Voir avant de calculer]
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Sur la figure, le point $M$ est associé au nombre réel $x$, le point $N$ à $\pi-x$ et le
+point $K$ à $-x$.
+\begin{enumerate}[label=\alph*)]
+  \item Comparer les abscisses de $M$ et de $N$, puis leurs ordonnées.
+  \item Comparer de même $M$ et $K$.
+  \item En déduire une écriture simple de $A(x)=\cos(\pi-x)+\cos(x)$ et de
+        $B(x)=\sin(-x)+\sin(x)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=1.15cm,y=1.15cm]
+  \draw[lecture] ({cos(40)},{sin(40)})--({-cos(40)},{sin(40)});
+  \draw[lecture] ({cos(40)},{sin(40)})--({cos(40)},{-sin(40)});
+  \draw[lecture] ({-cos(40)},{sin(40)})--({-cos(40)},0);
+  \cerclerep
+  \draw[grille] (0,0)--({cos(40)},{sin(40)});
+  \draw (0.3,0) arc (0:40:0.3);
+  \node[font=\scriptsize] at (20:0.45) {$x$};
+  \ptc{40}{$M$}\ptc{140}{$N$}\ptc{-40}{$K$}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Simplifier]
+Pour tout nombre réel $x$, simplifier :
+\begin{enumerate}[label=\alph*)]
+  \item $A(x)=\cos(-x)+\cos(\pi+x)$
+  \item $B(x)=\sin(\pi-x)-\sin(-x)$
+  \item $C(x)=\cos\left(\frac{\pi}{2}-x\right)+\sin(\pi+x)$
+  \item $D(x)=3\cos(\pi-x)+\sin\left(\frac{\pi}{2}+x\right)$
+\end{enumerate}
+
+\exo[Avec plus de termes]
+Pour tout nombre réel $x$, simplifier :
+\begin{enumerate}[label=\alph*)]
+  \item $E(x)=\sin\left(\frac{\pi}{2}-x\right)+\cos(\pi-x)+\sin(-x)+\sin(\pi-x)$
+  \item $F(x)=2\sin(\pi+x)+\cos\left(\frac{\pi}{2}+x\right)$
+  \item $G(x)=\cos\left(\frac{\pi}{2}+x\right)+\sin\left(\frac{\pi}{2}+x\right)+\cos(-x)$
+\end{enumerate}
+
+\exo[Toujours égal à 1]
+Montrer que, pour tout nombre réel $x$ :
+\begin{enumerate}[label=\alph*)]
+  \item $\cos^{2}(-x)+\sin^{2}(\pi-x)=1$ ;
+  \item $\big(\cos(\pi+x)\big)^{2}+\left(\cos\left(\frac{\pi}{2}-x\right)\right)^{2}=1$.
+\end{enumerate}
+
+\partiefiche{Le cercle trigonométrique complet}
+
+Le cercle complet sert aux parties VII, VIII et XII.
+\begin{center}
+\begin{tikzpicture}[x=2.75cm,y=2.75cm]
+  \foreach \a in {30,45,60}{%
+    \draw[lecture] ({cos(\a)},{-sin(\a)})--({cos(\a)},{sin(\a)});
+    \draw[lecture] ({-cos(\a)},{-sin(\a)})--({-cos(\a)},{sin(\a)});
+    \draw[lecture] ({-cos(\a)},{sin(\a)})--({cos(\a)},{sin(\a)});
+    \draw[lecture] ({-cos(\a)},{-sin(\a)})--({cos(\a)},{-sin(\a)});}
+  \cerclebase
+  \path[coulCourbeB] (1,0) node[croix]{} (0,1) node[croix]{} (-1,0) node[croix]{} (0,-1) node[croix]{};
+  \node[font=\footnotesize,inner sep=1pt] at (1.1,0.09) {$0$};
+  \node[font=\footnotesize,inner sep=1pt] at (-1.1,0.09) {$\pi$};
+  \node[font=\footnotesize,inner sep=1pt] at (-0.12,1.12) {$\frac{\pi}{2}$};
+  \node[font=\footnotesize,inner sep=1pt] at (-0.16,-1.12) {$-\frac{\pi}{2}$};
+  \foreach \a/\l in {30/\frac{\pi}{6},45/\frac{\pi}{4},60/\frac{\pi}{3},
+     120/\frac{2\pi}{3},135/\frac{3\pi}{4},150/\frac{5\pi}{6},
+     -30/-\frac{\pi}{6},-45/-\frac{\pi}{4},-60/-\frac{\pi}{3},
+     -120/-\frac{2\pi}{3},-135/-\frac{3\pi}{4},-150/-\frac{5\pi}{6}}{%
+    \path[coulCourbeB] ({cos(\a)},{sin(\a)}) node[croix]{};
+    \node[font=\footnotesize,inner sep=1pt] at ({1.14*cos(\a)},{1.14*sin(\a)}) {$\l$};}
+  \foreach \v/\l in {0.5/\frac{1}{2},0.866/\frac{\sqrt{3}}{2},-0.5/-\frac{1}{2},-0.866/-\frac{\sqrt{3}}{2}}{%
+    \draw (\v,0.02)--(\v,-0.02);
+    \node[below,font=\scriptsize,inner sep=1pt,outer sep=2pt,coulCourbeB,fill=white] at (\v,0) {$\l$};
+    \draw (0.02,\v)--(-0.02,\v);
+    \node[left,font=\scriptsize,inner sep=1pt,outer sep=2pt,coulCourbeC,fill=white] at (0,\v) {$\l$};}
+  \foreach \v/\l in {0.707/\frac{\sqrt{2}}{2},-0.707/-\frac{\sqrt{2}}{2}}{%
+    \draw (\v,0.02)--(\v,-0.02);
+    \node[above,font=\scriptsize,inner sep=1pt,outer sep=2pt,coulCourbeB,fill=white] at (\v,0) {$\l$};
+    \draw (0.02,\v)--(-0.02,\v);
+    \node[right,font=\scriptsize,inner sep=1pt,outer sep=2pt,coulCourbeC,fill=white] at (0,\v) {$\l$};}
+\end{tikzpicture}
+\end{center}
+
+\exo[Retrouver la mesure principale]
+Déterminer la mesure principale de l'angle orienté de mesure $x$ tel que :
+\begin{enumerate}[label=\alph*)]
+  \item $\cos(x)=\frac{\sqrt{3}}{2}$ et $\sin(x)=\frac{1}{2}$ ;
+  \item $\cos(x)=-\frac{\sqrt{2}}{2}$ et $\sin(x)=-\frac{\sqrt{2}}{2}$ ;
+  \item $\cos(x)=-\frac{1}{2}$ et $\sin(x)=-\frac{\sqrt{3}}{2}$ ;
+  \item $\cos(x)=0$ et $\sin(x)=1$ ;
+  \item $\cos(x)=\frac{\sqrt{2}}{2}$ et $\sin(x)=-\frac{\sqrt{2}}{2}$ ;
+  \item $\cos(x)=-\frac{\sqrt{3}}{2}$ et $\sin(x)=\frac{1}{2}$.
+\end{enumerate}
+
+\exo[Lire le cercle complet]
+Compléter le tableau à l'aide du cercle complet.
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $\dfrac{2\pi}{3}$ & $-\dfrac{3\pi}{4}$ & $\dfrac{5\pi}{6}$ & $-\dfrac{\pi}{3}$ & $-\dfrac{\pi}{2}$ & $\pi$\\
+\hline
+$\cos(x)$ & & & & & & \\
+\hline
+$\sin(x)$ & & & & & & \\
+\hline
+\end{tabular}}
+\end{center}
+
+\exo[Possible ou non ?]
+Existe-t-il un nombre réel $x$ tel que :
+\begin{enumerate}[label=\alph*)]
+  \item $\cos(x)=\frac{1}{2}$ et $\sin(x)=\frac{1}{2}$ ? (calculer $\cos^{2}(x)+\sin^{2}(x)$)
+  \item $\cos(x)=-\frac{1}{2}$ et $\sin(x)=\frac{\sqrt{3}}{2}$ ?
+\end{enumerate}
+Si oui, donner sa mesure principale.
+
+\partiefiche{Équations avec des cosinus et des sinus}
+
+\exo[Sur $\intof{-\pi}{\pi}$]
+Résoudre sur l'intervalle $\intof{-\pi}{\pi}$, à l'aide du cercle complet :
+a)~$\cos(x)=\frac{\sqrt{3}}{2}$ ; b)~$\sin(x)=\frac{1}{2}$ ;
+c)~$\cos(x)=-\frac{\sqrt{2}}{2}$ ; d)~$\sin(x)=-1$ ; e)~$\cos(x)=0$ ;
+f)~$\sin(x)=\frac{3}{2}$.
+
+\exo[Sur un autre intervalle]
+Résoudre, à l'aide du cercle complet :
+\begin{enumerate}[label=\alph*)]
+  \item $\cos(x)=-\frac{1}{2}$ sur $\intff{0}{2\pi}$ ;
+  \item $\sin(x)=\frac{\sqrt{2}}{2}$ sur $\intff{0}{2\pi}$ ;
+  \item $\sin(x)=0$ sur $\intff{-2\pi}{2\pi}$ ;
+  \item $\cos(x)=\frac{\sqrt{3}}{2}$ sur $\intff{-2\pi}{2\pi}$.
+\end{enumerate}
+
+\exo[Bras de robot]
+Le bras d'un robot, long de $2$ m, tourne autour du point $O$. Quand il fait l'angle
+$x$ avec l'axe $(Ox)$, sa pince a pour coordonnées $\big(2\cos(x)\,;2\sin(x)\big)$, en
+mètres. Pour quelles valeurs de $x$ dans $\intof{-\pi}{\pi}$ la pince :
+\begin{enumerate}[label=\alph*)]
+  \item a-t-elle pour abscisse $1$ ?
+  \item a-t-elle pour ordonnée $-\sqrt{2}$ ?
+  \item est-elle au point de coordonnées $\big({-}\sqrt{3}\,;1\big)$ ?
+\end{enumerate}
+
+\partiefiche{Fonctions cosinus et sinus}
+
+\exo[Tableaux de variation]
+Dresser le tableau de variation, à l'aide des courbes du cours :
+\begin{enumerate}[label=\alph*)]
+  \item de la fonction cosinus sur $\intff{\pi}{3\pi}$ ;
+  \item de la fonction sinus sur $\intff{-\frac{5\pi}{2}}{-\frac{\pi}{2}}$ ;
+  \item de la fonction sinus sur $\intff{\frac{3\pi}{2}}{\frac{7\pi}{2}}$ ;
+  \item de la fonction cosinus sur $\intff{-3\pi}{-\pi}$.
+\end{enumerate}
+
+\exo[Lire une période]
+Lire la période de chaque signal $f$, $g$ et $h$.
+\begin{center}
+\figsignal{-3}{3}{-2,2}{\sigtriangle}{(-4.2,2.6)}{$\Cf$}\hspace{0.2cm}
+\figsignal{-3}{3}{-3,3}{\sigcarre}{(-4.2,-2.6)}{$\Cg$}
+
+\smallskip
+\figsignal{-3}{3}{-4,1}{\sigdeforme}{(-2.5,2.6)}{$\mathcal{C}_{h}$}
+\end{center}
+
+\exo[Période et fréquence]
+Le temps $t$ est en millisecondes.
+\begin{center}
+\figsignal{-3}{3}{-2,2}{\sigrampe}{(-2,-2.6)}{$\mathcal{C}_{k}$}\hspace{0.2cm}
+\figsignal{-4}{4}{-4,-2,2,4}{\sigamorti}{(-2.5,-3.5)}{$\mathcal{C}_{m}$}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Lire la période de chaque signal $k$ (dents de scie) et $m$ (carré amorti).
+  \item Calculer la fréquence de chaque signal, en hertz.
+\end{enumerate}
+
+\exo[Vérifier une période par le calcul]
+\begin{enumerate}[label=\alph*)]
+  \item On pose $f(x)=\sin(2x)$. Montrer que $f(x+\pi)=f(x)$ pour tout nombre réel $x$.
+        Que peut-on en dire ?
+  \item On pose $g(x)=\cos\left(\frac{x}{2}\right)$. Calculer $g(x+4\pi)$ ; en déduire une
+        période de $g$.
+\end{enumerate}
+
+\partiefiche{Résolution graphique d'équations et d'inéquations}
+
+Les courbes ci-dessous servent aux exercices 35 à 38 ; un carreau vaut $\frac{\pi}{6}$ en
+abscisse et $\frac{1}{2}$ en ordonnée.
+\begin{center}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \reperetrigo{-12}{12}\courbetrigo{cos}
+  \gradpi{-12/-2\pi,-6/-\pi,6/\pi,12/2\pi}
+  \node[coulCourbe,font=\scriptsize,fill=white,inner sep=1pt] at (2.3,1.25) {$y=\cos(x)$};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \reperetrigo{-12}{12}\courbetrigo{sin}
+  \gradpi[above]{-12/-2\pi,-6/-\pi,6/\pi,12/2\pi}
+  \node[coulCourbe,font=\scriptsize,fill=white,inner sep=1pt] at (3.4,1.25) {$y=\sin(x)$};
+\end{tikzpicture}
+\end{center}
+
+\exo[Avec le cosinus]
+Résoudre graphiquement sur $\intff{-2\pi}{2\pi}$ :
+a)~$\cos(x)=0$ ; b)~$\cos(x)=-\frac{1}{2}$ ; c)~$\cos(x)\ge\frac{1}{2}$ ;
+d)~$\cos(x)<0$.
+
+\exo[Avec le sinus]
+Résoudre graphiquement sur $\intff{-2\pi}{2\pi}$ :
+a)~$\sin(x)=\frac{1}{2}$ ; b)~$\sin(x)=-1$ ; c)~$\sin(x)>0$ ;
+d)~$\sin(x)\le-\frac{1}{2}$.
+
+\exo[Sur $\intff{-\pi}{\pi}$]
+Résoudre graphiquement sur $\intff{-\pi}{\pi}$ :
+a)~$\cos(x)\le\frac{1}{2}$ ; b)~$\sin(x)\ge-\frac{1}{2}$ ; c)~$\cos(x)=-1$ ;
+d)~$\sin(x)<1$.
+
+\exo[Deux conditions à la fois]
+Pour quelles valeurs de $x$ dans $\intff{0}{2\pi}$ a-t-on à la fois :
+\begin{enumerate}[label=\alph*)]
+  \item $\cos(x)\ge 0$ et $\sin(x)\ge 0$ ?
+  \item $\cos(x)\le 0$ et $\sin(x)\ge\frac{1}{2}$ ?
+  \item $\cos(x)\ge\frac{1}{2}$ et $\sin(x)<0$ ?
+\end{enumerate}
+
+\partiefiche{Fonctions paires et impaires}
+
+\exo[Reconnaître sur la courbe]
+Dire si chaque fonction $f$, $g$ et $h$ est paire, impaire ou ni l'une ni l'autre.
+\begin{center}
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-4,2) .. controls (-3.4,0.6) and (-2.6,-1) .. (-2,-1)
+    .. controls (-1.4,-1) and (-0.6,1) .. (0,1)
+    .. controls (0.6,1) and (1.4,-1) .. (2,-1)
+    .. controls (2.6,-1) and (3.4,0.6) .. (4,2);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-3,2.4) {$\Cf$};
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-4,1) .. controls (-3.4,0) and (-2.6,-2) .. (-2,-2)
+    .. controls (-1.4,-2) and (-0.6,-1) .. (0,0)
+    .. controls (0.6,1) and (1.4,2) .. (2,2)
+    .. controls (2.6,2) and (3.4,0) .. (4,-1);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (-3,2.4) {$\Cg$};
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (-4,-2) .. controls (-3,-1) and (-2,2) .. (-1,2)
+    .. controls (0,2) and (1,0) .. (2,0)
+    .. controls (3,0) and (3.5,0.5) .. (4,1);
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (3,2.4) {$\mathcal{C}_{h}$};
+\end{tikzpicture}
+\end{center}
+
+\exo[Démontrer]
+Ces fonctions sont définies sur $\R$.
+\begin{enumerate}[label=\alph*)]
+  \item Démontrer que $f(x)=2x^{2}-\cos(x)$ est paire.
+  \item Démontrer que $g(x)=4x-3\sin(x)$ est impaire.
+  \item Démontrer que $h(x)=x\sin(x)$ est paire.
+\end{enumerate}
+
+\exo[Compléter une courbe]
+Recopier chaque courbe et la compléter sur $\intff{-4}{4}$.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ est paire et périodique de période $4$ ;
+  \item $g$ est impaire et périodique de période $4$.
+\end{enumerate}
+\begin{center}
+\begin{tikzpicture}[x=0.35cm,y=0.35cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,-2,2,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (0,1) .. controls (0.7,1) and (1.3,-2) .. (2,-2);
+  \node[font=\footnotesize] at (-3.5,2.4) {a)};
+\end{tikzpicture}\hspace{0.4cm}
+\begin{tikzpicture}[x=0.35cm,y=0.35cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,-2,2,4}\grady{-2,2}
+  \draw[coulCourbe,line width=1.1pt] (0,0) .. controls (0.35,-0.7) and (0.65,-2) .. (1,-2)
+    .. controls (1.35,-2) and (1.65,-0.7) .. (2,0);
+  \node[font=\footnotesize] at (-3.5,2.4) {b)};
+\end{tikzpicture}
+\end{center}
+
+\partiefiche{Équations du type $\cos(kx)=a$}
+
+\exo[Poser $X=kx$]
+Résoudre, à l'aide du cercle complet :
+\begin{enumerate}[label=\alph*)]
+  \item $\cos(2x)=\frac{\sqrt{2}}{2}$ sur $\intff{0}{\pi}$ ;
+  \item $\sin(2x)=1$ sur $\intff{-\pi}{\pi}$ ;
+  \item $\cos(3x)=-1$ sur $\intff{0}{\pi}$ ;
+  \item $\cos\left(\frac{x}{2}\right)=\frac{1}{2}$ sur $\intff{-2\pi}{2\pi}$.
+\end{enumerate}
+
+\exo[Beaucoup de solutions]
+Résoudre, à l'aide du cercle complet :
+\begin{enumerate}[label=\alph*)]
+  \item $\sin(4x)=0$ sur $\intff{0}{\pi}$ ;
+  \item $\cos(2x)=0$ sur $\intff{0}{2\pi}$.
+\end{enumerate}
+
+\exo[Angle divisé, angle multiplié]
+Résoudre, à l'aide du cercle complet :
+\begin{enumerate}[label=\alph*)]
+  \item $\sin\left(\frac{x}{3}\right)=\frac{1}{2}$ sur $\intff{0}{6\pi}$ ;
+  \item $\cos(3x)=\frac{1}{2}$ sur $\intff{0}{\frac{2\pi}{3}}$.
+\end{enumerate}
+
+\partiefiche{Fonctions sinusoïdales : amplitude, période, phase}
+
+\exo[Lire et calculer]
+Pour chaque fonction, donner l'amplitude, la pulsation et la phase à l'origine, puis
+calculer la période :
+\begin{enumerate}[label=\alph*)]
+  \item $u(t)=12\sin(200\pi t)$, $t$ en secondes (donner aussi la fréquence) ;
+  \item $v(t)=5\cos\left(4t+\frac{\pi}{3}\right)$ ;
+  \item $w(t)=3\sin\left(\frac{\pi}{3}t-\frac{\pi}{6}\right)$.
+\end{enumerate}
+
+\exo[Courant dans un moteur]
+Le courant dans un moteur vaut $i(t)=2\cos\left(100\pi t-\frac{\pi}{6}\right)$, en
+ampères, $t$ en secondes.
+\begin{enumerate}[label=\alph*)]
+  \item Donner l'amplitude, la pulsation et la phase à l'origine.
+  \item Calculer la période et la fréquence.
+  \item Calculer la valeur exacte de $i(0)$, puis de $i(0{,}01)$.
+\end{enumerate}
+
+\exo[Écrire la fonction]
+\begin{enumerate}[label=\alph*)]
+  \item La tension du secteur a une fréquence de $50$ Hz et une amplitude de $325$ V.
+        Calculer sa période, puis sa pulsation, et écrire $u(t)=A\sin(\omega t)$.
+  \item La membrane d'un haut-parleur joue un la de $440$ Hz et vibre avec une amplitude
+        de $2$ mm. Écrire sa position $x(t)=A\sin(\omega t)$.
+\end{enumerate}
+
+\partiefiche{Courbe d'une fonction sinusoïdale}
+
+\exo[Calculer des images, tracer]
+Pour chaque fonction $f$ et $g$, calculer les images de $0$, $1$, $2$, $3$ et $4$, puis
+tracer sa courbe sur $\intff{-4}{4}$ :
+\begin{center}
+$f(t)=4\sin\left(\frac{\pi}{2}t\right)$ \qquad
+$g(t)=2\cos\left(\frac{\pi}{2}t-\frac{\pi}{2}\right)$
+\end{center}
+
+\exo[Une période de 2]
+On pose $h(t)=3\cos(\pi t)$. Calculer les images de $0$, $\frac{1}{2}$, $1$,
+$\frac{3}{2}$ et $2$, puis tracer la courbe de $h$ sur $\intff{-4}{4}$.
+
+\exo[Générateur basse fréquence]
+Un générateur délivre la tension $u(t)=3\cos\left(\frac{\pi}{4}t\right)$, en volts, $t$ en
+millisecondes.
+\begin{enumerate}[label=\alph*)]
+  \item Donner l'amplitude ; calculer la période, puis la fréquence en hertz.
+  \item Calculer $u(0)$, $u(2)$, $u(4)$, $u(6)$ et $u(8)$.
+  \item Tracer la courbe de $u$ sur $\intff{0}{8}$ (un carreau pour $1$ ms et pour $1$ V).
+  \item Lire les instants de $\intff{0}{8}$ où la tension est nulle.
+  \item Résoudre $u(t)=\frac{3}{2}$ sur $\intff{0}{8}$ (poser $X=\frac{\pi}{4}t$).
+\end{enumerate}
+
+\exo[Bout d'une pale d'éolienne]
+Les pales d'une éolienne mesurent $40$ m et font un tour en $4$ s. La hauteur du bout
+d'une pale au-dessus du moyeu vaut $y(t)=40\sin\left(\frac{\pi}{2}t\right)$, en mètres,
+$t$ en secondes (négative quand le bout est sous le moyeu).
+\begin{center}
+\begin{tikzpicture}[x=0.9cm,y=0.9cm]
+  \draw[thick] (-2.4,-2.6)--(2.6,-2.6);
+  \draw[fill=black!8] (-0.12,-2.6)--(-0.06,0)--(0.06,0)--(0.12,-2.6)--cycle;
+  \draw[lecture] (-2.2,0)--(2.4,0) node[right,font=\scriptsize,black]{niveau du moyeu};
+  \foreach \a in {160,280}{\draw[line width=2.2pt,black!55] (0,0)--(\a:1.6);}
+  \draw[line width=2.2pt,coulCourbe] (0,0)--(40:1.6);
+  \node[font=\scriptsize,coulCourbe,above left,inner sep=1pt] at (40:1.0) {pale : $40$ m};
+  \draw[fill=white,line width=0.8pt] (0,0) circle (0.14);
+  \node[font=\scriptsize,below left,inner sep=2pt] at (-0.1,-0.1) {moyeu};
+  \path[coulCourbeB] (40:1.6) node[croix]{};
+  \draw[{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]},coulCourbeB,line width=0.8pt]
+    ({1.6*cos(40)},0)--({1.6*cos(40)},{1.6*sin(40)}) node[midway,right,font=\scriptsize]{$y(t)$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Donner l'amplitude et la période ; que représentent-elles pour l'éolienne ?
+  \item Combien de tours la pale fait-elle en une minute ?
+  \item Calculer $y(0)$, $y(1)$, $y(2)$, $y(3)$ et $y(4)$.
+  \item Tracer la courbe de $y$ sur $\intff{0}{8}$ (un carreau pour $1$ s et pour $10$ m) ;
+        lire les instants où le bout est tout en haut.
+  \item À quels instants de $\intff{0}{4}$ le bout est-il à $20$ m au-dessus du moyeu ?
+\end{enumerate}
+
+\columnbreak
+\exo[Pédale de vélo]
+La manivelle d'un pédalier mesure $16$ cm ; le cycliste pédale à vitesse constante. La
+hauteur de la pédale au-dessus de l'axe du pédalier vaut $h(t)=16\cos(2\pi t)$, en
+centimètres, $t$ en secondes (négative quand la pédale est sous l'axe).
+\begin{center}
+\begin{tikzpicture}[x=0.9cm,y=0.9cm]
+  \draw[lecture] (0,0) circle (1.3);
+  \draw[lecture] (-1.8,0)--(2.2,0) node[right,font=\scriptsize,black]{niveau de l'axe};
+  \draw[line width=2.2pt,coulCourbe] (0,0)--(55:1.3);
+  \node[font=\scriptsize,coulCourbe,left,inner sep=2pt] at (-1.35,0.75) {manivelle : $16$ cm};
+  \draw[fill=black!30] (0.50,0.99) rectangle (1.00,1.14);
+  \node[font=\scriptsize,above,inner sep=2pt] at (0.75,1.14) {pédale};
+  \draw[fill=white,line width=0.8pt] (0,0) circle (0.12);
+  \node[font=\scriptsize,below left,inner sep=2pt] at (-0.08,-0.08) {axe};
+  \draw[{Stealth[length=1.6mm]}-{Stealth[length=1.6mm]},coulCourbeB,line width=0.8pt]
+    ({1.3*cos(55)+0.4},0)--({1.3*cos(55)+0.4},{1.3*sin(55)}) node[midway,right,font=\scriptsize]{$h(t)$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Donner l'amplitude et la période ; que représentent-elles pour le cycliste ?
+  \item Calculer la fréquence, puis le nombre de tours de pédalier par minute.
+  \item Calculer $h(0)$, $h\left(\frac{1}{4}\right)$, $h\left(\frac{1}{2}\right)$,
+        $h\left(\frac{3}{4}\right)$ et $h(1)$.
+  \item Tracer la courbe de $h$ sur $\intff{0}{2}$ (un carreau pour $\frac{1}{4}$ s et
+        pour $4$ cm).
+  \item À quels instants de $\intff{0}{1}$ la pédale est-elle à $8$ cm au-dessus de
+        l'axe ? (poser $X=2\pi t$)
+\end{enumerate}
+
+\end{multicols*}
+
+\end{document}
