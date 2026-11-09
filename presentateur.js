@@ -1,13 +1,15 @@
-/* Mode présentateur des pages de partie d'un cours : projeter en classe.
-   Plein écran, sans menu ni navigation, tout replié comme le document élève ;
-   un clic sur « Correction » la déplie au tableau. Deux largeurs : pleine, ou
-   demi (cours à gauche, zone blanche à droite pour écrire sur le tableau blanc
+/* Mode présentateur des pages de partie d'un cours et des pages d'exercices :
+   projeter en classe. Plein écran, sans menu ni navigation, tout replié comme le
+   document élève ; un clic sur « Correction » ou « Corrigé » la déplie au tableau.
+   Deux largeurs : pleine, ou
+   demi (texte à gauche, zone blanche à droite pour écrire sur le tableau blanc
    où l'on projette), avec un trait à déplacer à la souris entre les deux. La zone
    blanche peut porter un quadrillage ou un repère. A− et A+ ajustent la taille du
-   cours à la salle, séparément pour chaque largeur ; le navigateur retient ces
+   texte à la salle, séparément pour chaque largeur ; le navigateur retient ces
    réglages, la dernière largeur, la place du trait et la taille des carreaux.
    Les boutons sont dans un menu en bas à droite (le haut de l'image est souvent
    coupé par le vidéoprojecteur), ouvert au survol de l'icône ou par un clic.
+   Page d'exercices : un champ du menu mène à l'exercice n.
    Styles : tex2html.css (html.presentateur). Les boutons ne sont créés qu'ici :
    sans script, rien ne change. */
 (function () {
@@ -26,6 +28,7 @@
   var page = document.querySelector('main.lecture');
   var surTitre = document.querySelector('h1.titre-partie .sur-titre');
   if (!page || !surTitre) return;
+  var pageExercices = surTitre.textContent === 'Exercices';   // lu avant d'y ajouter le bouton d'entrée
   var avant = null;   // état à retrouver en quittant
   var fond = null;    // zone blanche : null, 'quadrillage' ou 'repere' (vide à chaque entrée)
 
@@ -69,8 +72,8 @@
 
   function libeller() {
     largeur.textContent = reglage.demi ? 'Pleine largeur' : 'Demi-largeur';
-    largeur.title = reglage.demi ? 'Le cours sur toute la largeur de l’écran'
-      : 'Le cours à gauche, une zone blanche à droite pour écrire au tableau';
+    largeur.title = reglage.demi ? 'Le texte sur toute la largeur de l’écran'
+      : 'Le texte à gauche, une zone blanche à droite pour écrire au tableau';
     moins.disabled = reglage.zoom[mode()] <= ZOOM_MIN;
     plus.disabled = reglage.zoom[mode()] >= ZOOM_MAX;
     quadrillage.hidden = repere.hidden = !reglage.demi;
@@ -236,6 +239,7 @@
     window.scrollTo(0, avant.y);
     avant = null;
     fond = null;
+    if (champExo) { champExo.value = ''; champExo.classList.remove('erreur'); }
     dessiner();
     libeller();
     boutons.classList.remove('ouvert');
@@ -245,7 +249,7 @@
   ouvrir.type = 'button';
   ouvrir.className = 'presentateur-entrer';
   ouvrir.textContent = 'Mode présentateur';
-  ouvrir.title = 'Projeter cette partie en classe : plein écran, corrections repliées';
+  ouvrir.title = 'Projeter cette page en classe : plein écran, corrections repliées';
   ouvrir.onclick = entrer;
   surTitre.appendChild(ouvrir);
 
@@ -277,9 +281,38 @@
     return b;
   }
 
+  // page d'exercices : aller à l'exercice n, avec une marge au-dessus (haut de l'image souvent coupé)
+  var champExo = null;
+  var exos = page.querySelectorAll('section.exo[id^="exercice-"]');
+  if (pageExercices && exos.length) {
+    var allerExo = document.createElement('form');
+    var titreExo = document.createElement('label');
+    titreExo.textContent = 'Exercice';
+    champExo = document.createElement('input');
+    champExo.type = 'number';
+    champExo.min = 1;
+    champExo.title = 'Numéro de l’exercice à afficher';
+    titreExo.appendChild(champExo);
+    allerExo.appendChild(titreExo);
+    bouton(allerExo, 'Aller', 'Afficher cet exercice en haut de l’écran', function () {});
+    allerExo.lastChild.type = 'submit';
+    allerExo.onsubmit = function (e) {
+      e.preventDefault();
+      var cible = champExo.value && document.getElementById('exercice-' + champExo.value);
+      champExo.classList.toggle('erreur', !cible);
+      if (!cible) return;
+      cible.scrollIntoView({block: 'start', behavior: 'instant'});
+      window.scrollBy({top: -30, behavior: 'instant'});
+      champExo.blur();
+      boutons.classList.remove('ouvert');
+    };
+    champExo.oninput = function () { champExo.classList.remove('erreur'); };
+    ligne().appendChild(allerExo);
+  }
+
   var ligneTaille = ligne();
-  var moins = bouton(ligneTaille, 'A−', 'Réduire la taille du cours', function () { zoomer(-1); });
-  var plus = bouton(ligneTaille, 'A+', 'Agrandir la taille du cours', function () { zoomer(1); });
+  var moins = bouton(ligneTaille, 'A−', 'Réduire la taille du texte', function () { zoomer(-1); });
+  var plus = bouton(ligneTaille, 'A+', 'Agrandir la taille du texte', function () { zoomer(1); });
   var largeur = bouton(menu, '', '', basculer);
   var quadrillage = bouton(menu, 'Quadrillage', 'Afficher ou retirer le quadrillage de la zone blanche',
     function () { changerFond('quadrillage'); });
