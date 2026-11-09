@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="darkreader-lock">
+<title>Fonctions affines et pourcentages — DS blanc, 1ère spécifique</title>
+<meta name="description" content="Se tester sur le chapitre Fonctions affines et pourcentages, 1ère spécifique : un DS blanc de 55 minutes à faire en condition réelle, son corrigé et un bilan des méthodes à retravailler.">
+<meta name="author" content="Luc Destombe">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<style>:root{
+  --fond:#fbfaf7; --carte:#ffffff; --texte:#1d232b; --doux:#5b6470; --trait:#e3e0d8;
+  --accent:#1f4e79; --accent-fond:#e8eef5; --meth:#1b6e4f; --exo:#b03a2e;
+  --meth-fond:#e7f2ec; --exo-fond:#f8eae7; --braise:#fff3d1; --etincelle:#f28c28;
+  --metal:#1f4e79; --manche:#8a5a2b; --forge:#c9620c; --coeur:#d6336c;
+}
+@media (prefers-color-scheme: dark){:root{
+  --fond:#14171b; --carte:#1c2026; --texte:#e6e8eb; --doux:#9aa3ad; --trait:#2c323a;
+  --accent:#8db8e3; --accent-fond:#1f2a36; --meth:#6cc59f; --exo:#ee8a7e;
+  --meth-fond:#1a2a23; --exo-fond:#2e201e; --braise:#33260f; --etincelle:#f5a04a; --forge:#f5a04a; --coeur:#f06595; --metal:#8db8e3;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--texte);
+  font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.m{font-family:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;font-size:1.05em;white-space:nowrap}
+.m sup,.m sub{font-size:.7em;line-height:0}
+.vec{position:relative;display:inline-block}
+.vec::before{content:"\2192";position:absolute;left:.2em;right:-.05em;top:-.6em;font-size:.75em;
+  text-align:center;font-style:normal}
+h1,h2,h3{font-family:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;line-height:1.25}
+a{color:var(--accent)}
+.bandeau{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:center;justify-content:space-between;
+  padding:.9rem max(16px,calc((100vw - 900px)/2));border-bottom:1px solid var(--trait);background:var(--carte)}
+.bandeau>a{font-family:"Palatino Linotype",Palatino,Georgia,serif;font-size:1.25rem;font-weight:bold;
+  text-decoration:none;color:var(--texte);display:inline-flex;align-items:center;gap:.55rem}
+.bandeau>a img{display:block}
+.bandeau nav{display:flex;flex-wrap:wrap;gap:.2rem 1.2rem}
+.bandeau nav a{text-decoration:none;white-space:nowrap}
+main{max-width:900px;margin:0 auto;padding:1.5rem 16px 3rem}
+footer{max-width:900px;margin:0 auto;padding:1.5rem 16px 2.5rem;color:var(--doux);font-size:.85rem;
+  border-top:1px solid var(--trait)}
+@media (max-width:480px){.bandeau,main,footer{padding-left:8px;padding-right:8px}
+  .bandeau nav{gap:.2rem .75rem;font-size:.9rem}}
+.intro{font-size:1.05rem;color:var(--doux);max-width:65ch}
+.signature{text-align:right;font-style:italic}
+.centre{text-align:center}
+.definition{max-width:60ch;margin:1.2rem auto;padding:.7rem 1rem;border-left:3px solid var(--accent);
+  background:var(--accent-fond);border-radius:0 6px 6px 0;font-size:.98rem}
+.definition dfn{font-style:normal;font-weight:700;color:var(--accent)}
+h1:not(.centre)+.definition{margin-left:0}
+ul.parcours li{margin:.3rem 0}
+.presentation{font-size:1.2rem;margin:1rem 0 .5rem}
+.contact-lien{margin-top:2rem;color:var(--doux);font-size:.95rem}
+.carte-chap{margin:1rem 0;padding:.9rem 1.1rem;border:1px solid var(--trait);border-radius:8px;
+  background:var(--carte)}
+.carte-chap h2{margin:0 0 .4rem;font-size:1.25rem}
+.carte-chap h2 a{color:var(--texte);text-decoration:none}
+.carte-chap h2 a:hover{color:var(--accent)}
+.docs-ligne{margin:.2rem 0 .5rem}
+ol.parties{list-style:none;margin:0;padding:0;columns:2 280px;column-gap:1.5rem;
+  font-size:.92rem;color:var(--doux)}
+ol.parties li{break-inside:avoid;margin:.1rem 0}
+form.contact{display:flex;flex-direction:column;gap:.9rem;max-width:560px}
+form.contact label{display:flex;flex-direction:column;gap:.25rem;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:.55rem .7rem;
+  border:1px solid var(--trait);border-radius:6px;background:var(--carte);color:var(--texte)}
+form.contact button{align-self:flex-start;border:0;cursor:pointer;font:inherit;font-weight:600}
+form.contact button:disabled{opacity:.6}
+.piege{display:none}
+.bouton{display:inline-block;padding:.6rem 1.1rem;border-radius:6px;background:var(--accent);color:var(--fond);
+  text-decoration:none;font-weight:600}
+.niveau-bloc h2{margin:.5rem 0 .6rem;font-size:1.4rem}
+.num{color:var(--doux);font-variant-numeric:tabular-nums;margin-right:.3rem}
+.accueil{text-align:center;padding:1rem 0 .5rem}
+.bienvenue{margin:0 0 .3rem;font-family:"Palatino Linotype",Palatino,Georgia,serif;font-style:italic;
+  font-weight:700;font-size:2.1rem;color:var(--accent)}
+.accueil h1{margin:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.4rem 1.2rem;
+  font-size:clamp(2.4rem,7vw,3.8rem);line-height:1.2}
+.egal{flex:none;width:1.45em;height:.98em;margin-top:.1em;overflow:visible}
+.egal path{fill:var(--metal);stroke:var(--metal);stroke-width:2;stroke-linejoin:round}
+.egal path.etincelles{fill:none;stroke:var(--etincelle);stroke-width:3.2;stroke-linecap:round}
+.sous-titre{margin:1.3rem auto 0;max-width:34em;font-size:1.12rem;color:var(--doux)}
+.pastille{display:inline-grid;grid-template-columns:auto auto;align-items:center;gap:.6rem 1.6rem;
+  max-width:760px;margin-top:1.8rem;padding:1rem 1.6rem;border-radius:16px;border:2px solid var(--etincelle);
+  background:var(--braise);box-shadow:0 4px 0 var(--etincelle);color:var(--texte);font-size:1.06rem;
+  line-height:1.4;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.pastille:hover{transform:translateY(2px);box-shadow:0 2px 0 var(--etincelle)}
+.pastille:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.pastille svg.marteau{width:96px;height:70px;justify-self:center}
+.pastille .texte{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.pastille .nombre{font-family:"Palatino Linotype",Palatino,Georgia,serif;font-size:1.65rem;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.pastille .bravo{display:block;font-family:"Palatino Linotype",Palatino,Georgia,serif;font-style:italic;
+  font-weight:700;font-size:1.4rem}
+.pastille .defi{display:inline-flex;align-items:center;gap:.35rem;font-weight:700}
+.merci{margin:2.4rem 0 .6rem;text-align:center}
+.merci p{margin:0 0 .5rem;color:var(--doux)}
+button.coeur{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.2rem .55rem .9rem;
+  border:2px solid var(--coeur);border-radius:999px;background:var(--carte);color:var(--texte);
+  font-family:inherit;font-size:1rem;font-weight:600;line-height:1.2;cursor:pointer;transition:background .2s}
+button.coeur:hover{background:color-mix(in srgb,var(--coeur) 10%,var(--carte))}
+button.coeur:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+button.coeur svg path{fill:transparent;stroke:var(--coeur);stroke-width:2;stroke-linejoin:round;transition:fill .25s}
+button.coeur.envoye svg path{fill:var(--coeur)}
+button.coeur svg{transform-origin:50% 55%}
+button.coeur svg.bat{animation:battement .9s ease-in-out}
+@keyframes battement{0%,100%{transform:scale(1)}15%{transform:scale(1.35)}30%{transform:scale(1)}
+  45%{transform:scale(1.22)}60%{transform:scale(1)}}
+.surtitre{margin:0 0 .2rem;text-align:center;font-weight:600;font-size:.82rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--doux)}
+.pas-a-pas>h2,.choix-classe>h2{margin:0 0 1.4rem;text-align:center;font-size:1.8rem}
+.pas-a-pas,.choix-classe{padding-top:3.5rem}
+ol.pas{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.85rem}
+ol.pas li{padding:1.1rem 1.2rem;border-radius:10px;border-top:4px solid;transition:transform .15s}
+a.lien-pas{display:block;color:var(--texte);text-decoration:none;border-radius:10px}
+a.lien-pas:hover ol.pas li{transform:translateY(-2px)}
+a.lien-pas:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+a.lien-pas .suite{display:block;margin-top:1rem;text-align:center;font-weight:600;color:var(--accent)}
+a.lien-pas:hover .suite{text-decoration:underline}
+ol.pas .chiffre{display:block;font-family:"Palatino Linotype",Palatino,Georgia,serif;font-weight:700;font-size:2rem;line-height:1}
+ol.pas strong{display:block;margin:.6rem 0 .2rem;font-size:1.06rem}
+ol.pas p{margin:0;font-size:.92rem;line-height:1.45}
+ol.pas li.p-cours{background:var(--accent-fond);border-color:var(--accent)}.p-cours .chiffre{color:var(--accent)}
+ol.pas li.p-meth{background:var(--meth-fond);border-color:var(--meth)}.p-meth .chiffre{color:var(--meth)}
+ol.pas li.p-exo{background:var(--exo-fond);border-color:var(--exo)}.p-exo .chiffre{color:var(--exo)}
+ol.pas li.p-prog{background:var(--braise);border-color:var(--etincelle)}.p-prog .chiffre{color:var(--forge)}
+.grille-classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.85rem}
+a.classe{display:flex;flex-direction:column;gap:.45rem;padding:1.1rem 1.2rem;border-radius:10px;
+  border:1px solid var(--trait);background:var(--carte);box-shadow:0 3px 0 var(--trait);color:var(--texte);
+  text-decoration:none;transition:border-color .15s,transform .15s}
+a.classe:hover{border-color:var(--accent);transform:translateY(-2px)}
+a.classe .nom{font-family:"Palatino Linotype",Palatino,Georgia,serif;font-weight:700;font-size:1.5rem}
+a.classe .faits{color:var(--doux);font-size:.95rem}
+a.classe .faits .nombre{font-family:"Palatino Linotype",Palatino,Georgia,serif;font-weight:700;
+  font-size:1.35rem;color:var(--texte);font-variant-numeric:tabular-nums}
+a.classe .lien{margin-top:auto;padding-top:.3rem;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:.92rem;
+  color:var(--accent)}
+.ligne-enseignants{margin:0;padding:.3rem 16px;text-align:center;font-size:.85rem;line-height:1.35;
+  background:var(--accent-fond)}
+.ligne-enseignants a{text-decoration:none}
+.ligne-enseignants a:hover{text-decoration:underline}
+.encart-profs{margin-top:2.5rem;padding:1rem 1.2rem;border-radius:10px;border:1px solid var(--trait);background:var(--carte)}
+.encart-profs div{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem 1.5rem}
+.encart-profs div+div{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--trait)}
+.encart-profs p{margin:0;flex:1 1 380px}
+.encart-profs a{font-weight:600}
+.niveau-bloc h2 a{color:var(--texte);text-decoration:none}
+.niveau-bloc h2 a:hover{color:var(--accent)}
+.niveaux{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.2rem;margin-top:1.5rem}
+ul.chapitres{list-style:none;margin:0;padding:0}
+ul.chapitres li a{display:flex;align-items:baseline;gap:.2rem;padding:.55rem .75rem;margin-bottom:.4rem;
+  border:1px solid var(--trait);border-radius:6px;background:var(--carte);text-decoration:none;color:var(--texte)}
+ul.chapitres li a:hover{border-color:var(--accent)}
+ul.chapitres .num{flex:none;white-space:nowrap}
+.exos-faits{margin-left:auto;padding-left:.6rem;color:var(--doux);font-size:.88rem;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.exos-niveau{color:var(--doux);font-size:.92rem;margin:-.4rem 0 .6rem}
+.tiroir,.page-niveau{display:none}
+@media (max-width:600px){
+  .tiroirs .lien-niveau{display:none}
+  .tiroirs .tiroir{display:flex;align-items:center;justify-content:space-between;width:100%;
+    padding:.7rem .9rem;border:1px solid var(--trait);border-radius:8px;background:var(--carte);
+    color:var(--texte);font:inherit;font-weight:bold;cursor:pointer;text-align:left}
+  .tiroirs .tiroir::after{content:"›";font-size:1.4em;line-height:1;color:var(--doux);transition:transform .2s}
+  .tiroirs .ouvert .tiroir::after{transform:rotate(90deg)}
+  .tiroirs .tiroir:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .tiroirs .exos-tiroir{margin:0 .6rem 0 auto;color:var(--doux);font-size:.85rem;font-weight:normal;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap}
+  .tiroirs .exos-niveau,.tiroirs .niveau-bloc:not(.ouvert) .chapitres{display:none}
+  .tiroirs .ouvert .chapitres{margin-top:.5rem}
+  .tiroirs .page-niveau{display:block}
+  .tiroirs .page-niveau a{color:var(--accent);font-weight:600}
+  .niveaux{gap:.6rem}
+  .niveau-bloc h2{margin:0}
+}
+@media (prefers-reduced-motion:reduce){.tiroir::after{transition:none}}
+@media (max-width:700px){.accueil h1{flex-direction:column;gap:.15rem}.egal{margin-top:0}}
+@media (max-width:600px){.bienvenue{font-size:1.7rem}.pastille{grid-template-columns:auto;padding:.9rem 1.1rem}
+  .pastille svg.marteau{width:76px;height:56px}}
+@media (prefers-reduced-motion:reduce){.pastille,a.classe,ol.pas li{transition:none}
+  .pastille:hover,a.classe:hover,a.lien-pas:hover ol.pas li{transform:none}}
+.fil{color:var(--doux);font-size:.9rem;margin:0}
+.niveau{color:var(--doux);margin-top:-.6rem}
+.docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin:.6rem 0 1.4rem}
+a.doc{display:flex;flex-direction:column;gap:.15rem;padding:.9rem 1rem;border:1px solid var(--trait);
+  border-radius:8px;background:var(--carte);text-decoration:none;color:var(--texte)}
+a.doc span{color:var(--doux);font-size:.9rem}
+a.doc:hover{border-color:var(--accent)}
+a.doc.principal{border:2px solid var(--accent);background:var(--accent-fond)}
+a.doc.principal strong{color:var(--accent);font-size:1.15rem}
+a.doc.exos{border:2px solid var(--exo)}
+a.doc.exos strong{color:var(--exo);font-size:1.15rem}
+h2.rubrique{font-size:1.1rem;margin:1.4rem 0 0}
+h2.rubrique+.aide{margin:.1rem 0 0}
+a.mini.en-ligne{border-color:var(--accent);background:var(--accent-fond);font-weight:600}
+.aide{color:var(--doux);font-size:.9rem}
+ol.plan{list-style:none;padding:0;margin:0}
+ol.plan>li{padding:.4rem 0 .8rem;border-bottom:1px solid var(--trait)}
+ol.plan h3{margin:.6rem 0 .3rem;font-size:1.1rem}
+ol.plan h3 a,ol.parties a{color:var(--accent);text-decoration:none}
+ol.plan h3 a:hover,ol.parties a:hover{text-decoration:underline}
+ul.methodes{list-style:none;padding:0;margin:0}
+ul.methodes li{margin:.15rem 0}
+ul.methodes a{color:var(--meth);text-decoration:none}
+ul.methodes a:hover{text-decoration:underline}
+.afaire{margin:.3rem 0 0;font-size:.92rem;color:var(--exo)}
+.afaire a,.ex a{color:var(--exo)}
+a.corr{font-size:.85em}
+details.profs{margin-top:2rem;padding:.8rem 1rem;border:1px solid var(--trait);border-radius:8px;background:var(--carte)}
+details.profs summary{cursor:pointer;font-weight:600}
+details.profs li{margin:.5rem 0}
+a.mini{display:inline-block;margin:.1rem .3rem .1rem 0;padding:.1rem .5rem;border:1px solid var(--trait);
+  border-radius:4px;font-size:.9rem;text-decoration:none}
+.recherche{position:sticky;top:0;background:var(--fond);padding:.6rem 0 .2rem;z-index:1}
+#filtre{width:100%;padding:.7rem .9rem;font-size:1rem;border:1px solid var(--trait);border-radius:6px;
+  background:var(--carte);color:var(--texte)}
+.filtres{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}
+.filtres button{padding:.3rem .8rem;border:1px solid var(--trait);border-radius:999px;background:var(--carte);
+  color:var(--texte);font:inherit;font-size:.9rem;cursor:pointer}
+.filtres button.actif{background:var(--accent);border-color:var(--accent);color:var(--fond)}
+section.chap h3{font-size:1.05rem;margin:1.2rem 0 .4rem}
+section.chap h3 a{color:var(--texte);text-decoration:none}
+ul.liste-methodes{list-style:none;padding:0;margin:0}
+ul.liste-methodes li{padding:.45rem .1rem;border-bottom:1px solid var(--trait)}
+ul.liste-methodes li>a{color:var(--meth);text-decoration:none;font-weight:500}
+nav.lettres{display:flex;flex-wrap:wrap;gap:.2rem .5rem;margin:.8rem 0}
+nav.lettres a{text-decoration:none;font-weight:600}
+section.lettre h2{font-size:1.3rem;margin:1.2rem 0 .3rem;color:var(--accent)}
+ul.liste-index{list-style:none;padding:0;margin:0}
+ul.liste-index>li{padding:.35rem .1rem;border-bottom:1px solid var(--trait)}
+ul.liste-index ul{list-style:none;padding-left:1.2rem;margin:.15rem 0 0;font-size:.95rem}
+ul.liste-index .voir{color:var(--doux);font-size:.9rem}
+ul.liste-index .terme{font-weight:600}
+ul.liste-index ul .terme{font-weight:500}
+.renvoi{display:block;margin:.1rem 0 .1rem .6rem;font-size:.9rem;line-height:1.4}
+.renvoi .niv{color:var(--doux);font-size:.85rem}
+.renvoi a{color:var(--meth)}
+ul.liste-index li[id]{scroll-margin-top:9rem}
+.ex{display:block;font-size:.88rem;color:var(--doux)}
+.commutateur{display:inline-flex;margin:.2rem 0 1.2rem;border:1px solid var(--accent);border-radius:999px;
+  overflow:hidden}
+.commutateur button{padding:.45rem 1.2rem;border:0;background:var(--carte);color:var(--texte);font:inherit;
+  cursor:pointer}
+.commutateur button[aria-pressed="true"]{background:var(--accent);color:var(--fond);font-weight:600}
+.volet>.definition{margin-left:0}
+ol.etapes li{margin:.45rem 0}
+.fin{font-weight:600;margin-top:1.2rem}
+ol.seance{display:flex;flex-wrap:wrap;gap:4px;list-style:none;padding:0;margin:.6rem 0 1.5rem}
+ol.seance li{flex-basis:7.5rem;padding:.55rem .7rem;border-radius:6px;background:var(--accent-fond);
+  border-top:3px solid var(--accent);font-size:.92rem;line-height:1.3}
+ol.seance li strong{display:block;color:var(--accent)}
+footer .maj{display:block;margin-top:.5rem}
+section.jour h2{font-size:1.2rem;margin:1.6rem 0 .5rem}
+ul.historique{list-style:none;padding:0;margin:0}
+ul.historique li{padding:.45rem .1rem;border-bottom:1px solid var(--trait)}
+ul.historique li>a{color:var(--texte);text-decoration:none;font-weight:500}
+ul.historique li>a:hover{color:var(--accent)}
+.evts{display:block;font-size:.92rem;color:var(--doux)}
+.nature{display:inline-block;margin-right:.3rem;padding:0 .45rem;border-radius:4px;font-size:.8rem;
+  font-weight:600}
+.nature.ajout{background:var(--accent-fond);color:var(--meth)}
+.nature.modification{background:var(--accent-fond);color:var(--accent)}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="../../katex/katex.min.css" media="print" onload="this.media='all'">
+<script defer src="../../katex/katex.min.js"></script>
+<script defer src="../../katex/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$',right:'$',display:false}]})"></script><style>
+.se-tester [hidden]{display:none!important}
+.st-carte{background:var(--carte);border:1px solid var(--trait);border-radius:8px;padding:.8rem 1rem;margin:1rem 0}
+.st-carte h2{font-size:1.1rem;margin:.1rem 0 .5rem;color:var(--accent)}
+.st-carte ul{margin:.3rem 0;padding-left:1.2rem}
+.st-bouton{display:inline-block;font:inherit;font-weight:bold;min-height:44px;padding:.5rem 1.1rem;cursor:pointer;
+  border:1.5px solid var(--accent);border-radius:7px;background:var(--accent);color:var(--fond);text-decoration:none}
+.st-bouton.second{background:none;color:var(--accent)}
+.st-bouton[disabled]{opacity:.45;cursor:not-allowed}
+.st-actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:.8rem 0}
+.st-chrono{font:bold clamp(3.2rem,16vw,5.5rem)/1.1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums;text-align:center;color:var(--accent);margin:1.2rem 0 .3rem}
+.st-chrono.fini{color:var(--exo)}
+.st-centre{text-align:center}.st-centre .st-actions{justify-content:center}
+.st-doux{color:var(--doux);font-size:.92rem}
+.st-exo{margin:1.2rem 0 .4rem;font-size:1.02rem;color:var(--exo)}
+.st-ligne{background:var(--carte);border:1px solid var(--trait);border-radius:7px;padding:.55rem .75rem;margin:.45rem 0}
+.st-ligne p{margin:.05rem 0 .4rem;line-height:1.5}
+.st-ligne .num{font-weight:bold}.st-ligne .meth{color:var(--meth);font-size:.86rem;font-weight:bold}
+.st-coche{display:flex;gap:.4rem}
+.st-coche label{flex:1;display:block;cursor:pointer}
+.st-coche input{position:absolute;opacity:0}
+.st-coche span{display:block;text-align:center;padding:.42rem .3rem;border:1.5px solid var(--trait);border-radius:6px;font-size:.95rem}
+.st-coche input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+.st-coche input.ok:checked+span{background:var(--meth);border-color:var(--meth);color:var(--fond);font-weight:bold}
+.st-coche input.non:checked+span{background:var(--exo);border-color:var(--exo);color:var(--fond);font-weight:bold}
+.st-progres{position:sticky;bottom:0;background:var(--fond);border-top:1px solid var(--trait);padding:.6rem 0;margin-top:1rem}
+.st-meth{--c:var(--trait);border:1px solid var(--trait);border-left:4px solid var(--c);background:var(--carte);
+  border-radius:0 7px 7px 0;padding:.55rem .8rem;margin:.5rem 0}
+.st-meth.travail{--c:var(--exo)}.st-meth.acquis{--c:var(--meth)}
+.st-meth strong{display:block;line-height:1.35}
+.st-meth .score{color:var(--doux);font-size:.9rem}
+.st-meth .liens{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin-top:.25rem;font-size:.95rem}
+.st-meth.acquis .liens{display:none}
+.st-groupe{font-size:1.1rem;margin:1.4rem 0 .4rem}
+.ia-exos{display:flex;flex-wrap:wrap;gap:.35rem;margin:.1rem 0 .6rem}
+.ia-exos button{font:inherit;font-size:.9rem;padding:.35rem .7rem;cursor:pointer;border:1px solid var(--trait);
+  border-radius:6px;background:none;color:var(--texte)}
+.ia-exos button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--fond)}
+/* Bouton « Poser une question à une IA » (ia.js) ; couleurs de la page (tex2html.css). */
+details.ia{margin:.8rem 0 .3rem;font-size:.92rem}
+details.ia>summary{cursor:pointer;list-style:none;display:inline-block;padding:.3rem .8rem;
+  border:1px solid var(--trait,#e3e0d8);border-radius:999px;color:var(--accent,#1f4e79);
+  background:var(--carte,#fff);font-weight:600}
+.ia-icone{width:2.4em;height:2em;vertical-align:-.65em;margin-right:.4em}
+.ia-icone .bulle{fill:var(--carte,#fff);stroke:currentColor;stroke-width:1.3;stroke-linejoin:round}
+.ia-icone text{fill:currentColor;font:bold 9.5px system-ui,sans-serif;text-anchor:middle}
+details[open].ia>summary{background:var(--accent-fond,#e8eef5)}
+.ia-corps{margin-top:.5rem;padding:.6rem .8rem;border:1px solid var(--trait,#e3e0d8);
+  border-radius:8px;background:var(--carte,#fff)}
+.ia-corps label{display:block;color:var(--doux,#5b6470);font-size:.85rem}
+.ia-corps textarea{display:block;box-sizing:border-box;width:100%;margin-top:.3rem;padding:.4rem;
+  font:inherit;font-size:1rem;color:var(--texte,#1d232b);background:var(--fond,#fbfaf7);
+  border:1px solid var(--trait,#e3e0d8);border-radius:6px;resize:vertical}
+.ia-choix{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0 .2rem}
+.ia-choix button{font:inherit;font-size:.9rem;padding:.4rem .8rem;cursor:pointer;
+  border:1px solid var(--accent,#1f4e79);border-radius:6px;color:var(--accent,#1f4e79);
+  background:none}
+.ia-choix button:hover{background:var(--accent-fond,#e8eef5)}
+.ia-choix button[data-ia="copier"]{border-color:var(--trait,#e3e0d8);color:var(--doux,#5b6470)}
+.ia-etat{margin:.3rem 0;color:var(--texte,#1d232b);font-weight:600;min-height:1em}
+.ia-etat:empty{display:none}
+.ia-note{margin:.3rem 0 0;color:var(--doux,#5b6470);font-size:.8rem}
+</style>
+<link rel="canonical" href="https://faire-des-maths.fr/1ere-specifique/fonctions-affines-pourcentages/se-tester.html">
+</head>
+<body>
+<header class="bandeau"><a href="../../"><img src="../../logo.svg" alt="Logo" width="40" height="40">Faire des maths</a>
+<nav><a href="../../chapitres.html">Chapitres</a><a href="../../index/">Index</a><a href="../../mieux-apprendre/">Mieux apprendre</a><a href="../../mode-emploi.html">Mode d'emploi</a></nav></header>
+<main>
+<p class="fil"><a href="../../">Accueil</a> › <a href="../../chapitres.html">Chapitres</a> ›
+<a href="../">1ère spécifique</a> › <a href="./">Fonctions affines et pourcentages</a></p>
+<div class="se-tester">
+<h1>Se tester avec un DS blanc</h1>
+<p class="niveau">Fonctions affines et pourcentages — 1ère spécifique</p>
+
+<section id="st-accueil">
+<p>Tu peux maintenant te tester pour vérifier ce qui est acquis.</p>
+<div class="st-carte"><h2>Mets-toi en condition réelle</h2>
+<ul><li>Imprime le sujet (sans imprimante : reproduis les figures sur une feuille à carreaux).</li>
+<li>Trouve un endroit calme, et prévois 55 minutes de travail.</li>
+<li>Range ton cours et ton téléphone : il te sert seulement de chronomètre.</li></ul>
+<div class="st-actions"><a class="st-bouton second" href="DS_blanc_Fonctions_affines_pourcentages_1ere_specifique_2026_2027.pdf">Ouvrir le sujet (PDF)</a></div></div>
+<p>Quand tu es prêt, appuie sur le bouton. Le corrigé s'ouvrira à la fin.</p>
+<div class="st-actions"><button type="button" class="st-bouton" id="st-demarrer">Démarrer le DS blanc</button></div>
+</section>
+
+<section class="st-centre" id="st-chrono" hidden>
+<div class="st-chrono" id="st-temps" role="timer" aria-live="off">55:00</div>
+<p class="st-doux" id="st-info">Le temps continue de tourner même si tu fermes cette page.</p>
+<div class="st-actions" id="st-zone-terminer"><button type="button" class="st-bouton second" id="st-terminer">Terminer le DS blanc</button></div>
+<div class="st-actions" id="st-zone-confirmer" hidden>
+<button type="button" class="st-bouton" id="st-confirmer">Oui, voir le corrigé</button>
+<button type="button" class="st-bouton second" id="st-continuer">Continuer à travailler</button></div>
+<p style="margin-top:2rem"><a href="DS_blanc_Fonctions_affines_pourcentages_1ere_specifique_2026_2027.pdf">Revoir le sujet (PDF)</a></p>
+</section>
+
+<section id="st-corrige" hidden>
+<p>Le DS blanc est terminé. Corrige-toi avec ton crayon de couleur, question par question.</p>
+<div class="st-actions"><a class="st-bouton second" href="Corrige_DS_blanc_Fonctions_affines_pourcentages_1ere_specifique_2026_2027.pdf">Ouvrir le corrigé (PDF)</a></div>
+<details class="ia" data-genre="un exercice de DS blanc" data-niveau="première, mathématiques spécifiques" data-chapitre="Fonctions affines et pourcentages"><summary><svg class="ia-icone" viewBox="0 0 34 28" aria-hidden="true"><circle cx="12" cy="16.5" r="10.5" fill="#FFCC4D" stroke="#D99A00"/><circle cx="6.3" cy="19" r="1.8" fill="#FF8A7A" opacity=".55"/><circle cx="17.7" cy="19" r="1.8" fill="#FF8A7A" opacity=".55"/><ellipse cx="8.7" cy="14" rx="1.3" ry="1.9" fill="#664500"/><ellipse cx="15.3" cy="14" rx="1.3" ry="1.9" fill="#664500"/><path d="M7.5 19q4.5 4.5 9 0" fill="none" stroke="#664500" stroke-width="1.6" stroke-linecap="round"/><path class="bulle" d="M23.5 .8h7.5q2.5 0 2.5 2.5v6q0 2.5-2.5 2.5h-4l-5.5 3.6 1.6-3.6q-2.2 0-2.2-2.5v-6q0-2.5 2.6-2.5z"/><text x="27.2" y="10">?</text></svg>Un exercice non compris ? Pose ta question à une IA</summary><div class="ia-corps"><div class="st-doux">Quel exercice ?</div><div class="ia-exos" id="ia-exos" role="group" aria-label="Choix de l'exercice"><button type="button" data-n="1">Exercice 1</button><button type="button" data-n="2">Exercice 2</button><button type="button" data-n="3">Exercice 3</button><button type="button" data-n="4">Exercice 4</button></div><label>Ta question (tu peux aussi l'écrire ensuite)<textarea rows="2" placeholder="Par exemple : je ne comprends pas la question 2°)"></textarea></label><p class="ia-choix"><button type="button" data-ia="gemini">Gemini</button><button type="button" data-ia="chatgpt">ChatGPT</button><button type="button" data-ia="claude">Claude</button><button type="button" data-ia="copier">Copier pour une autre IA</button></p><p class="ia-etat" aria-live="polite"></p><p class="ia-note">L'énoncé de l'exercice et son corrigé partent avec ta question, mais pas ta copie. L'IA peut se tromper : vérifie ce qu'elle dit avec ton cours.</p></div></details>
+<div class="st-carte"><h2>Comment cocher</h2>
+« Réussi » seulement si le critère est rempli. Une réponse partielle, un doute ou une question non traitée :
+« Pas réussi ». Sois exigeant : cette grille ne sert pas à te noter, mais à savoir quoi retravailler.</div>
+<h3 class="st-exo">Exercice 1 — Automatismes</h3><div class="st-ligne" data-q="1-1" data-m="1"><p><span class="num">1°)</span> <span class="meth">Méthode 1.</span> Réussi si : tu as choisi a), $9$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 1, question 1"><label><input class="ok" type="radio" name="q1-1" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q1-1" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="1-2" data-m="3"><p><span class="num">2°)</span> <span class="meth">Méthode 3.</span> Réussi si : tu as choisi b), $28\,\%$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 1, question 2"><label><input class="ok" type="radio" name="q1-2" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q1-2" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="1-3" data-m="12"><p><span class="num">3°)</span> <span class="meth">Méthode 12.</span> Réussi si : tu as choisi b), $g(x)=-4x$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 1, question 3"><label><input class="ok" type="radio" name="q1-3" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q1-3" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="1-4" data-m="14"><p><span class="num">4°)</span> <span class="meth">Méthode 14.</span> Réussi si : tu as choisi b), positive pour $x&lt;3$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 1, question 4"><label><input class="ok" type="radio" name="q1-4" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q1-4" value="non"><span>Pas réussi</span></label></div></div><h3 class="st-exo">Exercice 2 — Des pourcentages</h3><div class="st-ligne" data-q="2-1" data-m="2"><p><span class="num">1°)</span> <span class="meth">Méthode 2.</span> Réussi si : tu trouves $340$ €.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 2, question 1"><label><input class="ok" type="radio" name="q2-1" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q2-1" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="2-2" data-m="4"><p><span class="num">2°)</span> <span class="meth">Méthode 4.</span> Réussi si : tu divises par la valeur de départ $2\,000$ et tu trouves $+15\,\%$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 2, question 2"><label><input class="ok" type="radio" name="q2-2" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q2-2" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="2-3" data-m="5"><p><span class="num">3°)</span> <span class="meth">Méthode 5.</span> Réussi si : le coefficient $0{,}8$ et $1\,840$ abonnés.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 2, question 3"><label><input class="ok" type="radio" name="q2-3" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q2-3" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="2-4" data-m="6"><p><span class="num">4°)</span> <span class="meth">Méthode 6.</span> Réussi si : tu multiplies $1{,}15$ par $0{,}8$ et tu conclus à une baisse de $8\,\%$ (et non une hausse de $15-20$).</p><div class="st-coche" role="radiogroup" aria-label="Exercice 2, question 4"><label><input class="ok" type="radio" name="q2-4" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q2-4" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="2-5" data-m="7"><p><span class="num">5°)</span> <span class="meth">Méthode 7.</span> Réussi si : tu calcules $1\,840\times 1{,}2=2\,208$ et tu réponds « non ».</p><div class="st-coche" role="radiogroup" aria-label="Exercice 2, question 5"><label><input class="ok" type="radio" name="q2-5" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q2-5" value="non"><span>Pas réussi</span></label></div></div><h3 class="st-exo">Exercice 3 — Louer une salle</h3><div class="st-ligne" data-q="3-1" data-m="10"><p><span class="num">1°)</span> <span class="meth">Méthode 10.</span> Réussi si : tu obtiens $f(x)=15x+40$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 3, question 1"><label><input class="ok" type="radio" name="q3-1" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q3-1" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="3-2" data-m="8"><p><span class="num">2°)</span> <span class="meth">Méthode 8.</span> Réussi si : $f(4)=100$, et ta phrase dit $4$ heures et $100$ €.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 3, question 2"><label><input class="ok" type="radio" name="q3-2" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q3-2" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="3-3" data-m="9"><p><span class="num">3°)</span> <span class="meth">Méthode 9.</span> Réussi si : tu résous $15x+40=145$ et tu trouves $7$ heures.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 3, question 3"><label><input class="ok" type="radio" name="q3-3" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q3-3" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="3-4" data-m="10"><p><span class="num">4°)</span> <span class="meth">Méthode 10.</span> Réussi si : tu obtiens $g(x)=5x+60$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 3, question 4"><label><input class="ok" type="radio" name="q3-4" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q3-4" value="non"><span>Pas réussi</span></label></div></div><h3 class="st-exo">Exercice 4 — Deux forfaits internet</h3><div class="st-ligne" data-q="4-1" data-m="12"><p><span class="num">1°)</span> <span class="meth">Méthode 12.</span> Réussi si : tu choisis $g$ et tu dis « proportionnel ».</p><div class="st-coche" role="radiogroup" aria-label="Exercice 4, question 1"><label><input class="ok" type="radio" name="q4-1" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q4-1" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="4-2" data-m="11"><p><span class="num">2°)</span> <span class="meth">Méthode 11.</span> Réussi si : tes deux droites passent par les bons points, avec les unités demandées.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 4, question 2"><label><input class="ok" type="radio" name="q4-2" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q4-2" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="4-3" data-m="14"><p><span class="num">3°)</span> <span class="meth">Méthode 14.</span> Réussi si : $f(x)-g(x)=-2x+10$, et le tableau $+$, $0$ en $5$, $-$.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 4, question 3"><label><input class="ok" type="radio" name="q4-3" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q4-3" value="non"><span>Pas réussi</span></label></div></div><div class="st-ligne" data-q="4-4" data-m="15"><p><span class="num">4°)</span> <span class="meth">Méthode 15.</span> Réussi si : ta réponse dépend de la consommation, avec la limite de $5$ Go, dans le bon sens.</p><div class="st-coche" role="radiogroup" aria-label="Exercice 4, question 4"><label><input class="ok" type="radio" name="q4-4" value="ok"><span>Réussi</span></label><label><input class="non" type="radio" name="q4-4" value="non"><span>Pas réussi</span></label></div></div>
+<div class="st-progres st-actions"><button type="button" class="st-bouton" id="st-voir-bilan" disabled>Voir mon bilan</button>
+<span class="st-doux" id="st-compte"></span></div>
+</section>
+
+<section id="st-bilan" hidden>
+<p id="st-resume"></p>
+<h2 class="st-groupe" id="st-titre-travail">À retravailler</h2><div id="st-travail"></div>
+<h2 class="st-groupe" id="st-titre-acquis">Acquises</h2><div id="st-acquis"></div>
+<div class="st-carte st-doux">Ce bilan vient de ta propre correction et reste sur cet appareil. Il donne une
+indication, pas une note : un vrai DS ajoute d'autres facteurs, comme le stress et des conditions différentes.</div>
+<div class="st-actions"><button type="button" class="st-bouton second" id="st-revenir">Revenir à la grille</button>
+<button type="button" class="st-bouton second" id="st-recommencer">Tout recommencer</button></div>
+</section>
+<div hidden id="st-cartes"><div class="st-meth" data-m="1"><strong>Méthode 1 — Calculer <span class="m"><i>t</i> %</span> d'une quantité</strong><span class="score"></span><div class="liens"><a href="partie-appliquer-un-pourcentage.html#methode-1">Revoir la méthode</a><a href="exercices.html#exercice-1">Exercices 1 à 5</a></div></div><div class="st-meth" data-m="2"><strong>Méthode 2 — Augmenter ou diminuer une quantité de <span class="m"><i>t</i> %</span></strong><span class="score"></span><div class="liens"><a href="partie-appliquer-un-pourcentage.html#methode-2">Revoir la méthode</a><a href="exercices.html#exercice-1">Exercices 1 à 5</a></div></div><div class="st-meth" data-m="3"><strong>Méthode 3 — Calculer une proportion en pourcentage</strong><span class="score"></span><div class="liens"><a href="partie-calculer-un-pourcentage.html#methode-3">Revoir la méthode</a><a href="exercices.html#exercice-6">Exercices 6 à 10</a></div></div><div class="st-meth" data-m="4"><strong>Méthode 4 — Calculer un taux d'évolution</strong><span class="score"></span><div class="liens"><a href="partie-calculer-un-pourcentage.html#methode-4">Revoir la méthode</a><a href="exercices.html#exercice-6">Exercices 6 à 10</a></div></div><div class="st-meth" data-m="5"><strong>Méthode 5 — Appliquer une évolution avec le coefficient multiplicateur</strong><span class="score"></span><div class="liens"><a href="partie-coefficient-multiplicateur.html#methode-5">Revoir la méthode</a><a href="exercices.html#exercice-11">Exercices 11 à 15</a></div></div><div class="st-meth" data-m="6"><strong>Méthode 6 — Calculer un taux d'évolution global</strong><span class="score"></span><div class="liens"><a href="partie-evolutions-successives-evolution-reciproque.html#methode-6">Revoir la méthode</a><a href="exercices.html#exercice-16">Exercices 16 à 23</a></div></div><div class="st-meth" data-m="7"><strong>Méthode 7 — Vérifier qu'une évolution en compense une autre</strong><span class="score"></span><div class="liens"><a href="partie-evolutions-successives-evolution-reciproque.html#methode-7">Revoir la méthode</a><a href="exercices.html#exercice-16">Exercices 16 à 23</a></div></div><div class="st-meth" data-m="8"><strong>Méthode 8 — Calculer une image</strong><span class="score"></span><div class="liens"><a href="partie-fonctions-affines-image-antecedent.html#methode-8">Revoir la méthode</a><a href="exercices.html#exercice-24">Exercices 24 à 27</a></div></div><div class="st-meth" data-m="9"><strong>Méthode 9 — Calculer un antécédent</strong><span class="score"></span><div class="liens"><a href="partie-fonctions-affines-image-antecedent.html#methode-9">Revoir la méthode</a><a href="exercices.html#exercice-24">Exercices 24 à 27</a></div></div><div class="st-meth" data-m="10"><strong>Méthode 10 — Déterminer une fonction affine</strong><span class="score"></span><div class="liens"><a href="partie-trouver-une-fonction-affine.html#methode-10">Revoir la méthode</a><a href="exercices.html#exercice-28">Exercices 28 à 31</a></div></div><div class="st-meth" data-m="11"><strong>Méthode 11 — Tracer la droite d'une fonction affine</strong><span class="score"></span><div class="liens"><a href="partie-tracer-une-fonction-affine.html#methode-11">Revoir la méthode</a><a href="exercices.html#exercice-32">Exercices 32 à 35</a></div></div><div class="st-meth" data-m="12"><strong>Méthode 12 — Utiliser une fonction linéaire (proportionnalité)</strong><span class="score"></span><div class="liens"><a href="partie-tracer-une-fonction-affine.html#methode-12">Revoir la méthode</a><a href="exercices.html#exercice-32">Exercices 32 à 35</a></div></div><div class="st-meth" data-m="14"><strong>Méthode 14 — Dresser le tableau de signes d'une fonction affine</strong><span class="score"></span><div class="liens"><a href="partie-signe-d-une-fonction-affine.html#methode-14">Revoir la méthode</a><a href="exercices.html#exercice-39">Exercices 39 à 41</a></div></div><div class="st-meth" data-m="15"><strong>Méthode 15 — Comparer deux offres</strong><span class="score"></span><div class="liens"><a href="partie-comparer-deux-fonctions-affines.html#methode-15">Revoir la méthode</a><a href="exercices.html#exercice-42">Exercices 42 à 47</a></div></div></div>
+</div>
+</main>
+<footer>© <a href="../../auteur.html">Luc Destombe</a> — documents sous licence
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr">CC BY-NC-SA 4.0</a> :
+libre usage et modification, sans usage commercial, en citant l'auteur et en partageant
+dans les mêmes conditions.
+<span class="maj"><a href="../../historique.html">Site mis à jour le 9 novembre 2026</a></span>
+<span class="maj"><a href="../../enseignants.html">Enseignants</a> : PDF, version à projeter et sources LaTeX à réutiliser</span>
+<span class="maj"><a href="../../contribuer.html">Contribuer</a> : suggérer des améliorations des cours et des exercices</span>
+<span class="maj">Ressource de la <a href="https://forge.apps.education.fr/">Forge des communs numériques éducatifs</a> : <a href="https://forge.apps.education.fr/faire-des-maths/faire-des-maths.forge.apps.education.fr">dépôt du site</a></span></footer>
+<script defer src="../../suggestions.js"></script>
+<script src="../../eleve.js"></script>
+<script type="application/json" id="st-donnees">{"cle": "fdm-se-tester:v1:1ere-specifique/fonctions-affines-pourcentages", "sources": {"1": {"titre": "Automatismes", "enonce": "Pour chaque question, une seule réponse est exacte. Recopier le numéro de la question\net la lettre de la réponse choisie. Aucune justification n'est demandée.\n\n\\begin{enumerate}[label=\\arabic*.,leftmargin=*,itemsep=4pt]\n \\item $15\\,\\%$ de $60$ est égal à :\n \\qcm{$9$}{$6$}{$0{,}9$}{$45$}\n \\item Sur $25$ élèves d'un club, $7$ font du théâtre. La proportion d'élèves qui font\n du théâtre est de :\n \\qcm{$7\\,\\%$}{$28\\,\\%$}{$25\\,\\%$}{$0{,}28\\,\\%$}\n \\item Parmi ces fonctions, laquelle est linéaire ?\n \\qcm{$f(x)=2x+1$}{$g(x)=-4x$}{$h(x)=x^{2}$}{$k(x)=5$}\n \\item La fonction $f(x)=-2x+6$ est :\n \\qcm{positive pour $x>3$}{positive pour $x<3$}{toujours positive}{nulle en $-3$}\n\\end{enumerate}", "corrige": "\\begin{enumerate}[label=\\arabic*.,leftmargin=*,itemsep=4pt]\n \\item Réponse \\textbf{a)}. $15\\,\\%$ de $60$ vaut $\\dfrac{15}{100}\\times 60=9$\n ($10\\,\\%$ vaut $6$, et $5\\,\\%$ vaut $3$).\n \\critere{1}{tu as choisi a), $9$.}\n \\item Réponse \\textbf{b)}. $\\dfrac{7}{25}=\\dfrac{28}{100}$, soit $28\\,\\%$.\n \\critere{3}{tu as choisi b), $28\\,\\%$.}\n \\item Réponse \\textbf{b)}. Une fonction linéaire s'écrit $ax$, sans nombre ajouté :\n $g(x)=-4x$.\n \\critere{12}{tu as choisi b), $g(x)=-4x$.}\n \\item Réponse \\textbf{b)}. $-2x+6$ s'annule en $3$ ; le coefficient $-2$ est négatif,\n donc $f(x)$ est positif avant $3$, négatif après.\n \\critere{14}{tu as choisi b), positive pour $x<3$.}\n\\end{enumerate}"}, "2": {"titre": "Des pourcentages", "enonce": "\\begin{questions}\n \\item Un vélo coûte $400$~€. Il est soldé à $-15\\,\\%$. Calculer son prix soldé.\n\\end{questions}\nUne lettre d'information sur l'environnement comptait $2\\,000$ abonnés en 2024 et\n$2\\,300$ en 2025.\n\\begin{questions}[resume]\n \\item Calculer le taux d'évolution du nombre d'abonnés entre 2024 et 2025.\n \\item En 2026, le nombre d'abonnés baisse de $20\\,\\%$. Donner le coefficient\n multiplicateur, puis calculer le nombre d'abonnés en 2026.\n \\item Calculer le taux d'évolution global entre 2024 et 2026.\n \\item Une hausse de $20\\,\\%$ en 2027 ramènerait-elle le nombre d'abonnés à celui de\n 2025 ? Justifier.\n\\end{questions}", "corrige": "\\begin{questions}\n \\item \\begin{calculs}\n \\text{remise} &= 0{,}15\\times 400=60 &&\\justif{$15\\,\\%$ de $400$}\\\\\n \\text{prix soldé} &= 400-60=340 &&\n \\end{calculs}\n Le vélo soldé coûte $340$~€ (ou directement $400\\times 0{,}85=340$).\n \\critere{2}{tu trouves $340$~€.}\n \\item \\begin{calculs}\n t &= \\dfrac{2\\,300-2\\,000}{2\\,000} &&\\justif{$\\frac{\\text{arrivée}-\\text{départ}}{\\text{départ}}$}\\\\\n t &= \\dfrac{300}{2\\,000}=0{,}15 &&\n \\end{calculs}\n Le nombre d'abonnés a augmenté de $15\\,\\%$.\n \\critere{4}{tu divises par la valeur de départ $2\\,000$ et tu trouves $+15\\,\\%$.}\n \\item Baisser de $20\\,\\%$, c'est multiplier par $1-\\dfrac{20}{100}=0{,}8$.\n \\begin{calculs}\n 2\\,300\\times 0{,}8 &= 1\\,840 &&\n \\end{calculs}\n En 2026, la lettre compte $1\\,840$ abonnés.\n \\critere{5}{le coefficient $0{,}8$ et $1\\,840$ abonnés.}\n \\item On multiplie les coefficients des deux évolutions.\n \\begin{calculs}\n 1{,}15\\times 0{,}8 &= 0{,}92 &&\\justif{coefficient global}\n \\end{calculs}\n $0{,}92=1-0{,}08$ : entre 2024 et 2026, le nombre d'abonnés a baissé de $8\\,\\%$.\n Contrôle : $2\\,000\\times 0{,}92=1\\,840$.\n \\critere{6}{tu multiplies $1{,}15$ par $0{,}8$ et tu conclus à une baisse de\n $8\\,\\%$ (et non une hausse de $15-20$\\dots).}\n \\item \\begin{calculs}\n 1\\,840\\times 1{,}2 &= 2\\,208 &&\\justif{hausse de $20\\,\\%$}\n \\end{calculs}\n $2\\,208<2\\,300$ : une hausse de $20\\,\\%$ ne suffit pas. Il faudrait une hausse de\n $25\\,\\%$, car $1\\,840\\times 1{,}25=2\\,300$.\n \\critere{7}{tu calcules $1\\,840\\times 1{,}2=2\\,208$ et tu réponds « non ».}\n\\end{questions}"}, "3": {"titre": "Louer une salle", "enonce": "Une association loue une salle pour ses fêtes. Le tarif est de $40$~€ de forfait, plus\n$15$~€ par heure. On note $f(x)$ le prix, en euros, d'une location de $x$ heures.\n\\begin{questions}\n \\item Exprimer $f(x)$ en fonction de $x$.\n \\item Calculer $f(4)$, puis interpréter ce résultat dans le contexte.\n \\item Une location a coûté $145$~€. Combien d'heures a-t-elle duré ?\n \\item Une autre salle est louée selon un tarif représenté par une fonction affine $g$,\n avec $g(2)=70$ et $g(6)=90$. Déterminer $g(x)$.\n\\end{questions}", "corrige": "\\begin{questions}\n \\item $15$~€ par heure, plus $40$~€ de forfait : $f(x)=15x+40$.\n \\critere{10}{tu obtiens $f(x)=15x+40$.}\n \\item \\begin{calculs}\n f(4) &= 15\\times 4+40 &&\\\\\n f(4) &= 100 &&\n \\end{calculs}\n Une location de $4$ heures coûte $100$~€.\n \\critere{8}{$f(4)=100$, et ta phrase dit $4$ heures et $100$~€.}\n \\item On cherche $x$ tel que $f(x)=145$.\n \\begin{calculs}\n 15x+40 &= 145 &&\\\\\n 15x &= 105 &&\\justif{on retire $40$}\\\\\n x &= 7 &&\\justif{on divise par $15$}\n \\end{calculs}\n La location a duré $7$ heures.\n \\critere{9}{tu résous $15x+40=145$ et tu trouves $7$ heures.}\n \\item $g(x)=ax+b$.\n \\begin{calculs}\n a &= \\dfrac{90-70}{6-2}=\\dfrac{20}{4}=5 &&\\justif{$\\frac{g(6)-g(2)}{6-2}$}\\\\\n 70 &= 5\\times 2+b &&\\justif{$g(2)=70$}\\\\\n b &= 60 &&\n \\end{calculs}\n Donc $g(x)=5x+60$. Contrôle : $g(6)=30+60=90$.\n \\critere{10}{tu obtiens $g(x)=5x+60$.}\n\\end{questions}"}, "4": {"titre": "Deux forfaits internet", "enonce": "Pour un abonnement de données mobiles, deux forfaits sont proposés. On note $x$ le\nnombre de gigaoctets (Go) consommés dans le mois, avec $0\\leq x\\leq 10$.\n\n\\textbf{Forfait A} : $10$~€ par mois, plus $2$~€ par Go ; prix $f(x)=2x+10$.\\par\n\\textbf{Forfait B} : $4$~€ par Go, sans abonnement ; prix $g(x)=4x$.\n\\begin{questions}\n \\item Laquelle des deux fonctions est linéaire ? Qu'est-ce que cela signifie pour le\n prix du forfait correspondant ?\n \\item Tracer les droites qui représentent $f$ et $g$ dans un même repère (en abscisse,\n $1$~cm pour $1$~Go ; en ordonnée, $1$~cm pour $5$~€).\n \\item Calculer $f(x)-g(x)$, puis dresser son tableau de signes sur\n $\\intff{0}{10}$.\n \\item Quel forfait conseiller selon le nombre de Go consommés ?\n\\end{questions}", "corrige": "\\begin{questions}\n \\item $g(x)=4x$ est linéaire : le prix du forfait B est proportionnel au nombre de Go\n (deux fois plus de Go, deux fois plus cher).\n \\critere{12}{tu choisis $g$ et tu dis « proportionnel ».}\n \\item \n Deux points suffisent pour chaque droite :\\par\n $f(0)=10$ et $f(10)=30$ ;\\par\n $g(0)=0$ et $g(5)=20$.\\par\n La droite de $g$ passe par l'origine (fonction linéaire).\n \\critere{11}{tes deux droites passent par les bons points, avec les unités\n demandées.}\n \n \n [figure]\n \n \\item \\begin{calculs}\n f(x)-g(x) &= 2x+10-4x &&\\\\\n f(x)-g(x) &= -2x+10 &&\n \\end{calculs}\n $-2x+10$ s'annule en $5$ ($-2\\times 5+10=0$) ; le coefficient $-2$ est négatif,\n donc il est positif avant $5$, négatif après.\n \\begin{center}\n [figure]\n \\end{center}\n \\critere{14}{$f(x)-g(x)=-2x+10$, et le tableau $+$, $0$ en $5$, $-$.}\n \\item Si $x<5$, $f(x)-g(x)>0$, donc $f(x)>g(x)$ : le forfait B est moins cher.\\par\n Si $x>5$, le forfait A est moins cher. Pour $5$~Go, les deux coûtent $20$~€.\\par\n On conseille le forfait B en dessous de $5$~Go par mois, le forfait A au-dessus.\n \\critere{15}{ta réponse dépend de la consommation, avec la limite de $5$~Go, dans\n le bon sens.}\n\\end{questions}"}}}</script>
+<script src="../../se-tester.js" defer></script>
+<script src="../../ia.js" defer></script>
+<script defer src="../../umami.js" data-website-id="2bfcd12c-46c7-4923-bfde-f06bc5730ac9" data-host-url="https://cloud.umami.is" data-domains="faire-des-maths.fr,www.faire-des-maths.fr,faire-des-maths.forge.apps.education.fr"></script>
+<script>
+function umTrack(nom, donnees) {
+  if (window.umami && window.umami.track) window.umami.track(nom, donnees);
+}
+document.addEventListener('click', function (e) {
+  var a = e.target.closest('a[href]');
+  if (!a || !/\.(pdf|tex)(#|$)/i.test(a.getAttribute('href'))) return;
+  var nom = a.getAttribute('href').split('#')[0];
+  umTrack(/\.tex$/i.test(nom) ? 'tex' : 'pdf', {fichier: nom.split('/').pop()});
+});
+document.addEventListener('toggle', function (e) {
+  var d = e.target;
+  if (!d.open || !d.classList) return;
+  var types = {'avj': 'ouverture AVJ', 'corrige': 'ouverture corrigé', 'exercices': 'ouverture fiche',
+               'reponses': 'ouverture réponses', 'ia': 'ouverture IA'};
+  for (var c in types) if (d.classList.contains(c)) {
+    umTrack(types[c], {page: location.pathname.replace(/index\.html$/, '')});
+    return;
+  }
+}, true);
+</script>
+</body>
+</html>
