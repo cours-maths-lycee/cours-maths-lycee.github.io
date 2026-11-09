@@ -6,7 +6,8 @@
    où l'on projette), avec un trait à déplacer à la souris entre les deux. La zone
    blanche peut porter un quadrillage ou un repère. A− et A+ ajustent la taille du
    texte à la salle, séparément pour chaque largeur ; le navigateur retient ces
-   réglages, la dernière largeur, la place du trait et la taille des carreaux.
+   réglages, la dernière largeur, la place du trait (remis au milieu quand on
+   change de largeur) et la taille des carreaux.
    Les boutons sont dans un menu en bas à droite (le haut de l'image est souvent
    coupé par le vidéoprojecteur), ouvert au survol de l'icône ou par un clic.
    Page d'exercices : un champ du menu mène à l'exercice n.
@@ -22,7 +23,7 @@
   // part de la largeur laissée au cours par le trait
   var PARTAGE_MIN = 0.25, PARTAGE_MAX = 0.85;
   // côté des carreaux du quadrillage, en pixels
-  var CARREAU = 40, CARREAU_PAS = 5, CARREAU_MIN = 20, CARREAU_MAX = 60;
+  var CARREAU = 40, CARREAU_PAS = 4, CARREAU_MIN = 16, CARREAU_MAX = 48;
   var CLE = 'presentateur';
   var racine = document.documentElement;
   var page = document.querySelector('main.lecture');
@@ -40,8 +41,10 @@
     return typeof p === 'number' && isFinite(p) ? Math.min(PARTAGE_MAX, Math.max(PARTAGE_MIN, p)) : 0.5;
   }
 
+  // ramène aussi sur un cran une taille retenue par le navigateur avec une ancienne échelle
   function borneCarreau(c) {
-    return typeof c === 'number' && isFinite(c) ? Math.min(CARREAU_MAX, Math.max(CARREAU_MIN, c)) : CARREAU;
+    if (typeof c !== 'number' || !isFinite(c)) return CARREAU;
+    return Math.min(CARREAU_MAX, Math.max(CARREAU_MIN, Math.round(c / CARREAU_PAS) * CARREAU_PAS));
   }
 
   // réglages retenus par le navigateur (facultatifs : stockage parfois bloqué)
@@ -98,10 +101,13 @@
   function basculer() {
     garderPassage(function () {
       reglage.demi = !reglage.demi;
+      reglage.partage = 0.5;   // changer de largeur remet le trait au milieu
+      placerTrait();
       racine.classList.toggle('presentateur-demi', reglage.demi);
       agrandir();
       libeller();
     });
+    dessiner();   // la zone blanche suit le trait
     retenir();
   }
 
