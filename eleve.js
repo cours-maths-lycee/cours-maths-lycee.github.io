@@ -17,8 +17,9 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
    - bouton marteau (marteau.js) : l'exercice est compté une seule fois ; le
      serveur donne un mot-code, à recopier sur le cahier à côté du numéro de
      l'exercice.
-   window.FDM_ELEVE : {prenom, fait(id), mot(id), nombre(), envoyerFait(id), bonus} (bonus :
-   exercices par bonus, 0 sans bonus) ; l'événement
+   window.FDM_ELEVE : {prenom, fait(id), mot(id), nombre(), envoyerFait(id),
+   envoyerDsBlanc(bilan), bonus} (bonus : exercices par bonus, 0 sans bonus ; bilan :
+   {page, debut, acquises, travail}, page « Se tester », onglet « DS blancs ») ; l'événement
    « fdm-eleve » (document) signale une mise à jour. */
 (function () {
   'use strict';
@@ -79,6 +80,13 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
       return j || {ok: false};
     }).catch(function () { return {ok: false, erreur: 'réseau'}; });
   }
+  function envoyerDsBlanc(b) {
+    return poster({action: 'dsblanc', page: b.page, debut: b.debut, acquises: b.acquises, travail: b.travail})
+      .then(function (j) {
+        if (j && !j.ok && j.erreur === 'code inconnu') oublier();
+        return j || {ok: false};
+      }).catch(function () { return {ok: false, erreur: 'réseau'}; });
+  }
   function synchroniser() {
     fetch(API + '?eleve=' + encodeURIComponent(etat.code))
       .then(function (r) { return r.json(); })
@@ -100,6 +108,7 @@ var FDM_ELEVE_CONFIG = {"api": "https://script.google.com/macros/s/AKfycbw1z92aB
     mot: function (id) { return etat.mots[id] || ''; },
     nombre: function () { return etat.faits.length; },
     envoyerFait: envoyerFait,
+    envoyerDsBlanc: envoyerDsBlanc,
     bonus: BONUS
   };
 

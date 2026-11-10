@@ -1,6 +1,8 @@
 /* Page « Se tester » d'un chapitre (scripts/site_se_tester.py) : consignes, compte à
    rebours, corrigé et grille à cocher, bilan par méthode. L'état reste dans le
-   navigateur (localStorage) ; le compte à rebours part de l'heure de fin : il continue
+   navigateur (localStorage) ; en mode élève (scripts/site/eleve.js), le bilan part en
+   plus dans l'onglet « DS blancs » du professeur : chapitre, date du DS blanc (début du
+   compte à rebours), nombres de méthodes acquises et à retravailler ; le compte à rebours part de l'heure de fin : il continue
    pendant la veille du téléphone et si la page est fermée. */
 (function () {
   'use strict';
@@ -118,6 +120,22 @@
     $('resume').textContent = premiere
       ? 'Commence par la méthode ' + premiere + ' : relis son exemple corrigé, puis fais un exercice de sa partie avant de passer à la suivante.'
       : 'Toutes les méthodes testées sont réussies. Garde le rythme : refais un exercice difficile de la fiche quelques jours avant le DS.';
+    enregistrer(nbAcquises, Object.keys(par).length - nbAcquises);
+  }
+
+  // ---------- mode élève : bilan enregistré pour le professeur (une fois par DS blanc et par grille) ----------
+  function enregistrer(acquises, travail) {
+    var E = window.FDM_ELEVE;
+    if (!E || !E.envoyerDsBlanc || !etat.fin) return;
+    var debut = etat.fin - DUREE, signature = debut + ':' + acquises + ':' + travail;
+    $('appareil').textContent = 'est enregistré pour ton professeur (chapitre, date, nombres de méthodes acquises et à retravailler)';
+    if (etat.envoye === signature) { $('envoi').textContent = 'Bilan enregistré.'; $('envoi').hidden = false; return; }
+    $('envoi').textContent = 'Enregistrement du bilan…'; $('envoi').hidden = false;
+    E.envoyerDsBlanc({page: D.page, debut: debut, acquises: acquises, travail: travail}).then(function (j) {
+      if (j.ok) { etat.envoye = signature; garder(); $('envoi').textContent = 'Bilan enregistré.'; }
+      else $('envoi').textContent = 'Le bilan n’a pas pu être enregistré' +
+        (j.erreur === 'réseau' ? ' (pas de connexion)' : '') + ' : rouvre cette page plus tard pour réessayer.';
+    });
   }
 
   // ---------- bouton IA : scripts/site/ia.js lit ces attributs au moment du clic ----------
