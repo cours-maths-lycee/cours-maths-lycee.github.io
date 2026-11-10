@@ -298,6 +298,17 @@ html.presentateur-demi .presentateur-tableau{display:block;position:fixed;top:0;
 .presentateur-tableau svg{display:block}
 .presentateur-tableau text{fill:#000}
 .presentateur-tableau .nom-axe{font-style:italic}
+/* corrigé succinct (presentateur.js) : résultats seuls, sans les explications en gris ;
+   À vous de jouer : les réponses courtes, à la place de la correction détaillée */
+.succinct-avj{display:none}
+html.presentateur-succinct .succinct-avj{display:block}
+html.presentateur-succinct details.avj>div>:not(.succinct-avj),
+html.presentateur-succinct .succ-cache,
+html.presentateur-succinct .succ-zone .x,
+html.presentateur-succinct .succ-zone p.note{display:none}
+html.presentateur-succinct .succ-zone .calculs:not(.equiv){grid-template-columns:max-content minmax(0,1fr)}
+html.presentateur-succinct .succ-zone .calculs .seul{grid-column:1/-1}
+html.presentateur-succinct .succ-zone .explique{grid-template-columns:1fr}
 
 /* encadré « En ligne » : l'autre page HTML du chapitre */
 .telecharger.exos{background:var(--exo-fond)}
@@ -4144,28 +4155,8 @@ dans les mêmes conditions.
 <span class="maj">Ressource de la <a href="https://forge.apps.education.fr/">Forge des communs numériques éducatifs</a> : <a href="https://forge.apps.education.fr/faire-des-maths/faire-des-maths.forge.apps.education.fr">dépôt du site</a></span></footer>
 <script defer src="../../suggestions.js"></script>
 <script src="../../eleve.js"></script>
+<script defer src="../../mesure.js"></script>
 <script defer src="../../umami.js" data-website-id="2bfcd12c-46c7-4923-bfde-f06bc5730ac9" data-host-url="https://cloud.umami.is" data-domains="faire-des-maths.fr,www.faire-des-maths.fr,faire-des-maths.forge.apps.education.fr"></script>
-<script>
-function umTrack(nom, donnees) {
-  if (window.umami && window.umami.track) window.umami.track(nom, donnees);
-}
-document.addEventListener('click', function (e) {
-  var a = e.target.closest('a[href]');
-  if (!a || !/\.(pdf|tex)(#|$)/i.test(a.getAttribute('href'))) return;
-  var nom = a.getAttribute('href').split('#')[0];
-  umTrack(/\.tex$/i.test(nom) ? 'tex' : 'pdf', {fichier: nom.split('/').pop()});
-});
-document.addEventListener('toggle', function (e) {
-  var d = e.target;
-  if (!d.open || !d.classList) return;
-  var types = {'avj': 'ouverture AVJ', 'corrige': 'ouverture corrigé', 'exercices': 'ouverture fiche',
-               'reponses': 'ouverture réponses', 'ia': 'ouverture IA'};
-  for (var c in types) if (d.classList.contains(c)) {
-    umTrack(types[c], {page: location.pathname.replace(/index\.html$/, '')});
-    return;
-  }
-}, true);
-</script>
 <script>
 // ouvre le corrigé (ou la correction) visé par l'adresse, ex. cours.html#corrige-12
 function ouvrir(){var c=location.hash&&document.getElementById(location.hash.slice(1));

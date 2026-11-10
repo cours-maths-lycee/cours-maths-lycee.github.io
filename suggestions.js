@@ -179,6 +179,7 @@ var FDM = {"url": "https://script.google.com/macros/s/AKfycbxtxXFwdiC_r2j1vf67up
         if (r.ok) {
           ['probleme', 'amelioration', 'calcul'].forEach(function (n) { f[n].value = ''; });
           etat.textContent = 'Merci ! Votre proposition est enregistrée.';
+          if (window.umTrack) window.umTrack('suggestion envoyée', {niveau: cible.niveau || ''});   // mesure.js : jamais le texte
           setTimeout(function () { dialogue.close(); }, 1800);
         } else etat.textContent = 'L\'envoi a échoué : ' + (r.erreur || 'erreur inconnue') + '.';
       })

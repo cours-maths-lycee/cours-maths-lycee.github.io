@@ -38,6 +38,8 @@ Les documents sont conçus par l'auteur avec l'aide d'une IA générative, puis 
 - `bonus.js` : animation d'un bonus obtenu en mode élève (visiteurs : tous les 10 exercices différents) ;
 - `eleve.js` : mode élève (lien personnel envoyé par le professeur ; le
   serveur des compteurs ne connaît qu'un code, jamais le nom de l'élève) ;
+- `mesure.js` : mesure d'audience anonyme (événements envoyés à Umami, sans
+  donnée personnelle ni texte libre) ;
 - `presentateur.js` : mode présentateur des pages de partie et d'exercices (projection en classe) ;
 - `katex/`, `umami.js` : composants tiers (voir LICENSE).
 

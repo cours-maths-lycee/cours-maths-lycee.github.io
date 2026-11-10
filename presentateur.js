@@ -11,6 +11,16 @@
    Les boutons sont dans un menu en bas à droite (le haut de l'image est souvent
    coupé par le vidéoprojecteur), ouvert au survol de l'icône ou par un clic.
    Page d'exercices : un champ du menu mène à l'exercice n.
+   Page de partie d'un cours : « Partie précédente » et « Partie suivante » (séances de
+   2 h) remplacent le contenu sur place, sans quitter le plein écran (un changement de
+   page le quitterait) ; en quittant le mode, la nouvelle page est rechargée, avec ses
+   boutons (IA, suggestions…).
+   Corrigé succinct (corrigés de fiche, exemples corrigés, À vous de jouer) : tiré du
+   corrigé détaillé, rien n'est écrit à part. Pour chaque question (\cas), les lignes
+   qui portent un résultat (\res), sans les explications en gris ; sans \res, la
+   dernière ligne de la question ; les figures restent. À vous de jouer : les
+   réponses courtes du 
+eponse (div.succinct-avj, tex2html.py).
    Styles : tex2html.css (html.presentateur). Les boutons ne sont créés qu'ici :
    sans script, rien ne change. */
 (function () {
@@ -31,6 +41,7 @@
   if (!page || !surTitre) return;
   var pageExercices = surTitre.textContent === 'Exercices';   // lu avant d'y ajouter le bouton d'entrée
   var avant = null;   // état à retrouver en quittant
+  var change = false; // partie changée sur place (Partie précédente / suivante)
   var fond = null;    // zone blanche : null, 'quadrillage' ou 'repere' (vide à chaque entrée)
 
   function borne(z) {
@@ -48,11 +59,12 @@
   }
 
   // réglages retenus par le navigateur (facultatifs : stockage parfois bloqué)
-  var reglage = {demi: false, zoom: {plein: 1, demi: 1}, partage: 0.5, carreau: CARREAU};
+  var reglage = {demi: false, succinct: false, zoom: {plein: 1, demi: 1}, partage: 0.5, carreau: CARREAU};
   try {
     var lu = JSON.parse(window.localStorage.getItem(CLE));
     if (lu) {
       reglage.demi = lu.demi === true;
+      reglage.succinct = lu.succinct === true;
       if (lu.zoom) reglage.zoom = {plein: borne(lu.zoom.plein), demi: borne(lu.zoom.demi)};
       reglage.partage = bornePartage(lu.partage);
       reglage.carreau = borneCarreau(lu.carreau);
@@ -85,6 +97,84 @@
     ligneCarreaux.hidden = !reglage.demi || fond !== 'quadrillage';
     carreauMoins.disabled = reglage.carreau <= CARREAU_MIN;
     carreauPlus.disabled = reglage.carreau >= CARREAU_MAX;
+    succinct.textContent = reglage.succinct ? 'Corrigé détaillé' : 'Corrigé succinct';
+    succinct.title = reglage.succinct ? 'Les corrections en entier, avec les explications'
+      : 'Les corrections réduites aux résultats';
+    succinct.hidden = !page.querySelector(ZONES + ', .succinct-avj');
+  }
+
+  /* Corrigé succinct : marque, une fois par correction, ce qui reste affiché
+     (.succ-garde) et ce qui disparaît (.succ-cache, sous html.presentateur-succinct). */
+  var ZONES = 'details.corrige > .corps-corrige, details.correction:not(.avj) > div';
+  var LIGNE = '.calculs > div, .explique > .t, p, li, table, .formule, .centre, h3, h4';
+  var LAISSER = 'p.cas, details.ia, button';   // ni gardés ni cachés : leur règle à eux
+
+  function garderLigne(garde, el) {
+    garde.push(el);
+    // ligne de calcul : le membre de gauche avec le membre de droite
+    if (el.classList.contains('d') && el.previousElementSibling) garde.push(el.previousElementSibling);
+  }
+
+  function derniereLigne(garde, segment) {
+    for (var k = segment.length - 1; k >= 0; k--) {
+      var el = segment[k];
+      if (el.matches(LAISSER) || el.matches('p.note')) continue;
+      if (el.classList.contains('calculs')) {
+        var fin = el.querySelector(':scope > div:last-child');
+        while (fin && fin.classList.contains('x')) fin = fin.previousElementSibling;
+        if (fin) { garderLigne(garde, fin); return; }
+      }
+      garde.push(el);
+      return;
+    }
+  }
+
+  function cacherReste(el, garde) {
+    [].forEach.call(el.children, function (c) {
+      if (c.matches(LAISSER) || garde.indexOf(c) >= 0) return;
+      if (garde.some(function (g) { return c.contains(g); })) cacherReste(c, garde);
+      else c.classList.add('succ-cache');
+    });
+  }
+
+  function preparerSuccinct() {
+    page.querySelectorAll(ZONES).forEach(function (zone) {
+      if (zone.classList.contains('succ-zone')) return;
+      zone.classList.add('succ-zone');
+      var garde = [], segments = [[]];
+      [].forEach.call(zone.children, function (c) {
+        if (c.matches('p.cas') && segments[segments.length - 1].length) segments.push([]);
+        segments[segments.length - 1].push(c);
+      });
+      segments.forEach(function (segment) {
+        var avant = garde.length;
+        segment.forEach(function (el) {
+          var res = [].slice.call(el.querySelectorAll('.res'));
+          if (el.matches('.res')) res.push(el);
+          res.forEach(function (r) {
+            var l = r.closest(LIGNE);
+            garderLigne(garde, l && zone.contains(l) && l !== zone ? l : r);
+          });
+        });
+        // sans \res : la dernière ligne, sauf pour le chapeau qui précède les questions
+        var chapeau = segments.length > 1 && !segment[0].matches('p.cas');
+        if (garde.length === avant && !chapeau) derniereLigne(garde, segment);
+        segment.forEach(function (el) {
+          [].forEach.call(el.querySelectorAll('img.fig'), function (f) { garde.push(f); });
+          if (el.matches('img.fig')) garde.push(el);
+        });
+      });
+      cacherReste(zone, garde);
+    });
+  }
+
+  function basculerSuccinct() {
+    garderPassage(function () {
+      reglage.succinct = !reglage.succinct;
+      racine.classList.toggle('presentateur-succinct', reglage.succinct);
+      libeller();
+    });
+    retenir();
   }
 
   // garde à l'écran le passage en cours de lecture : le texte se recompose à la nouvelle taille
@@ -224,6 +314,8 @@
     details.forEach(function (d) { d.open = false; });
     racine.classList.add('presentateur');
     racine.classList.toggle('presentateur-demi', reglage.demi);
+    preparerSuccinct();
+    racine.classList.toggle('presentateur-succinct', reglage.succinct);
     racine.setAttribute('data-theme', 'light');   // noir sur blanc, comme la feuille
     agrandir();
     window.scrollTo(0, 0);
@@ -234,7 +326,8 @@
 
   function quitter() {
     if (!avant) return;
-    racine.classList.remove('presentateur', 'presentateur-demi');
+    if (change) { location.reload(); return; }   // partie changée sur place : la page entière, avec ses scripts
+    racine.classList.remove('presentateur', 'presentateur-demi', 'presentateur-succinct');
     if (avant.theme === null) racine.removeAttribute('data-theme');
     else racine.setAttribute('data-theme', avant.theme);
     agrandir();
@@ -316,9 +409,58 @@
     ligne().appendChild(allerExo);
   }
 
+  // page de partie d'un cours : parties voisines, lues dans la navigation de la page
+  function voisine(classe, mot) {
+    var a = page.querySelector('nav.parties a.' + classe);
+    return a && a.querySelector('span') && a.querySelector('span').textContent.indexOf(mot) >= 0 ? a.href : null;
+  }
+  var enChargement = false;
+  function changerPartie(adresse) {
+    if (!adresse || enChargement) return;
+    enChargement = true;
+    boutons.classList.remove('ouvert');
+    fetch(adresse).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.text();
+    }).then(function (texte) {
+      var doc = new DOMParser().parseFromString(texte, 'text/html');
+      var neuf = doc.querySelector('main.lecture');
+      if (!neuf) throw new Error('page sans contenu');
+      page.innerHTML = neuf.innerHTML;
+      page.querySelectorAll('details').forEach(function (d) { d.open = false; });
+      document.title = doc.title;
+      history.pushState(null, '', adresse);
+      change = true;
+      window.scrollTo(0, 0);
+      majParties();
+      preparerSuccinct();
+      libeller();
+    }).catch(function () {
+      location.href = adresse;   // hors ligne ou page locale : changement de page ordinaire
+    }).then(function () { enChargement = false; });
+  }
+  var ligneParties = null, precedente = null, suivante = null;
+  if (!pageExercices && page.querySelector('nav.parties')) {
+    ligneParties = ligne();
+    precedente = bouton(ligneParties, '← Partie précédente', 'Afficher la partie précédente du cours',
+      function () { changerPartie(voisine('prec', 'précédente')); });
+    suivante = bouton(ligneParties, 'Partie suivante →', 'Afficher la partie suivante du cours',
+      function () { changerPartie(voisine('suiv', 'suivante')); });
+  }
+  function majParties() {
+    if (!ligneParties) return;
+    precedente.hidden = !voisine('prec', 'précédente');
+    suivante.hidden = !voisine('suiv', 'suivante');
+    ligneParties.hidden = precedente.hidden && suivante.hidden;
+  }
+  majParties();
+  // retour arrière du navigateur après un changement sur place : la page de l'adresse affichée
+  window.addEventListener('popstate', function () { if (change) location.reload(); });
+
   var ligneTaille = ligne();
   var moins = bouton(ligneTaille, 'A−', 'Réduire la taille du texte', function () { zoomer(-1); });
   var plus = bouton(ligneTaille, 'A+', 'Agrandir la taille du texte', function () { zoomer(1); });
+  var succinct = bouton(menu, '', '', basculerSuccinct);
   var largeur = bouton(menu, '', '', basculer);
   var quadrillage = bouton(menu, 'Quadrillage', 'Afficher ou retirer le quadrillage de la zone blanche',
     function () { changerFond('quadrillage'); });

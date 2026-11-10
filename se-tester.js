@@ -3,7 +3,8 @@
    navigateur (localStorage) ; en mode élève (scripts/site/eleve.js), le bilan part en
    plus dans l'onglet « DS blancs » du professeur : chapitre, date du DS blanc (début du
    compte à rebours), nombres de méthodes acquises et à retravailler ; le compte à rebours part de l'heure de fin : il continue
-   pendant la veille du téléphone et si la page est fermée. */
+   pendant la veille du téléphone et si la page est fermée. Mesure anonyme (mesure.js) :
+   DS blanc commencé, bilan (questions réussies, méthodes à retravailler), retravailler. */
 (function () {
   'use strict';
   var D = JSON.parse(document.getElementById('st-donnees').textContent);
@@ -68,7 +69,11 @@
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden && etat.etape === 'chrono') { garderEcran(); majChrono(); }
   });
-  $('demarrer').onclick = function () { etat.fin = Date.now() + DUREE; montrer('chrono'); };
+  function mesurer(nom, d) { d.page = D.page; if (window.umTrack) window.umTrack(nom, d); }   // mesure.js
+  $('demarrer').onclick = function () {
+    etat.fin = Date.now() + DUREE; montrer('chrono');
+    mesurer('DS blanc commencé', {});
+  };
   $('terminer').onclick = function () {
     if (Date.now() >= etat.fin) { montrer('corrige'); return; }
     $('zone-terminer').hidden = true; $('zone-confirmer').hidden = false;
@@ -121,7 +126,23 @@
       ? 'Commence par la méthode ' + premiere + ' : relis son exemple corrigé, puis fais un exercice de sa partie avant de passer à la suivante.'
       : 'Toutes les méthodes testées sont réussies. Garde le rythme : refais un exercice difficile de la fiche quelques jours avant le DS.';
     enregistrer(nbAcquises, Object.keys(par).length - nbAcquises);
+    // mesure anonyme, une fois par grille remplie : questions réussies, méthodes à retravailler
+    var ok = 0, travail = [];
+    lignes.forEach(function (l) { if (etat.coches[l.dataset.q] === 'ok') ok++; });
+    Object.keys(par).forEach(function (m) { if (par[m].ok < par[m].n) travail.push(m); });
+    var sig = etat.fin + ':' + ok + ':' + travail.join(',');
+    if (etat.mesure !== sig) {
+      etat.mesure = sig; garder();
+      mesurer('bilan Se tester', {questions: ok + '/' + lignes.length, acquises: nbAcquises,
+                                  travail: travail.join(', ') || 'aucune'});
+    }
   }
+  // un lien d'une méthode à retravailler : le bilan renvoie-t-il vers le cours et la fiche ?
+  $('travail').addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]'), c = a && a.closest('.st-meth');
+    if (c) mesurer('retravailler', {methode: c.dataset.m,
+                                    lien: /exercices\.html/.test(a.getAttribute('href')) ? 'exercices' : 'méthode'});
+  });
 
   // ---------- mode élève : bilan enregistré pour le professeur (une fois par DS blanc et par grille) ----------
   function enregistrer(acquises, travail) {
