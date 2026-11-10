@@ -17,10 +17,11 @@
    boutons (IA, suggestions…).
    Corrigé succinct (corrigés de fiche, exemples corrigés, À vous de jouer) : tiré du
    corrigé détaillé, rien n'est écrit à part. Pour chaque question (\cas), les lignes
-   qui portent un résultat (\res), sans les explications en gris ; sans \res, la
-   dernière ligne de la question ; les figures restent. À vous de jouer : les
-   réponses courtes du 
-eponse (div.succinct-avj, tex2html.py).
+   qui portent un résultat (\res), sans les explications en gris, sauf celles qui
+   portent elles-mêmes un \res (conclusion écrite seulement en gris) ; sans \res, la
+   dernière ligne de la question ; les figures restent. \res du cours : classe resc,
+   sans couleur. À vous de jouer sans \res : les réponses courtes du \reponse
+   (div.succinct-avj, tex2html.py).
    Styles : tex2html.css (html.presentateur). Les boutons ne sont créés qu'ici :
    sans script, rien ne change. */
 (function () {
@@ -105,11 +106,18 @@ eponse (div.succinct-avj, tex2html.py).
 
   /* Corrigé succinct : marque, une fois par correction, ce qui reste affiché
      (.succ-garde) et ce qui disparaît (.succ-cache, sous html.presentateur-succinct). */
-  var ZONES = 'details.corrige > .corps-corrige, details.correction:not(.avj) > div';
-  var LIGNE = '.calculs > div, .explique > .t, p, li, table, .formule, .centre, h3, h4';
+  var ZONES = 'details.corrige > .corps-corrige, details.correction > div';
+  var RES = '.res, .resc';
+  var LIGNE = '.calculs > div, .explique > div, p, li, table, .formule, .centre, h3, h4';
   var LAISSER = 'p.cas, details.ia, button';   // ni gardés ni cachés : leur règle à eux
 
   function garderLigne(garde, el) {
+    // explication en gris qui porte le résultat (conclusion écrite seulement là) :
+    // affichée, avec la ligne de calcul ou le texte qu'elle explique
+    if (el.classList.contains('x') && el.previousElementSibling) {
+      garde.push(el);
+      el = el.previousElementSibling;
+    }
     garde.push(el);
     // ligne de calcul : le membre de gauche avec le membre de droite
     if (el.classList.contains('d') && el.previousElementSibling) garde.push(el.previousElementSibling);
@@ -140,6 +148,8 @@ eponse (div.succinct-avj, tex2html.py).
   function preparerSuccinct() {
     page.querySelectorAll(ZONES).forEach(function (zone) {
       if (zone.classList.contains('succ-zone')) return;
+      // À vous de jouer sans résultat marqué : les réponses courtes (div.succinct-avj, CSS)
+      if (zone.parentNode.classList.contains('avj') && !zone.querySelector(RES)) return;
       zone.classList.add('succ-zone');
       var garde = [], segments = [[]];
       [].forEach.call(zone.children, function (c) {
@@ -149,11 +159,14 @@ eponse (div.succinct-avj, tex2html.py).
       segments.forEach(function (segment) {
         var avant = garde.length;
         segment.forEach(function (el) {
-          var res = [].slice.call(el.querySelectorAll('.res'));
-          if (el.matches('.res')) res.push(el);
+          var res = [].slice.call(el.querySelectorAll(RES));
+          if (el.matches(RES)) res.push(el);
           res.forEach(function (r) {
             var l = r.closest(LIGNE);
             garderLigne(garde, l && zone.contains(l) && l !== zone ? l : r);
+            // gris qui porte un \res (\rem, \justif) : reste affiché (tex2html.css)
+            var gris = r.closest('.x, p.note');
+            if (gris && zone.contains(gris)) gris.classList.add('succ-garde');
           });
         });
         // sans \res : la dernière ligne, sauf pour le chapeau qui précède les questions
