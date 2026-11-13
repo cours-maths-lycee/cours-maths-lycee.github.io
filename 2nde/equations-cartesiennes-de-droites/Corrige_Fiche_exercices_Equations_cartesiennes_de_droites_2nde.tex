@@ -1,0 +1,1024 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 9 --- Équations de droites --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\ShorthandsOff
+\tikzset{
+  droite/.style={coulCourbe,line width=1pt},
+  droiteB/.style={coulCourbeB,line width=1pt},
+  droiteC/.style={coulCourbeC,line width=1pt},
+  cherche/.style={-{Stealth[length=2.4mm]},line width=1.1pt,black},
+  aide/.style={dashed,black!50,line width=0.5pt},
+  fig/.style={line width=0.7pt,black!75},
+  nom/.style={midway,font=\footnotesize,inner sep=1.5pt},
+}
+\ShorthandsOn
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+
+\newcommand{\cotefig}[3][0.32]{\par\vspace{-0.55\baselineskip}\noindent
+  \begin{minipage}[t]{\dimexpr0.97\linewidth-#1\linewidth\relax}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering #3\end{minipage}\par}
+
+\begin{document}
+
+\entetefiche{Chapitre 9 --- Équations de droites}{Seconde}
+
+{\small Le repère est orthonormé. Pour la droite d'équation $ax+by+c=0$, le vecteur
+$\vec{u}\coord{-b}{a}$ est un vecteur directeur ; pour $y=mx+p$, c'est
+$\vec{u}\coord{1}{m}$.\par}
+
+\partie{Vecteur directeur d'une droite}
+
+\begin{exo}[Lire un vecteur directeur]
+\cotefig[0.4]{%
+\explique{$(d_{1})$ passe exactement par les nœuds $(-3\,;-2)$ et $(1\,;1)$ : de l'un à
+l'autre, $4$ carreaux vers la droite et $3$ vers le haut, donc
+$\res{\vec{u}_{1}\coord{4}{3}}$.}{ailleurs, la droite coupe les carreaux entre deux
+nœuds}
+\explique{$(d_{2})$ passe par $(-4\,;4)$ et $(0\,;2)$ : $\res{\vec{u}_{2}\coord{4}{-2}}$.}{$4$
+vers la droite, $2$ vers le bas}
+\explique{$(d_{3})$ passe par $(0\,;-3)$ et $(1\,;1)$ : $\res{\vec{u}_{3}\coord{1}{4}}$.}{$1$
+vers la droite, $4$ vers le haut}
+\rem{Tout vecteur colinéaire convient aussi : $\coord{8}{6}$ ou $\coord{-4}{-3}$ pour
+$(d_{1})$.}}
+{\begin{tikzpicture}[x=0.38cm,y=0.38cm]
+  \repere{-4}{-3}{5}{4}
+  \draw[droite] (-4,-2.75) -- (5,4);
+  \draw[droiteB] (-4,4) -- (5,-0.5);
+  \draw[droiteC] (0,-3) -- (1.75,4);
+  \draw[cherche] (-3,-2) -- node[nom,above left]{$\vec{u}_{1}$} (1,1);
+  \draw[cherche] (-4,4) -- node[nom,above right]{$\vec{u}_{2}$} (0,2);
+  \draw[cherche] (0,-3) -- node[nom,right]{$\vec{u}_{3}$} (1,1);
+  \path (-3,-2) node[croix]{} (1,1) node[croix]{} (-4,4) node[croix]{} (0,2) node[croix]{}
+        (0,-3) node[croix]{};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Tracer une droite]
+\cotefig[0.36]{%
+\cas{a)}
+\explique{Depuis $A(-3\,;1)$, $3$ vers la droite et $1$ vers le haut : $(d_{1})$ passe par
+$\res{(0\,;2)}$.}{déplacement de $\vec{u}$}
+\cas{b)}
+\explique{Depuis $B(-1\,;4)$, $1$ vers la droite et $3$ vers le bas : $(d_{2})$ passe par
+$\res{(0\,;1)}$.}{déplacement de $\vec{v}$}
+\cas{c)}
+\explique{Depuis $C(-2\,;-2)$, $2$ vers la droite : $(d_{3})$ passe par $\res{(0\,;-2)}$ ;
+elle est horizontale.}{$\vec{w}$ n'a pas de déplacement vertical}}
+{\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-4}{-3}{3}{5}
+  \gradx{-3,-2,-1,1,2} \grady{-2,1,2,4}
+  \draw[droite] (-4,0.6667) -- (3,3);
+  \draw[droiteB] (-1.3333,5) -- (1.3333,-3);
+  \draw[droiteC] (-4,-2) -- (3,-2);
+  \pt{-3,1}{above left}{A} \pt{-1,4}{left}{B} \pt{-2,-2}{below}{C}
+  \path (0,2) node[croix]{} (0,1) node[croix]{} (0,-2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,above] at (2.3,2.8) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize,right] at (1.1,-2.6) {$(d_{2})$};
+  \node[coulCourbeC,font=\footnotesize,below] at (-3.3,-2) {$(d_{3})$};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Est-ce un vecteur directeur ?]
+\cas{a)}
+\explique{$\vect{AB}\coord{4}{-6}$ dirige $(AB)$ ; un vecteur la dirige s'il est colinéaire
+à $\vect{AB}$.}{$\coord{6-2}{-1-5}$}
+\begin{calculs}
+\det(\vect{AB}\,;\vec{u}) &= 4\times 3-(-6)\times(-2) &&\justif{$xy'-yx'$}\\
+\det(\vect{AB}\,;\vec{u}) &= 0 &&\justif{$12-12$}
+\end{calculs}
+\explique{$\vec{u}$ \res{est un vecteur directeur} de $(AB)$.}{colinéaires}
+\begin{calculs}
+\det(\vect{AB}\,;\vec{v}) &= 4\times 4-(-6)\times 6 &&\justif{$xy'-yx'$}\\
+\det(\vect{AB}\,;\vec{v}) &= 52 &&\justif{$16+36$}
+\end{calculs}
+\explique{$\vec{v}$ \res{n'est pas un vecteur directeur} de $(AB)$.}{$52\neq 0$}
+\cas{b)}
+\explique{$\vect{CD}\coord{-2}{6}$ ; il faut $\det(\vect{CD}\,;\vec{w})=0$.}{$\coord{1-3}{4-(-2)}$}
+\begin{calculs}
+-2\times x-6\times 1 &= 0 &&\justif{$xy'-yx'$ avec $\vec{w}\coord{1}{x}$}\\
+-2x &= 6 &&\justif{on ajoute $6$}\\
+x &= \res{-3} &&\justif{on divise par $-2$}
+\end{calculs}
+\explique{Contrôle : $\vect{CD}=-2\vec{w}$ avec $\vec{w}\coord{1}{-3}$.}{coordonnées
+proportionnelles}
+\end{exo}
+
+\begin{exo}[Un point sur la droite ?]
+\explique{$M$ est sur $(d)$ quand $\vect{AM}$ et $\vec{u}\coord{2}{3}$ sont
+colinéaires.}{propriété du chapitre 8}
+\begin{calculs}
+\det(\vec{u}\,;\vect{AM}) &= 2\times 6-3\times 4 &&\justif{$\vect{AM}\coord{5-1}{5-(-1)}=\coord{4}{6}$}\\
+\det(\vec{u}\,;\vect{AM}) &= 0 &&
+\end{calculs}
+\explique{\res{$M$ est sur $(d)$}.}{déterminant nul}
+\begin{calculs}
+\det(\vec{u}\,;\vect{AN}) &= 2\times(-4)-3\times(-4) &&\justif{$\vect{AN}\coord{-3-1}{-5-(-1)}=\coord{-4}{-4}$}\\
+\det(\vec{u}\,;\vect{AN}) &= 4 &&\justif{$-8+12$}
+\end{calculs}
+\explique{\res{$N$ n'est pas sur $(d)$}.}{$4\neq 0$}
+\end{exo}
+
+\partie{Équation cartésienne d'une droite}
+
+\begin{exo}[Exploiter une équation]
+\cas{a)}
+\explique{$a=2$ et $b=-3$, donc $\res{\vec{u}\coord{3}{2}}$.}{$\vec{u}\coord{-b}{a}$ :
+$-b=-(-3)=3$}
+\cas{b)}
+\begin{calculs}
+2\times 0-3\times 2+6 &= 0 &&\justif{$A(0\,;2)$ : on remplace $x$ et $y$}
+\end{calculs}
+\explique{\res{$A$ est sur $(d)$}.}{égalité vraie}
+\begin{calculs}
+2\times 3-3\times 4+6 &= 0 &&\justif{$B(3\,;4)$ : $6-12+6$}
+\end{calculs}
+\explique{\res{$B$ est sur $(d)$}.}{égalité vraie}
+\begin{calculs}
+2\times 1-3\times 3+6 &= -1 &&\justif{$C(1\,;3)$ : $2-9+6$}
+\end{calculs}
+\explique{$-1\neq 0$ : \res{$C$ n'est pas sur $(d)$}.}{égalité fausse}
+\cas{c)}
+\begin{calculs}
+2\times 1-3y+6 &= 0 &&\justif{on remplace $x$ par $1$}\\
+-3y+8 &= 0 &&\justif{on réduit}\\
+-3y &= -8 &&\\
+y &= \res{\frac{8}{3}} &&\justif{on divise par $-3$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+2x-3\times 0+6 &= 0 &&\justif{on remplace $y$ par $0$}\\
+2x &= -6 &&\\
+x &= \res{-3} &&
+\end{calculs}
+\cas{e)}
+\cotefig[0.36]{%
+\explique{On place deux points de $(d)$ : $A(0\,;2)$ et $(-3\,;0)$ (question d), puis on
+trace la droite ; elle passe aussi par $B(3\,;4)$.}{un troisième point pour vérifier}}
+{\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-4}{-1}{4}{5}
+  \gradx{-3,3} \grady{2,4}
+  \draw[droite] (-4,-0.6667) -- (4,4.6667);
+  \pt{0,2}{above left}{A} \pt{3,4}{below right}{B} \path (-3,0) node[croix]{};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Des vecteurs directeurs]
+\explique{On lit $a$ (devant $x$) et $b$ (devant $y$), puis $\vec{u}\coord{-b}{a}$.}{théorème
+1}
+\cas{a)}
+\explique{$a=3$ et $b=-5$ : $\res{\vec{u}\coord{5}{3}}$.}{$-b=5$}
+\cas{b)}
+\explique{$a=4$ et $b=3$ : $\res{\vec{u}\coord{-3}{4}}$.}{$-b=-3$}
+\cas{c)}
+\explique{$a=-1$ et $b=6$ : $\res{\vec{u}\coord{-6}{-1}}$.}{attention au signe de $a$}
+\cas{d)}
+\explique{$2x=3y$ s'écrit $2x-3y=0$ : $a=2$, $b=-3$, donc $\res{\vec{u}\coord{3}{2}}$.}{on
+fait tout passer du même côté ; $c=0$}
+\end{exo}
+
+\begin{exo}[Appartenir à une droite]
+\cas{a)}
+\explique{$0+3\times 2-6=0$ : \res{le point $E$ appartient à la droite $(d)$}, car ses
+coordonnées vérifient l'équation.}{$E(0\,;2)$}
+\explique{$3+3\times 1-6=0$ : \res{le point $F$ appartient à la droite $(d)$}, car ses
+coordonnées vérifient l'équation.}{$F(3\,;1)$}
+\explique{$-3+3\times 3-6=0$ : \res{le point $G$ appartient à la droite $(d)$}, car ses
+coordonnées vérifient l'équation.}{$G(-3\,;3)$}
+\explique{$2+3\times 2-6=2$ : \res{le point $H$ n'appartient pas à la droite $(d)$}, car ses
+coordonnées ne vérifient pas l'équation.}{$2\neq 0$}
+\cas{b)}
+\begin{calculs}
+k+3\times 0-6 &= 0 &&\justif{$K(k\,;0)$ est sur $(d)$}\\
+k &= \res{6} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+1+3y-6 &= 0 &&\justif{$L(1\,;y)$ est sur $(d)$}\\
+3y &= 5 &&\\
+y &= \res{\frac{5}{3}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Avec le déterminant]
+\cas{a)}
+\explique{$\res{\vect{AM}\coord{x-2}{y-1}}$.}{extrémité moins origine}
+\cas{b)}
+\begin{calculs}
+\det(\vect{AM}\,;\vec{u}) &= (x-2)\times 3-(y-1)\times 1 &&\justif{$xy'-yx'$}\\
+\det(\vect{AM}\,;\vec{u}) &= 3x-6-y+1 &&\justif{on développe}\\
+\det(\vect{AM}\,;\vec{u}) &= \res{3x-y-5} &&\justif{on réduit}
+\end{calculs}
+\cas{c)}
+\explique{$M$ est sur $(d)$ quand le déterminant est nul : $\res{3x-y-5=0}$.}{$\vect{AM}$ et
+$\vec{u}$ colinéaires}
+\explique{$a=3$ et $b=-1$, donc $\coord{-b}{a}=\coord{1}{3}$ : c'est bien
+$\vec{u}$.}{on retrouve le théorème 1}
+\end{exo}
+
+\partie{Trouver une équation cartésienne}
+
+\begin{exo}[Un point et un vecteur directeur]
+\explique{On lit $a$ et $b$ sur $\vec{u}\coord{-b}{a}$ ; on trouve $c$ avec le
+point.}{méthode 3}
+\cas{a)}
+\explique{$\vec{u}\coord{-1}{4}$ : $a=4$ et $b=1$, d'où $4x+y+c=0$.}{$-b=-1$}
+\begin{calculs}
+4\times 2+(-3)+c &= 0 &&\justif{$A(2\,;-3)$ est sur $(d_{1})$}\\
+5+c &= 0 &&\\
+c &= -5 &&
+\end{calculs}
+\explique{$\res{4x+y-5=0}$.}{contrôle : $8-3-5=0$}
+\cas{b)}
+\explique{$\vec{v}\coord{3}{2}$ : $a=2$ et $b=-3$, d'où $2x-3y+c=0$.}{$-b=3$}
+\begin{calculs}
+2\times(-1)-3\times 2+c &= 0 &&\justif{$B(-1\,;2)$}\\
+-8+c &= 0 &&\\
+c &= 8 &&
+\end{calculs}
+\explique{$\res{2x-3y+8=0}$.}{contrôle : $-2-6+8=0$}
+\cas{c)}
+\explique{$\vec{w}\coord{5}{-2}$ : $a=-2$ et $b=-5$, d'où $-2x-5y+c=0$.}{$-b=5$}
+\begin{calculs}
+-2\times 0-5\times(-4)+c &= 0 &&\justif{$C(0\,;-4)$}\\
+20+c &= 0 &&\\
+c &= -20 &&
+\end{calculs}
+\explique{$\res{-2x-5y-20=0}$, ou $2x+5y+20=0$ en multipliant par $-1$.}{les deux
+équations conviennent}
+\end{exo}
+
+\begin{exo}[Deux points]
+\cas{a)}
+\explique{$\vect{AB}\coord{2}{4}$ dirige $(AB)$ : $a=4$ et $b=-2$, d'où
+$4x-2y+c=0$.}{$\coord{3-1}{7-3}$}
+\begin{calculs}
+4\times 1-2\times 3+c &= 0 &&\justif{$A$ est sur la droite}\\
+c &= 2 &&\justif{$4-6=-2$}
+\end{calculs}
+\explique{$\res{4x-2y+2=0}$ (ou $2x-y+1=0$). Vérification avec $B$ :
+$12-14+2=0$.}{le second point vérifie l'équation}
+\cas{b)}
+\explique{$\vect{CD}\coord{6}{-3}$ : $a=-3$ et $b=-6$, d'où $-3x-6y+c=0$.}{$\coord{4-(-2)}{0-3}$}
+\begin{calculs}
+-3\times(-2)-6\times 3+c &= 0 &&\justif{$C$ est sur la droite}\\
+c &= 12 &&\justif{$6-18=-12$}
+\end{calculs}
+\explique{$\res{-3x-6y+12=0}$ (ou $x+2y-4=0$). Vérification avec $D$ :
+$-12-0+12=0$.}{en divisant par $-3$, l'équation est plus simple}
+\end{exo}
+
+\begin{exo}[Les droites d'un triangle]
+\cas{a)}
+\explique{$\vect{AB}\coord{4}{2}$ : $2x-4y+c=0$ ; avec $A$ : $-2-4+c=0$, donc $c=6$.}{$a=2$,
+$b=-4$}
+\explique{$(AB)$ : $\res{2x-4y+6=0}$ (ou $x-2y+3=0$).}{contrôle avec $B$ : $6-12+6=0$}
+\explique{$\vect{BC}\coord{-2}{-6}$ : $-6x+2y+c=0$ ; avec $B$ : $-18+6+c=0$, donc
+$c=12$.}{$a=-6$, $b=2$}
+\explique{$(BC)$ : $\res{-6x+2y+12=0}$ (ou $3x-y-6=0$).}{contrôle avec $C$ : $-6-6+12=0$}
+\cas{b)}
+\explique{$I\left(\frac{3+1}{2}\,;\frac{3+(-3)}{2}\right)$, soit $\res{I(2\,;0)}$.}{moyennes
+des coordonnées (chapitre 8)}
+\cas{c)}
+\explique{$\vect{AI}\coord{3}{-1}$ : $a=-1$ et $b=-3$, d'où $-x-3y+c=0$ ; avec $A$ :
+$1-3+c=0$, donc $c=2$.}{$\coord{2-(-1)}{0-1}$}
+\explique{$(AI)$ : $\res{-x-3y+2=0}$ (ou $x+3y-2=0$).}{contrôle avec $I$ : $-2+0+2=0$}
+\end{exo}
+
+\begin{exo}[Du graphique à l'équation]
+\cotefig[0.36]{%
+\explique{$(d_{1})$ passe par les nœuds $(-3\,;0)$ et $(1\,;2)$ : $\vec{u}_{1}\coord{4}{2}$,
+d'où $2x-4y+c=0$ ; avec $(-3\,;0)$ : $-6+c=0$, $c=6$.}{$a=2$, $b=-4$}
+\explique{$(d_{1})$ : $\res{2x-4y+6=0}$ (ou $x-2y+3=0$).}{contrôle avec $(1\,;2)$}
+\explique{$(d_{2})$ passe par $(0\,;3)$ et $(2\,;-1)$ : $\vec{u}_{2}\coord{2}{-4}$, d'où
+$-4x-2y+c=0$ ; avec $(0\,;3)$ : $-6+c=0$, $c=6$.}{$a=-4$, $b=-2$}
+\explique{$(d_{2})$ : $\res{-4x-2y+6=0}$ (ou $2x+y-3=0$).}{contrôle avec $(2\,;-1)$}}
+{\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-4}{-3}{5}{4}
+  \draw[droite] (-4,-0.5) -- (5,4);
+  \draw[droiteB] (-0.5,4) -- (3,-3);
+  \path (-3,0) node[croix]{} (1,2) node[croix]{} (0,3) node[croix]{} (2,-1) node[croix]{};
+  \node[coulCourbe,font=\footnotesize,left] at (4.3,4) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize,right] at (2.6,-2.6) {$(d_{2})$};
+\end{tikzpicture}}
+\end{exo}
+
+\partie{Équation réduite ; passer de l'une à l'autre}
+
+\begin{exo}[De la cartésienne à la réduite]
+\explique{On isole $y$ comme dans une équation.}{méthode 4}
+\cas{a)}
+\begin{calculs}
+2x+y-5 &= 0 &&\justif{on recopie}\\
+y &= \res{-2x+5} &&\justif{on enlève $2x$, on ajoute $5$}
+\end{calculs}
+\explique{Pente \res{$-2$}, ordonnée à l'origine \res{$5$}.}{$m$ devant $x$, $p$ seul}
+\cas{b)}
+\begin{calculs}
+6x-3y+9 &= 0 &&\\
+-3y &= -6x-9 &&\justif{on enlève $6x$ et $9$}\\
+y &= \res{2x+3} &&\justif{on divise par $-3$ : les signes changent}
+\end{calculs}
+\explique{Pente \res{$2$}, ordonnée à l'origine \res{$3$}.}{}
+\cas{c)}
+\begin{calculs}
+x+3y-6 &= 0 &&\\
+3y &= -x+6 &&\\
+y &= \res{-\frac{1}{3}x+2} &&\justif{on divise par $3$}
+\end{calculs}
+\explique{Pente \res{$-\frac13$}, ordonnée à l'origine \res{$2$}.}{}
+\cas{d)}
+\begin{calculs}
+4x-6y+3 &= 0 &&\\
+-6y &= -4x-3 &&\\
+y &= \res{\frac{2}{3}x+\frac{1}{2}} &&\justif{$\frac{-4}{-6}=\frac23$ et $\frac{-3}{-6}=\frac12$}
+\end{calculs}
+\explique{Pente \res{$\frac23$}, ordonnée à l'origine \res{$\frac12$}.}{}
+\end{exo}
+
+\begin{exo}[De la réduite à la cartésienne]
+\cas{a)}
+\explique{$y=3x-2$ donne $\res{3x-y-2=0}$.}{on enlève $y$ des deux côtés}
+\cas{b)}
+\explique{$y=-x+4$ donne $\res{x+y-4=0}$.}{on ajoute $x$, on enlève $4$}
+\cas{c)}
+\begin{calculs}
+y &= \frac{2}{3}x-1 &&\justif{on recopie}\\
+3y &= 2x-3 &&\justif{on multiplie tout par $3$}\\
+0 &= 2x-3y-3 &&\justif{on enlève $3y$}
+\end{calculs}
+\explique{$\res{2x-3y-3=0}$.}{coefficients entiers}
+\cas{d)}
+\begin{calculs}
+y &= -\frac{1}{4}x+2 &&\\
+4y &= -x+8 &&\justif{on multiplie par $4$}\\
+0 &= -x-4y+8 &&\justif{on enlève $4y$}
+\end{calculs}
+\explique{$-x-4y+8=0$, ou $\res{x+4y-8=0}$.}{en multipliant par $-1$}
+\end{exo}
+
+\begin{exo}[Pente et vecteur directeur]
+\cotefig[0.36]{%
+\explique{$(d_{1})$ : $\res{\vec{u}_{1}\coord{1}{2}}$ ; elle passe par $(0\,;1)$, puis
+$(1\,;3)$.}{$\vec{u}\coord{1}{m}$ avec $m=2$}
+\explique{$(d_{2})$ : $\res{\vec{u}_{2}\coord{1}{-3}}$ ; elle passe par l'origine, puis
+$(1\,;-3)$.}{$p=0$}
+\explique{$(d_{3})$ : $\coord{1}{\frac13}$, ou $\res{\vec{u}_{3}\coord{3}{1}}$ en
+multipliant par $3$ ; elle passe par $(0\,;2)$, puis $(3\,;3)$.}{coordonnées entières,
+plus faciles à tracer}}
+{\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-2}{-3}{4}{4}
+  \gradx{1,3} \grady{-3,1,2,3}
+  \draw[droite] (-2,-3) -- (1.5,4);
+  \draw[droiteB] (-1.3333,4) -- (1,-3);
+  \draw[droiteC] (-2,1.3333) -- (4,3.3333);
+  \node[coulCourbe,font=\footnotesize,right] at (1.4,3.6) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize,right] at (0.9,-2.6) {$(d_{2})$};
+  \node[coulCourbeC,font=\footnotesize,below] at (3.3,3.1) {$(d_{3})$};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Par un point et la pente, par deux points]
+\cas{a)}
+\begin{calculs}
+4 &= 2\times(-1)+p &&\justif{$y=2x+p$ passe par $A(-1\,;4)$}\\
+p &= 6 &&\justif{on ajoute $2$}
+\end{calculs}
+\explique{$\res{y=2x+6}$.}{contrôle : $-2+6=4$}
+\cas{b)}
+\begin{calculs}
+m &= \frac{5-(-1)}{3-1} &&\justif{différence des ordonnées sur différence des abscisses}\\
+m &= 3 &&
+\end{calculs}
+\begin{calculs}
+-1 &= 3\times 1+p &&\justif{$B(1\,;-1)$ est sur la droite}\\
+p &= -4 &&
+\end{calculs}
+\explique{$\res{y=3x-4}$.}{contrôle avec $C$ : $9-4=5$}
+\cas{c)}
+\begin{calculs}
+m &= \frac{0-3}{4-(-2)} &&\justif{$D(-2\,;3)$, $E(4\,;0)$}\\
+m &= -\frac{1}{2} &&\justif{$-3\div 6$}
+\end{calculs}
+\begin{calculs}
+0 &= -\frac{1}{2}\times 4+p &&\justif{$E$ est sur la droite : plus simple que $D$}\\
+p &= 2 &&
+\end{calculs}
+\explique{$\res{y=-\frac{1}{2}x+2}$.}{contrôle avec $D$ : $1+2=3$}
+\end{exo}
+
+\begin{exo}[Le prix d'une course]
+\cas{a)}
+\begin{calculs}
+4x-5y+20 &= 0 &&\justif{on recopie}\\
+-5y &= -4x-20 &&\\
+y &= \res{0{,}8x+4} &&\justif{on divise par $-5$}
+\end{calculs}
+\cas{b)}
+\explique{La pente $0{,}8$ est \res{le prix par kilomètre} ($0{,}80$~€) ; l'ordonnée à
+l'origine $4$ est \res{le prix de départ} ($4$~€), payé même sans rouler.}{quand $x$ augmente
+de $1$, $y$ augmente de $0{,}8$}
+\cas{c)}
+\begin{calculs}
+y &= 0{,}8\times 15+4 &&\justif{$x=15$}\\
+y &= \res{16} &&
+\end{calculs}
+\explique{La course de $15$~km coûte $16$~€.}{on conclut}
+\cas{d)}
+\begin{calculs}
+0{,}8x+4 &= 28 &&\justif{$y=28$}\\
+0{,}8x &= 24 &&\\
+x &= \res{30} &&\justif{$24\div 0{,}8$}
+\end{calculs}
+\explique{Pour $28$~€, on parcourt $30$~km.}{la forme réduite est la plus pratique ici}
+\end{exo}
+
+\partie{Droites parallèles}
+
+\begin{exo}[Parallèles ou sécantes]
+\explique{Pour chaque couple, un vecteur directeur de chaque droite, puis leur
+déterminant.}{méthode 5}
+\cas{a)}
+\begin{calculs}
+\det(\vec{u}_{1}\,;\vec{u}_{2}) &= 2\times(-6)-3\times(-4) &&\justif{$\vec{u}_{1}\coord{2}{3}$, $\vec{u}_{2}\coord{-4}{-6}$}\\
+\det(\vec{u}_{1}\,;\vec{u}_{2}) &= 0 &&
+\end{calculs}
+\explique{\res{Parallèles}.}{vecteurs colinéaires}
+\cas{b)}
+\begin{calculs}
+\det(\vec{u}_{3}\,;\vec{u}_{4}) &= -1\times 1-1\times 1 &&\justif{$\vec{u}_{3}\coord{-1}{1}$, $\vec{u}_{4}\coord{1}{1}$}\\
+\det(\vec{u}_{3}\,;\vec{u}_{4}) &= -2 &&
+\end{calculs}
+\explique{\res{Sécantes}.}{$-2\neq 0$}
+\cas{c)}
+\begin{calculs}
+\det(\vec{u}_{5}\,;\vec{u}_{6}) &= -5\times 4-2\times(-10) &&\justif{$\vec{u}_{5}\coord{-5}{2}$, $\vec{u}_{6}\coord{-10}{4}$}\\
+\det(\vec{u}_{5}\,;\vec{u}_{6}) &= 0 &&
+\end{calculs}
+\explique{\res{Parallèles}.}{l'équation de $(d_{6})$ a les coefficients de $(d_{5})$ multipliés par $2$}
+\cas{d)}
+\begin{calculs}
+\det(\vec{u}_{7}\,;\vec{u}_{8}) &= 4\times\frac{1}{4}-1\times 1 &&\justif{$\vec{u}_{7}\coord{4}{1}$, $\vec{u}_{8}\coord{1}{\frac14}$}\\
+\det(\vec{u}_{7}\,;\vec{u}_{8}) &= 0 &&
+\end{calculs}
+\explique{\res{Parallèles}.}{$4\times\frac14=1$}
+\end{exo}
+
+\begin{exo}[La forme la plus pratique]
+\cas{a)}
+\begin{calculs}
+4x-2y+3 &= 0 &&\justif{on réduit $(d_{2})$}\\
+-2y &= -4x-3 &&\\
+y &= 2x+\frac{3}{2} &&
+\end{calculs}
+\explique{Même pente $2$ que $(d_{1})$ : \res{parallèles}.}{les deux en réduites : on
+compare les pentes (propriété 2)}
+\cas{b)}
+\explique{$(d_{4})$ : $x-y=0$ s'écrit $y=x$. Pentes $-1$ et $1$ : \res{sécantes}.}{pentes
+différentes}
+\rem{On peut aussi tout écrire en cartésiennes et calculer un déterminant : le résultat
+est le même.}
+\end{exo}
+
+\begin{exo}[La parallèle qui passe par un point]
+\explique{La parallèle garde $a$ et $b$ ; on trouve $c$ avec le point.}{méthode 6}
+\cas{a)}
+\begin{calculs}
+2\times 3-1+c &= 0 &&\justif{$2x-y+c=0$ passe par $A(3\,;1)$}\\
+c &= -5 &&
+\end{calculs}
+\explique{$\res{2x-y-5=0}$.}{}
+\cas{b)}
+\begin{calculs}
+-2+3\times 4+c &= 0 &&\justif{$x+3y+c=0$ passe par $B(-2\,;4)$}\\
+c &= -10 &&
+\end{calculs}
+\explique{$\res{x+3y-10=0}$.}{}
+\cas{c)}
+\explique{$\vect{EF}\coord{2}{3}$ dirige la parallèle : $a=3$, $b=-2$, d'où
+$3x-2y+c=0$.}{méthode 3 avec le point $G$}
+\begin{calculs}
+3\times 1-2\times(-2)+c &= 0 &&\justif{$G(1\,;-2)$}\\
+c &= -7 &&
+\end{calculs}
+\explique{$\res{3x-2y-7=0}$.}{contrôle : $3+4-7=0$}
+\end{exo}
+
+\begin{exo}[Un trapèze]
+\cas{a)}
+\begin{calculs}
+\det(\vect{AB}\,;\vect{DC}) &= 6\times 1-2\times 3 &&\justif{$\vect{AB}\coord{6}{2}$, $\vect{DC}\coord{3}{1}$}\\
+\det(\vect{AB}\,;\vect{DC}) &= 0 &&
+\end{calculs}
+\explique{Les droites $(AB)$ et $(DC)$ sont \res{parallèles}.}{vecteurs directeurs colinéaires}
+\cas{b)}
+\begin{calculs}
+\det(\vect{AD}\,;\vect{BC}) &= 2\times 3-4\times(-1) &&\justif{$\vect{AD}\coord{2}{4}$, $\vect{BC}\coord{-1}{3}$}\\
+\det(\vect{AD}\,;\vect{BC}) &= 10 &&
+\end{calculs}
+\explique{$(AD)$ et $(BC)$ \res{ne sont pas parallèles} : $ABCD$ a deux côtés parallèles
+seulement, c'est \res{un trapèze}.}{$10\neq 0$}
+\cas{c)}
+\explique{$\vect{AB}\coord{6}{2}$ : $2x-6y+c=0$ ; avec $A$ : $-4+6+c=0$, donc $c=-2$ ;
+$(AB)$ : $\res{2x-6y-2=0}$.}{$a=2$, $b=-6$}
+\explique{Parallèle par $D(0\,;3)$ : $2x-6y+c=0$ avec $-18+c=0$, donc
+$\res{2x-6y+18=0}$.}{mêmes $a$ et $b$}
+\explique{Avec $C(3\,;4)$ : $6-24+18=0$, donc \res{$C$ est sur cette parallèle}.}{c'est
+la droite $(DC)$, parallèle à $(AB)$ d'après le a)}
+\end{exo}
+
+\besoinplace{18\baselineskip}
+\partie{Droites horizontales et verticales}
+
+\begin{exo}[Tracer]
+\cotefig[0.36]{%
+\cas{a)}
+\explique{$3y-6=0$ donne $y=2$ : \res{horizontale}.}{$a=0$}
+\cas{b)}
+\explique{$x+3=0$ donne $x=-3$ : \res{verticale}.}{$b=0$}
+\cas{c)}
+\explique{$2y+4=0$ donne $y=-2$ : \res{horizontale}.}{$a=0$}
+\cas{d)}
+\explique{$4x-2=0$ donne $x=\frac12$ : \res{verticale}.}{$b=0$}}
+{\begin{tikzpicture}[x=0.38cm,y=0.38cm]
+  \repere{-4}{-3}{3}{3}
+  \gradx{-3,-2,-1,1,2} \grady{-2,-1,1,2}
+  \draw[droite] (-4,2) -- (3,2);
+  \draw[droiteB] (-3,-3) -- (-3,3);
+  \draw[droiteC] (-4,-2) -- (3,-2);
+  \draw[droite,coulCourbeB!60!black] (0.5,-3) -- (0.5,3);
+  \node[coulCourbe,font=\footnotesize,above] at (2.2,2) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize,left] at (-3,2.5) {$(d_{2})$};
+  \node[coulCourbeC,font=\footnotesize,below] at (2.2,-2) {$(d_{3})$};
+  \node[font=\footnotesize,right] at (0.5,2.6) {$(d_{4})$};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Trouver une équation]
+\cas{a)}
+\explique{$\vect{AB}\coord{0}{6}$ : $a=6$ et $b=0$, d'où $6x+c=0$ ; avec $A$ : $12+c=0$,
+$c=-12$.}{méthode 3}
+\explique{$6x-12=0$, soit $\res{x=2}$.}{$A$ et $B$ ont la même abscisse : verticale}
+\cas{b)}
+\explique{$\vect{CD}\coord{8}{0}$ : $a=0$ et $b=-8$, d'où $-8y+c=0$ ; avec $C$ :
+$-32+c=0$, $c=32$.}{$-b=8$}
+\explique{$-8y+32=0$, soit $\res{y=4}$.}{même ordonnée : horizontale}
+\cas{c)}
+\explique{$\vec{\imath}\coord{1}{0}$ : $a=0$ et $b=-1$, d'où $-y+c=0$ ; avec $E$ :
+$-3+c=0$, $c=3$.}{$\vec{\imath}$ dirige les horizontales}
+\explique{$-y+3=0$, soit $\res{y=3}$.}{horizontale passant par $E$}
+\end{exo}
+
+\begin{exo}[Les côtés d'un rectangle]
+\cas{a)}
+\explique{$(AB)$ : $\res{y=-1}$ ; $(BC)$ : $\res{x=3}$ ; $(CD)$ : $\res{y=2}$ ; $(DA)$ :
+$\res{x=-2}$.}{deux points de même ordonnée : horizontale ; de même abscisse : verticale}
+\cas{b)}
+\explique{\res{La droite $(BC)$ est parallèle à l'axe des ordonnées}, car tous ses points
+ont l'abscisse $3$.}{elle est verticale}
+\cas{c)}
+\explique{Axes de symétrie : la verticale $\res{x=\frac12}$ et l'horizontale
+$\res{y=\frac12}$.}{$\frac{-2+3}{2}=\frac12$ et $\frac{-1+2}{2}=\frac12$ : ils passent par
+les milieux des côtés}
+\end{exo}
+
+\partie{Point d'intersection de deux droites sécantes}
+
+\begin{exo}[Calculer un point d'intersection]
+\explique{On égale les deux expressions de $y$, puis on calcule $y$.}{méthode 8}
+\cas{a)}
+\begin{calculs}
+3x-1 &= -x+7 &&\justif{même $y$}\\
+4x &= 8 &&\justif{on ajoute $x$ et $1$}\\
+x &= 2 &&
+\end{calculs}
+\begin{calculs}
+y &= 3\times 2-1 &&\justif{dans $(d_{1})$}\\
+y &= 5 &&
+\end{calculs}
+\explique{$\res{(2\,;5)}$.}{contrôle dans $(d_{2})$ : $-2+7=5$}
+\cas{b)}
+\begin{calculs}
+2x+3 &= -x+1 &&\justif{même $y$}\\
+3x &= -2 &&\\
+x &= -\frac{2}{3} &&
+\end{calculs}
+\begin{calculs}
+y &= -\left(-\frac{2}{3}\right)+1 &&\justif{dans $(d_{4})$, plus simple}\\
+y &= \frac{2}{3}+\frac{1\fois{3}}{1\fois{3}} &&\justif{même dénominateur}\\
+y &= \frac{5}{3} &&
+\end{calculs}
+\explique{$\res{\left(-\frac{2}{3}\,;\frac{5}{3}\right)}$.}{contrôle dans $(d_{3})$ :
+$-\frac43+\frac93=\frac53$}
+\cas{c)}
+\begin{calculs}
+\frac{1}{2}x+1 &= -x+4 &&\justif{même $y$}\\
+\frac{3}{2}x &= 3 &&\justif{$\frac12+1=\frac32$}\\
+x &= 2 &&\justif{on multiplie par $\frac23$}
+\end{calculs}
+\explique{$y=-2+4=2$ : $\res{(2\,;2)}$.}{dans $(d_{6})$}
+\end{exo}
+
+\begin{exo}[D'abord réduire]
+\cas{a)}
+\explique{$(d_{1})$ : $y=2x+1$ ; $(d_{2})$ : $y=-x+4$.}{on isole $y$ dans chaque équation}
+\begin{calculs}
+2x+1 &= -x+4 &&\justif{même $y$}\\
+3x &= 3 &&\\
+x &= 1 &&
+\end{calculs}
+\explique{$y=2+1=3$ : $\res{(1\,;3)}$.}{contrôle dans $(d_{2})$ : $-1+4=3$}
+\cas{b)}
+\explique{$(d_{3})$ : $x=-2$ (verticale) ; on remplace dans $(d_{4})$ : $y=3\times(-2)+5=-1$.}{la
+forme $x=-2$ est la plus pratique}
+\explique{$\res{(-2\,;-1)}$.}{}
+\end{exo}
+
+\begin{exo}[Louer un vélo]
+\cas{a)}
+\explique{Tarif A : $\res{y=1{,}5x+6}$ ; tarif B : $\res{y=3x}$.}{pente : le prix par
+heure ; ordonnée à l'origine : les frais fixes}
+\cas{b)}
+\begin{calculs}
+1{,}5x+6 &= 3x &&\justif{même prix}\\
+6 &= 1{,}5x &&\justif{on enlève $1{,}5x$}\\
+x &= 4 &&\justif{$6\div 1{,}5$}
+\end{calculs}
+\explique{$y=3\times 4=12$ : $\res{(4\,;12)}$.}{pour $4$~h, les deux tarifs coûtent $12$~€}
+\cas{c)}
+\explique{$3$~h : A coûte $10{,}50$~€, B coûte $9$~€ : \res{tarif B}.}{$1{,}5\times 3+6$ et
+$3\times 3$}
+\explique{$6$~h : A coûte $15$~€, B coûte $18$~€ : \res{tarif A}.}{au-delà de $4$~h, A
+devient moins cher}
+\end{exo}
+
+\begin{exo}[Deux droites sécantes]
+\cas{a)}
+\explique{$(AB)$ : pente $\frac{5-1}{2-0}=2$, ordonnée à l'origine $1$, donc $\res{y=2x+1}$.}{$A(0\,;1)$
+est sur l'axe des ordonnées}
+\begin{calculs}
+m &= \frac{0-6}{5-(-1)} &&\justif{$C(-1\,;6)$, $D(5\,;0)$}\\
+m &= -1 &&
+\end{calculs}
+\explique{$0=-5+p$, donc $p=5$ : $(CD)$ : $\res{y=-x+5}$.}{avec $D(5\,;0)$}
+\cas{b)}
+\explique{Pentes $2$ et $-1$ différentes : les droites \res{sont sécantes}.}{pas
+parallèles (propriété 2)}
+\cas{c)}
+\begin{calculs}
+2x+1 &= -x+5 &&\justif{même $y$}\\
+3x &= 4 &&\\
+x &= \frac{4}{3} &&
+\end{calculs}
+\begin{calculs}
+y &= -\frac{4}{3}+5 &&\justif{dans $(CD)$}\\
+y &= -\frac{4}{3}+\frac{5\fois{3}}{1\fois{3}} &&\justif{même dénominateur}\\
+y &= \frac{11}{3} &&
+\end{calculs}
+\explique{$\res{\left(\frac{4}{3}\,;\frac{11}{3}\right)}$.}{contrôle dans $(AB)$ :
+$\frac83+\frac33=\frac{11}{3}$}
+\end{exo}
+
+\partie{Problèmes de géométrie repérée}
+
+\begin{exo}[Dans un carré]
+\cas{a)}
+\cotefig[0.3]{%
+\explique{$\res{A(0\,;0)}$, $\res{B(4\,;0)}$, $\res{C(4\,;4)}$, $\res{D(0\,;4)}$,
+$\res{I(4\,;2)}$ et $\res{J(2\,;4)}$.}{côté $4$ ; $I$ et $J$ : moyennes des coordonnées}}
+{\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \draw[fig] (0,0) -- (4,0) -- (4,4) -- (0,4) -- cycle;
+  \draw[coulCourbe] (0,0) -- (4,2);
+  \draw[coulCourbeB] (4,0) -- (2,4);
+  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{4,4}{above right}{C}
+  \pt{0,4}{above left}{D} \pt{4,2}{right}{I} \pt{2,4}{above}{J}
+  \pt{3.2,1.6}{above left}{K}
+\end{tikzpicture}}
+\cas{b)}
+\explique{$(AI)$ passe par l'origine, pente $\frac{2}{4}=\frac12$ : $\res{y=\frac{1}{2}x}$.}{$p=0$}
+\explique{$(BJ)$ : pente $\frac{4-0}{2-4}=-2$ ; avec $B$ : $0=-8+p$, $p=8$ :
+$\res{y=-2x+8}$.}{deux points}
+\cas{c)}
+\begin{calculs}
+\frac{1}{2}x &= -2x+8 &&\justif{même $y$}\\
+\frac{5}{2}x &= 8 &&\justif{$\frac12+2=\frac52$}\\
+x &= \frac{16}{5} &&\justif{on multiplie par $\frac25$}
+\end{calculs}
+\explique{$y=\frac12\times\frac{16}{5}=\frac{8}{5}$ : $\res{K\left(\frac{16}{5}\,;\frac{8}{5}\right)}$.}{dans
+$(AI)$}
+\cas{d)}
+\explique{$\vect{DK}\coord{\frac{16}{5}}{\frac{8}{5}-4}=\coord{\frac{16}{5}}{-\frac{12}{5}}$.}{$4=\frac{20}{5}$}
+\begin{calculs}
+DK^{2} &= \frac{256}{25}+\frac{144}{25} &&\justif{carrés des coordonnées}\\
+DK^{2} &= \frac{400}{25} &&\\
+DK^{2} &= 16 &&
+\end{calculs}
+\explique{$DK=4=DA$ : \res{$DK=DA$}, le triangle $ADK$ est isocèle en $D$.}{$\sqrt{16}=4$}
+\end{exo}
+
+\begin{exo}[Trois points alignés]
+\cas{a)}
+\explique{$\res{A(0\,;0)}$, $\res{B(6\,;0)}$, $\res{C(6\,;4)}$, $\res{D(0\,;4)}$ et
+$\res{K(3\,;0)}$.}{repère orthonormé : angle droit en $A$, même unité sur les deux axes}
+\cas{b)}
+\explique{$\vect{AC}\coord{6}{4}$, donc $\vect{AM}=\frac13\vect{AC}$ a pour coordonnées
+$\coord{2}{\frac43}$ : $\res{M\left(2\,;\frac{4}{3}\right)}$.}{produit par un nombre réel
+(chapitre 8)}
+\cas{c)}
+\explique{$\vect{DK}\coord{3}{-4}$ : $a=-4$ et $b=-3$, d'où $-4x-3y+c=0$ ; avec $D$ :
+$-12+c=0$, $c=12$.}{méthode 3}
+\explique{$(DK)$ : $\res{-4x-3y+12=0}$ (ou $4x+3y-12=0$).}{contrôle avec $K$ : $-12+12=0$}
+\cas{d)}
+\begin{calculs}
+-4\times 2-3\times\frac{4}{3}+12 &= 0 &&\justif{$-8-4+12$}
+\end{calculs}
+\explique{$M$ est sur $(DK)$ : \res{$D$, $M$ et $K$ sont alignés}.}{ses coordonnées vérifient
+l'équation}
+\end{exo}
+
+\begin{exo}[Les médianes d'un triangle]
+\cas{a)}
+\explique{$\res{I(3\,;3)}$, $\res{J(0\,;3)}$ et $\res{K(3\,;0)}$.}{moyennes des coordonnées}
+\cas{b)}
+\explique{$(AI)$ : pente $\frac33=1$, passe par l'origine : $\res{y=x}$.}{$p=0$}
+\explique{$(BJ)$ : pente $\frac{3-0}{0-6}=-\frac12$, ordonnée à l'origine $3$ :
+$\res{y=-\frac{1}{2}x+3}$.}{$J$ est sur l'axe des ordonnées}
+\cas{c)}
+\begin{calculs}
+x &= -\frac{1}{2}x+3 &&\justif{même $y$}\\
+\frac{3}{2}x &= 3 &&\justif{on ajoute $\frac12x$}\\
+x &= 2 &&
+\end{calculs}
+\explique{$y=2$ : $\res{G(2\,;2)}$.}{dans $(AI)$}
+\cas{d)}
+\explique{$(CK)$ : pente $\frac{0-6}{3-0}=-2$, ordonnée à l'origine $6$ :
+$y=-2x+6$.}{$C(0\,;6)$}
+\explique{Pour $x=2$ : $-4+6=2$ ; \res{$G$ est sur la troisième médiane}.}{les trois
+médianes sont concourantes (en $G$, centre de gravité)}
+\end{exo}
+
+\end{document}

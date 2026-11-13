@@ -1,0 +1,1534 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.1}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{8}{Repérage, vecteurs et trigonométrie}
+\niveaucours{Seconde}
+\titrecours{REPÉRAGE, VECTEURS ET TRIGONOMÉTRIE}{Cours --- Seconde}
+
+\begin{document}
+
+\ShorthandsOff
+\tikzset{
+  vecteur/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbe},
+  vecteurB/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeB},
+  vecteurC/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeC},
+  base/.style={-{Stealth[length=2mm]},line width=0.9pt,black},
+  aide/.style={dashed,black!45,line width=0.6pt},
+  fig/.style={line width=0.8pt,black!75},
+}
+\ShorthandsOn
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Repère du plan, base orthonormée}
+
+\begin{definitionbox}[Définition 1 --- Repère, base orthonormée]
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+Un \textbf{repère} du plan est formé d'un point $O$, l'\textbf{origine}, et de deux
+vecteurs $\vec{\imath}$ et $\vec{\jmath}$ qui n'ont pas la même direction. On le note
+$(O\,;\vec{\imath},\vec{\jmath})$ ; le couple $(\vec{\imath},\vec{\jmath})$ est une
+\textbf{base}.
+
+\smallskip
+La base est \textbf{orthonormée} quand $\vec{\imath}$ et $\vec{\jmath}$ ont des
+directions \textbf{perpendiculaires} et la \textbf{même longueur}, prise pour unité. Le
+repère est alors \textbf{orthonormé} : c'est celui du quadrillage, où
+$\vec{\imath}$ fait un carreau vers la droite et $\vec{\jmath}$ un carreau vers le haut.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
+  \draw[base] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{\imath}$} (1,0);
+  \draw[base] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{\jmath}$} (0,1);
+  \pt{0,0}{below left}{O}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Coordonnées d'un point]
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+Le point $M$ a pour \textbf{coordonnées} $(x\,;y)$ dans le repère
+$(O\,;\vec{\imath},\vec{\jmath})$ quand
+\[
+  \vect{OM}=x\,\vec{\imath}+y\,\vec{\jmath}.
+\]
+Pour aller de $O$ à $M$, on fait $x$ fois $\vec{\imath}$, puis $y$ fois $\vec{\jmath}$.
+Le nombre $x$ est l'\textbf{abscisse} de $M$, le nombre $y$ son \textbf{ordonnée}.
+
+\smallskip
+Ci-contre, $\vect{OM}=3\vec{\imath}+2\vec{\jmath}$ : $M$ a pour coordonnées $(3\,;2)$,
+ce qu'on note $M(3\,;2)$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
+  \draw[aide,black!70] (0,0) -- node[midway,below,font=\footnotesize,black]{$3\vec{\imath}$} (3,0);
+  \draw[aide,black!70] (3,0) -- node[midway,right,font=\footnotesize,black]{$2\vec{\jmath}$} (3,2);
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{$\vect{OM}$} (3,2);
+  \pt{0,0}{below left}{O} \pt{3,2}{above right}{M}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Lire et placer des points dans un repère]
+\etapeexemples
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+Dans le repère orthonormé $(O\,;\vec{\imath},\vec{\jmath})$ ci-contre :
+\begin{questions}[label=\alph*)]
+  \item Lire les coordonnées des points $A$, $B$, $C$ et $D$.
+  \item Placer les points $E(4\,;-2)$ et $F(-1\,;0)$.
+  \item Écrire $\vect{OA}$ en fonction de $\vec{\imath}$ et $\vec{\jmath}$.
+  \item Écrire $\vect{DA}$ en fonction de $\vec{\imath}$ et $\vec{\jmath}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{5}{4}
+  \gradx{-3,-2,-1,2,3,4} \grady{-2,-1,2,3}
+  \draw[base] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{\imath}$} (1,0);
+  \draw[base] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{\jmath}$} (0,1);
+  \pt{3,1}{above right}{A} \pt{-2,3}{above left}{B}
+  \pt{-3,-2}{below left}{C} \pt{0,-1}{right}{D}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\explique{$\res{A(3\,;1)}$ \quad $\res{B(-2\,;3)}$}{d'abord l'abscisse, sur l'axe
+horizontal, puis l'ordonnée}
+\explique{$\res{C(-3\,;-2)}$ \quad $\res{D(0\,;-1)}$}{$D$ est sur l'axe des ordonnées :
+son abscisse est $0$}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[t]{0.6\linewidth}
+\explique{$E$ : $4$ carreaux vers la droite depuis $O$, puis $2$ vers le bas.}{abscisse
+$4$, ordonnée $-2$}
+\explique{$F$ : $1$ carreau vers la gauche, puis on ne monte pas : $F$ est sur l'axe des
+abscisses.}{ordonnée $0$}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-2}{-3}{5}{1}
+  \gradx{-1,2,4} \grady{-2}
+  \pt{4,-2}{below right}{E} \pt{-1,0}{above left}{F}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}\par\nopagebreak
+\explique{$\vect{OA}=\res{3\vec{\imath}+\vec{\jmath}}$}{de $O$ à $A$ : $3$ fois
+$\vec{\imath}$, puis $1$ fois $\vec{\jmath}$}
+\cas{d)}\par\nopagebreak
+\explique{$\vect{DA}=\res{3\vec{\imath}+2\vec{\jmath}}$}{de $D$ à $A$ : $3$ carreaux vers
+la droite, puis $2$ vers le haut}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+Dans le repère orthonormé $(O\,;\vec{\imath},\vec{\jmath})$ ci-contre :
+\begin{questions}[label=\alph*)]
+  \item Lire les coordonnées des points $G$, $H$, $K$ et $L$.
+  \item Placer les points $M(-4\,;-1)$ et $N(2\,;0)$.
+  \item Écrire $\vect{OG}$ en fonction de $\vec{\imath}$ et $\vec{\jmath}$.
+  \item Écrire $\vect{KG}$ en fonction de $\vec{\imath}$ et $\vec{\jmath}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-3}{5}{4}
+  \gradx{-3,-2,-1,2,3,4} \grady{-2,-1,2,3}
+  \draw[base] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{\imath}$} (1,0);
+  \draw[base] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{\jmath}$} (0,1);
+  \pt{2,3}{above right}{G} \pt{-3,1}{above left}{H}
+  \pt{-1,-3}{below left}{K} \pt{0,2}{right}{L}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $G(2\,;3)$, $H(-3\,;1)$, $K(-1\,;-3)$, $L(0\,;2)$ ; c)~$\vect{OG}=2\vec{\imath}+3\vec{\jmath}$ ;
+d)~$\vect{KG}=3\vec{\imath}+6\vec{\jmath}$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Coordonnées d'un vecteur}
+
+\begin{definitionbox}[Définition 3 --- Coordonnées d'un vecteur]
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+Dans une base $(\vec{\imath},\vec{\jmath})$, tout vecteur $\vec{u}$ s'écrit
+$\vec{u}=x\,\vec{\imath}+y\,\vec{\jmath}$. Les nombres $x$ et $y$ sont les
+\textbf{coordonnées} de $\vec{u}$ ; on les écrit en colonne : $\vec{u}\coord{x}{y}$.
+
+\smallskip
+C'est le \textbf{déplacement} du chapitre 3 : $x$ carreaux horizontalement (vers la
+droite si $x>0$, vers la gauche si $x<0$), puis $y$ carreaux verticalement (vers le haut
+si $y>0$, vers le bas si $y<0$). Ci-contre, $\vec{u}\coord{4}{-2}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \quadrillage{-0.4}{-2.4}{4.4}{1.4}
+  \draw[aide,black!70] (0,1) -- node[midway,above,font=\footnotesize,black]{$4\vec{\imath}$} (4,1);
+  \draw[aide,black!70] (4,1) -- node[midway,right,font=\footnotesize,black]{$-2\vec{\jmath}$} (4,-1);
+  \draw[vecteur] (0,1) -- node[midway,below left,font=\footnotesize]{$\vec{u}$} (4,-1);
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\begin{itemize}
+  \item Deux vecteurs sont \textbf{égaux} quand ils ont les mêmes coordonnées.
+  \item Le vecteur nul a pour coordonnées $\coord{0}{0}$ ; l'opposé de
+        $\vec{u}\coord{x}{y}$ est $-\vec{u}\coord{-x}{-y}$.
+  \item Le vecteur $\vect{OM}$, appelé \textbf{vecteur position} de $M$, a les mêmes
+        coordonnées que le point $M$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Lire et tracer un vecteur de coordonnées connues]
+Pour \textbf{lire}, on compte le déplacement de l'origine à la pointe, avec un signe
+($-$ vers la gauche ou vers le bas). Pour \textbf{tracer} depuis une origine, on fait le
+déplacement ; pour tracer un vecteur qui doit \textbf{arriver} en un point, on fait le
+déplacement à l'envers depuis ce point.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Lire les coordonnées des vecteurs $\vec{u}$, $\vec{v}$ et $\vec{w}$.
+  \item Tracer un représentant du vecteur $\vec{s}\coord{3}{-2}$ d'origine $A$.
+  \item Tracer un représentant du vecteur $\vec{t}\coord{-4}{-1}$ d'extrémité $B$.
+\end{questions}
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \node[font=\small\bfseries,coulExo] at (6,-1.3) {a)};
+  \quadrillage{-0.4}{-0.4}{12.4}{4.4}
+  \draw[base] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{\imath}$} (1,0);
+  \draw[base] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{\jmath}$} (0,1);
+  \draw[vecteur] (1,2) -- node[midway,above left,font=\footnotesize]{$\vec{u}$} (5,3);
+  \draw[vecteurB] (9,1) -- node[midway,below left,font=\footnotesize]{$\vec{v}$} (6,3);
+  \draw[vecteurC] (11,4) -- node[midway,right,font=\footnotesize]{$\vec{w}$} (11,1);
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \node[font=\small\bfseries,coulExo] at (5,-1.3) {b) et c)};
+  \quadrillage{-0.4}{-0.4}{10.4}{4.4}
+  \pt{1,3}{above left}{A} \pt{6,1}{below left}{B}
+\end{tikzpicture}
+\end{center}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\explique{$\res{\vec{u}\coord{4}{1}}$}{$4$ carreaux vers la droite, $1$ vers le haut}
+\explique{$\res{\vec{v}\coord{-3}{2}}$}{$3$ vers la gauche : abscisse $-3$ ; $2$ vers le
+haut}
+\explique{$\res{\vec{w}\coord{0}{-3}}$}{pas de déplacement horizontal : abscisse $0$}
+\cas{b) et c)}\par\nopagebreak
+\begin{minipage}[t]{0.6\linewidth}
+\explique{b) Depuis $A$, $3$ carreaux vers la droite, puis $2$ vers le bas : on place la
+pointe.}{la flèche part de $A$}
+\explique{c) La pointe doit être en $B$ : depuis $B$, on fait le déplacement à l'envers,
+$4$ carreaux vers la droite et $1$ vers le haut ; on arrive à l'origine.}{$B$ est
+l'extrémité}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \quadrillage{-0.4}{-0.4}{10.4}{4.4}
+  \draw[vecteur] (1,3) -- node[midway,above right,font=\footnotesize]{$\vec{s}$} (4,1);
+  \draw[vecteurB] (10,2) -- node[midway,above,font=\footnotesize]{$\vec{t}$} (6,1);
+  \pt{1,3}{above left}{A} \pt{6,1}{below left}{B}
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Lire les coordonnées des vecteurs $\vec{a}$, $\vec{b}$ et $\vec{c}$.
+  \item Tracer un représentant du vecteur $\vec{r}\coord{-3}{-2}$ d'origine $C$.
+  \item Tracer un représentant du vecteur $\vec{q}\coord{4}{-1}$ d'extrémité $D$.
+\end{questions}
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \node[font=\small\bfseries,coulExo] at (6,-1.3) {a)};
+  \quadrillage{-0.4}{-0.4}{12.4}{4.4}
+  \draw[base] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{\imath}$} (1,0);
+  \draw[base] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{\jmath}$} (0,1);
+  \draw[vecteur] (1,4) -- node[midway,above right,font=\footnotesize]{$\vec{a}$} (4,1);
+  \draw[vecteurB] (9,3) -- node[midway,above,font=\footnotesize]{$\vec{b}$} (5,2);
+  \draw[vecteurC] (8,1) -- node[midway,below,font=\footnotesize]{$\vec{c}$} (12,1);
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \node[font=\small\bfseries,coulExo] at (5,-1.3) {b) et c)};
+  \quadrillage{-0.4}{-0.4}{10.4}{4.4}
+  \pt{4,3}{above right}{C} \pt{9,3}{above right}{D}
+\end{tikzpicture}
+\end{center}
+\reponse{a) $\vec{a}\coord{3}{-3}$, $\vec{b}\coord{-4}{-1}$, $\vec{c}\coord{4}{0}$.}
+\end{methodebox}
+
+\afaire{exercices 5 et 6}
+
+\begin{proprietebox}[Propriété 1 --- Coordonnées de $\vect{AB}$]
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+Pour deux points $A(x_{A}\,;y_{A})$ et $B(x_{B}\,;y_{B})$ :
+\[
+  \vect{AB}\coord{x_{B}-x_{A}}{y_{B}-y_{A}}
+  \qquad\text{(extrémité moins origine).}
+\]
+En effet, de $A$ à $B$, on avance horizontalement de la différence des abscisses, puis
+verticalement de la différence des ordonnées.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-1}{-1}{6}{4}
+  \node[below,font=\footnotesize] at (1,0) {$x_{A}$}; \node[below,font=\footnotesize] at (5,0) {$x_{B}$};
+  \node[left,font=\footnotesize] at (0,1) {$y_{A}$}; \node[left,font=\footnotesize] at (0,3) {$y_{B}$};
+  \draw[aide] (1,0) -- (1,1) (5,0) -- (5,1) (0,1) -- (1,1) (0,3) -- (5,3);
+  \draw[aide,black!70] (1,1) -- node[midway,below,font=\footnotesize,black]{$x_{B}-x_{A}$} (5,1);
+  \draw[aide,black!70] (5,1) -- node[midway,right,font=\footnotesize,black]{$y_{B}-y_{A}$} (5,3);
+  \draw[vecteur] (1,1) -- node[midway,above left,font=\footnotesize]{$\vect{AB}$} (5,3);
+  \pt{1,1}{above left}{A} \pt{5,3}{above right}{B}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer les coordonnées d'un vecteur $\vect{AB}$]
+\etapeexemples
+On considère les points $A(1\,;2)$, $B(5\,;3)$, $C(-2\,;4)$ et $D(1\,;-1)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées du vecteur $\vect{AB}$.
+  \item Calculer les coordonnées du vecteur $\vect{CD}$.
+  \item En déduire les coordonnées du vecteur $\vect{DC}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vect{AB} &\coord{x_{B}-x_{A}}{y_{B}-y_{A}} &\qquad& \rem{extrémité moins origine}\\
+\vect{AB} &\coord{5-1}{3-2} && \rem{on remplace}\\
+\vect{AB} &\res{\coord{4}{1}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{CD} &\coord{x_{D}-x_{C}}{y_{D}-y_{C}} &\qquad& \rem{extrémité $D$, origine $C$}\\
+\vect{CD} &\coord{1-(-2)}{-1-4} && \rem{parenthèses autour de $-2$}\\
+\vect{CD} &\res{\coord{3}{-5}} && \rem{$1+2=3$ ; $-1-4=-5$}
+\end{calculs}
+\cas{c)}\par\nopagebreak
+\explique{$\vect{DC}=-\vect{CD}$, donc $\res{\vect{DC}\coord{-3}{5}}$.}{échanger les
+lettres donne l'opposé : on change les signes}
+\end{correction}
+
+\etape{À vous de jouer}
+On considère les points $E(2\,;-1)$, $F(6\,;1)$, $G(-3\,;2)$ et $H(1\,;-4)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées du vecteur $\vect{EF}$.
+  \item Calculer les coordonnées du vecteur $\vect{GH}$.
+  \item En déduire les coordonnées du vecteur $\vect{HG}$.
+\end{questions}
+\reponse{a) $\vect{EF}\coord{4}{2}$ ; b)~$\vect{GH}\coord{4}{-6}$ ; c)~$\vect{HG}\coord{-4}{6}$.}
+\end{methodebox}
+
+\afaire{exercices 7 à 9}
+
+\partiecours{Coordonnées d'une somme, d'un produit par un nombre réel}
+
+\begin{proprietebox}[Propriété 2 --- Coordonnées d'une somme, d'un produit]
+Pour deux vecteurs $\vec{u}\coord{x}{y}$ et $\vec{v}\coord{x'}{y'}$ et un nombre réel
+$k$ :
+\begin{center}
+$\vec{u}+\vec{v}\coord{x+x'}{y+y'}$ \qquad $\vec{u}-\vec{v}\coord{x-x'}{y-y'}$ \qquad
+$k\vec{u}\coord{kx}{ky}$
+\end{center}
+Mettre $\vec{v}$ à la suite de $\vec{u}$ ajoute les déplacements ; multiplier par $k$
+multiplie les deux nombres de carreaux par $k$ (chapitre 3).
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Calculer les coordonnées d'une somme, d'un produit]
+On calcule l'abscisse avec les abscisses, puis l'ordonnée avec les ordonnées.
+\etapeexemples
+On considère les vecteurs $\vec{u}\coord{3}{-2}$ et $\vec{v}\coord{-1}{4}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées de $\vec{u}+\vec{v}$.
+  \item Calculer les coordonnées de $3\vec{u}$ et de $-1{,}5\vec{v}$.
+  \item On pose $\vec{w}=2\vec{u}-3\vec{v}$. Calculer les coordonnées de $\vec{w}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vec{u}+\vec{v} &\coord{3+(-1)}{-2+4} &\qquad& \rem{abscisses ensemble, ordonnées ensemble}\\
+\vec{u}+\vec{v} &\res{\coord{2}{2}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+3\vec{u} &\coord{3\times 3}{3\times(-2)} &\qquad& \rem{on multiplie les deux coordonnées par $3$}\\
+3\vec{u} &\res{\coord{9}{-6}} &&
+\end{calculs}
+\begin{calculs}
+-1{,}5\vec{v} &\coord{-1{,}5\times(-1)}{-1{,}5\times 4} &\qquad& \rem{on multiplie par $-1{,}5$}\\
+-1{,}5\vec{v} &\res{\coord{1{,}5}{-6}} &&
+\end{calculs}
+\cas{c)}
+\explique{Abscisse $x$ de $\vec{w}$, puis ordonnée $y$ :}{on remplace $\vec{u}$ et
+$\vec{v}$ par leurs coordonnées}
+\begin{calculs}
+x &= 2\times 3-3\times(-1) &\qquad& \rem{abscisses de $\vec{u}$ et de $\vec{v}$}\\
+x &= 6+3 &&\\
+x &= 9 &&
+\end{calculs}
+\begin{calculs}
+y &= 2\times(-2)-3\times 4 &\qquad& \rem{mêmes opérations sur les ordonnées}\\
+y &= -4-12 &&\\
+y &= -16 &&
+\end{calculs}
+\explique{Donc $\res{\vec{w}\coord{9}{-16}}$.}{on conclut}
+\end{correction}
+
+\etape{À vous de jouer}
+On considère les vecteurs $\vec{a}\coord{-2}{5}$ et $\vec{b}\coord{4}{-1}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées de $\vec{a}+\vec{b}$.
+  \item Calculer les coordonnées de $4\vec{a}$ et de $-0{,}5\vec{b}$.
+  \item On pose $\vec{c}=3\vec{a}-2\vec{b}$. Calculer les coordonnées de $\vec{c}$.
+\end{questions}
+\reponse{a) $\coord{2}{4}$ ; b)~$4\vec{a}\coord{-8}{20}$, $-0{,}5\vec{b}\coord{-2}{0{,}5}$ ;
+c)~$\vec{c}\coord{-14}{17}$.}
+\end{methodebox}
+
+\afaire{exercices 10 à 13}
+
+\partiecours{Combinaison de deux vecteurs}
+
+\begin{proprietebox}[Propriété 3 --- Combinaison de deux vecteurs]
+Si deux vecteurs $\vec{a}$ et $\vec{b}$ n'ont pas la même direction (ils ne sont pas
+\textbf{colinéaires}), tout vecteur $\vec{w}$ s'écrit d'une seule façon
+\[
+  \vec{w}=x\,\vec{a}+y\,\vec{b},
+\]
+comme $\vec{u}=x\,\vec{\imath}+y\,\vec{\jmath}$ dans une base : $(\vec{a},\vec{b})$ est
+aussi une base, qui n'est pas orthonormée.
+\end{proprietebox}
+
+\begin{exemplebox}[Exemple]
+\begin{minipage}[t]{0.5\linewidth}\raggedright
+Ci-contre, pour aller de l'origine à la pointe de $\vec{g}$, on fait deux fois $\vec{e}$,
+puis une fois $\vec{f}$ (en pointillés) :
+\[
+  \vec{g}=2\vec{e}+\vec{f}.
+\]
+On a remplacé les carreaux, qui suivent $\vec{\imath}$ et $\vec{\jmath}$, par des pas de
+$\vec{e}$ et de $\vec{f}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.46\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \quadrillage{-0.4}{-0.4}{12.4}{5.4}
+  \draw[vecteur] (0,4) -- node[midway,above,font=\footnotesize]{$\vec{e}$} (4,5);
+  \draw[vecteurB] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{f}$} (1,3);
+  \draw[vecteurC] (3,0) -- node[midway,below right,font=\footnotesize]{$\vec{g}$} (12,5);
+  \draw[aide,black!70,->] (3,0) -- node[midway,below right,font=\footnotesize,black]{$\vec{e}$} (7,1);
+  \draw[aide,black!70,->] (7,1) -- node[midway,below right,font=\footnotesize,black]{$\vec{e}$} (11,2);
+  \draw[aide,black!70,->] (11,2) -- node[midway,right,font=\footnotesize,black]{$\vec{f}$} (12,5);
+\end{tikzpicture}
+\end{minipage}
+\end{exemplebox}
+
+\begin{methodebox}[Méthode 5 --- Écrire un vecteur en fonction de deux vecteurs]
+Sur un quadrillage, on cherche un chemin de l'origine à la pointe de $\vec{w}$, fait de
+représentants de $\vec{a}$ et de $\vec{b}$ (ou de leurs opposés) mis bout à bout. Dans une
+figure, on passe par des points connus (relation de Chasles).
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Écrire $\vec{w}$, puis $\vec{r}$, en fonction de $\vec{a}$ et $\vec{b}$.
+  \item $ABC$ est un triangle et $I$ le milieu de $[BC]$. Écrire $\vect{AI}$ en fonction de
+        $\vect{AB}$ et $\vect{AC}$.
+\end{questions}
+\begin{center}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \node[font=\small\bfseries,coulExo] at (7,-1.3) {a)};
+  \quadrillage{-0.4}{-0.4}{14.4}{5.4}
+  \draw[vecteur] (0,0) -- node[midway,below right,font=\footnotesize]{$\vec{a}$} (3,1);
+  \draw[vecteurB] (2,3) -- node[midway,left,font=\footnotesize]{$\vec{b}$} (1,5);
+  \draw[vecteurC] (5,0) -- node[midway,right,font=\footnotesize]{$\vec{w}$} (6,5);
+  \draw[vecteurC] (7,2) -- node[midway,above,font=\footnotesize]{$\vec{r}$} (14,2);
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}[scale=0.7]
+  \node[font=\small\bfseries,coulExo] at (2,-0.8) {b)};
+  \draw[fig] (0,0) -- (4,0) -- (1.5,3) -- cycle;
+  \draw[aide] (0,0) -- (2.75,1.5);
+  \pt{0,0}{below left}{A} \pt{4,0}{below right}{B} \pt{1.5,3}{above}{C}
+  \pt{2.75,1.5}{above right}{I}
+\end{tikzpicture}
+\end{center}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[t]{0.58\linewidth}
+\explique{De l'origine de $\vec{w}$, on fait $\vec{a}$, puis deux fois $\vec{b}$ : on
+arrive à la pointe. Donc $\vec{w}=\res{\vec{a}+2\vec{b}}$.}{chemin $\vec{a}$, $\vec{b}$,
+$\vec{b}$ en pointillés}
+\explique{De l'origine de $\vec{r}$, deux fois $\vec{a}$, puis $-\vec{b}$. Donc
+$\vec{r}=\res{2\vec{a}-\vec{b}}$.}{$-\vec{b}$ : le déplacement de $\vec{b}$ à l'envers}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.4\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.38cm,y=0.38cm]
+  \quadrillage{-0.4}{-0.4}{11.4}{5.4}
+  \draw[vecteurC] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{w}$} (1,5);
+  \draw[aide,black!70,->] (0,0) -- node[midway,below right,font=\footnotesize,black]{$\vec{a}$} (3,1);
+  \draw[aide,black!70,->] (3,1) -- node[midway,right,font=\footnotesize,black]{$\vec{b}$} (2,3);
+  \draw[aide,black!70,->] (2,3) -- node[midway,right,font=\footnotesize,black]{$\vec{b}$} (1,5);
+  \draw[vecteurC] (4,1) -- node[midway,below,font=\footnotesize]{$\vec{r}$} (11,1);
+  \draw[aide,black!70,->] (4,1) -- node[midway,above left,font=\footnotesize,black]{$\vec{a}$} (7,2);
+  \draw[aide,black!70,->] (7,2) -- node[midway,above left,font=\footnotesize,black]{$\vec{a}$} (10,3);
+  \draw[aide,black!70,->] (10,3) -- node[midway,right,font=\footnotesize,black]{$-\vec{b}$} (11,1);
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+\vect{AI} &= \vect{AB}+\vect{BI} &\qquad& \rem{Chasles : on passe par $B$}\\
+\vect{AI} &= \vect{AB}+\tfrac{1}{2}\vect{BC} && \rem{$I$ milieu de $[BC]$}\\
+\vect{AI} &= \vect{AB}+\tfrac{1}{2}\bigl(\vect{BA}+\vect{AC}\bigr) && \rem{Chasles : on passe par $A$}\\
+\vect{AI} &= \vect{AB}-\tfrac{1}{2}\vect{AB}+\tfrac{1}{2}\vect{AC} && \rem{on développe ; $\vect{BA}=-\vect{AB}$}\\
+\vect{AI} &= \res{\tfrac{1}{2}\vect{AB}+\tfrac{1}{2}\vect{AC}} && \rem{$1-\frac12=\frac12$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Écrire $\vec{s}$, puis $\vec{t}$, en fonction de $\vec{c}$ et $\vec{d}$.
+  \item $EFG$ est un triangle et $J$ le milieu de $[EG]$. Écrire $\vect{FJ}$ en fonction de
+        $\vect{FE}$ et $\vect{FG}$.
+\end{questions}
+\begin{center}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \node[font=\small\bfseries,coulExo] at (7,-1.3) {a)};
+  \quadrillage{-0.4}{-0.4}{14.4}{5.4}
+  \draw[vecteur] (0,2) -- node[midway,below left,font=\footnotesize]{$\vec{c}$} (3,1);
+  \draw[vecteurB] (1,3) -- node[midway,left,font=\footnotesize]{$\vec{d}$} (2,5);
+  \draw[vecteurC] (4,1) -- node[midway,above left,font=\footnotesize]{$\vec{s}$} (9,4);
+  \draw[vecteurC] (9,5) -- node[midway,right,font=\footnotesize]{$\vec{t}$} (14,1);
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}[scale=0.7]
+  \node[font=\small\bfseries,coulExo] at (2,-0.8) {b)};
+  \draw[fig] (0,0) -- (4,0) -- (3,3) -- cycle;
+  \draw[aide] (4,0) -- (1.5,1.5);
+  \pt{0,0}{below left}{E} \pt{4,0}{below right}{F} \pt{3,3}{above}{G}
+  \pt{1.5,1.5}{above left}{J}
+\end{tikzpicture}
+\end{center}
+\reponse{a) $\vec{s}=\vec{c}+2\vec{d}$, $\vec{t}=2\vec{c}-\vec{d}$ ;
+b)~$\vect{FJ}=\frac{1}{2}\vect{FE}+\frac{1}{2}\vect{FG}$.}
+\end{methodebox}
+
+\afaire{exercices 14 à 17}
+
+\partiecours{Égalité de vecteurs et parallélogrammes}
+
+\begin{proprietebox}[Propriété 4 --- Parallélogramme]
+Rappel du chapitre 3 : $ABCD$ est un parallélogramme \quad équivaut à \quad
+$\vect{AB}=\vect{DC}$.
+
+\smallskip
+Dans un repère, deux vecteurs sont égaux quand ils ont les mêmes coordonnées : pour
+démontrer que $ABCD$ est un parallélogramme, on calcule les coordonnées de $\vect{AB}$ et
+de $\vect{DC}$, et on les compare.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Parallélogramme : le reconnaître, le compléter]
+Attention à l'ordre des lettres : dans $ABCD$, le côté $[AB]$ est parallèle à $[DC]$, et
+on lit $\vect{AB}$ et $\vect{DC}$ dans le même sens.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(-2\,;1)$, $B(2\,;2)$, $C(3\,;-1)$ et $D(-1\,;-2)$.
+        Démontrer que $ABCD$ est un parallélogramme.
+  \item On considère les points $E(1\,;3)$, $F(4\,;-1)$ et $G(-2\,;-2)$. Calculer les
+        coordonnées du point $H$ tel que $EFGH$ soit un parallélogramme.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vect{AB} &\coord{2-(-2)}{2-1} &\qquad& \rem{extrémité moins origine}\\
+\vect{AB} &\coord{4}{1} &&
+\end{calculs}
+\begin{calculs}
+\vect{DC} &\coord{3-(-1)}{-1-(-2)} &\qquad& \rem{origine $D$, extrémité $C$}\\
+\vect{DC} &\coord{4}{1} &&
+\end{calculs}
+\explique{$\vect{AB}$ et $\vect{DC}$ ont les mêmes coordonnées : $\vect{AB}=\vect{DC}$.}{même
+déplacement}
+\explique{Conclusion : $ABCD$ est \res{un parallélogramme}.}{propriété 4}
+\cas{b)}
+\explique{$EFGH$ est un parallélogramme quand $\vect{EF}=\vect{HG}$. On note
+$H(x\,;y)$.}{on nomme les coordonnées cherchées}
+\begin{calculs}
+\vect{EF} &\coord{4-1}{-1-3} &\qquad& \rem{extrémité moins origine}\\
+\vect{EF} &\coord{3}{-4} &&
+\end{calculs}
+\begin{calculs}
+\vect{HG} &\coord{-2-x}{-2-y} &\qquad& \rem{origine $H(x\,;y)$, extrémité $G$}
+\end{calculs}
+\explique{Mêmes abscisses, puis mêmes ordonnées :}{deux équations}
+\begin{calculs}
+-2-x &= 3 &\qquad& \rem{abscisses égales}\\
+-x &= 5 && \rem{on ajoute $2$}\\
+x &= -5 &&
+\end{calculs}
+\begin{calculs}
+-2-y &= -4 &\qquad& \rem{ordonnées égales}\\
+-y &= -2 && \rem{on ajoute $2$}\\
+y &= 2 &&
+\end{calculs}
+\explique{Donc $\res{H(-5\,;2)}$.}{contrôle : $\vect{HG}\coord{3}{-4}$}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item On considère les points $K(-3\,;0)$, $L(0\,;2)$, $M(4\,;1)$ et $N(1\,;-1)$.
+        Démontrer que $KLMN$ est un parallélogramme.
+  \item On considère les points $R(2\,;1)$, $S(5\,;3)$ et $T(3\,;-2)$. Calculer les
+        coordonnées du point $U$ tel que $RSTU$ soit un parallélogramme.
+\end{questions}
+\reponse{a) $\vect{KL}=\vect{NM}$, de coordonnées $\coord{3}{2}$ ; b)~$U(0\,;-4)$.}
+\end{methodebox}
+
+\afaire{exercices 18 à 20}
+
+\partiecours{Colinéarité, déterminant}
+
+\begin{definitionbox}[Définition 4 --- Déterminant]
+Rappel du chapitre 3 : deux vecteurs non nuls $\vec{u}$ et $\vec{v}$ sont
+\textbf{colinéaires} quand ils ont la même direction, c'est-à-dire quand
+$\vec{v}=k\vec{u}$ pour un nombre réel $k$. Le vecteur nul est colinéaire à tout vecteur.
+
+\smallskip
+Le \textbf{déterminant} de $\vec{u}\coord{x}{y}$ et $\vec{v}\coord{x'}{y'}$ est le nombre
+\[
+  \det(\vec{u}\,;\vec{v})=\begin{vmatrix} x & x'\\ y & y'\end{vmatrix}=xy'-yx'.
+\]
+On écrit les coordonnées côte à côte et on fait la différence des produits en croix,
+comme pour tester l'égalité de deux fractions (chapitre 1).
+\end{definitionbox}
+
+\begin{proprietebox}[Théorème 1 --- Critère de colinéarité]
+Dans une base orthonormée, les trois phrases suivantes disent la même chose :
+\begin{itemize}
+  \item $\vec{u}\coord{x}{y}$ et $\vec{v}\coord{x'}{y'}$ sont colinéaires ;
+  \item leurs coordonnées sont proportionnelles ;
+  \item $\det(\vec{u}\,;\vec{v})=0$, c'est-à-dire $xy'-yx'=0$.
+\end{itemize}
+\end{proprietebox}
+
+\textbf{Exemple, puis démonstration}\autableau
+\begin{correction}
+\explique{Exemple : $\vec{u}\coord{2}{3}$ et $\vec{v}\coord{6}{9}$, avec
+$\vec{v}=3\vec{u}$.}{deux vecteurs colinéaires}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 2\times 9-3\times 6 &\qquad& \rem{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 0 && \rem{$18-18$ : le déterminant est nul}
+\end{calculs}
+\explique{Démonstration : on suppose $\vec{u}$ non nul (sinon les trois phrases sont
+vraies).}{$\vec{0}$ est colinéaire à tout vecteur}
+\explique{\textbf{Sens direct.} Si $\vec{v}=k\vec{u}$, alors $x'=kx$ et $y'=ky$ :}{on
+remplace dans le déterminant}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= x\times ky-y\times kx &\qquad& \rem{$x'=kx$ et $y'=ky$}\\
+\det(\vec{u}\,;\vec{v}) &= 0 && \rem{les deux produits sont égaux}
+\end{calculs}
+\explique{\textbf{Réciproque.} On suppose $xy'-yx'=0$, soit $xy'=yx'$, et par exemple
+$x\neq 0$. On pose $k=\frac{x'}{x}$ : alors $x'=kx$.}{une coordonnée de $\vec{u}$ n'est
+pas nulle}
+\begin{calculs}
+y' &= \frac{yx'}{x} &\qquad& \rem{on divise $xy'=yx'$ par $x$}\\
+y' &= ky && \rem{car $\frac{x'}{x}=k$}
+\end{calculs}
+\explique{Si c'est $y$ qui n'est pas nul, on pose $k=\frac{y'}{y}$ de la même façon.}{même
+calcul}
+\explique{Conclusion : $\vec{v}=k\vec{u}$, les vecteurs sont colinéaires.}{coordonnées
+proportionnelles, de coefficient $k$}
+\end{correction}
+
+\begin{methodebox}[Méthode 7 --- Tester si deux vecteurs sont colinéaires]
+\etapeexemples
+Pour chaque couple de vecteurs, dire si les vecteurs sont colinéaires.
+\begin{center}
+a)~$\vec{u}\coord{3}{-2}$ et $\vec{v}\coord{-6}{4}$ \qquad
+b)~$\vec{u}\coord{5}{2}$ et $\vec{v}\coord{7}{3}$ \qquad
+c)~$\vec{u}\coord{\frac{1}{3}}{2}$ et $\vec{v}\coord{1}{6}$
+\end{center}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 3\times 4-(-2)\times(-6) &\qquad& \rem{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 12-12 &&\\
+\det(\vec{u}\,;\vec{v}) &= 0 &&
+\end{calculs}
+\explique{Le déterminant est nul : $\vec{u}$ et $\vec{v}$ sont \res{colinéaires}.}{en
+effet, $\vec{v}=-2\vec{u}$}
+\cas{b)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= 5\times 3-2\times 7 &\qquad& \rem{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 15-14 &&\\
+\det(\vec{u}\,;\vec{v}) &= 1 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : $\vec{u}$ et $\vec{v}$ ne sont \res{pas
+colinéaires}.}{$1\neq 0$}
+\cas{c)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= \frac{1}{3}\times 6-2\times 1 &\qquad& \rem{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 2-2 && \rem{$\frac{6}{3}=2$}\\
+\det(\vec{u}\,;\vec{v}) &= 0 &&
+\end{calculs}
+\explique{Les vecteurs sont \res{colinéaires}.}{en effet, $\vec{v}=3\vec{u}$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque couple de vecteurs, dire si les vecteurs sont colinéaires.
+\begin{center}
+a)~$\vec{a}\coord{2}{-5}$ et $\vec{b}\coord{-4}{10}$ \qquad
+b)~$\vec{a}\coord{3}{4}$ et $\vec{b}\coord{5}{7}$ \qquad
+c)~$\vec{a}\coord{1}{3}$ et $\vec{b}\coord{\frac{1}{3}}{1}$
+\end{center}
+\reponse{a) déterminant $0$, colinéaires ; b)~déterminant $1$, non colinéaires ;
+c)~déterminant $0$, colinéaires.}
+\end{methodebox}
+
+\afaire{exercices 21 et 22}
+
+\begin{proprietebox}[Propriété 5 --- Parallélisme, alignement]
+\begin{itemize}
+  \item Les droites $(AB)$ et $(CD)$ sont \textbf{parallèles} \quad équivaut à \quad
+        $\vect{AB}$ et $\vect{CD}$ sont colinéaires.
+  \item Les points $A$, $B$ et $C$ sont \textbf{alignés} \quad équivaut à \quad
+        $\vect{AB}$ et $\vect{AC}$ sont colinéaires.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Démontrer un parallélisme, un alignement]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(-1\,;2)$, $B(3\,;4)$, $C(-2\,;-3)$ et $D(4\,;0)$.
+        Démontrer que les droites $(AB)$ et $(CD)$ sont parallèles.
+  \item On considère les points $E(-2\,;-1)$, $F(1\,;1)$, $G(7\,;5)$ et $H(4\,;4)$.
+        Les points $E$, $F$ et $G$ sont-ils alignés ? Et les points $E$, $F$ et $H$ ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{AB}\coord{4}{2}$ et $\vect{CD}\coord{6}{3}$.}{$\coord{3-(-1)}{4-2}$ et
+$\coord{4-(-2)}{0-(-3)}$}
+\begin{calculs}
+\det(\vect{AB}\,;\vect{CD}) &= 4\times 3-2\times 6 &\qquad& \rem{$xy'-yx'$}\\
+\det(\vect{AB}\,;\vect{CD}) &= 0 && \rem{$12-12$}
+\end{calculs}
+\explique{Conclusion : $\vect{AB}$ et $\vect{CD}$ sont colinéaires, donc les droites
+$(AB)$ et $(CD)$ sont \res{parallèles}.}{propriété 5}
+\cas{b)}
+\explique{$\vect{EF}\coord{3}{2}$ et $\vect{EG}\coord{9}{6}$.}{deux vecteurs qui partent du
+même point $E$}
+\begin{calculs}
+\det(\vect{EF}\,;\vect{EG}) &= 3\times 6-2\times 9 &\qquad& \rem{$xy'-yx'$}\\
+\det(\vect{EF}\,;\vect{EG}) &= 0 && \rem{$18-18$}
+\end{calculs}
+\explique{Conclusion : $E$, $F$ et $G$ sont \res{alignés}.}{vecteurs colinéaires}
+\explique{$\vect{EH}\coord{6}{5}$.}{$\coord{4-(-2)}{4-(-1)}$}
+\begin{calculs}
+\det(\vect{EF}\,;\vect{EH}) &= 3\times 5-2\times 6 &\qquad& \rem{$xy'-yx'$}\\
+\det(\vect{EF}\,;\vect{EH}) &= 3 && \rem{$15-12$}
+\end{calculs}
+\explique{Conclusion : $E$, $F$ et $H$ ne sont \res{pas alignés}.}{$3\neq 0$}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(0\,;3)$, $B(2\,;-1)$, $C(-3\,;1)$ et $D(0\,;-5)$.
+        Démontrer que les droites $(AB)$ et $(CD)$ sont parallèles.
+  \item On considère les points $M(-3\,;0)$, $N(-1\,;3)$, $R(3\,;9)$ et $S(1\,;5)$.
+        Les points $M$, $N$ et $R$ sont-ils alignés ? Et les points $M$, $N$ et $S$ ?
+\end{questions}
+\reponse{a) $\vect{AB}\coord{2}{-4}$, $\vect{CD}\coord{3}{-6}$, déterminant $0$ :
+parallèles ; b)~$M$, $N$, $R$ alignés (déterminant $0$) ; $M$, $N$, $S$ non alignés
+(déterminant $-2$).}
+\end{methodebox}
+
+\afaire{exercices 23 et 24}
+
+\partiecours{Milieu d'un segment}
+
+\begin{proprietebox}[Propriété 6 --- Coordonnées du milieu]
+Le milieu $I$ du segment $[AB]$ a pour coordonnées
+\[
+  I\left(\frac{x_{A}+x_{B}}{2}\,;\frac{y_{A}+y_{B}}{2}\right)
+  \qquad\text{(la moyenne des abscisses, la moyenne des ordonnées).}
+\]
+\end{proprietebox}
+
+\textbf{Démonstration}\autableau
+\begin{correction}
+\explique{$I$ est le milieu de $[AB]$, donc $\vect{AI}=\vect{IB}$ (chapitre 3) : ces deux
+vecteurs ont la même abscisse.}{on note $I(x_{I}\,;y_{I})$}
+\begin{calculs}
+x_{I}-x_{A} &= x_{B}-x_{I} &\qquad& \rem{extrémité moins origine, des deux côtés}\\
+2x_{I} &= x_{A}+x_{B} && \rem{on ajoute $x_{I}+x_{A}$ des deux côtés}\\
+x_{I} &= \frac{x_{A}+x_{B}}{2} && \rem{on divise par $2$}
+\end{calculs}
+\explique{Conclusion : même calcul pour l'ordonnée, d'où la formule.}{ordonnées de
+$\vect{AI}$ et $\vect{IB}$ égales}
+\end{correction}
+
+\begin{methodebox}[Méthode 9 --- Calculer avec les coordonnées du milieu]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(-3\,;1)$ et $B(5\,;4)$. Calculer les coordonnées du
+        milieu $I$ de $[AB]$.
+  \item On considère les points $C(2\,;-1)$ et $K(3\,;1)$. Calculer les coordonnées du
+        point $D$ tel que $K$ soit le milieu de $[CD]$.
+  \item On considère les points $E(-2\,;0)$, $F(1\,;3)$, $G(4\,;1)$ et $H(1\,;-2)$.
+        Démontrer que $EFGH$ est un parallélogramme, à l'aide de ses diagonales.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+x_{I} &= \frac{-3+5}{2} &\qquad& \rem{moyenne des abscisses}\\
+x_{I} &= 1 &&
+\end{calculs}
+\begin{calculs}
+y_{I} &= \frac{1+4}{2} &\qquad& \rem{moyenne des ordonnées}\\
+y_{I} &= 2{,}5 &&
+\end{calculs}
+\explique{Donc $\res{I(1\,;2{,}5)}$.}{on conclut}
+\cas{b)}
+\explique{On note $D(x\,;y)$ ; l'abscisse de $K$ est la moyenne de celles de $C$ et
+$D$.}{on écrit la formule avec l'inconnue}
+\begin{calculs}
+\frac{2+x}{2} &= 3 &\qquad& \rem{$x_{K}=3$}\\
+2+x &= 6 && \rem{on multiplie par $2$}\\
+x &= 4 && \rem{on enlève $2$}
+\end{calculs}
+\begin{calculs}
+\frac{-1+y}{2} &= 1 &\qquad& \rem{$y_{K}=1$}\\
+-1+y &= 2 && \rem{on multiplie par $2$}\\
+y &= 3 && \rem{on ajoute $1$}
+\end{calculs}
+\explique{Donc $\res{D(4\,;3)}$.}{contrôle : $\frac{2+4}{2}=3$ et $\frac{-1+3}{2}=1$}
+\cas{c)}
+\explique{Un quadrilatère est un parallélogramme quand ses diagonales $[EG]$ et $[FH]$ ont
+le même milieu.}{rappel du collège}
+\explique{Milieu de $[EG]$ : $\left(\frac{-2+4}{2}\,;\frac{0+1}{2}\right)$, soit
+$(1\,;0{,}5)$.}{moyennes des coordonnées}
+\explique{Milieu de $[FH]$ : $\left(\frac{1+1}{2}\,;\frac{3+(-2)}{2}\right)$, soit
+$(1\,;0{,}5)$.}{même point}
+\explique{Conclusion : $EFGH$ est \res{un parallélogramme}.}{diagonales de même milieu}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(-1\,;6)$ et $B(4\,;-2)$. Calculer les coordonnées du
+        milieu $I$ de $[AB]$.
+  \item On considère les points $R(-3\,;2)$ et $T(-1\,;4)$. Calculer les coordonnées du
+        point $S$ tel que $T$ soit le milieu de $[RS]$.
+  \item On considère les points $K(-3\,;-1)$, $L(0\,;2)$, $M(3\,;1)$ et $N(0\,;-2)$.
+        Démontrer que $KLMN$ est un parallélogramme, à l'aide de ses diagonales.
+\end{questions}
+\reponse{a) $I(1{,}5\,;2)$ ; b)~$S(1\,;6)$ ; c)~les diagonales $[KM]$ et $[LN]$ ont le même
+milieu $(0\,;0)$.}
+\end{methodebox}
+
+\afaire{exercices 25 à 28}
+
+\partiecours{Norme d'un vecteur, longueur d'un segment}
+
+\begin{proprietebox}[Propriété 7 --- Norme et longueur]
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+Dans une base \textbf{orthonormée}, la \textbf{norme} (la longueur) du vecteur
+$\vec{u}\coord{x}{y}$ est
+\[
+  \norme{\vec{u}}=\sqrt{x^{2}+y^{2}}.
+\]
+La longueur du segment $[AB]$ est la norme de $\vect{AB}$ :
+\[
+  AB=\sqrt{(x_{B}-x_{A})^{2}+(y_{B}-y_{A})^{2}}.
+\]
+C'est le théorème de Pythagore dans le triangle rectangle ci-contre.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
+  \draw[aide,black!70] (0,0) -- node[midway,below,font=\footnotesize,black]{$x$} (4,0);
+  \draw[aide,black!70] (4,0) -- node[midway,right,font=\footnotesize,black]{$y$} (4,3);
+  \draw[black!70] (3.7,0) -- (3.7,0.3) -- (4,0.3);
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{$\vec{u}$} (4,3);
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer une norme, une longueur]
+\etapeexemples
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Calculer la norme du vecteur $\vec{u}\coord{3}{-4}$.
+  \item On considère les points $A(-1\,;2)$ et $B(3\,;4)$. Calculer la longueur $AB$.
+  \item On considère les points $C(1\,;1)$, $D(5\,;3)$ et $E(3\,;7)$. Démontrer que le
+        triangle $CDE$ est rectangle isocèle.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\norme{\vec{u}} &= \sqrt{3^{2}+(-4)^{2}} &\qquad& \rem{$\sqrt{x^{2}+y^{2}}$ ; parenthèses autour de $-4$}\\
+\norme{\vec{u}} &= \sqrt{9+16} &&\\
+\norme{\vec{u}} &= \res{5} && \rem{$\sqrt{25}=5$}
+\end{calculs}
+\cas{b)}
+\explique{$\vect{AB}\coord{4}{2}$.}{$\coord{3-(-1)}{4-2}$}
+\begin{calculs}
+AB &= \sqrt{4^{2}+2^{2}} &\qquad& \rem{norme de $\vect{AB}$}\\
+AB &= \sqrt{20} &&\\
+AB &= \res{2\sqrt{5}} && \rem{$\sqrt{20}=\sqrt{4}\times\sqrt{5}$ (chapitre 6)}
+\end{calculs}
+\cas{c)}
+\explique{$\vect{CD}\coord{4}{2}$, $\vect{DE}\coord{-2}{4}$ et
+$\vect{CE}\coord{2}{6}$.}{extrémité moins origine}
+\begin{calculs}
+CD^{2} &= 4^{2}+2^{2} &\qquad& \rem{on calcule les carrés : pas de racine}\\
+CD^{2} &= 20 &&
+\end{calculs}
+\begin{calculs}
+DE^{2} &= (-2)^{2}+4^{2} &\qquad& \rem{même calcul}\\
+DE^{2} &= 20 &&
+\end{calculs}
+\begin{calculs}
+CE^{2} &= 2^{2}+6^{2} &\qquad& \rem{le plus long côté}\\
+CE^{2} &= 40 &&
+\end{calculs}
+\explique{$CD=DE$ : le triangle est isocèle en $D$.}{$CD^{2}=DE^{2}$}
+\explique{$CD^{2}+DE^{2}=40=CE^{2}$ : il est rectangle en $D$.}{réciproque du théorème de
+Pythagore}
+\explique{Conclusion : $CDE$ est \res{rectangle isocèle en $D$}.}{on rassemble}
+\end{correction}
+
+\etape{À vous de jouer}
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Calculer la norme du vecteur $\vec{v}\coord{-6}{8}$.
+  \item On considère les points $F(2\,;-3)$ et $G(5\,;3)$. Calculer la longueur $FG$.
+  \item On considère les points $K(-2\,;0)$, $L(1\,;4)$ et $M(5\,;1)$. Démontrer que le
+        triangle $KLM$ est rectangle isocèle.
+\end{questions}
+\reponse{a) $10$ ; b)~$FG=\sqrt{45}=3\sqrt{5}$ ; c)~$KL^{2}=LM^{2}=25$ et $KM^{2}=50$ :
+rectangle isocèle en $L$.}
+\end{methodebox}
+
+\afaire{exercices 29 à 32}
+
+\partiecours{Trigonométrie dans le triangle rectangle}
+
+\begin{proprietebox}[Propriété 8 --- Cosinus, sinus, tangente (rappel du collège)]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Dans le triangle $ABC$ rectangle en $C$, pour l'angle aigu $\widehat{A}$ :
+\begin{center}
+$\cos\widehat{A}=\dfrac{\text{adjacent}}{\text{hypoténuse}}=\dfrac{AC}{AB}$\\[4pt]
+$\sin\widehat{A}=\dfrac{\text{opposé}}{\text{hypoténuse}}=\dfrac{BC}{AB}$\\[4pt]
+$\tan\widehat{A}=\dfrac{\text{opposé}}{\text{adjacent}}=\dfrac{BC}{AC}$
+\end{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.8]
+  \draw[fig] (0,0) -- (4,0) -- (4,2.6) -- cycle;
+  \draw[black!70] (3.7,0) -- (3.7,0.3) -- (4,0.3);
+  \draw (0.9,0) arc (0:33:0.9);
+  \node[font=\footnotesize,align=center] at (2,-0.4) {adjacent};
+  \node[font=\footnotesize,align=left,anchor=west] at (4.05,1.3) {opposé};
+  \node[font=\footnotesize,rotate=33] at (1.7,1.5) {hypoténuse};
+  \node[below left] at (0,0) {$A$};
+  \node[below right] at (4,0) {$C$};
+  \node[above right] at (4,2.6) {$B$};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{Calculatrice}, réglée en \textbf{degrés} : les touches \textsf{cos}, \textsf{sin}
+et \textsf{tan} donnent le rapport à partir de l'angle ; les touches
+\textsf{cos$^{-1}$}, \textsf{sin$^{-1}$} et \textsf{tan$^{-1}$} (souvent avec
+\textsf{2nde} ou \textsf{shift}) donnent l'angle à partir du rapport.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Calculer une longueur]
+On repère l'hypoténuse, puis le côté adjacent et le côté opposé à l'angle connu ; on
+choisit le rapport qui contient le côté cherché et un côté connu, et on termine par un
+produit en croix.
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+\begin{questions}[label=\alph*)]
+  \item $DEF$ est rectangle en $E$, avec $\widehat{D}=35^{\circ}$ et $DF=8$~cm. Calculer
+        $EF$, arrondie au dixième.
+  \item Dans le même triangle, calculer $DE$, arrondie au dixième.
+  \item $RST$ est rectangle en $S$, avec $\widehat{R}=40^{\circ}$ et $RS=5$~cm. Calculer
+        $RT$, arrondie au dixième.
+  \item $KLM$ est rectangle en $L$, avec $\widehat{K}=55^{\circ}$ et $KL=4$~cm. Calculer
+        $LM$, arrondie au dixième.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.42]
+  \draw[fig] (0,0) -- (6.55,0) -- (6.55,4.59) -- cycle;
+  \draw[black!70] (6.25,0) -- (6.25,0.3) -- (6.55,0.3);
+  \draw (1.2,0) arc (0:35:1.2);
+  \node[below left] at (0,0) {$D$};
+  \node[below right] at (6.55,0) {$E$};
+  \node[above right] at (6.55,4.59) {$F$};
+  \node[font=\footnotesize] at (2.2,0.6) {$35^{\circ}$};
+  \node[font=\footnotesize,above left] at (3.3,2.3) {$8$ cm};
+\end{tikzpicture}
+\quad
+\begin{tikzpicture}[scale=0.42]
+  \draw[fig] (0,0) -- (5,0) -- (5,4.2) -- cycle;
+  \draw[black!70] (4.7,0) -- (4.7,0.3) -- (5,0.3);
+  \draw (1.2,0) arc (0:40:1.2);
+  \node[below left] at (0,0) {$R$};
+  \node[below right] at (5,0) {$S$};
+  \node[above right] at (5,4.2) {$T$};
+  \node[font=\footnotesize] at (2.2,0.7) {$40^{\circ}$};
+  \node[font=\footnotesize,below] at (2.5,0) {$5$ cm};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[scale=0.42]
+  \draw[fig] (0,0) -- (4,0) -- (4,5.71) -- cycle;
+  \draw[black!70] (3.7,0) -- (3.7,0.3) -- (4,0.3);
+  \draw (1.2,0) arc (0:55:1.2);
+  \node[below left] at (0,0) {$K$};
+  \node[below right] at (4,0) {$L$};
+  \node[above right] at (4,5.71) {$M$};
+  \node[font=\footnotesize] at (2.1,0.9) {$55^{\circ}$};
+  \node[font=\footnotesize,below] at (2,0) {$4$ cm};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{Hypoténuse $[DF]$ ; $[EF]$ est opposé à $\widehat{D}$.}{on cherche l'opposé, on
+connaît l'hypoténuse : sinus}
+\begin{calculs}
+\sin\widehat{D} &= \frac{EF}{DF} &\qquad& \rem{opposé sur hypoténuse}\\
+\sin 35^{\circ} &= \frac{EF}{8} && \rem{on remplace}\\
+EF &= 8\times\sin 35^{\circ} && \rem{produit en croix}\\
+EF &\approx \res{4{,}6\text{~cm}} && \rem{calculatrice en degrés}
+\end{calculs}
+\cas{b)}
+\explique{$[DE]$ est adjacent à $\widehat{D}$.}{adjacent et hypoténuse : cosinus}
+\begin{calculs}
+\cos 35^{\circ} &= \frac{DE}{8} &\qquad& \rem{adjacent sur hypoténuse}\\
+DE &= 8\times\cos 35^{\circ} && \rem{produit en croix}\\
+DE &\approx \res{6{,}6\text{~cm}} &&
+\end{calculs}
+\cas{c)}
+\explique{Hypoténuse $[RT]$, cherchée ; $[RS]$ est adjacent à $\widehat{R}$.}{adjacent et
+hypoténuse : cosinus}
+\begin{calculs}
+\cos 40^{\circ} &= \frac{5}{RT} &\qquad& \rem{adjacent sur hypoténuse}\\
+RT\times\cos 40^{\circ} &= 5 && \rem{produit en croix}\\
+RT &= \frac{5}{\cos 40^{\circ}} && \rem{on divise par $\cos 40^{\circ}$}\\
+RT &\approx \res{6{,}5\text{~cm}} && \rem{plus long que $RS$ : c'est l'hypoténuse}
+\end{calculs}
+\cas{d)}
+\explique{$[KL]$ est adjacent à $\widehat{K}$ et $[LM]$ lui est opposé ; l'hypoténuse
+$[KM]$ n'est ni connue ni cherchée.}{opposé et adjacent : tangente}
+\begin{calculs}
+\tan\widehat{K} &= \frac{LM}{KL} &\qquad& \rem{opposé sur adjacent}\\
+\tan 55^{\circ} &= \frac{LM}{4} && \rem{on remplace}\\
+LM &= 4\times\tan 55^{\circ} && \rem{produit en croix}\\
+LM &\approx \res{5{,}7\text{~cm}} && \rem{calculatrice en degrés}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+\begin{questions}[label=\alph*)]
+  \item $GHK$ est rectangle en $H$, avec $\widehat{G}=50^{\circ}$ et $GK=6$~cm. Calculer
+        $HK$, arrondie au dixième.
+  \item Dans le même triangle, calculer $GH$, arrondie au dixième.
+  \item $LMN$ est rectangle en $M$, avec $\widehat{L}=30^{\circ}$ et $LM=9$~cm. Calculer
+        $LN$, arrondie au dixième.
+  \item $XYZ$ est rectangle en $Y$, avec $\widehat{X}=20^{\circ}$ et $XY=7$~cm. Calculer
+        $YZ$, arrondie au dixième.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.34]
+  \draw[fig] (0,0) -- (3.86,0) -- (3.86,4.6) -- cycle;
+  \draw[black!70] (3.56,0) -- (3.56,0.3) -- (3.86,0.3);
+  \draw (1.1,0) arc (0:50:1.1);
+  \node[below left] at (0,0) {$G$};
+  \node[below right] at (3.86,0) {$H$};
+  \node[above right] at (3.86,4.6) {$K$};
+  \node[font=\footnotesize] at (1.9,0.8) {$50^{\circ}$};
+  \node[font=\footnotesize,above left] at (1.9,2.3) {$6$ cm};
+\end{tikzpicture}
+\quad
+\begin{tikzpicture}[scale=0.24]
+  \draw[fig] (0,0) -- (9,0) -- (9,5.2) -- cycle;
+  \draw[black!70] (8.6,0) -- (8.6,0.4) -- (9,0.4);
+  \draw (1.8,0) arc (0:30:1.8);
+  \node[below left] at (0,0) {$L$};
+  \node[below right] at (9,0) {$M$};
+  \node[above right] at (9,5.2) {$N$};
+  \node[font=\footnotesize] at (3.4,0.9) {$30^{\circ}$};
+  \node[font=\footnotesize,below] at (4.5,0) {$9$ cm};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[scale=0.3]
+  \draw[fig] (0,0) -- (7,0) -- (7,2.55) -- cycle;
+  \draw[black!70] (6.6,0) -- (6.6,0.4) -- (7,0.4);
+  \draw (2,0) arc (0:20:2);
+  \node[below left] at (0,0) {$X$};
+  \node[below right] at (7,0) {$Y$};
+  \node[above right] at (7,2.55) {$Z$};
+  \node[font=\footnotesize] at (3.5,0.6) {$20^{\circ}$};
+  \node[font=\footnotesize,below] at (3.5,0) {$7$ cm};
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $HK=6\sin 50^{\circ}\approx 4{,}6$~cm ; b)~$GH=6\cos 50^{\circ}\approx 3{,}9$~cm ;
+c)~$LN=\frac{9}{\cos 30^{\circ}}\approx 10{,}4$~cm ; d)~$YZ=7\tan 20^{\circ}\approx 2{,}5$~cm.}
+\end{methodebox}
+
+\afaire{exercices 33 et 34}
+
+\begin{methodebox}[Méthode 12 --- Calculer un angle]
+Pour un angle, on calcule d'abord le rapport (cosinus, sinus ou tangente), puis on
+utilise la touche réciproque de la calculatrice.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item $ABC$ est rectangle en $B$, avec $AB=4$~cm et $AC=5$~cm. Calculer
+        $\widehat{A}$, arrondi au degré.
+  \item Une rampe d'accès monte de $0{,}5$~m sur une longueur horizontale de $6$~m.
+        Calculer l'angle qu'elle fait avec le sol, arrondi au dixième de degré.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Hypoténuse $[AC]$ ; $[AB]$ est adjacent à $\widehat{A}$.}{adjacent et
+hypoténuse : cosinus}
+\begin{calculs}
+\cos\widehat{A} &= \frac{AB}{AC} &\qquad& \rem{adjacent sur hypoténuse}\\
+\cos\widehat{A} &= \frac{4}{5} &&\\
+\widehat{A} &\approx \res{37^{\circ}} && \rem{touche $\cos^{-1}$, soit $\cos^{-1}(4\div 5)\approx 36{,}87$}
+\end{calculs}
+\cas{b)}
+\explique{La rampe, le sol et la verticale forment un triangle rectangle : $0{,}5$~m est
+le côté opposé à l'angle, $6$~m le côté adjacent.}{opposé et adjacent : tangente}
+\begin{calculs}
+\tan\alpha &= \frac{0{,}5}{6} &\qquad& \rem{opposé sur adjacent ; $\alpha$ : l'angle cherché}\\
+\alpha &\approx \res{4{,}8^{\circ}} && \rem{touche $\tan^{-1}$, soit $\tan^{-1}(0{,}5\div 6)$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $DEF$ est rectangle en $E$, avec $DE=3$~cm et $DF=7$~cm. Calculer $\widehat{D}$,
+        arrondi au degré.
+  \item Une route monte de $12$~m pour $100$~m parcourus à l'horizontale. Calculer
+        l'angle qu'elle fait avec l'horizontale, arrondi au dixième de degré.
+\end{questions}
+\reponse{a) $\widehat{D}\approx 65^{\circ}$ ; b)~$\approx 6{,}8^{\circ}$.}
+\end{methodebox}
+
+\afaire{exercices 35 à 37}
+
+\end{document}
