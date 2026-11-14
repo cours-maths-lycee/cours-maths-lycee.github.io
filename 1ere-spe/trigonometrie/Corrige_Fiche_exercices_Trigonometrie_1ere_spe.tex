@@ -1,0 +1,1454 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 8 --- Trigonométrie --- corrigé}{1\textsuperscript{re} spécialité}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\let\partieligne\partie
+\renewcommand{\partie}[1]{\besoinplace{16\baselineskip}\partieligne{#1}}
+\BeforeBeginEnvironment{exo}{\besoinplace{10\baselineskip}}
+\setlength{\parindent}{0pt}
+
+\ShorthandsOff
+\tikzset{lecture/.style={dashed,black!60,line width=0.6pt},
+  sens/.style={-{Stealth[length=1.8mm]},line width=0.9pt,coulCourbeB}}
+\newcommand{\cerclenu}{%
+  \draw[-{Stealth[length=2mm]},thick] (-1.3,0)--(1.3,0) node[below,font=\scriptsize,inner sep=2pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.3)--(0,1.3) node[right,font=\scriptsize,inner sep=2pt]{$y$};
+  \draw[line width=0.9pt] (0,0) circle (1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};}
+\newcommand{\cerclebase}{\cerclenu
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$1$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$-1$};
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (0,1) {$1$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (0,-1) {$-1$};}
+\newcommand{\cerclerep}{\cerclenu
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$0$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (1,0) {$2\pi$};
+  \node[above left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$\pi$};}
+\newcommand{\rayons}[1]{\foreach \a in {#1}{\draw[grille] (0,0)--({cos(\a)},{sin(\a)});}}
+\newcommand{\ptc}[2]{%
+  \path[coulCourbeB] ({cos(#1)},{sin(#1)}) node[croix]{};
+  \node[font=\scriptsize,inner sep=1pt,align=center] at ({1.3*cos(#1)},{1.3*sin(#1)}) {#2};}
+\newcommand{\arcsens}[3]{\draw[sens] ({#3*cos(#1)},{#3*sin(#1)}) arc (#1:#2:#3);}
+\newcommand{\verticale}[1]{\draw[lecture] ({cos(#1)},-1.15)--({cos(#1)},1.15);}
+\newcommand{\horizontale}[1]{\draw[lecture] (-1.15,{sin(#1)})--(1.15,{sin(#1)});}
+\newcommand{\valx}[2]{\pgfmathtruncatemacro{\q}{cos(#1)>0?1:0}%
+  \draw[coulCourbeB,line width=1pt] ({cos(#1)},0.05)--({cos(#1)},-0.05);
+  \ifnum\q=1 \node[below left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};
+  \else \node[below right,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};\fi}
+\newcommand{\valy}[2]{%
+  \draw[coulCourbeB,line width=1pt] (0.05,{sin(#1)})--(-0.05,{sin(#1)});
+  \node[left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,{sin(#1)}) {#2};}
+\newcommand{\equacos}[4]{\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \cerclebase\verticale{#1}\valx{#1}{#4}\ptc{#1}{#2}\ptc{-#1}{#3}\end{tikzpicture}}
+\newcommand{\equasin}[5]{\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \cerclebase\horizontale{#1}\valy{#1}{#5}\ptc{#1}{#3}\ptc{#2}{#4}\end{tikzpicture}}
+\newcommand{\cerclept}[3]{\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \cerclebase#3\ptc{#1}{#2}\end{tikzpicture}}
+\newcommand{\reperetrigo}[2]{%
+  \foreach \k in {#1,...,#2}{\draw[grille] ({\k*pi/6},-1.5)--({\k*pi/6},1.5);}
+  \foreach \j in {-3,...,3}{\draw[grille] ({#1*pi/6},{\j/2})--({#2*pi/6},{\j/2});}
+  \draw[-{Stealth[length=2mm]},thick] ({#1*pi/6},0)--({#2*pi/6+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.5)--(0,1.8)
+    node[below left=-1pt,font=\footnotesize]{$y$};
+  \node[above left,font=\scriptsize,inner sep=1pt,outer sep=1pt] at (0,1) {$1$};
+  \foreach \j/\l in {0.5/\frac{1}{2},-0.5/-\frac{1}{2},-1/-1}{%
+    \node[left,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,\j) {$\l$};}}
+\newcommand{\gradpi}[2][below]{\foreach \k/\l in {#2}{%
+  \draw ({\k*pi/6},0.05)--({\k*pi/6},-0.05);
+  \node[#1,font=\scriptsize,inner sep=1pt,outer sep=2.5pt,fill=white] at ({\k*pi/6},0) {$\l$};}}
+\newcommand{\courbecos}[2]{\draw[coulCourbe,line width=1.1pt]
+  plot[domain=#1*pi/6:#2*pi/6,samples=121] (\x,{cos(\x r)});}
+\newcommand{\courbesin}[2]{\draw[coulCourbe,line width=1.1pt]
+  plot[domain=#1*pi/6:#2*pi/6,samples=121] (\x,{sin(\x r)});}
+\newcommand{\courbesinC}[2]{\draw[coulCourbeC,line width=1.1pt]
+  plot[domain=#1*pi/6:#2*pi/6,samples=121] (\x,{sin(\x r)});}
+\newcommand{\droiteh}[4]{\draw[coulCourbeB,line width=0.8pt]
+  ({#1*pi/6},#3)--({#2*pi/6},#3) node[right,font=\footnotesize]{#4};}
+\newcommand{\lirex}[2]{\draw[lecture] ({#1*pi/6},#2)--({#1*pi/6},0);
+  \path[coulCourbeB] ({#1*pi/6},#2) node[croix]{};}
+\newcommand{\interaxe}[3][red]{\draw[#1,line width=1.8pt] ({#2*pi/6},0)--({#3*pi/6},0);}
+\newcommand{\figcos}[1]{\begin{center}\begin{tikzpicture}[x=1.1cm,y=1.1cm]
+  \reperetrigo{-12}{12}\courbecos{-12}{12}#1\end{tikzpicture}\end{center}}
+\newcommand{\figsin}[1]{\begin{center}\begin{tikzpicture}[x=1.1cm,y=1.1cm]
+  \reperetrigo{-12}{12}\courbesin{-12}{12}#1\end{tikzpicture}\end{center}}
+\ShorthandsOn
+
+\begin{document}
+
+\entetefiche{Chapitre 8 --- Trigonométrie}{Première spécialité mathématiques}
+
+\partie{Cercle trigonométrique et radian}
+
+\begin{exo}[Des degrés aux radians]
+\explique{Pour chaque angle, on multiplie par $\dfrac{\pi}{180}$, puis on simplifie.}{$180^{\circ}$ valent $\pi$ rad (méthode 1)}
+\cas{a)}
+\begin{calculs}
+40^{\circ} &= 40\times\dfrac{\pi}{180}\text{ rad} &&\justif{on multiplie par $\tfrac{\pi}{180}$}\\
+40^{\circ} &= \dfrac{2\times\barre{20}\times\pi}{9\times\barre{20}}\text{ rad} &&\justif{$40$ vaut $2\times 20$ et $180$ vaut $9\times 20$}\\
+40^{\circ} &= \res{\dfrac{2\pi}{9}\text{ rad}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+150^{\circ} &= 150\times\dfrac{\pi}{180}\text{ rad} &&\justif{même calcul}\\
+150^{\circ} &= \dfrac{5\times\barre{30}\times\pi}{6\times\barre{30}}\text{ rad} &&\justif{on simplifie par $30$}\\
+150^{\circ} &= \res{\dfrac{5\pi}{6}\text{ rad}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+225^{\circ} &= 225\times\dfrac{\pi}{180}\text{ rad} &&\\
+225^{\circ} &= \dfrac{5\times\barre{45}\times\pi}{4\times\barre{45}}\text{ rad} &&\justif{on simplifie par $45$}\\
+225^{\circ} &= \res{\dfrac{5\pi}{4}\text{ rad}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+300^{\circ} &= 300\times\dfrac{\pi}{180}\text{ rad} &&\\
+300^{\circ} &= \dfrac{5\times\barre{60}\times\pi}{3\times\barre{60}}\text{ rad} &&\justif{on simplifie par $60$}\\
+300^{\circ} &= \res{\dfrac{5\pi}{3}\text{ rad}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+72^{\circ} &= 72\times\dfrac{\pi}{180}\text{ rad} &&\\
+72^{\circ} &= \dfrac{2\times\barre{36}\times\pi}{5\times\barre{36}}\text{ rad} &&\justif{on simplifie par $36$}\\
+72^{\circ} &= \res{\dfrac{2\pi}{5}\text{ rad}} &&
+\end{calculs}
+\rem{Contrôle : $225^{\circ}$ est entre $180^{\circ}$ et $270^{\circ}$, et $\frac{5\pi}{4}$
+entre $\pi$ et $\frac{3\pi}{2}$.}
+\end{exo}
+
+\begin{exo}[Des radians aux degrés]
+\explique{Pour chaque angle, on multiplie par $\dfrac{180}{\pi}$ : les $\pi$ se simplifient.}{sens inverse de l'exercice 1}
+\cas{a)}
+\begin{calculs}
+\dfrac{3\pi}{4}\text{ rad} &= \dfrac{3\barre{\pi}}{4}\times\dfrac{180}{\barre{\pi}}\text{ degrés} &&\justif{on multiplie par $\tfrac{180}{\pi}$}\\
+\dfrac{3\pi}{4}\text{ rad} &= 3\times 45\text{ degrés} &&\justif{$180$ divisé par $4$ vaut $45$}\\
+\dfrac{3\pi}{4}\text{ rad} &= \res{135^{\circ}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\dfrac{7\pi}{12}\text{ rad} &= 7\times 15\text{ degrés} &&\justif{$180$ divisé par $12$ vaut $15$}\\
+\dfrac{7\pi}{12}\text{ rad} &= \res{105^{\circ}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\dfrac{4\pi}{9}\text{ rad} &= 4\times 20\text{ degrés} &&\justif{$180$ divisé par $9$ vaut $20$}\\
+\dfrac{4\pi}{9}\text{ rad} &= \res{80^{\circ}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\dfrac{11\pi}{6}\text{ rad} &= 11\times 30\text{ degrés} &&\justif{$180$ divisé par $6$ vaut $30$}\\
+\dfrac{11\pi}{6}\text{ rad} &= \res{330^{\circ}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\dfrac{3\pi}{8}\text{ rad} &= 3\times 22{,}5\text{ degrés} &&\justif{$180$ divisé par $8$ vaut $22{,}5$}\\
+\dfrac{3\pi}{8}\text{ rad} &= \res{67{,}5^{\circ}} &&
+\end{calculs}
+\rem{Méthode rapide : on divise $180$ par le dénominateur, puis on multiplie par le
+numérateur.}
+\end{exo}
+
+\begin{exo}[Sans calculatrice]
+\explique{On écrit chaque angle comme un multiple de $15^{\circ}$ : sa mesure en radians est le même multiple de $\dfrac{\pi}{12}$.}{les mesures sont proportionnelles}
+\begin{calculs}
+45^{\circ} &= 3\times 15^{\circ} &&\justif{donc $3\times\tfrac{\pi}{12}$}\\
+45^{\circ} &= \dfrac{3\pi}{12}\text{ rad} &&\\
+45^{\circ} &= \res{\dfrac{\pi}{4}\text{ rad}} &&\justif{on simplifie par $3$}\\
+75^{\circ} &= 5\times 15^{\circ} &&\\
+75^{\circ} &= \res{\dfrac{5\pi}{12}\text{ rad}} &&\\
+105^{\circ} &= 7\times 15^{\circ} &&\\
+105^{\circ} &= \res{\dfrac{7\pi}{12}\text{ rad}} &&\\
+165^{\circ} &= 11\times 15^{\circ} &&\\
+165^{\circ} &= \res{\dfrac{11\pi}{12}\text{ rad}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Polygones réguliers]
+\cas{a)}
+\explique{Les $n$ angles au centre d'un polygone régulier à $n$ côtés se partagent le tour complet, $2\pi$ : chacun mesure $\dfrac{2\pi}{n}$.}{tous égaux, car le polygone est régulier}
+\begin{calculs}
+\text{triangle} &= \dfrac{2\pi}{3} &&\justif{$3$ côtés : $\res{\tfrac{2\pi}{3}}$}\\
+\text{carré} &= \dfrac{2\pi}{4} &&\justif{soit $\res{\tfrac{\pi}{2}}$}\\
+\text{hexagone} &= \dfrac{2\pi}{6} &&\justif{soit $\res{\tfrac{\pi}{3}}$}\\
+\text{octogone} &= \dfrac{2\pi}{8} &&\justif{soit $\res{\tfrac{\pi}{4}}$}\\
+\text{dodécagone} &= \dfrac{2\pi}{12} &&\justif{soit $\res{\tfrac{\pi}{6}}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+n &= \dfrac{360}{24} &&\justif{les angles au centre se partagent $360^{\circ}$}\\
+n &= \res{15} &&\justif{le polygone a $15$ côtés}\\
+24^{\circ} &= \dfrac{2\pi}{15}\text{ rad} &&\justif{un quinzième de tour}
+\end{calculs}
+\explique{L'angle au centre mesure $\res{\dfrac{2\pi}{15}}$ rad.}{contrôle : $24\times\tfrac{\pi}{180}$ se simplifie par $12$ en $\tfrac{2\pi}{15}$}
+\end{exo}
+
+\partie{Longueur d'un arc, mesures d'un angle orienté}
+
+\begin{exo}[Longueur d'un arc]
+\explique{On écrit la formule $\ell=r\times\alpha$, puis on remplace les grandeurs connues.}{propriété 2 ; l'angle est en radians (méthode 2)}
+\cas{a)}
+\begin{calculs}
+\ell &= r\times\alpha &&\justif{on recopie la formule}\\
+\ell &= 6\times\dfrac{\pi}{3} &&\justif{$r$ vaut $6$ cm}\\
+\ell &= \res{2\pi}\text{ cm} &&\justif{$6$ divisé par $3$ vaut $2$ ; environ $6{,}3$ cm}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\ell &= r\times\alpha &&\\
+\ell &= 9\times\dfrac{5\pi}{6} &&\justif{$r$ vaut $9$ cm}\\
+\ell &= \dfrac{3\times\barre{3}\times 5\pi}{2\times\barre{3}} &&\justif{on simplifie par $3$}\\
+\ell &= \res{\dfrac{15\pi}{2}}\text{ cm} &&\justif{environ $23{,}6$ cm}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\ell &= r\times\alpha &&\justif{on cherche $\alpha$}\\
+4 &= 10\times\alpha &&\justif{$\ell$ vaut $4$ cm et $r$ vaut $10$ cm}\\
+\alpha &= \dfrac{4}{10} &&\justif{on divise par $10$}\\
+\alpha &= \res{\dfrac{2}{5}} &&\justif{en radians}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\ell &= r\times\alpha &&\\
+3\pi &= 4\times\alpha &&\justif{$\ell$ vaut $3\pi$ cm et $r$ vaut $4$ cm}\\
+\alpha &= \res{\dfrac{3\pi}{4}} &&\justif{on divise par $4$ ; soit $135^{\circ}$}
+\end{calculs}
+\rem{Erreur fréquente : utiliser l'angle en degrés dans la formule ; elle ne vaut qu'en radians.}
+\end{exo}
+
+\begin{exo}[Lire les mesures d'un point]
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\cas{Point $E$}
+\explique{Sens direct : $5\times\dfrac{\pi}{4}$, soit $\res{\dfrac{5\pi}{4}}$.}{un huitième de tour vaut $\tfrac{\pi}{4}$ ; on en compte $5$ à partir du point $(1\,;0)$}
+\explique{Sens indirect : $3\times\left(-\dfrac{\pi}{4}\right)$, soit $\res{-\dfrac{3\pi}{4}}$.}{dans l'autre sens, $3$ huitièmes de tour}
+\cas{Point $F$}
+\explique{Sens direct : $10\times\dfrac{\pi}{6}$, soit $\res{\dfrac{5\pi}{3}}$.}{un douzième de tour vaut $\tfrac{\pi}{6}$ ; on en compte $10$}
+\explique{Sens indirect : $2\times\left(-\dfrac{\pi}{6}\right)$, soit $\res{-\dfrac{\pi}{3}}$.}{dans l'autre sens, $2$ douzièmes}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=1.1cm,y=1.1cm]
+  \rayons{0,30,...,330}\cerclerep
+  \arcsens{0}{225}{0.5}\ptc{225}{$E$}\ptc{300}{$F$}
+\end{tikzpicture}
+\end{minipage}
+\rem{Contrôle : les deux mesures d'un même point diffèrent d'un tour,
+$\frac{5\pi}{4}-\left(-\frac{3\pi}{4}\right)=\frac{8\pi}{4}$, soit $2\pi$.}
+\end{exo}
+
+\begin{exo}[Placer des images]
+\begin{minipage}[c]{0.60\linewidth}\raggedright
+\explique{$A$ : $3$ huitièmes de tour dans le sens direct ; $B$ : un douzième dans le sens indirect.}{les nombres sans tour en trop se placent directement (méthode 4)}
+\begin{calculs}
+\dfrac{13\pi}{4} &= \dfrac{8\pi}{4}+\dfrac{5\pi}{4} &&\justif{$C$ est l'image de $\res{\tfrac{5\pi}{4}}$}\\
+-\dfrac{7\pi}{3} &= -\dfrac{6\pi}{3}-\dfrac{\pi}{3} &&\justif{$D$ est l'image de $\res{-\tfrac{\pi}{3}}$}\\
+\dfrac{9\pi}{2} &= \dfrac{8\pi}{2}+\dfrac{\pi}{2} &&\justif{$4\pi$ : deux tours ; $G$ est l'image de $\res{\tfrac{\pi}{2}}$}\\
+-5\pi &= -4\pi-\pi &&\justif{$H$ est l'image de $-\pi$, soit $\res{\pi}$}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \rayons{0,15,...,345}\cerclerep
+  \ptc{135}{$A$}\ptc{-30}{$B$}\ptc{225}{$C$}\ptc{-60}{$D$}\ptc{90}{$G$}\ptc{180}{\\[6pt]$H$}
+\end{tikzpicture}
+\end{minipage}
+\rem{$-\pi$ et $\pi$ ont la même image : le point de coordonnées $(-1\,;0)$.}
+\end{exo}
+
+\begin{exo}[Même image ou non ?]
+\explique{Deux nombres réels ont la même image quand leur différence est un nombre entier de tours, $2k\pi$.}{propriété 3}
+\cas{a)}
+\begin{calculs}
+7\pi-(-3\pi) &= 10\pi &&\justif{$10\pi$ vaut $5\times 2\pi$ : cinq tours}
+\end{calculs}
+\explique{$7\pi$ et $-3\pi$ \res{ont la même image}, car ils diffèrent de cinq tours.}{la phrase demandée}
+\cas{b)}
+\begin{calculs}
+\dfrac{19\pi}{4}-\dfrac{3\pi}{4} &= \dfrac{16\pi}{4} &&\\
+\dfrac{19\pi}{4}-\dfrac{3\pi}{4} &= 4\pi &&\justif{deux tours}
+\end{calculs}
+\explique{$\dfrac{3\pi}{4}$ et $\dfrac{19\pi}{4}$ \res{ont la même image}, car ils diffèrent de deux tours.}{}
+\cas{c)}
+\begin{calculs}
+\dfrac{5\pi}{2}-\left(-\dfrac{\pi}{2}\right) &= \dfrac{6\pi}{2} &&\\
+\dfrac{5\pi}{2}-\left(-\dfrac{\pi}{2}\right) &= 3\pi &&\justif{un tour et demi}
+\end{calculs}
+\explique{$\dfrac{5\pi}{2}$ et $-\dfrac{\pi}{2}$ \res{n'ont pas la même image}, car $3\pi$ n'est pas un nombre entier de tours.}{leurs images sont diamétralement opposées : le haut et le bas du cercle}
+\cas{d)}
+\begin{calculs}
+\dfrac{2\pi}{3}-\left(-\dfrac{16\pi}{3}\right) &= \dfrac{18\pi}{3} &&\\
+\dfrac{2\pi}{3}-\left(-\dfrac{16\pi}{3}\right) &= 6\pi &&\justif{trois tours}
+\end{calculs}
+\explique{$\dfrac{2\pi}{3}$ et $-\dfrac{16\pi}{3}$ \res{ont la même image}, car ils diffèrent de trois tours.}{}
+\end{exo}
+
+\begin{exo}[Grande roue]
+\cas{a)}
+\begin{calculs}
+\ell &= r\times\alpha &&\justif{propriété 2}\\
+\ell &= 30\times\dfrac{5\pi}{2} &&\justif{$r$ vaut $30$ m}\\
+\ell &= \res{75\pi}\text{ m} &&\justif{$30$ divisé par $2$ vaut $15$, puis $15\times 5\pi$}
+\end{calculs}
+\explique{La nacelle parcourt environ $\res{236}$ m.}{$75\times\pi\approx 235{,}6$}
+\cas{b)}
+\begin{calculs}
+\dfrac{5\pi}{2} &= \dfrac{4\pi}{2}+\dfrac{\pi}{2} &&\justif{on fait apparaître des tours}\\
+\dfrac{5\pi}{2} &= 2\pi+\dfrac{\pi}{2} &&\justif{un tour, plus un quart de tour}
+\end{calculs}
+\explique{La roue a fait \res{un tour et un quart} ; la nacelle est l'image de $\dfrac{\pi}{2}$ : \res{tout en haut} de la roue.}{le point de coordonnées $(0\,;1)$ du cercle trigonométrique}
+\cas{c)}
+\begin{calculs}
+\dfrac{5\pi}{2}\text{ rad} &= 5\times 90\text{ degrés} &&\justif{$180$ divisé par $2$ vaut $90$}\\
+\dfrac{5\pi}{2}\text{ rad} &= \res{450^{\circ}} &&\justif{$360^{\circ}+90^{\circ}$ : on retrouve un tour et un quart}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\ell &= r\times\alpha &&\justif{on cherche $\alpha$}\\
+100\pi &= 30\times\alpha &&\\
+\alpha &= \dfrac{100\pi}{30} &&\justif{on divise par $30$}\\
+\alpha &= \res{\dfrac{10\pi}{3}} &&\justif{on simplifie par $10$}\\
+\dfrac{10\pi}{3}-\dfrac{6\pi}{3} &= \dfrac{4\pi}{3} &&\justif{on retire un tour}
+\end{calculs}
+\explique{La nacelle est l'image de $\res{\dfrac{4\pi}{3}}$.}{$\tfrac{4\pi}{3}$ est bien entre $0$ et $2\pi$ : en bas à gauche de la roue}
+\end{exo}
+
+\partie{Mesure principale d'un angle orienté}
+
+\begin{exo}[Mesure principale]
+\explique{On écrit un tour avec le dénominateur de la mesure, puis on retire (ou on ajoute) le nombre de tours qui ramène dans $\intof{-\pi}{\pi}$.}{méthode 5 ; on vise le multiple le plus proche du numérateur}
+\cas{a)}
+\begin{calculs}
+\dfrac{9\pi}{4}-\dfrac{8\pi}{4} &= \res{\dfrac{\pi}{4}} &&\justif{$2\pi$ s'écrit $\tfrac{8\pi}{4}$ : on retire un tour}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+-\dfrac{7\pi}{3}+\dfrac{6\pi}{3} &= \res{-\dfrac{\pi}{3}} &&\justif{$2\pi$ s'écrit $\tfrac{6\pi}{3}$ : on ajoute un tour}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\dfrac{23\pi}{6}-\dfrac{24\pi}{6} &= \res{-\dfrac{\pi}{6}} &&\justif{$24$ : le multiple de $12$ le plus proche de $23$ ; deux tours}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\dfrac{31\pi}{4}-\dfrac{32\pi}{4} &= \res{-\dfrac{\pi}{4}} &&\justif{$32$ : le multiple de $8$ le plus proche de $31$ ; quatre tours}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+-\dfrac{21\pi}{2}+\dfrac{20\pi}{2} &= \res{-\dfrac{\pi}{2}} &&\justif{$20$ : le multiple de $4$ le plus proche de $21$ ; cinq tours}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+\dfrac{199\pi}{3}-\dfrac{198\pi}{3} &= \res{\dfrac{\pi}{3}} &&\justif{$198$ : le multiple de $6$ le plus proche de $199$ ; $33$ tours}
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+18\pi-18\pi &= \res{0} &&\justif{$18\pi$ : neuf tours exactement}
+\end{calculs}
+\rem{Contrôle : le résultat doit être dans $\intof{-\pi}{\pi}$. En c), avec $12$ au lieu de
+$24$, on trouverait $\frac{11\pi}{6}$, trop grand.}
+\end{exo}
+
+\begin{exo}[L'intrus]
+\explique{On ramène chaque mesure à sa mesure principale : l'intrus est celle qui en donne une autre.}{propriété 3}
+\cas{a)}
+\begin{calculs}
+\dfrac{5\pi}{3}-\dfrac{6\pi}{3} &= -\dfrac{\pi}{3} &&\justif{un tour de moins}\\
+\dfrac{11\pi}{3}-\dfrac{12\pi}{3} &= -\dfrac{\pi}{3} &&\justif{deux tours de moins}\\
+-\dfrac{7\pi}{3}+\dfrac{6\pi}{3} &= -\dfrac{\pi}{3} &&\justif{un tour de plus}\\
+\dfrac{7\pi}{3}-\dfrac{6\pi}{3} &= \dfrac{\pi}{3} &&\justif{autre point}
+\end{calculs}
+\explique{L'intrus est $\res{\dfrac{7\pi}{3}}$ ; la mesure principale de l'angle est $\res{-\dfrac{\pi}{3}}$.}{$-\tfrac{\pi}{3}$ figure déjà dans la liste}
+\cas{b)}
+\begin{calculs}
+-\dfrac{5\pi}{4}+\dfrac{8\pi}{4} &= \dfrac{3\pi}{4} &&\justif{un tour de plus}\\
+\dfrac{11\pi}{4}-\dfrac{8\pi}{4} &= \dfrac{3\pi}{4} &&\justif{un tour de moins}\\
+\dfrac{19\pi}{4}-\dfrac{16\pi}{4} &= \dfrac{3\pi}{4} &&\justif{deux tours de moins}
+\end{calculs}
+\explique{L'intrus est $\res{-\dfrac{3\pi}{4}}$, déjà dans $\intof{-\pi}{\pi}$ et différent de $\dfrac{3\pi}{4}$ ; la mesure principale de l'angle est $\res{\dfrac{3\pi}{4}}$.}{$\tfrac{3\pi}{4}$ et $-\tfrac{3\pi}{4}$ sont symétriques par rapport à l'axe des abscisses}
+\end{exo}
+
+\begin{exo}[Satellite]
+\cas{a)}
+\begin{calculs}
+\dfrac{47\pi}{3} &= \dfrac{42\pi}{3}+\dfrac{5\pi}{3} &&\justif{$42$ : le plus grand multiple de $6$ sous $47$}\\
+\dfrac{47\pi}{3} &= 14\pi+\dfrac{5\pi}{3} &&\justif{$14\pi$ vaut $7\times 2\pi$}
+\end{calculs}
+\explique{Le satellite a fait $\res{7}$ tours complets.}{le reste, $\tfrac{5\pi}{3}$, est moins d'un tour}
+\cas{b)}
+\begin{calculs}
+\dfrac{47\pi}{3}-\dfrac{48\pi}{3} &= \res{-\dfrac{\pi}{3}} &&\justif{$48$ : le multiple de $6$ le plus proche de $47$ ; huit tours}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\ell &= r\times\alpha &&\justif{propriété 2}\\
+\ell &= 6\,000\times\dfrac{47\pi}{3} &&\justif{$r$ vaut $6\,000$ km}\\
+\ell &= \res{94\,000\pi}\text{ km} &&\justif{$6\,000$ divisé par $3$ vaut $2\,000$, puis $2\,000\times 47$}
+\end{calculs}
+\explique{Il a parcouru environ $\res{295\,310}$ km.}{$94\,000\times\pi\approx 295\,309{,}7$}
+\end{exo}
+
+\begin{exo}[Toutes les mesures d'un intervalle]
+\cas{a)}
+\begin{calculs}
+\dfrac{7\pi}{6}-\dfrac{12\pi}{6} &= \res{-\dfrac{5\pi}{6}} &&\justif{$\tfrac{7\pi}{6}$ dépasse $\pi$ : on retire un tour}
+\end{calculs}
+\cas{b)}
+\explique{Les nombres réels de même image s'écrivent $\dfrac{7\pi}{6}+2k\pi$, soit $\dfrac{7\pi}{6}+\dfrac{12k\pi}{6}$, avec $k$ entier ; l'intervalle va de $-\dfrac{24\pi}{6}$ à $\dfrac{24\pi}{6}$.}{propriété 3 ; tout écrit avec le dénominateur $6$}
+\begin{calculs}
+\dfrac{7\pi}{6}-\dfrac{24\pi}{6} &= -\dfrac{17\pi}{6} &&\justif{$k=-2$ : dans l'intervalle}\\
+\dfrac{7\pi}{6}-\dfrac{12\pi}{6} &= -\dfrac{5\pi}{6} &&\justif{$k=-1$}\\
+\dfrac{7\pi}{6}+\dfrac{12\pi}{6} &= \dfrac{19\pi}{6} &&\justif{$k=1$}\\
+\dfrac{7\pi}{6}+\dfrac{24\pi}{6} &= \dfrac{31\pi}{6} &&\justif{$k=2$ : trop grand, $31$ dépasse $24$}\\
+\dfrac{7\pi}{6}-\dfrac{36\pi}{6} &= -\dfrac{29\pi}{6} &&\justif{$k=-3$ : trop petit}
+\end{calculs}
+\explique{Les nombres cherchés sont $\res{-\dfrac{17\pi}{6}}$, $\res{-\dfrac{5\pi}{6}}$, $\res{\dfrac{7\pi}{6}}$ et $\res{\dfrac{19\pi}{6}}$.}{quatre nombres : l'intervalle couvre quatre tours}
+\end{exo}
+
+\partie{Cosinus et sinus d'un nombre réel}
+
+\begin{exo}[Valeurs exactes]
+\explique{On cherche d'abord la mesure principale, qui a le même cosinus et le même sinus, puis on lit le tableau des valeurs remarquables.}{méthode 6 ; propriété 4 : un tour ne change ni le cosinus ni le sinus}
+\cas{a)}
+\begin{calculs}
+\dfrac{13\pi}{6}-\dfrac{12\pi}{6} &= \dfrac{\pi}{6} &&\justif{on retire un tour}\\
+\cos\left(\dfrac{13\pi}{6}\right) &= \cos\left(\dfrac{\pi}{6}\right) &&\justif{même point, même cosinus}\\
+\cos\left(\dfrac{13\pi}{6}\right) &= \res{\dfrac{\sqrt{3}}{2}} &&\justif{lecture du tableau}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\dfrac{9\pi}{4}-\dfrac{8\pi}{4} &= \dfrac{\pi}{4} &&\justif{on retire un tour}\\
+\sin\left(\dfrac{9\pi}{4}\right) &= \res{\dfrac{\sqrt{2}}{2}} &&\justif{$\sin\left(\tfrac{\pi}{4}\right)$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+-5\pi+6\pi &= \pi &&\justif{on ajoute trois tours}\\
+\cos(-5\pi) &= \res{-1} &&\justif{$\cos(\pi)$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+-\dfrac{7\pi}{2}+\dfrac{8\pi}{2} &= \dfrac{\pi}{2} &&\justif{on ajoute deux tours, $4\pi$}\\
+\sin\left(-\dfrac{7\pi}{2}\right) &= \res{1} &&\justif{$\sin\left(\tfrac{\pi}{2}\right)$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\dfrac{25\pi}{3}-\dfrac{24\pi}{3} &= \dfrac{\pi}{3} &&\justif{on retire quatre tours}\\
+\cos\left(\dfrac{25\pi}{3}\right) &= \res{\dfrac{1}{2}} &&\justif{$\cos\left(\tfrac{\pi}{3}\right)$}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+-\dfrac{15\pi}{4}+\dfrac{16\pi}{4} &= \dfrac{\pi}{4} &&\justif{on ajoute deux tours}\\
+\sin\left(-\dfrac{15\pi}{4}\right) &= \res{\dfrac{\sqrt{2}}{2}} &&\justif{$\sin\left(\tfrac{\pi}{4}\right)$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Calculer une expression]
+\explique{On remplace $x$ par sa valeur, puis on utilise le tableau des valeurs remarquables.}{méthode 7}
+\cas{a)}
+\begin{calculs}
+f\left(\dfrac{\pi}{6}\right) &= 4\cos\left(\dfrac{\pi}{6}\right)-6\sin\left(\dfrac{\pi}{6}\right) &&\justif{on remplace $x$ par $\tfrac{\pi}{6}$}\\
+f\left(\dfrac{\pi}{6}\right) &= 4\times\dfrac{\sqrt{3}}{2}-6\times\dfrac{1}{2} &&\justif{valeurs du tableau}\\
+f\left(\dfrac{\pi}{6}\right) &= \res{2\sqrt{3}-3} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g\left(\dfrac{\pi}{3}\right) &= 2\left(\sin\left(\dfrac{\pi}{3}\right)\right)^{2} &&\justif{$\sin^{2}$ : le sinus, au carré}\\
+g\left(\dfrac{\pi}{3}\right) &= 2\times\dfrac{3}{4} &&\justif{$\left(\tfrac{\sqrt{3}}{2}\right)^{2}$ vaut $\tfrac{3}{4}$}\\
+g\left(\dfrac{\pi}{3}\right) &= \res{\dfrac{3}{2}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h\left(\dfrac{\pi}{12}\right) &= \sin\left(2\times\dfrac{\pi}{12}\right) &&\justif{on multiplie d'abord}\\
+h\left(\dfrac{\pi}{12}\right) &= \sin\left(\dfrac{\pi}{6}\right) &&\\
+h\left(\dfrac{\pi}{12}\right) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k\left(\dfrac{\pi}{4}\right) &= \dfrac{\sqrt{2}}{2}\times\dfrac{\sqrt{2}}{2} &&\justif{cosinus et sinus de $\tfrac{\pi}{4}$}\\
+k\left(\dfrac{\pi}{4}\right) &= \dfrac{2}{4} &&\justif{$\sqrt{2}\times\sqrt{2}$ vaut $2$}\\
+k\left(\dfrac{\pi}{4}\right) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m\left(\dfrac{\pi}{6}\right) &= \left(\dfrac{\sqrt{3}}{2}\right)^{2}-\left(\dfrac{1}{2}\right)^{2} &&\justif{valeurs du tableau}\\
+m\left(\dfrac{\pi}{6}\right) &= \dfrac{3}{4}-\dfrac{1}{4} &&\\
+m\left(\dfrac{\pi}{6}\right) &= \res{\dfrac{1}{2}} &&\justif{$\tfrac{2}{4}$ simplifié}
+\end{calculs}
+\rem{Erreur fréquente en c) : $\sin(2x)$ n'est pas $2\sin(x)$ ; ici $2\sin\left(\frac{\pi}{12}\right)$
+ne vaut pas $\frac{1}{2}$.}
+\end{exo}
+
+\begin{exo}[Le sinus d'après le cosinus]
+\explique{On remplace la valeur connue dans $\cos^{2}(x)+\sin^{2}(x)=1$, on trouve le carré cherché, puis l'intervalle donne le signe.}{propriété 4 ; un carré a deux racines, de signes contraires}
+\cas{a)}
+\begin{calculs}
+\cos^{2}(x)+\sin^{2}(x) &= 1 &&\justif{pour tout nombre réel $x$}\\
+\left(\dfrac{1}{4}\right)^{2}+\sin^{2}(x) &= 1 &&\justif{on remplace $\cos(x)$}\\
+\sin^{2}(x) &= \dfrac{16}{16}-\dfrac{1}{16} &&\justif{on retire $\tfrac{1}{16}$ ; $1$ s'écrit $\tfrac{16}{16}$}\\
+\sin^{2}(x) &= \dfrac{15}{16} &&
+\end{calculs}
+\explique{$x\in\intff{0}{\pi}$ : l'image de $x$ est en haut du cercle, donc $\sin(x)\ge 0$.}{le signe départage les deux racines}
+\begin{calculs}
+\sin(x) &= \sqrt{\dfrac{15}{16}} &&\justif{la racine positive}\\
+\sin(x) &= \res{\dfrac{\sqrt{15}}{4}} &&\justif{$\sqrt{16}$ vaut $4$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\cos^{2}(x)+\left(-\dfrac{2}{3}\right)^{2} &= 1 &&\justif{on remplace $\sin(x)$}\\
+\cos^{2}(x) &= \dfrac{9}{9}-\dfrac{4}{9} &&\justif{un carré est positif : $\left(-\tfrac{2}{3}\right)^{2}$ vaut $\tfrac{4}{9}$}\\
+\cos^{2}(x) &= \dfrac{5}{9} &&
+\end{calculs}
+\explique{$x\in\intff{-\dfrac{\pi}{2}}{0}$ : l'image de $x$ est à droite de l'axe des ordonnées, donc $\cos(x)\ge 0$.}{quart en bas à droite}
+\begin{calculs}
+\cos(x) &= \res{\dfrac{\sqrt{5}}{3}} &&\justif{la racine positive de $\tfrac{5}{9}$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\left(-\dfrac{12}{13}\right)^{2}+\sin^{2}(x) &= 1 &&\justif{on remplace $\cos(x)$}\\
+\sin^{2}(x) &= \dfrac{169}{169}-\dfrac{144}{169} &&\justif{$12^{2}$ vaut $144$ et $13^{2}$ vaut $169$}\\
+\sin^{2}(x) &= \dfrac{25}{169} &&
+\end{calculs}
+\explique{$x\in\intff{-\pi}{0}$ : l'image de $x$ est en bas du cercle, donc $\sin(x)\le 0$.}{}
+\begin{calculs}
+\sin(x) &= \res{-\dfrac{5}{13}} &&\justif{la racine négative de $\tfrac{25}{169}$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\cos^{2}(x)+\sin^{2}(x) &= \dfrac{4}{9}+\dfrac{4}{9} &&\justif{on teste la relation}\\
+\cos^{2}(x)+\sin^{2}(x) &= \dfrac{8}{9} &&\justif{différent de $1$}
+\end{calculs}
+\explique{\res{Non} : aucun nombre réel n'a pour cosinus et pour sinus $\dfrac{2}{3}$.}{le point de coordonnées $\left(\tfrac{2}{3}\,;\tfrac{2}{3}\right)$ est à l'intérieur du cercle}
+\rem{Erreur fréquente : oublier le signe, ou écrire $\sqrt{\frac{15}{16}}=\frac{15}{4}$ ; la
+racine porte sur le numérateur et sur le dénominateur.}
+\end{exo}
+
+\begin{exo}[Démontrer les valeurs en $\frac{\pi}{4}$]
+\cas{a)}
+\explique{$\dfrac{\pi}{4}$ est entre $0$ et $\dfrac{\pi}{2}$ : $M$ est dans le quart en haut à droite, $\cos\left(\dfrac{\pi}{4}\right)$ et $\sin\left(\dfrac{\pi}{4}\right)$ sont \res{positifs}.}{coordonnées de $M$}
+\cas{b)}
+\explique{Le triangle $OHM$ est rectangle en $H$ et l'angle $\widehat{HOM}$ mesure $\dfrac{\pi}{4}$, soit $45^{\circ}$.}{$H$ est le projeté de $M$ sur l'axe des abscisses}
+\begin{calculs}
+\widehat{OMH} &= 180^{\circ}-90^{\circ}-45^{\circ} &&\justif{somme des angles d'un triangle}\\
+\widehat{OMH} &= 45^{\circ} &&\justif{deux angles égaux}
+\end{calculs}
+\explique{Le triangle $OHM$ est \res{rectangle isocèle} en $H$ : $OH=HM$, soit $\cos\left(\dfrac{\pi}{4}\right)=\sin\left(\dfrac{\pi}{4}\right)$.}{$OH$ est l'abscisse de $M$, $HM$ son ordonnée}
+\cas{c)}
+\begin{calculs}
+\cos^{2}\left(\dfrac{\pi}{4}\right)+\sin^{2}\left(\dfrac{\pi}{4}\right) &= 1 &&\justif{propriété 4}\\
+2\cos^{2}\left(\dfrac{\pi}{4}\right) &= 1 &&\justif{le sinus est égal au cosinus}\\
+\cos^{2}\left(\dfrac{\pi}{4}\right) &= \dfrac{1}{2} &&\justif{on divise par $2$}\\
+\cos\left(\dfrac{\pi}{4}\right) &= \dfrac{1}{\sqrt{2}} &&\justif{la racine positive, d'après a)}\\
+\cos\left(\dfrac{\pi}{4}\right) &= \res{\dfrac{\sqrt{2}}{2}} &&\justif{on multiplie en haut et en bas par $\sqrt{2}$}
+\end{calculs}
+\explique{Et $\sin\left(\dfrac{\pi}{4}\right)=\res{\dfrac{\sqrt{2}}{2}}$.}{d'après b)}
+\end{exo}
+
+\begin{exo}[Démontrer les valeurs en $\frac{\pi}{3}$ et $\frac{\pi}{6}$]
+\cas{a)}
+\explique{$OA=OM=1$ : le triangle $OAM$ est isocèle en $O$, et son angle en $O$ mesure $\dfrac{\pi}{3}$, soit $60^{\circ}$.}{$A$ et $M$ sont sur le cercle de rayon $1$}
+\begin{calculs}
+\widehat{OAM} &= \dfrac{180^{\circ}-60^{\circ}}{2} &&\justif{les deux angles à la base sont égaux}\\
+\widehat{OAM} &= 60^{\circ} &&
+\end{calculs}
+\explique{Les trois angles mesurent $60^{\circ}$ : le triangle $OAM$ est \res{équilatéral}.}{}
+\cas{b)}
+\explique{Le pied $H$ de la hauteur issue de $M$ est le milieu de $[OA]$ : $OH=\dfrac{1}{2}$, donc $\cos\left(\dfrac{\pi}{3}\right)=\res{\dfrac{1}{2}}$.}{$OH$ est l'abscisse de $M$}
+\begin{calculs}
+\left(\dfrac{1}{2}\right)^{2}+\sin^{2}\left(\dfrac{\pi}{3}\right) &= 1 &&\justif{propriété 4}\\
+\sin^{2}\left(\dfrac{\pi}{3}\right) &= \dfrac{4}{4}-\dfrac{1}{4} &&\\
+\sin^{2}\left(\dfrac{\pi}{3}\right) &= \dfrac{3}{4} &&\\
+\sin\left(\dfrac{\pi}{3}\right) &= \res{\dfrac{\sqrt{3}}{2}} &&\justif{positif : $M$ est au-dessus de l'axe des abscisses}
+\end{calculs}
+\cas{c)}
+\explique{$ON=ON'=1$ et l'angle $\widehat{NON'}$ mesure $\dfrac{\pi}{6}+\dfrac{\pi}{6}$, soit $\dfrac{\pi}{3}$, ou $60^{\circ}$ : comme en a), le triangle $ONN'$ est \res{équilatéral}.}{$N$ est à $\tfrac{\pi}{6}$ au-dessus de l'axe, $N'$ à $\tfrac{\pi}{6}$ au-dessous}
+\cas{d)}
+\explique{Le triangle est équilatéral de côté $1$, donc $NN'=\res{1}$.}{}
+\explique{$N$ et $N'$ sont symétriques par rapport à l'axe des abscisses : leurs ordonnées sont $\sin\left(\dfrac{\pi}{6}\right)$ et $-\sin\left(\dfrac{\pi}{6}\right)$, donc $NN'=2\sin\left(\dfrac{\pi}{6}\right)$.}{$[NN']$ est vertical}
+\begin{calculs}
+2\sin\left(\dfrac{\pi}{6}\right) &= 1 &&\justif{les deux écritures de $NN'$}\\
+\sin\left(\dfrac{\pi}{6}\right) &= \res{\dfrac{1}{2}} &&\justif{on divise par $2$}\\
+\cos^{2}\left(\dfrac{\pi}{6}\right) &= \dfrac{4}{4}-\dfrac{1}{4} &&\justif{propriété 4}\\
+\cos\left(\dfrac{\pi}{6}\right) &= \res{\dfrac{\sqrt{3}}{2}} &&\justif{la racine positive de $\tfrac{3}{4}$}
+\end{calculs}
+\rem{On retrouve tout le tableau des valeurs remarquables : les cosinus et sinus de
+$\frac{\pi}{6}$ et de $\frac{\pi}{3}$ s'échangent.}
+\end{exo}
+
+\partie{Angles associés}
+
+\begin{exo}[Lire les symétries]
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\cas{Point $N$}
+\explique{a) $N$ est l'image de $M$ par la \res{symétrie d'axe $(Ox)$}.}{même abscisse, ordonnée opposée}
+\explique{b) $N$ est l'image de $\res{-\dfrac{\pi}{3}}$.}{c) $\cos$ vaut $\tfrac{1}{2}$ et $\sin$ vaut $-\tfrac{\sqrt{3}}{2}$}
+\cas{Point $R$}
+\explique{a) $R$ est l'image de $M$ par la \res{symétrie d'axe $(Oy)$}.}{même ordonnée, abscisse opposée}
+\explique{b) $R$ est l'image de $\pi-\dfrac{\pi}{3}$, soit $\res{\dfrac{2\pi}{3}}$.}{c) $\cos$ vaut $-\tfrac{1}{2}$ et $\sin$ vaut $\tfrac{\sqrt{3}}{2}$}
+\cas{Point $S$}
+\explique{a) $S$ est l'image de $M$ par la \res{symétrie de centre $O$}.}{les deux coordonnées sont opposées}
+\explique{b) $S$ est l'image de $\pi+\dfrac{\pi}{3}$, soit $\dfrac{4\pi}{3}$, ou $\res{-\dfrac{2\pi}{3}}$ entre $-\pi$ et $\pi$.}{c) $\cos$ vaut $-\tfrac{1}{2}$ et $\sin$ vaut $-\tfrac{\sqrt{3}}{2}$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=1.3cm,y=1.3cm]
+  \draw[lecture] ({cos(60)},{sin(60)})--({cos(60)},{-sin(60)});
+  \draw[lecture] ({cos(60)},{sin(60)})--({-cos(60)},{sin(60)});
+  \draw[lecture] ({cos(60)},{sin(60)})--({-cos(60)},{-sin(60)});
+  \cerclerep
+  \ptc{60}{$M$}\ptc{-60}{$N$}\ptc{120}{$R$}\ptc{240}{$S$}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[À l'aide d'un angle associé]
+\explique{On écrit l'angle sous la forme $\pi-x$, $\pi+x$ ou $-x$ avec $x$ du tableau, puis on applique la propriété 6.}{méthode 8 ; la figure dit si le signe change}
+\cas{a)}
+\begin{calculs}
+\cos\left(\dfrac{5\pi}{6}\right) &= \cos\left(\pi-\dfrac{\pi}{6}\right) &&\justif{$\tfrac{6\pi}{6}-\tfrac{\pi}{6}$ vaut $\tfrac{5\pi}{6}$}\\
+\cos\left(\dfrac{5\pi}{6}\right) &= -\cos\left(\dfrac{\pi}{6}\right) &&\justif{$\cos(\pi-x)=-\cos(x)$}\\
+\cos\left(\dfrac{5\pi}{6}\right) &= \res{-\dfrac{\sqrt{3}}{2}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\sin\left(\dfrac{4\pi}{3}\right) &= \sin\left(\pi+\dfrac{\pi}{3}\right) &&\justif{$\tfrac{3\pi}{3}+\tfrac{\pi}{3}$}\\
+\sin\left(\dfrac{4\pi}{3}\right) &= -\sin\left(\dfrac{\pi}{3}\right) &&\justif{$\sin(\pi+x)=-\sin(x)$}\\
+\sin\left(\dfrac{4\pi}{3}\right) &= \res{-\dfrac{\sqrt{3}}{2}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\cos\left(\dfrac{3\pi}{4}\right) &= \cos\left(\pi-\dfrac{\pi}{4}\right) &&\\
+\cos\left(\dfrac{3\pi}{4}\right) &= \res{-\dfrac{\sqrt{2}}{2}} &&\justif{$-\cos\left(\tfrac{\pi}{4}\right)$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\sin\left(-\dfrac{\pi}{6}\right) &= -\sin\left(\dfrac{\pi}{6}\right) &&\justif{$\sin(-x)=-\sin(x)$}\\
+\sin\left(-\dfrac{\pi}{6}\right) &= \res{-\dfrac{1}{2}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\dfrac{7\pi}{4}-\dfrac{8\pi}{4} &= -\dfrac{\pi}{4} &&\justif{d'abord la mesure principale}\\
+\cos\left(\dfrac{7\pi}{4}\right) &= \cos\left(-\dfrac{\pi}{4}\right) &&\justif{même point}\\
+\cos\left(\dfrac{7\pi}{4}\right) &= \res{\dfrac{\sqrt{2}}{2}} &&\justif{$\cos(-x)=\cos(x)$}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+\dfrac{11\pi}{6}-\dfrac{12\pi}{6} &= -\dfrac{\pi}{6} &&\justif{mesure principale}\\
+\sin\left(\dfrac{11\pi}{6}\right) &= \res{-\dfrac{1}{2}} &&\justif{d'après d)}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Un angle hors du tableau]
+\cas{a)}
+\begin{calculs}
+\pi-\dfrac{\pi}{12} &= \dfrac{12\pi}{12}-\dfrac{\pi}{12} &&\\
+\pi-\dfrac{\pi}{12} &= \res{\dfrac{11\pi}{12}} &&\\
+\dfrac{\pi}{2}-\dfrac{\pi}{12} &= \dfrac{6\pi}{12}-\dfrac{\pi}{12} &&\\
+\dfrac{\pi}{2}-\dfrac{\pi}{12} &= \res{\dfrac{5\pi}{12}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\cos\left(\dfrac{11\pi}{12}\right) &= -\cos\left(\dfrac{\pi}{12}\right) &&\justif{$\cos(\pi-x)=-\cos(x)$}\\
+\cos\left(\dfrac{11\pi}{12}\right) &= \res{-\dfrac{\sqrt{6}+\sqrt{2}}{4}} &&\\
+\cos\left(\dfrac{5\pi}{12}\right) &= \sin\left(\dfrac{\pi}{12}\right) &&\justif{$\cos\left(\tfrac{\pi}{2}-x\right)=\sin(x)$}\\
+\cos\left(\dfrac{5\pi}{12}\right) &= \res{\dfrac{\sqrt{6}-\sqrt{2}}{4}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\sin\left(\dfrac{13\pi}{12}\right) &= \sin\left(\pi+\dfrac{\pi}{12}\right) &&\justif{$\tfrac{12\pi}{12}+\tfrac{\pi}{12}$}\\
+\sin\left(\dfrac{13\pi}{12}\right) &= \res{-\dfrac{\sqrt{6}-\sqrt{2}}{4}} &&\justif{$\sin(\pi+x)=-\sin(x)$}\\
+\sin\left(\dfrac{7\pi}{12}\right) &= \sin\left(\dfrac{\pi}{2}+\dfrac{\pi}{12}\right) &&\justif{$\tfrac{6\pi}{12}+\tfrac{\pi}{12}$}\\
+\sin\left(\dfrac{7\pi}{12}\right) &= \res{\dfrac{\sqrt{6}+\sqrt{2}}{4}} &&\justif{$\sin\left(\tfrac{\pi}{2}+x\right)=\cos(x)$}\\
+\cos\left(-\dfrac{\pi}{12}\right) &= \res{\dfrac{\sqrt{6}+\sqrt{2}}{4}} &&\justif{$\cos(-x)=\cos(x)$}
+\end{calculs}
+\rem{$-\frac{\sqrt{6}-\sqrt{2}}{4}$ s'écrit aussi $\frac{\sqrt{2}-\sqrt{6}}{4}$.}
+\end{exo}
+
+\begin{exo}[Le dire en phrase]
+\cas{a)}
+\begin{calculs}
+\pi+\dfrac{\pi}{7} &= \dfrac{7\pi}{7}+\dfrac{\pi}{7} &&\\
+\pi+\dfrac{\pi}{7} &= \dfrac{8\pi}{7} &&
+\end{calculs}
+\explique{« $M$ et $N$ sont symétriques par rapport \res{au point $O$} ; leurs cosinus sont \res{opposés} et leurs sinus sont \res{opposés}. »}{un demi-tour de plus : on passe de l'autre côté de $O$}
+\cas{b)}
+\explique{$\cos\left(\dfrac{8\pi}{7}\right)=\res{-\cos\left(\dfrac{\pi}{7}\right)}$.}{$\cos(\pi+x)=-\cos(x)$}
+\cas{c)}
+\begin{calculs}
+\dfrac{\pi}{2}-\dfrac{\pi}{7} &= \dfrac{7\pi}{14}-\dfrac{2\pi}{14} &&\justif{dénominateur commun $14$}\\
+\dfrac{\pi}{2}-\dfrac{\pi}{7} &= \dfrac{5\pi}{14} &&
+\end{calculs}
+\explique{$\cos\left(\dfrac{5\pi}{14}\right)=\res{\sin\left(\dfrac{\pi}{7}\right)}$.}{$\cos\left(\tfrac{\pi}{2}-x\right)=\sin(x)$ : cosinus et sinus s'échangent}
+\end{exo}
+
+\partie{Simplifier une expression à l'aide des angles associés}
+
+\begin{exo}[Simplifier]
+\explique{On remplace chaque terme d'après la propriété 6, puis on réduit.}{méthode 9}
+\cas{a)}
+\begin{calculs}
+A(x) &= \cos(\pi-x)+\cos(-x) &&\justif{on recopie}\\
+A(x) &= -\cos(x)+\cos(x) &&\justif{on remplace chaque terme}\\
+A(x) &= \res{0} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B(x) &= \sin(\pi+x)+\sin(\pi-x)+\sin(-x) &&\\
+B(x) &= -\sin(x)+\sin(x)-\sin(x) &&\justif{on remplace chaque terme}\\
+B(x) &= \res{-\sin(x)} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C(x) &= \cos\left(\dfrac{\pi}{2}-x\right)-\sin(\pi-x)+\cos\left(\dfrac{\pi}{2}+x\right) &&\\
+C(x) &= \sin(x)-\sin(x)-\sin(x) &&\justif{$\cos\left(\tfrac{\pi}{2}+x\right)=-\sin(x)$}\\
+C(x) &= \res{-\sin(x)} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D(x) &= 2\cos(x+2\pi)+\cos(\pi+x) &&\\
+D(x) &= 2\cos(x)-\cos(x) &&\justif{un tour ne change pas le cosinus}\\
+D(x) &= \res{\cos(x)} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Faire apparaître un tour]
+\cas{a)}
+\begin{calculs}
+\sin(3\pi+x) &= \sin(\pi+x+2\pi) &&\justif{$3\pi$ s'écrit $\pi+2\pi$}\\
+\sin(3\pi+x) &= \sin(\pi+x) &&\justif{on retire le tour}\\
+\sin(3\pi+x) &= \res{-\sin(x)} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\cos(x-\pi) &= \cos\big({-}(\pi-x)\big) &&\justif{$x-\pi$ est l'opposé de $\pi-x$}\\
+\cos(x-\pi) &= \cos(\pi-x) &&\justif{$\cos(-X)=\cos(X)$}\\
+\cos(x-\pi) &= \res{-\cos(x)} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\cos\left(\dfrac{5\pi}{2}-x\right) &= \cos\left(\dfrac{\pi}{2}-x+2\pi\right) &&\justif{$\tfrac{5\pi}{2}$ s'écrit $\tfrac{\pi}{2}+2\pi$}\\
+\cos\left(\dfrac{5\pi}{2}-x\right) &= \cos\left(\dfrac{\pi}{2}-x\right) &&\justif{on retire le tour}\\
+\cos\left(\dfrac{5\pi}{2}-x\right) &= \res{\sin(x)} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\sin\left(x-\dfrac{\pi}{2}\right) &= \sin\left(-\left(\dfrac{\pi}{2}-x\right)\right) &&\justif{l'opposé de $\tfrac{\pi}{2}-x$}\\
+\sin\left(x-\dfrac{\pi}{2}\right) &= -\sin\left(\dfrac{\pi}{2}-x\right) &&\justif{$\sin(-X)=-\sin(X)$}\\
+\sin\left(x-\dfrac{\pi}{2}\right) &= \res{-\cos(x)} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Toujours le même nombre]
+\cas{a)}
+\begin{calculs}
+\sin^{2}\left(\dfrac{\pi}{2}-x\right)+\sin^{2}(-x) &= \cos^{2}(x)+\big({-}\sin(x)\big)^{2} &&\justif{angles associés}\\
+\sin^{2}\left(\dfrac{\pi}{2}-x\right)+\sin^{2}(-x) &= \cos^{2}(x)+\sin^{2}(x) &&\justif{un carré efface le signe}\\
+\sin^{2}\left(\dfrac{\pi}{2}-x\right)+\sin^{2}(-x) &= \res{1} &&\justif{propriété 4}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\big(\cos(x)+\sin(x)\big)^{2} &= \cos^{2}(x)+2\cos(x)\sin(x)+\sin^{2}(x) &&\justif{$(a+b)^{2}$}\\
+\big(\cos(x)-\sin(x)\big)^{2} &= \cos^{2}(x)-2\cos(x)\sin(x)+\sin^{2}(x) &&\justif{$(a-b)^{2}$}
+\end{calculs}
+\explique{En additionnant, les doubles produits s'annulent : il reste $2\cos^{2}(x)+2\sin^{2}(x)$, soit $2\big(\cos^{2}(x)+\sin^{2}(x)\big)$, donc $\res{2}$.}{propriété 4}
+\cas{c)}
+\begin{calculs}
+\cos^{2}(\pi+x)+\cos^{2}\left(\dfrac{\pi}{2}+x\right) &= \big({-}\cos(x)\big)^{2}+\big({-}\sin(x)\big)^{2} &&\justif{angles associés}\\
+\cos^{2}(\pi+x)+\cos^{2}\left(\dfrac{\pi}{2}+x\right) &= \cos^{2}(x)+\sin^{2}(x) &&\\
+\cos^{2}(\pi+x)+\cos^{2}\left(\dfrac{\pi}{2}+x\right) &= \res{1} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Des produits]
+\cas{a)}
+\begin{calculs}
+A(x) &= \cos(x+\pi)\sin\left(\dfrac{\pi}{2}-x\right)-\sin^{2}(-x) &&\justif{on recopie}\\
+A(x) &= -\cos(x)\times\cos(x)-\sin^{2}(x) &&\justif{$\cos(x+\pi)=-\cos(x)$ ; $\sin\left(\tfrac{\pi}{2}-x\right)=\cos(x)$}\\
+A(x) &= -\big(\cos^{2}(x)+\sin^{2}(x)\big) &&\justif{on met le signe $-$ en facteur}\\
+A(x) &= \res{-1} &&\justif{propriété 4}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B(x) &= \sin\left(\dfrac{\pi}{2}+x\right)\cos(-x)+\cos\left(\dfrac{\pi}{2}-x\right)\sin(\pi-x) &&\\
+B(x) &= \cos(x)\times\cos(x)+\sin(x)\times\sin(x) &&\justif{on remplace chaque facteur}\\
+B(x) &= \res{1} &&\justif{$\cos^{2}(x)+\sin^{2}(x)$}
+\end{calculs}
+\end{exo}
+
+\partie{Le cercle trigonométrique complet}
+
+\begin{exo}[Retrouver la mesure principale]
+\explique{On place le cosinus sur l'axe des abscisses, le sinus sur l'axe des ordonnées : les deux droites se croisent sur le cercle en un seul point, qu'on lit sur le cercle complet.}{méthode 10 ; les signes disent dans quel quart du cercle chercher}
+\cas{a)}
+\explique{$x=\res{\dfrac{\pi}{4}}$.}{cosinus et sinus positifs : quart en haut à droite}
+\cas{b)}
+\explique{$x=\res{-\dfrac{5\pi}{6}}$.}{les deux négatifs : quart en bas à gauche ; ordonnée $-\tfrac{1}{2}$, près de l'axe $(Ox)$}
+\cas{c)}
+\explique{$x=\res{-\dfrac{\pi}{3}}$.}{cosinus positif, sinus négatif : quart en bas à droite}
+\cas{d)}
+\explique{$x=\res{\pi}$.}{le point de coordonnées $(-1\,;0)$ ; $-\pi$ n'est pas dans $\intof{-\pi}{\pi}$}
+\cas{e)}
+\explique{$x=\res{\dfrac{3\pi}{4}}$.}{cosinus négatif, sinus positif : quart en haut à gauche}
+\cas{f)}
+\explique{$x=\res{-\dfrac{\pi}{2}}$.}{le point de coordonnées $(0\,;-1)$, tout en bas}
+\end{exo}
+
+\begin{exo}[Lire le cercle complet]
+\explique{Les mesures $\dfrac{5\pi}{3}$, $\dfrac{11\pi}{4}$ et $-\dfrac{3\pi}{2}$ ne sont pas principales : on retire ou on ajoute un tour.}{méthode 5}
+\begin{calculs}
+\dfrac{5\pi}{3}-\dfrac{6\pi}{3} &= -\dfrac{\pi}{3} &&\justif{on retire un tour}\\
+\dfrac{11\pi}{4}-\dfrac{8\pi}{4} &= \dfrac{3\pi}{4} &&\justif{on retire un tour}\\
+-\dfrac{3\pi}{2}+\dfrac{4\pi}{2} &= \dfrac{\pi}{2} &&\justif{on ajoute un tour}
+\end{calculs}
+\explique{Le cosinus est l'abscisse du point, le sinus son ordonnée.}{lecture sur le cercle complet}
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{6pt}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $-\dfrac{2\pi}{3}$ & $\dfrac{3\pi}{4}$ & $-\dfrac{\pi}{6}$ & $\dfrac{5\pi}{3}$ & $\dfrac{11\pi}{4}$ & $-\dfrac{3\pi}{2}$\\
+\hline
+$\cos(x)$ & $\res{-\dfrac{1}{2}}$ & $\res{-\dfrac{\sqrt{2}}{2}}$ & $\res{\dfrac{\sqrt{3}}{2}}$ & $\res{\dfrac{1}{2}}$ & $\res{-\dfrac{\sqrt{2}}{2}}$ & $\res{0}$\\
+\hline
+$\sin(x)$ & $\res{-\dfrac{\sqrt{3}}{2}}$ & $\res{\dfrac{\sqrt{2}}{2}}$ & $\res{-\dfrac{1}{2}}$ & $\res{-\dfrac{\sqrt{3}}{2}}$ & $\res{\dfrac{\sqrt{2}}{2}}$ & $\res{1}$\\
+\hline
+\end{tabular}}
+\end{center}
+\rem{$\frac{3\pi}{4}$ et $\frac{11\pi}{4}$ ont la même image, donc les mêmes colonnes.}
+\end{exo}
+
+\begin{exo}[Possible ou non ?]
+\explique{Un point du cercle vérifie $\cos^{2}(x)+\sin^{2}(x)=1$ : on teste la relation.}{propriété 4}
+\cas{a)}
+\begin{calculs}
+\cos^{2}(x)+\sin^{2}(x) &= \dfrac{3}{4}+\dfrac{3}{4} &&\justif{les deux carrés valent $\tfrac{3}{4}$}\\
+\cos^{2}(x)+\sin^{2}(x) &= \dfrac{3}{2} &&\justif{différent de $1$}
+\end{calculs}
+\explique{\res{Non}.}{le point est à l'extérieur du cercle}
+\cas{b)}
+\begin{calculs}
+\cos^{2}(x)+\sin^{2}(x) &= \dfrac{1}{4}+\dfrac{3}{4} &&\\
+\cos^{2}(x)+\sin^{2}(x) &= 1 &&\justif{la relation est vérifiée}
+\end{calculs}
+\explique{\res{Oui} : sur le cercle complet, c'est le point associé à $\res{-\dfrac{2\pi}{3}}$.}{les deux négatifs : en bas à gauche}
+\cas{c)}
+\begin{calculs}
+\cos^{2}(x)+\sin^{2}(x) &= \dfrac{9}{25}+\dfrac{16}{25} &&\\
+\cos^{2}(x)+\sin^{2}(x) &= 1 &&\justif{la relation est vérifiée}
+\end{calculs}
+\explique{\res{Oui}, mais ce point n'est pas sur le cercle complet : sa mesure n'est pas une valeur remarquable.}{environ $0{,}93$ rad, à la calculatrice}
+\rem{La relation est nécessaire ; sur le cercle trigonométrique, elle suffit : tout point
+dont les coordonnées la vérifient est sur le cercle.}
+\end{exo}
+
+\begin{exo}[Un hexagone régulier]
+\begin{minipage}[c]{0.60\linewidth}\raggedright
+\cas{a)}
+\explique{Les six sommets partagent le tour en six : deux sommets consécutifs sont séparés de $\dfrac{2\pi}{6}$, soit $\dfrac{\pi}{3}$.}{exercice 4}
+\explique{$A$ : $\res{0}$ ; $B$ : $\res{\dfrac{\pi}{3}}$ ; $C$ : $\res{\dfrac{2\pi}{3}}$ ; $D$ : $\res{\pi}$ ; $E$ : $\res{-\dfrac{2\pi}{3}}$ ; $F$ : $\res{-\dfrac{\pi}{3}}$.}{$E$ et $F$ : $\tfrac{4\pi}{3}$ et $\tfrac{5\pi}{3}$, ramenés dans $\intof{-\pi}{\pi}$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[x=1.3cm,y=1.3cm]
+  \cerclenu
+  \draw[coulCourbe,line width=0.9pt] (0:1)--(60:1)--(120:1)--(180:1)--(240:1)--(300:1)--cycle;
+  \ptc{0}{$A$}\ptc{60}{$B$}\ptc{120}{$C$}\ptc{180}{$D$}\ptc{240}{$E$}\ptc{300}{$F$}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\explique{Les coordonnées d'un sommet sont le cosinus et le sinus de sa mesure.}{lecture sur le cercle complet}
+\begin{center}
+$A\res{(1\,;0)}$ \qquad $B\res{\left(\dfrac{1}{2}\,;\dfrac{\sqrt{3}}{2}\right)}$ \qquad
+$C\res{\left(-\dfrac{1}{2}\,;\dfrac{\sqrt{3}}{2}\right)}$\\[6pt]
+$D\res{(-1\,;0)}$ \qquad $E\res{\left(-\dfrac{1}{2}\,;-\dfrac{\sqrt{3}}{2}\right)}$ \qquad
+$F\res{\left(\dfrac{1}{2}\,;-\dfrac{\sqrt{3}}{2}\right)}$
+\end{center}
+\end{exo}
+
+\partie{Équations avec des cosinus et des sinus}
+
+\begin{exo}[Sur $\intof{-\pi}{\pi}$]
+\explique{$\cos(x)=a$ : on place $a$ sur l'axe des abscisses et on trace la droite verticale ; $\sin(x)=a$ : on place $a$ sur l'axe des ordonnées et on trace la droite horizontale. Chaque point d'intersection avec le cercle donne une solution.}{méthode 11}
+\cas{a)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{La droite verticale passant par $\dfrac{\sqrt{2}}{2}$ coupe le cercle en deux points, associés à $\dfrac{\pi}{4}$ et $-\dfrac{\pi}{4}$.}{lecture sur le cercle complet}
+\explique{$\res{S=\ens{-\dfrac{\pi}{4}\,;\dfrac{\pi}{4}}}$.}{une solution par point}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\equacos{45}{$\frac{\pi}{4}$}{$-\frac{\pi}{4}$}{$\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{La droite horizontale passant par $-\dfrac{\sqrt{3}}{2}$ coupe le cercle en deux points, associés à $-\dfrac{\pi}{3}$ et $-\dfrac{2\pi}{3}$.}{le sinus se lit sur l'axe des ordonnées}
+\explique{$\res{S=\ens{-\dfrac{2\pi}{3}\,;-\dfrac{\pi}{3}}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\equasin{-60}{-120}{$-\frac{\pi}{3}$}{$-\frac{2\pi}{3}$}{$-\frac{\sqrt{3}}{2}$}
+\end{minipage}
+\cas{c)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{La droite verticale passant par $-\dfrac{1}{2}$ coupe le cercle en deux points, associés à $\dfrac{2\pi}{3}$ et $-\dfrac{2\pi}{3}$.}{valeur négative : à gauche de $O$}
+\explique{$\res{S=\ens{-\dfrac{2\pi}{3}\,;\dfrac{2\pi}{3}}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\equacos{120}{$\frac{2\pi}{3}$}{$-\frac{2\pi}{3}$}{$-\frac{1}{2}$}
+\end{minipage}
+\cas{d)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{La droite horizontale passant par $0$ est l'axe des abscisses : elle coupe le cercle aux points associés à $0$ et à $\pi$.}{}
+\explique{$\res{S=\ens{0\,;\pi}}$.}{$-\pi$ n'est pas dans $\intof{-\pi}{\pi}$ : on ne compte le point de gauche qu'une fois}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \cerclebase\ptc{0}{$0$}\ptc{180}{$\pi$}
+\end{tikzpicture}
+\end{minipage}
+\cas{e)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{La droite verticale passant par $-1$ touche le cercle en un seul point, tout à gauche.}{}
+\explique{$\res{S=\ens{\pi}}$.}{une seule solution}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\cerclept{180}{$\pi$}{\verticale{180}}
+\end{minipage}
+\cas{f)}
+\explique{\res{Aucune solution}.}{$\tfrac{5}{4}$ vaut $1{,}25$, plus que $1$ : la droite horizontale ne rencontre pas le cercle}
+\end{exo}
+
+\begin{exo}[Sur un autre intervalle]
+\explique{On lit d'abord les mesures principales sur le cercle, puis on ajoute ou on retire des tours pour rester dans l'intervalle demandé.}{même point, autre mesure}
+\cas{a)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{Mesures principales : $-\dfrac{\pi}{6}$ et $-\dfrac{5\pi}{6}$, hors de $\intff{0}{2\pi}$.}{droite horizontale passant par $-\tfrac{1}{2}$}
+\begin{calculs}
+-\dfrac{\pi}{6}+\dfrac{12\pi}{6} &= \dfrac{11\pi}{6} &&\justif{on ajoute un tour}\\
+-\dfrac{5\pi}{6}+\dfrac{12\pi}{6} &= \dfrac{7\pi}{6} &&
+\end{calculs}
+\explique{$\res{S=\ens{\dfrac{7\pi}{6}\,;\dfrac{11\pi}{6}}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\equasin{-30}{-150}{$\frac{11\pi}{6}$}{$\frac{7\pi}{6}$}{$-\frac{1}{2}$}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{Mesures principales : $\dfrac{5\pi}{6}$ et $-\dfrac{5\pi}{6}$.}{droite verticale passant par $-\tfrac{\sqrt{3}}{2}$}
+\begin{calculs}
+-\dfrac{5\pi}{6}+\dfrac{12\pi}{6} &= \dfrac{7\pi}{6} &&\justif{la seconde est négative : un tour de plus}
+\end{calculs}
+\explique{$\res{S=\ens{\dfrac{5\pi}{6}\,;\dfrac{7\pi}{6}}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\equacos{150}{$\frac{5\pi}{6}$}{$\frac{7\pi}{6}$}{$-\frac{\sqrt{3}}{2}$}
+\end{minipage}
+\cas{c)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{Mesures principales : $\dfrac{\pi}{2}$ et $-\dfrac{\pi}{2}$ (haut et bas du cercle). L'intervalle couvre deux tours : chaque point a deux solutions.}{}
+\begin{calculs}
+\dfrac{\pi}{2}-\dfrac{4\pi}{2} &= -\dfrac{3\pi}{2} &&\justif{un tour de moins}\\
+-\dfrac{\pi}{2}+\dfrac{4\pi}{2} &= \dfrac{3\pi}{2} &&\justif{un tour de plus}
+\end{calculs}
+\explique{$\res{S=\ens{-\dfrac{3\pi}{2}\,;-\dfrac{\pi}{2}\,;\dfrac{\pi}{2}\,;\dfrac{3\pi}{2}}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \cerclebase\ptc{90}{$\frac{\pi}{2}$ ; $-\frac{3\pi}{2}$}\ptc{-90}{$-\frac{\pi}{2}$ ; $\frac{3\pi}{2}$}
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}
+\begin{minipage}[c]{0.66\linewidth}\raggedright
+\explique{Mesures principales : $\dfrac{\pi}{4}$ et $\dfrac{3\pi}{4}$, puis un tour de moins pour chacune.}{deux tours : quatre solutions}
+\begin{calculs}
+\dfrac{\pi}{4}-\dfrac{8\pi}{4} &= -\dfrac{7\pi}{4} &&\\
+\dfrac{3\pi}{4}-\dfrac{8\pi}{4} &= -\dfrac{5\pi}{4} &&
+\end{calculs}
+\explique{$\res{S=\ens{-\dfrac{7\pi}{4}\,;-\dfrac{5\pi}{4}\,;\dfrac{\pi}{4}\,;\dfrac{3\pi}{4}}}$.}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.30\linewidth}\centering
+\equasin{45}{135}{$\frac{\pi}{4}$\\$-\frac{7\pi}{4}$}{$\frac{3\pi}{4}$\\$-\frac{5\pi}{4}$}{$\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\cas{e)}
+\explique{$\cos(x)=1$ au seul point de coordonnées $(1\,;0)$, de mesures $0$, $2\pi$, $4\pi$\ldots{} ; $\intff{0}{6\pi}$ couvre trois tours.}{on ajoute des tours tant qu'on reste dans l'intervalle}
+\explique{$\res{S=\ens{0\,;2\pi\,;4\pi\,;6\pi}}$.}{quatre solutions : les deux bornes comprises}
+\end{exo}
+
+\begin{exo}[Se ramener à $\cos(x)=a$]
+\explique{On isole d'abord $\cos(x)$ ou $\sin(x)$, comme l'inconnue d'une équation du premier degré, puis on lit le cercle.}{on se ramène à la méthode 11}
+\cas{a)}
+\begin{calculs}
+2\cos(x)-1 &= 0 &&\justif{on recopie}\\
+2\cos(x) &= 1 &&\justif{on ajoute $1$}\\
+\cos(x) &= \dfrac{1}{2} &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$\res{S=\ens{-\dfrac{\pi}{3}\,;\dfrac{\pi}{3}}}$.}{droite verticale passant par $\tfrac{1}{2}$}
+\cas{b)}
+\begin{calculs}
+2\sin(x)+\sqrt{3} &= 0 &&\\
+\sin(x) &= -\dfrac{\sqrt{3}}{2} &&\justif{on retire $\sqrt{3}$, puis on divise par $2$}\\
+-\dfrac{\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{5\pi}{3} &&\justif{mesures principales $-\tfrac{\pi}{3}$ et $-\tfrac{2\pi}{3}$ : un tour de plus}\\
+-\dfrac{2\pi}{3}+\dfrac{6\pi}{3} &= \dfrac{4\pi}{3} &&
+\end{calculs}
+\explique{$\res{S=\ens{\dfrac{4\pi}{3}\,;\dfrac{5\pi}{3}}}$.}{solutions dans $\intff{0}{2\pi}$}
+\cas{c)}
+\begin{calculs}
+\sqrt{2}\cos(x)+1 &= 0 &&\\
+\cos(x) &= -\dfrac{1}{\sqrt{2}} &&\justif{on retire $1$, puis on divise par $\sqrt{2}$}\\
+\cos(x) &= -\dfrac{\sqrt{2}}{2} &&\justif{on multiplie en haut et en bas par $\sqrt{2}$}
+\end{calculs}
+\explique{$\res{S=\ens{-\dfrac{3\pi}{4}\,;\dfrac{3\pi}{4}}}$.}{droite verticale passant par $-\tfrac{\sqrt{2}}{2}$}
+\cas{d)}
+\begin{calculs}
+4\sin^{2}(x) &= 1 &&\\
+\sin^{2}(x) &= \dfrac{1}{4} &&\justif{on divise par $4$}
+\end{calculs}
+\explique{Donc $\sin(x)=\dfrac{1}{2}$ ou $\sin(x)=-\dfrac{1}{2}$.}{$X^{2}=\tfrac{1}{4}$ a deux solutions, $\tfrac{1}{2}$ et $-\tfrac{1}{2}$ (chapitre 2)}
+\explique{$\res{S=\ens{-\dfrac{5\pi}{6}\,;-\dfrac{\pi}{6}\,;\dfrac{\pi}{6}\,;\dfrac{5\pi}{6}}}$.}{deux droites horizontales, quatre points}
+\rem{Erreur fréquente en d) : oublier la solution négative de $\sin^{2}(x)=\frac{1}{4}$.}
+\end{exo}
+
+\begin{exo}[Point sur un cercle de rayon $4$]
+\cas{a)}
+\begin{calculs}
+4\cos(x) &= 2 &&\justif{l'abscisse de $M$ vaut $2$}\\
+\cos(x) &= \dfrac{1}{2} &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$x=\res{-\dfrac{\pi}{3}}$ ou $x=\res{\dfrac{\pi}{3}}$.}{droite verticale passant par $\tfrac{1}{2}$}
+\cas{b)}
+\begin{calculs}
+4\sin(x) &= -2\sqrt{2} &&\justif{l'ordonnée de $M$}\\
+\sin(x) &= -\dfrac{\sqrt{2}}{2} &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$x=\res{-\dfrac{3\pi}{4}}$ ou $x=\res{-\dfrac{\pi}{4}}$.}{droite horizontale passant par $-\tfrac{\sqrt{2}}{2}$}
+\cas{c)}
+\begin{calculs}
+\cos(x) &= \dfrac{-2\sqrt{3}}{4} &&\justif{l'abscisse divisée par $4$}\\
+\cos(x) &= -\dfrac{\sqrt{3}}{2} &&\\
+\sin(x) &= \dfrac{2}{4} &&\justif{l'ordonnée divisée par $4$}\\
+\sin(x) &= \dfrac{1}{2} &&
+\end{calculs}
+\explique{$x=\res{\dfrac{5\pi}{6}}$.}{un seul point a ces deux coordonnées : en haut à gauche (méthode 10)}
+\end{exo}
+
+\partie{Fonctions cosinus et sinus}
+
+\begin{exo}[Tableaux de variation]
+\explique{On suit la courbe du cours sur l'intervalle demandé, en notant ses maximums ($1$) et ses minimums ($-1$).}{méthode 12 ; la période $2\pi$ permet de décaler un tableau connu}
+\cas{a)}
+\explique{La courbe part de $1$ en $-2\pi$, descend à $-1$ en $-\pi$, remonte à $1$ en $0$ : \res{décroissante sur $\intff{-2\pi}{-\pi}$, puis croissante sur $\intff{-\pi}{0}$}.}{}
+\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=2]{$x$/1,$\cos(x)$/2}{$-2\pi$,$-\pi$,$0$}
+  \tkzTabVar{+/$1$,-/$-1$,+/$1$}
+\end{tikzpicture}\end{center}
+\cas{b)}
+\explique{$\sin\left(-\dfrac{5\pi}{2}\right)=\sin\left(-\dfrac{\pi}{2}\right)$, soit $-1$ ; la courbe monte à $1$ en $-\dfrac{3\pi}{2}$, puis redescend à $-1$ : \res{croissante sur $\intff{-\frac{5\pi}{2}}{-\frac{3\pi}{2}}$, puis décroissante}.}{$-\tfrac{5\pi}{2}+2\pi$ vaut $-\tfrac{\pi}{2}$}
+\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=2]{$x$/1.3,$\sin(x)$/2}{$-\dfrac{5\pi}{2}$,$-\dfrac{3\pi}{2}$,$-\dfrac{\pi}{2}$}
+  \tkzTabVar{-/$-1$,+/$1$,-/$-1$}
+\end{tikzpicture}\end{center}
+\cas{c)}
+\explique{$\cos(3\pi)$ et $\cos(5\pi)$ valent $-1$, $\cos(4\pi)$ vaut $1$ : \res{croissante sur $\intff{3\pi}{4\pi}$, puis décroissante sur $\intff{4\pi}{5\pi}$}.}{même tableau que sur $\intff{-\pi}{\pi}$, décalé de $4\pi$}
+\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=2]{$x$/1,$\cos(x)$/2}{$3\pi$,$4\pi$,$5\pi$}
+  \tkzTabVar{-/$-1$,+/$1$,-/$-1$}
+\end{tikzpicture}\end{center}
+\cas{d)}
+\explique{$\sin\left(\dfrac{3\pi}{2}\right)=-1$, $\sin\left(\dfrac{5\pi}{2}\right)=1$, $\sin\left(\dfrac{7\pi}{2}\right)=-1$ : \res{croissante sur $\intff{\frac{3\pi}{2}}{\frac{5\pi}{2}}$, puis décroissante}.}{}
+\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=2]{$x$/1.3,$\sin(x)$/2}{$\dfrac{3\pi}{2}$,$\dfrac{5\pi}{2}$,$\dfrac{7\pi}{2}$}
+  \tkzTabVar{-/$-1$,+/$1$,-/$-1$}
+\end{tikzpicture}\end{center}
+\end{exo}
+
+\begin{exo}[Démontrer une période]
+\explique{On remplace $x$ par $x+T$, puis on fait apparaître un tour, $2\pi$.}{méthode 13}
+\cas{a)}
+\begin{calculs}
+f(x+2\pi) &= 5-2\cos(x+2\pi) &&\justif{on remplace $x$ par $x+2\pi$}\\
+f(x+2\pi) &= 5-2\cos(x) &&\justif{un tour de plus}\\
+f(x+2\pi) &= \res{f(x)} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g\left(x+\dfrac{2\pi}{3}\right) &= \cos\left(3\left(x+\dfrac{2\pi}{3}\right)\right) &&\justif{on remplace $x$}\\
+g\left(x+\dfrac{2\pi}{3}\right) &= \cos(3x+2\pi) &&\justif{$3\times\tfrac{2\pi}{3}$ vaut $2\pi$}\\
+g\left(x+\dfrac{2\pi}{3}\right) &= \res{g(x)} &&\justif{un tour de plus}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h(x+8\pi) &= \sin\left(\dfrac{x+8\pi}{4}\right) &&\\
+h(x+8\pi) &= \sin\left(\dfrac{x}{4}+2\pi\right) &&\justif{$\tfrac{8\pi}{4}$ vaut $2\pi$}\\
+h(x+8\pi) &= \res{h(x)} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k(x+\pi) &= \sin^{2}(x+\pi) &&\\
+k(x+\pi) &= \big({-}\sin(x)\big)^{2} &&\justif{$\sin(\pi+x)=-\sin(x)$}\\
+k(x+\pi) &= \res{k(x)} &&\justif{un carré efface le signe}
+\end{calculs}
+\explique{Les quatre fonctions sont périodiques, de périodes respectives $2\pi$, $\dfrac{2\pi}{3}$, $8\pi$ et $\pi$.}{on conclut par une phrase}
+\end{exo}
+
+\begin{exo}[La période de $\cos(kx)$]
+\cas{a)}
+\begin{calculs}
+f\left(x+\dfrac{2\pi}{k}\right) &= \cos\left(k\left(x+\dfrac{2\pi}{k}\right)\right) &&\justif{on remplace $x$}\\
+f\left(x+\dfrac{2\pi}{k}\right) &= \cos(kx+2\pi) &&\justif{$k\times\tfrac{2\pi}{k}$ vaut $2\pi$}\\
+f\left(x+\dfrac{2\pi}{k}\right) &= \res{f(x)} &&
+\end{calculs}
+\cas{b)}
+\explique{Pour $\cos(5x)$, $k$ vaut $5$ : période $\res{\dfrac{2\pi}{5}}$.}{d'après a)}
+\explique{Pour $\sin\left(\dfrac{x}{3}\right)$, $k$ vaut $\dfrac{1}{3}$ : période $\dfrac{2\pi}{\frac{1}{3}}$, soit $\res{6\pi}$.}{même calcul avec le sinus : $\sin\left(\tfrac{x+6\pi}{3}\right)=\sin\left(\tfrac{x}{3}+2\pi\right)$}
+\cas{c)}
+\begin{calculs}
+T &= \dfrac{2\pi}{100\pi} &&\justif{$k$ vaut $100\pi$}\\
+T &= \res{\dfrac{1}{50}}\text{ s} &&\justif{soit $0{,}02$ s}
+\end{calculs}
+\explique{En une seconde, il y a $\res{50}$ périodes.}{c'est la fréquence du secteur, $50$ Hz}
+\end{exo}
+
+\begin{exo}[La fonction $|\sin|$]
+\cas{a)}
+\begin{calculs}
+g(x+\pi) &= |\sin(x+\pi)| &&\justif{on remplace $x$ par $x+\pi$}\\
+g(x+\pi) &= |{-}\sin(x)| &&\justif{$\sin(\pi+x)=-\sin(x)$}\\
+g(x+\pi) &= |\sin(x)| &&\justif{un nombre et son opposé ont la même valeur absolue}\\
+g(x+\pi) &= \res{g(x)} &&
+\end{calculs}
+\cas{b)}
+\explique{Sur $\intff{0}{\pi}$, $g$ varie comme le sinus : \res{croissante sur $\intff{0}{\frac{\pi}{2}}$, décroissante sur $\intff{\frac{\pi}{2}}{\pi}$} ; sur $\intff{\pi}{2\pi}$, on décale de $\pi$, la période.}{$\sin(x)\ge 0$ sur $\intff{0}{\pi}$}
+\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=1.5,espcl=1.6]{$x$/1.3,$g(x)$/2}{$0$,$\dfrac{\pi}{2}$,$\pi$,$\dfrac{3\pi}{2}$,$2\pi$}
+  \tkzTabVar{-/$0$,+/$1$,-/$0$,+/$1$,-/$0$}
+\end{tikzpicture}\end{center}
+\end{exo}
+
+\partie{Résolution graphique d'équations et d'inéquations}
+
+\begin{exo}[Avec le cosinus]
+\explique{On trace la droite horizontale $y=a$ ; les solutions d'une équation sont les abscisses des points d'intersection, celles d'une inéquation les abscisses où la courbe est au-dessus (ou au-dessous) de la droite.}{méthode 14 ; un carreau vaut $\tfrac{\pi}{6}$}
+\cas{a)}
+\explique{$\res{S=\ens{-\dfrac{5\pi}{3}\,;-\dfrac{\pi}{3}\,;\dfrac{\pi}{3}\,;\dfrac{5\pi}{3}}}$.}{$\tfrac{\pi}{3}$ : deux carreaux à droite de $0$}
+\figcos{\droiteh{-12}{12}{0.5}{$y=\frac{1}{2}$}\lirex{-10}{0.5}\lirex{-2}{0.5}\lirex{2}{0.5}\lirex{10}{0.5}
+  \gradpi{-10/-\frac{5\pi}{3},-2/-\frac{\pi}{3},2/\frac{\pi}{3},10/\frac{5\pi}{3}}}
+\cas{b)}
+\explique{$\res{S=\ens{-\pi\,;\pi}}$.}{la courbe touche la droite $y=-1$ en ses deux minimums}
+\figcos{\droiteh{-12}{12}{-1}{$y=-1$}\lirex{-6}{-1}\lirex{6}{-1}
+  \gradpi[above]{-6/-\pi,6/\pi}}
+\cas{c)}
+\explique{$\res{S=\intff{-2\pi}{-\dfrac{3\pi}{2}}\cup\intff{-\dfrac{\pi}{2}}{\dfrac{\pi}{2}}\cup\intff{\dfrac{3\pi}{2}}{2\pi}}$.}{la courbe est sur ou au-dessus de l'axe des abscisses ; crochets fermés à cause de $\ge$}
+\figcos{\interaxe{-12}{-9}\interaxe[coulCourbeC]{-3}{3}\interaxe[orange]{9}{12}
+  \gradpi{-12/-2\pi,12/2\pi}\gradpi[below left]{-9/-\frac{3\pi}{2},3/\frac{\pi}{2}}\gradpi[below right]{-3/-\frac{\pi}{2},9/\frac{3\pi}{2}}}
+\cas{d)}
+\explique{$\res{S=\intoo{-\dfrac{4\pi}{3}}{-\dfrac{2\pi}{3}}\cup\intoo{\dfrac{2\pi}{3}}{\dfrac{4\pi}{3}}}$.}{la courbe est strictement au-dessous de la droite $y=-\tfrac{1}{2}$ ; crochets ouverts à cause de $<$}
+\figcos{\droiteh{-12}{12}{-0.5}{$y=-\frac{1}{2}$}\interaxe{-8}{-4}\interaxe[coulCourbeC]{4}{8}
+  \lirex{-8}{-0.5}\lirex{-4}{-0.5}\lirex{4}{-0.5}\lirex{8}{-0.5}
+  \gradpi[above]{-8/-\frac{4\pi}{3},-4/-\frac{2\pi}{3},4/\frac{2\pi}{3},8/\frac{4\pi}{3}}}
+\end{exo}
+
+\begin{exo}[Avec le sinus]
+\cas{a)}
+\explique{$\res{S=\ens{-\dfrac{5\pi}{6}\,;-\dfrac{\pi}{6}\,;\dfrac{7\pi}{6}\,;\dfrac{11\pi}{6}}}$.}{quatre points d'intersection avec la droite $y=-\tfrac{1}{2}$}
+\figsin{\droiteh{-12}{12}{-0.5}{$y=-\frac{1}{2}$}\lirex{-5}{-0.5}\lirex{-1}{-0.5}\lirex{7}{-0.5}\lirex{11}{-0.5}
+  \gradpi[above]{-5/-\frac{5\pi}{6},-1/-\frac{\pi}{6},7/\frac{7\pi}{6},11/\frac{11\pi}{6}}}
+\cas{b)}
+\explique{$\res{S=\ens{-\dfrac{3\pi}{2}\,;\dfrac{\pi}{2}}}$.}{les deux maximums de la courbe}
+\figsin{\droiteh{-12}{12}{1}{$y=1$}\lirex{-9}{1}\lirex{3}{1}
+  \gradpi{-9/-\frac{3\pi}{2},3/\frac{\pi}{2}}}
+\cas{c)}
+\explique{$\res{S=\intoo{-\pi}{0}\cup\intoo{\pi}{2\pi}}$.}{la courbe est strictement au-dessous de l'axe ; en $-2\pi$, $-\pi$, $0$, $\pi$ et $2\pi$, le sinus vaut $0$}
+\figsin{\interaxe{-6}{0}\interaxe[coulCourbeC]{6}{12}
+  \gradpi[above]{-6/-\pi,6/\pi,12/2\pi}}
+\cas{d)}
+\explique{$\res{S=\intff{-\dfrac{5\pi}{3}}{-\dfrac{4\pi}{3}}\cup\intff{\dfrac{\pi}{3}}{\dfrac{2\pi}{3}}}$.}{la droite $y=\tfrac{\sqrt{3}}{2}$ passe par le point de coordonnées $\left(\tfrac{\pi}{3}\,;\tfrac{\sqrt{3}}{2}\right)$ ; par symétrie et par période, on trouve les autres}
+\figsin{\droiteh{-12}{12}{0.866}{$y=\frac{\sqrt{3}}{2}$}\interaxe{-10}{-8}\interaxe[coulCourbeC]{2}{4}
+  \lirex{-10}{0.866}\lirex{-8}{0.866}\lirex{2}{0.866}\lirex{4}{0.866}
+  \gradpi{-10/-\frac{5\pi}{3},-8/-\frac{4\pi}{3},2/\frac{\pi}{3},4/\frac{2\pi}{3}}}
+\end{exo}
+
+\begin{exo}[Deux conditions à la fois]
+\explique{On cherche les intervalles qui vérifient la première condition, puis ceux qui vérifient la seconde ; les solutions sont la partie commune.}{lecture sur les deux courbes, sur $\intff{0}{2\pi}$}
+\cas{a)}
+\explique{$\cos(x)\ge 0$ sur $\intff{0}{\dfrac{\pi}{2}}\cup\intff{\dfrac{3\pi}{2}}{2\pi}$ ; $\sin(x)\le 0$ en $0$ et sur $\intff{\pi}{2\pi}$.}{$\sin(0)$ vaut $0$, qui est bien $\le 0$}
+\explique{$\res{S=\ens{0}\cup\intff{\dfrac{3\pi}{2}}{2\pi}}$.}{le quart en bas à droite du cercle, plus le point de départ}
+\cas{b)}
+\explique{$\sin(x)\ge\dfrac{1}{2}$ sur $\intff{\dfrac{\pi}{6}}{\dfrac{5\pi}{6}}$ ; $\cos(x)\ge 0$ sur $\intff{0}{\dfrac{\pi}{2}}\cup\intff{\dfrac{3\pi}{2}}{2\pi}$.}{}
+\explique{$\res{S=\intff{\dfrac{\pi}{6}}{\dfrac{\pi}{2}}}$.}{}
+\cas{c)}
+\explique{$\cos(x)\le-\dfrac{1}{2}$ sur $\intff{\dfrac{2\pi}{3}}{\dfrac{4\pi}{3}}$ ; $\sin(x)>0$ sur $\intoo{0}{\pi}$.}{}
+\explique{$\res{S=\intfo{\dfrac{2\pi}{3}}{\pi}}$.}{$\pi$ est exclu : $\sin(\pi)$ vaut $0$}
+\begin{center}\begin{tikzpicture}[x=1.1cm,y=1.1cm]
+  \reperetrigo{0}{12}\courbecos{0}{12}\courbesinC{0}{12}
+  \node[coulCourbe,font=\footnotesize,fill=white,inner sep=1pt] at (2.2,1.25) {$y=\cos(x)$};
+  \node[coulCourbeC,font=\footnotesize,fill=white,inner sep=1pt] at (4.7,1.25) {$y=\sin(x)$};
+  \gradpi{1/\frac{\pi}{6},3/\frac{\pi}{2},4/\frac{2\pi}{3},6/\pi,8/\frac{4\pi}{3},9/\frac{3\pi}{2},12/2\pi}
+\end{tikzpicture}\end{center}
+\rem{Le cercle trigonométrique donne la même réponse : en a), les points à droite de l'axe
+des ordonnées et sous l'axe des abscisses (ou sur lui).}
+\end{exo}
+
+\begin{exo}[Combien de solutions ?]
+\explique{On compte les points d'intersection de la courbe avec la droite horizontale $y=a$, sur $\intff{-2\pi}{2\pi}$, qui couvre deux périodes.}{une valeur approchée suffit ici : on ne demande que le nombre de solutions}
+\cas{a)}
+\explique{$0{,}3$ est entre $-1$ et $1$ : deux points par période, \res{$4$ solutions}.}{}
+\cas{b)}
+\explique{De même pour $-0{,}8$ : \res{$4$ solutions}.}{}
+\cas{c)}
+\explique{La droite $y=1$ touche la courbe du cosinus en ses maximums, en $-2\pi$, $0$ et $2\pi$ : \res{$3$ solutions}.}{les bornes de l'intervalle comptent}
+\cas{d)}
+\explique{$1{,}2$ dépasse $1$ : \res{aucune solution}.}{un sinus est toujours entre $-1$ et $1$}
+\end{exo}
+
+\end{document}

@@ -1,0 +1,1625 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.1}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \\[2pt]{\small\itshape Version élève}
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{9}{Géométrie repérée et produit scalaire}
+\niveaucours{1\textsuperscript{re} spécialité mathématiques}
+\titrecours{GÉOMÉTRIE REPÉRÉE ET PRODUIT SCALAIRE}{Cours --- Première spécialité}
+
+\begin{document}
+
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+
+\ShorthandsOff
+\tikzset{
+  vecteur/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbe},
+  vecteurB/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeB},
+  vecteurC/.style={-{Stealth[length=2.6mm]},line width=1.1pt,coulCourbeC},
+  base/.style={-{Stealth[length=2mm]},line width=0.9pt,black},
+  aide/.style={dashed,black!45,line width=0.6pt},
+  fig/.style={line width=0.8pt,black!75},
+  axe/.style={aide,-{Stealth[length=2.2mm]}},
+}
+\ShorthandsOn
+
+\newcommand{\carremilieu}[5]{%
+\begin{tikzpicture}[scale=0.45]
+  \draw[fig] (0,0) -- (4,0) -- (4,4) -- (0,4) -- cycle;
+  \draw[aide] (0,0) -- (4,4);
+  \pt{0,0}{below left}{#1} \pt{4,0}{below right}{#2} \pt{4,4}{above right}{#3}
+  \pt{0,4}{above left}{#4} \pt{2,4}{above}{#5}
+\end{tikzpicture}}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, théorèmes), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\smallskip
+Sur cette feuille, seuls les \textbf{énoncés} des exemples figurent : la résolution,
+signalée par la mention \emph{(au tableau)}, est à rédiger dans le cahier.
+
+\end{remarquebox}
+
+\partiecours{Coordonnées d'un vecteur, somme de deux vecteurs}
+
+Les parties I à IV reprennent la seconde (chapitres « Vecteurs » et « Vecteurs et
+trigonométrie »). Le plan est muni d'un repère $(O\,;\vec{\imath},\vec{\jmath})$ ; à partir
+de la partie IV, il est \textbf{orthonormé}.
+
+\begin{definitionbox}[Définition 1 --- Coordonnées d'un vecteur]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Tout vecteur $\vec{u}$ s'écrit d'une seule façon $\vec{u}=x\,\vec{\imath}+y\,\vec{\jmath}$,
+avec deux nombres réels $x$ et $y$ : ce sont les \textbf{coordonnées} de $\vec{u}$. On
+note $\vec{u}\coord{x}{y}$.
+
+\smallskip
+Sur la figure, $\vec{u}=3\vec{\imath}+2\vec{\jmath}$ : on avance de $3$ vers la droite et
+de $2$ vers le haut, donc $\vec{u}\coord{3}{2}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
+  \draw[base] (0,0) -- node[below,font=\footnotesize]{$\vec{\imath}$} (1,0);
+  \draw[base] (0,0) -- node[left,font=\footnotesize]{$\vec{\jmath}$} (0,1);
+  \draw[aide] (1,1) -- (4,1) -- (4,3);
+  \draw[vecteur] (1,1) -- node[midway,above left,font=\footnotesize]{$\vec{u}$} (4,3);
+  \node[below,font=\footnotesize] at (2.5,1) {$3$};
+  \node[right,font=\footnotesize] at (4,2) {$2$};
+  \pt{0,0}{below left}{O}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Somme et différence]
+Pour deux vecteurs $\vec{u}\coord{x}{y}$ et $\vec{v}\coord{x'}{y'}$ :
+\begin{center}
+  $\vec{u}+\vec{v}\coord{x+x'}{y+y'}$ \qquad $\vec{u}-\vec{v}\coord{x-x'}{y-y'}$
+\end{center}
+On ajoute (ou on soustrait) les abscisses entre elles et les ordonnées entre elles.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 2 --- Coordonnées de $\vect{AB}$]
+Pour deux points $A(x_{A}\,;y_{A})$ et $B(x_{B}\,;y_{B})$ :
+\[
+  \vect{AB}\coord{x_{B}-x_{A}}{y_{B}-y_{A}}
+  \qquad\text{(arrivée moins départ).}
+\]
+\demo{par la relation de Chasles :}
+\begin{calculs}
+\vect{AB} &= \vect{AO}+\vect{OB} &\qquad& \rem{relation de Chasles}\\
+\vect{AB} &= \vect{OB}-\vect{OA} && \rem{$\vect{AO}=-\vect{OA}$}
+\end{calculs}
+Or $\vect{OB}$ a pour coordonnées celles du point $B$, et $\vect{OA}$ celles de $A$ : la
+propriété 1 donne le résultat.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Calculer les coordonnées d'un vecteur]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Donner les coordonnées des vecteurs $\vec{w}=4\vec{\imath}-\vec{\jmath}$ et
+        $\vec{t}=-2\vec{\jmath}$.
+  \item Pour les points $A(3\,;-1)$ et $B(-2\,;4)$, calculer les coordonnées de
+        $\vect{AB}$, puis celles de $\vect{BA}$.
+  \item Pour les points $E\left(\frac{2}{3}\,;1\right)$ et $F\left(-1\,;\frac{5}{3}\right)$,
+        calculer les coordonnées de $\vect{EF}$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Donner les coordonnées des vecteurs $\vec{w}=-3\vec{\imath}+5\vec{\jmath}$ et
+        $\vec{s}=6\vec{\imath}$.
+  \item Pour les points $C(-4\,;2)$ et $D(1\,;-1)$, calculer les coordonnées de
+        $\vect{CD}$, puis celles de $\vect{DC}$.
+  \item Pour les points $G\left(\frac{1}{3}\,;-2\right)$ et $H\left(2\,;-\frac{4}{3}\right)$,
+        calculer les coordonnées de $\vect{GH}$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Calculer avec les coordonnées]
+\etapeexemples
+On considère les vecteurs $\vec{u}\coord{3}{-2}$ et $\vec{v}\coord{-1}{5}$, et les points
+$A(2\,;1)$, $B(-1\,;3)$ et $C(4\,;-2)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées des vecteurs $\vec{u}+\vec{v}$ et $\vec{u}-\vec{v}$.
+  \item Calculer les coordonnées du vecteur $\vect{AB}+\vect{BC}$. Quel vecteur
+        retrouve-t-on ?
+  \item Calculer les coordonnées du vecteur $\vec{w}$ tel que $\vec{u}+\vec{w}=\vec{v}$.
+\end{questions}
+
+\etape{À vous de jouer}
+On considère les vecteurs $\vec{u}\coord{-4}{1}$ et $\vec{v}\coord{2}{3}$, et les points
+$E(1\,;-2)$, $F(3\,;2)$ et $G(-2\,;0)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées des vecteurs $\vec{u}+\vec{v}$ et $\vec{u}-\vec{v}$.
+  \item Calculer les coordonnées du vecteur $\vect{EF}+\vect{FG}$. Quel vecteur
+        retrouve-t-on ?
+  \item Calculer les coordonnées du vecteur $\vec{w}$ tel que $\vec{u}+\vec{w}=\vec{v}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Parallélogramme et milieu d'un segment}
+
+\begin{proprietebox}[Propriété 3 --- Égalité de vecteurs et parallélogramme]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\begin{itemize}
+  \item Deux vecteurs sont \textbf{égaux} quand ils ont les mêmes coordonnées.
+  \item $ABCD$ est un \textbf{parallélogramme} quand $\vect{AB}=\vect{DC}$.
+  \item $ABCD$ est un parallélogramme quand ses diagonales $[AC]$ et $[BD]$ ont le
+        \textbf{même milieu}.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.55]
+  \draw[fig] (0,0) -- (4,1) -- (5,3) -- (1,2) -- cycle;
+  \draw[aide] (0,0) -- (5,3) (4,1) -- (1,2);
+  \draw[vecteur] (0,0) -- node[midway,below right,font=\footnotesize]{$\vect{AB}$} (4,1);
+  \draw[vecteurB] (1,2) -- node[midway,above left,font=\footnotesize]{$\vect{DC}$} (5,3);
+  \pt{0,0}{below left}{A} \pt{4,1}{below right}{B} \pt{5,3}{above right}{C}
+  \pt{1,2}{above left}{D}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 4 --- Coordonnées du milieu]
+Le milieu $I$ du segment $[AB]$ a pour coordonnées les \textbf{moyennes} des
+coordonnées de $A$ et de $B$ :
+\begin{center}
+  $x_{I}=\dfrac{x_{A}+x_{B}}{2}$ \qquad $y_{I}=\dfrac{y_{A}+y_{B}}{2}$
+\end{center}
+\demo{$I$ est le milieu de $[AB]$, donc $\vect{AI}=\vect{IB}$ : les abscisses de ces deux
+vecteurs sont égales.}
+\begin{calculs}
+x_{I}-x_{A} &= x_{B}-x_{I} &\qquad& \rem{arrivée moins départ, des deux côtés}\\
+2x_{I} &= x_{A}+x_{B} && \rem{on ajoute $x_{I}+x_{A}$}\\
+x_{I} &= \dfrac{x_{A}+x_{B}}{2} && \rem{de même pour les ordonnées}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer les coordonnées d'un point défini par une égalité de vecteurs]
+L'égalité de deux vecteurs donne deux équations : une pour les abscisses, une pour
+les ordonnées.
+\etapeexemples
+On considère les points $A(-1\,;2)$, $B(3\,;4)$, $C(4\,;1)$ et le vecteur
+$\vec{u}\coord{2}{-5}$. Calculer les coordonnées :
+\begin{questions}[label=\alph*)]
+  \item du point $E$ tel que $\vect{AE}=\vec{u}$ ;
+  \item du point $D$ tel que $ABCD$ soit un parallélogramme ;
+  \item du point $F$ tel que $\vect{FA}=\vect{BC}$.
+\end{questions}
+
+\etape{À vous de jouer}
+On considère les points $K(2\,;-1)$, $L(-1\,;3)$, $M(1\,;4)$ et le vecteur
+$\vec{w}\coord{-3}{2}$. Calculer les coordonnées :
+\begin{questions}[label=\alph*)]
+  \item du point $N$ tel que $\vect{KN}=\vec{w}$ ;
+  \item du point $R$ tel que $KLMR$ soit un parallélogramme ;
+  \item du point $S$ tel que $\vect{SK}=\vect{LM}$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{methodebox}[Méthode 4 --- Utiliser les coordonnées du milieu]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(-3\,;4)$ et $B(5\,;-2)$. Calculer les coordonnées du
+        milieu $I$ de $[AB]$.
+  \item Le point $K(2\,;-1)$ est le milieu du segment $[AC]$. Calculer les coordonnées
+        du point $C$.
+  \item On considère les points $E(-2\,;1)$, $F(3\,;2)$, $G(4\,;-1)$ et $H(-1\,;-2)$.
+        Démontrer que $EFGH$ est un parallélogramme.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item On considère les points $R(-5\,;2)$ et $S(3\,;6)$. Calculer les coordonnées du
+        milieu $J$ de $[RS]$.
+  \item Le point $M(0\,;-1)$ est le milieu du segment $[RT]$. Calculer les coordonnées
+        du point $T$.
+  \item On considère les points $K(-3\,;0)$, $L(1\,;3)$, $U(5\,;2)$ et $V(1\,;-1)$.
+        Démontrer que $KLUV$ est un parallélogramme.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Produit d'un vecteur par un nombre réel, colinéarité}
+
+\begin{definitionbox}[Définition 2 --- Produit d'un vecteur par un nombre réel]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Pour un vecteur non nul $\vec{u}$ et un nombre réel $k$ non nul, le vecteur $k\vec{u}$ a :
+\begin{itemize}
+  \item la même \textbf{direction} que $\vec{u}$ ;
+  \item le même \textbf{sens} si $k>0$, le sens contraire si $k<0$ ;
+  \item une \textbf{longueur} multipliée par $k$ si $k>0$, par $-k$ si $k<0$.
+\end{itemize}
+Si $k=0$ ou $\vec{u}=\vec{0}$, alors $k\vec{u}=\vec{0}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \quadrillage{-0.4}{-0.4}{6.4}{3.4}
+  \draw[vecteur] (0,1) -- node[midway,above left,font=\footnotesize]{$\vec{u}$} (2,2);
+  \draw[vecteurB] (2,0) -- node[midway,below right,font=\footnotesize]{$2\vec{u}$} (6,2);
+  \draw[vecteurC] (3,3) -- node[midway,above left,font=\footnotesize]{$-\vec{u}$} (1,2);
+\end{tikzpicture}
+\end{minipage}
+
+\medskip
+En coordonnées : pour $\vec{u}\coord{x}{y}$, on a $k\vec{u}\coord{kx}{ky}$. Par exemple, pour
+$\vec{u}\coord{2}{-1}$ et $\vec{v}\coord{1}{4}$ :
+\begin{center}
+  $2\vec{u}\coord{4}{-2}$ \qquad $3\vec{v}\coord{3}{12}$ \qquad
+  $2\vec{u}-3\vec{v}\coord{4-3}{-2-12}$, soit $2\vec{u}-3\vec{v}\coord{1}{-14}$.
+\end{center}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 3 --- Vecteurs colinéaires, déterminant]
+Deux vecteurs $\vec{u}$ et $\vec{v}$ sont \textbf{colinéaires} quand l'un est le produit de
+l'autre par un nombre réel : $\vec{v}=k\vec{u}$ (ou $\vec{u}=k\vec{v}$). Le vecteur nul est
+colinéaire à tout vecteur.
+
+\smallskip
+Le \textbf{déterminant} de $\vec{u}\coord{x}{y}$ et $\vec{v}\coord{x'}{y'}$ est le nombre
+\[
+  \det(\vec{u}\,;\vec{v})=\begin{vmatrix} x & x'\\ y & y'\end{vmatrix}=xy'-yx'
+  \qquad\text{(produit en croix des coordonnées).}
+\]
+\end{definitionbox}
+
+\begin{proprietebox}[Théorème 1 --- Critère de colinéarité]
+$\vec{u}$ et $\vec{v}$ sont colinéaires quand $\det(\vec{u}\,;\vec{v})=0$ ; ils ne le
+sont pas quand $\det(\vec{u}\,;\vec{v})\neq 0$.
+
+\smallskip
+\demo{d'un sens (la réciproque est admise) : si $\vec{v}=k\vec{u}$, alors $x'=kx$ et
+$y'=ky$.}
+\begin{calculs}
+\det(\vec{u}\,;\vec{v}) &= x\times ky-y\times kx &\qquad& \rem{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{v}) &= 0 && \rem{les deux produits sont égaux}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Démontrer que deux vecteurs sont colinéaires, ou non]
+On cherche d'abord un multiple évident ($\vec{v}=k\vec{u}$) ; s'il ne se voit pas, on
+calcule le déterminant.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Les vecteurs $\vec{u}\coord{2}{-3}$ et $\vec{v}\coord{-6}{9}$ sont-ils colinéaires ?
+  \item Les vecteurs $\vec{u}\coord{3}{5}$ et $\vec{w}\coord{5}{8}$ sont-ils colinéaires ?
+  \item Les vecteurs $\vec{a}\coord{\sqrt{2}}{1}$ et $\vec{b}\coord{2}{\sqrt{2}}$ sont-ils
+        colinéaires ?
+  \item Calculer les nombres réels $m$ pour lesquels les vecteurs $\vec{r}\coord{m}{2}$
+        et $\vec{s}\coord{8}{m}$ sont colinéaires.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Les vecteurs $\vec{u}\coord{-1}{4}$ et $\vec{v}\coord{3}{-12}$ sont-ils colinéaires ?
+  \item Les vecteurs $\vec{u}\coord{4}{7}$ et $\vec{w}\coord{5}{9}$ sont-ils colinéaires ?
+  \item Les vecteurs $\vec{a}\coord{\sqrt{3}}{3}$ et $\vec{b}\coord{1}{\sqrt{3}}$ sont-ils
+        colinéaires ?
+  \item Calculer les nombres réels $m$ pour lesquels les vecteurs $\vec{r}\coord{m}{3}$
+        et $\vec{s}\coord{12}{m}$ sont colinéaires.
+\end{questions}
+
+\end{methodebox}
+
+\begin{proprietebox}[Propriété 5 --- Parallélisme et alignement]
+\begin{itemize}
+  \item Les droites $(AB)$ et $(CD)$ sont \textbf{parallèles} quand les vecteurs
+        $\vect{AB}$ et $\vect{CD}$ sont colinéaires.
+  \item Les points $A$, $B$ et $C$ sont \textbf{alignés} quand les vecteurs
+        $\vect{AB}$ et $\vect{AC}$ sont colinéaires.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Démontrer un parallélisme ou un alignement]
+\etapeexemples
+On considère les points $A(-1\,;-2)$, $B(1\,;2)$, $C(3\,;0)$, $D(4\,;2)$ et $E(3\,;6)$.
+\begin{questions}[label=\alph*)]
+  \item Les droites $(AB)$ et $(CD)$ sont-elles parallèles ?
+  \item Les points $A$, $B$ et $E$ sont-ils alignés ?
+  \item Les points $A$, $B$ et $C$ sont-ils alignés ?
+  \item Calculer l'ordonnée $y$ du point $M(4\,;y)$ de la droite $(AB)$.
+\end{questions}
+
+\etape{À vous de jouer}
+On considère les points $F(-2\,;1)$, $G(0\,;2)$, $H(1\,;-3)$, $K(5\,;-1)$ et $L(6\,;5)$.
+\begin{questions}[label=\alph*)]
+  \item Les droites $(FG)$ et $(HK)$ sont-elles parallèles ?
+  \item Les points $F$, $G$ et $L$ sont-ils alignés ?
+  \item Les points $F$, $G$ et $H$ sont-ils alignés ?
+  \item Calculer l'ordonnée $y$ du point $N(8\,;y)$ de la droite $(FG)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 9 à 12}
+
+\partiecours{Norme d'un vecteur, équation d'un cercle}
+
+À partir d'ici, le repère $(O\,;\vec{\imath},\vec{\jmath})$ est \textbf{orthonormé} :
+$\vec{\imath}$ et $\vec{\jmath}$ ont des directions perpendiculaires et la même
+longueur, prise pour unité.
+
+\begin{proprietebox}[Propriété 6 --- Norme et distance]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+La \textbf{norme} d'un vecteur $\vec{u}$, notée $\norme{\vec{u}}$, est sa longueur ; pour
+deux points, $\norme{\vect{AB}}=AB$. Pour $\vec{u}\coord{x}{y}$ :
+\[
+  \norme{\vec{u}}=\sqrt{x^{2}+y^{2}}.
+\]
+Pour deux points $A$ et $B$ :
+$AB=\sqrt{(x_{B}-x_{A})^{2}+(y_{B}-y_{A})^{2}}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \quadrillage{-0.4}{-0.4}{4.4}{3.4}
+  \draw[aide] (0,0) -- (4,0) -- (4,3);
+  \draw[black!60] (3.7,0) -- (3.7,0.3) -- (4,0.3);
+  \draw[vecteur] (0,0) -- node[midway,above left,font=\footnotesize]{$\vec{u}$} (4,3);
+  \node[below,font=\footnotesize] at (2,0) {$x$};
+  \node[right,font=\footnotesize] at (4,1.5) {$y$};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\demo{le triangle de la figure est rectangle (le repère est orthonormé) ; ses côtés de
+l'angle droit mesurent $x$ et $y$, au signe près, et le théorème de Pythagore donne
+$\norme{\vec{u}}^{2}=x^{2}+y^{2}$.}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer une norme]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Calculer la norme du vecteur $\vec{u}\coord{-5}{12}$.
+  \item On considère les points $A(-2\,;1)$ et $B(2\,;3)$. Calculer la distance $AB$
+        et l'écrire sous la forme $a\sqrt{b}$, avec deux nombres entiers $a$ et $b$.
+  \item On considère les points $C(-1\,;0)$, $D(3\,;2)$ et $E(1\,;6)$. Quelle est la
+        nature du triangle $CDE$ ?
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Calculer la norme du vecteur $\vec{v}\coord{8}{-15}$.
+  \item On considère les points $E(-3\,;2)$ et $F(3\,;-1)$. Calculer la distance $EF$
+        et l'écrire sous la forme $a\sqrt{b}$, avec deux nombres entiers $a$ et $b$.
+  \item On considère les points $K(-2\,;1)$, $L(1\,;2)$ et $M(0\,;5)$. Quelle est la
+        nature du triangle $KLM$ ?
+\end{questions}
+
+\end{methodebox}
+
+\begin{proprietebox}[Théorème 2 --- Équation d'un cercle]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Le cercle de centre $\Omega(a\,;b)$ et de rayon $r$ est l'ensemble des points $M(x\,;y)$
+tels que
+\[
+  (x-a)^{2}+(y-b)^{2}=r^{2}.
+\]
+On dit que c'est une \textbf{équation} du cercle.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.55]
+  \draw[coulCourbe,line width=1pt] (0,0) circle (2);
+  \draw[aide] (0,0) -- (1.6,1.2);
+  \node[font=\footnotesize,above left] at (0.8,0.6) {$r$};
+  \pt{0,0}{below}{\Omega} \pt{1.6,1.2}{above right}{M}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\demo{une distance est positive, donc deux distances sont égales quand leurs carrés le
+sont.}
+\begin{calculs}
+\Omega M &= r &\qquad& \rem{$M$ est sur le cercle}\\
+\Omega M^{2} &= r^{2} && \rem{on passe aux carrés}\\
+(x-a)^{2}+(y-b)^{2} &= r^{2} && \rem{propriété 6, avec $\vect{\Omega M}\coord{x-a}{y-b}$}
+\end{calculs}
+\smallskip
+En développant, on obtient une autre forme : $(x-1)^{2}+(y+3)^{2}=4$ devient
+$x^{2}+y^{2}-2x+6y+6=0$. Pour reconnaître un cercle sous cette forme, on fait le chemin
+inverse en complétant les carrés (forme canonique, chapitre 3) : voir la fiche
+d'exercices.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Trouver l'équation cartésienne d'un cercle]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Lire le centre et le rayon du cercle d'équation $(x+3)^{2}+(y-1)^{2}=7$.
+  \item Écrire une équation du cercle $\mathcal{C}_{1}$ de centre $\Omega(2\,;-3)$ et de rayon $4$.
+  \item Écrire une équation du cercle $\mathcal{C}_{2}$ de centre $A(-1\,;2)$ qui passe par
+        $B(3\,;5)$.
+  \item Les points $C(2\,;-2)$ et $D(4\,;1)$ sont-ils sur le cercle $\mathcal{C}_{2}$ ?
+  \item Écrire une équation du cercle $\mathcal{C}_{3}$ de diamètre $[EF]$, avec $E(-3\,;1)$ et
+        $F(5\,;-5)$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Lire le centre et le rayon du cercle d'équation $(x-5)^{2}+(y+2)^{2}=11$.
+  \item Écrire une équation du cercle $\mathcal{C}_{1}$ de centre $\Omega(-4\,;1)$ et de rayon $3$.
+  \item Écrire une équation du cercle $\mathcal{C}_{2}$ de centre $K(3\,;-1)$ qui passe par
+        $L(-1\,;2)$.
+  \item Les points $M(6\,;3)$ et $N(0\,;2)$ sont-ils sur le cercle $\mathcal{C}_{2}$ ?
+  \item Écrire une équation du cercle $\mathcal{C}_{3}$ de diamètre $[GH]$, avec $G(-2\,;-3)$ et
+        $H(4\,;5)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 13 à 16}
+
+\partiecours{Définition du produit scalaire}
+
+\begin{definitionbox}[Définition 4 --- Produit scalaire]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+On représente deux vecteurs non nuls avec la même origine : $\vec{u}=\vect{AB}$ et
+$\vec{v}=\vect{AC}$. Leur \textbf{angle} est l'angle géométrique $\widehat{BAC}$, entre
+$0^{\circ}$ et $180^{\circ}$. Le \textbf{produit scalaire} de $\vec{u}$ et $\vec{v}$ est le
+\textbf{nombre}
+\[
+  \vec{u}\cdot\vec{v}=\norme{\vec{u}}\times\norme{\vec{v}}\times\cos\big(\widehat{BAC}\big),
+\]
+c'est-à-dire $\vect{AB}\cdot\vect{AC}=AB\times AC\times\cos\big(\widehat{BAC}\big)$. Il se lit
+« $\vec{u}$ scalaire $\vec{v}$ ». Si l'un des deux vecteurs est nul,
+$\vec{u}\cdot\vec{v}=0$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.8]
+  \draw (0.7,0) arc (0:38.66:0.7);
+  \draw[vecteur] (0,0) -- node[midway,below,font=\footnotesize]{$\vec{u}$} (3.5,0);
+  \draw[vecteurB] (0,0) -- node[midway,above left,font=\footnotesize]{$\vec{v}$} (2.5,2);
+  \pt{0,0}{left}{A} \pt{3.5,0}{below right}{B} \pt{2.5,2}{above right}{C}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{Carré scalaire} : $\vec{u}\cdot\vec{u}=\norme{\vec{u}}^{2}$ (l'angle est nul) ; on
+note $\vec{u}^{2}=\vec{u}\cdot\vec{u}$. Par exemple, $\vect{AB}\cdot\vect{AB}=AB^{2}$.
+\end{definitionbox}
+
+\begin{remarquebox}[Cosinus d'un angle (rappel du chapitre 8)]
+Un angle géométrique se mesure ici en \textbf{degrés} ; $180^{\circ}$ correspond à
+$\pi$ radians. Son cosinus se lit sur le cercle trigonométrique (abscisse du point
+associé) ; à la calculatrice, en mode \textbf{degré}. Valeurs remarquables :
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{5pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+\hline
+angle & $0^{\circ}$ & $30^{\circ}$ & $45^{\circ}$ & $60^{\circ}$ & $90^{\circ}$ &
+$120^{\circ}$ & $135^{\circ}$ & $150^{\circ}$ & $180^{\circ}$\\
+\hline
+en radians & $0$ & $\dfrac{\pi}{6}$ & $\dfrac{\pi}{4}$ & $\dfrac{\pi}{3}$ & $\dfrac{\pi}{2}$ &
+$\dfrac{2\pi}{3}$ & $\dfrac{3\pi}{4}$ & $\dfrac{5\pi}{6}$ & $\pi$\\
+\hline
+cosinus & $1$ & $\dfrac{\sqrt{3}}{2}$ & $\dfrac{\sqrt{2}}{2}$ & $\dfrac{1}{2}$ & $0$ &
+$-\dfrac{1}{2}$ & $-\dfrac{\sqrt{2}}{2}$ & $-\dfrac{\sqrt{3}}{2}$ & $-1$\\
+\hline
+\end{tabular}}
+\end{center}
+Deux angles qui se complètent à $180^{\circ}$ ont des cosinus opposés (points
+symétriques par rapport à l'axe des ordonnées) : $\cos(180^{\circ}-a)=-\cos(a)$, par
+exemple $\cos(120^{\circ})=-\cos(60^{\circ})$.
+\end{remarquebox}
+
+\begin{proprietebox}[Propriété 7 --- Signe, symétrie, orthogonalité]
+\begin{itemize}
+  \item $\vec{u}\cdot\vec{v}=\vec{v}\cdot\vec{u}$ (\textbf{symétrie}).
+  \item Le produit scalaire de deux vecteurs non nuls est positif si leur angle est
+        aigu, négatif s'il est obtus, nul s'il est droit.
+  \item Deux vecteurs sont \textbf{orthogonaux} quand leur produit scalaire est nul :
+        $\vec{u}\cdot\vec{v}=0$. Pour deux vecteurs non nuls, cela veut dire que leurs
+        directions sont perpendiculaires ($\cos(90^{\circ})=0$) ; le vecteur nul est
+        orthogonal à tout vecteur.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Calculer un produit scalaire avec un angle]
+Les deux vecteurs doivent avoir la même origine : sinon, on déplace l'un d'eux.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item $\norme{\vec{u}}=3$, $\norme{\vec{v}}=4$ et l'angle de $\vec{u}$ et $\vec{v}$
+        mesure $60^{\circ}$. Calculer $\vec{u}\cdot\vec{v}$.
+  \item Dans le triangle $ABC$, $AB=5$, $AC=4$ et $\widehat{BAC}=135^{\circ}$. Calculer
+        $\vect{AB}\cdot\vect{AC}$.
+  \item $EFG$ est un triangle équilatéral de côté $6$. Calculer $\vect{EF}\cdot\vect{EG}$,
+        puis $\vect{EF}\cdot\vect{FG}$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $\norme{\vec{u}}=5$, $\norme{\vec{v}}=2$ et l'angle de $\vec{u}$ et $\vec{v}$
+        mesure $60^{\circ}$. Calculer $\vec{u}\cdot\vec{v}$.
+  \item Dans le triangle $RST$, $RS=3$, $RT=8$ et $\widehat{SRT}=150^{\circ}$. Calculer
+        $\vect{RS}\cdot\vect{RT}$.
+  \item $KLM$ est un triangle équilatéral de côté $4$. Calculer $\vect{KL}\cdot\vect{KM}$,
+        puis $\vect{KL}\cdot\vect{LM}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 17 à 20}
+
+\besoinplace{14\baselineskip}
+\partiecours{Produit scalaire et projeté orthogonal}
+
+\begin{definitionbox}[Définition 5 --- Projeté orthogonal d'un point]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Le \textbf{projeté orthogonal} d'un point $M$ sur une droite $(d)$ est le point $H$ où la
+perpendiculaire à $(d)$ qui passe par $M$ coupe $(d)$ : c'est l'« ombre » de $M$ sur
+$(d)$ quand la lumière arrive perpendiculairement. Si $M$ est sur $(d)$, alors $H=M$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.7]
+  \draw[fig] (-0.5,0) -- (4.5,0) node[right,font=\footnotesize]{$(d)$};
+  \draw[aide] (2,2) -- (2,0);
+  \draw[black!60] (2,0.25) -- (2.25,0.25) -- (2.25,0);
+  \pt{2,2}{above}{M} \pt{2,0}{below}{H}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Théorème 3 --- Produit scalaire par projection]
+Soit $A$ et $B$ deux points distincts, $C$ un point et $H$ son projeté orthogonal sur la
+droite $(AB)$. Alors $\vect{AB}\cdot\vect{AC}=\vect{AB}\cdot\vect{AH}$, c'est-à-dire :
+\begin{itemize}
+  \item $\vect{AB}\cdot\vect{AC}=AB\times AH$ si $\vect{AB}$ et $\vect{AH}$ ont le
+        \textbf{même sens} ;
+  \item $\vect{AB}\cdot\vect{AC}=-AB\times AH$ s'ils sont de \textbf{sens contraires}.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}[scale=0.65]
+  \draw[aide] (2.5,2) -- (2.5,0);
+  \draw[black!60] (2.5,0.25) -- (2.25,0.25) -- (2.25,0);
+  \draw[vecteur] (0,0) -- node[pos=0.85,above,font=\footnotesize]{$\vect{AB}$} (4,0);
+  \draw[vecteurB] (0,0) -- node[midway,above left,font=\footnotesize]{$\vect{AC}$} (2.5,2);
+  \pt{0,0}{left}{A} \pt{4,0}{right}{B} \pt{2.5,2}{above}{C} \pt{2.5,0}{below}{H}
+  \node[font=\footnotesize] at (2,-1.3) {même sens : $AB\times AH$};
+\end{tikzpicture}
+\qquad\qquad
+\begin{tikzpicture}[scale=0.65]
+  \draw[aide] (-2,0) -- (0,0);
+  \draw[aide] (-2,2) -- (-2,0);
+  \draw[black!60] (-2,0.25) -- (-1.75,0.25) -- (-1.75,0);
+  \draw[vecteur] (0,0) -- node[midway,below,font=\footnotesize]{$\vect{AB}$} (3,0);
+  \draw[vecteurB] (0,0) -- node[midway,above right,font=\footnotesize]{$\vect{AC}$} (-2,2);
+  \pt{0,0}{below}{A} \pt{3,0}{right}{B} \pt{-2,2}{above}{C} \pt{-2,0}{below}{H}
+  \node[font=\footnotesize] at (0.5,-1.3) {sens contraires : $-AB\times AH$};
+\end{tikzpicture}
+\end{center}
+En particulier, si $C$ est sur la droite $(AB)$ : $\vect{AB}\cdot\vect{AC}=AB\times AC$
+quand $\vect{AB}$ et $\vect{AC}$ ont le même sens, $-AB\times AC$ sinon.
+
+\smallskip
+\demo{pour un angle $\widehat{BAC}$ aigu, dans le triangle $AHC$ rectangle en $H$ :}
+\begin{calculs}
+\cos\big(\widehat{BAC}\big) &= \dfrac{AH}{AC} &\qquad& \rem{côté adjacent sur hypoténuse}\\
+\vect{AB}\cdot\vect{AC} &= AB\times AC\times\dfrac{AH}{AC} && \rem{définition 4}\\
+\vect{AB}\cdot\vect{AC} &= AB\times AH && \rem{on simplifie par $AC$}
+\end{calculs}
+Pour un angle $\widehat{BAC}$ obtus, $H$ est de l'autre côté de $A$ et
+$\widehat{HAC}=180^{\circ}-\widehat{BAC}$ est aigu :
+\begin{calculs}
+\cos\big(\widehat{BAC}\big) &= -\cos\big(\widehat{HAC}\big) &\qquad& \rem{angles qui se complètent à $180^{\circ}$}\\
+\cos\big(\widehat{BAC}\big) &= -\dfrac{AH}{AC} && \rem{dans le triangle $AHC$ rectangle en $H$}\\
+\vect{AB}\cdot\vect{AC} &= -AB\times AH && \rem{définition 4, on simplifie par $AC$}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer un produit scalaire par projection]
+On projette l'extrémité du second vecteur sur la droite qui porte le premier, puis on
+compare les sens.
+\etapeexemples
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCD$ est un carré de côté $4$ et $I$ est le milieu de $[CD]$. Calculer :
+\begin{questions}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$ ;
+  \item $\vect{AB}\cdot\vect{AD}$ ;
+  \item $\vect{AB}\cdot\vect{CD}$ ;
+  \item $\vect{AB}\cdot\vect{AI}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}
+\vspace{0pt}\centering
+\carremilieu{A}{B}{C}{D}{I}
+\end{minipage}
+
+\smallskip
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+\begin{questions}[label=\alph*),start=5]
+  \item Dans le triangle $EFG$ ci-contre, $H$ est le projeté orthogonal de $G$ sur la
+        droite $(EF)$, avec $EF=5$ et $EH=3$. Calculer $\vect{EF}\cdot\vect{EG}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.4]
+  \draw[aide] (-3,0) -- (0,0);
+  \draw[aide] (-3,2.5) -- (-3,0);
+  \draw[black!60] (-3,0.4) -- (-2.6,0.4) -- (-2.6,0);
+  \draw[fig] (0,0) -- (5,0) -- (-3,2.5) -- cycle;
+  \pt{0,0}{below}{E} \pt{5,0}{below right}{F} \pt{-3,2.5}{above}{G} \pt{-3,0}{below}{H}
+\end{tikzpicture}
+\end{minipage}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$KLMN$ est un carré de côté $6$ et $J$ est le milieu de $[MN]$. Calculer :
+\begin{questions}[label=\alph*)]
+  \item $\vect{KL}\cdot\vect{KM}$ ;
+  \item $\vect{KL}\cdot\vect{KN}$ ;
+  \item $\vect{KL}\cdot\vect{MN}$ ;
+  \item $\vect{KL}\cdot\vect{KJ}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}
+\vspace{0pt}\centering
+\carremilieu{K}{L}{M}{N}{J}
+\end{minipage}
+
+\smallskip
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+\begin{questions}[label=\alph*),start=5]
+  \item Dans le triangle $RST$ ci-contre, $H$ est le projeté orthogonal de $T$ sur la
+        droite $(RS)$, avec $RS=4$ et $RH=2$. Calculer $\vect{RS}\cdot\vect{RT}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.45]
+  \draw[aide] (-2,0) -- (0,0);
+  \draw[aide] (-2,2.5) -- (-2,0);
+  \draw[black!60] (-2,0.4) -- (-1.6,0.4) -- (-1.6,0);
+  \draw[fig] (0,0) -- (4,0) -- (-2,2.5) -- cycle;
+  \pt{0,0}{below}{R} \pt{4,0}{below right}{S} \pt{-2,2.5}{above}{T} \pt{-2,0}{below}{H}
+\end{tikzpicture}
+\end{minipage}
+
+\end{methodebox}
+
+\afaire{exercices 21 à 23}
+
+\partiecours{Règles de calcul}
+
+Avec le produit scalaire, on développe comme en calcul littéral, où
+\begin{center}
+$(a+b)(c+d)=ac+ad+bc+bd$ \qquad $(a+b)^{2}=a^{2}+2ab+b^{2}$
+\end{center}
+
+\begin{proprietebox}[Propriété 8 --- Règles de calcul (admises)]
+Pour tous vecteurs $\vec{u}$, $\vec{v}$, $\vec{w}$ et tout nombre réel $k$ :
+\begin{center}
+$\vec{u}\cdot(\vec{v}+\vec{w})=\vec{u}\cdot\vec{v}+\vec{u}\cdot\vec{w}$
+\qquad
+$(\vec{u}+\vec{v})\cdot\vec{w}=\vec{u}\cdot\vec{w}+\vec{v}\cdot\vec{w}$
+\qquad
+$(k\vec{u})\cdot\vec{v}=\vec{u}\cdot(k\vec{v})=k\,(\vec{u}\cdot\vec{v})$
+\end{center}
+On dit que le produit scalaire est \textbf{bilinéaire} : on développe, et on sort les
+nombres réels.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 9 --- Identités remarquables]
+Pour tous vecteurs $\vec{u}$ et $\vec{v}$ :
+\begin{center}
+$(\vec{u}+\vec{v})^{2}=\vec{u}^{2}+2\,\vec{u}\cdot\vec{v}+\vec{v}^{2}$
+\qquad
+$(\vec{u}-\vec{v})^{2}=\vec{u}^{2}-2\,\vec{u}\cdot\vec{v}+\vec{v}^{2}$
+\qquad
+$(\vec{u}+\vec{v})\cdot(\vec{u}-\vec{v})=\vec{u}^{2}-\vec{v}^{2}$
+\end{center}
+Avec les normes : $\norme{\vec{u}+\vec{v}}^{2}=\norme{\vec{u}}^{2}+2\,\vec{u}\cdot\vec{v}+\norme{\vec{v}}^{2}$.
+
+\smallskip
+\demo{de la première (les deux autres se démontrent de la même façon) :}
+\begin{calculs}
+(\vec{u}+\vec{v})^{2} &= (\vec{u}+\vec{v})\cdot(\vec{u}+\vec{v}) &\qquad& \rem{carré scalaire}\\
+(\vec{u}+\vec{v})^{2} &= \vec{u}\cdot\vec{u}+\vec{u}\cdot\vec{v}+\vec{v}\cdot\vec{u}+\vec{v}\cdot\vec{v} && \rem{on développe (propriété 8)}\\
+(\vec{u}+\vec{v})^{2} &= \vec{u}^{2}+2\,\vec{u}\cdot\vec{v}+\vec{v}^{2} && \rem{symétrie : $\vec{v}\cdot\vec{u}=\vec{u}\cdot\vec{v}$}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Calculer avec les règles du produit scalaire]
+\etapeexemples
+On sait que $\norme{\vec{u}}=3$, $\norme{\vec{v}}=2$ et $\vec{u}\cdot\vec{v}=-1$. Calculer :
+\begin{questions}[label=\alph*)]
+  \item $(2\vec{u})\cdot(3\vec{v})$ ;
+  \item $\vec{u}\cdot(\vec{u}+\vec{v})$ ;
+  \item $\norme{\vec{u}+\vec{v}}^{2}$, puis $\norme{\vec{u}+\vec{v}}$ ;
+  \item $(\vec{u}-2\vec{v})\cdot(\vec{u}+\vec{v})$.
+\end{questions}
+
+\etape{À vous de jouer}
+On sait que $\norme{\vec{u}}=4$, $\norme{\vec{v}}=1$ et $\vec{u}\cdot\vec{v}=2$. Calculer :
+\begin{questions}[label=\alph*)]
+  \item $(3\vec{u})\cdot(2\vec{v})$ ;
+  \item $\vec{u}\cdot(\vec{u}+\vec{v})$ ;
+  \item $\norme{\vec{u}+\vec{v}}^{2}$, puis $\norme{\vec{u}+\vec{v}}$ ;
+  \item $(\vec{u}-2\vec{v})\cdot(\vec{u}+\vec{v})$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 24 à 26}
+
+\partiecours{Produit scalaire dans un repère orthonormé}
+
+\begin{proprietebox}[Théorème 4 --- Expression avec les coordonnées]
+Dans un repère \textbf{orthonormé}, pour $\vec{u}\coord{x}{y}$ et $\vec{v}\coord{x'}{y'}$ :
+\[
+  \vec{u}\cdot\vec{v}=xx'+yy'
+  \qquad\text{(abscisses multipliées, plus ordonnées multipliées).}
+\]
+On retrouve $\vec{u}\cdot\vec{u}=x^{2}+y^{2}=\norme{\vec{u}}^{2}$.
+
+\smallskip
+\demo{avec $\vec{u}=x\vec{\imath}+y\vec{\jmath}$ et $\vec{v}=x'\vec{\imath}+y'\vec{\jmath}$ :}
+\begin{calculs}
+\vec{u}\cdot\vec{v} &= (x\vec{\imath}+y\vec{\jmath})\cdot(x'\vec{\imath}+y'\vec{\jmath}) &\qquad& \rem{définition 1}\\
+\vec{u}\cdot\vec{v} &= xx'\,\vec{\imath}\cdot\vec{\imath}+xy'\,\vec{\imath}\cdot\vec{\jmath}+yx'\,\vec{\jmath}\cdot\vec{\imath}+yy'\,\vec{\jmath}\cdot\vec{\jmath} && \rem{on développe (propriété 8)}\\
+\vec{u}\cdot\vec{v} &= xx'\times 1+xy'\times 0+yx'\times 0+yy'\times 1 && \rem{$\vec{\imath}^{2}=\norme{\vec{\imath}}^{2}=1$ ; $\vec{\imath}$ et $\vec{\jmath}$ orthogonaux}\\
+\vec{u}\cdot\vec{v} &= xx'+yy' &&
+\end{calculs}
+
+\smallskip
+\begin{itemize}
+  \item $\vec{u}$ et $\vec{v}$ sont \textbf{orthogonaux} quand $xx'+yy'=0$.
+  \item Avec $\vec{\imath}\coord{1}{0}$ et $\vec{\jmath}\coord{0}{1}$ :
+        $\vec{u}\cdot\vec{\imath}=x$ et $\vec{u}\cdot\vec{\jmath}=y$. Les coordonnées
+        de $\vec{u}$ sont ses produits scalaires avec les vecteurs de la base.
+\end{itemize}
+À ne pas confondre : $xy'-yx'=0$ (déterminant) pour la \textbf{colinéarité},
+$xx'+yy'=0$ (produit scalaire) pour l'\textbf{orthogonalité}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 12 --- Calculer un produit scalaire avec les coordonnées, vecteurs orthogonaux]
+\etapeexemples
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Calculer $\vec{u}\cdot\vec{v}$ pour $\vec{u}\coord{4}{-3}$ et $\vec{v}\coord{2}{5}$.
+  \item Les vecteurs $\vec{a}\coord{6}{-4}$ et $\vec{b}\coord{2}{3}$ sont-ils orthogonaux ?
+  \item On considère les points $A(1\,;-1)$, $B(5\,;1)$ et $C(0\,;1)$. Le triangle $ABC$
+        est-il rectangle en $A$ ?
+  \item Calculer le nombre réel $m$ pour lequel les vecteurs $\vec{r}\coord{m}{3}$ et
+        $\vec{s}\coord{6}{-4}$ sont orthogonaux.
+\end{questions}
+
+\etape{À vous de jouer}
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Calculer $\vec{u}\cdot\vec{v}$ pour $\vec{u}\coord{-2}{5}$ et $\vec{v}\coord{3}{1}$.
+  \item Les vecteurs $\vec{a}\coord{5}{2}$ et $\vec{b}\coord{-4}{10}$ sont-ils orthogonaux ?
+  \item On considère les points $E(-1\,;2)$, $F(3\,;4)$ et $G(1\,;-2)$. Le triangle $EFG$
+        est-il rectangle en $E$ ?
+  \item Calculer le nombre réel $m$ pour lequel les vecteurs $\vec{r}\coord{m}{-2}$ et
+        $\vec{s}\coord{5}{10}$ sont orthogonaux.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 27 à 30}
+
+\partiecours{Produit scalaire et normes}
+
+Les identités remarquables (propriété 9) relient le produit scalaire aux longueurs :
+quand on connaît les trois côtés d'un triangle, on calcule un produit scalaire sans angle
+ni projeté.
+
+\begin{proprietebox}[Propriété 10 --- Produit scalaire avec des normes]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Pour tous vecteurs $\vec{u}$ et $\vec{v}$ :
+\[
+  \vec{u}\cdot\vec{v}=\frac{1}{2}\left(\norme{\vec{u}+\vec{v}}^{2}-\norme{\vec{u}}^{2}-\norme{\vec{v}}^{2}\right).
+\]
+Dans un triangle $ABC$ :
+\[
+  \vect{AB}\cdot\vect{AC}=\frac{1}{2}\left(AB^{2}+AC^{2}-BC^{2}\right).
+\]
+Le côté retranché, $BC$, est celui qui \textbf{fait face} au sommet $A$ commun aux deux
+vecteurs.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.6]
+  \draw[aide] (5,0) -- (1.5,2.6);
+  \node[font=\footnotesize,above right] at (3.25,1.3) {$BC$};
+  \draw[vecteur] (0,0) -- node[midway,below,font=\footnotesize]{$\vect{AB}$} (5,0);
+  \draw[vecteurB] (0,0) -- node[midway,above left,font=\footnotesize]{$\vect{AC}$} (1.5,2.6);
+  \pt{0,0}{below left}{A} \pt{5,0}{below right}{B} \pt{1.5,2.6}{above}{C}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\demo{dans le triangle, avec la relation de Chasles et la propriété 9 :}
+\begin{calculs}
+BC^{2} &= \norme{\vect{AC}-\vect{AB}}^{2} &\qquad& \rem{$\vect{BC}=\vect{BA}+\vect{AC}=\vect{AC}-\vect{AB}$}\\
+BC^{2} &= AC^{2}-2\,\vect{AB}\cdot\vect{AC}+AB^{2} && \rem{identité remarquable}\\
+2\,\vect{AB}\cdot\vect{AC} &= AB^{2}+AC^{2}-BC^{2} && \rem{on isole le produit scalaire}\\
+\vect{AB}\cdot\vect{AC} &= \frac{1}{2}\left(AB^{2}+AC^{2}-BC^{2}\right) && \rem{on divise par $2$}
+\end{calculs}
+La formule avec $\norme{\vec{u}+\vec{v}}$ s'obtient de même, en isolant $\vec{u}\cdot\vec{v}$
+dans $\norme{\vec{u}+\vec{v}}^{2}=\norme{\vec{u}}^{2}+2\,\vec{u}\cdot\vec{v}+\norme{\vec{v}}^{2}$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 13 --- Calculer un produit scalaire avec des normes]
+On repère le sommet commun aux deux vecteurs ; on retranche le carré du côté qui lui
+fait face.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item $\norme{\vec{u}}=3$, $\norme{\vec{v}}=5$ et $\norme{\vec{u}+\vec{v}}=7$. Calculer
+        $\vec{u}\cdot\vec{v}$.
+  \item Dans le triangle $ABC$, $AB=4$, $AC=6$ et $BC=5$. Calculer $\vect{AB}\cdot\vect{AC}$.
+  \item Dans le même triangle $ABC$, calculer $\vect{BA}\cdot\vect{BC}$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $\norme{\vec{u}}=2$, $\norme{\vec{v}}=4$ et $\norme{\vec{u}+\vec{v}}=5$. Calculer
+        $\vec{u}\cdot\vec{v}$.
+  \item Dans le triangle $EFG$, $EF=5$, $EG=7$ et $FG=6$. Calculer $\vect{EF}\cdot\vect{EG}$.
+  \item Dans le même triangle $EFG$, calculer $\vect{FE}\cdot\vect{FG}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 31 à 33}
+
+\partiecours{Vecteur normal et équation cartésienne d'une droite}
+
+Rappel de seconde (chapitre « Équations cartésiennes de droites ») : une droite a une
+équation de la forme $ax+by+c=0$, et $\vec{u}\coord{-b}{a}$ en est un vecteur directeur.
+Le produit scalaire donne un autre vecteur, perpendiculaire à la droite, qu'on lit tout
+aussi vite.
+
+\begin{definitionbox}[Définition 6 --- Vecteur normal]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Un \textbf{vecteur normal} à une droite $(d)$ est un vecteur $\vec{n}$ non nul orthogonal à
+un vecteur directeur $\vec{u}$ de $(d)$ : sa direction est perpendiculaire à $(d)$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.8]
+  \draw[fig] (-1,-0.5) -- (4,2) node[right,font=\footnotesize]{$(d)$};
+  \draw[vecteur] (0,0) -- node[midway,below right,font=\footnotesize]{$\vec{u}$} (2.4,1.2);
+  \draw[vecteurB] (0,0) -- node[midway,left,font=\footnotesize]{$\vec{n}$} (-0.8,1.6);
+  \draw[black!60] (0.27,0.13) -- (0.14,0.4) -- (-0.13,0.27);
+  \pt{0,0}{below}{A}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Théorème 5 --- Vecteur normal et équation cartésienne]
+Le repère est orthonormé.
+\begin{itemize}
+  \item La droite d'équation $ax+by+c=0$ a pour vecteur normal $\vec{n}\coord{a}{b}$.
+  \item Réciproquement, la droite qui passe par un point $A$ et de vecteur normal
+        $\vec{n}\coord{a}{b}$ a une équation de la forme $ax+by+c=0$ : un point $M$ est sur
+        cette droite quand $\vect{AM}\cdot\vec{n}=0$.
+\end{itemize}
+\demo{}
+\begin{calculs}
+\vec{u}\cdot\vec{n} &= (-b)\times a+a\times b &\qquad& \rem{$\vec{u}\coord{-b}{a}$ directeur, $xx'+yy'$}\\
+\vec{u}\cdot\vec{n} &= 0 && \rem{$\vec{n}$ est orthogonal à $\vec{u}$}
+\end{calculs}
+Pour la réciproque, avec $A(x_{A}\,;y_{A})$ et $M(x\,;y)$ : $M$ est sur la droite quand
+$\vect{AM}$ est orthogonal à $\vec{n}$.
+\begin{calculs}
+\vect{AM}\cdot\vec{n} &= a(x-x_{A})+b(y-y_{A}) &\qquad& \rem{$\vect{AM}\coord{x-x_{A}}{y-y_{A}}$}\\
+\vect{AM}\cdot\vec{n} &= ax+by+c && \rem{en posant $c=-ax_{A}-by_{A}$}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 14 --- Trouver une équation cartésienne avec un vecteur normal]
+On lit $a$ et $b$ sur le vecteur normal ; on trouve $c$ en écrivant que le point connu
+vérifie l'équation.
+\etapeexemples
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Lire un vecteur normal et un vecteur directeur de la droite d'équation
+        $3x-2y+5=0$.
+  \item Trouver une équation cartésienne de la droite $(d)$ qui passe par $A(2\,;-1)$, de
+        vecteur normal $\vec{n}\coord{3}{4}$.
+  \item On considère les points $B(1\,;2)$, $C(-1\,;-2)$ et $D(4\,;0)$. Trouver une équation
+        cartésienne de la hauteur issue de $B$ dans le triangle $BCD$.
+  \item On considère les points $E(-1\,;3)$ et $F(3\,;1)$. Trouver une équation cartésienne
+        de la médiatrice de $[EF]$.
+\end{questions}
+
+\etape{À vous de jouer}
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Lire un vecteur normal et un vecteur directeur de la droite d'équation
+        $-x+4y-3=0$.
+  \item Trouver une équation cartésienne de la droite $(d)$ qui passe par $A(-3\,;1)$, de
+        vecteur normal $\vec{n}\coord{2}{-5}$.
+  \item On considère les points $K(2\,;3)$, $L(0\,;-1)$ et $M(3\,;1)$. Trouver une équation
+        cartésienne de la hauteur issue de $K$ dans le triangle $KLM$.
+  \item On considère les points $R(-2\,;-1)$ et $S(4\,;3)$. Trouver une équation cartésienne
+        de la médiatrice de $[RS]$.
+\end{questions}
+
+\end{methodebox}
+
+\begin{proprietebox}[Propriété 11 --- Droites parallèles, droites perpendiculaires]
+Le repère est orthonormé. Deux droites $(d)$ et $(d')$ ont pour vecteurs normaux
+$\vec{n}$ et $\vec{n}\,{}'$.
+\begin{itemize}
+  \item $(d)$ et $(d')$ sont \textbf{perpendiculaires} quand $\vec{n}\cdot\vec{n}\,{}'=0$ ;
+  \item $(d)$ et $(d')$ sont \textbf{parallèles} quand $\vec{n}$ et $\vec{n}\,{}'$ sont
+        colinéaires : $\det(\vec{n}\,;\vec{n}\,{}')=0$ (théorème 1).
+\end{itemize}
+En effet, deux droites sont perpendiculaires quand leurs perpendiculaires le sont, et
+parallèles quand leurs perpendiculaires le sont.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 15 --- Démontrer que deux droites sont parallèles ou perpendiculaires]
+On lit un vecteur normal sur chaque équation (cartésienne), puis on calcule leur produit
+scalaire et leur déterminant.
+\etapeexemples
+Le repère est orthonormé. Pour chaque couple de droites, dire si elles sont parallèles,
+perpendiculaires, ou ni l'un ni l'autre.
+\begin{questions}[label=\alph*)]
+  \item $(d_{1})$ : $2x-3y+1=0$ et $(d_{2})$ : $3x+2y-4=0$ ;
+  \item $(d_{1})$ : $2x-3y+1=0$ et $(d_{3})$ : $4x-6y+5=0$ ;
+  \item $(d_{4})$ : $x+5y-2=0$ et $(d_{5})$ : $y=2x+1$.
+\end{questions}
+
+\etape{À vous de jouer}
+Le repère est orthonormé. Pour chaque couple de droites, dire si elles sont parallèles,
+perpendiculaires, ou ni l'un ni l'autre.
+\begin{questions}[label=\alph*)]
+  \item $(d_{1})$ : $5x+2y-1=0$ et $(d_{2})$ : $2x-5y+3=0$ ;
+  \item $(d_{1})$ : $5x+2y-1=0$ et $(d_{3})$ : $10x+4y+7=0$ ;
+  \item $(d_{4})$ : $3x-y+2=0$ et $(d_{5})$ : $y=x-4$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 34 à 37}
+
+\partiecours{Projeté orthogonal d'un point sur une droite}
+
+\begin{proprietebox}[Propriété 12 --- Coordonnées du projeté orthogonal]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Le projeté orthogonal $H$ d'un point $M$ sur une droite $(d)$ (définition 5) est le point
+d'intersection de $(d)$ et de la perpendiculaire $(\Delta)$ à $(d)$ qui passe par $M$.
+\begin{itemize}
+  \item Un vecteur \textbf{directeur} de $(d)$ est un vecteur \textbf{normal} à
+        $(\Delta)$ : on trouve ainsi une équation de $(\Delta)$ (méthode 14).
+  \item Les coordonnées de $H$ sont la solution du \textbf{système} formé par les
+        équations de $(d)$ et de $(\Delta)$.
+  \item La distance $MH$ est la \textbf{distance du point $M$ à la droite $(d)$} : c'est la
+        plus courte distance de $M$ à un point de $(d)$.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.6]
+  \draw[fig] (-0.5,-0.25) -- (5,2.5) node[right,font=\footnotesize]{$(d)$};
+  \draw[aide] (1.45,3.6) -- (2.75,1.0);
+  \node[font=\footnotesize,left] at (1.5,3.5) {$(\Delta)$};
+  \draw[black!60] (2.87,1.43) -- (2.74,1.70) -- (2.47,1.57);
+  \pt{1.9,2.7}{right}{M} \pt{2.6,1.3}{below right}{H}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{remarquebox}[Rappel --- Système de deux équations à deux inconnues]
+Le point d'intersection de deux droites sécantes a des coordonnées $(x\,;y)$ qui vérifient
+les deux équations à la fois : le couple $(x\,;y)$ est l'unique solution du système
+\[
+  \left\{\begin{array}{l}
+  2x+y-4=0\\
+  -x+2y-3=0
+  \end{array}\right.
+  \qquad\text{(par exemple).}
+\]
+On le résout de deux façons :
+\begin{itemize}
+  \item par \textbf{substitution} : on isole une inconnue dans une équation, puis on la
+        remplace dans l'autre ;
+  \item par \textbf{combinaison} : on ajoute les deux équations, multipliées au besoin par
+        des nombres bien choisis, pour faire disparaître une inconnue.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 16 --- Trouver le projeté orthogonal d'un point sur une droite]
+Équation de la perpendiculaire, puis intersection des deux droites par un système.
+\etapeexemples
+Le repère est orthonormé. On considère la droite $(d)$ d'équation $2x+y-4=0$ et le point
+$M(5\,;4)$.
+\begin{questions}[label=\alph*)]
+  \item Trouver une équation cartésienne de la perpendiculaire $(\Delta)$ à $(d)$ qui
+        passe par $M$.
+  \item Calculer les coordonnées du projeté orthogonal $H$ de $M$ sur $(d)$.
+  \item En déduire la distance du point $M$ à la droite $(d)$.
+  \item On considère les points $A(0\,;1)$, $B(4\,;3)$ et $C(1\,;4)$. Calculer les
+        coordonnées du projeté orthogonal $K$ de $C$ sur la droite $(AB)$.
+\end{questions}
+
+\etape{À vous de jouer}
+Le repère est orthonormé. On considère la droite $(d)$ d'équation $3x-y-2=0$ et le point
+$M(-2\,;2)$.
+\begin{questions}[label=\alph*)]
+  \item Trouver une équation cartésienne de la perpendiculaire $(\Delta)$ à $(d)$ qui
+        passe par $M$.
+  \item Calculer les coordonnées du projeté orthogonal $H$ de $M$ sur $(d)$.
+  \item En déduire la distance du point $M$ à la droite $(d)$.
+  \item On considère les points $E(1\,;0)$, $F(5\,;2)$ et $G(2\,;3)$. Calculer les
+        coordonnées du projeté orthogonal $K$ de $G$ sur la droite $(EF)$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 38 à 40}
+
+\partiecours{Calcul d'un angle}
+
+\begin{proprietebox}[Propriété 13 --- Cosinus d'un angle]
+Pour deux vecteurs non nuls $\vec{u}$ et $\vec{v}$, d'angle $\alpha$, la définition 4 donne
+\[
+  \cos(\alpha)=\frac{\vec{u}\cdot\vec{v}}{\norme{\vec{u}}\times\norme{\vec{v}}}.
+\]
+On calcule le produit scalaire autrement (coordonnées, normes) et on en déduit le
+cosinus ; l'angle, entre $0^{\circ}$ et $180^{\circ}$, se lit dans le tableau des valeurs
+remarquables ou s'obtient par la touche $\cos^{-1}$ de la calculatrice, en mode degré.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 17 --- Calculer un angle avec le produit scalaire]
+\etapeexemples
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Calculer la valeur exacte de l'angle $\alpha$ des vecteurs $\vec{u}\coord{3}{1}$ et
+        $\vec{v}\coord{1}{2}$.
+  \item On considère les points $A(1\,;1)$, $B(5\,;1)$ et $C(2\,;4)$. Calculer l'angle
+        $\widehat{BAC}$, au dixième de degré.
+  \item Dans le triangle $EFG$, $EF=5$, $EG=8$ et $FG=7$. Calculer l'angle $\widehat{FEG}$.
+\end{questions}
+
+\etape{À vous de jouer}
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item Calculer la valeur exacte de l'angle $\alpha$ des vecteurs $\vec{u}\coord{3}{1}$ et
+        $\vec{v}\coord{-1}{-2}$.
+  \item On considère les points $E(0\,;1)$, $F(3\,;1)$ et $G(1\,;3)$. Calculer l'angle
+        $\widehat{FEG}$, au dixième de degré.
+  \item Dans le triangle $KLM$, $KL=3$, $KM=5$ et $LM=7$. Calculer l'angle $\widehat{LKM}$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 41 à 43}
+
+\partiecours{Théorème d'Al-Kashi}
+
+\begin{proprietebox}[Théorème 6 --- Théorème d'Al-Kashi]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Dans un triangle $ABC$, quand on connaît deux côtés et l'angle entre eux, on calcule le
+troisième côté :
+\[
+  BC^{2}=AB^{2}+AC^{2}-2\times AB\times AC\times\cos\big(\widehat{BAC}\big).
+\]
+C'est le théorème de Pythagore « corrigé » : si l'angle en $A$ est droit,
+$\cos(90^{\circ})=0$ et on retrouve $BC^{2}=AB^{2}+AC^{2}$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.6]
+  \draw[fig] (0,0) -- (5,0) -- (1.5,2.6) -- cycle;
+  \draw (0.7,0) arc (0:60:0.7);
+  \pt{0,0}{below left}{A} \pt{5,0}{below right}{B} \pt{1.5,2.6}{above}{C}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\demo{avec la relation de Chasles et l'identité remarquable (propriété 9) :}
+\begin{calculs}
+BC^{2} &= \norme{\vect{AC}-\vect{AB}}^{2} &\qquad& \rem{$\vect{BC}=\vect{BA}+\vect{AC}=\vect{AC}-\vect{AB}$}\\
+BC^{2} &= AC^{2}-2\,\vect{AB}\cdot\vect{AC}+AB^{2} && \rem{identité remarquable}\\
+BC^{2} &= AB^{2}+AC^{2}-2\times AB\times AC\times\cos\big(\widehat{BAC}\big) && \rem{définition 4}
+\end{calculs}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 18 --- Calculer une longueur avec le théorème d'Al-Kashi]
+On repère les deux côtés connus et l'angle compris entre eux ; le côté calculé est celui
+qui fait face à cet angle.
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Dans le triangle $ABC$, $AB=5$, $AC=8$ et $\widehat{BAC}=60^{\circ}$. Calculer $BC$.
+  \item Deux voiliers quittent le même port. À midi, l'un est à $6$~km du port, l'autre à
+        $10$~km, et leurs routes font un angle de $120^{\circ}$. Calculer la distance qui
+        sépare les deux voiliers.
+  \item Dans le triangle $DEF$, $DE=4$, $DF=3\sqrt{2}$ et $\widehat{EDF}=45^{\circ}$. Calculer
+        la valeur exacte de $EF$.
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*),beginpenalty=10000]
+  \item Dans le triangle $KLM$, $KL=8$, $KM=15$ et $\widehat{LKM}=60^{\circ}$. Calculer $LM$.
+  \item Deux randonneurs partent du même refuge. Une heure plus tard, l'un est à $3$~km du
+        refuge, l'autre à $5$~km, et leurs chemins font un angle de $120^{\circ}$.
+        Calculer la distance qui sépare les deux randonneurs.
+  \item Dans le triangle $RST$, $RS=2\sqrt{2}$, $RT=5$ et $\widehat{SRT}=45^{\circ}$. Calculer
+        la valeur exacte de $ST$.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 44 à 47}
+
+\partiecours{Ensemble des points \texorpdfstring{$M$ tels que $\vect{MA}\cdot\vect{MB}=0$}{M tels que MA.MB = 0}}
+
+\begin{proprietebox}[Théorème 7 --- Cercle de diamètre {$[AB]$}]
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Soit $A$ et $B$ deux points distincts. L'ensemble des points $M$ tels que
+$\vect{MA}\cdot\vect{MB}=0$ est le \textbf{cercle de diamètre $[AB]$}.
+
+\smallskip
+Pour $M$ distinct de $A$ et de $B$, cela veut dire : le triangle $AMB$ est rectangle en
+$M$ si, et seulement si, $M$ est sur le cercle de diamètre $[AB]$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[scale=0.55]
+  \draw[coulCourbe,line width=1pt] (0,0) circle (2);
+  \draw[fig] (-2,0) -- (1.2,1.6) -- (2,0);
+  \draw[aide] (-2,0) -- (2,0);
+  \draw[black!60] (0.93,1.47) -- (1.08,1.2) -- (1.35,1.33);
+  \pt{-2,0}{left}{A} \pt{2,0}{right}{B} \pt{0,0}{below}{I} \pt{1.2,1.6}{above right}{M}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\demo{avec le milieu $I$ de $[AB]$ : $\vect{IB}=-\vect{IA}$, et $IA=\frac{AB}{2}$.}
+\begin{calculs}
+\vect{MA}\cdot\vect{MB} &= \big(\vect{MI}+\vect{IA}\big)\cdot\big(\vect{MI}+\vect{IB}\big) &\qquad& \rem{relation de Chasles}\\
+\vect{MA}\cdot\vect{MB} &= \big(\vect{MI}+\vect{IA}\big)\cdot\big(\vect{MI}-\vect{IA}\big) && \rem{$\vect{IB}=-\vect{IA}$}\\
+\vect{MA}\cdot\vect{MB} &= MI^{2}-IA^{2} && \rem{identité remarquable (propriété 9)}
+\end{calculs}
+Donc $\vect{MA}\cdot\vect{MB}=0$ quand $MI^{2}=IA^{2}$, c'est-à-dire $MI=IA$ (des
+distances sont positives) : $M$ est sur le cercle de centre $I$ et de rayon $IA$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 19 --- Trouver un ensemble de points avec le produit scalaire]
+On traduit la condition par le produit scalaire, puis on reconnaît un cercle
+(théorème 7) ou une droite (théorème 5).
+\etapeexemples
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item On considère les points $A(-1\,;2)$ et $B(3\,;0)$. Trouver une équation de
+        l'ensemble $(\mathcal{C})$ des points $M$ tels que $\vect{MA}\cdot\vect{MB}=0$.
+  \item Le point $C(0\,;-1)$ est-il sur $(\mathcal{C})$ ? En déduire la nature du triangle
+        $ABC$.
+  \item On considère les points $D(1\,;2)$ et $E(4\,;-1)$. Trouver l'ensemble $(\mathcal{D})$
+        des points $M$ tels que $\vect{DE}\cdot\vect{DM}=0$, et une équation de cet ensemble.
+\end{questions}
+
+\etape{À vous de jouer}
+Le repère est orthonormé.
+\begin{questions}[label=\alph*)]
+  \item On considère les points $F(-2\,;1)$ et $G(4\,;-1)$. Trouver une équation de
+        l'ensemble $(\mathcal{C})$ des points $M$ tels que $\vect{MF}\cdot\vect{MG}=0$.
+  \item Le point $K(2\,;3)$ est-il sur $(\mathcal{C})$ ? En déduire la nature du triangle
+        $FGK$.
+  \item On considère les points $R(2\,;-1)$ et $S(0\,;3)$. Trouver l'ensemble $(\mathcal{D})$
+        des points $M$ tels que $\vect{RS}\cdot\vect{RM}=0$, et une équation de cet ensemble.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 48 à 50}
+
+\end{document}
