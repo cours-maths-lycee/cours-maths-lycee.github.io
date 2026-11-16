@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.0}
+\def\lyceeversion{1.1}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
@@ -397,6 +397,14 @@
 \titrecours{PROBABILITÉS CONDITIONNELLES}{Cours --- Première spécialité}
 
 \begin{document}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
 
 \tikzset{evt/.style={inner sep=2pt},
   proba/.style={font=\footnotesize,fill=white,inner sep=1pt},
@@ -1516,7 +1524,8 @@ expérience aléatoire (un gain, un nombre de succès\dots).
 \smallskip
 $\{X=a\}$ est l'événement \og $X$ prend la valeur $a$\fg ; sa probabilité est notée
 $P(X=a)$. De même, $\{X\ge a\}$ est l'événement \og $X$ prend une valeur supérieure ou
-égale à $a$\fg.
+égale à $a$\fg, et $\{X\le a\}$ l'événement \og $X$ prend une valeur inférieure ou égale
+à $a$\fg ; leurs probabilités sont notées $P(X\ge a)$ et $P(X\le a)$.
 \end{definitionbox}
 
 \begin{remarquebox}[Une \og variable\fg{} qui est en fait une fonction]
@@ -1864,6 +1873,187 @@ $P(X=x_{i})$ & $0{,}36$ & $0{,}48$ & $0{,}16$\\\hline
 Calculer $V(X)$, puis $\sigma(X)$ arrondi au centième.
 \reponse{$V(X)=5{,}76+0{,}48+5{,}76=12$ ; $\sigma(X)=\sqrt{12}\approx 3{,}46$.}
 \end{methodebox}
-\afaire{exercices 38 à 45}
+
+\begin{proprietebox}[Propriété 7 --- Linéarité de l'espérance]
+Soit $X$ une variable aléatoire, et $a$ et $b$ deux nombres réels. Alors
+\[
+  E(aX+b)=a\,E(X)+b.
+\]
+\end{proprietebox}
+
+\begin{remarquebox}[Pourquoi ?]
+$aX+b$ prend les valeurs $ax_{i}+b$, avec les mêmes probabilités $p_{i}$ que $X$.
+\begin{calculs}
+E(aX+b) &= p_{1}(ax_{1}+b)+\dots+p_{n}(ax_{n}+b) &\qquad& \rem{définition 9}\\
+E(aX+b) &= a(p_{1}x_{1}+\dots+p_{n}x_{n})+b(p_{1}+\dots+p_{n}) && \rem{on développe, on
+regroupe}\\
+E(aX+b) &= a\,E(X)+b && \rem{la somme des $p_{i}$ vaut $1$}
+\end{calculs}
+Multiplier tous les gains par $2$ et leur ajouter $3$\,€, c'est multiplier l'espérance
+par $2$ et lui ajouter $3$\,€ : inutile de refaire la loi.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 17 --- Utiliser la linéarité de l'espérance]
+\etapeexemples
+Un glacier vend en moyenne $24$ glaces par heure : le nombre $X$ de glaces vendues en une
+heure vérifie $E(X)=24$. Chaque glace lui rapporte $3$\,€, et il paie $20$\,€ de frais par
+heure. On note $B$ son bénéfice en une heure, en euros.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $B$ en fonction de $X$.
+  \item Calculer $E(B)$ et interpréter le résultat.
+  \item Le glacier change ses prix : chaque glace lui rapporte alors $p$ euros. Pour quelle
+    valeur de $p$ le bénéfice moyen est-il de $100$\,€ par heure ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$B=\res{3X-20}$}{$3$\,€ par glace vendue, moins les frais}
+\cas{b)}
+\begin{calculs}
+E(B) &= E(3X-20) &&\\
+E(B) &= 3E(X)-20 &\qquad& \rem{linéarité, avec $a=3$ et $b=-20$}\\
+E(B) &= 3\times 24-20 &&\\
+E(B) &= \res{52} &&
+\end{calculs}
+\explique{Le glacier gagne en moyenne $52$\,€ par heure.}{on interprète}
+\cas{c)}
+\begin{calculs}
+E(B) &= 24p-20 &\qquad& \rem{$B=pX-20$, puis linéarité}\\
+24p-20 &= 100 && \rem{bénéfice moyen voulu}\\
+24p &= 120 &&\\
+p &= \res{5} &&
+\end{calculs}
+\explique{Chaque glace doit rapporter $5$\,€.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Un camion de restauration vend en moyenne $15$ sandwichs par heure : le nombre $X$ de
+sandwichs vendus en une heure vérifie $E(X)=15$. Chaque sandwich rapporte $4$\,€, et les
+frais sont de $25$\,€ par heure. On note $B$ le bénéfice en une heure, en euros.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $B$ en fonction de $X$.
+  \item Calculer $E(B)$ et interpréter le résultat.
+  \item Chaque sandwich rapporte maintenant $p$ euros. Pour quelle valeur de $p$ le
+    bénéfice moyen est-il de $50$\,€ par heure ?
+\end{questions}
+\reponse{a)~$B=4X-25$.\; b)~$E(B)=35$, soit $35$\,€ par heure en moyenne.\; c)~$p=5$.}
+\end{methodebox}
+
+\afaire{exercices 38 à 43}
+
+\partiecours{Statistiques et probabilités}
+
+\begin{proprietebox}[Propriété 8 --- Choisir un individu au hasard dans une population]
+On choisit un individu au hasard dans une population (tous ont la même probabilité d'être
+choisis), et on note $X$ la valeur d'un caractère numérique de cet individu.
+\begin{itemize}
+  \item La probabilité d'un événement est la \textbf{proportion} des individus qui le
+    réalisent : $P(X=x_{i})$ est la fréquence $f_{i}$ de la valeur $x_{i}$.
+  \item $E(X)$ est la \textbf{moyenne} $\overline{x}$ de la série, et $\sigma(X)$ son
+    \textbf{écart-type}.
+  \item $P_{A}(B)$ est une \textbf{fréquence conditionnelle} : la proportion des individus
+    qui réalisent $B$ parmi ceux qui réalisent $A$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{remarquebox}[Pourquoi ?]
+En seconde, la moyenne d'une série se calcule avec les fréquences :
+$\overline{x}=f_{1}x_{1}+\dots+f_{n}x_{n}$. Avec $p_{i}=f_{i}$, c'est exactement la
+formule de $E(X)$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 18 --- Passer d'une série statistique à une variable aléatoire]
+\etapeexemples
+Un club de judo compte $40$ adhérents. Le tableau donne le nombre de séances suivies par
+semaine.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Nombre de séances & $1$ & $2$ & $3$\\\hline
+Effectif & $10$ & $18$ & $12$\\\hline
+\end{tabular}
+\end{center}
+On choisit un adhérent au hasard ; $X$ est son nombre de séances par semaine.
+\begin{questions}[label=\alph*)]
+  \item Donner la loi de $X$.
+  \item Calculer $P(X\ge 2)$ et l'interpréter.
+  \item Calculer $E(X)$ et l'interpréter.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Chaque probabilité est une fréquence : $\frac{10}{40}=0{,}25$ ;
+$\frac{18}{40}=0{,}45$ ; $\frac{12}{40}=0{,}3$.}{effectif divisé par $40$}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $1$ & $2$ & $3$\\\hline
+$P(X=x_{i})$ & $0{,}25$ & $0{,}45$ & $0{,}3$\\\hline
+\end{tabular}
+\end{center}
+\cas{b)}
+\begin{calculs}
+P(X\ge 2) &= 0{,}45+0{,}3 &\qquad& \rem{valeurs $2$ et $3$}\\
+P(X\ge 2) &= \res{0{,}75} &&
+\end{calculs}
+\explique{$75\,\%$ des adhérents suivent au moins deux séances par semaine.}{une
+probabilité est une proportion}
+\cas{c)}
+\begin{calculs}
+E(X) &= 0{,}25\times 1+0{,}45\times 2+0{,}3\times 3 &\qquad& \rem{somme des
+$p_{i}\,x_{i}$}\\
+E(X) &= 0{,}25+0{,}9+0{,}9 &&\\
+E(X) &= \res{2{,}05} &&
+\end{calculs}
+\explique{Les adhérents suivent en moyenne $2{,}05$ séances par semaine.}{l'espérance est
+la moyenne de la série}
+\end{correction}
+
+\etape{À vous de jouer}
+On a demandé à $50$ personnes combien de livres elles ont lus le mois dernier.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Nombre de livres & $0$ & $1$ & $2$ & $3$\\\hline
+Effectif & $10$ & $20$ & $15$ & $5$\\\hline
+\end{tabular}
+\end{center}
+On choisit une de ces personnes au hasard ; $X$ est son nombre de livres lus.
+\begin{questions}[label=\alph*)]
+  \item Donner la loi de $X$.
+  \item Calculer $P(X\ge 2)$ et l'interpréter.
+  \item Calculer $E(X)$ et l'interpréter.
+\end{questions}
+\reponse{a)~$0{,}2$ ; $0{,}4$ ; $0{,}3$ ; $0{,}1$.\; b)~$0{,}4$, soit $40\,\%$ des
+personnes qui ont lu au moins deux livres.\; c)~$E(X)=1{,}3$ livre en moyenne.}
+\end{methodebox}
+
+\begin{remarquebox}[Simuler avec Python : la moyenne d'un échantillon]
+\texttt{randint(1, 6)} renvoie un entier au hasard de $1$ à $6$. La fonction
+\texttt{gain} simule le jeu \og on gagne $3$\,€ si le dé donne $6$, on perd $1$\,€
+sinon\fg ; \texttt{moyenne(n)} joue $n$ parties et renvoie la moyenne des gains : c'est la
+moyenne d'un \textbf{échantillon} de taille $n$.
+\begin{python}
+from random import randint
+
+def gain():
+    if randint(1, 6) == 6:
+        return 3
+    else:
+        return -1
+
+def moyenne(n):
+    s = 0
+    for k in range(n):
+        s = s + gain()
+    return s / n
+\end{python}
+Ici $E(X)=\frac{1}{6}\times 3+\frac{5}{6}\times(-1)=-\frac{1}{3}\approx -0{,}33$. Quand $n$
+est grand, \texttt{moyenne(n)} est proche de $-0{,}33$ : on estime ainsi une espérance, ou
+la moyenne d'une grande population, par la moyenne d'un échantillon.
+\end{remarquebox}
+
+\afaire{exercices 44 à 50}
 
 \end{document}

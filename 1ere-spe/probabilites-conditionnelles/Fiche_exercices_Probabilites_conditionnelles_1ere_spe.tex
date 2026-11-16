@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.0}
+\def\lyceeversion{1.1}
 \documentclass[a4paper,10pt]{article}
 \makeatletter
 \newif\iflycee@niveaux
@@ -281,6 +281,14 @@
 \makeatother
 \geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
 \setlength{\espaceexo}{5pt}
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
 
 \tikzset{evt/.style={inner sep=2pt},
   proba/.style={font=\footnotesize,fill=white,inner sep=1pt},
@@ -900,6 +908,118 @@ probabilités $0{,}3$ ; $0{,}5$ ; $0{,}2$, où $a$ est un nombre.
   \item Exprimer $E(X)$ en fonction de $a$.
   \item On sait que $E(X)=2$. Calculer $a$.
   \item Calculer $V(X)$, puis $\sigma(X)$ arrondi au centième.
+\end{enumerate}
+
+\exo[Le bénéfice d'un photographe]
+Un photographe fait en moyenne $6$ séances photo par jour : le nombre $X$ de séances d'une
+journée vérifie $E(X)=6$. Chaque séance lui rapporte $50$\,€, et ses frais sont de
+$80$\,€ par jour. On note $B$ son bénéfice d'une journée, en euros.
+\begin{enumerate}
+  \item Exprimer $B$ en fonction de $X$.
+  \item Calculer $E(B)$ et interpréter le résultat.
+  \item Chaque séance rapporte maintenant $p$ euros. Pour quelle valeur de $p$ le
+    bénéfice moyen est-il de $250$\,€ par jour ?
+\end{enumerate}
+
+\partiefiche{Statistiques et probabilités}
+
+\exo[Des places de cinéma]
+Un cinéma a reçu $200$ commandes en ligne. Le tableau donne le nombre de places achetées
+par commande.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Nombre de places & $1$ & $2$ & $3$ & $4$\\\hline
+Effectif & $40$ & $90$ & $30$ & $40$\\\hline
+\end{tabular}
+\end{center}
+On choisit une commande au hasard ; $X$ est son nombre de places.
+\begin{enumerate}
+  \item Donner la loi de $X$.
+  \item Calculer $P(X\ge 3)$ et l'interpréter.
+  \item Décrire par une phrase l'événement $\{X\le 2\}$ et calculer sa probabilité.
+  \item Calculer $E(X)$ et l'interpréter.
+\end{enumerate}
+
+\exo[Sport et niveau]
+Le tableau donne la répartition des $400$ élèves de seconde et de première d'un lycée.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Seconde & Première & Total\\\hline
+Sport en club & $90$ & $100$ & $190$\\\hline
+Pas de sport en club & $60$ & $150$ & $210$\\\hline
+Total & $150$ & $250$ & $400$\\\hline
+\end{tabular}
+\end{center}
+On choisit un de ces élèves au hasard ; $S$ : \og il fait du sport en club\fg{} et $D$ :
+\og il est en seconde\fg.
+\begin{enumerate}
+  \item Calculer $P(S)$ et l'interpréter comme une proportion.
+  \item Calculer $P_{D}(S)$ et l'interpréter par une phrase commençant par \og Parmi
+    \dots\fg.
+  \item Calculer $P_{S}(D)$ (fraction irréductible).
+  \item Les événements $S$ et $D$ sont-ils indépendants ? Justifier.
+\end{enumerate}
+
+\exo[Simuler un jeu de dé]
+La fonction \texttt{gain} simule un jeu : on lance un dé équilibré à six faces.
+\begin{python}
+from random import randint
+
+def gain():
+    de = randint(1, 6)
+    if de == 6:
+        return 4
+    elif de >= 4:
+        return 1
+    else:
+        return -2
+\end{python}
+\begin{enumerate}
+  \item On note $X$ le gain renvoyé par \texttt{gain()}. Donner la loi de $X$.
+  \item Calculer $E(X)$. Le jeu est-il équitable ?
+  \item La fonction \texttt{esperance} doit renvoyer l'espérance d'une variable aléatoire
+    dont les valeurs et les probabilités sont données par deux listes. Recopier et
+    compléter la ligne 4.
+\begin{python}
+def esperance(valeurs, probas):
+    e = 0
+    for i in range(len(valeurs)):
+        e = e + ...
+    return e
+\end{python}
+  \item Quel appel de \texttt{esperance} permet de vérifier la question 2 ?
+\end{enumerate}
+
+\exo[La moyenne d'un échantillon]
+\texttt{random()} renvoie un nombre au hasard entre $0$ et $1$ ; la condition
+\texttt{random() < 0.3} est vraie avec la probabilité $0{,}3$.
+\begin{python}
+from random import random
+
+def tirage():
+    if random() < 0.3:
+        return 10
+    else:
+        return 0
+\end{python}
+\begin{enumerate}
+  \item On note $X$ la valeur renvoyée par \texttt{tirage()}. Donner la loi de $X$ et
+    calculer $E(X)$.
+  \item Recopier et compléter la fonction \texttt{moyenne}, qui doit renvoyer la moyenne
+    d'un échantillon de $n$ valeurs de \texttt{tirage()}.
+\begin{python}
+def moyenne(n):
+    s = 0
+    for k in range(n):
+        s = ...
+    return ...
+\end{python}
+  \item On obtient \texttt{moyenne(10)} $\to$ \texttt{4.0}, \texttt{moyenne(1000)} $\to$
+    \texttt{2.97} et \texttt{moyenne(100000)} $\to$ \texttt{3.0042}. Que constate-t-on ?
 \end{enumerate}
 
 \partiefichesansnum{Exercices type bac}
