@@ -1,0 +1,638 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newcommand{\e}{\mathrm{e}}
+
+\begin{document}
+\titrefiche{1\textsuperscript{re} spécialité --- Fonction exponentielle}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Définition, relation fonctionnelle, notation $\e^{x}$}
+
+\exo[Écrire sous la forme $\e^{n}$]
+Écrire chaque nombre sous la forme $\e^{n}$, où $n$ est un entier relatif.
+\begin{enumerate}[label=\alph*)]
+  \item $A=\e^{3}\times\e^{6}$
+  \item $B=\e^{2}\times\e^{-5}$
+  \item $C=\dfrac{\e^{9}}{\e^{4}}$
+  \item $D=\dfrac{\e^{-1}}{\e^{-6}}$
+  \item $E=\left(\e^{4}\right)^{3}$
+  \item $F=\dfrac{1}{\e^{-7}}$
+  \item $G=\left(\e^{-2}\right)^{4}\times\e^{5}$
+\end{enumerate}
+
+\exo[Simplifier une expression]
+Pour tout nombre réel $x$, écrire chaque expression sous la forme $\e^{\dots}$.
+\begin{enumerate}[label=\alph*)]
+  \item $A=\e^{2x}\times\e^{x+3}$
+  \item $B=\dfrac{\e^{4x-1}}{\e^{x+2}}$
+  \item $C=\left(\e^{x}\right)^{3}\times\e^{-2x}$
+  \item $D=\dfrac{\e^{x+5}}{\e^{3x-1}}$
+  \item $E=\left(\e^{-x}\right)^{2}\times\e^{3x}$
+  \item $F=\dfrac{\e^{3x}}{\e^{x}\times\e^{2x-4}}$
+\end{enumerate}
+
+\exo[Développer]
+Pour tout nombre réel $x$, développer et simplifier chaque expression.
+\begin{enumerate}[label=\alph*)]
+  \item $A=\left(\e^{x}+1\right)^{2}$
+  \item $B=\left(\e^{x}-3\right)^{2}$
+  \item $C=\left(\e^{x}+2\right)\left(\e^{x}-2\right)$
+  \item $D=\e^{x}\left(\e^{x}+\e^{-x}\right)$
+  \item $E=\left(\e^{x}+\e^{-x}\right)^{2}$
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Pour chaque égalité, dire si elle est vraie pour tout nombre réel $x$, et le justifier
+par une phrase qui cite la règle utilisée (ou un contre-exemple).
+\begin{enumerate}[label=\alph*)]
+  \item $\e^{2}\times\e^{3}=\e^{6}$
+  \item $\e^{-x}=-\e^{x}$
+  \item $\left(\e^{x}\right)^{2}=\e^{2x}$
+  \item $\e^{x}+\e^{x}=\e^{2x}$
+  \item $\e^{0}=0$
+  \item $\e^{x}\times\e^{-x}=1$
+\end{enumerate}
+
+\exo[Une expression constante]
+Pour tout nombre réel $x$, on pose
+\[
+  f(x)=\left(\e^{x}+\e^{-x}\right)^{2}-\left(\e^{x}-\e^{-x}\right)^{2}.
+\]
+\begin{enumerate}
+  \item Calculer $f(0)$ et $f(1)$ à la calculatrice.
+  \item Développer $\left(\e^{x}+\e^{-x}\right)^{2}$ et
+        $\left(\e^{x}-\e^{-x}\right)^{2}$.
+  \item En déduire que $f(x)$ ne dépend pas de $x$.
+\end{enumerate}
+
+\partiefiche{Équations et inéquations avec des exponentielles}
+
+\exo[Résoudre une équation]
+Résoudre dans $\R$ chaque équation.
+\begin{enumerate}[label=\alph*)]
+  \item $\e^{3x+1}=\e^{x+7}$
+  \item $\e^{5x-10}=1$
+  \item $\e^{2x+3}=\e^{1-x}$
+  \item $\e^{x}=\e$
+  \item $\e^{4-x}=-2$
+\end{enumerate}
+
+\exo[Équations et second degré]
+Résoudre dans $\R$ chaque équation.
+\begin{enumerate}[label=\alph*)]
+  \item $\e^{x^{2}}=\e^{2x+8}$
+  \item $\e^{x^{2}-5x}=1$
+  \item $\e^{x^{2}+1}=\e^{x}$
+  \item $\e^{2x}\times\e^{x^{2}}=\e^{3}$
+\end{enumerate}
+
+\exo[Résoudre une inéquation]
+Résoudre dans $\R$ chaque inéquation.
+\begin{enumerate}[label=\alph*)]
+  \item $\e^{2x+5}\le\e^{x+8}$
+  \item $\e^{3-x}>1$
+  \item $\e^{4x}\ge\e^{x-6}$
+  \item $\e^{x^{2}}<\e^{x+2}$
+  \item $\e^{x^{2}}\ge\e^{4}$
+\end{enumerate}
+
+\exo[Produit par une exponentielle]
+Une exponentielle n'est jamais nulle et toujours strictement positive. En s'en servant,
+résoudre dans $\R$ :
+\begin{enumerate}[label=\alph*)]
+  \item $(x-3)\,\e^{x}=0$
+  \item $(2x+1)\,\e^{x}>0$
+  \item $\left(x^{2}-4\right)\e^{-x}\le 0$
+\end{enumerate}
+
+\exo[Changement de variable]
+On veut résoudre dans $\R$ l'équation $\e^{2x}+2\e^{x}-3=0$. On pose $X=\e^{x}$.
+\begin{enumerate}
+  \item Justifier que $\e^{2x}=X^{2}$.
+  \item Résoudre l'équation $X^{2}+2X-3=0$.
+  \item En déduire les solutions de l'équation de départ.
+\end{enumerate}
+
+\partiefiche{Étude de la fonction exponentielle}
+
+\exo[Dériver une fonction qui contient $\e^{x}$]
+Calculer la dérivée de chaque fonction ; factoriser par $\e^{x}$ quand c'est possible.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=4\e^{x}+x^{2}$, sur $\R$
+  \item $g(x)=(x+3)\,\e^{x}$, sur $\R$
+  \item $h(x)=(3-x)\,\e^{x}$, sur $\R$
+  \item $k(x)=\dfrac{\e^{x}}{x}$, sur $\intoo{0}{+\infty}$
+  \item $m(x)=x^{2}\e^{x}$, sur $\R$
+\end{enumerate}
+
+\exo[Tangentes à la courbe de l'exponentielle]
+On note $\mathcal{C}$ la courbe de la fonction exponentielle.
+\begin{enumerate}
+  \item Pour chaque nombre $a=-1$, $a=0$ et $a=2$, donner l'équation réduite de la tangente
+        à $\mathcal{C}$ au point d'abscisse $a$.
+  \item Pour chacune, calculer l'abscisse du point où elle coupe l'axe des abscisses.
+  \item Écrire, par une phrase, la régularité observée.
+\end{enumerate}
+
+\exo[Courbe et tangente]
+Pour tout nombre réel $x$, on pose $\varphi(x)=\e^{x}-x-1$.
+\begin{enumerate}
+  \item Calculer $\varphi'(x)$.
+  \item Résoudre l'inéquation $\e^{x}-1\ge 0$ (écrire $1=\e^{0}$).
+  \item Dresser le tableau de variations de $\varphi$ et donner son minimum.
+  \item En déduire que, pour tout nombre réel $x$, $\e^{x}\ge x+1$.
+  \item Interpréter ce résultat avec la courbe de l'exponentielle et sa tangente au
+        point d'abscisse $0$.
+\end{enumerate}
+
+\exo[Comparer sans calculatrice]
+\begin{enumerate}
+  \item Pour chaque couple, ranger les deux nombres dans l'ordre croissant, en citant la
+        propriété utilisée : $\e^{0{,}3}$ et $\e^{0{,}5}$ ; $\e^{-2}$ et $\e^{-3}$ ;
+        $\e^{-0{,}1}$ et $1$.
+  \item Pour $x\in\intff{-1}{2}$, encadrer $\e^{x}$.
+  \item Quel est le signe de $\e^{x}-1$ selon les valeurs de $x$ ?
+\end{enumerate}
+
+\partiefiche{Dérivée de $\e^{u}$}
+
+\exo[Dériver $\e^{u}$]
+Calculer la dérivée de chaque fonction, définie sur $\R$.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\e^{3x}$
+  \item $g(x)=\e^{-x}$
+  \item $h(x)=\e^{2x-5}$
+  \item $k(t)=50\,\e^{-0{,}2t}$
+  \item $m(x)=\e^{x^{2}+1}$
+  \item $p(x)=\e^{1-x^{2}}$
+\end{enumerate}
+
+\exo[Produit et exponentielle]
+Calculer la dérivée de chaque fonction, définie sur $\R$, et la factoriser.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x\,\e^{3x}$
+  \item $g(x)=(2x+1)\,\e^{-x}$
+  \item $h(x)=(x+1)\,\e^{2x}$
+  \item $k(x)=x^{2}\e^{-x}$
+\end{enumerate}
+
+\exo[Une dérivée proportionnelle à la fonction]
+\begin{enumerate}
+  \item Pour tout nombre réel $x$, on pose $f(x)=3\,\e^{-2x}$. Montrer que
+        $f'(x)+2f(x)=0$.
+  \item On pose $g(x)=\e^{4x+1}$. Montrer que $g'(x)=4g(x)$.
+  \item Trouver une fonction $h$ telle que $h'(x)=5h(x)$ pour tout nombre réel $x$, et
+        $h(0)=2$.
+\end{enumerate}
+
+\exo[Une courbe en cloche]
+On considère la fonction $f$ définie sur $\intff{-3}{3}$ par $f(x)=\e^{-0{,}25x^{2}}$.
+\begin{enumerate}
+  \item Calculer $f'(x)$.
+  \item Étudier le signe de $f'(x)$, puis dresser le tableau de variations de $f$.
+  \item Quel est le maximum de $f$ ? Pour quelle valeur de $x$ est-il atteint ?
+  \item Compléter un tableau de valeurs de $f$ sur $\intff{-3}{3}$ (au centième, pas de
+        $1$), puis tracer la courbe de $f$ (unité : $2$~cm).
+\end{enumerate}
+
+\partiefiche{Étude de fonctions avec des exponentielles}
+
+\exo[Étudier une fonction]
+On considère la fonction $f$ définie sur $\intff{-2}{2}$ par $f(x)=(2x-3)\,\e^{x}$.
+\begin{enumerate}
+  \item Calculer $f'(x)$.
+  \item Étudier le signe de $f'(x)$.
+  \item Dresser le tableau de variations de $f$ et donner son minimum.
+  \item Donner une équation de la tangente $T$ à $\Cf$ au point d'abscisse $0$.
+  \item Compléter un tableau de valeurs (au dixième, pas de $1$), puis tracer $T$ et
+        $\Cf$.
+\end{enumerate}
+
+\exo[Avec $\e^{-x}$]
+On considère la fonction $f$ définie sur $\intff{-1}{4}$ par $f(x)=(x+1)\,\e^{-x}$.
+\begin{enumerate}
+  \item Montrer que $f'(x)=-x\,\e^{-x}$.
+  \item Étudier le signe de $f'(x)$, puis dresser le tableau de variations de $f$.
+  \item L'affirmation « pour tout $x$ de $\intff{-1}{4}$, $f(x)\le 1$ » est-elle vraie ?
+        Justifier.
+  \item Donner l'équation réduite de la tangente à $\Cf$ au point d'abscisse $1$.
+\end{enumerate}
+
+\exo[Un quotient]
+On considère la fonction $f$ définie sur $\R$ par $f(x)=\dfrac{\e^{x}}{x^{2}+1}$.
+\begin{enumerate}
+  \item Montrer que $f'(x)=\dfrac{(x-1)^{2}\,\e^{x}}{\left(x^{2}+1\right)^{2}}$.
+  \item En déduire le sens de variation de $f$.
+  \item Donner une équation de la tangente à $\Cf$ au point d'abscisse $1$.
+  \item Un élève affirme : « $f'(1)=0$, donc $f$ a un extremum en $1$. » Répondre par une
+        phrase.
+\end{enumerate}
+
+\exo[Tangentes horizontales]
+On considère la fonction $f$ définie sur $\R$ par $f(x)=\left(x^{2}-3\right)\e^{x}$.
+\begin{enumerate}
+  \item Résoudre l'équation $f(x)=0$.
+  \item Montrer que $f'(x)=(x+3)(x-1)\,\e^{x}$.
+  \item Donner les coordonnées des points de $\Cf$ où la tangente est horizontale.
+  \item Dresser le tableau de variations de $f$ et donner ses extremums locaux.
+\end{enumerate}
+
+\partiefiche{Croissance et décroissance exponentielles}
+
+\exo[Tracer $\e^{kt}$ et $\e^{-kt}$]
+On considère les fonctions $f$ et $g$ définies sur $\intff{-4}{4}$ par
+$f(t)=\e^{0{,}3t}$ et $g(t)=\e^{-0{,}3t}$.
+\begin{enumerate}
+  \item Donner le sens de variation de $f$ et celui de $g$.
+  \item Compléter un tableau de valeurs de $f$ et de $g$ (au dixième, pas de $1$).
+  \item Tracer les deux courbes dans un même repère (unité : $1$~cm).
+  \item Laquelle modélise une croissance exponentielle ? une décroissance
+        exponentielle ? Répondre par une phrase.
+\end{enumerate}
+
+\exo[Reconnaître une suite géométrique]
+Pour chaque suite $(u_{n})$, $(v_{n})$, $(w_{n})$, montrer qu'elle est géométrique en
+exprimant le terme suivant en fonction du terme courant ; donner sa raison, son premier
+terme et son sens de variation.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{n}=\e^{3n}$
+  \item $v_{n}=4\,\e^{-0{,}5n}$
+  \item $w_{n}=\e^{2n+1}$
+\end{enumerate}
+
+\exo[Élimination d'un médicament]
+Un patient prend $80$~mg d'un médicament. La quantité restant dans son organisme,
+en mg, $t$ heures plus tard, est $Q(t)=80\,\e^{-0{,}1t}$.
+\begin{enumerate}
+  \item Calculer $Q(0)$ et interpréter le résultat.
+  \item Donner le sens de variation de $Q$.
+  \item On note $u_{n}=Q(n)$. Montrer que $(u_{n})$ est géométrique ; donner sa raison,
+        puis son arrondi au millième.
+  \item De quel pourcentage la quantité baisse-t-elle chaque heure ?
+  \item À l'aide d'un tableau de valeurs de la calculatrice, déterminer au bout de
+        combien d'heures entières il reste moins de $20$~mg.
+\end{enumerate}
+
+\exo[Du modèle discret au modèle continu]
+Une ville compte $2\,000$ habitants en 2026 ; sa population augmente de $4\,\%$ par an.
+On note $u_{n}$ la population $n$ années après 2026.
+\begin{enumerate}
+  \item Justifier que $(u_{n})$ est géométrique ; exprimer $u_{n}$ en fonction de $n$.
+  \item On cherche un modèle continu $f(t)=2\,000\,\e^{kt}$, avec $f(n)=u_{n}$ pour tout
+        entier $n$. Justifier que $\e^{k}=1{,}04$.
+  \item À l'aide d'un tableau de valeurs de la fonction exponentielle (pas de
+        $0{,}001$), donner l'arrondi de $k$ au millième.
+  \item Avec cette valeur, estimer la population au milieu de l'année 2028 ($t=2{,}5$),
+        et la comparer à $u_{2}$ et $u_{3}$.
+\end{enumerate}
+
+\partiefiche{Problèmes concrets}
+
+\exo[Bénéfice d'un atelier]
+Un atelier fabrique entre $100$ et $2\,000$ trottinettes par mois. Pour $x$ centaines de
+trottinettes, le bénéfice, en milliers d'euros, est
+\[
+  B(x)=(4x-20)\,\e^{-0{,}2x},\qquad x\in\intff{1}{20}.
+\]
+\begin{enumerate}
+  \item Calculer $B(1)$, arrondi au dixième, et interpréter le résultat.
+  \item Résoudre l'inéquation $B(x)\ge 0$ et interpréter.
+  \item Montrer que $B'(x)=(8-0{,}8x)\,\e^{-0{,}2x}$.
+  \item Dresser le tableau de variations de $B$.
+  \item Combien de trottinettes faut-il fabriquer pour un bénéfice maximal ? Que vaut-il,
+        à l'euro près ?
+\end{enumerate}
+
+\exo[Refroidissement d'un four à pain]
+Un four à pain est éteint à 22~h ; sa température, en \textdegree C, $t$ heures plus tard,
+est $T(t)=20+780\,\e^{-0{,}1t}$, pour $t\ge 0$.
+\begin{enumerate}
+  \item Quelle est la température du four quand on l'éteint ?
+  \item Calculer $T'(t)$ ; en déduire le sens de variation de $T$.
+  \item Calculer $T'(0)$ et l'interpréter (vitesse de refroidissement).
+  \item On peut nettoyer le four quand sa température est inférieure à
+        $100$~\textdegree C. Voici des valeurs de $T(t)$ arrondies au dixième.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        $t$ & $20$ & $21$ & $22$ & $23$ & $24$\\ \hline
+        $T(t)$ & $125{,}6$ & $115{,}5$ & $106{,}4$ & $98{,}2$ & $90{,}8$\\ \hline
+        \end{tabular}
+        \end{center}
+        À partir de quelle heure entière peut-on le nettoyer ? Justifier.
+\end{enumerate}
+
+\exo[Le plus grand potager]
+Un jardin est limité par les axes, la droite d'équation $x=5$ et la courbe $\Cf$ de
+$f(x)=6\,\e^{-0{,}5x}$ (unité : le mètre). On y place un potager rectangulaire $OABC$,
+avec $A$ d'abscisse $x$ sur l'axe des abscisses et $B$ sur $\Cf$.
+\begin{center}
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-1}{-1}{6}{7}
+  \gradx{1,2,3,4,5} \grady{1,2,3,4,5,6}
+  \draw[coulCourbe,line width=1.1pt,domain=0:5,samples=60]
+    plot (\x,{6*exp(-0.5*\x)});
+  \draw[coulExo,line width=0.9pt] (0,0) rectangle (1.5,2.834);
+  \draw[dashed] (5,0)--(5,0.49);
+  \node[font=\footnotesize,below] at (1.5,-0.3) {$A$};
+  \node[font=\footnotesize,above right] at (1.5,2.834) {$B$};
+  \node[font=\footnotesize,left] at (-0.3,2.834) {$C$};
+  \node[coulCourbe,font=\footnotesize,right] at (3,1.6) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Justifier que l'aire du potager, en m$^{2}$, est $g(x)=6x\,\e^{-0{,}5x}$, pour
+        $x\in\intff{0}{5}$.
+  \item Montrer que $g'(x)=(6-3x)\,\e^{-0{,}5x}$.
+  \item Dresser le tableau de variations de $g$.
+  \item Où placer $A$ pour que le potager soit le plus grand ? Donner son aire, au
+        dm$^{2}$ près.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
