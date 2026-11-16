@@ -19,7 +19,8 @@
    corrigé détaillé, rien n'est écrit à part. Pour chaque question (\cas), les lignes
    qui portent un résultat (\res), sans les explications en gris, sauf celles qui
    portent elles-mêmes un \res (conclusion écrite seulement en gris) ; sans \res, la
-   dernière ligne de la question ; les figures restent. \res du cours : classe resc,
+   dernière ligne de la question ; les figures et les tableaux restent, en entier
+   (pas de \res dans les cases d'un tableau : % lint-ok). \res du cours : classe resc,
    sans couleur. À vous de jouer sans \res : les réponses courtes du \reponse
    (div.succinct-avj, tex2html.py).
    Styles : tex2html.css (html.presentateur). Les boutons ne sont créés qu'ici :
@@ -172,9 +173,10 @@
         // sans \res : la dernière ligne, sauf pour le chapeau qui précède les questions
         var chapeau = segments.length > 1 && !segment[0].matches('p.cas');
         if (garde.length === avant && !chapeau) derniereLigne(garde, segment);
+        // figures et tableaux (de valeurs, de termes) restent, en entier
         segment.forEach(function (el) {
-          [].forEach.call(el.querySelectorAll('img.fig'), function (f) { garde.push(f); });
-          if (el.matches('img.fig')) garde.push(el);
+          [].forEach.call(el.querySelectorAll('img.fig, table'), function (f) { garde.push(f); });
+          if (el.matches('img.fig, table')) garde.push(el);
         });
       });
       cacherReste(zone, garde);
