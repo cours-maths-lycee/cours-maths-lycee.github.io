@@ -46,6 +46,32 @@
   var change = false; // partie changée sur place (Partie précédente / suivante)
   var fond = null;    // zone blanche : null, 'quadrillage' ou 'repere' (vide à chaque entrée)
 
+  /* Mesure d'audience (mesure.js, Umami) : adoption du mode par les enseignants.
+     « mode présentateur » à l'entrée : page, type (cours, exercices), largeur, corrige ;
+     « fin présentateur » en quittant (ou en fermant la page) : page d'entrée, minutes,
+     corrections (volets dépliés), outils servis (A±, largeur, succinct, quadrillage,
+     repère, parties voisines, aller à l'exercice). Les volets dépliés pendant le mode ne
+     sont pas comptés en « ouverture corrigé » (mesure.js), qui mesure le travail des élèves. */
+  var seance = null;
+  function mesurer(nom, donnees) { if (window.umTrack) window.umTrack(nom, donnees); }
+  function noter(outil) { if (seance) seance.outils[outil] = true; }
+  function finSeance() {
+    if (!seance) return;
+    mesurer('fin présentateur', {
+      page: seance.page,
+      minutes: Math.round((Date.now() - seance.debut) / 60000),
+      corrections: seance.corrections,
+      outils: Object.keys(seance.outils).sort().join(', ') || 'aucun'
+    });
+    seance = null;
+  }
+  window.addEventListener('pagehide', finSeance);
+  document.addEventListener('toggle', function (e) {
+    if (seance && e.target.open && e.target.tagName === 'DETAILS') {
+      seance.corrections++;
+    }
+  }, true);
+
   function borne(z) {
     return typeof z === 'number' && isFinite(z) ? Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) : 1;
   }
@@ -184,6 +210,7 @@
   }
 
   function basculerSuccinct() {
+    noter('succinct');
     garderPassage(function () {
       reglage.succinct = !reglage.succinct;
       racine.classList.toggle('presentateur-succinct', reglage.succinct);
@@ -204,6 +231,7 @@
   }
 
   function basculer() {
+    noter('largeur');
     garderPassage(function () {
       reglage.demi = !reglage.demi;
       reglage.partage = 0.5;   // changer de largeur remet le trait au milieu
@@ -217,6 +245,7 @@
   }
 
   function zoomer(sens) {
+    noter('taille');
     garderPassage(function () {
       reglage.zoom[mode()] = borne(Math.round((reglage.zoom[mode()] + sens * PAS) * 10) / 10);
       agrandir();
@@ -303,12 +332,14 @@
   }
 
   function changerFond(nouveau) {
+    noter(nouveau === 'repere' ? 'repère' : nouveau);
     fond = fond === nouveau ? null : nouveau;
     dessiner();
     libeller();
   }
 
   function changerCarreau(sens) {
+    noter('carreaux');
     reglage.carreau = borneCarreau(reglage.carreau + sens * CARREAU_PAS);
     dessiner();
     libeller();
@@ -332,6 +363,9 @@
     preparerSuccinct();
     racine.classList.toggle('presentateur-succinct', reglage.succinct);
     racine.setAttribute('data-theme', 'light');   // noir sur blanc, comme la feuille
+    seance = {page: location.pathname.replace(/index\.html$/, ''), debut: Date.now(), corrections: 0, outils: {}};
+    mesurer('mode présentateur', {page: seance.page, type: pageExercices ? 'exercices' : 'cours',
+      largeur: reglage.demi ? 'demi' : 'pleine', corrige: reglage.succinct ? 'succinct' : 'détaillé'});
     agrandir();
     window.scrollTo(0, 0);
     if (racine.requestFullscreen) {
@@ -341,6 +375,7 @@
 
   function quitter() {
     if (!avant) return;
+    finSeance();
     if (change) { location.reload(); return; }   // partie changée sur place : la page entière, avec ses scripts
     racine.classList.remove('presentateur', 'presentateur-demi', 'presentateur-succinct');
     if (avant.theme === null) racine.removeAttribute('data-theme');
@@ -415,6 +450,7 @@
       var cible = champExo.value && document.getElementById('exercice-' + champExo.value);
       champExo.classList.toggle('erreur', !cible);
       if (!cible) return;
+      noter('aller à l’exercice');
       cible.scrollIntoView({block: 'start', behavior: 'instant'});
       window.scrollBy({top: -30, behavior: 'instant'});
       champExo.blur();
@@ -433,6 +469,7 @@
   function changerPartie(adresse) {
     if (!adresse || enChargement) return;
     enChargement = true;
+    noter('parties voisines');
     boutons.classList.remove('ouvert');
     fetch(adresse).then(function (r) {
       if (!r.ok) throw new Error(r.status);

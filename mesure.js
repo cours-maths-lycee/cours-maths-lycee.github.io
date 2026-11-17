@@ -21,6 +21,8 @@
      (envoyés par se-tester.js)
    - diaporama : page, progression (25, 50, 75, 100 %)
    - merci : page ; suggestion envoyée : niveau (envoyé par suggestions.js)
+   - mode présentateur : page, type (cours, exercices), largeur, corrige ;
+     fin présentateur : page, minutes, corrections, outils (envoyés par presentateur.js)
    - index : volet (méthodes, thématique), entree */
 (function () {
   'use strict';
@@ -111,6 +113,7 @@
   document.addEventListener('toggle', function (e) {
     var d = e.target;
     if (!d.open || !d.classList) return;
+    if (document.documentElement.classList.contains('presentateur')) return;   // au tableau : fin présentateur
     for (var c in TYPES) if (d.classList.contains(c)) { track(TYPES[c], lieu(d)); return; }
   }, true);
 
