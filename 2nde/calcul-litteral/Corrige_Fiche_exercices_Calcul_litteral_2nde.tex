@@ -88,6 +88,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -1055,7 +1077,7 @@ multiplication à l'envers), et on ajoute $x$ si chaque terme contient $x$.}{on 
 le plus possible}
 \cas{A}
 \begin{calculs}
-A &= 48a-36b &&\justif{$12$ divise $48$ et $36$ : $48=12\times 4$ et $36=12\times 3$}\\
+A &= 48a-36b &&\justif{$48=12\times 4$ et $36=12\times 3$}\\
 A &= 12\times 4a-12\times 3b &&\\
 A &= \res{12(4a-3b)} &&\justif{$4$ et $3$ n'ont plus de diviseur commun}
 \end{calculs}
@@ -1442,11 +1464,13 @@ $-3+3=0$}
 \explique{$3x-2=0$ donne $3x=2$, soit $x=\frac23$ : la valeur interdite est
 \res{$\frac23$}.}{on ajoute $2$, puis on divise par $3$}
 \cas{C}
-\explique{$x(x+5)=0$ pour $x=0$ ou $x+5=0$, soit $x=-5$ : les valeurs interdites sont
-\res{$0$ et $-5$}.}{un facteur nul suffit}
+\explique{On résout $x(x+5)=0$.}{un facteur nul suffit}
+\eqproduit{x &= 0}{x+5 &= 0\\ x &= -5}
+\explique{Les valeurs interdites sont \res{$0$ et $-5$}.}{}
 \cas{D}
-\explique{$(3x+2)(2-x)=0$ pour $3x+2=0$, soit $x=-\frac23$, ou $2-x=0$, soit $x=2$ : les
-valeurs interdites sont \res{$-\frac23$ et $2$}.}{une valeur par facteur}
+\explique{On résout $(3x+2)(2-x)=0$.}{une valeur par facteur}
+\eqproduit{3x+2 &= 0\\ 3x &= -2\\ x &= -\dfrac23}{2-x &= 0\\ 2 &= x}
+\explique{Les valeurs interdites sont \res{$-\frac23$ et $2$}.}{}
 \cas{E}
 \explique{$x^{2}-16=(x+4)(x-4)$, nul pour $x=-4$ ou $x=4$ : les valeurs interdites sont
 \res{$-4$ et $4$}.}{troisième identité ; $4^{2}$ et $(-4)^{2}$ valent $16$}
@@ -1573,7 +1597,7 @@ $\res{\dfrac{1}{x-2}-\dfrac{1}{x}=\dfrac{2}{x(x-2)}}$.}{}
 \begin{exo}[Les deux règles]
 \explique{On regroupe les $x$ d'un côté et les nombres de l'autre en ajoutant ou en
 soustrayant le même terme aux deux membres, puis on divise par le coefficient de
-$x$.}{propriété 7 et méthode 9 du cours}
+$x$.}{méthode 9 du cours}
 \cas{a)}
 \begin{calculs}
 4x+3 &= 3x+8 &&\justif{on recopie}\\
@@ -1608,7 +1632,7 @@ x &= \dfrac72 &&\justif{on divise par $2$}
 2x-9 &= 5x+12 &&\\
 -9-12 &= 5x-2x &&\\
 -21 &= 3x &&\\
-x &= -7 &&\justif{on divise par $3$ : $-21\div 3=-7$}
+x &= -7 &&\justif{on divise par $3$, et $-21\div 3=-7$}
 \end{calculs}
 \explique{$\res{S=\ens{-7}}$.}{vérification : $-14-9=-23$ et $-35+12=-23$}
 \cas{f)}
@@ -1822,7 +1846,7 @@ x &= \dfrac{16}{9} &&
 -x+24 &= -x+24 &&\justif{les deux membres sont identiques}\\
 0x &= 0 &&
 \end{calculs}
-\explique{$0x=0$ est vrai pour tout $x$ : $\res{S=\R}$.}{propriété 7 : $a=0$ et $b=0$}
+\explique{$0x=0$ est vrai pour tout $x$ : $\res{S=\R}$.}{l'égalité est toujours vraie}
 \cas{2) b)}
 \begin{calculs}
 \dfrac{x+1}{3}-\dfrac{2x-1}{4}-1 &= -\dfrac{2x+1}{12} &&\justif{chaque terme $\times 12$}\\
@@ -1831,10 +1855,10 @@ x &= \dfrac{16}{9} &&
 -2x-5 &= -2x-1 &&\\
 0x &= 4 &&\justif{on ajoute $2x$ et $5$}
 \end{calculs}
-\explique{$0x=4$ n'est jamais vrai : $\res{S=\varnothing}$.}{propriété 7 : $a=0$ et
-$b\ne 0$}
+\explique{$0x=4$ n'est jamais vrai : $\res{S=\varnothing}$.}{l'égalité n'est jamais
+vraie}
 \rem{Quand les $x$ disparaissent, on ne s'arrête pas : on lit l'égalité qui reste. Vraie
-($0=0$), tous les réels sont solutions ; fausse ($0=4$), il n'y en a aucune.}
+($0=0$), tous les nombres réels sont solutions ; fausse ($0=4$), il n'y en a aucune.}
 \end{exo}
 
 \begin{exo}[L'inconnue au dénominateur]
@@ -1910,24 +1934,32 @@ dénominateur serait à rejeter.}
 
 \begin{exo}[Produit nul]
 \explique{Un produit est nul si et seulement si l'un au moins de ses facteurs est nul : on
-écrit \og facteur $=0$\fg{} pour chaque facteur qui contient $x$.}{propriété 8 du cours}
+résout \og facteur $=0$\fg{} pour chaque facteur qui contient $x$, une colonne par
+facteur.}{propriété 7 et méthode 11 du cours}
 \cas{a)}
-\explique{$2x(3x-5)=0$ équivaut à $2x=0$ ou $3x-5=0$, soit $x=0$ ou $x=\frac53$ :
-$\res{S=\ens{0\,;\frac53}}$.}{deux facteurs : deux équations du premier degré}
+\begin{calculs}
+2x(3x-5) &= 0 &&\justif{déjà factorisé}
+\end{calculs}
+\eqproduit{2x &= 0\\ x &= 0}{3x-5 &= 0\\ 3x &= 5\\ x &= \dfrac53}
+\explique{$\res{S=\ens{0\,;\frac53}}$}{deux facteurs : deux équations du premier degré}
 \cas{b)}
-\explique{$-4x^{2}(3x-8)=0$ équivaut à $-4x^{2}=0$ ou $3x-8=0$. Or $-4x^{2}=0$ seulement
-pour $x=0$ ; et $3x-8=0$ donne $x=\frac83$ : $\res{S=\ens{0\,;\frac83}}$.}{$-4$ n'est
-jamais nul ; $x^{2}=x\times x$ est nul pour $x=0$}
+\begin{calculs}
+-4x^{2}(3x-8) &= 0 &&\justif{déjà factorisé}
+\end{calculs}
+\eqproduit{-4x^{2} &= 0\\ x^{2} &= 0\\ x &= 0}{3x-8 &= 0\\ 3x &= 8\\ x &= \dfrac83}
+\explique{$\res{S=\ens{0\,;\frac83}}$}{$x^{2}=x\times x$ n'est nul que pour $x=0$}
 \cas{c)}
 \explique{$(-2x+5)^{2}=(-2x+5)(-2x+5)$ : les deux facteurs sont les mêmes. $-2x+5=0$ donne
 $x=\frac52$ : $\res{S=\ens{\frac52}}$.}{une seule solution}
 \cas{d)}
-\explique{$x^{2}(x+2)(-4-3x)=0$ équivaut à $x^{2}=0$ ou $x+2=0$ ou $-4-3x=0$, soit $x=0$
-ou $x=-2$ ou $x=-\frac43$.}{$-4-3x=0$ donne $-3x=4$}
-\explique{$\res{S=\ens{-2\,;-\frac43\,;0}}$.}{on range les solutions dans l'ordre croissant}
+\begin{calculs}
+x^{2}(x+2)(-4-3x) &= 0 &&\justif{trois facteurs}
+\end{calculs}
+\eqproduittrois{x^{2} &= 0\\ x &= 0}{x+2 &= 0\\ x &= -2}{-4-3x &= 0\\ -3x &= 4\\ x &= -\dfrac43}
+\explique{$\res{S=\ens{-2\,;-\frac43\,;0}}$}{on range les solutions dans l'ordre croissant}
 \cas{e)}
-\explique{$x+1=0$ ou $3x-2=0$ ou $x-5=0$, soit $x=-1$ ou $x=\frac23$ ou $x=5$ :
-$\res{S=\ens{-1\,;\frac23\,;5}}$.}{trois facteurs : trois solutions}
+\eqproduittrois{x+1 &= 0\\ x &= -1}{3x-2 &= 0\\ 3x &= 2\\ x &= \dfrac23}{x-5 &= 0\\ x &= 5}
+\explique{$\res{S=\ens{-1\,;\frac23\,;5}}$}{trois facteurs : trois solutions}
 \rem{Erreur fréquente : développer un produit déjà factorisé. Avec un produit nul, la forme
 factorisée donne directement les solutions.}
 \end{exo}
@@ -1940,13 +1972,15 @@ le produit nul.}{méthode 11 du cours}
 3x^{2}-8x &= 0 &&\justif{$x$ est commun}\\
 x(3x-8) &= 0 &&
 \end{calculs}
-\explique{$x=0$ ou $3x-8=0$ : $\res{S=\ens{0\,;\frac83}}$.}{}
+\eqproduit{x &= 0}{3x-8 &= 0\\ 3x &= 8\\ x &= \dfrac83}
+\explique{$\res{S=\ens{0\,;\frac83}}$}{}
 \cas{b)}
 \begin{calculs}
 2x^{3}-5x^{2} &= 0 &&\justif{$x^{2}$ est commun : $x^{3}=x^{2}\times x$}\\
 x^{2}(2x-5) &= 0 &&
 \end{calculs}
-\explique{$x^{2}=0$ ou $2x-5=0$ : $\res{S=\ens{0\,;\frac52}}$.}{}
+\eqproduit{x^{2} &= 0\\ x &= 0}{2x-5 &= 0\\ 2x &= 5\\ x &= \dfrac52}
+\explique{$\res{S=\ens{0\,;\frac52}}$}{}
 \cas{c)}
 \begin{calculs}
 (x+3)^{2} &= (x+3)(4x-3) &&\justif{on recopie}\\
@@ -1954,7 +1988,8 @@ x^{2}(2x-5) &= 0 &&
 (x+3)\big[(x+3)-(4x-3)\big] &= 0 &&\justif{facteur commun $(x+3)$}\\
 (x+3)(-3x+6) &= 0 &&\justif{$x+3-4x+3=-3x+6$}
 \end{calculs}
-\explique{$x+3=0$ ou $-3x+6=0$, soit $x=-3$ ou $x=2$ : $\res{S=\ens{-3\,;2}}$.}{}
+\eqproduit{x+3 &= 0\\ x &= -3}{-3x+6 &= 0\\ -3x &= -6\\ x &= 2}
+\explique{$\res{S=\ens{-3\,;2}}$}{}
 \rem{Ne jamais diviser par $(x+3)$ : on obtiendrait $x+3=4x-3$, soit seulement $x=2$, et
 on perdrait la solution $-3$.}
 \cas{d)}
@@ -1963,7 +1998,8 @@ on perdrait la solution $-3$.}
 (2x-5)\big[(3x+1)-(4-x)\big] &= 0 &&\\
 (2x-5)(4x-3) &= 0 &&\justif{$3x+1-4+x=4x-3$}
 \end{calculs}
-\explique{$2x-5=0$ ou $4x-3=0$ : $\res{S=\ens{\frac34\,;\frac52}}$.}{}
+\eqproduit{2x-5 &= 0\\ 2x &= 5\\ x &= \dfrac52}{4x-3 &= 0\\ 4x &= 3\\ x &= \dfrac34}
+\explique{$\res{S=\ens{\frac34\,;\frac52}}$}{}
 \cas{e)}
 \explique{Pas de facteur commun visible : on factorise le morceau $9x^{2}-4$ avec la
 troisième identité, ce qui fait apparaître $(3x+2)$ et $(3x-2)$.}{propriété 5 : une
@@ -1974,7 +2010,8 @@ identité dans un seul morceau}
 (3x+2)\big[(3x-2)-3+x\big] &= 0 &&\justif{facteur commun $(3x+2)$}\\
 (3x+2)(4x-5) &= 0 &&
 \end{calculs}
-\explique{$3x+2=0$ ou $4x-5=0$ : $\res{S=\ens{-\frac23\,;\frac54}}$.}{}
+\eqproduit{3x+2 &= 0\\ 3x &= -2\\ x &= -\dfrac23}{4x-5 &= 0\\ 4x &= 5\\ x &= \dfrac54}
+\explique{$\res{S=\ens{-\frac23\,;\frac54}}$}{}
 \cas{f)}
 \begin{calculs}
 (3x-1)(x+2)^{2}-9(3x-1) &= 0 &&\justif{tout à gauche}\\
@@ -1982,28 +2019,29 @@ identité dans un seul morceau}
 (3x-1)\big[(x+2)-3\big]\big[(x+2)+3\big] &= 0 &&\justif{$a^{2}-b^{2}$ avec $a=x+2$ et $b=3$}\\
 (3x-1)(x-1)(x+5) &= 0 &&
 \end{calculs}
-\explique{$3x-1=0$ ou $x-1=0$ ou $x+5=0$ : $\res{S=\ens{-5\,;\frac13\,;1}}$.}{trois
-facteurs}
+\eqproduittrois{3x-1 &= 0\\ 3x &= 1\\ x &= \dfrac13}{x-1 &= 0\\ x &= 1}{x+5 &= 0\\ x &= -5}
+\explique{$\res{S=\ens{-5\,;\frac13\,;1}}$}{trois facteurs}
 \end{exo}
 
 \begin{exo}[Différence de deux carrés nulle]
 \explique{Le membre de gauche est de la forme $a^{2}-b^{2}$ : on le factorise en
-$(a-b)(a+b)$, puis on applique le produit nul.}{méthode 11 du cours, exemple d)}
+$(a-b)(a+b)$, puis on résout l'équation produit.}{méthode 11 du cours, exemple d)}
 \cas{a)}
 \begin{calculs}
 9x^{2}-(x+2)^{2} &= 0 &&\justif{$9x^{2}=(3x)^{2}$ : $a=3x$ et $b=x+2$}\\
 \big[3x-(x+2)\big]\big[3x+(x+2)\big] &= 0 &&\\
 (2x-2)(4x+2) &= 0 &&
 \end{calculs}
-\explique{$2x-2=0$ ou $4x+2=0$, soit $x=1$ ou $x=-\frac12$ :
-$\res{S=\ens{-\frac12\,;1}}$.}{}
+\eqproduit{2x-2 &= 0\\ 2x &= 2\\ x &= 1}{4x+2 &= 0\\ 4x &= -2\\ x &= -\dfrac12}
+\explique{$\res{S=\ens{-\frac12\,;1}}$}{}
 \cas{b)}
 \begin{calculs}
 (3x+1)^{2}-(x+3)^{2} &= 0 &&\justif{$a=3x+1$ et $b=x+3$}\\
 \big[(3x+1)-(x+3)\big]\big[(3x+1)+(x+3)\big] &= 0 &&\\
 (2x-2)(4x+4) &= 0 &&
 \end{calculs}
-\explique{$2x-2=0$ ou $4x+4=0$ : $\res{S=\ens{-1\,;1}}$.}{}
+\eqproduit{2x-2 &= 0\\ 2x &= 2\\ x &= 1}{4x+4 &= 0\\ 4x &= -4\\ x &= -1}
+\explique{$\res{S=\ens{-1\,;1}}$}{}
 \cas{c)}
 \begin{calculs}
 (3x+5)^{2}-4(x+1)^{2} &= 0 &&\justif{$4(x+1)^{2}=\big[2(x+1)\big]^{2}$ : $b=2(x+1)$}\\
@@ -2011,7 +2049,8 @@ $\res{S=\ens{-\frac12\,;1}}$.}{}
 (3x+5-2x-2)(3x+5+2x+2) &= 0 &&\\
 (x+3)(5x+7) &= 0 &&
 \end{calculs}
-\explique{$x+3=0$ ou $5x+7=0$ : $\res{S=\ens{-3\,;-\frac75}}$.}{}
+\eqproduit{x+3 &= 0\\ x &= -3}{5x+7 &= 0\\ 5x &= -7\\ x &= -\dfrac75}
+\explique{$\res{S=\ens{-3\,;-\frac75}}$}{}
 \cas{d)}
 \begin{calculs}
 9(x+1)^{2}-4(2x+3)^{2} &= 0 &&\justif{$a=3(x+1)$ et $b=2(2x+3)$}\\
@@ -2019,7 +2058,8 @@ $\res{S=\ens{-\frac12\,;1}}$.}{}
 (3x+3-4x-6)(3x+3+4x+6) &= 0 &&\\
 (-x-3)(7x+9) &= 0 &&
 \end{calculs}
-\explique{$-x-3=0$ ou $7x+9=0$ : $\res{S=\ens{-3\,;-\frac97}}$.}{}
+\eqproduit{-x-3 &= 0\\ -x &= 3\\ x &= -3}{7x+9 &= 0\\ 7x &= -9\\ x &= -\dfrac97}
+\explique{$\res{S=\ens{-3\,;-\frac97}}$}{}
 \rem{Erreur fréquente : $4(x+1)^{2}=(4x+4)^{2}$. Le $4$ est le carré de $2$ : c'est
 $\big(2(x+1)\big)^{2}=(2x+2)^{2}$.}
 \end{exo}
@@ -2065,8 +2105,8 @@ x(16-8x+x^{2}) &= x^{3}+3x^{2} &&\justif{$(a-b)^{2}$ avec $a=4$ et $b=x$}\\
 16x-11x^{2} &= 0 &&\\
 x(16-11x) &= 0 &&\justif{$x$ est commun}
 \end{calculs}
-\explique{$x=0$ ou $16-11x=0$ : $\res{S=\ens{0\,;\frac{16}{11}}}$.}{ici, il reste une
-équation produit}
+\eqproduit{x &= 0}{16-11x &= 0\\ 16 &= 11x\\ x &= \dfrac{16}{11}}
+\explique{$\res{S=\ens{0\,;\frac{16}{11}}}$}{ici, il reste une équation produit}
 \rem{En d), on ne divise pas par $x$ : on perdrait la solution $0$.}
 \end{exo}
 
@@ -2087,10 +2127,13 @@ $(x-8)(x+4)=x^{2}+4x-8x-32$}
 \cas{2)}
 \explique{$E(0)$ : avec la forme B, $E(0)=0-0-32=\res{-32}$.}{$x=0$ annule les termes en
 $x$}
-\explique{$E(x)=0$ : avec la forme C, $(x-8)(x+4)=0$, soit $x=8$ ou $x=-4$ :
-$\res{S=\ens{-4\,;8}}$.}{forme factorisée et produit nul}
+\explique{$E(x)=0$ : avec la forme C, $(x-8)(x+4)=0$.}{forme factorisée}
+\eqproduit{x-8 &= 0\\ x &= 8}{x+4 &= 0\\ x &= -4}
+\explique{$\res{S=\ens{-4\,;8}}$}{}
 \explique{$E(x)=-32$ : avec la forme B, $x^{2}-4x-32=-32$, soit $x^{2}-4x=0$, puis
-$x(x-4)=0$ : $\res{S=\ens{0\,;4}}$.}{le $-32$ s'élimine}
+$x(x-4)=0$.}{le $-32$ s'élimine}
+\eqproduit{x &= 0}{x-4 &= 0\\ x &= 4}
+\explique{$\res{S=\ens{0\,;4}}$}{}
 \explique{$E(x)=-36$ : avec la forme A, $(x-2)^{2}-36=-36$, soit $(x-2)^{2}=0$, donc
 $x-2=0$ : $\res{S=\ens{2}}$.}{le $-36$ s'élimine}
 \rem{La bonne forme est celle où le nombre du second membre s'élimine, ou la forme
@@ -2101,7 +2144,7 @@ factorisée pour une équation $\ldots=0$.}
 
 \begin{exo}[Équations $x^{2}=a$]
 \explique{On isole le carré, puis : si $a>0$, deux solutions opposées $\sqrt a$ et
-$-\sqrt a$ ; si $a=0$, la seule solution $0$ ; si $a<0$, aucune.}{propriété 9 et méthode
+$-\sqrt a$ ; si $a=0$, la seule solution $0$ ; si $a<0$, aucune.}{propriété 8 et méthode
 13 du cours}
 \cas{a)}
 \explique{$x^{2}=81$ et $81>0$ : $\res{S=\ens{-9\,;9}}$.}{$9^{2}=81$ et $(-9)^{2}=81$}
@@ -2126,7 +2169,7 @@ ou $x=-9$ : $\res{S=\ens{-9\,;5}}$.}{méthode 13, exemple d)}
 \begin{exo}[Équations quotient]
 \explique{$\dfrac{A}{B}=0$ équivaut à $A=0$ et $B\ne 0$ : on cherche la ou les valeurs
 interdites, on résout \og numérateur $=0$\fg{}, puis on retire les valeurs
-interdites.}{propriété 9 et méthode 14 du cours}
+interdites.}{propriété 8 et méthode 14 du cours}
 \cas{a)}
 \explique{Valeur interdite : $x+2=0$ pour $x=-2$. Numérateur : $3x-4=0$ donne
 $x=\frac43$, qui n'est pas interdit : $\res{S=\ens{\frac43}}$.}{}
@@ -2142,8 +2185,8 @@ $x=1$, les deux valeurs interdites.}{facteur commun $4$, puis troisième identit
 (2x+3-3x+3)(2x+3+3x-3) &= 0 &&\\
 (-x+6)\times 5x &= 0 &&
 \end{calculs}
-\explique{$-x+6=0$ ou $5x=0$, soit $x=6$ ou $x=0$, qui ne sont pas interdits :
-$\res{S=\ens{0\,;6}}$.}{}
+\eqproduit{-x+6 &= 0\\ -x &= -6\\ x &= 6}{5x &= 0\\ x &= 0}
+\explique{$6$ et $0$ ne sont pas interdits : $\res{S=\ens{0\,;6}}$.}{}
 \cas{d)}
 \explique{Le dénominateur : $12-9x=0$ pour $x=\frac{12}{9}=\frac43$, valeur interdite.}{}
 \begin{calculs}
@@ -2152,8 +2195,8 @@ $\res{S=\ens{0\,;6}}$.}{}
 (3x-4)\big[(3x+4)-2\big] &= 0 &&\\
 (3x-4)(3x+2) &= 0 &&
 \end{calculs}
-\explique{$3x-4=0$ ou $3x+2=0$, soit $x=\frac43$ ou $x=-\frac23$. Or $\frac43$ est
-interdit : $\res{S=\ens{-\frac23}}$.}{on retire la valeur interdite}
+\eqproduit{3x-4 &= 0\\ 3x &= 4\\ x &= \dfrac43}{3x+2 &= 0\\ 3x &= -2\\ x &= -\dfrac23}
+\explique{Or $\frac43$ est interdit : $\res{S=\ens{-\frac23}}$.}{on retire la valeur interdite}
 \cas{e)}
 \explique{Valeur interdite : $0$. Pour $x\ne 0$, on met tout dans le membre de gauche et
 au même dénominateur $2x$.}{se ramener à $\frac{A}{B}=0$}
@@ -2196,8 +2239,8 @@ dénominateur}
 l'énoncé par une équation, on la résout, on vérifie que le résultat a un sens, puis on
 conclut par une phrase.}{méthode 15 du cours}
 \cas{1)}
-\explique{Soit $x$ l'âge de Zoé, en années. Elle ajoute $9$ : $x+9$ ; elle multiplie le
-résultat par $3$ : $3(x+9)$.}{le \og résultat\fg{} entier est multiplié : parenthèses}
+\explique{Soit $x$ l'âge de Zoé, en années. Elle ajoute $9$, ce qui donne $x+9$ ; elle
+multiplie le résultat par $3$, ce qui donne $3(x+9)$.}{le \og résultat\fg{} entier est multiplié : parenthèses}
 \begin{calculs}
 3(x+9) &= 75 &&\\
 3x+27 &= 75 &&\\
@@ -2609,12 +2652,15 @@ f\big(\tfrac12\big) &= \big(\tfrac12+3\big)^{2}-16 &&\justif{forme de l'énoncé
 f\big(\tfrac12\big) &= \tfrac{49}{4}-\tfrac{64}{4} &&\justif{$16=\frac{64}{4}$}\\
 f\big(\tfrac12\big) &= \res{-\tfrac{15}{4}} &&
 \end{calculs}
-\explique{Antécédents de $0$ : $(x-1)(x+7)=0$, soit $x=1$ ou $x=-7$. Ce sont $\res{1}$ et
-$\res{-7}$.}{forme factorisée}
-\explique{Antécédents de $-7$ : $x^{2}+6x-7=-7$, soit $x^{2}+6x=0$, puis $x(x+6)=0$. Ce
-sont $\res{0}$ et $\res{-6}$.}{forme développée : le $-7$ s'élimine}
-\explique{Antécédent de $-16$ : $(x+3)^{2}-16=-16$, soit $(x+3)^{2}=0$, donc $x=-3$. C'est
-$\res{-3}$.}{forme de l'énoncé : le $-16$ s'élimine}
+\explique{Antécédents de $0$ : on résout $(x-1)(x+7)=0$.}{forme factorisée}
+\eqproduit{x-1 &= 0\\ x &= 1}{x+7 &= 0\\ x &= -7}
+\explique{Les antécédents de $0$ sont $\res{1}$ et $\res{-7}$.}{}
+\explique{Antécédents de $-7$ : on résout $x^{2}+6x-7=-7$, soit $x^{2}+6x=0$, puis
+$x(x+6)=0$.}{forme développée : le $-7$ s'élimine}
+\eqproduit{x &= 0}{x+6 &= 0\\ x &= -6}
+\explique{Les antécédents de $-7$ sont $\res{0}$ et $\res{-6}$.}{}
+\explique{Antécédent de $-16$ : on résout $(x+3)^{2}-16=-16$, soit $(x+3)^{2}=0$, donc $x+3=0$.
+C'est $\res{-3}$.}{forme de l'énoncé : le $-16$ s'élimine}
 \end{exo}
 
 \begin{exo}[Lire, puis démontrer]
@@ -2640,10 +2686,13 @@ f(x) &= \res{(x+1)(x-4)} &&
 \end{calculs}
 \cas{3)}
 \explique{$f(2)=4-6-4=\res{-6}$.}{forme développée}
-\explique{$f(x)=0$ : $(x+1)(x-4)=0$, soit $x=-1$ ou $x=4$, toutes deux dans $\intff{-2}{5}$ :
-$\res{S=\ens{-1\,;4}}$.}{forme factorisée}
-\explique{$f(x)=-4$ : $x^{2}-3x-4=-4$, soit $x^{2}-3x=0$, puis $x(x-3)=0$ :
-$\res{S=\ens{0\,;3}}$.}{forme développée : le $-4$ s'élimine}
+\explique{$f(x)=0$ : on résout $(x+1)(x-4)=0$.}{forme factorisée}
+\eqproduit{x+1 &= 0\\ x &= -1}{x-4 &= 0\\ x &= 4}
+\explique{Les deux sont dans $\intff{-2}{5}$ : $\res{S=\ens{-1\,;4}}$.}{}
+\explique{$f(x)=-4$ : on résout $x^{2}-3x-4=-4$, soit $x^{2}-3x=0$, puis
+$x(x-3)=0$.}{forme développée : le $-4$ s'élimine}
+\eqproduit{x &= 0}{x-3 &= 0\\ x &= 3}
+\explique{$\res{S=\ens{0\,;3}}$}{}
 \explique{Les solutions trouvées par le calcul sont celles lues sur le graphique : les deux
 conjectures sont démontrées.}{une lecture graphique se démontre par le calcul}
 \end{exo}
@@ -2679,7 +2728,8 @@ x &= -8 &&
 \big[(3x-4)-(x+6)\big]\big[(3x-4)+(x+6)\big] &= 0 &&\\
 (2x-10)(4x+2) &= 0 &&
 \end{calculs}
-\explique{$2x-10=0$ ou $4x+2=0$ : $\res{S=\ens{-\frac12\,;5}}$.}{}
+\eqproduit{2x-10 &= 0\\ 2x &= 10\\ x &= 5}{4x+2 &= 0\\ 4x &= -2\\ x &= -\dfrac12}
+\explique{$\res{S=\ens{-\frac12\,;5}}$}{}
 \cas{e)}
 \explique{$9x^{2}-12x+4=(3x-2)^{2}$ ($a=3x$ et $b=2$ ; $2ab=12x$) et
 $4(x+2)^{2}=\big[2(x+2)\big]^{2}$.}{on reconnaît deux carrés}
@@ -2689,7 +2739,8 @@ $4(x+2)^{2}=\big[2(x+2)\big]^{2}$.}{on reconnaît deux carrés}
 \big[(3x-2)-2(x+2)\big]\big[(3x-2)+2(x+2)\big] &= 0 &&\\
 (x-6)(5x+2) &= 0 &&
 \end{calculs}
-\explique{$x-6=0$ ou $5x+2=0$ : $\res{S=\ens{-\frac25\,;6}}$.}{}
+\eqproduit{x-6 &= 0\\ x &= 6}{5x+2 &= 0\\ 5x &= -2\\ x &= -\dfrac25}
+\explique{$\res{S=\ens{-\frac25\,;6}}$}{}
 \end{exo}
 
 \begin{exo}[Points d'intersection de deux courbes]
@@ -2701,7 +2752,8 @@ x^{2}+2x-3 &= 2x+6 &&\\
 x^{2}-9 &= 0 &&\justif{les $2x$ s'éliminent}\\
 (x-3)(x+3) &= 0 &&
 \end{calculs}
-\explique{$x=3$ ou $x=-3$ ; $g(3)=12$ et $g(-3)=0$. Les points d'intersection sont
+\eqproduit{x-3 &= 0\\ x &= 3}{x+3 &= 0\\ x &= -3}
+\explique{$g(3)=12$ et $g(-3)=0$. Les points d'intersection sont
 $\res{(3\,;12)}$ et $\res{(-3\,;0)}$.}{contrôle : $f(3)=9+6-3=12$}
 \cas{b)}
 \begin{calculs}
@@ -2709,7 +2761,8 @@ $\res{(3\,;12)}$ et $\res{(-3\,;0)}$.}{contrôle : $f(3)=9+6-3=12$}
 3x^{2}-6x &= 0 &&\\
 3x(x-2) &= 0 &&
 \end{calculs}
-\explique{$x=0$ ou $x=2$ ; $g(0)=1$ et $g(2)=11$. Les points d'intersection sont
+\eqproduit{3x &= 0\\ x &= 0}{x-2 &= 0\\ x &= 2}
+\explique{$g(0)=1$ et $g(2)=11$. Les points d'intersection sont
 $\res{(0\,;1)}$ et $\res{(2\,;11)}$.}{contrôle : $f(2)=12-2+1=11$}
 \end{exo}
 

@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.6}
+\def\lyceeversion{1.7}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
@@ -90,6 +90,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -611,11 +633,14 @@ fait une pointe, sans tangente.
 Soit $f$ dérivable en $a$ et $A\bigl(a\,;f(a)\bigr)$ le point de $\Cf$ d'abscisse $a$.
 La \textbf{tangente} à $\Cf$ en $A$ est la droite qui passe par $A$ et dont le
 coefficient directeur est $f'(a)$.
+
+On la note $(T_a)$ : la tangente au point d'abscisse $1$ est $(T_1)$, et l'on écrit par
+exemple $(T_1)\colon y=2x+1$.
 \end{definitionbox}
 
 \begin{proprietebox}[Propriété 1 --- Équation de la tangente]
 \begin{minipage}[c]{0.56\linewidth}\raggedright
-La tangente à $\Cf$ au point d'abscisse $a$ a pour équation
+La tangente $(T_a)$ à $\Cf$ au point d'abscisse $a$ a pour équation
 \[
   y=f'(a)(x-a)+f(a).
 \]
@@ -636,7 +661,7 @@ Elle passe par $A\bigl(a\,;f(a)\bigr)$ ; quand on avance de $1$, elle monte de $
   \node[below,font=\scriptsize] at (2,-0.03) {$a$};
   \node[left,font=\scriptsize] at (-0.03,1.5) {$f(a)$};
   \node[coulCourbe,font=\footnotesize] at (1.1,1.4) {$\Cf$};
-  \node[coulExo,font=\scriptsize,right] at (3.8,3.3) {tangente};
+  \node[coulExo,font=\footnotesize,right] at (3.8,3.3) {$(T_a)$};
 \end{tikzpicture}
 \end{minipage}
 
@@ -653,39 +678,44 @@ y &= f'(a)(x-a)+f(a) &\qquad& \rem{on factorise par $f'(a)$}
 
 \begin{methodebox}[Méthode 3 --- Lire un nombre dérivé sur un graphique]
 \begin{minipage}[c]{0.44\linewidth}\raggedright
-On a tracé la courbe $\Cf$ d'une fonction $f$ et quatre de ses tangentes.
+On a tracé la courbe $\Cf$ d'une fonction $f$ et quatre de ses tangentes,
+$(T_{-4})$, $(T_{-2})$, $(T_0)$ et $(T_4)$.
 
 \etapeexemples
 Lire $f'(-2)$ et $f'(0)$.
 
 \etape{À vous de jouer}
-Lire $f(-4)$, $f'(-4)$, puis $f(3)$ et $f'(3)$.
-\reponse{$f(-4)=3$ et $f'(-4)=-3$ ;\; $f(3)=2$ et $f'(3)=-2$.}
+Lire $f(-4)$, $f'(-4)$, puis $f(4)$ et $f'(4)$.
+\reponse{$f(-4)=2$ et $f'(-4)=-3$ ;\; $f(4)=1$ et $f'(4)=-2$.}
 \end{minipage}\hfill
 \begin{minipage}[c]{0.54\linewidth}\centering
 \begin{tikzpicture}[x=0.6cm,y=0.6cm]
   \repere{-5}{-2}{5}{5}
   \gradx{-4,-3,-2,1,2,3,4} \grady{-1,1,2,3,4}
   \draw[coulCourbe,line width=1.1pt]
-    (-4,3) .. controls (-3.333,1) and (-2.667,-1) .. (-2,-1)
+    (-4,2) .. controls (-3.333,0) and (-2.667,-1) .. (-2,-1)
            .. controls (-1.333,-1) and (-0.667,-0.333) .. (0,1)
            .. controls (0.667,2.333) and (1.333,3) .. (2,3)
-           .. controls (2.333,3) and (2.667,2.667) .. (3,2);
-  \draw[coulExo,line width=0.9pt] (-4.333,4) -- (-2.667,-1);
-  \draw[coulExo,line width=0.9pt] (-3.6,-1) -- (-0.4,-1);
-  \draw[coulExo,line width=0.9pt] (-1.5,-2) -- (1.5,4);
-  \draw[coulExo,line width=0.9pt] (2.25,3.5) -- (4.5,-1);
-  \path[coulCourbe] (-4,3) node[croix]{} (-2,-1) node[croix]{} (0,1) node[croix]{}
-    (3,2) node[croix]{};
+           .. controls (2.667,3) and (3.333,2.333) .. (4,1);
+  \draw[coulExo,line width=0.9pt] (-4.333,3) -- (-2.667,-2)
+    node[pos=0,above,font=\footnotesize]{$(T_{-4})$};
+  \draw[coulExo,line width=0.9pt] (-3.2,-1) -- (-0.8,-1)
+    node[pos=0,left,font=\footnotesize]{$(T_{-2})$};
+  \draw[coulExo,line width=0.9pt] (-1.5,-2) -- (1.5,4)
+    node[pos=1,left,font=\footnotesize]{$(T_0)$};
+  \draw[coulExo,line width=0.9pt] (3.25,2.5) -- (4.75,-0.5)
+    node[pos=0,above right,font=\footnotesize]{$(T_4)$};
+  \path[coulCourbe] (-4,2) node[croix]{} (-2,-1) node[croix]{} (0,1) node[croix]{}
+    (4,1) node[croix]{};
   \node[coulCourbe,font=\footnotesize] at (2.4,3.6) {$\Cf$};
 \end{tikzpicture}
 \end{minipage}
 \begin{correction}
 \cas{$f'(-2)$}
-\explique{La tangente en $-2$ est horizontale : $f'(-2)=\res{0}$.}{une droite horizontale a un
+\explique{La tangente $(T_{-2})$ est horizontale : $f'(-2)=\res{0}$.}{une droite horizontale a un
 coefficient directeur nul}
 \cas{$f'(0)$}
-\explique{La tangente passe par $(0\,;1)$ et $(1\,;3)$ : quand on avance de $1$, elle monte
+\explique{La tangente $(T_0)$ passe par $(0\,;1)$ et $(1\,;3)$ : quand on avance de $1$, elle monte
 de $2$. Donc $f'(0)=\res{2}$.}{coefficient directeur $=\dfrac{\text{montée}}{\text{avancée}}$ ;
 une descente compte en négatif}
 \end{correction}
@@ -694,10 +724,10 @@ une descente compte en négatif}
 \begin{methodebox}[Méthode 4 --- Déterminer une équation de la tangente]
 \etapeexemples
 \begin{questions}[label=\alph*)]
-  \item $f(x)=x^{2}-2x+3$ : calculer $f'(2)$, puis une équation de la tangente à $\Cf$
-        au point d'abscisse $2$.
+  \item $f(x)=x^{2}-2x+3$ : calculer $f'(2)$, puis une équation de la tangente $(T_2)$
+        à $\Cf$ au point d'abscisse $2$.
   \item $g(x)=\dfrac{1}{x}$ : on a vu que $g'(2)=-\dfrac{1}{4}$ (méthode 2). Donner une
-        équation de la tangente à $\Cg$ au point d'abscisse $2$.
+        équation de la tangente $(T_2)$ à $\Cg$ au point d'abscisse $2$.
 \end{questions}
 \begin{correction}
 \cas{a)}
@@ -710,14 +740,14 @@ T(h) &= \frac{h^{2}+2h}{h} &\qquad& \rem{$f(2+h)-f(2)$, divisé par $h$}\\
 T(h) &= h+2 &&\\
 f'(2) &= \lim_{h\to 0}\,(h+2) &&\\
 f'(2) &= \res{2} &&\\
-y &= f'(2)(x-2)+f(2) &\qquad& \rem{on recopie la formule}\\
+y &= f'(2)(x-2)+f(2) &\qquad& \rem{équation de $(T_2)$ : on recopie la formule}\\
 y &= 2(x-2)+3 &&\\
 y &= \res{2x-1} &&
 \end{calculs}
 \cas{b)}
 \begin{calculs}
 g(2) &= \frac{1}{2} &&\\
-y &= g'(2)(x-2)+g(2) &&\\
+y &= g'(2)(x-2)+g(2) &\qquad& \rem{équation de $(T_2)$}\\
 y &= -\frac{1}{4}(x-2)+\frac{1}{2} &&\\
 y &= \res{-\frac{1}{4}x+1} &\qquad& \rem{$\frac{2}{4}+\frac{1}{2}=1$}
 \end{calculs}
@@ -727,11 +757,10 @@ y &= \res{-\frac{1}{4}x+1} &\qquad& \rem{$\frac{2}{4}+\frac{1}{2}=1$}
 Avec les nombres dérivés déjà calculés à la méthode 2, donner une équation de la
 tangente :
 \begin{questions}
-  \item à la courbe de $f(x)=x^{2}+3x$ au point d'abscisse $1$ ;
-  \item à la courbe de $h(x)=x^{2}-4x$ au point d'abscisse $3$.
+  \item $(T_1)$ à la courbe de $f(x)=x^{2}+3x$ au point d'abscisse $1$ ;
+  \item $(T_3)$ à la courbe de $h(x)=x^{2}-4x$ au point d'abscisse $3$.
 \end{questions}
-\reponse{1\textdegree) $y=5(x-1)+4$, soit $y=5x-1$ ;\; 2\textdegree) $y=2(x-3)-3$, soit
-$y=2x-9$.}
+\reponse{1\textdegree) $(T_1)\colon y=5x-1$ ;\; 2\textdegree) $(T_3)\colon y=2x-9$.}
 \end{methodebox}
 
 \afaire{exercices 9 à 12}
@@ -770,7 +799,7 @@ C'est l'équation de la tangente (propriété 1), avec $x=a+h$.
   \node[left,font=\scriptsize] at (-0.03,1.92) {$f(a+h)$};
   \node[left,font=\scriptsize] at (-0.03,1.36) {$f(a)+f'(a)h$};
   \node[coulCourbe,font=\footnotesize] at (2.55,2.75) {$\Cf$};
-  \node[coulExo,font=\scriptsize,right] at (3.1,1.96) {tangente};
+  \node[coulExo,font=\footnotesize,right] at (3.1,1.96) {$(T_a)$};
 \end{tikzpicture}
 \end{minipage}
 \end{proprietebox}
@@ -1421,7 +1450,7 @@ $f(x)=x^{3}-3x+1$ sur $\intff{-2}{3}$.
 \begin{questions}[label=\alph*)]
   \item Dresser le tableau de variations de $f$.
   \item Donner le maximum et le minimum de $f$ sur $\intff{-2}{3}$.
-  \item Donner une équation de la tangente à $\Cf$ au point d'abscisse $-1$.
+  \item Donner une équation de la tangente $(T_{-1})$ à $\Cf$ au point d'abscisse $-1$.
 \end{questions}
 \begin{correction}
 \cas{a)}
@@ -1449,7 +1478,7 @@ f(3) &= 27-9+1=19 &&
 \explique{Le minimum est \res{$-1$, atteint en $-2$ et en $1$}.}{$3$, atteint en $-1$, n'est qu'un
 maximum local}
 \cas{c)}
-\explique{$f'(-1)=0$ : la tangente est horizontale, d'équation $y=\res{3}$.}{$y=f'(-1)(x+1)+f(-1)$
+\explique{$f'(-1)=0$ : la tangente est horizontale, $(T_{-1})\colon y=\res{3}$.}{$y=f'(-1)(x+1)+f(-1)$
 avec $f'(-1)=0$}
 \end{correction}
 
@@ -1458,7 +1487,7 @@ $g(x)=-x^{3}+3x^{2}$ sur $\intff{-1}{4}$.
 \begin{questions}
   \item Dresser le tableau de variations de $g$.
   \item Donner le maximum et le minimum de $g$ sur $\intff{-1}{4}$.
-  \item Donner une équation de la tangente à $\Cg$ au point d'abscisse $2$.
+  \item Donner une équation de la tangente $(T_2)$ à $\Cg$ au point d'abscisse $2$.
 \end{questions}
 \reponse{1\textdegree) $g'(x)=-3x(x-2)$ : « $-$ », « $+$ », « $-$ » ; $g(-1)=4$ et
 $g(0)=0$ ; $g(2)=4$ et $g(4)=-16$ ;\; 2\textdegree) maximum $4$, atteint en $-1$ et en
@@ -1478,7 +1507,7 @@ $2$ ; minimum $-16$, atteint en $4$ ;\; 3\textdegree) $y=4$.}
   \item \textbf{Variations} : tableau de variations, avec les images des valeurs où $f'$
         s'annule et des bornes.
   \item \textbf{Extremums} : là où $f'(x)$ s'annule en changeant de signe.
-  \item \textbf{Tangentes} : $y=f'(a)(x-a)+f(a)$ ; aux extremums, la tangente est
+  \item \textbf{Tangentes} : $(T_a)\colon y=f'(a)(x-a)+f(a)$ ; aux extremums, la tangente est
         horizontale.
   \item \textbf{Courbe} : tableau de valeurs, puis extremums, tangentes et courbe.
 \end{etapes}
@@ -1494,8 +1523,8 @@ On considère $f(x)=\dfrac{4x}{x^{2}+1}$.
   \item Calculer $f'(x)$ et l'écrire sous forme factorisée.
   \item Étudier le signe de $f'(x)$.
   \item Dresser le tableau de variations de $f$ et donner ses extremums.
-  \item Donner une équation de la tangente $T$ à $\Cf$ au point d'abscisse $0$.
-  \item Tracer $T$ et $\Cf$ sur $\intff{-4}{4}$.
+  \item Donner une équation de la tangente $(T_0)$ à $\Cf$ au point d'abscisse $0$.
+  \item Tracer $(T_0)$ et $\Cf$ sur $\intff{-4}{4}$.
 \end{questions}
 \begin{correction}
 \cas{a)}
@@ -1533,7 +1562,7 @@ en changeant de signe (théorème 2)}
 \begin{calculs}
 f(0) &= 0 &&\\
 f'(0) &= \frac{4}{1}=4 &&\\
-y &= 4(x-0)+0 &\qquad& \rem{$y=f'(0)(x-0)+f(0)$}\\
+y &= 4(x-0)+0 &\qquad& \rem{$(T_0)\colon y=f'(0)(x-0)+f(0)$}\\
 y &= \res{4x} &&
 \end{calculs}
 \cas{f)}
@@ -1555,20 +1584,20 @@ $f(x)$ & $-0{,}9$ & $-1{,}2$ & $-1{,}6$ & $-2$ & $0$ & $2$ & $1{,}6$ & $1{,}2$ &
     plot (\x,{4*\x/(\x*\x+1)});
   \draw[coulExo,line width=0.9pt] (-0.65,-2.6) -- (0.65,2.6);
   \path[coulCourbe] (-1,-2) node[croix]{} (1,2) node[croix]{} (0,0) node[croix]{};
-  \node[coulExo,font=\footnotesize] at (0.95,2.75) {$T$};
+  \node[coulExo,font=\footnotesize] at (1.15,2.75) {$(T_0)$};
   \node[coulCourbe,font=\footnotesize] at (3.6,1.5) {$\Cf$};
 \end{tikzpicture}
 \end{center}
 \explique{On place d'abord les extremums, où la tangente est horizontale, puis la tangente
-$T$.}{la courbe « colle » à ses tangentes}
+$(T_0)$.}{la courbe « colle » à ses tangentes}
 \end{correction}
 
 \etape{À vous de jouer}
-Mêmes questions a) à e) pour $g(x)=\dfrac{x^{2}+3}{x-1}$, avec la tangente au point
+Mêmes questions a) à e) pour $g(x)=\dfrac{x^{2}+3}{x-1}$, avec la tangente $(T_0)$ au point
 d'abscisse $0$ ; puis tracer $\Cg$ sur $\intff{-3}{0{,}5}$ et sur $\intff{1{,}5}{5}$.
 \reponse{$g$ est définie sur $\R\setminus\{1\}$ ;
 $g'(x)=\dfrac{(x+1)(x-3)}{(x-1)^{2}}$ ; maximum local $-2$ en $-1$, minimum local $6$ en
-$3$ ; tangente en $0$ d'équation $y=-3x-3$.}
+$3$ ; $(T_0)\colon y=-3x-3$.}
 \end{methodebox}
 
 \afaire{exercices 46 à 48}

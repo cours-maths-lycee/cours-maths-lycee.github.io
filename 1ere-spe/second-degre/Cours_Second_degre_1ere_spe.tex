@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.8}\def\lyceerelectures{18}\def\lyceerodages{12}\def\lyceesceauannees{2026-2027}
+\def\lyceeversion{1.9}\def\lyceerelectures{20}\def\lyceerodages{12}\def\lyceesceauannees{2026-2027}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
@@ -90,6 +90,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -698,8 +720,11 @@ x_{0} &= \dfrac{20}{10}=2 &\qquad& \rem{$x_{0}=-\frac{b}{2a}$}
 \explique{$S=\res{\varnothing}$.}{}
 \cas{d)}
 \begin{calculs}
-9x^{2}-16=0 &\iff (3x-4)(3x+4)=0 &\qquad& \rem{factorisation directe ($u^{2}-v^{2}$) : pas de $\Delta$}\\
-            &\iff \res{x=\dfrac{4}{3} \;\text{ ou }\; x=-\dfrac{4}{3}} &&\\[4pt]
+9x^{2}-16=0 &\iff (3x-4)(3x+4)=0 &\qquad& \rem{factorisation directe ($u^{2}-v^{2}$) : pas de $\Delta$}
+\end{calculs}
+\eqproduit{3x-4 &= 0\\ 3x &= 4\\ x &= \dfrac43}{3x+4 &= 0\\ 3x &= -4\\ x &= -\dfrac43}
+\explique{$S=\res{\left\{-\dfrac{4}{3}\,;\dfrac{4}{3}\right\}}$.}{}
+\begin{calculs}
 4x^{2}+12x+9=0 &\iff (2x+3)^{2}=0 &\qquad& \rem{$u^{2}+2uv+v^{2}$}\\
                &\iff \res{x=-\dfrac{3}{2}} &&
 \end{calculs}
@@ -1356,7 +1381,8 @@ $S=\res{\{-5\,;4\}}$.}{méthode 5 : la somme des racines vaut $-\frac{b}{a}=-1$}
                      &\iff 8x^{2}-8x=0 &\qquad& \rem{tout dans un membre}\\
                      &\iff 8x(x-1)=0 &\qquad& \rem{facteur commun : pas de $\Delta$}
 \end{calculs}
-\explique{$S=\res{\{0\,;1\}}$.}{produit nul}
+\eqproduit{8x &= 0\\ x &= 0}{x-1 &= 0\\ x &= 1}
+\explique{$S=\res{\{0\,;1\}}$.}{}
 \cas{c)}
 \explique{$D=\R\setminus\{0\}$.}{un quotient : on écrit d'abord l'ensemble de
 définition}

@@ -88,6 +88,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -836,18 +858,10 @@ solutions.}
 (propriété 2), et $x^{2}=k$ se résout directement (propriété 3).}{méthode 5,
 exemples b) et c)}
 \cas{a)}
-\begin{calculs}
-(x-6)(4+x)=0 &\iff x-6=0 \;\text{ ou }\; 4+x=0 &&\justif{produit nul : un des facteurs
-est nul}\\
-             &\iff x=6 \;\text{ ou }\; x=-4 &&
-\end{calculs}
+\eqproduit{x-6 &= 0\\ x &= 6}{4+x &= 0\\ x &= -4}
 \explique{$S=\res{\ens{-4\,;6}}$.}{solutions rangées dans l'ordre croissant}
 \cas{b)}
-\begin{calculs}
-5x(3x-7)=0 &\iff 5x=0 \;\text{ ou }\; 3x-7=0 &&\justif{deux facteurs : $5x$ et
-$3x-7$}\\
-           &\iff x=0 \;\text{ ou }\; x=\dfrac{7}{3} &&
-\end{calculs}
+\eqproduit{5x &= 0\\ x &= 0}{3x-7 &= 0\\ 3x &= 7\\ x &= \dfrac73}
 \explique{$S=\res{\ens{0\,;\dfrac{7}{3}}}$.}{ne pas oublier la solution $0$}
 \cas{c)}
 \begin{calculs}
@@ -969,9 +983,10 @@ terme.}{méthode 7 du cours}
 dénominateur $x-4$ n'ont pas de facteur commun : \res{pas de simplification}.}{on ne
 barre pas les $x$ : ce sont des termes d'une somme}
 \cas{$B$}
-\explique{$x(x-2)=0$ pour $x=0$ ou $x=2$ : valeurs interdites \res{$0$ et $2$}. Pas de
-simplification : le numérateur $6$ ne contient ni $x$ ni $x-2$.}{produit nul :
-propriété 2}
+\explique{On résout $x(x-2)=0$.}{propriété 2}
+\eqproduit{x &= 0}{x-2 &= 0\\ x &= 2}
+\explique{Valeurs interdites \res{$0$ et $2$}. Pas de simplification : le numérateur $6$ ne
+contient ni $x$ ni $x-2$.}{}
 \cas{$C$}
 \explique{$2x+5=0$ pour $x=-\dfrac{5}{2}$ : valeur interdite \res{$-\dfrac{5}{2}$}. Pas de
 simplification.}{$2x=-5$, puis on divise par $2$}
@@ -1154,11 +1169,8 @@ dénominateur ne l'étant pas. On cherche donc les valeurs interdites, puis on r
 \explique{$-2$ n'est pas interdit : $S=\res{\ens{-2}}$.}{}
 \cas{c)}
 \explique{Valeur interdite : $-1$.}{}
-\begin{calculs}
-(x-3)(2x+5)=0 &\iff x-3=0 \;\text{ ou }\; 2x+5=0 &&\justif{le numérateur est un produit
-nul}\\
-              &\iff x=3 \;\text{ ou }\; x=-\dfrac{5}{2} &&
-\end{calculs}
+\explique{On résout $(x-3)(2x+5)=0$.}{le numérateur est nul}
+\eqproduit{x-3 &= 0\\ x &= 3}{2x+5 &= 0\\ 2x &= -5\\ x &= -\dfrac52}
 \explique{Aucune des deux valeurs n'est interdite : $S=\res{\ens{-\dfrac{5}{2}\,;3}}$.}{}
 \cas{d)}
 \explique{$x^{2}\ge 0$, donc $x^{2}+3\ge 3$ : le dénominateur ne s'annule jamais. Aucune

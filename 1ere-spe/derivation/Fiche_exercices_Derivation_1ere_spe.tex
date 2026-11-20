@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.4}
+\def\lyceeversion{1.5}
 \documentclass[a4paper,10pt]{article}
 \makeatletter
 \newif\iflycee@niveaux
@@ -89,6 +89,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -372,7 +394,7 @@ On considère $f(x)=x^{2}-4x$ et un nombre $a$.
 
 \exo[Lecture graphique]
 On a tracé la courbe $\Cf$ d'une fonction $f$ définie sur $\intff{-3}{5}$ et trois de
-ses tangentes, aux points $A$, $B$ et $C$.
+ses tangentes, $(T_{-1})$, $(T_1)$ et $(T_3)$, aux points $A$, $B$ et $C$.
 \begin{center}
 \begin{tikzpicture}[x=0.5cm,y=0.5cm]
   \repere{-4}{-4}{6}{4}
@@ -382,9 +404,12 @@ ses tangentes, aux points $A$, $B$ et $C$.
             .. controls (-0.333,2) and (0.333,1) .. (1,0)
             .. controls (1.667,-1) and (2.333,-2) .. (3,-2)
             .. controls (3.667,-2) and (4.333,-1) .. (5,2);
-  \draw[coulExo,line width=0.9pt] (-2.6,2) -- (0.6,2);
-  \draw[coulExo,line width=0.9pt] (-0.6,2.4) -- (2.6,-2.4);
-  \draw[coulExo,line width=0.9pt] (1.4,-2) -- (4.6,-2);
+  \draw[coulExo,line width=0.9pt] (-2.6,2) -- (0.6,2)
+    node[pos=0,left,font=\footnotesize]{$(T_{-1})$};
+  \draw[coulExo,line width=0.9pt] (-0.6,2.4) -- (2.6,-2.4)
+    node[pos=0.75,below left,font=\footnotesize]{$(T_1)$};
+  \draw[coulExo,line width=0.9pt] (1.4,-2) -- (4.6,-2)
+    node[pos=1,right,font=\footnotesize]{$(T_3)$};
   \path[coulCourbe] (-1,2) node[croix]{} (1,0) node[croix]{} (3,-2) node[croix]{};
   \node[font=\footnotesize] at (-1.5,2.5) {$A$};
   \node[font=\footnotesize,right] at (1.1,0.3) {$B$};
@@ -395,11 +420,12 @@ ses tangentes, aux points $A$, $B$ et $C$.
 \begin{enumerate}
   \item Lire $f(-1)$, $f(1)$ et $f(3)$.
   \item Lire $f'(-1)$, $f'(1)$ et $f'(3)$.
-  \item Donner une équation de la tangente à $\Cf$ en $B$.
+  \item Donner une équation de la tangente $(T_1)$ à $\Cf$ en $B$.
 \end{enumerate}
 
 \exo[Équation de la tangente]
-Dans chaque cas, donner une équation de la tangente à $\Cf$ au point d'abscisse $a$.
+Dans chaque cas, donner une équation de la tangente $(T_a)$ à $\Cf$ au point d'abscisse
+$a$.
 \begin{enumerate}[label=\alph*)]
   \item $a=2$ ; $f(2)=3$ et $f'(2)=4$
   \item $a=-1$ ; $f(-1)=2$ et $f'(-1)=-3$
@@ -410,17 +436,17 @@ Dans chaque cas, donner une équation de la tangente à $\Cf$ au point d'absciss
 \exo[Nombre dérivé, puis tangente]
 \begin{enumerate}
   \item $f(x)=x^{2}+x-2$. Calculer $f'(1)$ par la définition, puis une équation de la
-        tangente à $\Cf$ au point d'abscisse $1$.
+        tangente $(T_1)$ à $\Cf$ au point d'abscisse $1$.
   \item $g(x)=\dfrac{1}{x}$. Calculer $g'(-1)$ par la définition, puis une équation de
-        la tangente à $\Cg$ au point d'abscisse $-1$.
+        la tangente $(T_{-1})$ à $\Cg$ au point d'abscisse $-1$.
 \end{enumerate}
 
 \exo[Tangente passant par un point]
 \begin{enumerate}
-  \item La tangente à $\Cf$ au point $A(1\,;-2)$ passe par $B(3\,;4)$. Calculer
-        $f'(1)$, puis donner une équation de cette tangente.
-  \item La tangente à $\Cg$ au point $C(-2\,;1)$ passe par $D(0\,;-3)$. Calculer
-        $g'(-2)$, puis donner une équation de cette tangente.
+  \item La tangente $(T_1)$ à $\Cf$ au point $A(1\,;-2)$ passe par $B(3\,;4)$. Calculer
+        $f'(1)$, puis donner une équation de $(T_1)$.
+  \item La tangente $(T_{-2})$ à $\Cg$ au point $C(-2\,;1)$ passe par $D(0\,;-3)$.
+        Calculer $g'(-2)$, puis donner une équation de $(T_{-2})$.
 \end{enumerate}
 
 \partiefiche{Approximation linéaire}
@@ -515,7 +541,7 @@ On considère $f(x)=x^{3}-3x^{2}+2$.
 \begin{enumerate}
   \item Calculer $f'(x)$.
   \item En déduire $f'(0)$, $f'(1)$, $f'(-1)$ et $f'(2)$.
-  \item Donner une équation de la tangente à $\Cf$ au point d'abscisse $1$.
+  \item Donner une équation de la tangente $(T_1)$ à $\Cf$ au point d'abscisse $1$.
   \item En quels points de $\Cf$ la tangente est-elle horizontale ?
 \end{enumerate}
 
@@ -558,10 +584,10 @@ Calculer la dérivée de chaque fonction.
 
 \exo[Tangentes aux courbes de référence]
 \begin{enumerate}
-  \item Donner une équation de la tangente à la courbe de $f(x)=\dfrac{1}{x}$ au point
-        d'abscisse $1$.
-  \item Donner une équation de la tangente à la courbe de $g(x)=\sqrt{x}$ au point
-        d'abscisse $4$.
+  \item Donner une équation de la tangente $(T_1)$ à la courbe de $f(x)=\dfrac{1}{x}$
+        au point d'abscisse $1$.
+  \item Donner une équation de la tangente $(T_4)$ à la courbe de $g(x)=\sqrt{x}$ au
+        point d'abscisse $4$.
   \item Justifier que la courbe de $f$ n'a aucune tangente horizontale.
 \end{enumerate}
 
@@ -617,7 +643,7 @@ On considère $f(x)=(x-3)\sqrt{x}$ sur $\intoo{0}{+\infty}$.
 \begin{enumerate}
   \item Montrer que $f'(x)=\dfrac{3x-3}{2\sqrt{x}}$.
   \item Calculer $f(4)$ et $f'(4)$.
-  \item Donner une équation de la tangente à $\Cf$ au point d'abscisse $4$.
+  \item Donner une équation de la tangente $(T_4)$ à $\Cf$ au point d'abscisse $4$.
 \end{enumerate}
 
 \partiefiche{Dérivée d'un inverse et d'un quotient}
@@ -725,7 +751,7 @@ On considère $f(x)=\sqrt{x^{2}+9}$, définie sur $\R$.
 \begin{enumerate}
   \item Calculer $f'(x)$.
   \item Calculer $f(4)$ et $f'(4)$.
-  \item Donner une équation de la tangente à $\Cf$ au point d'abscisse $4$.
+  \item Donner une équation de la tangente $(T_4)$ à $\Cf$ au point d'abscisse $4$.
   \item En déduire une valeur approchée de $f(4{,}1)$, puis la comparer avec la
         calculatrice.
 \end{enumerate}
@@ -826,8 +852,8 @@ On considère $f(x)=-x^{3}+3x^{2}-1$ sur $\intff{-1}{3}$.
   \item Étudier le signe de $f'(x)$, puis dresser le tableau de variations de $f$.
   \item Donner les extremums locaux de $f$, puis son maximum et son minimum sur
         $\intff{-1}{3}$.
-  \item Donner une équation de la tangente $T$ à $\Cf$ au point d'abscisse $1$.
-  \item Avec un tableau de valeurs (pas de $0{,}5$), tracer $T$ et $\Cf$ dans un repère
+  \item Donner une équation de la tangente $(T_1)$ à $\Cf$ au point d'abscisse $1$.
+  \item Avec un tableau de valeurs (pas de $0{,}5$), tracer $(T_1)$ et $\Cf$ dans un repère
         orthonormé d'unité $1$~cm.
 \end{enumerate}
 
@@ -838,8 +864,8 @@ On considère $f(x)=\dfrac{2x+1}{x^{2}+2}$.
   \item Montrer que $f'(x)=\dfrac{-2(x+2)(x-1)}{(x^{2}+2)^{2}}$.
   \item Étudier le signe de $f'(x)$, puis dresser le tableau de variations de $f$.
   \item Donner les extremums locaux de $f$.
-  \item Donner une équation de la tangente $T$ à $\Cf$ au point d'abscisse $0$.
-  \item Avec un tableau de valeurs (pas de $1$), tracer $T$ et $\Cf$ sur
+  \item Donner une équation de la tangente $(T_0)$ à $\Cf$ au point d'abscisse $0$.
+  \item Avec un tableau de valeurs (pas de $1$), tracer $(T_0)$ et $\Cf$ sur
         $\intff{-4}{4}$, dans un repère orthonormé d'unité $2$~cm.
 \end{enumerate}
 
@@ -850,8 +876,8 @@ On considère $f(x)=\dfrac{x^{2}-3}{x-2}$.
   \item Montrer que $f'(x)=\dfrac{(x-1)(x-3)}{(x-2)^{2}}$.
   \item Étudier le signe de $f'(x)$, puis dresser le tableau de variations de $f$.
   \item Donner les extremums locaux de $f$. Que remarque-t-on ?
-  \item Donner une équation de la tangente $T$ à $\Cf$ au point d'abscisse $0$.
-  \item Avec un tableau de valeurs, tracer $T$ et $\Cf$ sur $\intff{-3}{1{,}5}$ et sur
+  \item Donner une équation de la tangente $(T_0)$ à $\Cf$ au point d'abscisse $0$.
+  \item Avec un tableau de valeurs, tracer $(T_0)$ et $\Cf$ sur $\intff{-3}{1{,}5}$ et sur
         $\intff{2{,}5}{7}$, dans un repère orthonormé d'unité $1$~cm.
 \end{enumerate}
 

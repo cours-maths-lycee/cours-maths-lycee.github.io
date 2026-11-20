@@ -88,6 +88,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -581,9 +603,12 @@ dérivés de $f$ ; on remplace ensuite $a$ par le nombre voulu.}
             .. controls (-0.333,2) and (0.333,1) .. (1,0)
             .. controls (1.667,-1) and (2.333,-2) .. (3,-2)
             .. controls (3.667,-2) and (4.333,-1) .. (5,2);
-  \draw[coulExo,line width=0.9pt] (-2.6,2) -- (0.6,2);
-  \draw[coulExo,line width=0.9pt] (-1.4,3.6) -- (2.6,-2.4);
-  \draw[coulExo,line width=0.9pt] (1.4,-2) -- (4.6,-2);
+  \draw[coulExo,line width=0.9pt] (-2.6,2) -- (0.6,2)
+    node[pos=0,left,font=\footnotesize]{$(T_{-1})$};
+  \draw[coulExo,line width=0.9pt] (-1.4,3.6) -- (2.6,-2.4)
+    node[pos=0,left,font=\footnotesize]{$(T_1)$};
+  \draw[coulExo,line width=0.9pt] (1.4,-2) -- (4.6,-2)
+    node[pos=1,right,font=\footnotesize]{$(T_3)$};
   \draw[coulRep,dashed,thin] (-1,0) -- (-1,2);
   \draw[coulRep,dashed,thin] (3,0) -- (3,-2) (0,-2) -- (1.4,-2);
   \draw[coulRep,line width=1pt,-{Stealth[length=2mm]}] (-1,3) --
@@ -605,13 +630,13 @@ courbe (pointillés)}
 \explique{$B(1\,;0)$ est sur l'axe des abscisses : $f(1)=\res{0}$ ; $C(3\,;-2)$ donne
 $f(3)=\res{-2}$.}{une image se lit sur la courbe}
 \cas{2.}
-\explique{Les tangentes en $A$ et en $C$ sont horizontales : $f'(-1)=\res{0}$ et
+\explique{Les tangentes $(T_{-1})$ et $(T_3)$ sont horizontales : $f'(-1)=\res{0}$ et
 $f'(3)=\res{0}$.}{une droite horizontale a un coefficient directeur nul}
-\explique{La tangente en $B$ passe par le point $(-1\,;3)$ et par $B(1\,;0)$ : quand on
+\explique{La tangente $(T_1)$ passe par le point $(-1\,;3)$ et par $B(1\,;0)$ : quand on
 avance de $2$, elle descend de $3$ (flèches).}{on choisit deux points de la tangente
 sur des nœuds du quadrillage}
 \begin{calculs}
-f'(1) &= \dfrac{\text{montée}}{\text{avancée}} &&\justif{coefficient directeur de la tangente en $B$}\\
+f'(1) &= \dfrac{\text{montée}}{\text{avancée}} &&\justif{coefficient directeur de $(T_1)$}\\
 f'(1) &= \dfrac{-3}{2} &&\justif{une descente compte en négatif}\\
 f'(1) &= \res{-1{,}5} &&
 \end{calculs}
@@ -619,7 +644,7 @@ f'(1) &= \res{-1{,}5} &&
 ce sont deux lectures différentes. Ici, $f(1)=0$, mais $f'(1)\ne 0$.}
 \cas{3.}
 \begin{calculs}
-y &= f'(1)(x-1)+f(1) &&\justif{propriété 1, avec $a=1$}\\
+y &= f'(1)(x-1)+f(1) &&\justif{équation de $(T_1)$, propriété 1}\\
 y &= -\dfrac{3}{2}(x-1)+0 &&\justif{$f'(1)=-\frac{3}{2}$ et $f(1)=0$}\\
 y &= \res{-\dfrac{3}{2}x+\dfrac{3}{2}} &&\justif{on développe}
 \end{calculs}
@@ -632,26 +657,26 @@ point $(-1\,;3)$ lu sur la figure.}{on contrôle avec un point de la tangente}
 on développe.}{propriété 1}
 \cas{a)}
 \begin{calculs}
-y &= f'(2)(x-2)+f(2) &&\justif{on recopie la formule, avec $a=2$}\\
+y &= f'(2)(x-2)+f(2) &&\justif{équation de $(T_2)$ : on recopie la formule}\\
 y &= 4(x-2)+3 &&\justif{$f'(2)=4$ et $f(2)=3$}\\
 y &= 4x-8+3 &&\justif{on développe}\\
 y &= \res{4x-5} &&
 \end{calculs}
 \cas{b)}
 \begin{calculs}
-y &= f'(-1)(x+1)+f(-1) &&\justif{$x-(-1)=x+1$}\\
+y &= f'(-1)(x+1)+f(-1) &&\justif{équation de $(T_{-1})$ ; $x-(-1)=x+1$}\\
 y &= -3(x+1)+2 &&\\
 y &= -3x-3+2 &&\\
 y &= \res{-3x-1} &&
 \end{calculs}
 \cas{c)}
 \begin{calculs}
-y &= f'(0)(x-0)+f(0) &&\justif{$x-0=x$}\\
+y &= f'(0)(x-0)+f(0) &&\justif{équation de $(T_0)$ ; $x-0=x$}\\
 y &= \res{\dfrac{1}{2}x+5} &&
 \end{calculs}
 \cas{d)}
 \begin{calculs}
-y &= f'(4)(x-4)+f(4) &&\\
+y &= f'(4)(x-4)+f(4) &&\justif{équation de $(T_4)$}\\
 y &= 0\times(x-4)-1 &&\justif{$f'(4)=0$}\\
 y &= \res{-1} &&\justif{tangente horizontale}
 \end{calculs}
@@ -674,9 +699,9 @@ T(h) &= h+3 &&\\
 f'(1) &= \lim_{h\to 0}\,(h+3) &&\\
 f'(1) &= \res{3} &&
 \end{calculs}
-\explique{Tangente au point d'abscisse $1$ :}{propriété 1}
+\explique{Équation de la tangente $(T_1)$ :}{propriété 1}
 \begin{calculs}
-y &= f'(1)(x-1)+f(1) &&\justif{on recopie la formule}\\
+y &= f'(1)(x-1)+f(1) &&\justif{équation de $(T_1)$ ; on recopie la formule}\\
 y &= 3(x-1)+0 &&\\
 y &= \res{3x-3} &&
 \end{calculs}
@@ -692,9 +717,9 @@ T(h) &= \dfrac{1}{-1+h} &&\\
 g'(-1) &= \lim_{h\to 0}\dfrac{1}{-1+h} &&\\
 g'(-1) &= \res{-1} &&\justif{$-1+h$ tend vers $-1$}
 \end{calculs}
-\explique{Tangente au point d'abscisse $-1$ :}{}
+\explique{Équation de la tangente $(T_{-1})$ :}{}
 \begin{calculs}
-y &= g'(-1)(x+1)+g(-1) &&\justif{$x-(-1)=x+1$}\\
+y &= g'(-1)(x+1)+g(-1) &&\justif{équation de $(T_{-1})$ ; $x-(-1)=x+1$}\\
 y &= -1\times(x+1)+(-1) &&\\
 y &= -x-1-1 &&\\
 y &= \res{-x-2} &&
@@ -714,7 +739,7 @@ f'(1) &= \dfrac{4-(-2)}{3-1} &&\\
 f'(1) &= \dfrac{6}{2} = \res{3} &&
 \end{calculs}
 \begin{calculs}
-y &= f'(1)(x-1)+f(1) &&\justif{$A(1\,;-2)$ est sur $\Cf$ : $f(1)=-2$}\\
+y &= f'(1)(x-1)+f(1) &&\justif{$(T_1)$ ; $A(1\,;-2)$ est sur $\Cf$ : $f(1)=-2$}\\
 y &= 3(x-1)-2 &&\\
 y &= 3x-3-2 &&\\
 y &= \res{3x-5} &&
@@ -727,7 +752,7 @@ g'(-2) &= \dfrac{-3-1}{0-(-2)} &&\\
 g'(-2) &= \dfrac{-4}{2} = \res{-2} &&
 \end{calculs}
 \begin{calculs}
-y &= g'(-2)(x+2)+g(-2) &&\justif{$g(-2)=1$ ; $x-(-2)=x+2$}\\
+y &= g'(-2)(x+2)+g(-2) &&\justif{$(T_{-2})$ ; $g(-2)=1$ et $x-(-2)=x+2$}\\
 y &= -2(x+2)+1 &&\\
 y &= -2x-4+1 &&\\
 y &= \res{-2x-3} &&
@@ -1069,7 +1094,7 @@ f'(2) &= 3\times 2^{2}-6\times 2 = \res{0} &&\justif{$12-12$}
 \cas{3.}
 \begin{calculs}
 f(1) &= 1-3+2 = 0 &&\justif{on calcule d'abord $f(1)$}\\
-y &= f'(1)(x-1)+f(1) &&\justif{propriété 1}\\
+y &= f'(1)(x-1)+f(1) &&\justif{équation de $(T_1)$ ; propriété 1}\\
 y &= -3(x-1)+0 &&\justif{$f'(1)=-3$ (question 2)}\\
 y &= \res{-3x+3} &&
 \end{calculs}
@@ -1080,8 +1105,8 @@ $f'(x)=0$.}{le coefficient directeur de la tangente est $f'(a)$}
 3x^{2}-6x &= 0 &&\justif{on recopie l'équation}\\
 3x(x-2) &= 0 &&\justif{on factorise par $3x$}
 \end{calculs}
-\explique{Un produit est nul si l'un de ses facteurs est nul : $x=0$ ou $x=2$.}{on le
-voyait déjà à la question 2}
+\eqproduit{3x &= 0\\ x &= 0}{x-2 &= 0\\ x &= 2}
+\explique{Les solutions sont $0$ et $2$.}{on le voyait déjà à la question 2}
 \begin{calculs}
 f(0) &= 2 &&\\
 f(2) &= 8-12+2 = -2 &&
@@ -1213,7 +1238,7 @@ a), d) et f).}
 f(1) &= \dfrac{1}{1} = 1 &&\\
 f'(x) &= -\dfrac{1}{x^{2}} &&\justif{on écrit d'abord la dérivée}\\
 f'(1) &= -\dfrac{1}{1^{2}} = -1 &&\\
-y &= f'(1)(x-1)+f(1) &&\justif{propriété 1}\\
+y &= f'(1)(x-1)+f(1) &&\justif{équation de $(T_1)$ ; propriété 1}\\
 y &= -1\times(x-1)+1 &&\\
 y &= -x+1+1 &&\\
 y &= \res{-x+2} &&
@@ -1223,7 +1248,7 @@ y &= \res{-x+2} &&
 g(4) &= \sqrt{4} = 2 &&\\
 g'(x) &= \dfrac{1}{2\sqrt{x}} &&\\
 g'(4) &= \dfrac{1}{2\times 2} = \dfrac{1}{4} &&\\
-y &= g'(4)(x-4)+g(4) &&\\
+y &= g'(4)(x-4)+g(4) &&\justif{équation de $(T_4)$}\\
 y &= \dfrac{1}{4}(x-4)+2 &&\\
 y &= \dfrac{1}{4}x-1+2 &&\justif{$\frac{1}{4}\times 4=1$}\\
 y &= \res{\dfrac{1}{4}x+1} &&
@@ -1418,7 +1443,7 @@ f'(4) &= \dfrac{9}{2\times 2} = \res{\dfrac{9}{4}} &&
 \end{calculs}
 \cas{3.}
 \begin{calculs}
-y &= f'(4)(x-4)+f(4) &&\justif{propriété 1}\\
+y &= f'(4)(x-4)+f(4) &&\justif{équation de $(T_4)$ ; propriété 1}\\
 y &= \dfrac{9}{4}(x-4)+2 &&\\
 y &= \dfrac{9}{4}x-9+2 &&\justif{$\frac{9}{4}\times 4=9$}\\
 y &= \res{\dfrac{9}{4}x-7} &&
@@ -1639,7 +1664,7 @@ x &= 2 &&\justif{$2\ne -1$ : ce n'est pas la valeur interdite}
 \begin{calculs}
 f'(2) &= \dfrac{6}{(2+1)^{2}} = \dfrac{6}{9} &&\\
 f'(2) &= \dfrac{2}{3} &&\justif{on simplifie par $3$}\\
-y &= f'(2)(x-2)+f(2) &&\justif{propriété 1}\\
+y &= f'(2)(x-2)+f(2) &&\justif{équation de $(T_2)$ ; propriété 1}\\
 y &= \dfrac{2}{3}(x-2)+0 &&\\
 y &= \res{\dfrac{2}{3}x-\dfrac{4}{3}} &&
 \end{calculs}
@@ -1649,7 +1674,7 @@ $f(0)$.}{}
 \begin{calculs}
 f(0) &= \dfrac{0-4}{0+1} = -4 &&\justif{donc $\res{B(0\,;-4)}$}\\
 f'(0) &= \dfrac{6}{(0+1)^{2}} = 6 &&\\
-y &= f'(0)(x-0)+f(0) &&\\
+y &= f'(0)(x-0)+f(0) &&\justif{équation de $(T_0)$}\\
 y &= \res{6x-4} &&
 \end{calculs}
 \rem{Ne pas confondre : sur l'axe des abscisses, $y=0$ ; sur l'axe des ordonnées, $x=0$.}
@@ -1787,7 +1812,7 @@ f'(4) &= \res{0{,}8} &&
 \end{calculs}
 \cas{3.}
 \begin{calculs}
-y &= f'(4)(x-4)+f(4) &&\justif{propriété 1}\\
+y &= f'(4)(x-4)+f(4) &&\justif{équation de $(T_4)$ ; propriété 1}\\
 y &= 0{,}8(x-4)+5 &&\\
 y &= 0{,}8x-3{,}2+5 &&\\
 y &= \res{0{,}8x+1{,}8} &&
@@ -2142,7 +2167,7 @@ comprises}
 \begin{calculs}
 f(1) &= -1+3-1 = 1 &&\\
 f'(1) &= -3+6 = 3 &&\justif{avec $f'(x)=-3x^{2}+6x$}\\
-y &= f'(1)(x-1)+f(1) &&\justif{propriété 1}\\
+y &= f'(1)(x-1)+f(1) &&\justif{équation de $(T_1)$ ; propriété 1}\\
 y &= 3(x-1)+1 &&\\
 y &= \res{3x-2} &&
 \end{calculs}
@@ -2157,7 +2182,7 @@ $f(x)$ & $3$ & $-0{,}125$ & $-1$ & $-0{,}375$ & $1$ & $2{,}375$ & $3$ & $2{,}125
 \end{tabular}
 \end{center}
 \explique{On place les points du tableau, les extremums (tangentes horizontales en $0$ et en
-$2$), puis $T$, qui passe par $(1\,;1)$ et $(0\,;-2)$.}{deux points suffisent pour tracer
+$2$), puis $(T_1)$, qui passe par $(1\,;1)$ et $(0\,;-2)$.}{deux points suffisent pour tracer
 une droite}
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
@@ -2168,7 +2193,7 @@ une droite}
   \draw[coulExo,line width=0.9pt] (0,-2) -- (1.8,3.4);
   \draw[coulExo,line width=0.9pt] (-0.6,-1) -- (0.6,-1) (1.4,3) -- (2.6,3);
   \path[coulCourbe] (0,-1) node[croix]{} (2,3) node[croix]{} (1,1) node[croix]{};
-  \node[coulExo,font=\footnotesize] at (1.95,3.75) {$T$};
+  \node[coulExo,font=\footnotesize] at (1.95,3.75) {$(T_1)$};
   \node[coulCourbe,font=\footnotesize] at (3.4,-0.6) {$\Cf$};
 \end{tikzpicture}
 \end{center}
@@ -2221,7 +2246,7 @@ $-2$} et \res{maximum local $1$ en $1$}.}{théorème 2}
 f(0) &= \dfrac{1}{2} &&\\
 f'(0) &= \dfrac{-2\times 2\times(-1)}{2^{2}} &&\justif{on remplace $x$ par $0$ dans la forme factorisée}\\
 f'(0) &= \dfrac{4}{4} = 1 &&\\
-y &= f'(0)(x-0)+f(0) &&\\
+y &= f'(0)(x-0)+f(0) &&\justif{équation de $(T_0)$}\\
 y &= \res{x+\dfrac{1}{2}} &&
 \end{calculs}
 \cas{6.}
@@ -2243,7 +2268,7 @@ $f(x)$ & $-0{,}39$ & $-0{,}45$ & $-0{,}5$ & $-0{,}33$ & $0{,}5$ & $1$ & $0{,}83$
   \draw[coulExo,line width=0.9pt] (-1.5,-1) -- (1.5,2);
   \draw[coulExo,line width=0.9pt] (-2.5,-0.5) -- (-1.5,-0.5) (0.5,1) -- (1.5,1);
   \path[coulCourbe] (-2,-0.5) node[croix]{} (1,1) node[croix]{} (0,0.5) node[croix]{};
-  \node[coulExo,font=\footnotesize] at (1.7,1.85) {$T$};
+  \node[coulExo,font=\footnotesize] at (1.7,1.85) {$(T_0)$};
   \node[coulCourbe,font=\footnotesize] at (3.8,0.75) {$\Cf$};
 \end{tikzpicture}
 \end{center}
@@ -2294,7 +2319,7 @@ qu'autour de son point}
 \begin{calculs}
 f(0) &= \dfrac{-3}{-2} = \dfrac{3}{2} &&\\
 f'(0) &= \dfrac{(-1)\times(-3)}{(-2)^{2}} = \dfrac{3}{4} &&\\
-y &= f'(0)(x-0)+f(0) &&\\
+y &= f'(0)(x-0)+f(0) &&\justif{équation de $(T_0)$}\\
 y &= \res{\dfrac{3}{4}x+\dfrac{3}{2}} &&
 \end{calculs}
 \cas{6.}
@@ -2325,7 +2350,7 @@ $f(x)$ & $6{,}5$ & $6$ & $6{,}5$ & $7{,}33$ & $8{,}25$ & $9{,}2$\\ \hline
   \draw[coulExo,line width=0.9pt] (-3,-0.75) -- (2,3);
   \draw[coulExo,line width=0.9pt] (0.4,2) -- (1.6,2) (2.4,6) -- (3.6,6);
   \path[coulCourbe] (1,2) node[croix]{} (3,6) node[croix]{} (0,1.5) node[croix]{};
-  \node[coulExo,font=\footnotesize] at (2.4,3.4) {$T$};
+  \node[coulExo,font=\footnotesize] at (2.4,3.4) {$(T_0)$};
   \node[coulCourbe,font=\footnotesize] at (6.4,9.6) {$\Cf$};
 \end{tikzpicture}
 \end{center}
@@ -2390,8 +2415,8 @@ déjà une solution.}{on traduit la question}
 6t^{2}-8t &= 0 &&\justif{on regroupe tout dans un membre}\\
 2t(3t-4) &= 0 &&\justif{on factorise par $2t$}
 \end{calculs}
-\explique{Produit nul : $t=0$ (le décollage) ou $3t-4=0$, soit $t=\dfrac{4}{3}$.}{équation
-produit nul}
+\eqproduit{2t &= 0\\ t &= 0}{3t-4 &= 0\\ 3t &= 4\\ t &= \dfrac43}
+\explique{$t=0$ correspond au décollage.}{}
 \begin{calculs}
 \dfrac{4}{3}~\text{h} &= 1~\text{h}+\dfrac{1}{3}\times 60~\text{min} &&\justif{$\frac{4}{3}=1+\frac{1}{3}$}\\
 \dfrac{4}{3}~\text{h} &= 1~\text{h}~20~\text{min} &&

@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.0}
+\def\lyceeversion{1.1}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
@@ -90,6 +90,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -716,26 +738,22 @@ Résoudre :
 \begin{correction}
 \cas{a)}
 \begin{calculs}
-(x-4)(x+6) &= 0 &\qquad& \rem{on recopie}\\
-x-4 &= 0 \quad\text{ou}\quad x+6=0 &\qquad& \rem{un des facteurs est nul}\\
-x &= 4 \quad\text{ou}\quad x=-6 &&
+(x-4)(x+6) &= 0 &\qquad& \rem{on recopie}
 \end{calculs}
+\eqproduit{x-4 &= 0\\ x &= 4}{x+6 &= 0\\ x &= -6}
 \explique{$S=\res{\ens{-6\,;4}}$.}{solutions rangées dans l'ordre croissant}
 \cas{b)}
 \begin{calculs}
-(3x-6)(-2x+10) &= 0 &\qquad& \rem{on recopie}\\
-3x-6 &= 0 \quad\text{ou}\quad -2x+10=0 &\qquad& \rem{un des facteurs est nul}\\
-3x &= 6 \quad\text{ou}\quad -2x=-10 &&\\
-x &= 2 \quad\text{ou}\quad x=5 &\qquad& \rem{$-10\div(-2)=5$}
+(3x-6)(-2x+10) &= 0 &\qquad& \rem{on recopie}
 \end{calculs}
+\eqproduit{3x-6 &= 0\\ 3x &= 6\\ x &= 2}{-2x+10 &= 0\\ -2x &= -10\\ x &= 5}
 \explique{$S=\res{\ens{2\,;5}}$.}{}
 \cas{c)}
 \begin{calculs}
 x^{2}-5x &= 0 &\qquad& \rem{on recopie ; ce n'est pas encore un produit}\\
-x(x-5) &= 0 &\qquad& \rem{on factorise : $x$ est dans les deux termes}\\
-x &= 0 \quad\text{ou}\quad x-5=0 &\qquad& \rem{un des facteurs est nul}\\
-x &= 0 \quad\text{ou}\quad x=5 &&
+x(x-5) &= 0 &\qquad& \rem{on factorise : $x$ est dans les deux termes}
 \end{calculs}
+\eqproduit{x &= 0}{x-5 &= 0\\ x &= 5}
 \explique{$S=\res{\ens{0\,;5}}$.}{}
 \end{correction}
 
@@ -858,10 +876,9 @@ factorisée : d'abord les parenthèses}\\
 l'expression la plus compliquée}
 \cas{b)}
 \begin{calculs}
-2(x-1)(x+3) &= 0 &\qquad& \rem{on résout $f(x)=0$ avec la forme factorisée}\\
-x-1 &= 0 \quad\text{ou}\quad x+3=0 &\qquad& \rem{produit nul ; le $2$ n'est jamais nul}\\
-x &= 1 \quad\text{ou}\quad x=-3 &&
+2(x-1)(x+3) &= 0 &\qquad& \rem{on résout $f(x)=0$ ; le $2$ n'est jamais nul}
 \end{calculs}
+\eqproduit{x-1 &= 0\\ x &= 1}{x+3 &= 0\\ x &= -3}
 \explique{Les racines de $f$ sont \res{$-3$ et $1$}.}{}
 \cas{c)}
 \explique{La courbe coupe l'axe des abscisses aux points \res{$(-3\,;0)$} et
@@ -1096,9 +1113,9 @@ bas}
 \cas{c)}
 \begin{calculs}
 3x^{2}-12x &= 0 &\qquad& \rem{les racines : on résout $h(x)=0$}\\
-x(3x-12) &= 0 &\qquad& \rem{on factorise par $x$}\\
-x &= 0 \quad\text{ou}\quad x=4 &\qquad& \rem{$3x=12$}
+x(3x-12) &= 0 &\qquad& \rem{on factorise par $x$}
 \end{calculs}
+\eqproduit{x &= 0}{3x-12 &= 0\\ 3x &= 12\\ x &= 4}
 \explique{$x_{S}=\dfrac{0+4}{2}=2$ et $h(2)=12-24=-12$ : sommet
 \res{$S(2\,;-12)$}.}{$3\times 2^{2}=12$}
 \explique{$a=3>0$ : $h$ diminue, puis augmente ; son minimum est $-12$.}{}
@@ -1175,7 +1192,9 @@ donnée}\\
 -2(x-2)(x-10) &= -2x^{2}+24x-40 &\qquad& \rem{on retrouve $B(x)$}
 \end{calculs}
 \cas{4\textdegree)}
-\explique{$B(x)=0$ pour $x=2$ ou $x=10$ : pour \res{$200$ ou $1\,000$ trottinettes}.}{produit nul sur la forme factorisée}
+\explique{On résout $-2(x-2)(x-10)=0$.}{la forme factorisée}
+\eqproduit{x-2 &= 0\\ x &= 2}{x-10 &= 0\\ x &= 10}
+\explique{Le bénéfice est nul pour \res{$200$ ou $1\,000$ trottinettes}.}{}
 \cas{5\textdegree)}
 \explique{$x_{S}=\dfrac{2+10}{2}=6$ et $B(6)=-2\times 4\times(-4)=32$.}{le milieu des
 racines}

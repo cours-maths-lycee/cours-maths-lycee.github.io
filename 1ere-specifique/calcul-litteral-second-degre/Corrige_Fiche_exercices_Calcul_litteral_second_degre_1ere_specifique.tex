@@ -88,6 +88,28 @@
 \renewcommand{\CancelColor}{\color{coulExo}}
 \newcommand{\fois}[1]{\times{\color{coulExo}#1}}
 \newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
 
 \tikzset{grille/.style={coulGrille,line width=0.4pt}}
 \newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
@@ -837,35 +859,31 @@ $x$.}
 
 \begin{exo}[Produit nul]
 \explique{L'équation est de la forme \og produit $=0$\fg. Un produit est nul quand l'un
-de ses facteurs est nul : on écrit \og premier facteur $=0$ ou second facteur
-$=0$\fg.}{méthode 5 du cours}
+de ses facteurs est nul : on résout \og facteur $=0$\fg{} pour chaque facteur, une
+colonne par facteur.}{méthode 5 du cours}
 \cas{a)}
 \begin{calculs}
-(x-1)(x+7) &= 0 &&\justif{on recopie}\\
-x-1 &= 0 \quad\text{ou}\quad x+7=0 &&\justif{un des facteurs est nul}\\
-x &= 1 \quad\text{ou}\quad x=-7 &&
+(x-1)(x+7) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{x-1 &= 0\\ x &= 1}{x+7 &= 0\\ x &= -7}
 \explique{$\res{S=\ens{-7\,;1}}$.}{solutions rangées dans l'ordre croissant}
 \cas{b)}
 \begin{calculs}
-(x+2)(x+5) &= 0 &&\justif{on recopie}\\
-x+2 &= 0 \quad\text{ou}\quad x+5=0 &&\justif{un des facteurs est nul}\\
-x &= -2 \quad\text{ou}\quad x=-5 &&
+(x+2)(x+5) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{x+2 &= 0\\ x &= -2}{x+5 &= 0\\ x &= -5}
 \explique{$\res{S=\ens{-5\,;-2}}$.}{$-5$ est plus petit que $-2$}
 \cas{c)}
 \begin{calculs}
-(x-3)(x-8) &= 0 &&\justif{on recopie}\\
-x-3 &= 0 \quad\text{ou}\quad x-8=0 &&\\
-x &= 3 \quad\text{ou}\quad x=8 &&
+(x-3)(x-8) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{x-3 &= 0\\ x &= 3}{x-8 &= 0\\ x &= 8}
 \explique{$\res{S=\ens{3\,;8}}$.}{}
 \cas{d)}
 \begin{calculs}
-x(x+4) &= 0 &&\justif{les deux facteurs sont $x$ et $x+4$}\\
-x &= 0 \quad\text{ou}\quad x+4=0 &&\\
-x &= 0 \quad\text{ou}\quad x=-4 &&
+x(x+4) &= 0 &&\justif{les deux facteurs sont $x$ et $x+4$}
 \end{calculs}
+\eqproduit{x &= 0}{x+4 &= 0\\ x &= -4}
 \explique{$\res{S=\ens{-4\,;0}}$.}{}
 \rem{Repère rapide : dans $(x-1)$, la solution est $1$ ; dans $(x+7)$, c'est $-7$. Le
 signe change.}
@@ -878,43 +896,33 @@ $x=-7$ : $x+7=0$.}
 résoudre jusqu'au bout.}{méthode 5 du cours}
 \cas{a)}
 \begin{calculs}
-(2x-4)(x+3) &= 0 &&\justif{on recopie}\\
-2x-4 &= 0 \quad\text{ou}\quad x+3=0 &&\justif{un des facteurs est nul}\\
-2x &= 4 \quad\text{ou}\quad x=-3 &&\\
-x &= 2 \quad\text{ou}\quad x=-3 &&\justif{$4\div 2=2$}
+(2x-4)(x+3) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{2x-4 &= 0\\ 2x &= 4\\ x &= 2}{x+3 &= 0\\ x &= -3}
 \explique{$\res{S=\ens{-3\,;2}}$.}{}
 \cas{b)}
 \begin{calculs}
-(3x+9)(x-5) &= 0 &&\justif{on recopie}\\
-3x+9 &= 0 \quad\text{ou}\quad x-5=0 &&\\
-3x &= -9 \quad\text{ou}\quad x=5 &&\justif{on retranche $9$}\\
-x &= -3 \quad\text{ou}\quad x=5 &&\justif{$-9\div 3=-3$}
+(3x+9)(x-5) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{3x+9 &= 0\\ 3x &= -9\\ x &= -3}{x-5 &= 0\\ x &= 5}
 \explique{$\res{S=\ens{-3\,;5}}$.}{}
 \cas{c)}
 \begin{calculs}
-(5x-15)(2x+8) &= 0 &&\justif{on recopie}\\
-5x-15 &= 0 \quad\text{ou}\quad 2x+8=0 &&\\
-5x &= 15 \quad\text{ou}\quad 2x=-8 &&\\
-x &= 3 \quad\text{ou}\quad x=-4 &&\justif{$15\div 5=3$ et $-8\div 2=-4$}
+(5x-15)(2x+8) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{5x-15 &= 0\\ 5x &= 15\\ x &= 3}{2x+8 &= 0\\ 2x &= -8\\ x &= -4}
 \explique{$\res{S=\ens{-4\,;3}}$.}{}
 \cas{d)}
 \begin{calculs}
-(-x+6)(4x-8) &= 0 &&\justif{on recopie}\\
--x+6 &= 0 \quad\text{ou}\quad 4x-8=0 &&\\
-6 &= x \quad\text{ou}\quad 4x=8 &&\justif{on fait passer $-x$ à droite}\\
-x &= 6 \quad\text{ou}\quad x=2 &&\justif{$8\div 4=2$}
+(-x+6)(4x-8) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{-x+6 &= 0\\ 6 &= x\\ x &= 6}{4x-8 &= 0\\ 4x &= 8\\ x &= 2}
 \explique{$\res{S=\ens{2\,;6}}$.}{}
 \cas{e)}
 \begin{calculs}
-(-2x+10)(3x+3) &= 0 &&\justif{on recopie}\\
--2x+10 &= 0 \quad\text{ou}\quad 3x+3=0 &&\\
--2x &= -10 \quad\text{ou}\quad 3x=-3 &&\\
-x &= 5 \quad\text{ou}\quad x=-1 &&\justif{$-10\div(-2)=5$ et $-3\div 3=-1$}
+(-2x+10)(3x+3) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{-2x+10 &= 0\\ -2x &= -10\\ x &= 5}{3x+3 &= 0\\ 3x &= -3\\ x &= -1}
 \explique{$\res{S=\ens{-1\,;5}}$.}{}
 \rem{Avec un coefficient devant $x$, on ne lit plus la solution \og en changeant le
 signe\fg{} : $2x-4=0$ donne $x=2$, pas $x=4$.}
@@ -928,43 +936,38 @@ facteur.}{méthode 5 du cours}
 \cas{a)}
 \begin{calculs}
 x^{2}-4x &= 0 &&\justif{on recopie ; ce n'est pas encore un produit}\\
-x(x-4) &= 0 &&\justif{$x^{2}=x\times x$ et $4x=x\times 4$}\\
-x &= 0 \quad\text{ou}\quad x-4=0 &&\justif{un des facteurs est nul}\\
-x &= 0 \quad\text{ou}\quad x=4 &&
+x(x-4) &= 0 &&\justif{$x^{2}=x\times x$ et $4x=x\times 4$}
 \end{calculs}
+\eqproduit{x &= 0}{x-4 &= 0\\ x &= 4}
 \explique{$\res{S=\ens{0\,;4}}$.}{}
 \cas{b)}
 \begin{calculs}
 x^{2}+6x &= 0 &&\justif{on recopie}\\
-x(x+6) &= 0 &&\justif{on factorise par $x$}\\
-x &= 0 \quad\text{ou}\quad x+6=0 &&\\
-x &= 0 \quad\text{ou}\quad x=-6 &&
+x(x+6) &= 0 &&\justif{on factorise par $x$}
 \end{calculs}
+\eqproduit{x &= 0}{x+6 &= 0\\ x &= -6}
 \explique{$\res{S=\ens{-6\,;0}}$.}{}
 \cas{c)}
 \begin{calculs}
 3x^{2}-9x &= 0 &&\justif{on recopie}\\
-x(3x-9) &= 0 &&\justif{$3x^{2}=x\times 3x$ et $9x=x\times 9$}\\
-x &= 0 \quad\text{ou}\quad 3x-9=0 &&\\
-x &= 0 \quad\text{ou}\quad x=3 &&\justif{$3x=9$}
+x(3x-9) &= 0 &&\justif{$3x^{2}=x\times 3x$ et $9x=x\times 9$}
 \end{calculs}
+\eqproduit{x &= 0}{3x-9 &= 0\\ x &= 3}
 \explique{$\res{S=\ens{0\,;3}}$.}{}
 \cas{d)}
 \begin{calculs}
 2x^{2}+10x &= 0 &&\justif{on recopie}\\
-x(2x+10) &= 0 &&\justif{on factorise par $x$}\\
-x &= 0 \quad\text{ou}\quad 2x+10=0 &&\\
-x &= 0 \quad\text{ou}\quad x=-5 &&\justif{$2x=-10$}
+x(2x+10) &= 0 &&\justif{on factorise par $x$}
 \end{calculs}
+\eqproduit{x &= 0}{2x+10 &= 0\\ x &= -5}
 \explique{$\res{S=\ens{-5\,;0}}$.}{}
 \cas{e)}
 \begin{calculs}
 x^{2} &= 7x &&\justif{on recopie}\\
 x^{2}-7x &= 0 &&\justif{on retranche $7x$ : tout passe à gauche}\\
-x(x-7) &= 0 &&\justif{on factorise par $x$}\\
-x &= 0 \quad\text{ou}\quad x-7=0 &&\\
-x &= 0 \quad\text{ou}\quad x=7 &&
+x(x-7) &= 0 &&\justif{on factorise par $x$}
 \end{calculs}
+\eqproduit{x &= 0}{x-7 &= 0\\ x &= 7}
 \explique{$\res{S=\ens{0\,;7}}$.}{contrôle : $7^{2}=49$ et $7\times 7=49$}
 \rem{Contrôle de la factorisation : on redéveloppe, $x(x-4)=x^{2}-4x$.}
 \rem{Piège en e) : diviser les deux membres par $x$ donne $x=7$ et fait perdre la solution
@@ -1153,20 +1156,22 @@ et on le distribue à la fin.}
 racine annule une parenthèse ; le nombre devant les parenthèses n'est jamais
 nul.}{propriété 6 du cours}
 \cas{$f$}
-\explique{$x-3=0$ ou $x+1=0$ : les racines de $f$ sont $\res{-1}$ et
-\res{3}.}{dans $(x+1)$, la racine est $-1$}
+\eqproduit{x-3 &= 0\\ x &= 3}{x+1 &= 0\\ x &= -1}
+\explique{Les racines de $f$ sont $\res{-1}$ et \res{3}.}{dans $(x+1)$, la racine est $-1$}
 \cas{$g$}
-\explique{$x+5=0$ ou $x-2=0$ : les racines de $g$ sont $\res{-5}$ et \res{2}.}{le $2$
-devant ne change pas les racines}
+\eqproduit{x+5 &= 0\\ x &= -5}{x-2 &= 0\\ x &= 2}
+\explique{Les racines de $g$ sont $\res{-5}$ et \res{2}.}{le $2$ devant ne change pas les
+racines}
 \cas{$h$}
-\explique{$x-4=0$ ou $x-6=0$ : les racines de $h$ sont \res{4} et \res{6}.}{le signe $-$
-devant ne change pas les racines}
+\eqproduit{x-4 &= 0\\ x &= 4}{x-6 &= 0\\ x &= 6}
+\explique{Les racines de $h$ sont \res{4} et \res{6}.}{le signe $-$ devant ne change pas les
+racines}
 \cas{$k$}
-\explique{$5x=0$ ou $x-7=0$ : les racines de $k$ sont \res{0} et \res{7}.}{$5x=0$ donne
-$x=0$}
+\eqproduit{5x &= 0\\ x &= 0}{x-7 &= 0\\ x &= 7}
+\explique{Les racines de $k$ sont \res{0} et \res{7}.}{}
 \cas{$m$}
-\explique{$x+2=0$ ou $x+8=0$ : les racines de $m$ sont $\res{-8}$ et $\res{-2}$.}{deux
-racines négatives}
+\eqproduit{x+2 &= 0\\ x &= -2}{x+8 &= 0\\ x &= -8}
+\explique{Les racines de $m$ sont $\res{-8}$ et $\res{-2}$.}{deux racines négatives}
 \rem{Erreur fréquente : garder le signe de la parenthèse. Dans $(x+5)$, la racine est
 $-5$ : on vérifie que $-5+5=0$.}
 \rem{Le nombre devant les parenthèses ($2$ pour $g$, $-1$ pour $h$, $5$ pour $k$ et $-3$ pour $m$)
@@ -1184,10 +1189,9 @@ n'est pas une racine.}
 factorisée}
 \cas{2.}
 \begin{calculs}
-(x+2)(x-3) &= 0 &&\justif{on résout $f(x)=0$ avec la forme factorisée}\\
-x+2 &= 0 \quad\text{ou}\quad x-3=0 &&\justif{produit nul}\\
-x &= -2 \quad\text{ou}\quad x=3 &&
+(x+2)(x-3) &= 0 &&\justif{on résout $f(x)=0$ avec la forme factorisée}
 \end{calculs}
+\eqproduit{x+2 &= 0\\ x &= -2}{x-3 &= 0\\ x &= 3}
 \explique{Les racines de $f$ sont $\res{-2}$ et \res{3}.}{}
 \cas{3.}
 \explique{La courbe coupe l'axe des abscisses aux points $\res{(-2\,;0)}$ et
@@ -1435,9 +1439,9 @@ et 10 du cours}
 \cas{a)}
 \begin{calculs}
 x^{2}-6x &= 0 &&\justif{les racines : on résout $f(x)=0$}\\
-x(x-6) &= 0 &&\justif{on factorise par $x$}\\
-x &= 0 \quad\text{ou}\quad x=6 &&\justif{produit nul}
+x(x-6) &= 0 &&\justif{on factorise par $x$}
 \end{calculs}
+\eqproduit{x &= 0}{x &= 6}
 \begin{calculs}
 x_{S} &= \dfrac{0+6}{2} = 3 &&\justif{le milieu des racines}\\
 f(3) &= 3^{2}-6\times 3 &&\justif{la forme développée suffit}\\
@@ -1448,10 +1452,9 @@ f(3) &= 9-18 = -9 &&
 \cas{b)}
 \begin{calculs}
 -x^{2}+10x &= 0 &&\justif{les racines}\\
-x(-x+10) &= 0 &&\justif{on factorise par $x$ : $-x^{2}=x\times(-x)$}\\
-x &= 0 \quad\text{ou}\quad -x+10=0 &&\\
-x &= 0 \quad\text{ou}\quad x=10 &&
+x(-x+10) &= 0 &&\justif{on factorise par $x$ : $-x^{2}=x\times(-x)$}
 \end{calculs}
+\eqproduit{x &= 0}{-x+10 &= 0\\ x &= 10}
 \begin{calculs}
 x_{S} &= \dfrac{0+10}{2} = 5 &&\justif{le milieu des racines}\\
 g(5) &= -5^{2}+10\times 5 &&\justif{$-5^{2}=-25$ : le carré, puis le signe}\\
@@ -1462,10 +1465,9 @@ g(5) &= -25+50 = 25 &&
 \cas{c)}
 \begin{calculs}
 2x^{2}+8x &= 0 &&\justif{les racines}\\
-x(2x+8) &= 0 &&\justif{on factorise par $x$}\\
-x &= 0 \quad\text{ou}\quad 2x+8=0 &&\\
-x &= 0 \quad\text{ou}\quad x=-4 &&\justif{$2x=-8$}
+x(2x+8) &= 0 &&\justif{on factorise par $x$}
 \end{calculs}
+\eqproduit{x &= 0}{2x+8 &= 0\\ x &= -4}
 \begin{calculs}
 x_{S} &= \dfrac{-4+0}{2} = -2 &&\justif{le milieu des racines}\\
 h(-2) &= 2\times(-2)^{2}+8\times(-2) &&\justif{on remplace $x$ par $(-2)$}\\
@@ -1476,9 +1478,9 @@ h(-2) &= 8-16 = -8 &&\justif{$(-2)^{2}=4$, puis $2\times 4=8$}
 \cas{d)}
 \begin{calculs}
 x^{2}-9 &= 0 &&\justif{les racines ; pas de $x$ en facteur ici}\\
-x^{2} &= 9 &&\justif{on isole $x^{2}$}\\
-x &= -3 \quad\text{ou}\quad x=3 &&\justif{$9>0$ et $9=3^{2}$}
+x^{2} &= 9 &&\justif{on isole $x^{2}$}
 \end{calculs}
+\eqproduit{x &= -3}{x &= 3}
 \begin{calculs}
 x_{S} &= \dfrac{-3+3}{2} = 0 &&\justif{le milieu des racines}\\
 k(0) &= 0^{2}-9 = -9 &&
@@ -1553,10 +1555,9 @@ $200$~€ : ce sont les frais de la journée.}{$B(0)<0$ : une perte}
 \explique{On retrouve $B(x)$ : donc $B(x)=-(x-2)(x-10)$.}{on part de la forme donnée}
 \cas{3.}
 \begin{calculs}
--(x-2)(x-10) &= 0 &&\justif{bénéfice nul : on résout $B(x)=0$}\\
-x-2 &= 0 \quad\text{ou}\quad x-10=0 &&\justif{produit nul}\\
-x &= 2 \quad\text{ou}\quad x=10 &&
+-(x-2)(x-10) &= 0 &&\justif{bénéfice nul : on résout $B(x)=0$}
 \end{calculs}
+\eqproduit{x-2 &= 0\\ x &= 2}{x-10 &= 0\\ x &= 10}
 \explique{Le bénéfice est nul pour \res{20} ou \res{100} repas.}{$x=2$ : $2$ dizaines de
 repas}
 \cas{4.}
@@ -1594,10 +1595,9 @@ de la falaise.}{$h(0)$ : la hauteur au départ}
 \explique{On retrouve $h(t)$ : donc $h(t)=-5(t+1)(t-3)$.}{$(-5)\times(-3)=+15$}
 \cas{3.}
 \begin{calculs}
--5(t+1)(t-3) &= 0 &&\justif{dans l'eau, la hauteur est nulle : $h(t)=0$}\\
-t+1 &= 0 \quad\text{ou}\quad t-3=0 &&\justif{produit nul ; $-5$ n'est jamais nul}\\
-t &= -1 \quad\text{ou}\quad t=3 &&
+-5(t+1)(t-3) &= 0 &&\justif{dans l'eau, la hauteur est nulle : $h(t)=0$}
 \end{calculs}
+\eqproduit{t+1 &= 0\\ t &= -1}{t-3 &= 0\\ t &= 3}
 \explique{Un temps est positif : la balle touche l'eau au bout de \res{3~secondes}.}{on
 rejette $t=-1$}
 \cas{4.}
@@ -1634,10 +1634,9 @@ A(x) &= 20x-x^{2} &&\\
 A(x) &= \res{-x^{2}+20x} &&\justif{on range}
 \end{calculs}
 \begin{calculs}
-x(20-x) &= 0 &&\justif{les racines : la forme factorisée sert ici}\\
-x &= 0 \quad\text{ou}\quad 20-x=0 &&\justif{produit nul}\\
-x &= 0 \quad\text{ou}\quad x=20 &&
+x(20-x) &= 0 &&\justif{les racines : la forme factorisée sert ici}
 \end{calculs}
+\eqproduit{x &= 0}{20-x &= 0\\ x &= 20}
 \explique{Les racines de $A$ sont \res{0} et \res{20}.}{un côté nul : l'enclos est
 aplati, son aire est nulle}
 \cas{4.}
@@ -1677,10 +1676,9 @@ x &= 2 &&\justif{on divise par $4$}
 oublie la solution négative ; d) divise $7$ par $2$}
 \cas{4.}
 \begin{calculs}
-(3x-6)(x+4) &= 0 &&\justif{on recopie}\\
-3x-6 &= 0 \quad\text{ou}\quad x+4=0 &&\justif{produit nul}\\
-x &= 2 \quad\text{ou}\quad x=-4 &&\justif{$3x=6$}
+(3x-6)(x+4) &= 0 &&\justif{on recopie}
 \end{calculs}
+\eqproduit{3x-6 &= 0\\ x &= 2}{x+4 &= 0\\ x &= -4}
 \explique{$S=\ens{-4\,;2}$ : réponse \res{b)}.}{d) oublie de diviser par $3$}
 \cas{5.}
 \begin{calculs}
@@ -1736,10 +1734,9 @@ centaines}
 \end{calculs}
 \explique{On retrouve $f(x)$ : donc $f(x)=-x(x-8)$.}{}
 \begin{calculs}
--x(x-8) &= 0 &&\justif{plus de malades : $f(x)=0$}\\
--x &= 0 \quad\text{ou}\quad x-8=0 &&\justif{produit nul}\\
-x &= 0 \quad\text{ou}\quad x=8 &&
+-x(x-8) &= 0 &&\justif{plus de malades : $f(x)=0$}
 \end{calculs}
+\eqproduit{-x &= 0\\ x &= 0}{x-8 &= 0\\ x &= 8}
 \explique{$x=0$ est le début de l'épidémie : elle s'arrête au bout de
 \res{8~semaines}.}{on interprète chaque solution}
 \cas{5.}
@@ -1782,10 +1779,9 @@ R(x) &= -10x^{2}+200x &&\justif{on range}
 \end{calculs}
 \cas{4.}
 \begin{calculs}
-x(200-10x) &= 0 &&\justif{on résout $R(x)=0$ avec la forme factorisée}\\
-x &= 0 \quad\text{ou}\quad 200-10x=0 &&\justif{produit nul}\\
-x &= 0 \quad\text{ou}\quad x=20 &&\justif{$10x=200$}
+x(200-10x) &= 0 &&\justif{on résout $R(x)=0$ avec la forme factorisée}
 \end{calculs}
+\eqproduit{x &= 0}{200-10x &= 0\\ x &= 20}
 \explique{Les racines de $R$ sont \res{0} et \res{20}.}{}
 \explique{Pour $x=0$, les places sont gratuites : la recette est nulle. Pour $x=20$, la
 troupe ne prévoit plus aucun spectateur ($200-200=0$) : la recette est nulle
