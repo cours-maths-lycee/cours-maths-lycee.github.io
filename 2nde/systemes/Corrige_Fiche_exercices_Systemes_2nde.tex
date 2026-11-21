@@ -1,0 +1,1218 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 13 --- Systèmes d'équations --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\ShorthandsOff
+\tikzset{
+  droite/.style={coulCourbe,line width=1pt},
+  droiteB/.style={coulCourbeB,line width=1pt},
+  aide/.style={dashed,black!50,line width=0.5pt},
+}
+\ShorthandsOn
+\newcommand{\sys}[1]{\left\{\begin{aligned}#1\end{aligned}\right.}
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+\newcommand{\sysligne}[1]{\begin{center}${\sys{#1}}$\end{center}}
+
+\newcommand{\cotefig}[3][0.32]{\par\vspace{-0.55\baselineskip}\noindent
+  \begin{minipage}[t]{\dimexpr0.97\linewidth-#1\linewidth\relax}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering #3\end{minipage}\par}
+
+\begin{document}
+
+\entetefiche{Chapitre 13 --- Systèmes d'équations}{Seconde}
+
+{\small Le repère est orthonormé. Dans chaque système, $(L_{1})$ est la première
+équation et $(L_{2})$ la deuxième. Pour la droite d'équation $ax+by+c=0$, le vecteur
+$\vec{u}\coord{-b}{a}$ est un vecteur directeur ; pour $y=mx+p$, c'est
+$\vec{u}\coord{1}{m}$.\par}
+
+\partie{Systèmes par substitution}
+
+\begin{exo}[Être solution d'un système]
+\explique{Un couple est solution quand il vérifie \textbf{les deux}
+équations.}{définition 1}
+\cas{$(3\,;2)$}
+\explique{$3\times 3+2=11$ et $3-2\times 2=-1$ : le couple $(3\,;2)$ \res{est
+solution} du système.}{les deux équations sont vérifiées}
+\cas{$(4\,;-1)$}
+\explique{$3\times 4+(-1)=11$, mais $4-2\times(-1)=6$, et non $-1$ : le couple
+$(4\,;-1)$ \res{n'est pas solution} du système.}{il ne vérifie que $(L_{1})$}
+\cas{$(1\,;1)$}
+\explique{$3\times 1+1=4$, et non $11$ : le couple $(1\,;1)$ \res{n'est pas
+solution} du système.}{inutile de tester $(L_{2})$}
+\rem{Erreur fréquente : s'arrêter à la première équation. Un couple qui vérifie
+$(L_{1})$ seulement n'est pas solution.}
+\end{exo}
+
+\begin{exo}[Une inconnue déjà isolée]
+\explique{Une équation donne déjà une inconnue : on la remplace dans l'autre
+équation.}{méthode 1}
+\cas{a)}
+\begin{calculs}
+2x+y &= 12 &&\justif{$(L_{2})$}\\
+2x+(x+3) &= 12 &&\justif{on remplace $y$ par $x+3$}\\
+3x+3 &= 12 &&\\
+3x &= 9 &&\justif{on enlève $3$}\\
+x &= 3 &&\justif{on divise par $3$}
+\end{calculs}
+\begin{calculs}
+y &= 3+3 &&\justif{dans $(L_{1})$ : $y=x+3$}\\
+y &= 6 &&
+\end{calculs}
+\explique{$S=\res{\{(3\,;6)\}}$.}{contrôle dans $(L_{2})$ : $2\times 3+6=12$}
+\cas{b)}
+\begin{calculs}
+3x-4y &= 1 &&\justif{$(L_{2})$}\\
+3(2y-1)-4y &= 1 &&\justif{on remplace $x$ par $2y-1$}\\
+6y-3-4y &= 1 &&\justif{on développe}\\
+2y-3 &= 1 &&\justif{on réduit}\\
+2y &= 4 &&\justif{on ajoute $3$}\\
+y &= 2 &&\justif{on divise par $2$}
+\end{calculs}
+\begin{calculs}
+x &= 2\times 2-1 &&\justif{dans $(L_{1})$ : $x=2y-1$}\\
+x &= 3 &&
+\end{calculs}
+\explique{$S=\res{\{(3\,;2)\}}$.}{contrôle dans $(L_{2})$ : $9-8=1$}
+\cas{c)}
+\begin{calculs}
+4x-y &= 7 &&\justif{$(L_{2})$}\\
+4x-(-2x+5) &= 7 &&\justif{on remplace $y$ par $-2x+5$, entre parenthèses}\\
+4x+2x-5 &= 7 &&\justif{le « $-$ » devant la parenthèse change les signes}\\
+6x &= 12 &&\justif{on ajoute $5$}\\
+x &= 2 &&\justif{on divise par $6$}
+\end{calculs}
+\begin{calculs}
+y &= -2\times 2+5 &&\justif{dans $(L_{1})$}\\
+y &= 1 &&
+\end{calculs}
+\explique{$S=\res{\{(2\,;1)\}}$.}{contrôle dans $(L_{2})$ : $8-1=7$}
+\rem{Erreur fréquente : oublier les parenthèses en remplaçant, et écrire $4x-2x+5$.}
+\end{exo}
+
+\begin{exo}[Isoler, puis remplacer]
+\explique{On isole l'inconnue de coefficient $1$ ou $-1$, puis on la remplace dans
+l'autre équation.}{méthode 1}
+\cas{a)}
+\begin{calculs}
+x &= 5-2y &&\justif{on isole $x$ dans $(L_{1})$ : on enlève $2y$}
+\end{calculs}
+\begin{calculs}
+3x+5y &= 13 &&\justif{$(L_{2})$}\\
+3(5-2y)+5y &= 13 &&\justif{on remplace $x$ par $5-2y$}\\
+15-6y+5y &= 13 &&\justif{on développe}\\
+15-y &= 13 &&\justif{on réduit}\\
+-y &= -2 &&\justif{on enlève $15$}\\
+y &= 2 &&\justif{on change les signes}
+\end{calculs}
+\begin{calculs}
+x &= 5-2\times 2 &&\justif{$x=5-2y$}\\
+x &= 1 &&
+\end{calculs}
+\explique{$S=\res{\{(1\,;2)\}}$.}{contrôle dans $(L_{2})$ : $3+10=13$}
+\cas{b)}
+\begin{calculs}
+y &= 7-2x &&\justif{on isole $y$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+5x+3y &= 18 &&\justif{$(L_{2})$}\\
+5x+3(7-2x) &= 18 &&\justif{on remplace $y$ par $7-2x$}\\
+5x+21-6x &= 18 &&\justif{on développe}\\
+-x+21 &= 18 &&\justif{on réduit}\\
+-x &= -3 &&\justif{on enlève $21$}\\
+x &= 3 &&\justif{on change les signes}
+\end{calculs}
+\begin{calculs}
+y &= 7-2\times 3 &&\justif{$y=7-2x$}\\
+y &= 1 &&
+\end{calculs}
+\explique{$S=\res{\{(3\,;1)\}}$.}{contrôle dans $(L_{2})$ : $15+3=18$}
+\cas{c)}
+\begin{calculs}
+3x-y &= 4 &&\justif{$(L_{1})$}\\
+-y &= 4-3x &&\justif{on enlève $3x$}\\
+y &= 3x-4 &&\justif{on change tous les signes}
+\end{calculs}
+\begin{calculs}
+5x-2y &= 6 &&\justif{$(L_{2})$}\\
+5x-2(3x-4) &= 6 &&\justif{on remplace $y$ par $3x-4$}\\
+5x-6x+8 &= 6 &&\justif{on développe : $-2\times(-4)=8$}\\
+-x+8 &= 6 &&\justif{on réduit}\\
+-x &= -2 &&\justif{on enlève $8$}\\
+x &= 2 &&\justif{on change les signes}
+\end{calculs}
+\begin{calculs}
+y &= 3\times 2-4 &&\justif{$y=3x-4$}\\
+y &= 2 &&
+\end{calculs}
+\explique{$S=\res{\{(2\,;2)\}}$.}{contrôle dans $(L_{2})$ : $10-4=6$}
+\cas{d)}
+\begin{calculs}
+-x+4y &= 6 &&\justif{$(L_{1})$}\\
+-x &= 6-4y &&\justif{on enlève $4y$}\\
+x &= 4y-6 &&\justif{on change tous les signes}
+\end{calculs}
+\begin{calculs}
+2x-3y &= 3 &&\justif{$(L_{2})$}\\
+2(4y-6)-3y &= 3 &&\justif{on remplace $x$ par $4y-6$}\\
+8y-12-3y &= 3 &&\justif{on développe}\\
+5y-12 &= 3 &&\justif{on réduit}\\
+5y &= 15 &&\justif{on ajoute $12$}\\
+y &= 3 &&\justif{on divise par $5$}
+\end{calculs}
+\begin{calculs}
+x &= 4\times 3-6 &&\justif{$x=4y-6$}\\
+x &= 6 &&
+\end{calculs}
+\explique{$S=\res{\{(6\,;3)\}}$.}{contrôle dans $(L_{2})$ : $12-9=3$}
+\end{exo}
+
+\begin{exo}[Des solutions en fractions]
+\cas{a)}
+\begin{calculs}
+x &= 2-3y &&\justif{on isole $x$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+2x-3y &= 1 &&\justif{$(L_{2})$}\\
+2(2-3y)-3y &= 1 &&\justif{on remplace $x$ par $2-3y$}\\
+4-6y-3y &= 1 &&\justif{on développe}\\
+-9y &= -3 &&\justif{on enlève $4$}\\
+y &= \frac{-3}{-9} &&\justif{on divise par $-9$}\\
+y &= \frac{1}{3} &&\justif{on simplifie par $-3$}
+\end{calculs}
+\begin{calculs}
+x &= 2-3\times\frac{1}{3} &&\justif{$x=2-3y$}\\
+x &= 2-1 &&\justif{$3\times\frac13=1$}\\
+x &= 1 &&
+\end{calculs}
+\explique{$S=\res{\left\{\left(1\,;\frac{1}{3}\right)\right\}}$.}{contrôle dans
+$(L_{2})$ : $2-3\times\frac13=2-1=1$}
+\cas{b)}
+\begin{calculs}
+5x-2y &= 2 &&\justif{$(L_{2})$}\\
+5x-2(x+1) &= 2 &&\justif{on remplace $y$ par $x+1$}\\
+5x-2x-2 &= 2 &&\justif{on développe}\\
+3x &= 4 &&\justif{on réduit et on ajoute $2$}\\
+x &= \frac{4}{3} &&\justif{on divise par $3$}
+\end{calculs}
+\begin{calculs}
+y &= \frac{4}{3}+1 &&\justif{dans $(L_{1})$ : $y=x+1$}\\
+y &= \frac{4}{3}+\frac{1\fois{3}}{1\fois{3}} &&\justif{même dénominateur}\\
+y &= \frac{7}{3} &&
+\end{calculs}
+\explique{$S=\res{\left\{\left(\frac{4}{3}\,;\frac{7}{3}\right)\right\}}$.}{contrôle
+dans $(L_{2})$ : $\frac{20}{3}-\frac{14}{3}=\frac63=2$}
+\end{exo}
+
+\partie{Systèmes par combinaison}
+
+\begin{exo}[Des coefficients déjà opposés]
+\explique{Une inconnue a des coefficients opposés : on additionne $(L_{1})$ et
+$(L_{2})$, elle disparaît.}{méthode 2}
+\cas{a)}
+\begin{calculs}
+(2x+3y)+(4x-3y) &= 12+6 &&\justif{$(L_{1})+(L_{2})$}\\
+6x &= 18 &&\justif{les $y$ s'éliminent : $3y-3y=0$}\\
+x &= 3 &&\justif{on divise par $6$}
+\end{calculs}
+\begin{calculs}
+2\times 3+3y &= 12 &&\justif{on remplace $x$ par $3$ dans $(L_{1})$}\\
+6+3y &= 12 &&\\
+3y &= 6 &&\justif{on enlève $6$}\\
+y &= 2 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$S=\res{\{(3\,;2)\}}$.}{contrôle dans $(L_{2})$ : $12-6=6$}
+\cas{b)}
+\begin{calculs}
+(-5x+2y)+(5x+4y) &= -1+13 &&\justif{$(L_{1})+(L_{2})$}\\
+6y &= 12 &&\justif{les $x$ s'éliminent}\\
+y &= 2 &&\justif{on divise par $6$}
+\end{calculs}
+\begin{calculs}
+-5x+2\times 2 &= -1 &&\justif{dans $(L_{1})$}\\
+-5x+4 &= -1 &&\\
+-5x &= -5 &&\justif{on enlève $4$}\\
+x &= 1 &&\justif{on divise par $-5$}
+\end{calculs}
+\explique{$S=\res{\{(1\,;2)\}}$.}{contrôle dans $(L_{2})$ : $5+8=13$}
+\cas{c)}
+\begin{calculs}
+(3x+4y)+(-3x+2y) &= 1+5 &&\justif{$(L_{1})+(L_{2})$}\\
+6y &= 6 &&\justif{les $x$ s'éliminent}\\
+y &= 1 &&\justif{on divise par $6$}
+\end{calculs}
+\begin{calculs}
+3x+4\times 1 &= 1 &&\justif{dans $(L_{1})$}\\
+3x &= -3 &&\justif{on enlève $4$}\\
+x &= -1 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$S=\res{\{(-1\,;1)\}}$.}{contrôle dans $(L_{2})$ : $3+2=5$}
+\end{exo}
+
+\begin{exo}[Multiplier une équation]
+\explique{On multiplie une équation pour que les coefficients d'une inconnue
+deviennent opposés, puis on additionne.}{méthode 2}
+\cas{a)}
+\explique{En $x$, $3$ et $6$ : on multiplie $(L_{1})$ par $-2$.}{$3\times(-2)=-6$,
+opposé de $6$}
+\sysligne{-6x-4y &= -16 && (L_{1})\times(-2)\\ 6x+5y &= 17 && (L_{2})}
+\begin{calculs}
+(-6x-4y)+(6x+5y) &= -16+17 &&\justif{on additionne}\\
+y &= 1 &&\justif{les $x$ s'éliminent}
+\end{calculs}
+\begin{calculs}
+3x+2\times 1 &= 8 &&\justif{dans $(L_{1})$}\\
+3x &= 6 &&\justif{on enlève $2$}\\
+x &= 2 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$S=\res{\{(2\,;1)\}}$.}{contrôle dans $(L_{2})$ : $12+5=17$}
+\cas{b)}
+\explique{En $x$, $4$ et $2$ : on multiplie $(L_{2})$ par $-2$.}{$2\times(-2)=-4$,
+opposé de $4$}
+\sysligne{4x+3y &= 5 && (L_{1})\\ -4x-10y &= -26 && (L_{2})\times(-2)}
+\begin{calculs}
+(4x+3y)+(-4x-10y) &= 5-26 &&\justif{on additionne}\\
+-7y &= -21 &&\justif{les $x$ s'éliminent}\\
+y &= 3 &&\justif{on divise par $-7$}
+\end{calculs}
+\begin{calculs}
+4x+3\times 3 &= 5 &&\justif{dans $(L_{1})$}\\
+4x &= -4 &&\justif{on enlève $9$}\\
+x &= -1 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$S=\res{\{(-1\,;3)\}}$.}{contrôle dans $(L_{2})$ : $-2+15=13$}
+\cas{c)}
+\explique{En $y$, $2$ et $-4$ : on multiplie $(L_{1})$ par $2$.}{$2\times 2=4$, opposé
+de $-4$}
+\sysligne{10x+4y &= 2 && (L_{1})\times 2\\ 3x-4y &= 11 && (L_{2})}
+\begin{calculs}
+(10x+4y)+(3x-4y) &= 2+11 &&\justif{on additionne}\\
+13x &= 13 &&\justif{les $y$ s'éliminent}\\
+x &= 1 &&\justif{on divise par $13$}
+\end{calculs}
+\begin{calculs}
+5\times 1+2y &= 1 &&\justif{dans $(L_{1})$}\\
+2y &= -4 &&\justif{on enlève $5$}\\
+y &= -2 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$S=\res{\{(1\,;-2)\}}$.}{contrôle dans $(L_{2})$ : $3+8=11$}
+\rem{Ici, éliminer $y$ est plus simple : une seule multiplication suffit. On regarde
+les deux inconnues avant de choisir.}
+\end{exo}
+
+\begin{exo}[Multiplier les deux équations]
+\explique{On multiplie chaque équation par le coefficient de l'autre, avec un signe
+« $-$ » sur l'une des deux : les coefficients deviennent opposés.}{méthode 2 c)}
+\cas{a)}
+\explique{En $x$, les coefficients sont $3$ et $5$ ; on multiplie $(L_{1})$ par $5$ et
+$(L_{2})$ par $-3$.}{$15$ et
+$-15$}
+\sysligne{15x+25y &= -5 && (L_{1})\times 5\\ -15x-9y &= -27 && (L_{2})\times(-3)}
+\begin{calculs}
+(15x+25y)+(-15x-9y) &= -5-27 &&\justif{on additionne}\\
+16y &= -32 &&\justif{les $x$ s'éliminent}\\
+y &= -2 &&\justif{on divise par $16$}
+\end{calculs}
+\begin{calculs}
+3x+5\times(-2) &= -1 &&\justif{dans $(L_{1})$}\\
+3x-10 &= -1 &&\\
+3x &= 9 &&\justif{on ajoute $10$}\\
+x &= 3 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$S=\res{\{(3\,;-2)\}}$.}{contrôle dans $(L_{2})$ : $15-6=9$}
+\cas{b)}
+\explique{En $x$, les coefficients sont $2$ et $5$ ; on multiplie $(L_{1})$ par $5$ et
+$(L_{2})$ par $-2$.}{$10$ et
+$-10$}
+\sysligne{10x+15y &= 20 && (L_{1})\times 5\\ -10x-8y &= -6 && (L_{2})\times(-2)}
+\begin{calculs}
+(10x+15y)+(-10x-8y) &= 20-6 &&\justif{on additionne}\\
+7y &= 14 &&\justif{les $x$ s'éliminent}\\
+y &= 2 &&\justif{on divise par $7$}
+\end{calculs}
+\begin{calculs}
+2x+3\times 2 &= 4 &&\justif{dans $(L_{1})$}\\
+2x &= -2 &&\justif{on enlève $6$}\\
+x &= -1 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$S=\res{\{(-1\,;2)\}}$.}{contrôle dans $(L_{2})$ : $-5+8=3$}
+\cas{c)}
+\explique{En $y$, les coefficients sont $-3$ et $2$ ; on multiplie $(L_{1})$ par $2$ et
+$(L_{2})$ par $3$.}{$-6$ et $6$,
+déjà de signes contraires}
+\sysligne{8x-6y &= 26 && (L_{1})\times 2\\ 9x+6y &= 42 && (L_{2})\times 3}
+\begin{calculs}
+(8x-6y)+(9x+6y) &= 26+42 &&\justif{on additionne}\\
+17x &= 68 &&\justif{les $y$ s'éliminent}\\
+x &= 4 &&\justif{on divise par $17$}
+\end{calculs}
+\begin{calculs}
+4\times 4-3y &= 13 &&\justif{dans $(L_{1})$}\\
+-3y &= -3 &&\justif{on enlève $16$}\\
+y &= 1 &&\justif{on divise par $-3$}
+\end{calculs}
+\explique{$S=\res{\{(4\,;1)\}}$.}{contrôle dans $(L_{2})$ : $12+2=14$}
+\end{exo}
+
+\begin{exo}[Choisir sa méthode]
+\cas{a)}
+\explique{Dans $(L_{1})$, $y$ a pour coefficient $1$ : la substitution est la plus
+rapide.}{remarque « Choisir sa méthode »}
+\begin{calculs}
+y &= x-7 &&\justif{on isole $y$ dans $(L_{1})$ : on ajoute $x$}
+\end{calculs}
+\begin{calculs}
+2x+y &= 8 &&\justif{$(L_{2})$}\\
+2x+(x-7) &= 8 &&\justif{on remplace $y$ par $x-7$}\\
+3x &= 15 &&\justif{on réduit et on ajoute $7$}\\
+x &= 5 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$y=5-7=-2$, donc $S=\res{\{(5\,;-2)\}}$.}{contrôle dans $(L_{2})$ :
+$10-2=8$}
+\rem{La combinaison marche aussi : les coefficients de $y$ sont égaux, on multiplie
+$(L_{1})$ par $-1$, puis on additionne.}
+\cas{b)}
+\explique{$(L_{1})$ donne déjà $x$ : la substitution est la plus rapide.}{}
+\begin{calculs}
+2x-5y &= 4 &&\justif{$(L_{2})$}\\
+2(3y+1)-5y &= 4 &&\justif{on remplace $x$ par $3y+1$}\\
+6y+2-5y &= 4 &&\justif{on développe}\\
+y &= 2 &&\justif{on réduit et on enlève $2$}
+\end{calculs}
+\explique{$x=3\times 2+1=7$, donc $S=\res{\{(7\,;2)\}}$.}{contrôle dans $(L_{2})$ :
+$14-10=4$}
+\cas{c)}
+\explique{Aucun coefficient ne vaut $1$ ou $-1$ : la combinaison évite les
+fractions.}{$(L_{1})\times 3$ et $(L_{2})\times(-2)$}
+\sysligne{12x+9y &= 30 && (L_{1})\times 3\\ -12x+10y &= 8 && (L_{2})\times(-2)}
+\begin{calculs}
+(12x+9y)+(-12x+10y) &= 30+8 &&\justif{on additionne}\\
+19y &= 38 &&\justif{les $x$ s'éliminent}\\
+y &= 2 &&\justif{on divise par $19$}
+\end{calculs}
+\begin{calculs}
+4x+3\times 2 &= 10 &&\justif{dans $(L_{1})$}\\
+4x &= 4 &&\justif{on enlève $6$}\\
+x &= 1 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$S=\res{\{(1\,;2)\}}$.}{contrôle dans $(L_{2})$ : $6-10=-4$}
+\cas{d)}
+\explique{En $y$, les coefficients $3$ et $-3$ sont opposés : la combinaison est
+immédiate.}{}
+\begin{calculs}
+(2x+3y)+(4x-3y) &= 2+1 &&\justif{$(L_{1})+(L_{2})$}\\
+6x &= 3 &&\justif{les $y$ s'éliminent}\\
+x &= \frac{3}{6} &&\justif{on divise par $6$}\\
+x &= \frac{1}{2} &&\justif{on simplifie par $3$}
+\end{calculs}
+\begin{calculs}
+2\times\frac{1}{2}+3y &= 2 &&\justif{dans $(L_{1})$}\\
+1+3y &= 2 &&\justif{$2\times\frac12=1$}\\
+3y &= 1 &&\justif{on enlève $1$}\\
+y &= \frac{1}{3} &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$S=\res{\left\{\left(\frac{1}{2}\,;\frac{1}{3}\right)\right\}}$.}{contrôle
+dans $(L_{2})$ : $4\times\frac12-3\times\frac13=2-1=1$}
+\end{exo}
+
+\partie{Problèmes et systèmes}
+
+\begin{exo}[Mangas et bandes dessinées]
+\cas{1)}
+\explique{Lou : un manga et deux bandes dessinées pour $38$~€, donc
+$\res{x+2y=38}$.}{une information, une équation}
+\explique{Sam : quatre mangas et trois bandes dessinées pour $77$~€, donc
+$\res{4x+3y=77}$.}{}
+\cas{2)}
+\sysligne{x+2y &= 38 && (L_{1})\\ 4x+3y &= 77 && (L_{2})}
+\begin{calculs}
+x &= 38-2y &&\justif{on isole $x$ dans $(L_{1})$ : coefficient $1$}
+\end{calculs}
+\begin{calculs}
+4x+3y &= 77 &&\justif{$(L_{2})$}\\
+4(38-2y)+3y &= 77 &&\justif{on remplace $x$ par $38-2y$}\\
+152-8y+3y &= 77 &&\justif{on développe}\\
+-5y &= -75 &&\justif{on réduit et on enlève $152$}\\
+y &= 15 &&\justif{on divise par $-5$}
+\end{calculs}
+\begin{calculs}
+x &= 38-2\times 15 &&\justif{$x=38-2y$}\\
+x &= 8 &&
+\end{calculs}
+\explique{$S=\res{\{(8\,;15)\}}$.}{contrôle dans $(L_{2})$ : $32+45=77$}
+\cas{3)}
+\explique{Un manga coûte \res{$8$~€} et une bande dessinée \res{$15$~€}.}{on répond
+par une phrase}
+\end{exo}
+
+\begin{exo}[Imprimante 3D]
+\explique{Soit $x$ le nombre de porte-clés et $y$ le nombre de figurines.}{on nomme les
+inconnues}
+\explique{$40$ objets, donc $x+y=40$ ; $20$~g par porte-clés et $50$~g par figurine, pour
+$1\,220$~g en tout, donc $20x+50y=1\,220$.}{une information, une équation}
+\sysligne{x+y &= 40 && (L_{1})\\ 20x+50y &= 1\,220 && (L_{2})}
+\begin{calculs}
+y &= 40-x &&\justif{on isole $y$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+20x+50y &= 1\,220 &&\justif{$(L_{2})$}\\
+20x+50(40-x) &= 1\,220 &&\justif{on remplace $y$ par $40-x$}\\
+20x+2\,000-50x &= 1\,220 &&\justif{on développe}\\
+-30x &= -780 &&\justif{on réduit et on enlève $2\,000$}\\
+x &= 26 &&\justif{on divise par $-30$}
+\end{calculs}
+\begin{calculs}
+y &= 40-26 &&\justif{$y=40-x$}\\
+y &= 14 &&
+\end{calculs}
+\explique{Le club a imprimé \res{$26$ porte-clés et $14$ figurines}.}{contrôle :
+$520+700=1\,220$}
+\end{exo}
+
+\begin{exo}[Sortie scolaire]
+\explique{Soit $x$ le nombre d'élèves et $y$ le nombre d'adultes.}{on nomme les
+inconnues}
+\explique{Chaque ligne du tableau donne une équation :}{prix par personne $\times$
+nombre de personnes}
+\sysligne{12x+20y &= 680 && (L_{1})\\ 10x+30y &= 620 && (L_{2})}
+\explique{Aucun coefficient ne vaut $1$ : on combine pour éliminer $y$.}{$20\times 3=60$
+et $30\times(-2)=-60$}
+\sysligne{36x+60y &= 2\,040 && (L_{1})\times 3\\ -20x-60y &= -1\,240 && (L_{2})\times(-2)}
+\begin{calculs}
+(36x+60y)+(-20x-60y) &= 2\,040-1\,240 &&\justif{on additionne}\\
+16x &= 800 &&\justif{les $y$ s'éliminent}\\
+x &= 50 &&\justif{on divise par $16$}
+\end{calculs}
+\begin{calculs}
+12\times 50+20y &= 680 &&\justif{dans $(L_{1})$}\\
+600+20y &= 680 &&\\
+20y &= 80 &&\justif{on enlève $600$}\\
+y &= 4 &&\justif{on divise par $20$}
+\end{calculs}
+\explique{\res{$50$ élèves et $4$ adultes} participent à la sortie.}{contrôle avec B :
+$500+120=620$}
+\end{exo}
+
+\partie{Systèmes et intersection de droites}
+
+\begin{exo}[Point d'intersection]
+\explique{On calcule le déterminant des vecteurs directeurs : non nul, les droites sont
+sécantes ; puis on résout le système de leurs équations.}{méthode 4}
+\cas{a)}
+\explique{$\vec{u}_{1}\coord{-1}{1}$ dirige $(d_{1})$ et $\vec{u}_{2}\coord{1}{2}$ dirige
+$(d_{2})$.}{$\vec{u}\coord{-b}{a}$ : pour $(d_{2})$, $-b=-(-1)=1$}
+\begin{calculs}
+\det(\vec{u}_{1}\,;\vec{u}_{2}) &= -1\times 2-1\times 1 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}_{1}\,;\vec{u}_{2}) &= -3 &&\justif{non nul : les droites sont sécantes}
+\end{calculs}
+\sysligne{x+y &= 5 && (L_{1})\\ 2x-y &= 1 && (L_{2})}
+\begin{calculs}
+(x+y)+(2x-y) &= 5+1 &&\justif{$(L_{1})+(L_{2})$ : coefficients de $y$ opposés}\\
+3x &= 6 &&\\
+x &= 2 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$y=5-2=3$ : le point d'intersection a pour coordonnées
+$\res{(2\,;3)}$.}{dans $(L_{1})$ ; contrôle dans $(d_{2})$ : $4-3-1=0$}
+\cas{b)}
+\explique{$\vec{u}_{3}\coord{1}{3}$ et $\vec{u}_{4}\coord{1}{-1}$.}{$\coord{1}{m}$ pour
+$y=mx+p$}
+\begin{calculs}
+\det(\vec{u}_{3}\,;\vec{u}_{4}) &= 1\times(-1)-3\times 1 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}_{3}\,;\vec{u}_{4}) &= -4 &&\justif{non nul : sécantes}
+\end{calculs}
+\begin{calculs}
+3x-2 &= -x+6 &&\justif{même $y$ : on remplace $y$ dans la deuxième équation}\\
+4x &= 8 &&\justif{on ajoute $x$ et $2$}\\
+x &= 2 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$y=3\times 2-2=4$ : le point d'intersection a pour coordonnées
+$\res{(2\,;4)}$.}{contrôle dans $(d_{4})$ : $-2+6=4$}
+\cas{c)}
+\explique{$\vec{u}_{5}\coord{-2}{3}$ et $\vec{u}_{6}\coord{4}{1}$.}{$\vec{u}\coord{-b}{a}$}
+\begin{calculs}
+\det(\vec{u}_{5}\,;\vec{u}_{6}) &= -2\times 1-3\times 4 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}_{5}\,;\vec{u}_{6}) &= -14 &&\justif{non nul : sécantes}
+\end{calculs}
+\sysligne{3x+2y &= 4 && (L_{1})\\ x-4y &= -8 && (L_{2})}
+\begin{calculs}
+x &= 4y-8 &&\justif{on isole $x$ dans $(L_{2})$ : on ajoute $4y$}
+\end{calculs}
+\begin{calculs}
+3x+2y &= 4 &&\justif{$(L_{1})$}\\
+3(4y-8)+2y &= 4 &&\justif{on remplace $x$ par $4y-8$}\\
+14y-24 &= 4 &&\justif{on développe et on réduit}\\
+14y &= 28 &&\justif{on ajoute $24$}\\
+y &= 2 &&\justif{on divise par $14$}
+\end{calculs}
+\explique{$x=4\times 2-8=0$ : le point d'intersection a pour coordonnées
+$\res{(0\,;2)}$.}{contrôle dans $(d_{5})$ : $0+4-4=0$}
+\end{exo}
+
+\begin{exo}[Parallèles ou sécantes ?]
+\cas{a)}
+\explique{$\vec{u}_{1}\coord{6}{2}$ dirige $(d_{1})$ et $\vec{u}_{2}\coord{-3}{-1}$ dirige
+$(d_{2})$.}{$\vec{u}\coord{-b}{a}$}
+\begin{calculs}
+\det(\vec{u}_{1}\,;\vec{u}_{2}) &= 6\times(-1)-2\times(-3) &&\justif{$xy'-yx'$}\\
+\det(\vec{u}_{1}\,;\vec{u}_{2}) &= 0 &&
+\end{calculs}
+\explique{Le déterminant est nul : les droites $(d_{1})$ et $(d_{2})$ sont
+\res{parallèles}.}{vecteurs directeurs colinéaires}
+\rem{Non exigé : en multipliant l'équation de $(d_{2})$ par $-2$, on obtient
+$2x-6y-8=0$, qui n'est pas l'équation de $(d_{1})$ ; les droites sont strictement
+parallèles (partie VI).}
+\cas{b)}
+\explique{$\vec{u}_{3}\coord{-1}{4}$ dirige $(d_{3})$ et $\vec{u}_{4}\coord{1}{2}$ dirige
+$(d_{4})$.}{$\coord{1}{m}$ pour $y=2x$}
+\begin{calculs}
+\det(\vec{u}_{3}\,;\vec{u}_{4}) &= -1\times 2-4\times 1 &&\justif{$xy'-yx'$}\\
+\det(\vec{u}_{3}\,;\vec{u}_{4}) &= -6 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : les droites $(d_{3})$ et $(d_{4})$ sont
+\res{sécantes}.}{}
+\begin{calculs}
+4x+y-6 &= 0 &&\justif{$(d_{3})$}\\
+4x+2x-6 &= 0 &&\justif{on remplace $y$ par $2x$}\\
+6x &= 6 &&\justif{on réduit et on ajoute $6$}\\
+x &= 1 &&\justif{on divise par $6$}
+\end{calculs}
+\explique{$y=2\times 1=2$ : le point d'intersection a pour coordonnées
+$\res{(1\,;2)}$.}{contrôle dans $(d_{3})$ : $4+2-6=0$}
+\end{exo}
+
+\begin{exo}[Deux droites à déterminer]
+\cas{1)}
+\explique{$A$ : $-1-2\times 1+3=0$ ; $B$ : $3-2\times 3+3=0$.}{on remplace $x$ et $y$
+par les coordonnées}
+\explique{Les points $A$ et $B$ vérifient l'équation $x-2y+3=0$ : c'est bien une
+équation de la droite $(AB)$.}{deux points suffisent à fixer une droite}
+\cas{2)}
+\explique{$\vec{u}\coord{-1}{2}$ : $-b=-1$ et $a=2$, donc $b=1$. $(d')$ a une
+équation de la forme $2x+y+c=0$.}{on lit $a$ et $b$ sur le vecteur directeur
+(chapitre 9)}
+\begin{calculs}
+2\times 3+(-2)+c &= 0 &&\justif{$C(3\,;-2)$ est sur $(d')$}\\
+4+c &= 0 &&\\
+c &= -4 &&
+\end{calculs}
+\explique{$(d')$ : $\res{2x+y-4=0}$.}{}
+\cas{3)}
+\explique{$\vec{v}\coord{2}{1}$ dirige $(d)$ et $\vec{u}\coord{-1}{2}$ dirige
+$(d')$.}{pour $(d)$ : $-b=-(-2)=2$}
+\begin{calculs}
+\det(\vec{v}\,;\vec{u}) &= 2\times 2-1\times(-1) &&\justif{$xy'-yx'$}\\
+\det(\vec{v}\,;\vec{u}) &= 5 &&
+\end{calculs}
+\explique{Le déterminant n'est pas nul : $(d)$ et $(d')$ sont
+\res{sécantes}.}{}
+\cas{4)}
+\sysligne{x-2y &= -3 && (L_{1})\\ 2x+y &= 4 && (L_{2})}
+\begin{calculs}
+x &= 2y-3 &&\justif{on isole $x$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+2x+y &= 4 &&\justif{$(L_{2})$}\\
+2(2y-3)+y &= 4 &&\justif{on remplace $x$ par $2y-3$}\\
+5y-6 &= 4 &&\justif{on développe et on réduit}\\
+5y &= 10 &&\justif{on ajoute $6$}\\
+y &= 2 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{$x=2\times 2-3=1$, donc $K\res{(1\,;2)}$.}{contrôle dans $(L_{2})$ :
+$2+2=4$}
+\cas{5)}
+\cotefig[0.4]{%
+\explique{On trace $(d)$ par $A$ et $B$, puis $(d')$ par $C$ et $K$ (ou avec
+$\vec{u}$ : un carreau vers la gauche, deux vers le haut).}{}
+\explique{Les deux droites se coupent bien au point de coordonnées $(1\,;2)$.}{la
+lecture contrôle le calcul}}{%
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-2}{-3}{5}{4}
+  \gradx{-1,1,2,3,4} \grady{-2,-1,1,2,3}
+  \draw[droite] (-2,0.5) -- (5,4);
+  \draw[droiteB] (0.5,3) -- (3.5,-3);
+  \draw[aide] (1,0) -- (1,2) -- (0,2);
+  \pt{-1,1}{above left}{A}
+  \pt{3,3}{above left}{B}
+  \pt{3,-2}{right}{C}
+  \pt{1,2}{above left}{K}
+  \node[coulCourbe,font=\footnotesize,below right] at (4,3.5) {$(d)$};
+  \node[coulCourbeB,font=\footnotesize,left] at (2.2,-1) {$(d')$};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Deux médianes d'un triangle]
+\cas{1)}
+\begin{calculs}
+x_{I} &= \frac{2+(-4)}{2} = -1 &&\justif{milieu : moyenne des abscisses}\\
+y_{I} &= \frac{6+0}{2} = 3 &&
+\end{calculs}
+\explique{$I\res{(-1\,;3)}$ ; de même, $J\res{(5\,;3)}$.}{$x_{J}=\frac{2+8}{2}=5$ et
+$y_{J}=\frac{6+0}{2}=3$}
+\cas{2)}
+\explique{$C$ : $8+3\times 0-8=0$ ; $I$ : $-1+3\times 3-8=0$.}{on remplace par les
+coordonnées}
+\explique{$C$ et $I$ vérifient l'équation $x+3y-8=0$ : c'est une équation de
+$(CI)$.}{}
+\cas{3)}
+\explique{$\vect{BJ}\coord{9}{3}$ ; on prend le vecteur directeur plus simple
+$\vec{u}\coord{3}{1}$.}{$\vec{u}=\frac13\vect{BJ}$, colinéaire}
+\explique{$-b=3$ et $a=1$ : $(BJ)$ a une équation de la forme $x-3y+c=0$.}{}
+\begin{calculs}
+-4-3\times 0+c &= 0 &&\justif{$B(-4\,;0)$ est sur $(BJ)$}\\
+c &= 4 &&
+\end{calculs}
+\explique{$(BJ)$ : $\res{x-3y+4=0}$.}{contrôle avec $J$ : $5-9+4=0$}
+\cas{4)}
+\sysligne{x+3y &= 8 && (L_{1})\\ x-3y &= -4 && (L_{2})}
+\begin{calculs}
+(x+3y)+(x-3y) &= 8-4 &&\justif{$(L_{1})+(L_{2})$ : coefficients de $y$ opposés}\\
+2x &= 4 &&\\
+x &= 2 &&
+\end{calculs}
+\begin{calculs}
+2+3y &= 8 &&\justif{dans $(L_{1})$}\\
+3y &= 6 &&\\
+y &= 2 &&
+\end{calculs}
+\explique{$G\res{(2\,;2)}$.}{contrôle dans $(L_{2})$ : $2-6=-4$}
+\cas{5)}
+\explique{$M\left(\frac{-4+8}{2}\,;\frac{0+0}{2}\right)$, soit $M(2\,;0)$. $A$ et $M$ ont
+la même abscisse $2$, donc $(AM)$ est la droite verticale d'équation $x=2$.}{droites
+parallèles aux axes (chapitre 9)}
+\explique{$G$ a pour abscisse $2$, donc $G$ est sur $(AM)$.}{}
+\explique{$G$ est sur les trois médianes du triangle $ABC$ : c'est son \res{centre de
+gravité}.}{les trois médianes sont concourantes}
+\end{exo}
+
+\partie{Équation réduite d'une droite par un système}
+
+\begin{exo}[Par deux points]
+\explique{$(AB)$ a pour équation $y=mx+p$ ; chaque point donne une équation d'inconnues
+$m$ et $p$.}{méthode 5}
+\cas{a)}
+\sysligne{m+p &= 4 && (L_{1})\\ 3m+p &= 10 && (L_{2})}
+\begin{calculs}
+(-m-p)+(3m+p) &= -4+10 &&\justif{$(L_{1})\times(-1)$, puis on additionne $(L_{2})$}\\
+2m &= 6 &&\justif{les $p$ s'éliminent}\\
+m &= 3 &&
+\end{calculs}
+\explique{$3+p=4$, donc $p=1$ : $(AB)$ a pour équation $\res{y=3x+1}$.}{dans
+$(L_{1})$ ; contrôle avec $B$ : $9+1=10$}
+\cas{b)}
+\sysligne{-2m+p &= 7 && (L_{1})\\ 2m+p &= -1 && (L_{2})}
+\begin{calculs}
+(-2m+p)+(2m+p) &= 7-1 &&\justif{coefficients de $m$ déjà opposés}\\
+2p &= 6 &&\justif{les $m$ s'éliminent}\\
+p &= 3 &&
+\end{calculs}
+\begin{calculs}
+2m+3 &= -1 &&\justif{dans $(L_{2})$}\\
+2m &= -4 &&\\
+m &= -2 &&
+\end{calculs}
+\explique{$(AB)$ : $\res{y=-2x+3}$.}{contrôle avec $A$ : $4+3=7$}
+\cas{c)}
+\sysligne{-m+p &= 0 && (L_{1})\\ 2m+p &= 1 && (L_{2})}
+\begin{calculs}
+(m-p)+(2m+p) &= 0+1 &&\justif{$(L_{1})\times(-1)$, puis on additionne $(L_{2})$}\\
+3m &= 1 &&\\
+m &= \frac{1}{3} &&
+\end{calculs}
+\explique{$(L_{1})$ donne $p=m=\frac13$ : $(AB)$ a pour équation
+$\res{y=\frac{1}{3}x+\frac{1}{3}}$.}{contrôle avec $B$ : $\frac23+\frac13=1$}
+\cas{d)}
+\sysligne{2m+p &= -1 && (L_{1})\\ 5m+p &= 1 && (L_{2})}
+\begin{calculs}
+(-2m-p)+(5m+p) &= 1+1 &&\justif{$(L_{1})\times(-1)$, puis on additionne $(L_{2})$}\\
+3m &= 2 &&\\
+m &= \frac{2}{3} &&
+\end{calculs}
+\begin{calculs}
+2\times\frac{2}{3}+p &= -1 &&\justif{dans $(L_{1})$}\\
+p &= -\frac{3}{3}-\frac{4}{3} &&\justif{on enlève $\frac43$ ; $-1=-\frac33$}\\
+p &= -\frac{7}{3} &&
+\end{calculs}
+\explique{$(AB)$ : $\res{y=\frac{2}{3}x-\frac{7}{3}}$.}{contrôle avec $B$ :
+$\frac{10}{3}-\frac73=\frac33=1$}
+\end{exo}
+
+\begin{exo}[Deux méthodes, un résultat]
+\cas{1)}
+\sysligne{-3m+p &= 5 && (L_{1})\\ m+p &= -3 && (L_{2})}
+\begin{calculs}
+(3m-p)+(m+p) &= -5-3 &&\justif{$(L_{1})\times(-1)$, puis on additionne $(L_{2})$}\\
+4m &= -8 &&\\
+m &= -2 &&
+\end{calculs}
+\explique{$-2+p=-3$, donc $p=-1$ : $(AB)$ a pour équation $\res{y=-2x-1}$.}{dans
+$(L_{2})$ ; contrôle avec $A$ : $6-1=5$}
+\cas{2)}
+\begin{calculs}
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &&\justif{formule de la pente (chapitre 5)}\\
+m &= \frac{-3-5}{1-(-3)} &&\\
+m &= \frac{-8}{4} &&\\
+m &= -2 &&
+\end{calculs}
+\explique{On retrouve bien $\res{m=-2}$.}{}
+\cas{3)}
+\explique{$-2\times 4-1=-9$ : les coordonnées de $C$ vérifient l'équation de $(AB)$,
+donc $C$ est sur $(AB)$ ; les points $A$, $B$ et $C$ \res{sont alignés}.}{on remplace
+$x$ par $x_{C}=4$}
+\end{exo}
+
+\begin{exo}[Salle de sport]
+\cas{1)}
+\explique{$10$ séances coûtent $95$~€, donc $95=m\times 10+p$ ; $25$ séances coûtent
+$170$~€, donc $170=m\times 25+p$.}{le point $(10\,;95)$ est sur la droite}
+\explique{Le système est $\res{\sys{10m+p &= 95 && (L_{1})\\ 25m+p &= 170 &&
+(L_{2})}}$}{}
+\cas{2)}
+\begin{calculs}
+(-10m-p)+(25m+p) &= -95+170 &&\justif{$(L_{1})\times(-1)$, puis on additionne $(L_{2})$}\\
+15m &= 75 &&\justif{les $p$ s'éliminent}\\
+m &= 5 &&\justif{on divise par $15$}
+\end{calculs}
+\begin{calculs}
+10\times 5+p &= 95 &&\justif{dans $(L_{1})$}\\
+p &= 45 &&\justif{on enlève $50$}
+\end{calculs}
+\explique{$\res{m=5}$ et $\res{p=45}$.}{contrôle dans $(L_{2})$ : $125+45=170$}
+\cas{3)}
+\explique{$m$ est le \res{prix d'une séance}, $5$~€ ; $p$ est le \res{prix de
+l'abonnement}, $45$~€.}{$y$ augmente de $m$ à chaque séance ; pour $0$ séance,
+$y=p$}
+\cas{4)}
+\begin{calculs}
+y &= 5\times 40+45 &&\justif{$y=5x+45$ avec $x=40$}\\
+y &= 245 &&
+\end{calculs}
+\explique{Pour $40$ séances, on paie \res{$245$~€}.}{}
+\end{exo}
+
+\partie{Aucune ou une infinité de solutions}
+
+\begin{exo}[Combien de solutions ?]
+\explique{Si les deux inconnues disparaissent : égalité fausse, aucune solution ;
+égalité toujours vraie, une infinité.}{propriété 3, méthode 6}
+\cas{a)}
+\begin{calculs}
+x &= 3+2y &&\justif{on isole $x$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+-3x+6y &= 2 &&\justif{$(L_{2})$}\\
+-3(3+2y)+6y &= 2 &&\justif{on remplace $x$ par $3+2y$}\\
+-9-6y+6y &= 2 &&\justif{on développe}\\
+-9 &= 2 &&\justif{les $y$ ont disparu : égalité fausse}
+\end{calculs}
+\explique{$S=\res{\varnothing}$ : les deux droites sont strictement
+parallèles.}{aucun point commun}
+\cas{b)}
+\begin{calculs}
+y &= 4-2x &&\justif{on isole $y$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+6x+3y &= 12 &&\justif{$(L_{2})$}\\
+6x+3(4-2x) &= 12 &&\justif{on remplace $y$ par $4-2x$}\\
+6x+12-6x &= 12 &&\justif{on développe}\\
+12 &= 12 &&\justif{égalité toujours vraie}
+\end{calculs}
+\explique{Le système a \res{une infinité de solutions} : les couples $(x\,;y)$ tels que
+$2x+y=4$, par exemple $(0\,;4)$ et $(2\,;0)$. Les deux droites sont
+confondues.}{$(L_{2})$ est $(L_{1})$ multipliée par $3$}
+\cas{c)}
+\begin{calculs}
+y &= 5-x &&\justif{on isole $y$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+2x+y &= 7 &&\justif{$(L_{2})$}\\
+2x+(5-x) &= 7 &&\justif{on remplace $y$ par $5-x$}\\
+x+5 &= 7 &&\justif{on réduit}\\
+x &= 2 &&\justif{on enlève $5$}
+\end{calculs}
+\explique{$y=5-2=3$, donc $S=\res{\{(2\,;3)\}}$ : les deux droites sont sécantes au
+point de coordonnées $(2\,;3)$.}{une seule solution}
+\cas{d)}
+\begin{calculs}
+4x-2y &= 6 &&\justif{$(L_{1})$}\\
+-2y &= 6-4x &&\justif{on enlève $4x$}\\
+y &= 2x-3 &&\justif{on divise par $-2$}
+\end{calculs}
+\begin{calculs}
+-6x+3y &= -9 &&\justif{$(L_{2})$}\\
+-6x+3(2x-3) &= -9 &&\justif{on remplace $y$ par $2x-3$}\\
+-6x+6x-9 &= -9 &&\justif{on développe}\\
+-9 &= -9 &&\justif{égalité toujours vraie}
+\end{calculs}
+\explique{Le système a \res{une infinité de solutions} : les couples $(x\,;y)$ tels que
+$y=2x-3$, par exemple $(0\,;-3)$ et $(3\,;3)$. Les deux droites sont
+confondues.}{les deux équations s'écrivent $y=2x-3$}
+\rem{Erreur fréquente : conclure « $S=\{(0\,;-3)\}$ ». Il n'y a pas une solution, mais
+une infinité.}
+\end{exo}
+
+\begin{exo}[Un coefficient inconnu]
+\cas{1)}
+\explique{$(d)$ : $\res{\vec{u}\coord{-1}{2}}$ ; $(d')$ :
+$\res{\vec{u}'\coord{-3}{a}}$.}{$\vec{u}\coord{-b}{a}$ : pour $(d')$, le coefficient
+de $x$ est $a$}
+\cas{2)}
+\begin{calculs}
+\det(\vec{u}\,;\vec{u}') &= -1\times a-2\times(-3) &&\justif{$xy'-yx'$}\\
+\det(\vec{u}\,;\vec{u}') &= \res{-a+6} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+-a+6 &= 0 &&\justif{parallèles : déterminant nul}\\
+a &= 6 &&
+\end{calculs}
+\explique{Les droites sont parallèles pour \res{$a=6$}.}{}
+\cas{4)}
+\sysligne{2x+y &= 3 && (L_{1})\\ 6x+3y &= 1 && (L_{2})}
+\begin{calculs}
+y &= 3-2x &&\justif{on isole $y$ dans $(L_{1})$}
+\end{calculs}
+\begin{calculs}
+6x+3(3-2x) &= 1 &&\justif{dans $(L_{2})$, on remplace $y$}\\
+6x+9-6x &= 1 &&\justif{on développe}\\
+9 &= 1 &&\justif{égalité fausse}
+\end{calculs}
+\explique{$S=\res{\varnothing}$ : pour $a=6$, les droites $(d)$ et $(d')$ sont
+strictement parallèles.}{aucun point commun}
+\cas{5)}
+\explique{Pour $a=4$, le déterminant vaut $-4+6=2$ : les droites sont sécantes.}{}
+\sysligne{2x+y &= 3 && (L_{1})\\ 4x+3y &= 1 && (L_{2})}
+\begin{calculs}
+4x+3(3-2x) &= 1 &&\justif{dans $(L_{2})$, on remplace $y$ par $3-2x$}\\
+4x+9-6x &= 1 &&\justif{on développe}\\
+-2x &= -8 &&\justif{on réduit et on enlève $9$}\\
+x &= 4 &&\justif{on divise par $-2$}
+\end{calculs}
+\explique{$y=3-2\times 4=-5$ : le point d'intersection a pour coordonnées
+$\res{(4\,;-5)}$.}{contrôle dans $(L_{2})$ : $16-15=1$}
+\end{exo}
+
+\begin{exo}[Le glacier et son perroquet]
+\cas{1)}
+\explique{Deux fois plus cher : $4$~€ la vanille et $6$~€ le chocolat.}{$2\times 2$ et
+$2\times 3$}
+\sysligne{2x+3y &= 150 && (L_{1})\\ 4x+6y &= 310 && (L_{2})}
+\begin{calculs}
+(-4x-6y)+(4x+6y) &= -300+310 &&\justif{$(L_{1})\times(-2)$, puis on additionne $(L_{2})$}\\
+0 &= 10 &&\justif{les deux inconnues disparaissent : égalité fausse}
+\end{calculs}
+\explique{Le système n'a aucune solution : le perroquet \res{a raison}.}{en doublant
+les prix, la recette double : $300$~€, et non $310$~€}
+\cas{2)}
+\begin{calculs}
+(-4x-6y)+(4x+6y) &= -300+300 &&\justif{même calcul, avec $300$}\\
+0 &= 0 &&\justif{égalité toujours vraie}
+\end{calculs}
+\explique{Le système a une infinité de solutions : le perroquet \res{ne peut pas
+trouver} $x$ et $y$.}{$(L_{2})$ est $(L_{1})$ multipliée par $2$ : elle n'apporte
+rien de nouveau}
+\rem{Par exemple, $30$ glaces de chaque parfum, ou $75$ à la vanille et aucune au
+chocolat, donnent toutes deux $150$~€.}
+\cas{3)}
+\sysligne{2x+3y &= 150 && (L_{1})\\ 3x+2y &= 160 && (L_{2})}
+\sysligne{6x+9y &= 450 && (L_{1})\times 3\\ -6x-4y &= -320 && (L_{2})\times(-2)}
+\begin{calculs}
+(6x+9y)+(-6x-4y) &= 450-320 &&\justif{on additionne}\\
+5y &= 130 &&\justif{les $x$ s'éliminent}\\
+y &= 26 &&\justif{on divise par $5$}
+\end{calculs}
+\begin{calculs}
+2x+3\times 26 &= 150 &&\justif{dans $(L_{1})$}\\
+2x &= 72 &&\justif{on enlève $78$}\\
+x &= 36 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{Le glacier a vendu \res{$36$ glaces à la vanille et $26$ au
+chocolat}.}{contrôle dans $(L_{2})$ : $108+52=160$}
+\end{exo}
+
+\end{document}

@@ -1,0 +1,515 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{bottom=1cm}
+
+\setlength{\espaceexo}{4pt}
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=1pt,topsep=1pt}
+
+\newcommand{\sys}[1]{\left\{\begin{aligned}#1\end{aligned}\right.}
+\newcommand{\coord}[2]{\begin{pmatrix}#1\\#2\end{pmatrix}}
+
+\begin{document}
+
+\titrefiche{Seconde --- Systèmes d'équations}{Fiche d'exercices du chapitre}
+
+{\small\itshape Le repère est orthonormé dans toute la fiche.\par}
+\vspace{0.12cm}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Systèmes par substitution}
+
+\exo[Être solution d'un système]
+On considère le système ${\sys{3x+y &= 11\\ x-2y &= -1}}$\,.
+
+Pour chaque couple $(3\,;2)$, $(4\,;-1)$ et $(1\,;1)$, dire par une phrase s'il est
+solution du système, en justifiant.
+
+\exo[Une inconnue déjà isolée]
+Résoudre chaque système par substitution.
+\begin{center}
+  a)~${\sys{y &= x+3\\ 2x+y &= 12}}$ \qquad
+  b)~${\sys{x &= 2y-1\\ 3x-4y &= 1}}$\\[4pt]
+  c)~${\sys{y &= -2x+5\\ 4x-y &= 7}}$
+\end{center}
+
+\exo[Isoler, puis remplacer]
+Résoudre chaque système par substitution.
+\begin{center}
+  a)~${\sys{x+2y &= 5\\ 3x+5y &= 13}}$ \qquad
+  b)~${\sys{2x+y &= 7\\ 5x+3y &= 18}}$\\[4pt]
+  c)~${\sys{3x-y &= 4\\ 5x-2y &= 6}}$ \qquad
+  d)~${\sys{-x+4y &= 6\\ 2x-3y &= 3}}$
+\end{center}
+
+\exo[Des solutions en fractions]
+Résoudre chaque système par substitution.
+\begin{center}
+  a)~${\sys{x+3y &= 2\\ 2x-3y &= 1}}$ \qquad
+  b)~${\sys{y &= x+1\\ 5x-2y &= 2}}$
+\end{center}
+
+\partiefiche{Systèmes par combinaison}
+
+\exo[Des coefficients déjà opposés]
+Résoudre chaque système par combinaison.
+\begin{center}
+  a)~${\sys{2x+3y &= 12\\ 4x-3y &= 6}}$ \qquad
+  b)~${\sys{-5x+2y &= -1\\ 5x+4y &= 13}}$\\[4pt]
+  c)~${\sys{3x+4y &= 1\\ -3x+2y &= 5}}$
+\end{center}
+
+\exo[Multiplier une équation]
+Résoudre chaque système par combinaison, en multipliant une seule des deux équations.
+\begin{center}
+  a)~${\sys{3x+2y &= 8\\ 6x+5y &= 17}}$ \qquad
+  b)~${\sys{4x+3y &= 5\\ 2x+5y &= 13}}$\\[4pt]
+  c)~${\sys{5x+2y &= 1\\ 3x-4y &= 11}}$
+\end{center}
+
+\exo[Multiplier les deux équations]
+Résoudre chaque système par combinaison.
+\begin{center}
+  a)~${\sys{3x+5y &= -1\\ 5x+3y &= 9}}$ \qquad
+  b)~${\sys{2x+3y &= 4\\ 5x+4y &= 3}}$\\[4pt]
+  c)~${\sys{4x-3y &= 13\\ 3x+2y &= 14}}$
+\end{center}
+
+\exo[Choisir sa méthode]
+Pour chaque système, dire par une phrase quelle méthode est la plus rapide et pourquoi,
+puis le résoudre.
+\begin{center}
+  a)~${\sys{-x+y &= -7\\ 2x+y &= 8}}$ \qquad
+  b)~${\sys{x &= 3y+1\\ 2x-5y &= 4}}$\\[4pt]
+  c)~${\sys{4x+3y &= 10\\ 6x-5y &= -4}}$ \qquad
+  d)~${\sys{2x+3y &= 2\\ 4x-3y &= 1}}$
+\end{center}
+
+\partiefiche{Problèmes et systèmes}
+
+\exo[Mangas et bandes dessinées]
+Lou achète un manga et deux bandes dessinées pour $38$~€. Sam achète quatre mangas et
+trois bandes dessinées pour $77$~€. Tous les mangas ont le même prix, toutes les bandes
+dessinées aussi. On note $x$ le prix d'un manga et $y$ celui d'une bande dessinée, en
+euros.
+\begin{enumerate}
+  \item Écrire l'équation qui traduit l'achat de Lou, puis celle qui traduit l'achat
+        de Sam.
+  \item Résoudre le système formé par ces deux équations.
+  \item Donner le prix d'un manga et celui d'une bande dessinée.
+\end{enumerate}
+
+\exo[Imprimante 3D]
+Un club de technologie imprime en 3D des porte-clés, qui demandent chacun $20$~g de
+filament, et des figurines, qui en demandent $50$~g. En une semaine, il a imprimé $40$
+objets et utilisé $1\,220$~g de filament.
+
+Combien de porte-clés et combien de figurines le club a-t-il imprimés ?
+
+\exo[Sortie scolaire]
+Pour une sortie scolaire, deux autocaristes proposent leurs tarifs.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & par élève & par adulte & total \\ \hline
+Autocariste A & $12$~€ & $20$~€ & $680$~€ \\ \hline
+Autocariste B & $10$~€ & $30$~€ & $620$~€ \\ \hline
+\end{tabular}
+\end{center}
+Combien d'élèves et combien d'adultes participent à la sortie ?
+
+\partiefiche{Systèmes et intersection de droites}
+
+\exo[Point d'intersection]
+Pour chaque couple de droites, démontrer que les droites sont sécantes, puis calculer
+les coordonnées de leur point d'intersection.
+\begin{enumerate}[label=\alph*)]
+  \item $(d_{1})$ : $x+y-5=0$ et $(d_{2})$ : $2x-y-1=0$.
+  \item $(d_{3})$ : $y=3x-2$ et $(d_{4})$ : $y=-x+6$.
+  \item $(d_{5})$ : $3x+2y-4=0$ et $(d_{6})$ : $x-4y+8=0$.
+\end{enumerate}
+
+\exo[Parallèles ou sécantes ?]
+Pour chaque couple de droites, dire par une phrase si les droites sont parallèles ou
+sécantes ; si elles sont sécantes, calculer les coordonnées de leur point
+d'intersection.
+\begin{enumerate}[label=\alph*)]
+  \item $(d_{1})$ : $2x-6y+1=0$ et $(d_{2})$ : $-x+3y+4=0$.
+  \item $(d_{3})$ : $4x+y-6=0$ et $(d_{4})$ : $y=2x$.
+\end{enumerate}
+
+\exo[Deux droites à déterminer]
+On considère les points $A(-1\,;1)$, $B(3\,;3)$ et $C(3\,;-2)$. La droite $(d)$ est la
+droite $(AB)$ ; la droite $(d')$ passe par $C$ et a pour vecteur directeur
+$\vec{u}\coord{-1}{2}$.
+\begin{enumerate}
+  \item Démontrer que $(d)$ a pour équation cartésienne $x-2y+3=0$.
+  \item Déterminer une équation cartésienne de $(d')$.
+  \item Démontrer que $(d)$ et $(d')$ sont sécantes.
+  \item Calculer les coordonnées de leur point d'intersection $K$.
+  \item Tracer $(d)$ et $(d')$ dans un repère et contrôler le résultat.
+\end{enumerate}
+
+\exo[Deux médianes d'un triangle]
+On considère les points $A(2\,;6)$, $B(-4\,;0)$ et $C(8\,;0)$.
+\begin{enumerate}
+  \item Calculer les coordonnées des milieux $I$ de $[AB]$ et $J$ de $[AC]$.
+  \item Démontrer que la droite $(CI)$ a pour équation $x+3y-8=0$.
+  \item Déterminer une équation cartésienne de la droite $(BJ)$.
+  \item Calculer les coordonnées du point d'intersection $G$ de $(CI)$ et $(BJ)$.
+  \item Soit $M$ le milieu de $[BC]$. Démontrer que $G$ est sur la droite $(AM)$.
+        Que représente le point $G$ pour le triangle $ABC$ ?
+\end{enumerate}
+
+\partiefiche{Équation réduite d'une droite par un système}
+
+\exo[Par deux points]
+Pour chaque couple de points, trouver l'équation réduite de la droite $(AB)$ à l'aide
+d'un système.
+\begin{enumerate}[label=\alph*)]
+  \item $A(1\,;4)$ et $B(3\,;10)$.
+  \item $A(-2\,;7)$ et $B(2\,;-1)$.
+  \item $A(-1\,;0)$ et $B(2\,;1)$.
+  \item $A(2\,;-1)$ et $B(5\,;1)$.
+\end{enumerate}
+
+\exo[Deux méthodes, un résultat]
+On considère les points $A(-3\,;5)$, $B(1\,;-3)$ et $C(4\,;-9)$.
+\begin{enumerate}
+  \item Trouver l'équation réduite de la droite $(AB)$ à l'aide d'un système.
+  \item Retrouver sa pente $m$ avec la formule $m=\dfrac{y_{B}-y_{A}}{x_{B}-x_{A}}$.
+  \item Les points $A$, $B$ et $C$ sont-ils alignés ? Justifier.
+\end{enumerate}
+
+\exo[Salle de sport]
+Une salle de sport fait payer un abonnement annuel, puis un prix fixe par séance. Avec
+$10$ séances dans l'année, on paie $95$~€ en tout ; avec $25$ séances, $170$~€. Le prix
+$y$, en euros, pour $x$ séances est donné par $y=mx+p$.
+\begin{enumerate}
+  \item Traduire l'énoncé par un système d'inconnues $m$ et $p$.
+  \item Résoudre ce système.
+  \item Que représentent $m$ et $p$ pour la salle de sport ?
+  \item Combien paie-t-on pour $40$ séances ?
+\end{enumerate}
+
+\partiefiche{Aucune ou une infinité de solutions}
+
+\exo[Combien de solutions ?]
+Résoudre chaque système, puis dire par une phrase comment sont placées les deux droites
+associées.
+\begin{center}
+  a)~${\sys{x-2y &= 3\\ -3x+6y &= 2}}$ \qquad
+  b)~${\sys{2x+y &= 4\\ 6x+3y &= 12}}$\\[4pt]
+  c)~${\sys{x+y &= 5\\ 2x+y &= 7}}$ \qquad
+  d)~${\sys{4x-2y &= 6\\ -6x+3y &= -9}}$
+\end{center}
+
+\exo[Un coefficient inconnu]
+Soit $a$ un nombre réel. On considère les droites $(d)$ : $2x+y-3=0$ et
+$(d')$ : $ax+3y-1=0$.
+\begin{enumerate}
+  \item Donner un vecteur directeur de chaque droite.
+  \item Exprimer le déterminant de ces deux vecteurs en fonction de $a$.
+  \item Pour quelle valeur de $a$ les droites sont-elles parallèles ?
+  \item Pour cette valeur de $a$, résoudre le système formé par les équations de
+        $(d)$ et $(d')$. Conclure.
+  \item Pour $a=4$, calculer les coordonnées du point d'intersection des droites.
+\end{enumerate}
+
+\exo[Le glacier et son perroquet]
+Un glacier vend des glaces à la vanille à $2$~€ et des glaces au chocolat à $3$~€. On
+note $x$ le nombre de glaces à la vanille vendues dans la journée et $y$ le nombre de
+glaces au chocolat.
+\begin{enumerate}
+  \item Le soir, il dit à son perroquet : \og J'ai fait $150$~€ de recette. Si j'avais
+        vendu toutes mes glaces deux fois plus cher, j'aurais fait $310$~€. \fg{}
+        \og Impossible ! \fg{} répond le perroquet. A-t-il raison ? Justifier avec un
+        système.
+  \item Le glacier corrige : \og J'aurais fait $300$~€. \fg{} Le perroquet peut-il
+        trouver $x$ et $y$ ? Justifier.
+  \item Le lendemain, la recette est encore de $150$~€ ; avec les prix échangés
+        ($3$~€ la vanille, $2$~€ le chocolat), elle aurait été de $160$~€. Combien de
+        glaces de chaque parfum ont été vendues ?
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
