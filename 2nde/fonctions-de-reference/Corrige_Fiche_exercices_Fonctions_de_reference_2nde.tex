@@ -1,0 +1,1430 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 10 --- Fonctions de référence --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\cotefig}[3][0.32]{\par\noindent
+  \begin{minipage}[t]{\dimexpr0.97\linewidth-#1\linewidth\relax}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering #3\end{minipage}\par}
+
+\newcommand{\schemacentre}[5]{%
+  \begin{tikzpicture}[x=0.5cm,baseline=(base)]
+    \coordinate (base) at (0,-0.1);
+    \draw[-{Stealth[length=2mm]},thick] (-0.8,0)--(5.8,0);
+    \ifnum#5=1 \draw[red,line width=1.6pt] (0,0)--(5,0);
+    \else \path[red] (0,0) node[croix]{} (5,0) node[croix]{};\fi
+    \draw (0,0.1)--(0,-0.1) node[below,font=\scriptsize]{$#1$};
+    \draw (2.5,0.1)--(2.5,-0.1) node[below,font=\scriptsize]{$#2$};
+    \draw (5,0.1)--(5,-0.1) node[below,font=\scriptsize]{$#3$};
+    \draw[{Stealth[length=1.4mm]}-{Stealth[length=1.4mm]}] (0,0.3)--(2.5,0.3);
+    \draw[{Stealth[length=1.4mm]}-{Stealth[length=1.4mm]}] (2.5,0.3)--(5,0.3);
+    \node[font=\scriptsize,above] at (1.25,0.3) {$#4$};
+    \node[font=\scriptsize,above] at (3.75,0.3) {$#4$};
+  \end{tikzpicture}}
+
+\begin{document}
+
+\entetefiche{Chapitre 10 --- Fonctions de référence}{Seconde}
+
+{\small Le repère est orthonormé, un carreau pour unité. Pour résoudre $x^{2}=k$,
+$x^{3}=k$, $\frac{1}{x}=k$ ou $\sqrt{x}=k$, on isole d'abord le carré, le cube,
+l'inverse ou la racine, comme une inconnue.\par}
+
+\partie{Fonction carré : courbe, variations, équations}
+
+\begin{exo}[Tableau de valeurs et parabole]
+\cas{1)}
+\explique{On part de $-2$ et on ajoute $0{,}5$ à chaque fois, jusqu'à $2$.}{le pas est
+l'écart entre deux valeurs de $x$}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|*{9}{c|}}
+\hline
+$x$ & $-2$ & $-1{,}5$ & $-1$ & $-0{,}5$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\\hline
+$x^{2}$ & $4$ & $2{,}25$ & $1$ & $0{,}25$ & $0$ & $0{,}25$ & $1$ & $2{,}25$ & $4$\\\hline
+\end{tabular}
+\end{center}
+\cas{2)}
+\cotefig[0.3]{On place les points du tableau (croix), puis on les relie par une courbe
+régulière, sans pointe en $0$ : c'est la parabole, symétrique par rapport à l'axe des
+ordonnées.
+
+\smallskip
+{\small\itshape\color{black!60}Deux nombres opposés ont le même carré : il suffit de
+calculer les images des nombres positifs.}}{%
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-3}{-1}{3}{5}
+  \gradx{-2,-1,1,2} \grady{1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-2:2,samples=60] plot (\x,{(\x)*(\x)});
+  \foreach \a/\b in {-2/4,-1.5/2.25,-1/1,-0.5/0.25,0/0,0.5/0.25,1/1,1.5/2.25,2/4}
+    {\path[coulCourbe] (\a,\b) node[croix]{};}
+\end{tikzpicture}}
+\cas{3)}
+\explique{L'image de $-1{,}5$ par la fonction carré est \res{$2{,}25$}.}{$(-1{,}5)^{2}=2{,}25$,
+lu dans le tableau}
+\explique{Les antécédents de $4$ par la fonction carré sont \res{$-2$ et $2$}.}{les deux
+nombres dont le carré vaut $4$}
+\end{exo}
+
+\begin{exo}[Comparer deux carrés]
+\cas{a)}
+\explique{$0\le 4{,}9<5{,}2$ et la fonction carré est croissante sur $\intfo{0}{+\infty}$,
+donc \res{$4{,}9^{2}<5{,}2^{2}$}.}{deux nombres positifs : l'ordre est conservé}
+\cas{b)}
+\explique{$-0{,}8<-0{,}3\le 0$ et la fonction carré est décroissante sur
+$\intof{-\infty}{0}$, donc \res{$(-0{,}8)^{2}>(-0{,}3)^{2}$}.}{deux nombres négatifs : l'ordre
+est renversé}
+\cas{c)}
+\explique{$(-7)^{2}=7^{2}$ et $0\le 6{,}5<7$, donc \res{$6{,}5^{2}<(-7)^{2}$}.}{deux opposés
+ont le même carré : on se ramène à deux positifs}
+\cas{d)}
+\explique{$-2{,}4$ et $2{,}4$ sont opposés : \res{$(-2{,}4)^{2}=2{,}4^{2}$}.}{même carré}
+\cas{e)}
+\explique{$0\le 0{,}99<1{,}01$, donc \res{$0{,}99^{2}<1{,}01^{2}$}.}{l'ordre est conservé}
+\rem{Erreur fréquente : écrire $(-0{,}8)^{2}<(-0{,}3)^{2}$ parce que $-0{,}8<-0{,}3$. Entre
+deux nombres négatifs, le carré renverse l'ordre.}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{1.}
+\explique{\leavevmode\res{Faux} : $(-6)^{2}=(-6)\times(-6)$, soit $36$.}{un carré n'est jamais négatif}
+\cas{2.}
+\explique{\leavevmode\res{Vrai} : $4^{2}=16$.}{}
+\cas{3.}
+\explique{\leavevmode\res{Faux} : $x=-4$ convient aussi, car $(-4)^{2}=16$.}{$x^{2}=16$ a deux solutions,
+$-4$ et $4$}
+\cas{4.}
+\explique{\leavevmode\res{Faux} : $-9$ n'a pas d'antécédent, car un carré n'est jamais
+négatif.}{$(-3)^{2}=9$, pas $-9$}
+\cas{5.}
+\explique{\leavevmode\res{Faux}. Contre-exemple : $-3<1$, mais $(-3)^{2}=9$ et $1^{2}=1$, donc
+$(-3)^{2}>1^{2}$.}{un seul contre-exemple suffit}
+\rem{Les affirmations 2 et 3 sont réciproques : la 2 est vraie, la 3 est fausse.}
+\end{exo}
+
+\begin{exo}[Équations qui se ramènent à $x^{2}=k$]
+\cas{a)}
+\begin{calculs}
+3x^{2}-4 &= x^{2}+14 &&\justif{on recopie l'équation}\\
+3x^{2}-x^{2} &= 14+4 &&\justif{les $x^{2}$ à gauche, les nombres à droite}\\
+2x^{2} &= 18 &&\\
+x^{2} &= 9 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$9>0$, donc $S=\res{\ens{-3\,;3}}$.}{$\sqrt{9}=3$}
+\cas{b)}
+\begin{calculs}
+5x^{2}+3 &= 2x^{2}+3 &&\justif{on recopie l'équation}\\
+3x^{2} &= 0 &&\\
+x^{2} &= 0 &&
+\end{calculs}
+\explique{Une seule solution : $S=\res{\ens{0}}$.}{$k=0$}
+\cas{c)}
+\begin{calculs}
+7-x^{2} &= 3x^{2}+11 &&\justif{on recopie l'équation}\\
+-x^{2}-3x^{2} &= 11-7 &&\\
+-4x^{2} &= 4 &&\\
+x^{2} &= -1 &&\justif{on divise par $-4$}
+\end{calculs}
+\explique{Un carré n'est jamais négatif, donc $S=\res{\varnothing}$.}{$-1<0$}
+\cas{d)}
+\begin{calculs}
+4x^{2}+1 &= x^{2}+16 &&\justif{on recopie l'équation}\\
+3x^{2} &= 15 &&\\
+x^{2} &= 5 &&
+\end{calculs}
+\explique{$5>0$, donc $S=\res{\ens{-\sqrt{5}\,;\sqrt{5}}}$.}{$5$ n'est pas un carré parfait : on
+garde $\sqrt{5}$}
+\cas{e)}
+\begin{calculs}
+2x^{2}-7 &= 43 &&\justif{on recopie l'équation}\\
+2x^{2} &= 50 &&\\
+x^{2} &= 25 &&
+\end{calculs}
+\explique{$S=\res{\ens{-5\,;5}}$.}{$\sqrt{25}=5$}
+\cas{f)}
+\explique{Le carré porte sur $x-3$ : $x-3=7$ ou $x-3=-7$.}{$(x-3)^{2}=49$ et $49=7^{2}$}
+\explique{$x=10$ ou $x=-4$, donc $S=\res{\ens{-4\,;10}}$.}{on ajoute $3$}
+\end{exo}
+
+\begin{exo}[Des aires aux longueurs]
+\cas{1.}
+\explique{On note $x$ le côté, en mètres ($x>0$) : $x^{2}=98$, donc $x=\sqrt{98}$.}{on garde la
+solution positive : c'est une longueur}
+\begin{calculs}
+\sqrt{98} &= \sqrt{49\times 2} &&\justif{$49$ est un carré parfait (chapitre 6)}\\
+\sqrt{98} &= 7\sqrt{2} &&
+\end{calculs}
+\explique{Le côté mesure \res{$7\sqrt{2}$~m}, soit environ \res{$9{,}90$~m}.}{calculatrice}
+\cas{2.}
+\explique{L'aire passe de $5^{2}=25$~cm$^{2}$ à $50$~cm$^{2}$ ; le nouveau côté $c$ vérifie
+$c^{2}=50$.}{aire doublée}
+\begin{calculs}
+c &= \sqrt{50} &&\justif{$c>0$}\\
+c &= \sqrt{25\times 2} &&\\
+c &= 5\sqrt{2} &&
+\end{calculs}
+\explique{Le nouveau côté mesure \res{$5\sqrt{2}$~cm}, soit environ \res{$7{,}07$~cm} :
+\res{le côté n'est pas doublé} (il faudrait $10$~cm).}{doubler le côté multiplie l'aire par
+$4$}
+\cas{3.}
+\begin{calculs}
+\pi r^{2} &= 49\pi &&\justif{aire d'un disque : $\pi r^{2}$}\\
+r^{2} &= 49 &&\justif{on divise par $\pi$}
+\end{calculs}
+\explique{$r>0$, donc le rayon vaut \res{$7$~cm}.}{valeur exacte, sans arrondi}
+\end{exo}
+
+\begin{exo}[Chute d'un colis]
+\cas{1.}
+\begin{calculs}
+h(0) &= 45-5\times 0^{2} &&\justif{on remplace $t$ par $0$}\\
+h(0) &= \res{45} &&
+\end{calculs}
+\explique{De même, $h(1)=45-5$, soit \res{$h(1)=40$}, et $h(2)=45-5\times 4$, soit
+\res{$h(2)=25$}.}{$2^{2}=4$ : on calcule le carré avant de multiplier}
+\cas{2.}
+\begin{calculs}
+45-5t^{2} &= 25 &&\justif{$h(t)=25$}\\
+-5t^{2} &= -20 &&\\
+t^{2} &= 4 &&
+\end{calculs}
+\explique{$t\ge 0$, donc $t=2$ : le colis est à $25$~m du sol au bout de \res{$2$~s}.}{on écarte
+$-2$ : le temps est positif}
+\cas{3.}
+\begin{calculs}
+45-5t^{2} &= 0 &&\justif{au sol, la hauteur est nulle}\\
+-5t^{2} &= -45 &&\\
+t^{2} &= 9 &&
+\end{calculs}
+\explique{$t=3$ : le colis touche le sol au bout de \res{$3$~s}.}{$t\ge 0$}
+\cas{4.}
+\begin{calculs}
+45-5t^{2} &= 35 &&\justif{$h(t)=35$}\\
+-5t^{2} &= -10 &&\\
+t^{2} &= 2 &&
+\end{calculs}
+\explique{$t=\sqrt{2}$ : au bout de \res{$\sqrt{2}$~s}, soit environ \res{$1{,}41$~s}.}{on
+vérifie : $1{,}41$ est bien entre $1$ et $2$}
+\end{exo}
+
+\partie{Fonction carré : inéquations et résolution graphique}
+
+\begin{exo}[Lire sur la parabole]
+\cotefig[0.3]{%
+\cas{a)}
+La parabole est sur la droite $y=1$ ou au-dessous entre $-1$ et $1$ :
+$S=\res{\intff{-1}{1}}$ (en rouge). {\small\itshape\color{black!60}(« $\le$ » : bornes
+comprises)}
+
+\cas{b)}
+Elle est strictement au-dessus de la droite $y=4$ avant $-2$ et après $2$ :
+$S=\res{\intoo{-\infty}{-2}\cup\intoo{2}{+\infty}}$. {\small\itshape\color{black!60}(au-delà
+de la figure, la parabole continue de monter)}
+
+\cas{c)}
+La droite $y=9$ coupe la parabole aux abscisses $-3$ et $3$ :
+$S=\res{\ens{-3\,;3}}$.
+
+\cas{d)}
+La parabole est sur la droite $y=9$ ou au-dessus avant $-3$ et après $3$ :
+$S=\res{\intof{-\infty}{-3}\cup\intfo{3}{+\infty}}$.
+
+\cas{e)}
+La parabole n'est jamais sous l'axe des abscisses : $S=\res{\varnothing}$.
+{\small\itshape\color{black!60}(un carré n'est jamais négatif)}}{%
+\begin{tikzpicture}[x=0.36cm,y=0.36cm]
+  \repere{-4}{-1}{4}{10}
+  \gradx{-3,-2,-1,1,2,3} \grady{1,2,3,4,5,6,7,8,9}
+  \draw[coulCourbe,line width=1.1pt,domain=-3.1:3.1,samples=60] plot (\x,{(\x)*(\x)});
+  \draw[black!70,thick] (-4,1)--(4,1) (-4,4)--(4,4) (-4,9)--(4,9);
+  \draw[black!70,dashed] (-1,1)--(-1,0) (1,1)--(1,0);
+  \draw[red,line width=1.6pt] (-1,0)--(1,0);
+  \path (-1,1) node[croix]{} (1,1) node[croix]{} (-2,4) node[croix]{} (2,4) node[croix]{}
+        (-3,9) node[croix]{} (3,9) node[croix]{};
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Résoudre exactement]
+\cas{a)}
+\explique{$\sqrt{36}=6$, donc $S=\res{\intff{-6}{6}}$.}{$x^{2}\le k$ : entre $-\sqrt{k}$ et
+$\sqrt{k}$, bornes comprises}
+\cas{b)}
+\explique{$x^{2}=3$ a pour solutions $-\sqrt{3}$ et $\sqrt{3}$, donc
+$S=\res{\intoo{-\infty}{-\sqrt{3}}\cup\intoo{\sqrt{3}}{+\infty}}$.}{$x^{2}>k$ : à l'extérieur,
+bornes exclues}
+\cas{c)}
+\explique{Un carré n'est jamais négatif, donc $S=\res{\varnothing}$.}{$-4<0$}
+\cas{d)}
+\explique{Un carré est toujours positif ou nul, donc $S=\res{\R}$.}{tout nombre réel convient}
+\cas{e)}
+\begin{calculs}
+4x^{2}-1 &\le 3x^{2}+24 &&\justif{on recopie l'inéquation}\\
+x^{2} &\le 25 &&\justif{on retire $3x^{2}$ et on ajoute $1$}
+\end{calculs}
+\explique{$S=\res{\intff{-5}{5}}$.}{$\sqrt{25}=5$}
+\cas{f)}
+\begin{calculs}
+5x^{2}+2 &> 2x^{2}+29 &&\justif{on recopie l'inéquation}\\
+3x^{2} &> 27 &&\\
+x^{2} &> 9 &&\justif{on divise par $3>0$ : le sens ne change pas}
+\end{calculs}
+\explique{$S=\res{\intoo{-\infty}{-3}\cup\intoo{3}{+\infty}}$.}{$\sqrt{9}=3$}
+\end{exo}
+
+\begin{exo}[Encadrer un carré]
+\cas{a)}
+\explique{$2$ et $5$ sont positifs et la fonction carré est croissante sur
+$\intfo{0}{+\infty}$ : $2^{2}\le x^{2}\le 5^{2}$, soit \res{$4\le x^{2}\le 25$}.}{l'ordre est
+conservé}
+\cas{b)}
+\explique{$-4$ et $-1$ sont négatifs et la fonction carré est décroissante sur
+$\intof{-\infty}{0}$ : $(-4)^{2}\ge x^{2}\ge(-1)^{2}$, soit \res{$1\le x^{2}\le 16$}.}{l'ordre
+est renversé}
+\cas{c)}
+\explique{L'intervalle contient $0$ : le plus petit carré est $0$ ; le plus grand est
+$3^{2}=9$, car $(-2)^{2}=4$ est plus petit. Donc \res{$0\le x^{2}\le 9$}.}{on regarde la
+parabole entre $-2$ et $3$}
+\rem{Erreur fréquente : écrire $4\le x^{2}\le 9$ en élevant les bornes au carré. La
+parabole descend jusqu'à $0$ entre $-2$ et $3$.}
+\cas{d)}
+\explique{$x>3\ge 0$ : l'ordre est conservé, donc \res{$x^{2}>9$}.}{une inégalité, pas un
+encadrement}
+\cas{e)}
+\explique{$x<-5\le 0$ : l'ordre est renversé, donc \res{$x^{2}>25$}.}{$(-5)^{2}=25$}
+\end{exo}
+
+\begin{exo}[L'arche d'un hangar]
+\cas{1.}
+\explique{$f(0)=16-0$, soit \res{$f(0)=16$} : c'est la hauteur de l'arche en son milieu, sa
+hauteur maximale.}{$x^{2}\ge 0$, donc $16-x^{2}\le 16$}
+\cas{2.}
+\explique{$f(-3)=16-9$, soit \res{$f(-3)=7$} ; $f(3)=16-9$, soit \res{$f(3)=7$}. Les deux
+hauteurs sont égales : l'arche est symétrique.}{$(-3)^{2}=3^{2}=9$}
+\cas{3.}
+\begin{calculs}
+16-x^{2} &= 0 &&\justif{on recopie l'équation}\\
+x^{2} &= 16 &&
+\end{calculs}
+\explique{$S=\res{\ens{-4\,;4}}$ : l'arche touche le sol en $-4$ et en $4$, sa largeur au sol
+est de \res{$8$~m}.}{$4-(-4)=8$}
+\cas{4.}
+\begin{calculs}
+16-x^{2} &\ge 7 &&\justif{la hauteur doit être d'au moins $7$~m}\\
+-x^{2} &\ge -9 &&\justif{on retire $16$}\\
+x^{2} &\le 9 &&\justif{on multiplie par $-1$ : le sens change}
+\end{calculs}
+\explique{Donc $x\in\intff{-3}{3}$ : le convoi dispose d'un passage de \res{$6$~m} de
+large.}{$3-(-3)=6$}
+\cas{5.}
+\explique{$16-x^{2}\ge 12$ équivaut à $x^{2}\le 4$, donc $x\in\intff{-2}{2}$ : une largeur
+de \res{$4$~m}.}{même démarche}
+\end{exo}
+
+\partie{Parabole et droite : position relative}
+
+\begin{exo}[Parabole et droite]
+\cas{1.}
+\begin{calculs}
+(x+2)(x-3) &= x^{2}-3x+2x-6 &&\justif{double distributivité (chapitre 4)}\\
+(x+2)(x-3) &= \res{x^{2}-x-6} &&
+\end{calculs}
+\cas{2.}
+\explique{$x^{2}-(x+6)=x^{2}-x-6$, soit $(x+2)(x-3)$.}{la différence est le produit qu'on
+vient de développer}
+\explique{$x+2=0$ pour $x=-2$ et $x-3=0$ pour $x=3$ ; $a=1>0$ pour les deux : $-$ puis
+$+$.}{signe de chaque facteur}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=3.4,espcl=2]{$x$/1,$x+2$/1,$x-3$/1,$x^{2}-(x+6)$/1}%
+    {$-\infty$,$-2$,$3$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\cas{3.}
+\explique{La parabole est \res{au-dessous de (d) sur $\intff{-2}{3}$} et \res{au-dessus de
+(d) sur $\intof{-\infty}{-2}$ et sur $\intfo{3}{+\infty}$}.}{signe $-$ : parabole
+au-dessous ; signe $+$ : au-dessus}
+\cas{4.}
+\explique{Elles se coupent pour $x=-2$ et $x=3$ ; $(-2)^{2}=4$ et $3^{2}=9$ : points
+\res{$(-2\,;4)$ et $(3\,;9)$}.}{on vérifie sur (d) : $-2+6=4$ et $3+6=9$}
+\end{exo}
+
+\begin{exo}[Un nombre et son carré]
+\cas{1.}
+\explique{On étudie le signe de $x^{2}-2x=x(x-2)$ sur $\intfo{0}{+\infty}$.}{on factorise par
+$x$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=3.4,espcl=2]{$x$/1,$x$/1,$x-2$/1,$x^{2}-2x$/1}{$0$,$2$,$+\infty$}
+  \tkzTabLine{z,+,t,+,}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabLine{z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{La parabole est \res{au-dessous de la droite $y=2x$ sur $\intff{0}{2}$} et
+\res{au-dessus sur $\intfo{2}{+\infty}$}.}{elles se coupent en $(0\,;0)$ et $(2\,;4)$}
+\cas{2.}
+\explique{$0\le 0{,}7\le 1$, donc \res{$0{,}7^{2}<0{,}7$} ; $1{,}3>1$, donc
+\res{$1{,}3^{2}>1{,}3$}.}{cours : $x^{2}\le x$ sur $\intff{0}{1}$, $x^{2}\ge x$ au-delà}
+\cas{3.}
+\explique{\leavevmode\res{Léa a tort} : un carré de côté $0{,}5$~m a une aire de $0{,}25$~m$^{2}$, et
+$0{,}25<0{,}5$.}{l'affirmation n'est vraie que pour un côté d'au moins $1$~m}
+\end{exo}
+
+\begin{exo}[Lire, puis démontrer]
+\cas{1.}
+\explique{(d) passe par $(0\,;2)$ et $(2\,;0)$ ; son ordonnée à l'origine est $p=2$.}{deux nœuds
+du quadrillage}
+\begin{calculs}
+m &= \frac{0-2}{2-0} &&\justif{coefficient directeur (chapitre 9)}\\
+m &= -1 &&
+\end{calculs}
+\explique{(d) a pour équation réduite \res{$y=-x+2$}.}{on vérifie avec $(2\,;0)$ : $-2+2=0$}
+\cas{2.}
+\explique{On lit les points \res{$(-2\,;4)$ et $(1\,;1)$}.}{nœuds du quadrillage}
+\cas{3.}
+\begin{calculs}
+(x+2)(x-1) &= x^{2}-x+2x-2 &&\justif{double distributivité}\\
+(x+2)(x-1) &= \res{x^{2}+x-2} &&
+\end{calculs}
+\cas{4.}
+\explique{$x^{2}-(-x+2)=x^{2}+x-2$, soit $(x+2)(x-1)$.}{la différence}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=3.4,espcl=2]{$x$/1,$x+2$/1,$x-1$/1,$x^{2}-(-x+2)$/1}%
+    {$-\infty$,$-2$,$1$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{La parabole est \res{au-dessous de (d) sur $\intff{-2}{1}$} et \res{au-dessus
+ailleurs} ; elles se coupent en $x=-2$ et $x=1$.}{le calcul confirme la lecture : $(-2)^{2}=4$
+et $1^{2}=1$}
+\cas{5.}
+\explique{$x^{2}\le 2-x$ : la parabole est sur (d) ou au-dessous, donc
+$S=\res{\intff{-2}{1}}$.}{signes $-$ et les $0$}
+\end{exo}
+
+\partie{Fonction cube}
+
+\begin{exo}[Tableau de valeurs et courbe]
+\cas{1.}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|*{9}{c|}}
+\hline
+$x$ & $-2$ & $-1{,}5$ & $-1$ & $-0{,}5$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\\hline
+$x^{3}$ & $-8$ & $-3{,}375$ & $-1$ & $-0{,}125$ & $0$ & $0{,}125$ & $1$ & $3{,}375$
+  & $8$\\\hline
+\end{tabular}
+\end{center}
+{\small\itshape\color{black!60}$1{,}5^{3}=1{,}5\times 1{,}5\times 1{,}5$, soit $2{,}25\times
+1{,}5$, soit $3{,}375$ ; un nombre négatif a un cube négatif.\par}
+\cas{2.}
+\cotefig[0.2]{On place les points, puis on les relie par une courbe régulière : elle
+monte toujours, et elle est symétrique par rapport à l'origine.
+
+\smallskip
+{\small\itshape\color{black!60}Avec un carreau pour unité, la courbe va de $-8$ à $8$
+carreaux en hauteur.}}{%
+\begin{tikzpicture}[x=0.3cm,y=0.3cm]
+  \repere{-3}{-9}{3}{9}
+  \gradx{-2,-1,1,2} \grady{-8,-4,4,8}
+  \draw[coulCourbe,line width=1.1pt,domain=-2:2,samples=60] plot (\x,{(\x)*(\x)*(\x)});
+  \foreach \a/\b in {-2/-8,-1.5/-3.375,-1/-1,0/0,1/1,1.5/3.375,2/8}
+    {\path[coulCourbe] (\a,\b) node[croix]{};}
+\end{tikzpicture}}
+\cas{3.}
+\explique{L'image de $-1{,}5$ par la fonction cube est \res{$-3{,}375$}. L'antécédent de $-8$
+par la fonction cube est \res{$-2$}.}{tableau}
+\explique{$-8$ n'a qu'un antécédent car l'équation $x^{3}=-8$ a une seule solution : la
+fonction cube est croissante sur $\R$.}{la courbe coupe une fois chaque droite horizontale}
+\end{exo}
+
+\begin{exo}[Équations et inéquations]
+\cas{a)}
+\begin{calculs}
+x^{3} &= 125 &&\justif{on recopie l'équation}\\
+x &= \sqrt[3]{125} &&\justif{une seule solution : la racine cubique}\\
+x &= 5 &&\justif{car $5^{3}=125$}
+\end{calculs}
+\explique{$S=\res{\ens{5}}$.}{}
+\cas{b)}
+\explique{$x=\sqrt[3]{-64}$, soit $x=-4$ : $S=\res{\ens{-4}}$.}{$(-4)^{3}=-64$}
+\cas{c)}
+\begin{calculs}
+4x^{3}-7 &= 101 &&\justif{on recopie l'équation}\\
+4x^{3} &= 108 &&\\
+x^{3} &= 27 &&\justif{on divise par $4$}\\
+x &= \sqrt[3]{27} &&\\
+x &= 3 &&\justif{car $3^{3}=27$}
+\end{calculs}
+\explique{$S=\res{\ens{3}}$.}{}
+\cas{d)}
+\begin{calculs}
+x^{3} &\ge 1 &&\justif{on recopie l'inéquation}\\
+x &\ge \sqrt[3]{1} &&\justif{la fonction cube conserve l'ordre}\\
+x &\ge 1 &&
+\end{calculs}
+\explique{$S=\res{\intfo{1}{+\infty}}$.}{borne comprise}
+\cas{e)}
+\begin{calculs}
+2x^{3}+9 &< x^{3}+1 &&\justif{on recopie l'inéquation}\\
+x^{3} &< -8 &&\justif{on retire $x^{3}$ et $9$}\\
+x &< \sqrt[3]{-8} &&\\
+x &< -2 &&\justif{car $(-2)^{3}=-8$}
+\end{calculs}
+\explique{$S=\res{\intoo{-\infty}{-2}}$.}{borne exclue}
+\cas{f)}
+\explique{$x=\sqrt[3]{10}$ : $S=\res{\ens{\sqrt[3]{10}}}$, avec $\sqrt[3]{10}\approx
+\res{2{,}15}$.}{touche racine cubique de la calculatrice ; $2^{3}=8$ et $3^{3}=27$}
+\end{exo}
+
+\begin{exo}[Comparer des cubes]
+\cas{1.}
+\explique{La fonction cube est croissante sur $\R$ : l'ordre est toujours conservé.}{même
+pour des nombres négatifs}
+\explique{a)~$1{,}9<2{,}1$, donc \res{$1{,}9^{3}<2{,}1^{3}$}. b)~$-3{,}2<-2{,}8$, donc
+\res{$(-3{,}2)^{3}<(-2{,}8)^{3}$}. c)~$-5<0{,}1$, donc \res{$(-5)^{3}<0{,}1^{3}$}.}{}
+\cas{2.}
+\explique{$-3{,}2<-2{,}8\le 0$ et la fonction carré est décroissante sur $\intof{-\infty}{0}$,
+donc \res{$(-3{,}2)^{2}>(-2{,}8)^{2}$} : \res{l'ordre est contraire} à celui du 1.~b).}{le
+carré renverse l'ordre des négatifs, le cube jamais}
+\cas{3.}
+\explique{$-2\le x\le 3$ et l'ordre est conservé : $(-2)^{3}\le x^{3}\le 3^{3}$, soit
+\res{$-8\le x^{3}\le 27$}.}{pas de piège en $0$, contrairement au carré}
+\end{exo}
+
+\begin{exo}[Un aquarium cubique]
+\cas{1.}
+\begin{calculs}
+x^{3} &= 216 &&\justif{volume en litres}\\
+x &= \sqrt[3]{216} &&\\
+x &= 6 &&\justif{car $6^{3}=216$}
+\end{calculs}
+\explique{L'arête mesure \res{$6$~dm}.}{}
+\cas{2.}
+\explique{$x^{3}\ge 343$ équivaut à $x\ge\sqrt[3]{343}$, soit $x\ge 7$ : il faut une arête
+d'au moins \res{$7$~dm}.}{$7^{3}=343$ ; ordre conservé}
+\cas{3.}
+\explique{$3^{3}=27$ et $6^{3}=216$ ; $216\div 27=8$ : le volume est \res{multiplié par
+$8$}.}{doubler l'arête multiplie le volume par $2^{3}$}
+\cas{4.}
+\explique{$x^{3}=100$, donc $x=\sqrt[3]{100}$ : l'arête mesure \res{$\sqrt[3]{100}$~dm}, soit
+environ \res{$4{,}64$~dm}.}{calculatrice ; on vérifie : $4{,}64^{3}\approx 99{,}9$}
+\end{exo}
+
+\partie{Fonction inverse}
+
+\begin{exo}[Tableau de valeurs et hyperbole]
+\cas{1.}
+\explique{De $-4$ à $4$ avec un pas de $0{,}5$, sans $0$ ; on a $\frac{1}{0{,}5}=2$,
+$\frac{1}{1{,}5}=\frac23$, $\frac{1}{2{,}5}=\frac25$, $\frac{1}{3{,}5}=\frac27$.}{diviser par
+$0{,}5$, c'est multiplier par $2$}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|c|*{8}{c|}}
+\hline
+$x$ & $-4$ & $-3{,}5$ & $-3$ & $-2{,}5$ & $-2$ & $-1{,}5$ & $-1$ & $-0{,}5$\\\hline
+$\dfrac{1}{x}$ & $-\dfrac14$ & $-\dfrac27$ & $-\dfrac13$ & $-\dfrac25$ & $-\dfrac12$
+  & $-\dfrac23$ & $-1$ & $-2$\\\hline
+\end{tabular}
+
+\smallskip
+\begin{tabular}{|c|*{8}{c|}}
+\hline
+$x$ & $0{,}5$ & $1$ & $1{,}5$ & $2$ & $2{,}5$ & $3$ & $3{,}5$ & $4$\\\hline
+$\dfrac{1}{x}$ & $2$ & $1$ & $\dfrac23$ & $\dfrac12$ & $\dfrac25$ & $\dfrac13$ & $\dfrac27$
+  & $\dfrac14$\\\hline
+\end{tabular}
+\end{center}
+\cas{2.}
+\cotefig[0.3]{On place les points, puis on trace deux branches séparées : la courbe ne
+coupe jamais l'axe des ordonnées, car $0$ n'a pas d'image. L'hyperbole est symétrique
+par rapport à l'origine.}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-5}{-3}{5}{3}
+  \gradx{-4,-2,2,4} \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt,domain=0.5:4,samples=60] plot (\x,{1/(\x)});
+  \draw[coulCourbe,line width=1.1pt,domain=-4:-0.5,samples=60] plot (\x,{1/(\x)});
+  \foreach \a in {0.5,1,1.5,2,2.5,3,3.5,4}
+    {\path[coulCourbe] (\a,{1/\a}) node[croix]{} (-\a,{-1/\a}) node[croix]{};}
+\end{tikzpicture}}
+\cas{3.}
+\explique{$-\frac13$ est l'image de \res{$-3$}. L'antécédent de $\frac14$ est
+\res{$4$}.}{tableau}
+\explique{$0$ n'a pas d'image : on ne peut pas diviser par $0$, donc $\frac{1}{0}$
+n'existe pas.}{valeur interdite (chapitre 4)}
+\end{exo}
+
+\begin{exo}[Équations et inéquations]
+\cas{a)}
+\begin{calculs}
+\frac{1}{x} &= 3 &&\justif{$x\ne 0$}\\
+1 &= 3x &&\justif{produit en croix}\\
+x &= \frac13 &&
+\end{calculs}
+\explique{$S=\res{\ens{\frac13}}$.}{l'inverse de $3$}
+\cas{b)}
+\explique{$1=-5x$, donc $x=-\frac15$ : $S=\res{\ens{-\frac15}}$.}{produit en croix}
+\cas{c)}
+\begin{calculs}
+\frac{1}{x} &= \frac23 &&\justif{$x\ne 0$}\\
+1\times 3 &= 2x &&\justif{produit en croix}\\
+x &= \frac32 &&
+\end{calculs}
+\explique{$S=\res{\ens{\frac32}}$.}{l'inverse de $\frac23$ est $\frac32$}
+\cas{d)}
+\begin{calculs}
+\frac{1}{x}-4 &\le 0 &&\justif{on se ramène à $0$ (chapitre 5)}\\
+\frac{1}{x}-\dfrac{4\fois{x}}{1\fois{x}} &\le 0 &&\justif{même dénominateur}\\
+\frac{1-4x}{x} &\le 0 &&
+\end{calculs}
+\explique{$1-4x=0$ pour $x=\frac14$, $a=-4<0$ : $+$ puis $-$. Valeur interdite
+$0$.}{double barre en $0$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=2.6,espcl=2]{$x$/1,$1-4x$/1,$x$/1,$\frac{1-4x}{x}$/1.2}%
+    {$-\infty$,$0$,$\frac14$,$+\infty$}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,d,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\explique{$S=\res{\intoo{-\infty}{0}\cup\intfo{\frac14}{+\infty}}$.}{signes $-$ et le $0$ ;
+$0$ est exclu}
+\cas{e)}
+\begin{calculs}
+\frac{1}{x}+2 &> 0 &&\justif{on ajoute $2$}\\
+\frac{1}{x}+\dfrac{2\fois{x}}{1\fois{x}} &> 0 &&\justif{même dénominateur}\\
+\frac{1+2x}{x} &> 0 &&
+\end{calculs}
+\explique{$1+2x=0$ pour $x=-\frac12$, $a=2>0$ : $-$ puis $+$.}{signe du numérateur}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=2.6,espcl=2]{$x$/1,$1+2x$/1,$x$/1,$\frac{1+2x}{x}$/1.2}%
+    {$-\infty$,$-\frac12$,$0$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,d,+,}
+\end{tikzpicture}
+\end{center}
+\explique{$S=\res{\intoo{-\infty}{-\frac12}\cup\intoo{0}{+\infty}}$.}{signes $+$ ; inégalité
+stricte}
+\rem{Erreur fréquente : « $\frac1x\le 4$ donne $x\ge\frac14$ » en oubliant les nombres
+négatifs, dont l'inverse est négatif, donc inférieur à $4$.}
+\end{exo}
+
+\begin{exo}[Comparer des inverses]
+\cas{1.}
+\explique{a) $0<3<7$ et la fonction inverse est décroissante sur $\intoo{0}{+\infty}$, donc
+\res{$\frac13>\frac17$}.}{deux positifs : l'ordre est renversé}
+\explique{b) $-5<-2<0$ et elle est décroissante sur $\intoo{-\infty}{0}$, donc
+\res{$\frac{1}{-5}>\frac{1}{-2}$}.}{$-0{,}2>-0{,}5$}
+\explique{c) $\frac{1}{-4}<0$ et $\frac12>0$, donc \res{$\frac{1}{-4}<\frac12$}.}{signes
+contraires : on ne compare pas par les variations}
+\explique{d) $0<0{,}9<1{,}1$, donc \res{$\frac{1}{0{,}9}>\frac{1}{1{,}1}$}.}{l'ordre est
+renversé}
+\cas{2.}
+\explique{La fonction cube est croissante : $0{,}9<1{,}1$ donne
+\res{$0{,}9^{3}<1{,}1^{3}$}.}{l'ordre est conservé}
+\cas{3.}
+\explique{$2\le x\le 5$, nombres positifs : $\frac12\ge\frac{1}{x}\ge\frac15$, soit
+\res{$\frac15\le\frac{1}{x}\le\frac12$}.}{l'ordre est renversé : les bornes échangent leur
+place}
+\end{exo}
+
+\begin{exo}[Un rectangle d'aire fixée]
+\cas{1.}
+\explique{L'aire vaut $x\times y=12$, donc $y=\frac{12}{x}$.}{on divise par $x\ne 0$}
+\explique{Pour $x=3$ : $y=\frac{12}{3}$, soit \res{$y=4$} ; pour $x=8$ : $y=\frac{12}{8}$, soit
+\res{$y=1{,}5$}.}{en mètres}
+\cas{2.}
+\begin{calculs}
+\frac{12}{x} &= 8 &&\justif{la longueur vaut $8$}\\
+12 &= 8x &&\justif{produit en croix}\\
+x &= 1{,}5 &&
+\end{calculs}
+\explique{La largeur mesure \res{$1{,}5$~m}.}{on vérifie : $1{,}5\times 8=12$}
+\cas{3.}
+\explique{$\frac{12}{x}\le 6$ ; on divise les deux membres par $12>0$ :
+$\frac{1}{x}\le\frac{6}{12}$, soit $\frac{1}{x}\le\frac12$.}{le sens ne change pas}
+\explique{$x>0$ et la fonction inverse est décroissante sur $\intoo{0}{+\infty}$ ;
+$\frac{1}{x}\le\frac12$ équivaut donc à $x\ge 2$ : largeurs \res{d'au moins
+$2$~m}.}{$\frac12$ est l'inverse de $2$ ; l'ordre est renversé}
+\cas{4.}
+\begin{calculs}
+(2\sqrt{3})^{2} &= 2^{2}\times(\sqrt{3})^{2} &&\justif{carré d'un produit}\\
+(2\sqrt{3})^{2} &= 4\times 3 &&\\
+(2\sqrt{3})^{2} &= \res{12} &&
+\end{calculs}
+\explique{Pour $x=2\sqrt{3}$ : $x\times x=12$, l'aire du rectangle ; donc
+$y=\frac{12}{x}=x$. La longueur égale la largeur : \res{c'est un carré}.}{côté
+$2\sqrt{3}\approx 3{,}46$~m}
+\end{exo}
+
+\partie{Fonction racine carrée}
+
+\begin{exo}[Tableau de valeurs et courbe]
+\cas{1.}
+\explique{\leavevmode\res{$\sqrt{0}=0$}, \res{$\sqrt{1}=1$}, \res{$\sqrt{4}=2$}, \res{$\sqrt{9}=3$},
+\res{$\sqrt{16}=4$} et \res{$\sqrt{25}=5$}.}{des carrés parfaits : $4=2^{2}$\ldots}
+\cas{2.}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|c|*{10}{c|}}
+\hline
+$x$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$ & $9$\\\hline
+$\sqrt{x}$ & $0$ & $1$ & $1{,}4$ & $1{,}7$ & $2$ & $2{,}2$ & $2{,}4$ & $2{,}6$ & $2{,}8$
+  & $3$\\\hline
+\end{tabular}
+\end{center}
+\cotefig[0.4]{On place les points, puis on les relie : la courbe part de l'origine et
+monte de moins en moins vite.
+
+\smallskip
+{\small\itshape\color{black!60}Valeurs arrondies au dixième, à la calculatrice.}}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-1}{-1}{10}{4}
+  \gradx{1,2,3,4,5,6,7,8,9} \grady{1,2,3}
+  \draw[coulCourbe,line width=1.1pt,domain=0:9,samples=80] plot (\x,{sqrt(\x)});
+  \foreach \a in {0,1,...,9} {\path[coulCourbe] (\a,{sqrt(\a)}) node[croix]{};}
+\end{tikzpicture}}
+\cas{3.}
+\explique{L'antécédent de $5$ par la fonction racine carrée est \res{$25$}.}{$\sqrt{25}=5$}
+\explique{$-4$ n'a pas d'image : un nombre négatif n'a pas de racine carrée.}{aucun carré
+n'est négatif (chapitre 6)}
+\end{exo}
+
+\begin{exo}[Équations et inéquations]
+\cas{a)}
+\begin{calculs}
+\sqrt{x} &= 9 &&\justif{$9\ge 0$}\\
+(\sqrt{x})^{2} &= 9^{2} &&\justif{on élève au carré}\\
+x &= 81 &&
+\end{calculs}
+\explique{$S=\res{\ens{81}}$.}{}
+\cas{b)}
+\explique{Une racine carrée n'est jamais négative : $S=\res{\varnothing}$.}{$-4<0$}
+\cas{c)}
+\begin{calculs}
+4\sqrt{x}-1 &= 11 &&\justif{on recopie l'équation}\\
+4\sqrt{x} &= 12 &&\\
+\sqrt{x} &= 3 &&\justif{on isole la racine}\\
+(\sqrt{x})^{2} &= 3^{2} &&\justif{on élève au carré}\\
+x &= 9 &&
+\end{calculs}
+\explique{$S=\res{\ens{9}}$.}{on vérifie : $4\times 3-1=11$}
+\cas{d)}
+\begin{calculs}
+\sqrt{x} &\le 5 &&\justif{deux nombres positifs}\\
+(\sqrt{x})^{2} &\le 5^{2} &&\justif{le carré conserve l'ordre}\\
+x &\le 25 &&
+\end{calculs}
+\explique{Et $x\ge 0$, donc $S=\res{\intff{0}{25}}$.}{on n'oublie pas la borne $0$}
+\cas{e)}
+\begin{calculs}
+\sqrt{x} &> 0{,}5 &&\justif{on recopie l'inéquation}\\
+(\sqrt{x})^{2} &> 0{,}5^{2} &&\justif{le carré conserve l'ordre}\\
+x &> 0{,}25 &&
+\end{calculs}
+\explique{$S=\res{\intoo{0{,}25}{+\infty}}$.}{« $>$ » : borne exclue}
+\cas{f)}
+\explique{Une racine carrée est toujours positive ou nulle, donc jamais inférieure à $-1$ :
+$S=\res{\varnothing}$.}{$\sqrt{x}\ge 0>-1$}
+\end{exo}
+
+\begin{exo}[Un nombre, son carré, sa racine]
+\cas{1.}
+\explique{\leavevmode\res{$\mathcal{C}_{1}$ : $y=x^{2}$} (la plus raide), \res{$\mathcal{C}_{2}$ : $y=x$}
+(la droite), \res{$\mathcal{C}_{3}$ : $y=\sqrt{x}$} (la plus plate).}{toutes passent par
+$(0\,;0)$ et $(1\,;1)$}
+\cas{2.}
+\explique{Pour $0\le x\le 1$ : \res{$x^{2}\le x\le\sqrt{x}$} ; pour $x\ge 1$ :
+\res{$\sqrt{x}\le x\le x^{2}$}.}{on lit l'ordre des courbes de bas en haut}
+\cas{3.}
+\explique{Pour $x=0{,}25$ : $x^{2}=0{,}0625$ et $\sqrt{x}=0{,}5$, et $0{,}0625\le 0{,}25\le
+0{,}5$. Pour $x=4$ : $\sqrt{4}=2$ et $4^{2}=16$, et $2\le 4\le 16$.}{\res{les deux ordres
+sont vérifiés}}
+\cas{4.}
+\explique{On retrouve la position de la parabole et de la droite $y=x$ :
+\res{$x^{2}\le x$ sur $\intff{0}{1}$ et $x^{2}\ge x$ sur $\intfo{1}{+\infty}$}.}{partie III}
+\end{exo}
+
+\begin{exo}[Vitesse d'une chute]
+\cas{1.}
+\explique{$v(5)=\sqrt{20\times 5}$, soit $\sqrt{100}$ : \res{$v(5)=10$~m/s} ;
+$v(45)=\sqrt{900}$ : \res{$v(45)=30$~m/s}.}{$20\times 45=900$}
+\cas{2.}
+\begin{calculs}
+\sqrt{20h} &= 40 &&\justif{la vitesse vaut $40$}\\
+(\sqrt{20h})^{2} &= 40^{2} &&\justif{on élève au carré}\\
+20h &= 1600 &&\\
+h &= 80 &&
+\end{calculs}
+\explique{Il faut le lâcher de \res{$80$~m}.}{on vérifie : $\sqrt{1600}=40$}
+\cas{3.}
+\begin{calculs}
+\sqrt{20h} &\le 20 &&\justif{deux nombres positifs}\\
+20h &\le 400 &&\justif{le carré conserve l'ordre}\\
+h &\le 20 &&
+\end{calculs}
+\explique{Pour une hauteur comprise entre $0$ et \res{$20$~m}.}{$h\ge 0$}
+\cas{4.}
+\explique{$10<11$, donc $200<220$, puis $\sqrt{200}<\sqrt{220}$ : \res{$v(10)<v(11)$}.}{la
+fonction racine carrée est croissante}
+\end{exo}
+
+\partie{Valeur absolue d'un nombre}
+
+\begin{exo}[Valeurs absolues et distances]
+\cas{1.}
+\explique{$\lvert -9|=\res{9}$, $|4{,}5|=\res{4{,}5}$, $|0|=\res{0}$ et
+$\left|-\frac34\right|=\res{\frac34}$.}{distance à $0$ : on retire le signe $-$}
+\cas{2.}
+\begin{calculs}
+|11-2| &= \res{9} &&\justif{a) distance : $|b-a|$}\\
+|3-(-5)| &= |3+5| &&\justif{b)}\\
+|3-(-5)| &= \res{8} &&\\
+\lvert -2-(-8)| &= \lvert -2+8| &&\justif{c)}\\
+\lvert -2-(-8)| &= \res{6} &&
+\end{calculs}
+\cas{3.}
+\explique{a) \res{La distance entre $x$ et $4$ vaut $3$.}}{$|x-a|$ : distance entre $x$ et $a$}
+\explique{b) $|a+2|=|a-(-2)|$ : \res{la distance entre $a$ et $-2$ vaut $5$}.}{piège :
+$+2$ donne $-2$}
+\end{exo}
+
+\begin{exo}[Sans valeur absolue, sans racine]
+\cas{a)}
+\explique{$\sqrt{3}<\sqrt{4}=2$, donc $2-\sqrt{3}>0$ et $|2-\sqrt{3}|=\res{2-\sqrt{3}}$.}{nombre
+positif : il reste le même}
+\cas{b)}
+\explique{$\sqrt{7}<\sqrt{9}=3$, donc $\sqrt{7}-3<0$ et $|\sqrt{7}-3|=\res{3-\sqrt{7}}$.}{nombre
+négatif : on prend son opposé}
+\cas{c)}
+\explique{$\pi\approx 3{,}14<4$, donc $|\pi-4|=\res{4-\pi}$.}{$\pi-4<0$}
+\cas{d)}
+\explique{$\sqrt{(1-\sqrt{2})^{2}}=|1-\sqrt{2}|$ ; $\sqrt{2}>1$, donc le résultat vaut
+\res{$\sqrt{2}-1$}.}{$\sqrt{a^{2}}=|a|$}
+\cas{e)}
+\explique{$\sqrt{(-8)^{2}}=\lvert -8|$, soit \res{$8$}.}{et pas $-8$ : une racine carrée est
+positive}
+\cas{f)}
+\explique{$\sqrt{(5-\sqrt{30})^{2}}=|5-\sqrt{30}|$ ; $\sqrt{30}>\sqrt{25}=5$, donc le
+résultat vaut \res{$\sqrt{30}-5$}.}{$5-\sqrt{30}<0$}
+\end{exo}
+
+\begin{exo}[Priorités et valeurs absolues]
+\begin{calculs}
+A &= 3-2\times\lvert -5| &&\justif{on recopie}\\
+A &= 3-2\times 5 &&\justif{la valeur absolue d'abord, comme une parenthèse}\\
+A &= 3-10 &&\justif{la multiplication avant la soustraction}\\
+A &= \res{-7} &&
+\end{calculs}
+\begin{calculs}
+B &= |3-8|-\lvert -4| &&\justif{on recopie}\\
+B &= \lvert -5|-4 &&\\
+B &= 5-4 &&\\
+B &= \res{1} &&
+\end{calculs}
+\begin{calculs}
+C &= |2-7|\times\lvert -3| &&\justif{on recopie}\\
+C &= 5\times 3 &&\justif{$|2-7|=\lvert -5|=5$}\\
+C &= \res{15} &&
+\end{calculs}
+\begin{calculs}
+D &= \lvert -6+2|-3\times|1-3| &&\justif{on recopie}\\
+D &= \lvert -4|-3\times\lvert -2| &&\justif{on calcule dans les valeurs absolues}\\
+D &= 4-3\times 2 &&\\
+D &= 4-6 &&\justif{la multiplication d'abord}\\
+D &= \res{-2} &&
+\end{calculs}
+\begin{calculs}
+E &= 5-|4-2\times 5| &&\justif{on recopie}\\
+E &= 5-|4-10| &&\justif{priorité à l'intérieur aussi}\\
+E &= 5-\lvert -6| &&\\
+E &= 5-6 &&\\
+E &= \res{-1} &&
+\end{calculs}
+\begin{calculs}
+F &= \left|(-3)^{2}-10\right| &&\justif{on recopie}\\
+F &= |9-10| &&\justif{la puissance d'abord}\\
+F &= \lvert -1| &&\\
+F &= \res{1} &&
+\end{calculs}
+\rem{Une valeur absolue est toujours positive, mais une expression qui en contient peut
+être négative ($A$, $D$, $E$) : le signe $-$ devant $|\ldots|$ reste.}
+\end{exo}
+
+\begin{exo}[Des écarts]
+\cas{1.}
+\explique{$|5-(-7)|=|5+7|$, soit $12$ : l'écart est de \res{$12$~°C}.}{distance entre $-7$ et
+$5$}
+\cas{2.}
+\explique{$|25-(-18)|=|25+18|$, soit $43$ : ils sont à \res{$43$~m} l'un de
+l'autre.}{distance entre $-18$ et $25$}
+\cas{3.}
+\cotefig[0.36]{Les nombres à distance $3$ de $1$ sont $1-3$ et $1+3$, soit \res{$-2$ et
+$4$}.
+
+\smallskip
+Cette condition s'écrit \res{$|x-1|=3$}.}{\schemacentre{-2}{1}{4}{3}{0}}
+\end{exo}
+
+\partie{Intervalle de centre $a$ et de rayon $r$}
+
+\begin{exo}[Résoudre avec une distance]
+\cas{a)}
+\cotefig[0.36]{Le centre vaut $5$ et le rayon $1$ ; $5-1=4$ et $5+1=6$, donc
+$S=\res{\intff{4}{6}}$.}{\schemacentre{4}{5}{6}{1}{1}}
+\cas{b)}
+\cotefig[0.36]{$|x+2|=|x-(-2)|$ : centre $-2$, rayon $3$, donc
+$S=\res{\intff{-5}{1}}$.}{\schemacentre{-5}{-2}{1}{3}{1}}
+\cas{c)}
+\cotefig[0.36]{Le centre vaut $1$ et le rayon $0{,}5$, donc $S=\res{\intff{0{,}5}{1{,}5}}$.}{%
+\schemacentre{0{,}5}{1}{1{,}5}{0{,}5}{1}}
+\cas{d)}
+\cotefig[0.36]{Les nombres à distance exactement $6$ de $4$ sont $4-6$ et $4+6$, donc
+$S=\res{\ens{-2\,;10}}$.}{\schemacentre{-2}{4}{10}{6}{0}}
+\cas{e)}
+\cotefig[0.36]{$|x+7|=|x-(-7)|$ : à distance $2$ de $-7$, donc
+$S=\res{\ens{-9\,;-5}}$.}{\schemacentre{-9}{-7}{-5}{2}{0}}
+\end{exo}
+
+\begin{exo}[Traduire un intervalle]
+\cas{1.~a)}
+\begin{calculs}
+a &= \frac{3+11}{2} &&\justif{le centre est le milieu}\\
+a &= 7 &&\\
+r &= 11-7 &&\justif{distance du centre à une borne}\\
+r &= 4 &&
+\end{calculs}
+\explique{$\intff{3}{11}$ s'écrit \res{$|x-7|\le 4$}.}{}
+\cas{1.~b)}
+\explique{Centre $\frac{-6+2}{2}$, soit $-2$ ; rayon $2-(-2)$, soit $4$ :
+\res{$|x+2|\le 4$}.}{$x-(-2)=x+2$}
+\cas{1.~c)}
+\explique{Centre $\frac{-1+0}{2}$, soit $-0{,}5$ ; rayon $0-(-0{,}5)$, soit $0{,}5$ :
+\res{$|x+0{,}5|\le 0{,}5$}.}{}
+\cas{1.~d)}
+\explique{Centre $\frac{1{,}2+1{,}8}{2}$, soit $1{,}5$ ; rayon $1{,}8-1{,}5$, soit $0{,}3$ :
+\res{$|x-1{,}5|\le 0{,}3$}.}{}
+\cas{2.}
+\explique{$x^{2}\le 9$ donne $S=\intff{-3}{3}$ : centre \res{$0$}, rayon \res{$3$}.}{il s'écrit
+aussi $|x|\le 3$ (partie IX)}
+\end{exo}
+
+\begin{exo}[Tolérances]
+\cas{1.}
+\explique{\leavevmode\res{$|T-19|\le 1{,}5$}, donc $T\in\res{\intff{17{,}5}{20{,}5}}$.}{$19-1{,}5$ et
+$19+1{,}5$}
+\cas{2.}
+\explique{\leavevmode\res{$|V-75|\le 1$}, donc $V\in\res{\intff{74}{76}}$.}{en cL}
+\cas{3.}
+\explique{$|p-0{,}52|\le 0{,}03$ donne $p\in\intff{0{,}49}{0{,}55}$.}{$0{,}52-0{,}03$ et
+$0{,}52+0{,}03$}
+\explique{$p$ peut valoir $0{,}49$, soit moins de la moitié : \res{il n'est pas sûr de
+gagner}.}{$0{,}49<0{,}5$}
+\end{exo}
+
+\partie{Fonction valeur absolue}
+
+\begin{exo}[Courbe et lecture]
+\cas{1.}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|*{9}{c|}}
+\hline
+$x$ & $-4$ & $-3$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+$|x|$ & $4$ & $3$ & $2$ & $1$ & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+\end{tabular}
+\end{center}
+\cotefig[0.3]{%
+\cas{2.}
+a)~La droite $y=2$ coupe la courbe en $-2$ et $2$, donc $S=\res{\ens{-2\,;2}}$.
+
+b) La courbe est sur la droite $y=2$ ou au-dessous de $-2$ à $2$ :
+$S=\res{\intff{-2}{2}}$ (en rouge).
+
+c) Elle est strictement au-dessus de la droite $y=3$ avant $-3$ et après $3$ :
+$S=\res{\intoo{-\infty}{-3}\cup\intoo{3}{+\infty}}$.
+
+d) La courbe n'est jamais sous l'axe des abscisses : $S=\res{\varnothing}$.
+
+\cas{3.}
+Les antécédents de $2$ par la fonction valeur absolue sont \res{$-2$ et $2$}.}{%
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-5}{-1}{5}{5}
+  \gradx{-4,-3,-2,-1,1,2,3,4} \grady{1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt] (-4,4)--(0,0)--(4,4);
+  \foreach \a in {-4,...,4} {\path[coulCourbe] (\a,{abs(\a)}) node[croix]{};}
+  \draw[black!70,thick] (-5,2)--(5,2) (-5,3)--(5,3);
+  \draw[red,line width=1.6pt] (-2,0)--(2,0);
+\end{tikzpicture}}
+\end{exo}
+
+\begin{exo}[Équations et inéquations]
+\cas{a)}
+\explique{Les nombres à distance $7$ de $0$ sont solutions, donc $S=\res{\ens{-7\,;7}}$.}{deux solutions
+opposées}
+\cas{b)}
+\explique{$S=\res{\intoo{-4{,}5}{4{,}5}}$.}{à distance strictement inférieure à $4{,}5$ de $0$}
+\cas{c)}
+\explique{$S=\res{\intof{-\infty}{-2}\cup\intfo{2}{+\infty}}$.}{à distance au moins $2$ de $0$}
+\cas{d)}
+\begin{calculs}
+3|x|-2 &= 10 &&\justif{on recopie l'équation}\\
+3|x| &= 12 &&\\
+|x| &= 4 &&\justif{on isole la valeur absolue}
+\end{calculs}
+\explique{$S=\res{\ens{-4\,;4}}$.}{}
+\cas{e)}
+\begin{calculs}
+5-|x| &> 1 &&\justif{on recopie l'inéquation}\\
+-|x| &> -4 &&\justif{on retire $5$}\\
+|x| &< 4 &&\justif{on multiplie par $-1$ : le sens change}
+\end{calculs}
+\explique{$S=\res{\intoo{-4}{4}}$.}{}
+\cas{f)}
+\explique{$|x|\le -2$ : une valeur absolue n'est jamais négative, $S=\res{\varnothing}$.}{on
+retire $3$}
+\end{exo}
+
+\begin{exo}[Valeur absolue et carré]
+\cas{1.}
+\explique{On lit les points \res{$(-1\,;1)$, $(0\,;0)$ et $(1\,;1)$}.}{on vérifie :
+$(-1)^{2}=1=\lvert -1|$}
+\cas{2.}
+\explique{La parabole est sur la courbe de $|x|$ ou au-dessous entre $-1$ et $1$ :
+$S=\res{\intff{-1}{1}}$.}{au-delà, la parabole passe au-dessus}
+\cas{3.}
+\explique{Pour $x\ge 0$, $x^{2}\le|x|$ s'écrit $x^{2}\le x$ : c'est la position de la
+parabole et de la droite $y=x$ (partie III), \res{$x^{2}\le x$ sur $\intff{0}{1}$} et
+$x^{2}\ge x$ au-delà.}{la réponse sur $\intfo{0}{+\infty}$ est démontrée}
+\cas{4.}
+\explique{$(-x)^{2}=x^{2}$ et $|-x|=|x|$ : les points d'abscisses $x$ et $-x$ ont la même
+ordonnée, donc \res{chaque courbe est symétrique par rapport à l'axe des
+ordonnées}.}{deux opposés ont la même image}
+\cas{5.}
+\explique{$0{,}6^{2}=0{,}36$ et $\lvert -0{,}6|=0{,}6$, donc \res{$0{,}6^{2}<\lvert
+-0{,}6|$}.}{$0{,}6\in\intff{-1}{1}$ : cohérent avec le 2.}
+\end{exo}
+
+\partiesansnum{Problèmes de synthèse}
+
+\begin{exo}[Le carré et le triangle]
+\cas{1.}
+\explique{$AMNP$ est un carré de côté $x$ : \res{$f(x)=x^{2}$}.}{aire d'un carré : côté
+$\times$ côté}
+\begin{calculs}
+g(x) &= \frac{MB\times BC}{2} &&\justif{triangle rectangle en $B$}\\
+g(x) &= \frac{(4-x)\times 4}{2} &&\justif{$MB=AB-AM=4-x$}\\
+g(x) &= 2(4-x) &&\\
+g(x) &= \res{8-2x} &&
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+(x+4)(x-2) &= x^{2}-2x+4x-8 &&\justif{double distributivité}\\
+(x+4)(x-2) &= \res{x^{2}+2x-8} &&
+\end{calculs}
+\cas{3.}
+\explique{$f(x)-g(x)=x^{2}-(8-2x)$, soit $x^{2}+2x-8$, c'est-à-dire
+$(x+4)(x-2)$.}{la différence est le produit du 2.}
+\eqproduit{x+4 &= 0\\ x &= -4}{x-2 &= 0\\ x &= 2}
+\explique{$-4$ n'est pas dans $\intff{0}{4}$ : les aires sont égales pour \res{$AM=2$~cm}
+(elles valent alors $4$~cm$^{2}$).}{on vérifie : $2^{2}=4$ et $8-2\times 2=4$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=3.2,espcl=2.4]{$x$/1,$x+4$/1,$x-2$/1,$f(x)-g(x)$/1}{$0$,$2$,$4$}
+  \tkzTabLine{,+,t,+,}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabLine{,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{Le carré a la plus grande aire pour \res{$2<x\le 4$}.}{$x+4>0$ sur
+$\intff{0}{4}$ : la différence a le signe de $x-2$}
+\cas{4.}
+\explique{Le triangle $MBC$ est rectangle en $B$ ; d'après le théorème de Pythagore :}{angle
+droit du carré $ABCD$}
+\begin{calculs}
+MC^{2} &= MB^{2}+BC^{2} &&\justif{$[MC]$ est l'hypoténuse}\\
+MC^{2} &= (4-x)^{2}+4^{2} &&\\
+MC^{2} &= (4-x)^{2}+16 &&
+\end{calculs}
+\explique{$MC$ est une longueur, donc positive : \res{$MC=\sqrt{(4-x)^{2}+16}$}.}{$MC$ est la
+racine carrée de $MC^{2}$}
+\cas{5.}
+\begin{calculs}
+(4-x)^{2}+16 &= 25 &&\justif{$MC=5$ équivaut à $MC^{2}=25$}\\
+(4-x)^{2} &= 9 &&
+\end{calculs}
+\explique{Le carré porte sur $4-x$ : $4-x=3$ ou $4-x=-3$, soit $x=1$ ou $x=7$.}{$x^{2}=k$ :
+deux solutions opposées}
+\explique{$7$ n'est pas dans $\intff{0}{4}$ : il faut placer $M$ à \res{$1$~cm de $A$}.}{on
+vérifie : $\sqrt{3^{2}+16}=\sqrt{25}=5$}
+\end{exo}
+
+\begin{exo}[Une hyperbole et une droite]
+\cas{1.}
+\explique{Pour $E$ : $\frac{1}{1/2}=2$ et $-\frac12+\frac52=2$ ; \res{$E$ est sur les deux
+courbes}.}{on remplace $x$ par $\frac12$ et on compare à l'ordonnée}
+\explique{Pour $F$ : $\frac{1}{2}$ et $-2+\frac52=\frac12$ ; \res{$F$ aussi}.}{}
+\cas{2.}
+\begin{calculs}
+\frac{1}{x}-\left(-x+\frac52\right) &= \frac{1}{x}+x-\frac52 &&\justif{on enlève les
+parenthèses}\\
+\frac{1}{x}-\left(-x+\frac52\right) &= \dfrac{1\fois{2}}{x\fois{2}}+\dfrac{x\fois{2x}}{1\fois{2x}}
+  -\dfrac{5\fois{x}}{2\fois{x}} &&\justif{dénominateur commun $2x$}\\
+\frac{1}{x}-\left(-x+\frac52\right) &= \res{\frac{2x^{2}-5x+2}{2x}} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+(2x-1)(x-2) &= 2x^{2}-4x-x+2 &&\justif{double distributivité}\\
+(2x-1)(x-2) &= \res{2x^{2}-5x+2} &&
+\end{calculs}
+\cas{4.}
+\explique{La différence s'écrit $\dfrac{(2x-1)(x-2)}{2x}$ ; $2x-1=0$ pour $x=\frac12$ et
+$x-2=0$ pour $x=2$ ; $2x>0$.}{$x>0$ : le dénominateur est positif}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=3.6,espcl=2]{$x$/1,$2x-1$/1,$x-2$/1,$2x$/1,{$\frac{(2x-1)(x-2)}{2x}$}/1.2}%
+    {$0$,$\frac12$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{z,+,t,+,t,+,}
+  \tkzTabLine{d,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{L'hyperbole est \res{au-dessous de (d) sur $\intff{\frac12}{2}$} et
+\res{au-dessus sur $\intof{0}{\frac12}$ et sur $\intfo{2}{+\infty}$}.}{elles se coupent en $E$
+et en $F$}
+\cas{5.}
+\explique{$x+\frac{1}{x}\le\frac52$ équivaut à $\frac{1}{x}\le -x+\frac52$ : l'hyperbole est
+sur (d) ou au-dessous, donc \res{$x\in\intff{\frac12}{2}$}.}{on retire $x$ des deux
+membres}
+\rem{Le plus petit total est atteint pour $x=1$ : $1+\frac11=2$.}
+\end{exo}
+
+\begin{exo}[Le pendule de l'horloge]
+\cas{1.}
+\explique{$T(1)=2\sqrt{1}$, soit \res{$2$~s} ; $T(0{,}25)=2\times 0{,}5$, soit
+\res{$1$~s}.}{$\sqrt{0{,}25}=0{,}5$}
+\cas{2.}
+\begin{calculs}
+2\sqrt{L} &= 3 &&\justif{la période vaut $3$}\\
+\sqrt{L} &= 1{,}5 &&\justif{on isole la racine}\\
+(\sqrt{L})^{2} &= 1{,}5^{2} &&\justif{on élève au carré}\\
+L &= 2{,}25 &&
+\end{calculs}
+\explique{Il faut un pendule de \res{$2{,}25$~m}.}{}
+\cas{3.}
+\begin{calculs}
+T(4L) &= 2\sqrt{4L} &&\justif{on remplace $L$ par $4L$}\\
+T(4L) &= 2\times 2\sqrt{L} &&\justif{$\sqrt{4L}=\sqrt{4}\times\sqrt{L}$ (chapitre 6)}\\
+T(4L) &= 2\,T(L) &&
+\end{calculs}
+\explique{La période est \res{multipliée par $2$}.}{pour doubler la période, on quadruple
+la longueur}
+\cas{4.}
+\explique{\res{$|T-2|\le 0{,}02$}, soit $1{,}98\le 2\sqrt{L}\le 2{,}02$.}{intervalle de centre
+$2$ et de rayon $0{,}02$}
+\explique{On divise par $2$, donc $0{,}99\le\sqrt{L}\le 1{,}01$.}{le sens ne change pas}
+\cas{5.}
+\explique{Les trois nombres sont positifs et le carré conserve l'ordre :
+$0{,}99^{2}\le L\le 1{,}01^{2}$, soit \res{$0{,}9801\le L\le 1{,}0201$}.}{$0{,}99^{2}=0{,}9801$
+et $1{,}01^{2}=1{,}0201$}
+\explique{L'intervalle a pour centre $1{,}0001$ et pour rayon $0{,}02$ : l'horloger doit
+régler le pendule à environ \res{$1$~m, à $2$~cm près}.}{$1{,}0201-0{,}9801=0{,}04$}
+\end{exo}
+
+\end{document}
