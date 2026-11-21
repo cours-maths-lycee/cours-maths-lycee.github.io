@@ -1,0 +1,1077 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+\elevetrue
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \RequirePackage{comment}
+  \excludecomment{correction}
+  \renewcommand{\reponse}[1]{}
+  \newcommand{\autableau}{\hfill{\footnotesize\itshape\color{black!45}(au tableau)}}
+  \newcommand{\etapeexemples}{%
+    \par\smallskip\textbf{\color{coulMeth}Exemples}\autableau\par\nobreak\smallskip}
+  \newcommand{\etapetableau}[1]{%
+    \par\smallskip\textbf{\color{coulMeth}#1}\autableau\par\nobreak\smallskip}
+  \newtcolorbox{exempletableau}[1][Exemple]{%
+    enhanced,breakable,colback=white,colframe=coulEx,
+    boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+    left=8pt,right=6pt,top=4pt,bottom=4pt,
+    before skip=5pt,after skip=5pt,
+    before upper={\textbf{\color{coulEx}#1}\autableau\par\smallskip}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      \lycee@mentioneleve
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{12}{Statistiques}
+\niveaucours{Seconde}
+\titrecours{STATISTIQUES}{Cours --- Seconde}
+
+\begin{document}
+
+\tikzset{
+  barre/.style={fill=coulCourbe!20,draw=coulCourbe,line width=0.8pt},
+  secteur/.style={draw=black,line width=0.6pt},
+}
+
+\partiecours{Effectifs, fréquences, effectifs cumulés, classes}
+
+\begin{definitionbox}[Définition 1 --- Vocabulaire]
+\begin{itemize}
+  \item La \textbf{population} est l'ensemble étudié (les élèves d'une classe, les
+    ménages français) ; chacun de ses membres est un \textbf{individu}.
+  \item Le \textbf{caractère} est ce que l'on observe sur chaque individu. Il est
+    \textbf{qualitatif} quand ses valeurs ne sont pas des nombres (moyen de transport,
+    matière préférée) ; \textbf{quantitatif} sinon, \textbf{discret} s'il ne prend
+    que des valeurs isolées (nombre de livres lus), \textbf{continu} s'il peut prendre
+    toutes les valeurs d'un intervalle (durée d'un trajet).
+  \item La liste des valeurs relevées est une \textbf{série statistique}. Les
+    réponses « ne se prononce pas » n'en font pas partie.
+\end{itemize}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Effectif, fréquence]
+\begin{itemize}
+  \item L'\textbf{effectif} d'une valeur est le nombre d'individus qui ont cette
+    valeur ; l'\textbf{effectif total} $N$ est le nombre de valeurs de la série.
+  \item La \textbf{fréquence} d'une valeur est la proportion des individus qui ont
+    cette valeur (chapitre 7) :
+    \[
+    f=\frac{\text{effectif de la valeur}}{\text{effectif total}}
+    \]
+    C'est un nombre entre $0$ et $1$, écrit en fraction, en écriture décimale ou en
+    pourcentage. La somme des fréquences vaut $1$, soit $100\,\%$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 3 --- Effectifs et fréquences cumulés]
+Les valeurs étant rangées dans l'ordre croissant, l'\textbf{effectif cumulé croissant}
+d'une valeur est la somme des effectifs des valeurs qui lui sont inférieures ou
+égales. Il répond à la question « combien d'individus ont au plus cette valeur ? ».
+La \textbf{fréquence cumulée croissante} se définit de même avec les fréquences.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Dresser un tableau d'effectifs, de fréquences et d'effectifs cumulés]
+\etapeexemples
+Dans une classe de seconde, $30$ élèves ont répondu à la question « Combien de
+séances de sport faites-vous par semaine, en dehors de l'EPS ? ». Deux ont répondu
+« ne se prononce pas » ; voici les réponses des $28$ autres.
+\begin{center}
+$0$ ; $2$ ; $1$ ; $3$ ; $2$ ; $0$ ; $4$ ; $2$ ; $1$ ; $0$ ; $2$ ; $3$ ; $1$ ; $2$ ;
+$0$ ; $4$ ; $2$ ; $1$ ; $3$ ; $0$ ; $2$ ; $1$ ; $0$ ; $4$ ; $2$ ; $3$ ; $1$ ; $0$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Préciser la population, le caractère étudié et son type.
+  \item Dresser le tableau des effectifs, des fréquences (arrondies au centième) et
+    des effectifs cumulés croissants.
+  \item Combien d'élèves font au plus $2$ séances ? Quelle proportion des élèves
+    cela représente-t-il ?
+\end{questions}
+
+\etape{À vous de jouer}
+Dans une autre classe, $32$ élèves ont répondu à la question « Combien de livres
+avez-vous lus depuis la rentrée, en dehors des lectures demandées en cours ? ». Deux
+ont répondu « ne se prononce pas » ; voici les réponses des $30$ autres.
+\begin{center}
+$1$ ; $0$ ; $2$ ; $1$ ; $3$ ; $4$ ; $1$ ; $0$ ; $2$ ; $2$ ; $1$ ; $3$ ; $0$ ; $1$ ; $4$ ;
+$2$ ; $1$ ; $0$ ; $3$ ; $2$ ; $1$ ; $1$ ; $0$ ; $2$ ; $3$ ; $4$ ; $1$ ; $2$ ; $0$ ; $3$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Préciser la population, le caractère étudié et son type.
+  \item Dresser le tableau des effectifs, des fréquences (arrondies au centième) et
+    des effectifs cumulés croissants.
+  \item Combien d'élèves ont lu au plus $2$ livres ? Quelle proportion des élèves
+    cela représente-t-il ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\begin{definitionbox}[Définition 4 --- Regroupement en classes]
+Quand les valeurs sont nombreuses et toutes différentes (caractère continu), on les
+regroupe en \textbf{classes} de même amplitude. La classe $\intfo{a}{b}$ contient les
+valeurs $x$ telles que $a\le x<b$ ; son \textbf{amplitude} est $b-a$.
+\enonce{Exemple : une durée de $20$ min est dans la classe $\intfo{20}{30}$, pas
+dans $\intfo{10}{20}$.}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Regrouper une série en classes]
+\etapeexemples
+Dans une classe de seconde, $24$ élèves ont indiqué leur temps de trajet entre leur
+domicile et le lycée, en minutes.
+\begin{center}
+$5$ ; $12$ ; $25$ ; $8$ ; $18$ ; $35$ ; $15$ ; $22$ ; $10$ ; $42$ ; $28$ ; $14$ ;
+$7$ ; $19$ ; $30$ ; $16$ ; $45$ ; $11$ ; $24$ ; $3$ ; $17$ ; $33$ ; $20$ ; $13$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Regrouper ces durées en classes d'amplitude $10$ min, de $\intfo{0}{10}$ à
+    $\intfo{40}{50}$, dans un tableau d'effectifs.
+  \item Calculer la fréquence de chaque classe, en pourcentage arrondi à $0{,}1\,\%$.
+  \item Combien d'élèves mettent moins de $30$ minutes ?
+\end{questions}
+
+\etape{À vous de jouer}
+Dans une autre classe, $20$ élèves ont indiqué leur temps d'écran de la veille, en
+dehors du travail scolaire, en minutes.
+\begin{center}
+$15$ ; $45$ ; $90$ ; $120$ ; $30$ ; $75$ ; $60$ ; $100$ ; $85$ ; $50$ ; $130$ ; $65$ ;
+$40$ ; $95$ ; $110$ ; $70$ ; $20$ ; $60$ ; $140$ ; $80$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Regrouper ces durées en classes d'amplitude $30$ min, de $\intfo{0}{30}$ à
+    $\intfo{120}{150}$, dans un tableau d'effectifs.
+  \item Calculer la fréquence de chaque classe, en pourcentage.
+  \item Combien d'élèves ont passé moins de $90$ minutes devant un écran ?
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercice 5}
+
+\partiecours{Moyenne, moyenne pondérée}
+
+\begin{definitionbox}[Définition 5 --- Moyenne]
+\begin{itemize}
+  \item Moyenne d'une liste de $N$ valeurs :
+    $\overline{x}=\dfrac{\text{somme des valeurs}}{N}$.
+  \item Valeurs $x_1$, $x_2$, \ldots, $x_p$ d'effectifs $n_1$, $n_2$, \ldots, $n_p$
+    (moyenne \textbf{pondérée} par les effectifs) :
+    \[
+    \overline{x}=\frac{n_1x_1+n_2x_2+\dots+n_px_p}{N}
+    \]
+  \item Avec les fréquences $f_1$, $f_2$, \ldots, $f_p$ :
+    $\overline{x}=f_1x_1+f_2x_2+\dots+f_px_p$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 3 --- Calculer une moyenne]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Une élève a noté ses heures de sommeil pendant une semaine :
+    \begin{center}
+    $8$ ; $7{,}5$ ; $9$ ; $6{,}5$ ; $8$ ; $10$ ; $7$
+    \end{center}
+    Calculer la durée moyenne d'une nuit.
+  \item Dans une classe, $28$ élèves ont indiqué leur nombre de séances de sport par
+    semaine, hors EPS. Calculer le nombre moyen de séances.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{5}{c|}}
+    \hline
+    Nombre de séances & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+    Effectif & $7$ & $6$ & $8$ & $4$ & $3$\\\hline
+    \end{tabular}
+    \end{center}
+  \item Le tableau répartit les ménages français selon leur nombre de personnes en
+    $2023$ (chiffres Insee). Calculer le nombre moyen de personnes par ménage, en
+    comptant $6$ pour « $6$ ou plus ».
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{6}{c|}}
+    \hline
+    Nombre de personnes & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ ou plus\\\hline
+    Fréquence & $38{,}9\,\%$ & $32{,}3\,\%$ & $12{,}9\,\%$ & $10{,}6\,\%$ & $3{,}8\,\%$
+      & $1{,}6\,\%$\\\hline
+    \end{tabular}
+    \end{center}
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Un élève a chronométré son trajet en bus pendant cinq jours, en minutes :
+    \begin{center}
+    $22$ ; $25$ ; $19$ ; $24$ ; $30$
+    \end{center}
+    Calculer la durée moyenne d'un trajet.
+  \item Dans une classe, $30$ élèves ont indiqué le nombre de livres lus depuis la
+    rentrée, hors cours. Calculer le nombre moyen de livres lus.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{5}{c|}}
+    \hline
+    Nombre de livres & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+    Effectif & $6$ & $9$ & $7$ & $5$ & $3$\\\hline
+    \end{tabular}
+    \end{center}
+  \item Le tableau répartit les ménages français selon leur nombre de personnes en
+    $1990$ (chiffres Insee). Calculer le nombre moyen de personnes par ménage, en
+    comptant $6$ pour « $6$ ou plus », puis comparer avec $2023$.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{6}{c|}}
+    \hline
+    Nombre de personnes & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ ou plus\\\hline
+    Fréquence & $27{,}0\,\%$ & $29{,}4\,\%$ & $17{,}7\,\%$ & $15{,}7\,\%$ & $6{,}8\,\%$
+      & $3{,}4\,\%$\\\hline
+    \end{tabular}
+    \end{center}
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 6 et 7}
+
+\begin{proprietebox}[Propriété 1 --- Linéarité de la moyenne]
+\begin{itemize}
+  \item Si on ajoute un même nombre $b$ à toutes les valeurs, la moyenne augmente
+    de $b$.
+  \item Si on multiplie toutes les valeurs par un même nombre $a$, la moyenne est
+    multipliée par $a$.
+\end{itemize}
+\enonce{Exemple : un trajet dure en moyenne $24$ min. Des travaux ajoutent $5$ min à
+chaque trajet : la moyenne passe à $24+5$, soit $29$ min. Si chaque durée augmente
+de $10\,\%$, elle est multipliée par $1{,}1$ (coefficient multiplicateur, chapitre 7),
+et la moyenne aussi : $24\times 1{,}1$ vaut $26{,}4$ min.}
+\end{proprietebox}
+
+\begin{definitionbox}[Définition 6 --- Centre d'une classe]
+Le \textbf{centre} de la classe $\intfo{a}{b}$ est le nombre $\dfrac{a+b}{2}$, au
+milieu de la classe.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Moyenne d'une série regroupée en classes]
+\begin{itemize}
+  \item Si l'on connaît l'effectif $n_1$, $n_2$\ldots{} et la moyenne $m_1$,
+    $m_2$\ldots{} de chaque classe (ou de chaque groupe), la moyenne de la série est
+    $\overline{x}=\dfrac{n_1m_1+n_2m_2+\dots}{N}$.
+  \item Si l'on ne connaît que les effectifs, on suppose les valeurs réparties
+    uniformément dans chaque classe : la moyenne d'une classe est alors son centre.
+    On obtient une \textbf{estimation} de la moyenne.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Calculer la moyenne d'une série regroupée en classes]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Un club de judo compte $12$ adultes, d'âge moyen $34$ ans, et $18$ jeunes,
+    d'âge moyen $13$ ans. Calculer l'âge moyen des membres du club.
+  \item Le tableau répartit $24$ élèves selon leur temps de trajet entre leur domicile
+    et le lycée. Estimer le temps de trajet moyen, en arrondissant à $0{,}1$ min.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{5}{c|}}
+    \hline
+    Durée (min) & $\intfo{0}{10}$ & $\intfo{10}{20}$ & $\intfo{20}{30}$
+      & $\intfo{30}{40}$ & $\intfo{40}{50}$\\\hline
+    Effectif & $4$ & $10$ & $5$ & $3$ & $2$\\\hline
+    \end{tabular}
+    \end{center}
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Une chorale compte $15$ adultes, d'âge moyen $42$ ans, et $25$ jeunes, d'âge
+    moyen $15$ ans. Calculer l'âge moyen des choristes.
+  \item Le tableau répartit $20$ élèves selon leur temps d'écran de la veille. Estimer
+    le temps d'écran moyen.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{5}{c|}}
+    \hline
+    Durée (min) & $\intfo{0}{30}$ & $\intfo{30}{60}$ & $\intfo{60}{90}$
+      & $\intfo{90}{120}$ & $\intfo{120}{150}$\\\hline
+    Effectif & $2$ & $4$ & $7$ & $4$ & $3$\\\hline
+    \end{tabular}
+    \end{center}
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 8 à 11}
+
+\partiecours{Étendue, médiane, quartiles}
+
+\begin{definitionbox}[Définition 7 --- Étendue, médiane, quartiles]
+On range les $N$ valeurs de la série dans l'ordre croissant.
+\begin{itemize}
+  \item \textbf{Étendue} : plus grande valeur $-$ plus petite valeur.
+  \item La \textbf{médiane} $Me$ partage la série en deux groupes de même effectif :
+    si $N$ est impair, c'est la valeur du milieu, de rang $\dfrac{N+1}{2}$ ; si $N$ est
+    pair, c'est la moyenne des valeurs de rangs $\dfrac{N}{2}$ et $\dfrac{N}{2}+1$.
+  \item Le \textbf{premier quartile} $Q_1$ est la plus petite valeur de la série telle
+    qu'au moins $25\,\%$ des valeurs lui soient inférieures ou égales : son rang est
+    $\dfrac{N}{4}$, arrondi à l'entier supérieur.
+  \item Le \textbf{troisième quartile} $Q_3$ est la plus petite valeur de la série
+    telle qu'au moins $75\,\%$ des valeurs lui soient inférieures ou égales : son rang
+    est $\dfrac{3N}{4}$, arrondi à l'entier supérieur.
+  \item \textbf{Écart interquartile} : $Q_3-Q_1$. L'intervalle $\intff{Q_1}{Q_3}$
+    contient au moins la moitié des valeurs.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 5 --- Déterminer l'étendue, la médiane et les quartiles]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Nombre de naissances en France, en milliers, de $2014$ à $2025$ (chiffres
+    Insee, $2023$ à $2025$ provisoires) :
+    \begin{center}
+    $819$ ; $799$ ; $784$ ; $770$ ; $759$ ; $753$ ; $735$ ; $742$ ; $726$ ; $678$ ;
+    $661$ ; $645$
+    \end{center}
+    Déterminer l'étendue, la médiane, $Q_1$ et $Q_3$, puis interpréter $Q_1$.
+  \item Dans une classe, $28$ élèves ont indiqué leur nombre de séances de sport par
+    semaine, hors EPS. Déterminer l'étendue, la médiane, $Q_1$ et $Q_3$, puis
+    interpréter la médiane.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{5}{c|}}
+    \hline
+    Nombre de séances & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+    Effectif & $7$ & $6$ & $8$ & $4$ & $3$\\\hline
+    Effectif cumulé croissant & $7$ & $13$ & $21$ & $25$ & $28$\\\hline
+    \end{tabular}
+    \end{center}
+\end{questions}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Taux de natalité en France (naissances pour $1~000$ habitants), de $2014$ à
+    $2025$ (chiffres Insee) :
+    \begin{center}
+    $12{,}4$ ; $12{,}0$ ; $11{,}8$ ; $11{,}5$ ; $11{,}3$ ; $11{,}2$ ; $10{,}9$ ;
+    $10{,}9$ ; $10{,}6$ ; $9{,}9$ ; $9{,}6$ ; $9{,}4$
+    \end{center}
+    Déterminer l'étendue, la médiane, $Q_1$ et $Q_3$, puis interpréter $Q_1$.
+  \item Dans une classe, $30$ élèves ont indiqué le nombre de livres lus depuis la
+    rentrée, hors cours. Déterminer l'étendue, la médiane, $Q_1$ et $Q_3$, puis
+    interpréter la médiane.
+    \begin{center}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|l|*{5}{c|}}
+    \hline
+    Nombre de livres & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+    Effectif & $6$ & $9$ & $7$ & $5$ & $3$\\\hline
+    Effectif cumulé croissant & $6$ & $15$ & $22$ & $27$ & $30$\\\hline
+    \end{tabular}
+    \end{center}
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 12 à 14}
+
+\begin{remarquebox}[Effet d'une valeur extrême]
+La série $8$ ; $9$ ; $10$ ; $11$ ; $12$ a pour moyenne $10$ et pour médiane $10$. Si
+l'on ajoute la valeur $40$, la moyenne devient $\dfrac{90}{6}$, soit $15$, mais la
+médiane devient $\dfrac{10+11}{2}$, soit $10{,}5$ seulement. La moyenne est très
+sensible à l'ajout ou à la suppression d'une valeur extrême ; la médiane, peu.
+\end{remarquebox}
+
+\begin{definitionbox}[Définition 8 --- Classe médiane]
+Pour une série regroupée en classes, la \textbf{classe médiane} est la première
+classe dont l'effectif cumulé croissant atteint ou dépasse $\dfrac{N}{2}$. Si l'on
+suppose les valeurs réparties uniformément dans cette classe, on estime la médiane
+par proportionnalité.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 6 --- Estimer la médiane d'une série regroupée en classes]
+\etapeexemples
+Le tableau répartit $24$ élèves selon leur temps de trajet entre leur domicile et le
+lycée.
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|*{5}{c|}}
+\hline
+Durée (min) & $\intfo{0}{10}$ & $\intfo{10}{20}$ & $\intfo{20}{30}$ & $\intfo{30}{40}$
+  & $\intfo{40}{50}$\\\hline
+Effectif & $4$ & $10$ & $5$ & $3$ & $2$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer les effectifs cumulés croissants.
+  \item Déterminer la classe médiane.
+  \item Estimer la médiane, en supposant les durées réparties uniformément dans
+    cette classe.
+\end{questions}
+
+\etape{À vous de jouer}
+Le tableau répartit $20$ élèves selon leur temps d'écran de la veille.
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|*{5}{c|}}
+\hline
+Durée (min) & $\intfo{0}{30}$ & $\intfo{30}{60}$ & $\intfo{60}{90}$ & $\intfo{90}{120}$
+  & $\intfo{120}{150}$\\\hline
+Effectif & $2$ & $4$ & $7$ & $4$ & $3$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer les effectifs cumulés croissants.
+  \item Déterminer la classe médiane.
+  \item Estimer la médiane, en supposant les durées réparties uniformément dans
+    cette classe, au dixième de minute.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 15 et 16}
+
+\partiecours{Écart type}
+
+Deux séries peuvent avoir la même moyenne, mais des valeurs plus ou moins
+dispersées autour d'elle. L'écart type mesure cette dispersion.
+
+\begin{definitionbox}[Définition 9 --- Écart type]
+L'\textbf{écart type} d'une série de moyenne $\overline{x}$, de valeurs $x_1$, \ldots,
+$x_p$ et d'effectifs $n_1$, \ldots, $n_p$, est le nombre
+\[
+\sigma=\sqrt{\frac{n_1(x_1-\overline{x})^{2}+n_2(x_2-\overline{x})^{2}+\dots
++n_p(x_p-\overline{x})^{2}}{N}}
+\]
+C'est la racine carrée de la moyenne des carrés des écarts à la moyenne. Il a la même
+unité que les valeurs ; plus il est grand, plus les valeurs sont dispersées autour de
+la moyenne.
+\end{definitionbox}
+
+\begin{remarquebox}[Résumer une série]
+On résume une série par un couple d'indicateurs : moyenne et écart type, ou médiane
+et écart interquartile. Le second couple est peu sensible aux valeurs extrêmes.
+\end{remarquebox}
+
+\begin{proprietebox}[Calculatrice NumWorks --- application \texttt{Statistiques}]
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{4.3cm}|>{\raggedright\arraybackslash}p{12.3cm}|}
+\hline
+\textbf{Pour} & \textbf{On fait}\\\hline
+entrer la série & Onglet \texttt{Données} : les valeurs dans la colonne \texttt{V1},
+  leurs effectifs dans \texttt{N1} (effectif $1$ pour chaque valeur d'une
+  liste).\\\hline
+lire les indicateurs & Onglet \texttt{Stats} : effectif total, minimum, maximum,
+  étendue, moyenne, \texttt{Écart type} $\sigma$, $Q_1$, médiane, $Q_3$, écart
+  interquartile.\\\hline
+\end{tabular}
+\end{center}
+On lit l'écart type $\sigma$, pas l'écart type « échantillon » $s$.
+{\footnotesize\itshape Les intitulés peuvent varier selon la version du logiciel.}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer un écart type et comparer deux séries]
+\etapeexemples
+Hugo vient au lycée à vélo, Inès en bus. Voici la durée de leurs trajets, en minutes,
+pendant une semaine.
+\begin{center}
+Hugo : $14$ ; $15$ ; $16$ ; $15$ ; $15$ \qquad Inès : $10$ ; $25$ ; $12$ ; $18$ ; $10$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer à la main la moyenne et l'écart type des durées de Hugo.
+  \item Déterminer à la calculatrice la moyenne et l'écart type des durées d'Inès,
+    arrondi au centième.
+  \item Comparer les deux séries.
+\end{questions}
+
+\etape{À vous de jouer}
+Léa et Tom ont fait cinq quiz de révision notés sur $20$.
+\begin{center}
+Léa : $8$ ; $10$ ; $12$ ; $10$ ; $10$ \qquad Tom : $4$ ; $16$ ; $6$ ; $14$ ; $10$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer à la main la moyenne et l'écart type des notes de Léa.
+  \item Déterminer à la calculatrice la moyenne et l'écart type des notes de Tom,
+    arrondi au centième.
+  \item Comparer les deux séries.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 17 à 20}
+
+\partiecours{Diagrammes}
+
+\begin{definitionbox}[Définition 10 --- Choisir un diagramme]
+\begin{itemize}
+  \item Caractère qualitatif : \textbf{diagramme circulaire} (l'angle de chaque
+    secteur est proportionnel à l'effectif : angle $=$ fréquence $\times 360^{\circ}$)
+    ou \textbf{diagramme en barres}.
+  \item Caractère quantitatif discret : diagramme en barres, une barre par valeur.
+  \item Série regroupée en classes de même amplitude : \textbf{histogramme}, des
+    rectangles accolés, de hauteur proportionnelle à l'effectif de la classe.
+  \item \textbf{Polygone des fréquences cumulées croissantes} : on place le point
+    (début de la première classe ; $0$), puis pour chaque classe le point (fin de la
+    classe ; fréquence cumulée), et on les relie par des segments. Le point
+    d'ordonnée $50\,\%$ donne une estimation de la médiane.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 8 --- Construire un diagramme circulaire]
+\etapeexemples
+Répartition de la population française au $1^{\text{er}}$ janvier $2026$ selon l'âge
+(chiffres Insee, provisoires).
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|}
+\hline
+Âge & moins de $20$ ans & de $20$ à $64$ ans & $65$ ans ou plus\\\hline
+Fréquence & $22{,}5\,\%$ & $55{,}3\,\%$ & $22{,}2\,\%$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer l'angle de chaque secteur, arrondi au degré.
+  \item Construire le diagramme circulaire.
+\end{questions}
+
+\etape{À vous de jouer}
+Mode de transport principal des actifs pour aller travailler en France (chiffres
+Insee, recensement $2017$).
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|*{5}{c|}}
+\hline
+Mode & voiture & transports en commun & marche & vélo & deux-roues motorisé\\\hline
+Fréquence & $73{,}7\,\%$ & $15{,}8\,\%$ & $6{,}3\,\%$ & $2{,}2\,\%$ & $2{,}0\,\%$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer l'angle de chaque secteur, arrondi au degré.
+  \item Construire le diagramme circulaire.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 21 et 22}
+
+\begin{methodebox}[Méthode 9 --- Construire un histogramme et le polygone des fréquences cumulées]
+\etapeexemples
+Le tableau répartit $24$ élèves selon leur temps de trajet entre leur domicile et le
+lycée.
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|*{5}{c|}}
+\hline
+Durée (min) & $\intfo{0}{10}$ & $\intfo{10}{20}$ & $\intfo{20}{30}$ & $\intfo{30}{40}$
+  & $\intfo{40}{50}$\\\hline
+Effectif & $4$ & $10$ & $5$ & $3$ & $2$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Construire l'histogramme de cette série.
+  \item Calculer les fréquences cumulées croissantes, en pourcentage arrondi à
+    $0{,}1\,\%$, puis construire le polygone des fréquences cumulées.
+  \item Lire sur le polygone une estimation de la médiane.
+\end{questions}
+
+\etape{À vous de jouer}
+Le tableau répartit $20$ élèves selon leur temps d'écran de la veille.
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|*{5}{c|}}
+\hline
+Durée (min) & $\intfo{0}{30}$ & $\intfo{30}{60}$ & $\intfo{60}{90}$ & $\intfo{90}{120}$
+  & $\intfo{120}{150}$\\\hline
+Effectif & $2$ & $4$ & $7$ & $4$ & $3$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Construire l'histogramme de cette série.
+  \item Calculer les fréquences cumulées croissantes, en pourcentage, puis construire
+    le polygone des fréquences cumulées.
+  \item Lire sur le polygone une estimation de la médiane.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 23 et 24}
+
+\partiecours{Croisement de deux variables qualitatives}
+
+Un tableau croisé (chapitre 11) répartit une population selon deux caractères. On y
+lit deux sortes de fréquences.
+
+\begin{definitionbox}[Définition 11 --- Fréquences marginales et conditionnelles]
+\begin{itemize}
+  \item La \textbf{fréquence marginale} d'une valeur se calcule avec un total, dans
+    la marge du tableau :
+    \[
+    f=\frac{\text{total de sa ligne (ou de sa colonne)}}{\text{effectif total}}
+    \]
+  \item La \textbf{fréquence conditionnelle} de $B$ \textbf{parmi} $A$ est la
+    proportion des individus qui ont $B$ parmi ceux qui ont $A$ :
+    \[
+    f=\frac{\text{effectif de } A \text{ et } B}{\text{effectif de } A}
+    \]
+    On ne regarde que la ligne (ou la colonne) de $A$.
+\end{itemize}
+Pour un individu choisi au hasard, c'est la probabilité $P_A(B)$ du chapitre 11. Les
+médias l'écrivent « parmi les… », « chez les… », « des … , $x\,\%$ … ».
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 10 --- Calculer des fréquences marginales et conditionnelles]
+\etapeexemples
+Le tableau répartit les actifs selon leur mode de transport principal pour aller
+travailler et la distance entre leur domicile et leur travail, en milliers d'actifs
+(chiffres Insee, recensement $2017$, arrondis à la dizaine de milliers).
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+ & $2$ km ou moins & de $2$ à $5$ km & plus de $5$ km & Total\\\hline
+Marche ou vélo & $1~320$ & $540$ & $250$ & $2~110$\\\hline
+Voiture & $1~960$ & $2~990$ & & \\\hline
+Autre mode & $420$ & $970$ & $2~960$ & $4~350$\\\hline
+Total & $3~700$ & $4~500$ & $16~400$ & $24~600$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Parmi les actifs qui habitent à plus de $5$ km de leur travail, $80{,}4\,\%$
+    prennent la voiture. Compléter le tableau.
+  \item Calculer la fréquence marginale des actifs qui prennent la voiture.
+  \item Calculer la fréquence des actifs qui vont travailler à pied ou à vélo parmi
+    ceux qui habitent à $2$ km ou moins.
+  \item Calculer la fréquence des actifs qui habitent à $2$ km ou moins parmi ceux qui
+    vont travailler à pied ou à vélo. Traduire le résultat par une phrase.
+\end{questions}
+
+\etape{À vous de jouer}
+Le tableau répartit les $600$ élèves d'un lycée selon leur moyen de transport et la
+durée de leur trajet.
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+ & moins de $15$ min & de $15$ à $30$ min & plus de $30$ min & Total\\\hline
+Marche ou vélo & $120$ & $45$ & $5$ & $170$\\\hline
+Bus ou car & $30$ & & $110$ & \\\hline
+Voiture & $50$ & $80$ & $35$ & $165$\\\hline
+Total & $200$ & $250$ & $150$ & $600$\\\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Parmi les élèves dont le trajet dure de $15$ à $30$ min, $50\,\%$ prennent le
+    bus ou le car. Compléter le tableau.
+  \item Calculer la fréquence marginale des élèves qui prennent le bus ou le car.
+  \item Calculer la fréquence des élèves qui viennent à pied ou à vélo parmi ceux dont
+    le trajet dure moins de $15$ min.
+  \item Calculer la fréquence des élèves dont le trajet dure moins de $15$ min parmi
+    ceux qui viennent à pied ou à vélo. Traduire le résultat par une phrase.
+\end{questions}
+
+\end{methodebox}
+
+\afaire{exercices 25 à 28}
+
+\end{document}
