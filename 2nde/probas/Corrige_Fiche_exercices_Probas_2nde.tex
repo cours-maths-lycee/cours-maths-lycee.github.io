@@ -1,0 +1,1080 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\tcbuselibrary{listings}
+\entete{Chapitre 11 --- Probabilités --- corrigé}{Seconde}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\Card}{\operatorname{Card}}
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\tikzset{
+  arbre/.style={grow'=right,level distance=2.3cm,
+    level 1/.style={sibling distance=2.2cm},
+    level 2/.style={sibling distance=1.1cm},
+    every node/.style={font=\small}},
+  poids/.style={font=\scriptsize,sloped,inner sep=1.5pt},
+}
+
+\newcommand{\cotefig}[3][0.36]{\par\noindent
+  \begin{minipage}[t]{\dimexpr0.97\linewidth-#1\linewidth\relax}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[t]{#1\linewidth}\vspace{0pt}\centering #3\end{minipage}\par}
+
+\begin{document}
+
+\entetefiche{Chapitre 11 --- Probabilités}{Seconde}
+
+{\small Quand une expérience se fait « au hasard » (dé équilibré, jetons indiscernables,
+individu choisi au hasard), on est en situation d'équiprobabilité :
+$P(A)=\dfrac{\Card(A)}{\Card(\Omega)}$. On le dit avant de s'en servir.\par}
+
+\partie{Vocabulaire des probabilités}
+
+\begin{exo}[Univers et événements]
+\cas{a)}
+\explique{$\Omega=\res{\ens{1\,;2\,;3\,;\dots\,;20}}$ et $\Card(\Omega)=\res{20}$.}{les
+$20$ numéros possibles}
+\cas{b)}
+\explique{$A=\res{\ens{6\,;12\,;18}}$.}{$4\times 6=24$ dépasse $20$}
+\explique{$B=\res{\ens{17\,;18\,;19\,;20}}$.}{« supérieur ou égal » : $17$ en fait partie}
+\cas{c)}
+\explique{Aucun numéro de $1$ à $20$ n'est un multiple de $25$, donc
+$C=\res{\varnothing}$ : c'est un \res{événement impossible}.}{aucune issue}
+\cas{d)}
+\explique{$18$ appartient à $A$ et à $B$, mais pas à $C$ : \res{les événements $A$ et
+$B$ sont réalisés, $C$ ne l'est pas}.}{on cherche $18$ dans chaque ensemble}
+\end{exo}
+
+\begin{exo}[Un univers de mots]
+\cas{a)}
+\explique{$\Card(\Omega)=\res{8}$.}{on compte les mots}
+\cas{b)}
+\explique{$A=\res{\ens{\text{mer}\,;\text{rio}\,;\text{ver}\,;\text{mur}\,;\text{roc}}}$.}{les
+mots qui contiennent un r}
+\explique{$B=\res{\ens{\text{rio}\,;\text{sol}\,;\text{roc}}}$.}{les mots qui contiennent
+un o}
+\cas{c)}
+\explique{Aucun mot ne commence par une voyelle, donc $C=\varnothing$ : « L'événement $C$
+est \res{impossible} ».}{a, e, i, o, u, y : aucun mot ne commence ainsi}
+\cas{d)}
+\explique{Tous les mots ont trois lettres, donc $D=\Omega$ : « L'événement $D$ est
+\res{certain} ».}{il contient toutes les issues}
+\end{exo}
+
+\begin{exo}[Deux lancers d'une pièce]
+\cas{a)}
+\explique{$\Omega=\res{\ens{\text{PP}\,;\text{PF}\,;\text{FP}\,;\text{FF}}}$.}{PF et FP
+sont deux issues différentes : l'ordre compte}
+\cas{b)}
+\explique{$A=\res{\ens{\text{PP}\,;\text{PF}\,;\text{FP}}}$.}{« au moins une fois » : une
+ou deux fois}
+\explique{$B=\res{\ens{\text{PP}\,;\text{FF}}}$.}{deux fois pile ou deux fois face}
+\cas{c)}
+\explique{FF n'appartient pas à $A$ mais appartient à $B$ : \res{seul l'événement $B$ est
+réalisé}.}{FF : aucun pile}
+\end{exo}
+
+\partie{Calcul d'une probabilité}
+
+\begin{exo}[Un dé à vingt faces]
+\explique{Le dé est équilibré : les $20$ issues ont la même probabilité, et
+$\Card(\Omega)=20$.}{on justifie l'équiprobabilité}
+\cas{a)}
+\explique{$A=\ens{2\,;4\,;\dots\,;20}$ compte $10$ issues.}{un nombre sur deux est pair}
+\begin{calculs}
+P(A) &= \dfrac{\Card(A)}{\Card(\Omega)} &&\justif{équiprobabilité}\\
+P(A) &= \dfrac{10}{20} &&\\
+P(A) &= \res{\dfrac{1}{2}} &&\justif{on simplifie par $10$}
+\end{calculs}
+\cas{b)}
+\explique{$B=\ens{6\,;12\,;18}$, donc $P(B)=\res{\dfrac{3}{20}}$.}{$3$ issues sur $20$}
+\cas{c)}
+\explique{$C=\ens{7\,;14}$, donc $P(C)=\dfrac{2}{20}=\res{\dfrac{1}{10}}$.}{on simplifie
+par $2$}
+\cas{d)}
+\explique{Tous les numéros sont inférieurs ou égaux à $20$, donc $D=\Omega$ et
+$P(D)=\res{1}$.}{événement certain}
+\end{exo}
+
+\begin{exo}[Des jetons numérotés]
+\cas{a)}
+\explique{Les jetons sont indiscernables : chacun des $12$ jetons a la même chance d'être
+tiré. Les numéros, eux, n'ont pas la même probabilité : il y a plus de jetons
+« $1$ » que de jetons « $3$ ». \res{Les issues équiprobables sont donc les $12$
+jetons}.}{piège : ne pas compter $3$ issues}
+\cas{b)}
+\explique{$n$ est impair pour les $5$ jetons « $1$ » et les $3$ jetons « $3$ », soit $8$
+jetons.}{$\Card(A)=5+3$}
+\begin{calculs}
+P(A) &= \dfrac{8}{12} &&\justif{$8$ jetons sur $12$}\\
+P(A) &= \dfrac{2\times\barre{4}}{3\times\barre{4}} &&\justif{on simplifie par $4$}\\
+P(A) &= \res{\dfrac{2}{3}} &&
+\end{calculs}
+\explique{$n\ge 2$ pour les $4$ jetons « $2$ » et les $3$ jetons « $3$ », donc
+$P(B)=\res{\dfrac{7}{12}}$.}{$\Card(B)=4+3$}
+\explique{Aucun jeton ne porte le numéro $4$, donc $P(C)=\res{0}$.}{événement impossible}
+\end{exo}
+
+\begin{exo}[Un jeu de 52 cartes]
+\explique{La carte est tirée au hasard : équiprobabilité sur les $52$ cartes.}{on justifie
+le modèle}
+\cas{a)}
+\explique{$13$ trèfles : $P=\dfrac{13}{52}=\res{\dfrac{1}{4}}$.}{$52=4\times 13$}
+\cas{b)}
+\explique{$26$ cartes noires (piques et trèfles) : $P=\dfrac{26}{52}=\res{\dfrac{1}{2}}$.}{$13+13$}
+\cas{c)}
+\explique{$3$ figures par couleur, soit $12$ figures : $P=\dfrac{12}{52}=\res{\dfrac{3}{13}}$.}{on
+simplifie par $4$}
+\cas{d)}
+\explique{$4$ as : $P=\dfrac{4}{52}=\res{\dfrac{1}{13}}$.}{un as par couleur}
+\end{exo}
+
+\begin{exo}[Le sac le plus favorable]
+\cas{a)}
+\explique{Lina n'a que des billes rouges : $P=\dfrac{4}{4}=\res{1}$.}{événement certain}
+\explique{Tom : $6+18=24$ billes, donc $P=\dfrac{6}{24}=\res{\dfrac{1}{4}}$.}{on simplifie
+par $6$}
+\explique{Inès : $50+2=52$ billes, donc $P=\dfrac{50}{52}=\res{\dfrac{25}{26}}$.}{on
+simplifie par $2$}
+\explique{$\dfrac{1}{4}<\dfrac{25}{26}<1$ : \res{c'est Lina qui a le plus de chances}
+(elle est sûre de tirer une bille rouge).}{$\dfrac{25}{26}\approx 0{,}96$}
+\cas{b)}
+\explique{Il faut que les $4$ billes rouges de Lina soient le quart du sac, comme pour
+Tom.}{$P=\dfrac{1}{4}$}
+\explique{Le sac doit contenir $4\times 4=16$ billes : il faut ajouter
+$16-4=\res{12}$ billes noires.}{vérification : $\dfrac{4}{16}=\dfrac{1}{4}$}
+\end{exo}
+
+\partie{Intersection, réunion, événement contraire}
+
+\begin{exo}[Une roue de loterie]
+\cas{a)}
+\explique{$A=\ens{4\,;8\,;12\,;16}$ et $B=\ens{13\,;14\,;15\,;16}$.}{on liste d'abord $A$
+et $B$}
+\explique{$A\cap B=\res{\ens{16}}$.}{seul $16$ est dans les deux}
+\explique{$A\cup B=\res{\ens{4\,;8\,;12\,;13\,;14\,;15\,;16}}$.}{$16$ écrit une seule fois}
+\explique{$\overline{A}=\res{\ens{1\,;2\,;3\,;5\,;6\,;7\,;9\,;10\,;11\,;13\,;14\,;15}}$.}{les
+$12$ numéros qui ne sont pas multiples de $4$}
+\explique{$A\cap B\ne\varnothing$, donc \res{$A$ et $B$ ne sont pas
+incompatibles}.}{$16$ est dans les deux}
+\cas{b)}
+\explique{Les secteurs ont la même taille : équiprobabilité, avec $\Card(\Omega)=16$.}{on
+justifie le modèle}
+\explique{$P(A)=\dfrac{4}{16}=\res{\dfrac{1}{4}}$, $P(B)=\dfrac{4}{16}=\res{\dfrac{1}{4}}$ et
+$P(A\cap B)=\res{\dfrac{1}{16}}$.}{$4$, $4$ et $1$ issues}
+\cas{c)}
+\begin{calculs}
+P\big(\overline{A}\big) &= 1-P(A) &&\justif{probabilité du contraire}\\
+P\big(\overline{A}\big) &= \dfrac{4}{4}-\dfrac{1}{4} &&\justif{$1=\frac{4}{4}$}\\
+P\big(\overline{A}\big) &= \res{\dfrac{3}{4}} &&
+\end{calculs}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{propriété 3}\\
+P(A\cup B) &= \dfrac{1\fois{4}}{4\fois{4}}+\dfrac{1\fois{4}}{4\fois{4}}-\dfrac{1}{16}
+  &&\justif{même dénominateur $16$}\\
+P(A\cup B) &= \dfrac{4+4-1}{16} &&\\
+P(A\cup B) &= \res{\dfrac{7}{16}} &&
+\end{calculs}
+\explique{Vérification : $A\cup B$ compte $7$ issues sur $16$, et $\overline{A}$ en compte
+$12$, soit $\dfrac{12}{16}=\dfrac{3}{4}$.}{on compte les issues de la question a)}
+\end{exo}
+
+\begin{exo}[Traduire par une phrase]
+\cas{a)}
+\explique{$E\cap A$ : \res{« le spectateur est un étudiant abonné »}.}{« et » : les deux
+à la fois}
+\explique{$E\cup A$ : \res{« le spectateur est étudiant ou abonné »}, ou les deux.}{« ou » :
+au moins l'un des deux}
+\explique{$\overline{E}$ : \res{« le spectateur n'est pas étudiant »}.}{le contraire de $E$}
+\explique{$E\cap\overline{A}$ : \res{« le spectateur est étudiant et n'a pas
+d'abonnement »}.}{$\overline{A}$ : « il n'a pas d'abonnement »}
+\cas{b)}
+\explique{Léo est étudiant : $E$ est réalisé, donc $E\cup A$ aussi. Il n'a pas
+d'abonnement : $A$ et $E\cap A$ ne sont pas réalisés. \res{Les événements $E$ et
+$E\cup A$ sont réalisés, $A$ et $E\cap A$ ne le sont pas.}}{pour $E\cup A$, il suffit
+d'un des deux}
+\end{exo}
+
+\begin{exo}[Défauts de fabrication]
+\cas{a)}
+\explique{$P(E)=\res{0{,}04}$, $P(B)=\res{0{,}06}$ et $P(E\cap B)=\res{0{,}01}$.}{$4\,\%$,
+$6\,\%$ et $1\,\%$ écrits en décimaux}
+\cas{b)}
+\begin{calculs}
+P\big(\overline{E}\big) &= 1-P(E) &&\justif{« pas de défaut d'écran » : contraire de $E$}\\
+P\big(\overline{E}\big) &= 1-0{,}04 &&\\
+P\big(\overline{E}\big) &= \res{0{,}96} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(E\cup B) &= P(E)+P(B)-P(E\cap B) &&\justif{« au moins un des deux » : $E\cup B$}\\
+P(E\cup B) &= 0{,}04+0{,}06-0{,}01 &&\\
+P(E\cup B) &= \res{0{,}09} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+P\big(\overline{E\cup B}\big) &= 1-P(E\cup B) &&\justif{« aucun défaut » : contraire de
+« au moins un »}\\
+P\big(\overline{E\cup B}\big) &= 1-0{,}09 &&\\
+P\big(\overline{E\cup B}\big) &= \res{0{,}91} &&
+\end{calculs}
+\rem{Erreur fréquente : additionner $0{,}04$ et $0{,}06$ sans retirer $0{,}01$ ; les
+téléphones qui ont les deux défauts seraient comptés deux fois.}
+\end{exo}
+
+\begin{exo}[Des données impossibles]
+\cas{a)}
+\explique{$P(A)+P\big(\overline{A}\big)$ doit valoir $1$, or $0{,}7+0{,}4=1{,}1$ :
+\res{c'est impossible}.}{$P\big(\overline{A}\big)=1-P(A)=0{,}3$}
+\cas{b)}
+\explique{Si $A$ et $B$ sont incompatibles, $P(A\cup B)=0{,}6+0{,}5=1{,}1$, plus grand que
+$1$ : \res{c'est impossible}.}{une probabilité ne dépasse pas $1$}
+\cas{c)}
+\explique{Les issues de $A\cap B$ sont toutes dans $A$, donc $P(A\cap B)$ ne peut pas
+dépasser $P(A)=0{,}3$ : \res{c'est impossible}.}{$A\cap B$ est une partie de $A$}
+\cas{d)}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{propriété 3}\\
+0{,}7 &= 0{,}5+0{,}35-P(A\cap B) &&\justif{on remplace}\\
+0{,}7 &= 0{,}85-P(A\cap B) &&\\
+P(A\cap B) &= 0{,}85-0{,}7 &&\justif{on isole $P(A\cap B)$}\\
+P(A\cap B) &= \res{0{,}15} &&
+\end{calculs}
+\end{exo}
+
+\partie{Loi de probabilité}
+
+\begin{exo}[Un dé truqué]
+\cas{a)}
+\begin{calculs}
+P(4) &= 1-(0{,}15+0{,}2+0{,}1+0{,}25+0{,}1) &&\justif{la somme des probabilités vaut $1$}\\
+P(4) &= 1-0{,}8 &&\\
+P(4) &= \res{0{,}2} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+P(A) &= P(2)+P(4)+P(6) &&\justif{propriété 4 : $A=\ens{2\,;4\,;6}$}\\
+P(A) &= 0{,}2+0{,}2+0{,}1 &&\\
+P(A) &= \res{0{,}5} &&
+\end{calculs}
+\begin{calculs}
+P(B) &= P(4)+P(5)+P(6) &&\justif{« au moins $4$ » : $B=\ens{4\,;5\,;6}$}\\
+P(B) &= 0{,}2+0{,}25+0{,}1 &&\\
+P(B) &= \res{0{,}55} &&
+\end{calculs}
+\cas{c)}
+\explique{$\overline{B}$ : \res{« obtenir moins de $4$ »}, c'est-à-dire $1$, $2$ ou $3$.}{le
+contraire de « au moins $4$ »}
+\explique{$P\big(\overline{B}\big)=1-0{,}55=\res{0{,}45}$.}{vérification :
+$0{,}15+0{,}2+0{,}1=0{,}45$}
+\end{exo}
+
+\begin{exo}[Une roue de quatre couleurs]
+\cas{a)}
+\begin{calculs}
+P(\text{jaune}) &= 1-\dfrac{1}{3}-\dfrac{1}{4}-\dfrac{1}{6} &&\justif{la somme des
+probabilités vaut $1$}\\
+P(\text{jaune}) &= \dfrac{1\fois{12}}{1\fois{12}}-\dfrac{1\fois{4}}{3\fois{4}}
+  -\dfrac{1\fois{3}}{4\fois{3}}-\dfrac{1\fois{2}}{6\fois{2}} &&\justif{même dénominateur $12$}\\
+P(\text{jaune}) &= \dfrac{12-4-3-2}{12} &&\\
+P(\text{jaune}) &= \dfrac{3}{12} &&\\
+P(\text{jaune}) &= \res{\dfrac{1}{4}} &&\justif{on simplifie par $3$}
+\end{calculs}
+\cas{b)}
+\explique{« Ni rouge ni bleue » : vert ou jaune.}{les issues de l'événement}
+\begin{calculs}
+P(\text{vert ou jaune}) &= \dfrac{1}{4}+\dfrac{1}{4} &&\justif{propriété 4}\\
+P(\text{vert ou jaune}) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{c)}
+\explique{Les probabilités ne sont pas toutes égales ($\frac{1}{3}\ne\frac{1}{6}$) :
+\res{les issues ne sont pas équiprobables}.}{on ne peut pas utiliser
+$\dfrac{\Card(A)}{\Card(\Omega)}$}
+\end{exo}
+
+\begin{exo}[Attente à la cantine]
+\cas{a)}
+\begin{calculs}
+P(\text{plus de }15) &= 1-(0{,}2+0{,}4+0{,}3) &&\justif{la somme vaut $1$}\\
+P(\text{plus de }15) &= \res{0{,}1} &&
+\end{calculs}
+\cas{b)}
+\explique{Moins de $10$ minutes : $0$ à $5$ ou $5$ à $10$, donc
+$P=0{,}2+0{,}4=\res{0{,}6}$.}{propriété 4}
+\cas{c)}
+\explique{Le contraire de « attendre plus de $5$ minutes » est « attendre de $0$ à $5$
+minutes », de probabilité $0{,}2$.}{on traduit l'événement contraire}
+\explique{$P=1-0{,}2=\res{0{,}8}$.}{vérification : $0{,}4+0{,}3+0{,}1=0{,}8$}
+\rem{Cette loi vient de fréquences observées sur un grand nombre de jours : c'est un
+modèle, tiré de la loi des grands nombres (partie VIII).}
+\end{exo}
+
+\begin{exo}[Une probabilité inconnue]
+\cas{a)}
+\explique{Les faces $1$ à $5$ ont la probabilité $a$, la face $6$ la probabilité $3a$, et la
+somme vaut $1$.}{« trois fois plus grande » : $3a$}
+\begin{calculs}
+a+a+a+a+a+3a &= 1 &&\justif{somme des probabilités}\\
+8a &= 1 &&\justif{on réduit}\\
+a &= \res{\dfrac{1}{8}} &&\justif{on divise par $8$}
+\end{calculs}
+\cas{b)}%
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Face & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ \\
+\hline
+Probabilité & $\dfrac{1}{8}$ & $\dfrac{1}{8}$ & $\dfrac{1}{8}$ & $\dfrac{1}{8}$ &
+$\dfrac{1}{8}$ & $\dfrac{3}{8}$ \\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $5\times\dfrac{1}{8}+\dfrac{3}{8}=\dfrac{8}{8}=1$.}{la somme vaut
+bien $1$}
+\cas{c)}
+\begin{calculs}
+P(\text{pair}) &= P(2)+P(4)+P(6) &&\justif{propriété 4}\\
+P(\text{pair}) &= \dfrac{1}{8}+\dfrac{1}{8}+\dfrac{3}{8} &&\\
+P(\text{pair}) &= \res{\dfrac{5}{8}} &&
+\end{calculs}
+\cas{d)}
+\explique{$P(\text{pas }6)=1-\dfrac{3}{8}=\res{\dfrac{5}{8}}$.}{probabilité du contraire}
+\end{exo}
+
+\partie{Tableaux croisés d'effectifs}
+
+\begin{exo}[Une salle de concert]
+\cas{a)}
+\begin{calculs}
+\text{gradins} &= 500-300 &&\justif{les autres places}\\
+\text{gradins} &= 200 &&
+\end{calculs}
+\begin{calculs}
+\text{fosse, moins de 25 ans} &= 0{,}4\times 300 &&\justif{$40\,\%$ de $300$}\\
+\text{fosse, moins de 25 ans} &= 120 &&
+\end{calculs}
+\begin{calculs}
+\text{gradins, moins de 25 ans} &= 0{,}15\times 200 &&\justif{$15\,\%$ de $200$}\\
+\text{gradins, moins de 25 ans} &= 30 &&
+\end{calculs}
+\explique{On complète par soustraction ($300-120=180$, $200-30=170$), puis les totaux des
+colonnes par addition.}{chaque ligne a pour somme son total}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Moins de 25 ans & 25 ans ou plus & Total \\
+\hline
+Fosse & $\res{120}$ & $180$ & $300$ \\
+\hline
+Gradins & $30$ & $170$ & $200$ \\
+\hline
+Total & $150$ & $350$ & $500$ \\
+\hline
+\end{tabular}
+\end{center}
+\cas{b)}
+\explique{Le spectateur est choisi au hasard : équiprobabilité sur les $500$
+spectateurs.}{propriété 5}
+\explique{$P(F)=\dfrac{300}{500}=\res{0{,}6}$, $P(J)=\dfrac{150}{500}=\res{0{,}3}$ et
+$P(F\cap J)=\dfrac{120}{500}=\res{0{,}24}$.}{total de ligne, total de colonne, case commune}
+\cas{c)}
+\begin{calculs}
+P(F\cup J) &= P(F)+P(J)-P(F\cap J) &&\justif{propriété 3}\\
+P(F\cup J) &= 0{,}6+0{,}3-0{,}24 &&\\
+P(F\cup J) &= \res{0{,}66} &&
+\end{calculs}
+\explique{« En gradins et $25$ ans ou plus » :
+$P\big(\overline{F}\cap\overline{J}\big)=\dfrac{170}{500}=\res{0{,}34}$.}{vérification :
+$1-0{,}66=0{,}34$}
+\end{exo}
+
+\begin{exo}[Musique et dessin]
+\cas{a)}
+\explique{Musique et dessin : $4$. Musique sans dessin : $14-4=10$. Dessin sans musique :
+$10-4=6$. Ni l'un ni l'autre : $32-4-10-6=12$.}{on part de la case « les deux »}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Dessin & Pas de dessin & Total \\
+\hline
+Musique & $\res{4}$ & $10$ & $14$ \\
+\hline
+Pas de musique & $6$ & $12$ & $18$ \\
+\hline
+Total & $10$ & $22$ & $32$ \\
+\hline
+\end{tabular}
+\end{center}
+\cas{b)}
+\explique{\res{$12$ élèves} ne font ni musique ni dessin.}{case « pas de musique, pas de
+dessin »}
+\cas{c)}
+\explique{$M\cap\overline{D}$ : \res{« l'élève fait de la musique mais pas de
+dessin »}.}{$\overline{D}$ : « il ne fait pas de dessin »}
+\explique{$P\big(M\cap\overline{D}\big)=\dfrac{10}{32}=\res{\dfrac{5}{16}}$.}{élève choisi au
+hasard : équiprobabilité}
+\cas{d)}
+\begin{calculs}
+P(M\cup D) &= P(M)+P(D)-P(M\cap D) &&\justif{propriété 3}\\
+P(M\cup D) &= \dfrac{14}{32}+\dfrac{10}{32}-\dfrac{4}{32} &&\\
+P(M\cup D) &= \dfrac{20}{32} &&\\
+P(M\cup D) &= \res{\dfrac{5}{8}} &&\justif{on simplifie par $4$}
+\end{calculs}
+\explique{Vérification : $32-12=20$ élèves font au moins l'une des deux activités.}{contraire
+de « ni l'un ni l'autre »}
+\end{exo}
+
+\begin{exo}[Satisfaction des usagers]
+\cas{a)}
+\explique{Métro : $1\,000-400-350=250$ usagers. Satisfaits : $0{,}7\times 400=280$ pour le
+bus, $0{,}8\times 350=280$ pour le tram, $0{,}9\times 250=225$ pour le métro.}{pourcentages :
+chapitre 7}
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+ & Bus & Tram & Métro & Total \\
+\hline
+Satisfait & $\res{280}$ & $280$ & $225$ & $785$ \\
+\hline
+Non satisfait & $120$ & $70$ & $25$ & $215$ \\
+\hline
+Total & $400$ & $350$ & $250$ & $1\,000$ \\
+\hline
+\end{tabular}
+\end{center}
+\cas{b)}
+\explique{$P(T)=\dfrac{350}{1\,000}=\res{0{,}35}$, $P(S)=\dfrac{785}{1\,000}=\res{0{,}785}$
+et $P(T\cap S)=\dfrac{280}{1\,000}=\res{0{,}28}$.}{usager choisi au hasard :
+équiprobabilité}
+\cas{c)}
+\begin{calculs}
+P(T\cup S) &= P(T)+P(S)-P(T\cap S) &&\justif{propriété 3}\\
+P(T\cup S) &= 0{,}35+0{,}785-0{,}28 &&\\
+P(T\cup S) &= \res{0{,}855} &&
+\end{calculs}
+\explique{Vérification : seuls les non-satisfaits du bus et du métro ne sont ni au tram ni
+satisfaits, soit $120+25=145$, et $1-0{,}145=0{,}855$.}{contraire de $T\cup S$}
+\end{exo}
+
+\partie{Probabilités conditionnelles}
+
+\begin{exo}[Langue vivante et demi-pension]
+\cas{a)}
+\explique{« Parmi les demi-pensionnaires » : on ne regarde que leur ligne, $90$ germanistes
+sur $300$.}{la condition est $D$}
+\explique{$P_D(A)=\dfrac{90}{300}=\res{0{,}3}$.}{$\dfrac{\Card(D\cap A)}{\Card(D)}$}
+\cas{b)}
+\explique{« Parmi les germanistes » : on ne regarde que leur colonne, $90$
+demi-pensionnaires sur $120$.}{la condition est $A$}
+\explique{$P_A(D)=\dfrac{90}{120}=\res{0{,}75}$.}{$P_D(A)\ne P_A(D)$ : l'ordre compte}
+\cas{c)}
+\explique{$P_E(D)=\dfrac{210}{380}\approx\res{0{,}55}$.}{colonne de l'espagnol}
+\explique{\res{Parmi les élèves qui apprennent l'espagnol, environ $55\,\%$ sont
+demi-pensionnaires.}}{on écrit la condition en premier : « parmi … »}
+\end{exo}
+
+\begin{exo}[De la phrase à la notation]
+\cas{a)}
+\explique{« $45\,\%$ des demi-pensionnaires … » : $\res{P_D(S)=0{,}45}$.}{on choisit parmi
+les demi-pensionnaires : condition $D$}
+\explique{« parmi les élèves de l'AS, $60\,\%$ … » : $\res{P_S(D)=0{,}6}$.}{condition $S$}
+\explique{« $20\,\%$ des élèves sont des demi-pensionnaires de l'AS » :
+$\res{P(D\cap S)=0{,}2}$.}{pas de condition : tous les élèves}
+\cas{b)}
+\explique{\res{Parmi les élèves qui ne sont pas demi-pensionnaires (les externes), $30\,\%$
+font partie de l'AS.}}{condition $\overline{D}$ ; on parle de $S$}
+\end{exo}
+
+\begin{exo}[Un test de dépistage]
+\cas{a)}
+\explique{Malades : $0{,}02\times 20\,000=\res{400}$.}{$2\,\%$ de $20\,000$}
+\explique{Tests positifs chez les malades : $0{,}9\times 400=\res{360}$.}{sensibilité :
+$90\,\%$ des malades}
+\cas{b)}
+\explique{Non-malades : $20\,000-400=19\,600$.}{les autres personnes}
+\explique{Tests négatifs : $0{,}97\times 19\,600=\res{19\,012}$ ; tests positifs :
+$19\,600-19\,012=\res{588}$.}{spécificité : $97\,\%$ des non-malades}
+\cas{c)}%
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Test positif & Test négatif & Total \\
+\hline
+Malades & $360$ & $40$ & $400$ \\
+\hline
+Non malades & $588$ & $19\,012$ & $19\,600$ \\
+\hline
+Total & $948$ & $19\,052$ & $20\,000$ \\
+\hline
+\end{tabular}
+\end{center}
+\cas{d)}
+\explique{On ne regarde que la colonne des $948$ tests positifs.}{la condition est $T$}
+\explique{$P_T(M)=\dfrac{360}{948}\approx\res{0{,}38}$.}{calculatrice}
+\cas{e)}
+\explique{Faux positifs : $P_T\big(\overline{M}\big)=\dfrac{588}{948}\approx\res{0{,}62}$.}{non
+malades parmi les positifs}
+\explique{Le test détecte $90\,\%$ des malades, mais environ $62\,\%$ des tests positifs
+sont de faux positifs : la maladie est rare, et $3\,\%$ des très nombreux non-malades
+dépassent les malades détectés. Un test positif doit être confirmé.}{$P_M(T)=0{,}9$ mais
+$P_T(M)\approx 0{,}38$}
+\end{exo}
+
+\begin{exo}[Avec la formule]
+\cas{a)}
+\explique{Équiprobabilité sur les $32$ cartes : $P(C)=\dfrac{8}{32}=\res{\dfrac{1}{4}}$,
+$P(R)=\dfrac{4}{32}=\res{\dfrac{1}{8}}$.}{$8$ cœurs, $4$ rois}
+\explique{$C\cap R$ : le roi de cœur, donc $P(C\cap R)=\res{\dfrac{1}{32}}$.}{une seule carte}
+\cas{b)}
+\begin{calculs}
+P_C(R) &= \dfrac{P(C\cap R)}{P(C)} &&\justif{propriété 6}\\
+P_C(R) &= \dfrac{1}{32}\times\dfrac{4}{1} &&\justif{diviser par $\frac{1}{4}$, c'est
+multiplier par $4$}\\
+P_C(R) &= \dfrac{4}{32} &&\\
+P_C(R) &= \res{\dfrac{1}{8}} &&
+\end{calculs}
+\explique{Parmi les cœurs, un sur huit est un roi.}{vérification : $1$ roi sur $8$ cœurs}
+\begin{calculs}
+P_R(C) &= \dfrac{P(C\cap R)}{P(R)} &&\justif{propriété 6}\\
+P_R(C) &= \dfrac{1}{32}\times\dfrac{8}{1} &&\justif{diviser par $\frac{1}{8}$, c'est
+multiplier par $8$}\\
+P_R(C) &= \dfrac{8}{32} &&\\
+P_R(C) &= \res{\dfrac{1}{4}} &&
+\end{calculs}
+\explique{Parmi les rois, un sur quatre est un cœur.}{vérification : $1$ cœur sur $4$ rois}
+\cas{c)}
+\begin{calculs}
+P(C\cup R) &= P(C)+P(R)-P(C\cap R) &&\justif{propriété 3}\\
+P(C\cup R) &= \dfrac{8}{32}+\dfrac{4}{32}-\dfrac{1}{32} &&\justif{même dénominateur $32$}\\
+P(C\cup R) &= \res{\dfrac{11}{32}} &&
+\end{calculs}
+\end{exo}
+
+\partie{Arbres pondérés}
+
+\begin{exo}[Compétition au club de tennis]
+\cas{a)}
+\cotefig{\explique{$P(A)=0{,}6$, $P_A(C)=0{,}3$ et $P_{\overline{A}}(C)=0{,}7$.}{« parmi
+les adultes » : sachant $A$}
+\explique{On complète chaque nœud à $1$, d'où $P\big(\overline{A}\big)=0{,}4$,
+$P_A\big(\overline{C}\big)=0{,}7$, $P_{\overline{A}}\big(\overline{C}\big)=0{,}3$.}{somme des
+branches d'un nœud : $1$}}
+{\begin{tikzpicture}[arbre]
+\node {}
+  child {node {$A$}
+    child {node {$C$} edge from parent node[poids,above] {$0{,}3$}}
+    child {node {$\overline{C}$} edge from parent node[poids,below] {$0{,}7$}}
+    edge from parent node[poids,above] {$0{,}6$}}
+  child {node {$\overline{A}$}
+    child {node {$C$} edge from parent node[poids,above] {$0{,}7$}}
+    child {node {$\overline{C}$} edge from parent node[poids,below] {$0{,}3$}}
+    edge from parent node[poids,below] {$0{,}4$}};
+\end{tikzpicture}}
+\explique{\res{Arbre ci-contre.}}{premier niveau : adulte ou non ; second : compétition ou
+non}
+\cas{b)}
+\begin{calculs}
+P(A\cap C) &= P(A)\times P_A(C) &&\justif{chemin $A$ puis $C$}\\
+P(A\cap C) &= 0{,}6\times 0{,}3 &&\\
+P(A\cap C) &= \res{0{,}18} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(C) &= P(A\cap C)+P\big(\overline{A}\cap C\big) &&\justif{somme des deux chemins qui
+mènent à $C$}\\
+P(C) &= 0{,}18+0{,}4\times 0{,}7 &&\\
+P(C) &= 0{,}18+0{,}28 &&\\
+P(C) &= \res{0{,}46} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+P\big(\overline{A}\cap\overline{C}\big) &= 0{,}4\times 0{,}3 &&\justif{chemin
+$\overline{A}$ puis $\overline{C}$}\\
+P\big(\overline{A}\cap\overline{C}\big) &= \res{0{,}12} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Deux chocolats]
+\cas{a)}
+\cotefig{\explique{Au premier choix : $3$ noirs ($N$) et $4$ au lait ($L$) sur $7$.}{tous
+les chocolats ont la même chance}
+\explique{Après un noir, il reste $2$ noirs et $4$ au lait ; après un chocolat au lait,
+$3$ noirs et $3$ au lait.}{on a mangé le premier : il en reste $6$}}
+{\begin{tikzpicture}[arbre]
+\node {}
+  child {node {$N$}
+    child {node {$N$} edge from parent node[poids,above] {$\frac{2}{6}$}}
+    child {node {$L$} edge from parent node[poids,below] {$\frac{4}{6}$}}
+    edge from parent node[poids,above] {$\frac{3}{7}$}}
+  child {node {$L$}
+    child {node {$N$} edge from parent node[poids,above] {$\frac{3}{6}$}}
+    child {node {$L$} edge from parent node[poids,below] {$\frac{3}{6}$}}
+    edge from parent node[poids,below] {$\frac{4}{7}$}};
+\end{tikzpicture}}
+\explique{\res{Arbre ci-contre.}}{chaque nœud a pour somme $1$}
+\cas{b)}
+\begin{calculs}
+P(\text{deux noirs}) &= \dfrac{3}{7}\times\dfrac{2}{6} &&\justif{chemin $N$ puis $N$}\\
+P(\text{deux noirs}) &= \dfrac{6}{42} &&\\
+P(\text{deux noirs}) &= \res{\dfrac{1}{7}} &&\justif{on simplifie par $6$}
+\end{calculs}
+\begin{calculs}
+P(\text{deux au lait}) &= \dfrac{4}{7}\times\dfrac{3}{6} &&\justif{chemin $L$ puis $L$}\\
+P(\text{deux au lait}) &= \dfrac{12}{42} &&\\
+P(\text{deux au lait}) &= \res{\dfrac{2}{7}} &&\justif{on simplifie par $6$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(\text{même sorte}) &= \dfrac{1}{7}+\dfrac{2}{7} &&\justif{somme des deux chemins}\\
+P(\text{même sorte}) &= \res{\dfrac{3}{7}} &&
+\end{calculs}
+\cas{d)}
+\explique{Le contraire de « au moins un noir » est « deux au lait ».}{aucun noir}
+\begin{calculs}
+P(\text{au moins un noir}) &= 1-\dfrac{2}{7} &&\justif{probabilité du contraire}\\
+P(\text{au moins un noir}) &= \res{\dfrac{5}{7}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Deux tickets à gratter]
+\cas{a)}
+\cotefig{\explique{Chaque ticket est gagnant avec la probabilité $\frac{1}{4}$, perdant avec
+$\frac{3}{4}$, quel que soit le résultat de l'autre.}{les mêmes probabilités au second
+niveau}
+\explique{\res{Arbre ci-contre.}}{$G$ puis $G$ : deux tickets gagnants}}
+{\begin{tikzpicture}[arbre]
+\node {}
+  child {node {$G$}
+    child {node {$G$} edge from parent node[poids,above] {$\frac{1}{4}$}}
+    child {node {$\overline{G}$} edge from parent node[poids,below] {$\frac{3}{4}$}}
+    edge from parent node[poids,above] {$\frac{1}{4}$}}
+  child {node {$\overline{G}$}
+    child {node {$G$} edge from parent node[poids,above] {$\frac{1}{4}$}}
+    child {node {$\overline{G}$} edge from parent node[poids,below] {$\frac{3}{4}$}}
+    edge from parent node[poids,below] {$\frac{3}{4}$}};
+\end{tikzpicture}}
+\cas{b)}
+\explique{$P(\text{deux gagnants})=\dfrac{1}{4}\times\dfrac{1}{4}=\res{\dfrac{1}{16}}$.}{chemin
+$G$ puis $G$}
+\cas{c)}
+\explique{Un seul gagnant : chemins $G$ puis $\overline{G}$, et $\overline{G}$ puis $G$.}{deux
+chemins}
+\begin{calculs}
+P(\text{un seul}) &= \dfrac{1}{4}\times\dfrac{3}{4}+\dfrac{3}{4}\times\dfrac{1}{4}
+  &&\justif{somme des deux chemins}\\
+P(\text{un seul}) &= \dfrac{3}{16}+\dfrac{3}{16} &&\\
+P(\text{un seul}) &= \dfrac{6}{16} &&\\
+P(\text{un seul}) &= \res{\dfrac{3}{8}} &&\justif{on simplifie par $2$}
+\end{calculs}
+\cas{d)}
+\explique{Le contraire de « au moins un gagnant » est « aucun gagnant » :
+$\dfrac{3}{4}\times\dfrac{3}{4}=\dfrac{9}{16}$.}{chemin $\overline{G}$ puis $\overline{G}$}
+\begin{calculs}
+P(\text{au moins un}) &= 1-\dfrac{9}{16} &&\justif{probabilité du contraire}\\
+P(\text{au moins un}) &= \res{\dfrac{7}{16}} &&
+\end{calculs}
+\explique{Vérification : $\dfrac{1}{16}+\dfrac{6}{16}=\dfrac{7}{16}$.}{deux gagnants ou un seul}
+\end{exo}
+
+\begin{exo}[Un test pour les chats]
+\cas{a)}
+\cotefig{\explique{$P(M)=0{,}01$ ; sensibilité $P_M(T)=0{,}98$ ; spécificité
+$P_{\overline{M}}\big(\overline{T}\big)=0{,}95$.}{on traduit l'énoncé}
+\explique{On complète : $P\big(\overline{M}\big)=0{,}99$,
+$P_M\big(\overline{T}\big)=0{,}02$ et $P_{\overline{M}}(T)=0{,}05$.}{somme des branches d'un
+nœud : $1$}
+\explique{\res{Arbre ci-contre.}}{$0{,}05$ : les faux positifs}}
+{\begin{tikzpicture}[arbre]
+\node {}
+  child {node {$M$}
+    child {node {$T$} edge from parent node[poids,above] {$0{,}98$}}
+    child {node {$\overline{T}$} edge from parent node[poids,below] {$0{,}02$}}
+    edge from parent node[poids,above] {$0{,}01$}}
+  child {node {$\overline{M}$}
+    child {node {$T$} edge from parent node[poids,above] {$0{,}05$}}
+    child {node {$\overline{T}$} edge from parent node[poids,below] {$0{,}95$}}
+    edge from parent node[poids,below] {$0{,}99$}};
+\end{tikzpicture}}
+\cas{b)}
+\begin{calculs}
+P(M\cap T) &= 0{,}01\times 0{,}98 &&\justif{chemin $M$ puis $T$}\\
+P(M\cap T) &= \res{0{,}0098} &&
+\end{calculs}
+\begin{calculs}
+P(T) &= P(M\cap T)+P\big(\overline{M}\cap T\big) &&\justif{somme des deux chemins}\\
+P(T) &= 0{,}0098+0{,}99\times 0{,}05 &&\\
+P(T) &= 0{,}0098+0{,}0495 &&\\
+P(T) &= \res{0{,}0593} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P_T(M) &= \dfrac{P(M\cap T)}{P(T)} &&\justif{propriété 6}\\
+P_T(M) &= \dfrac{0{,}0098}{0{,}0593} &&\\
+P_T(M) &\approx \res{0{,}17} &&\justif{calculatrice}
+\end{calculs}
+\cas{d)}
+\explique{$P_M(T)=0{,}98$ mais $P_T(M)\approx 0{,}17$ : \res{un test positif ne suffit pas},
+car environ $83\,\%$ des chats testés positifs ne sont pas malades.}{la maladie est rare :
+les faux positifs sont plus nombreux que les vrais}
+\end{exo}
+
+\partie{Loi des grands nombres et simulation}
+
+\begin{exo}[Lire une simulation]
+\cas{a)}
+\explique{Une face gagnante sur $4$, dé équilibré : $p=\res{\dfrac{1}{4}}$, soit
+$0{,}25$.}{équiprobabilité}
+\cas{b)}
+\explique{\texttt{gains} compte les lancers où le dé donne $4$ ; la fonction renvoie
+\res{\texttt{gains / n}, la fréquence observée des gains sur $n$ lancers}.}{nombre de gains
+divisé par $n$}
+\cas{c)}
+\explique{Plus $n$ est grand, plus la fréquence est proche de $0{,}25$ ; avec $n=10$, elle
+en est loin ($0{,}4$). C'est \res{la loi des grands nombres}.}{propriété 8}
+\cas{d)}
+\explique{Pour $n=100$ : l'écart vaut $0{,}25-0{,}21$, soit $0{,}04$, et
+$\dfrac{1}{\sqrt{100}}=0{,}1$ : \res{l'écart est inférieur à $0{,}1$}.}{$\sqrt{100}=10$}
+\explique{Pour $n=1\,000$ : l'écart vaut $0{,}262-0{,}25$, soit $0{,}012$, et
+$\dfrac{1}{\sqrt{1\,000}}\approx 0{,}032$ : \res{l'écart est inférieur à
+$0{,}032$}.}{calculatrice pour $\sqrt{1\,000}$}
+\end{exo}
+
+\begin{exo}[Simuler un contrôle de qualité]
+\cas{a)}
+\begin{python}
+from random import random
+
+def livre():
+    if random() < 0.04:
+        return 1
+    else:
+        return 0
+
+def frequence(n):
+    defauts = 0
+    for k in range(n):
+        defauts = defauts + livre()
+    return defauts / n
+\end{python}
+\explique{\res{\texttt{random() < 0.04}, \texttt{return 0} et \texttt{return defauts / n}}.}{\texttt{random()
+< 0.04} est vrai avec la probabilité $0{,}04$}
+\cas{b)}
+\explique{D'après la loi des grands nombres, \texttt{frequence(10000)} sera proche de
+\res{$0{,}04$}.}{$4\,\%$ des livres ont un défaut}
+\cas{c)}
+\explique{$\dfrac{1}{\sqrt{10\,000}}=\dfrac{1}{100}=0{,}01$ : dans environ $95\,\%$ des cas,
+la fréquence est entre $0{,}04-0{,}01$ et $0{,}04+0{,}01$, soit \res{entre $0{,}03$ et
+$0{,}05$}.}{propriété 8 ; $\sqrt{10\,000}=100$}
+\end{exo}
+
+\begin{exo}[Estimer une probabilité]
+\cas{a)}
+\explique{$f=\dfrac{1\,550}{2\,500}=\res{0{,}62}$.}{nombre de « tête » divisé par le nombre
+de lancers}
+\cas{b)}
+\explique{$\dfrac{1}{\sqrt{2\,500}}=\dfrac{1}{50}=\res{0{,}02}$.}{$50\times 50=2\,500$}
+\explique{Dans environ $95\,\%$ des cas, l'écart entre $f$ et $p$ est inférieur à $0{,}02$ :
+$p$ est vraisemblablement \res{entre $0{,}60$ et $0{,}64$}.}{$0{,}62-0{,}02$ et
+$0{,}62+0{,}02$}
+\cas{c)}
+\explique{Il faut $\dfrac{1}{\sqrt{n}}=0{,}01$, soit $\sqrt{n}=100$, donc
+$n=\res{10\,000}$ lancers.}{diviser l'erreur par $2$ demande $4$ fois plus de lancers}
+\end{exo}
+
+\end{document}
