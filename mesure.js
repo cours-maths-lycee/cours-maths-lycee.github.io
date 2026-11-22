@@ -19,6 +19,9 @@
    - DS blanc commencé : page ; bilan Se tester : page, questions (réussies/total),
      acquises, travail (méthodes à retravailler) ; retravailler : page, methode, lien
      (envoyés par se-tester.js)
+   - série commencée : page, questions, chrono, parties ; série finie : page, score,
+     questions, chrono, parties, temps (fini, écoulé) ; cartes revues : page, cartes ;
+     retravailler : page, lien (envoyés par cartes.js, page « Cartes flash »)
    - diaporama : page, progression (25, 50, 75, 100 %)
    - merci : page ; suggestion envoyée : niveau (envoyé par suggestions.js)
    - mode présentateur : page, type (cours, exercices), largeur, corrige ;
