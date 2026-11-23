@@ -12,7 +12,7 @@
 
    Événements (nom : données)
    - pdf, tex : fichier (lien ouvert depuis le site) ; anki : fichier (paquet de cartes
-     flash téléchargé : page du chapitre, du niveau, des cartes)
+     flash téléchargé, .apkg ou .txt : page du chapitre, du niveau, des cartes)
    - ouverture AVJ, ouverture corrigé, ouverture fiche, ouverture réponses,
      ouverture IA : page, ancre (methode-N, exercice-N), exo (identifiant)
    - exercice fait : page, ancre, exo (bouton marteau)
@@ -80,7 +80,7 @@
       track(/\.tex$/i.test(nom) ? 'tex' : 'pdf', {fichier: nom.split('/').pop()});
       return;
     }
-    if (a && /-anki\.txt(#|$)/i.test(a.getAttribute('href'))) {
+    if (a && /-anki\.(apkg|txt)(#|$)/i.test(a.getAttribute('href'))) {
       track('anki', {fichier: a.getAttribute('href').split('#')[0].split('/').pop()});
       return;
     }
