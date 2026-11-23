@@ -34,10 +34,19 @@
    les cartes ratées » (sans note, jusqu'à « Compris »), progression.
    Lien direct : cartes.html#partie=4 (une partie), #jusqua=4 (parties I à IV).
    Série en classe (QR code du tableau de bord, page cartes-flash.html) :
-   cartes.html#serie=K7FQ&parties=1,2,3&n=5&t=1 : réglages imposés par le professeur ;
-   début et fin de la série envoyés au serveur (compteurs_google.gs, onglet « Séries en
-   classe ») avec le code de l'élève (mode élève) ou, sinon, un jeton anonyme tiré par le
-   navigateur (le tableau de bord affiche alors « Élève 1 », « Élève 2 »…).
+   cartes.html#serie=K7FQ&parties=1,2,3&n=5&t=1&cartes=c004,c017,… : réglages imposés par
+   le professeur et cartes tirées par son tableau de bord, dans l'ordre (fin de leur
+   identifiant) : la même série pour toute la classe, sans le tirage adaptatif ; sans
+   « cartes » (ancien lien), tirage ordinaire. Début et fin de la série envoyés au serveur
+   (compteurs_google.gs, onglet « Séries en classe ») avec le code de l'élève (mode élève)
+   ou, sinon, un jeton anonyme tiré par le navigateur (le tableau de bord affiche alors
+   « Élève 1 », « Élève 2 »…), et à la fin les réponses carte par carte (« 1 », « 0 »,
+   « - » si le temps a manqué), pour le débriefing en classe.
+   Statistiques (onglet « Réponses aux cartes », scripts/stats_cartes.py) : à la fin de
+   chaque série, seul ou en classe, une ligne par carte répondue : carte, genre, niveau,
+   rang, niveau visé par le tirage, juste, secondes avant « Voir la réponse » ; avec le
+   code de l'élève en mode élève, sans aucun identifiant pour un visiteur (jeton tiré
+   pour la série seulement).
    Mode élève (eleve.js) : chaque séance part dans l'onglet « Cartes flash » du professeur.
    Mesure anonyme (mesure.js) : série commencée, série finie, cartes revues. */
 (function () {
@@ -57,6 +66,8 @@
   document.querySelectorAll('#fc-noms-parties span').forEach(function (s) {
     PARTIES[s.dataset.p] = {page: s.dataset.page, titre: s.dataset.titre};
   });
+  var PAR_SUFFIXE = {};   // fin de l'identifiant (après le dernier tiret) -> carte
+  CARTES.forEach(function (c) { PAR_SUFFIXE[c.id.slice(c.id.lastIndexOf('-') + 1)] = c; });
   var GENRES = {cours: 'Cours', methode: 'Méthode', exo: 'Exercice'};
   var ROMAINS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII',
                  'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
@@ -106,7 +117,7 @@
     if (!api || !CLASSE) return Promise.resolve({ok: false, erreur: 'réseau'});
     var p = identite();
     p.action = 'classe'; p.serie = CLASSE.code; p.etat = etat;
-    if (d) { p.questions = d.questions; p.justes = d.justes; }
+    if (d) { p.questions = d.questions; p.justes = d.justes; if (d.reponses) p.reponses = d.reponses; }
     return fetch(api, {method: 'POST', body: new URLSearchParams(p)})
       .then(function (r) { return r.json(); })
       .catch(function () { return {ok: false, erreur: 'réseau'}; });
@@ -118,7 +129,8 @@
       if (bloc) bloc.hidden = actif;
     });
     if (actif) $('classe').innerHTML = '<h2>Série en classe</h2><p>Code <strong>' + CLASSE.code + '</strong> : ' +
-      pluriel(CLASSE.n, 'question') + (CLASSE.t ? ', temps limité' : '') + ', parties choisies par ton professeur. ' +
+      pluriel(CLASSE.cartes ? CLASSE.cartes.length : CLASSE.n, 'question') + (CLASSE.t ? ', temps limité' : '') +
+      (CLASSE.cartes ? ', les mêmes pour toute la classe. ' : ', parties choisies par ton professeur. ') +
       'Ton résultat lui sera envoyé à la fin.</p>';
   }
   function lireAdresse() {
@@ -127,7 +139,9 @@
       var q = new URLSearchParams(h), code = (q.get('serie') || '').toUpperCase();
       var l = (q.get('parties') || '').split(',').map(Number).filter(function (x) { return x > 0; });
       if (/^[A-Z0-9]{4}$/.test(code) && l.length) {
-        CLASSE = {code: code, n: q.get('n') === '10' ? 10 : 5, t: q.get('t') === '1' ? 1 : 0};
+        var liste = (q.get('cartes') || '').split(',').filter(function (x) { return /^[a-z0-9]{1,12}$/.test(x); });
+        CLASSE = {code: code, n: q.get('n') === '10' ? 10 : 5, t: q.get('t') === '1' ? 1 : 0,
+                  cartes: liste.length ? liste : null};
         cocher(function (p) { return l.indexOf(p) >= 0; });
         poserChoix('n', CLASSE.n); poserChoix('t', CLASSE.t);
         modeClasse(true);
@@ -214,15 +228,31 @@
       var st = etatCarte(id);
       return c && c.g === 'cours' && st && st.r > 0;
     }).slice(0, Math.floor(n / 2));
+    var liste = null;   // série en classe : les cartes du professeur, dans l'ordre (k : rang dans sa liste)
+    if (CLASSE && CLASSE.cartes) {
+      liste = [];
+      CLASSE.cartes.forEach(function (x, k) { if (PAR_SUFFIXE[x]) liste.push({c: PAR_SUFFIXE[x], k: k}); });
+      if (liste.length) { n = liste.length; prioritaires = []; } else liste = null;
+    }
     S = {pool: pool, n: n, i: 0, vues: [], ratees: [], parties: parties, chrono: chrono, debut: Date.now(),
          fin: chrono ? Date.now() + n * 60000 : 0, decal: decalage(), adj: 0, suite: 0, quotas: quotas(n, seancesPage().length), neuves: 0,
-         prio: prioritaires, utilisees: {}, parPartie: {}, revoir: null};
+         prio: prioritaires, utilisees: {}, parPartie: {}, revoir: null, liste: liste, vise: 0,
+         jeton: jetonSerie()};
+    if (liste) S.reponses = CLASSE.cartes.map(function () { return '-'; });
     mesurer('série commencée', {questions: n, chrono: chrono ? 'oui' : 'non', parties: texteParties(parties),
                                 classe: CLASSE ? 'oui' : 'non'});
-    if (CLASSE) { S.classe = true; envoyerClasse('debut'); }
+    if (CLASSE) {
+      S.classe = true;
+      envoyerClasse('debut').then(function (j) { if (!j.ok && j.erreur === 'série terminée') S.classeTerminee = true; });
+    }
     montrer('seance');
     if (chrono) { majTemps(); tic = setInterval(majTemps, 500); } else $('temps').textContent = '';
     suivante();
+  }
+  function jetonSerie() {
+    var j = '';
+    for (var k = 0; k < 12; k++) j += 'abcdefghijkmnpqrstuvwxyz23456789'.charAt(Math.floor(Math.random() * 32));
+    return j;
   }
   function texteParties(l) {
     var toutes = Array.prototype.map.call(cases, function (li) { return +li.dataset.p; });
@@ -253,6 +283,8 @@
   }
   function tirer() {
     var maintenant = Date.now();
+    if (S.liste) { S.vise = 0; return S.liste[S.i] ? S.liste[S.i].c : null; }
+    S.vise = Math.max(1, Math.min(4, profil(S.i, S.n) + S.decal + S.adj));
     while (S.prio.length) {
       var id = S.prio.shift();
       var c = S.pool.filter(function (x) { return x.id === id && !S.utilisees[x.id]; })[0];
@@ -274,6 +306,7 @@
     $('reponse').hidden = true; $('voir').hidden = false;
     $('bas').hidden = true; $('bas-revoir').hidden = true;
     $('voir').focus();
+    if (S) { S.affiche = Date.now(); S.secondes = -1; }
   }
   function suivante() {
     if (S.i >= S.n) return finir(false);
@@ -285,6 +318,7 @@
     afficher(c, R.dataset.fil + ' / Question ' + (S.i + 1) + '/' + S.n);
   }
   $('voir').onclick = function () {
+    if (S && S.secondes < 0) S.secondes = Math.min(3600, Math.round((Date.now() - S.affiche) / 1000));
     $('reponse').hidden = false; $('voir').hidden = true;
     if (S && S.revoir) $('bas-revoir').hidden = false; else $('bas').hidden = false;
   };
@@ -298,7 +332,8 @@
       st.k = 0; S.ratees.push(c);
     }
     suivi.c[c.id] = st; garder();
-    S.vues.push({c: c, juste: juste});
+    S.vues.push({c: c, juste: juste, rang: S.i + 1, vise: S.vise, secondes: Math.max(0, S.secondes)});
+    if (S.liste) S.reponses[S.liste[S.i].k] = juste ? '1' : '0';
     if (juste) { if (++S.suite >= 2) { S.adj = Math.min(1, S.adj + 1); S.suite = 0; } }
     else { S.adj = Math.max(-1, S.adj - 1); S.suite = 0; }
     S.i++;
@@ -370,9 +405,14 @@
     mesurer('série finie', {score: ok + '/' + v, questions: S.n, chrono: S.chrono ? 'oui' : 'non',
                              parties: seance.parties, temps: tempsEcoule ? 'écoulé' : 'fini'});
     enregistrer(seance);
-    if (S.classe) {
+    envoyerReponses();
+    if (S.classe && S.classeTerminee) {
+      $('envoi-classe').hidden = false;
+      $('envoi-classe').textContent = 'La série de ton professeur était déjà terminée : ton résultat ne lui a pas été envoyé.';
+      CLASSE = null; modeClasse(false);
+    } else if (S.classe) {
       $('envoi-classe').hidden = false; $('envoi-classe').textContent = 'Envoi du résultat à ton professeur…';
-      envoyerClasse('fin', {questions: v, justes: ok}).then(function (j) {
+      envoyerClasse('fin', {questions: v, justes: ok, reponses: S.reponses ? S.reponses.join('') : ''}).then(function (j) {
         $('envoi-classe').textContent = j.ok ? 'Résultat envoyé à ton professeur.'
           : 'Le résultat n’a pas pu être envoyé' + (j.erreur === 'réseau' ? ' (pas de connexion)' : ' : ' + j.erreur) + '.';
       });
@@ -435,6 +475,19 @@
     txt += '<p>' + pluriel(vues, 'carte') + ' du chapitre ' + (vues > 1 ? 'déjà vues' : 'déjà vue') + ' sur ' +
       CARTES.length + '.</p>';
     z.innerHTML = txt;
+  }
+
+  // ---------- statistiques : une ligne par carte répondue (onglet « Réponses aux cartes ») ----------
+  function envoyerReponses() {
+    var api = (window.FDM_ELEVE_CONFIG || {}).api;
+    if (!api || !S.vues.length) return;
+    var p = {action: 'reponses', page: PAGE, jeton: S.jeton, classe: S.classe && CLASSE ? CLASSE.code : ''};
+    try { var e = JSON.parse(localStorage.getItem('fdm-eleve:v1')); if (e && e.code) p.eleve = e.code; } catch (x) {}
+    // jamais le jeton anonyme du navigateur : un visiteur n'a aucun identifiant ici
+    p.lignes = JSON.stringify(S.vues.map(function (x) {
+      return [x.c.id, x.c.g, x.c.n, x.rang, x.vise, x.juste ? 1 : 0, x.secondes];
+    }));
+    fetch(api, {method: 'POST', body: new URLSearchParams(p)}).catch(function () {});
   }
 
   // ---------- mode élève : séance enregistrée pour le professeur ----------

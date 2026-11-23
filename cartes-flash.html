@@ -320,8 +320,36 @@ ul.historique li>a:hover{color:var(--accent)}
 .cf-noms li{padding:.3rem .8rem;border-radius:999px;border:1px solid var(--trait);color:var(--doux);font-size:1.1rem}
 .cf-noms li.fini{background:var(--meth);border-color:var(--meth);color:var(--fond);font-weight:bold}
 .cf-attente{color:var(--doux);font-size:1.15rem}
+.cf-apercu-bloc summary{cursor:pointer;color:var(--accent);margin:.2rem 0 .4rem}
+.cf-apercu{padding-left:1.6rem;margin:.3rem 0 .6rem}
+.cf-apercu li{margin:.45rem 0}
+.cf-etiquette{display:inline-block;font-size:.8rem;color:var(--doux);border:1px solid var(--trait);border-radius:999px;
+  padding:0 .55rem;margin-bottom:.2rem}
+#cf-enonces{margin-top:1.2rem;border-top:1px solid var(--trait);padding-top:.6rem}
+.cf-enonces{padding-left:1.8rem;margin:.4rem 0;font-size:1.15rem}
+.cf-enonces li{margin:.5rem 0}
+.cf-debrief{list-style:none;padding:0;margin:.8rem 0}
+.cf-q{background:var(--carte);border:1px solid var(--trait);border-left:7px solid var(--trait);border-radius:8px;
+  padding:.8rem 1.1rem;margin:0 0 1rem;font-size:1.2rem}
+.cf-q.bas{border-left-color:#c0392b}.cf-q.moyen{border-left-color:#d68910}.cf-q.haut{border-left-color:#239b56}
+.cf-q-tete{display:flex;flex-wrap:wrap;gap:.3rem 1rem;align-items:baseline}
+.cf-q-num{font-weight:bold;color:var(--accent)}
+.cf-q-taux{font:bold 1.6rem/1.1 system-ui,sans-serif}
+.cf-q.bas .cf-q-taux{color:#c0392b}.cf-q.moyen .cf-q-taux{color:#d68910}.cf-q.haut .cf-q-taux{color:#239b56}
+.cf-barre{height:6px;border-radius:3px;background:var(--trait);margin:.4rem 0 .7rem;overflow:hidden}
+.cf-barre span{display:block;height:100%;background:var(--doux)}
+.cf-q.bas .cf-barre span{background:#c0392b}.cf-q.moyen .cf-barre span{background:#d68910}.cf-q.haut .cf-barre span{background:#239b56}
+.cf-q-texte{margin:.3rem 0 .7rem;overflow-x:auto}
+.cf-q-rep{margin-top:.7rem;padding:.6rem .9rem;border-radius:6px;background:var(--fond);border:1px dashed var(--trait);overflow-x:auto}
 .cf [hidden]{display:none!important}
+
+.fc-fig{display:block;text-align:center;margin:.5rem 0 .2rem}
+img.fig{max-width:100%;height:auto;vertical-align:middle;background:#fff;border-radius:4px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) img.fig{background:transparent;
+  filter:invert(.92) hue-rotate(180deg)}}
+:root[data-theme="dark"] img.fig{background:transparent;filter:invert(.92) hue-rotate(180deg)}
 </style>
+<link rel="stylesheet" href="katex/katex.min.css" media="print" onload="this.media='all'">
 <link rel="canonical" href="https://faire-des-maths.fr/cartes-flash.html">
 </head>
 <body>
@@ -358,7 +386,9 @@ c'est l'un des résultats les plus solides des recherches sur l'apprentissage.</
 <div id="cf-preparer">
 <h2>Série en classe</h2>
 <p>En début d'heure, 5 minutes : les élèves scannent le QR code projeté et font la même série sur
-leur téléphone. Vous voyez qui a terminé et la réussite de la classe, sans score individuel à l'écran.</p>
+leur téléphone. Vous voyez qui a terminé et la réussite de la classe, sans score individuel à l'écran.
+À la fin, « Terminer la série » affiche chaque question avec son pourcentage de réussite, réponse
+repliée, pour la reprendre avec la classe.</p>
 <div class="cf-bloc"><h3>Chapitre</h3>
 <select id="cf-chapitre" aria-label="Chapitre"><option value="0">1ère spécialité — Dérivation</option></select>
 <h3 style="margin-top:.9rem">Parties</h3>
@@ -373,7 +403,13 @@ leur téléphone. Vous voyez qui a terminé et la réussite de la classe, sans s
 <label><input type="radio" name="cf-t" value="1" checked><span>Temps limité</span></label>
 <label><input type="radio" name="cf-t" value="0"><span>Sans limite de temps</span></label></div>
 <p class="cf-doux">Temps limité : 1 minute par question, soit 5 minutes pour 5 questions.</p>
-<div class="cf-ligne"><button type="button" class="cf-bouton" id="cf-lancer">Lancer la série</button>
+<h3 style="margin-top:.9rem">Questions de la série</h3>
+<p class="cf-doux">Les mêmes pour toute la classe, des plus simples aux plus difficiles.</p>
+<details class="cf-apercu-bloc"><summary>Voir les questions tirées (sans les réponses)</summary>
+<ol class="cf-apercu" id="cf-apercu"></ol></details>
+<div class="cf-ligne"><button type="button" class="cf-bouton second" id="cf-retirer">Autre tirage</button>
+<span class="cf-doux" id="cf-apercu-msg" aria-live="polite"></span></div>
+<div class="cf-ligne" style="margin-top:.9rem"><button type="button" class="cf-bouton" id="cf-lancer">Lancer la série</button>
 <span class="cf-doux" id="cf-lancer-msg" aria-live="polite"></span></div></div>
 <div class="cf-bloc"><h3>Prénoms des élèves (facultatif)</h3>
 <p class="cf-doux">Les élèves qui ont ouvert leur lien personnel du site sont reconnus par leur code. Pour
@@ -387,14 +423,28 @@ le fichier</button></div>
 
 <div id="cf-tableau" hidden>
 <div class="cf-entete"><h2 id="cf-titre"></h2>
-<div class="cf-ligne"><button type="button" class="cf-bouton second" id="cf-qr-cacher">Masquer le QR code</button>
+<div class="cf-ligne"><button type="button" class="cf-bouton second" id="cf-terminer">Terminer la série</button>
+<button type="button" class="cf-bouton second" id="cf-qr-cacher">Masquer le QR code</button>
+<button type="button" class="cf-bouton second" id="cf-enonces-cacher">Masquer les questions</button>
 <button type="button" class="cf-bouton second" id="cf-plein">Plein écran</button>
 <button type="button" class="cf-bouton second" id="cf-nouvelle">Nouvelle série</button></div></div>
 <p class="cf-doux" id="cf-reglages"></p>
-<div class="cf-grille"><div id="cf-acces"><div id="cf-qr"></div>
+<div class="cf-grille" id="cf-suivi"><div id="cf-acces"><div id="cf-qr"></div>
 <p class="cf-code-grand" id="cf-code-grand"></p>
 <p class="cf-doux">ou sur <strong id="cf-adresse"></strong>, onglet Élève, avec ce code</p></div>
-<div><div id="cf-vue"></div><p class="cf-doux" id="cf-etat" aria-live="polite"></p></div></div>
+<div><div id="cf-vue"></div><p class="cf-doux" id="cf-etat" aria-live="polite"></p>
+<div id="cf-enonces"><h3>Les questions, sans téléphone</h3>
+<p class="cf-doux">À faire sur une feuille, en même temps que les autres (résultat non enregistré).</p>
+<ol class="cf-enonces" id="cf-enonces-liste"></ol></div></div></div>
+<div id="cf-debrief" hidden>
+<div class="cf-compteurs" id="cf-debrief-resume"></div>
+<div class="cf-ligne" style="margin-top:.6rem"><div class="cf-choix" role="radiogroup" aria-label="Ordre des questions">
+<label><input type="radio" name="cf-ordre" value="serie" checked><span>Ordre de la série</span></label>
+<label><input type="radio" name="cf-ordre" value="taux"><span>Les moins réussies d'abord</span></label></div>
+<button type="button" class="cf-bouton second" id="cf-actualiser">Actualiser</button></div>
+<p class="cf-doux" id="cf-debrief-msg" aria-live="polite"></p>
+<ol class="cf-debrief" id="cf-questions"></ol>
+</div>
 </div>
 </section>
 <script type="application/json" id="cf-donnees">{"chapitres": [{"page": "1ere-spe/derivation", "niveau": "1ère spécialité", "titre": "Dérivation", "parties": [[1, "Limite en zéro d'une fonction"], [2, "Nombre dérivé"], [3, "Tangente à une courbe"], [4, "Approximation linéaire"], [5, "Dérivées des fonctions polynômes"], [6, "Dérivées des autres fonctions de référence"], [7, "Dérivée d'une somme et d'un produit"], [8, "Dérivée d'un inverse et d'un quotient"], [9, "Dérivée des fonctions composées"], [10, "Étude des variations d'une fonction"], [11, "Extremums d'une fonction"], [12, "Étude complète d'une fonction"], [13, "Problèmes concrets"]]}]}</script>
