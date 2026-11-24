@@ -1,20 +1,21 @@
 /* Page « Cartes flash » du site (cartes-flash.html, scripts/site_cartes.py) : choix élève /
    enseignant.
    Élève : chapitres qui ont des cartes (liens vers leur page cartes.html) ; code d'une série
-   en classe, tapé à la main si le QR code ne passe pas (?serie=CODE au serveur : réglages,
-   puis cartes.html#serie=…).
+   en classe, projeté au tableau et tapé à la main (?serie=CODE au serveur : réglages, puis
+   cartes.html#serie=…). Pas de QR code de série : il ouvrait un nouvel onglet où l'élève
+   n'était plus reconnu (lien personnel ouvert dans un autre onglet, essai en classe).
    Enseignant (tableau de bord à projeter) : le professeur choisit chapitre, parties, nombre
    de questions et temps ; le tableau de bord tire la série (cartes lues dans la page
    cartes.html du chapitre), la même pour toute la classe : genres par tiers, niveaux
    progressifs (profil de cartes.js), parties mélangées, une part de hasard ; aperçu des
    questions replié, « Autre tirage ». Le serveur (compteurs_google.gs, action=ouvrir) rend
    un code public et un secret, gardé dans ce navigateur, qui seul permet de lire les
-   résultats (?serie=CODE&secret=…, toutes les 4 secondes). Affichage : QR code (qrcode.js,
-   licence MIT ; le lien porte la liste des cartes) et code ; élèves qui ont commencé, qui
-   ont terminé ; moyenne de la classe (pas de score individuel à l'écran) ; les questions
-   de la série, sans les réponses, pour un élève sans téléphone (« Masquer les questions »,
-   choix gardé dans ce navigateur).
-   « Terminer la série » (deux clics ; action=fermer : plus de nouvel élève, les résultats
+   résultats (?serie=CODE&secret=…, toutes les 4 secondes). Affichage, pensé pour
+   tenir sur l'écran projeté : à gauche le code, élèves qui ont commencé, qui ont terminé
+   (étiquettes compactes) et moyenne de la classe (pas de score individuel à l'écran) ; à
+   droite les questions de la série, sans les réponses, pour un élève sans téléphone
+   (« Masquer les questions », choix gardé dans ce navigateur).
+   « Terminer la série » (un clic, bouton principal, en vue aussi en plein écran ; action=fermer : plus de nouvel élève, les résultats
    en cours arrivent encore) : débriefing à projeter, chaque question avec son pourcentage
    de réussite, dans l'ordre de la série ou les moins réussies d'abord, réponse repliée
    (« Voir la réponse ») ; « Actualiser » pour les derniers résultats. Prénoms : fichier tableau-de-bord.json (python scripts/eleves.py
@@ -193,11 +194,6 @@
 
   // ---------- enseignant : série en cours ----------
   var SERIE = lire('fdm-cartes-flash:serie'), tic = null;
-  function lien(s) {
-    return new URL(s.page + '/cartes.html', location.href).href.split('#')[0] +
-      '#serie=' + s.code + '&parties=' + s.parties + '&n=' + s.n + '&t=' + s.t +
-      (s.cartes ? '&cartes=' + s.cartes.join(',') : '');
-  }
   $('lancer').onclick = function () {
     var c = chapitre(), msg = $('lancer-msg');
     var parties = partiesCochees();
@@ -233,7 +229,6 @@
     $('preparer').hidden = actif;
     $('tableau').hidden = !actif;
     arreter();
-    terminerArme(false);
     if (!actif) { majApercu(); return; }
     var parties = SERIE.parties.split(',').map(function (p) { return ROMAINS[+p]; }).join(', ');
     $('titre').textContent = SERIE.niveau + ' — ' + SERIE.titre;
@@ -241,12 +236,8 @@
       (SERIE.t ? 'temps limité (' + SERIE.n + ' min)' : 'sans limite de temps') + '.';
     $('code-grand').textContent = SERIE.code;
     $('adresse').textContent = location.host + location.pathname.replace(/[^/]*$/, '') + 'cartes-flash.html';
-    var qr = window.qrcode(0, 'M');
-    qr.addData(lien(SERIE));
-    qr.make();
-    $('qr').innerHTML = qr.createSvgTag({cellSize: 6, margin: 24, scalable: true, alt: 'QR code de la série ' + SERIE.code});
     $('suivi').hidden = !!SERIE.ferme; $('debrief').hidden = !SERIE.ferme;
-    $('terminer').hidden = !!SERIE.ferme; $('qr-cacher').hidden = !!SERIE.ferme;
+    $('terminer').hidden = !!SERIE.ferme;
     $('enonces-cacher').hidden = !!SERIE.ferme;
     if (SERIE.ferme) { debriefer(); return; }
     enonces();
@@ -257,18 +248,9 @@
   function arreter() { if (tic) { clearInterval(tic); tic = null; } }
   $('nouvelle').onclick = function () { SERIE = null; ecrire('fdm-cartes-flash:serie', null); afficherSerie(); };
 
-  // ---------- terminer la série (deux clics, sans fenêtre de confirmation) ----------
-  var arme = null;
-  function terminerArme(oui) {
-    if (arme) { clearTimeout(arme); arme = null; }
-    $('terminer').textContent = oui ? 'Confirmer : terminer la série' : 'Terminer la série';
-    $('terminer').classList.toggle('second', !oui);
-    if (oui) arme = setTimeout(function () { terminerArme(false); }, 5000);
-  }
+  // ---------- terminer la série (un clic, sans confirmation) ----------
   $('terminer').onclick = function () {
     if (!SERIE) return;
-    if (!arme) { terminerArme(true); return; }
-    terminerArme(false);
     $('etat').textContent = 'Fermeture de la série…';
     fetch(API, {method: 'POST', body: new URLSearchParams({action: 'fermer', serie: SERIE.code, secret: SERIE.secret})})
       .then(function (r) { return r.json(); }).then(function (j) {
@@ -348,15 +330,11 @@
   };
   R.querySelectorAll('input[name="cf-ordre"]').forEach(function (x) { x.onchange = function () { if (SERIE) debriefer(); }; });
   $('actualiser').onclick = function () { if (SERIE) debriefer(); };
-  $('qr-cacher').onclick = function () {
-    var z = $('acces'), cache = !z.hidden;
-    z.hidden = cache;
-    this.textContent = cache ? 'Montrer le QR code' : 'Masquer le QR code';
-  };
-  // questions de la série à côté du QR code, sans les réponses : pour un élève sans téléphone
+  // questions de la série à côté du code, sans les réponses : pour un élève sans téléphone
   function enonces() {
     var z = $('enonces-liste');
     $('enonces').hidden = !SERIE.cartes || !!lire('fdm-cartes-flash:sans-enonces');
+    $('suivi').classList.toggle('seul', $('enonces').hidden);
     $('enonces-cacher').hidden = !SERIE.cartes;
     $('enonces-cacher').textContent = $('enonces').hidden ? 'Montrer les questions' : 'Masquer les questions';
     z.innerHTML = '';
@@ -374,6 +352,7 @@
   $('enonces-cacher').onclick = function () {
     var cache = !$('enonces').hidden;
     $('enonces').hidden = cache;
+    $('suivi').classList.toggle('seul', cache);
     ecrire('fdm-cartes-flash:sans-enonces', cache ? 1 : null);
     this.textContent = cache ? 'Montrer les questions' : 'Masquer les questions';
   };
@@ -382,6 +361,9 @@
     if (document.fullscreenElement) document.exitFullscreen();
     else if (z.requestFullscreen) z.requestFullscreen();
   };
+  document.addEventListener('fullscreenchange', function () {
+    $('plein').textContent = document.fullscreenElement ? 'Quitter le plein écran' : 'Plein écran';
+  });
 
   // noms : prénom (avec l'initiale du nom si deux prénoms identiques dans le fichier)
   function nomEleve(code) {

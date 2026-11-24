@@ -33,7 +33,7 @@
    Fin de séance : score, cartes ratées (liens vers la méthode et les exercices), « Revoir
    les cartes ratées » (sans note, jusqu'à « Compris »), progression.
    Lien direct : cartes.html#partie=4 (une partie), #jusqua=4 (parties I à IV).
-   Série en classe (QR code du tableau de bord, page cartes-flash.html) :
+   Série en classe (code projeté par le tableau de bord, tapé sur cartes-flash.html) :
    cartes.html#serie=K7FQ&parties=1,2,3&n=5&t=1&cartes=c004,c017,… : réglages imposés par
    le professeur et cartes tirées par son tableau de bord, dans l'ordre (fin de leur
    identifiant) : la même série pour toute la classe, sans le tirage adaptatif ; sans
