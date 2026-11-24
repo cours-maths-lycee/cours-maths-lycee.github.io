@@ -1,0 +1,1093 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Suites et récurrence}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Suites arithmétiques et géométriques (rappels de 1\textsuperscript{re})}
+
+\exo[Reconnaître une suite arithmétique]
+Pour chacune des suites $(a_{n})$ à $(d_{n})$ ci-dessous, dire si elle est arithmétique ;
+si oui, donner son premier terme et sa raison.
+\begin{enumerate}[label=\alph*)]
+  \item $(a_{n})$ définie pour tout $n\in\N$ par $a_{n}=5n-4$.
+  \item $(b_{n})$ définie pour tout $n\in\N$ par $b_{n}=n^{2}+2$.
+  \item $(c_{n})$ définie par $c_{0}=3$ et, pour tout $n\in\N$, $c_{n+1}=2c_{n}-1$.
+  \item $(d_{n})$ définie pour tout $n\in\N$ par $d_{n}=(n+3)^{2}-n^{2}$.
+\end{enumerate}
+
+\exo[Reconnaître une suite géométrique]
+Pour chacune des suites $(a_{n})$ à $(d_{n})$ ci-dessous, dire si elle est géométrique ;
+si oui, donner son premier terme et sa raison.
+\begin{enumerate}[label=\alph*)]
+  \item $(a_{n})$ définie pour tout $n\in\N$ par $a_{n}=6^{n}$.
+  \item $(b_{n})$ définie pour tout $n\in\N$ par $b_{n}=n^{3}$.
+  \item $(c_{n})$ définie pour tout $n\in\N$ par $c_{n}=-3\times 2^{n+2}$.
+  \item $(d_{n})$ définie par $d_{0}=2$ et, pour tout $n\in\N$, $d_{n+1}=2d_{n}+4n$.
+\end{enumerate}
+
+\exo[Deux modèles pour une durée d'écoute]
+En janvier 2026, Inès a écouté $30$~h de musique en ligne, et Noé $16$~h. On suppose
+que, chaque mois, la durée d'écoute d'Inès augmente de $1{,}5$~h et celle de Noé de
+$8\,\%$. Pour tout $n\in\Ns$, on note $a_{n}$ et $b_{n}$ les durées d'écoute, en heure,
+d'Inès et de Noé le $n$-ième mois : $a_{1}=30$ et $b_{1}=16$.
+\begin{enumerate}
+  \item Calculer $a_{2}$, $a_{3}$, $b_{2}$ et $b_{3}$.
+  \item Exprimer $a_{n+1}$ en fonction de $a_{n}$, et $b_{n+1}$ en fonction de $b_{n}$ ;
+        en déduire la nature de chaque suite.
+  \item Exprimer $a_{n}$ et $b_{n}$ en fonction de $n$.
+  \item Selon ce modèle, combien de temps chacun écoutera-t-il de la musique en
+        décembre 2026 ?
+  \item Compléter la fonction Python ci-dessous pour qu'elle renvoie $a_{12}$ et
+        $b_{12}$.
+\begin{python}
+def ecoute():
+    a = ...
+    b = ...
+    for i in range(...):
+        a = ...
+        b = ...
+    return a, b
+\end{python}
+  \item À l'aide de la calculatrice, déterminer le premier mois où Noé écoutera plus de
+        musique qu'Inès.
+\end{enumerate}
+
+\exo[Vrai ou faux : le contre-exemple]
+Pour chaque affirmation, dire si elle est vraie ou fausse, en justifiant. Pour montrer
+qu'une affirmation est fausse, un contre-exemple suffit.
+\begin{enumerate}[label=\alph*)]
+  \item La suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=n^{2}+1$ est
+        arithmétique.
+  \item Si une suite $(v_{n})$ vérifie $v_{1}-v_{0}=v_{2}-v_{1}$, alors elle est
+        arithmétique.
+  \item La somme de deux suites géométriques est une suite géométrique.
+  \item Le produit de deux suites géométriques est une suite géométrique.
+\end{enumerate}
+
+\exo[Une plateforme qui perd des abonnés]
+Une plateforme de vidéos compte $2{,}4$ millions d'abonnés en janvier 2026. Chaque
+année, elle en perd $6\,\%$. Pour tout $n\in\N$, on note $u_{n}$ le nombre d'abonnés,
+en million, en janvier $2026+n$ ; ainsi $u_{0}=2{,}4$.
+\begin{enumerate}
+  \item Calculer $u_{1}$.
+  \item Exprimer $u_{n+1}$ en fonction de $u_{n}$ ; en déduire la nature de la suite
+        $(u_{n})$, puis $u_{n}$ en fonction de $n$.
+  \item Combien la plateforme comptera-t-elle d'abonnés en janvier 2030 ?
+  \item On considère la fonction Python ci-dessous. Que représente la valeur qu'elle
+        renvoie ?
+\begin{python}
+def seuil():
+    n = 0
+    u = 2.4
+    while u >= 1.2:
+        n = n + 1
+        u = 0.94 * u
+    return n
+\end{python}
+  \item À l'aide de la calculatrice, déterminer cette valeur, puis l'année
+        correspondante.
+\end{enumerate}
+
+\partiefiche{Suites auxiliaires}
+
+\exo[Calcul : écrire sous la forme d'un seul quotient]
+Pour chaque expression, $x$ est un nombre réel pour lequel elle est définie. L'écrire
+sous la forme d'un seul quotient.
+\begin{center}
+$A=2+\dfrac{3}{x+1}$ \qquad\qquad $B=4-\dfrac{6}{2-x}$ \\[6pt]
+$C=\dfrac{2}{3}+\dfrac{1}{2x+1}$ \qquad\qquad $D=3+\dfrac{x+2}{x-1}$ \\[6pt]
+$E=\dfrac{3x}{x+2}-\dfrac{4}{x+2}$ \qquad\qquad $F=\dfrac{2}{x-1}-\dfrac{3}{x+2}$
+\end{center}
+
+\exo[Calcul : exprimer $u$ en fonction de $v$]
+Dans chaque cas, $u$ et $v$ sont deux nombres réels pour lesquels les quotients sont
+définis. Exprimer $u$ en fonction de $v$.
+\begin{center}
+a)~$v=\dfrac{u}{u-1}$ \qquad\qquad b)~$v=\dfrac{u+1}{u-3}$ \\[6pt]
+c)~$v=\dfrac{u-2}{u+1}$ \qquad\qquad d)~$v=\dfrac{1}{u+3}$
+\end{center}
+
+\exo[Les abonnés d'une médiathèque]
+En septembre 2026, une médiathèque compte $4\,000$ abonnés. Chaque année, $15\,\%$ des
+abonnés ne renouvellent pas leur abonnement, et $450$ nouveaux abonnés s'inscrivent.
+Pour tout $n\in\N$, on note $u_{n}$ le nombre d'abonnés en septembre $2026+n$ ; ainsi
+$u_{0}=4\,000$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Justifier que, pour tout $n\in\N$, on a $u_{n+1}=0{,}85\,u_{n}+450$.
+  \item Compléter la fonction Python ci-dessous pour qu'elle renvoie $u_{n}$.
+\begin{python}
+def terme(n):
+    u = ...
+    for i in range(...):
+        u = ...
+    return u
+\end{python}
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=u_{n}-3\,000$.
+        Démontrer que $(v_{n})$ est géométrique ; préciser sa raison et son premier
+        terme.
+  \item Exprimer $v_{n}$, puis $u_{n}$, en fonction de $n$.
+  \item Justifier que le nombre d'abonnés restera toujours supérieur à $3\,000$.
+\end{enumerate}
+
+\exo[Une suite auxiliaire qui dépend de $n$]
+Soit la suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$,
+$u_{n+1}=3u_{n}-4n+6$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Écrire une fonction Python \texttt{suite(n)} qui renvoie $u_{n}$.
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=u_{n}-2n+2$.
+        Démontrer que $(v_{n})$ est géométrique de raison $3$.
+  \item En déduire l'expression de $u_{n}$ en fonction de $n$.
+\end{enumerate}
+
+\exo[Une suite auxiliaire géométrique définie par un quotient]
+Soit la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$,
+$u_{n+1}=\dfrac{3u_{n}+2}{u_{n}+2}$. On admet que $u_{n}\geq 0$ pour tout $n\in\N$.
+Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=\dfrac{u_{n}-2}{u_{n}+1}$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$, puis $v_{0}$, $v_{1}$ et $v_{2}$.
+  \item Démontrer que la suite $(v_{n})$ est géométrique ; préciser sa raison.
+  \item Exprimer $v_{n}$ en fonction de $n$.
+  \item Exprimer $u_{n}$ en fonction de $v_{n}$, puis en fonction de $n$.
+\end{enumerate}
+
+\exo[Une suite auxiliaire arithmétique définie par un quotient]
+Soit la suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$,
+$u_{n+1}=\dfrac{u_{n}-1}{u_{n}+3}$. On admet que $u_{n}>-1$ pour tout $n\in\N$.
+Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=\dfrac{1}{u_{n}+1}$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$, puis $v_{0}$, $v_{1}$ et $v_{2}$.
+  \item Démontrer que la suite $(v_{n})$ est arithmétique de raison $\frac{1}{2}$.
+  \item En déduire l'expression de $v_{n}$, puis de $u_{n}$, en fonction de $n$.
+  \item Démontrer que, pour tout $n\in\N$, on a
+        $u_{n+1}-u_{n}=-\dfrac{(u_{n}+1)^{2}}{u_{n}+3}$. En déduire que
+        $u_{n+1}\leq u_{n}$.
+\end{enumerate}
+
+\partiefiche{Suites définies par une fonction}
+
+\exo[Représenter une suite et conjecturer]
+Soit $f$ la fonction définie sur $\R$ par $f(x)=0{,}5x+3$ et la suite $(u_{n})$ définie
+par $u_{0}=0$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{enumerate}
+  \item Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Donner la relation de récurrence de $(u_{n})$.
+  \item Dans un repère orthonormé, tracer la droite d'équation $y=x$ et la courbe de $f$,
+        puis placer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$ sur l'axe des abscisses.
+  \item Conjecturer le sens de variation de $(u_{n})$ et le nombre dont $u_{n}$ se
+        rapproche quand $n$ devient grand.
+  \item Reprendre les questions 3 et 4 avec la suite $(v_{n})$ définie par $v_{0}=10$
+        et, pour tout $n\in\N$, $v_{n+1}=f(v_{n})$.
+\end{enumerate}
+
+\exo[Explicite ou par récurrence]
+Soit $f$ la fonction définie sur $\R$ par $f(x)=x^{2}-4x+5$. Soit la suite $(u_{n})$
+définie pour tout $n\in\N$ par $u_{n}=f(n)$, et la suite $(v_{n})$ définie par
+$v_{0}=1$ et, pour tout $n\in\N$, $v_{n+1}=f(v_{n})$.
+\begin{enumerate}
+  \item Calculer $u_{0}$, $u_{1}$, $u_{2}$, $u_{3}$, puis $u_{10}$.
+  \item Calculer $v_{1}$, $v_{2}$, $v_{3}$ et $v_{4}$.
+  \item Peut-on calculer $v_{10}$ en remplaçant $n$ par $10$ dans une formule ?
+        Déterminer $v_{10}$.
+  \item Soit la suite $(w_{n})$ définie par $w_{0}=3$ et, pour tout $n\in\N$,
+        $w_{n+1}=f(w_{n})$. Calculer $w_{1}$, $w_{2}$ et $w_{3}$ : que remarque-t-on ?
+\end{enumerate}
+
+\exo[Lire une suite sur un graphique]
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=\sqrt{2x+3}$. Sa courbe
+$\Cf$ et la droite d'équation $y=x$ sont tracées ci-dessous.
+\begin{center}
+\begin{tikzpicture}[x=0.75cm,y=0.75cm]
+  \repere{0}{0}{8}{5}
+  \gradx{1,2,3,4,5,6,7,8} \grady{1,2,3,4,5}
+  \draw[coulCourbeB,line width=0.8pt] (0,0)--(5,5) node[right,font=\footnotesize]{$y=x$};
+  \draw[coulCourbe,line width=1.1pt] plot[domain=0:8,samples=80] (\x,{sqrt(2*\x+3)});
+  \node[coulCourbe,font=\footnotesize] at (7.4,4.75) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+Soit les suites $(u_{n})$ et $(v_{n})$ définies par $u_{0}=0$, $v_{0}=6$ et, pour tout
+$n\in\N$, $u_{n+1}=f(u_{n})$ et $v_{n+1}=f(v_{n})$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $v_{1}$ (valeurs exactes, puis arrondies au centième).
+  \item Sur le graphique, placer $u_{0}$, $u_{1}$, $u_{2}$, $u_{3}$, puis $v_{0}$,
+        $v_{1}$, $v_{2}$, $v_{3}$ sur l'axe des abscisses.
+  \item Conjecturer le sens de variation de chaque suite et le nombre dont ses termes se
+        rapprochent.
+  \item Résoudre dans $\intfo{0}{+\infty}$ l'équation $f(x)=x$. Ce résultat
+        est-il cohérent avec la conjecture ?
+\end{enumerate}
+
+\partiefiche{Sens de variation : trois méthodes}
+
+\exo[Étudier le sens de variation]
+Étudier le sens de variation de chacune des suites $(a_{n})$ à $(e_{n})$ ci-dessous.
+\begin{enumerate}[label=\alph*)]
+  \item $(a_{n})$ définie pour tout $n\in\N$ par $a_{n}=2n^{2}-9n+1$.
+  \item $(b_{n})$ définie pour tout $n\in\Ns$ par $b_{n}=\dfrac{2^{n}}{n}$.
+  \item $(c_{n})$ définie pour tout $n\in\N$ par $c_{n}=n^{4}+3n^{2}$.
+  \item $(d_{n})$ définie pour tout $n\in\N$ par $d_{n}=7-\dfrac{4}{n+1}$.
+  \item $(e_{n})$ définie pour tout $n\in\N$ par $e_{n}=5\times 0{,}6^{n}$.
+\end{enumerate}
+
+\exo[Une suite définie par un quotient]
+Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=\dfrac{2n+1}{n+3}$.
+\begin{enumerate}
+  \item Calculer $u_{0}$, $u_{1}$ et $u_{2}$.
+  \item Démontrer que, pour tout $n\in\N$, on a
+        $u_{n+1}-u_{n}=\dfrac{5}{(n+3)(n+4)}$.
+  \item En déduire le sens de variation de $(u_{n})$.
+  \item Vérifier que, pour tout $n\in\N$, on a $u_{n}=2-\dfrac{5}{n+3}$. En déduire que
+        $u_{n}<2$.
+  \item Retrouver le sens de variation de $(u_{n})$ avec la fonction $g$ définie sur
+        $\intfo{0}{+\infty}$ par $g(x)=2-\dfrac{5}{x+3}$.
+\end{enumerate}
+
+\exo[Décroissante à partir d'un rang]
+Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=n\times 0{,}9^{n}$.
+\begin{enumerate}
+  \item À l'aide de la calculatrice, donner les valeurs arrondies au millième de
+        $u_{0}$ à $u_{12}$. Quel semble être le sens de variation de $(u_{n})$ ?
+  \item Démontrer que, pour tout $n\in\Ns$, on a
+        $\dfrac{u_{n+1}}{u_{n}}=\dfrac{0{,}9\,(n+1)}{n}$.
+  \item Résoudre dans $\Ns$ l'inéquation $\dfrac{0{,}9\,(n+1)}{n}\leq 1$.
+  \item En déduire le sens de variation de $(u_{n})$, puis la plus grande valeur prise
+        par $u_{n}$.
+\end{enumerate}
+
+\exo[Suites récurrentes : la méthode de la différence]
+Étudier le sens de variation de chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$
+ci-dessous.
+\begin{enumerate}[label=\alph*)]
+  \item $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$,
+        $u_{n+1}=u_{n}+n^{2}-5n+6$ (on pourra factoriser $n^{2}-5n+6$).
+  \item $(v_{n})$ définie par $v_{0}=1$ et, pour tout $n\in\N$,
+        $v_{n+1}=v_{n}-\dfrac{2}{v_{n}^{2}+1}$.
+  \item $(w_{n})$ définie par $w_{0}=2$ et, pour tout $n\in\N$,
+        $w_{n+1}=w_{n}^{2}-w_{n}+1$.
+\end{enumerate}
+
+\partiefiche{Le raisonnement par récurrence}
+
+\exo[Comprendre une propriété $P_{n}$]
+Soit la suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$,
+$u_{n+1}=3u_{n}+2$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Compléter la fonction Python ci-dessous pour que \texttt{suite(n)} renvoie
+        $u_{n}$.
+\begin{python}
+def suite(n):
+    u = ...
+    for i in range(...):
+        u = ...
+    return u
+\end{python}
+  \item Pour tout $n\in\N$, on note $P_{n}$ la propriété «~$u_{n}\geq 1$~», $Q_{n}$ la
+        propriété «~$u_{n}=4n+1$~», $R_{n}$ la propriété «~$u_{n}=2\times 3^{n}-1$~»
+        et $S_{n}$ la propriété «~$0<u_{n}<10$~». Pour chacune, dire si elle est vraie
+        pour $n=0$, pour $n=1$ et pour $n=2$.
+  \item Peut-on affirmer que, pour tout $n\in\N$, $Q_{n}$ est vraie ? Et $S_{n}$ ?
+  \item Les trois premiers rangs suffisent-ils pour affirmer que $R_{n}$ est vraie pour
+        tout $n\in\N$ ?
+\end{enumerate}
+
+\exo[L'initialisation est indispensable]
+Pour tout $n\in\N$, on note $P_{n}$ la propriété «~$5^{n}+2$ est un multiple
+de~$4$~».
+\begin{enumerate}
+  \item Soit $n\in\N$ tel que $P_{n}$ est vraie : il existe un entier $k$ tel que
+        $5^{n}+2=4k$. Démontrer que $5^{n+1}+2=4(5k-2)$, puis que $P_{n+1}$ est vraie.
+  \item La propriété $P_{0}$ est-elle vraie ?
+  \item Peut-on affirmer que, pour tout $n\in\N$, $5^{n}+2$ est un multiple de $4$ ?
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $5^{n}-1$ est un multiple de
+        $4$.
+\end{enumerate}
+
+\exo[Démontrer une inégalité par récurrence]
+Pour chaque suite, démontrer l'inégalité par récurrence.
+\begin{enumerate}[label=\alph*)]
+  \item $(a_{n})$ définie par $a_{0}=4$ et, pour tout $n\in\N$, $a_{n+1}=2a_{n}-3$ :
+        pour tout $n\in\N$, on a $a_{n}\geq 3$.
+  \item $(b_{n})$ définie par $b_{0}=1$ et, pour tout $n\in\N$,
+        $b_{n+1}=0{,}5\,b_{n}+1$ : pour tout $n\in\N$, on a $b_{n}\leq 2$.
+  \item $(c_{n})$ définie par $c_{0}=0$ et, pour tout $n\in\N$, $c_{n+1}=3c_{n}+1$ :
+        pour tout $n\in\N$, on a $c_{n}\geq 0$.
+  \item $(d_{n})$ définie par $d_{0}=2$ et, pour tout $n\in\N$, $d_{n+1}=d_{n}^{2}+1$ :
+        pour tout $n\in\N$, on a $d_{n}\geq 2$.
+\end{enumerate}
+
+\exo[Comparer une suite à $2n^{2}$]
+Soit la suite $(u_{n})$ définie par $u_{0}=2$ et, pour tout $n\in\N$,
+$u_{n+1}=u_{n}+4n+3$.
+\begin{enumerate}
+  \item Calculer $u_{1}$, $u_{2}$ et $u_{3}$, et les comparer à $2n^{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $u_{n}\geq 2n^{2}$.
+  \item En déduire que $u_{n}\geq 200$ pour tout entier $n\geq 10$.
+\end{enumerate}
+
+\exo[Une inégalité à partir d'un rang]
+\begin{enumerate}
+  \item Résoudre dans $\N$ l'inéquation $4n+2\geq 2n+3$.
+  \item Pour $n=0$, $1$, $2$ et $3$, dire si l'inégalité $2^{n}\geq 2n+1$ est vraie.
+  \item Démontrer par récurrence que, pour tout entier $n\geq 3$, on a
+        $2^{n}\geq 2n+1$.
+  \item L'inégalité est vraie pour $n=0$. Pourquoi ne peut-on pas faire
+        l'initialisation au rang $0$ ?
+\end{enumerate}
+
+\exo[Une suite qui grandit vite]
+Soit la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$,
+$u_{n+1}=u_{n}^{2}+1$.
+\begin{enumerate}
+  \item Calculer $u_{1}$, $u_{2}$, $u_{3}$, $u_{4}$ et $u_{5}$.
+  \item Pour $n$ allant de $0$ à $5$, comparer $u_{n}$ et $2^{n}$.
+  \item Démontrer par récurrence que, pour tout entier $n\geq 4$, on a
+        $u_{n}\geq 2^{n}$ (on pourra remarquer que $4^{n}=2^{n}\times 2^{n}$).
+\end{enumerate}
+
+\partiefiche{Récurrence et terme général d'une suite}
+
+\exo[Démontrer l'expression de $u_{n}$]
+Pour chaque suite, calculer les deux termes qui suivent le premier, puis démontrer
+par récurrence l'expression du terme général.
+\begin{enumerate}[label=\alph*)]
+  \item $(u_{n})$ définie par $u_{0}=5$ et, pour tout $n\in\N$, $u_{n+1}=2u_{n}-3$ :
+        pour tout $n\in\N$, on a $u_{n}=2^{n+1}+3$.
+  \item $(v_{n})$ définie par $v_{0}=-2$ et, pour tout $n\in\N$,
+        $v_{n+1}=v_{n}+2n+4$ : pour tout $n\in\N$, on a $v_{n}=n^{2}+3n-2$.
+  \item $(w_{n})$ définie par $w_{0}=80$ et, pour tout $n\in\N$,
+        $w_{n+1}=1{,}2\,w_{n}-4$ : pour tout $n\in\N$, on a
+        $w_{n}=60\times 1{,}2^{n}+20$.
+\end{enumerate}
+
+\exo[Des vélos en libre-service]
+Une ville lance un service de vélos en libre-service en janvier 2026. Pour tout
+$n\in\N$, on note $u_{n}$ le nombre d'abonnés $n$ mois après janvier 2026 : $u_{0}=300$.
+Chaque mois, $20\,\%$ des abonnés résilient et $100$ nouveaux s'abonnent, donc, pour
+tout $n\in\N$, $u_{n+1}=0{,}8\,u_{n}+100$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $u_{n}=500-200\times 0{,}8^{n}$.
+  \item Combien le service comptera-t-il d'abonnés en janvier 2027 ?
+  \item Justifier que le nombre d'abonnés restera toujours inférieur à $500$.
+  \item Compléter la fonction Python ci-dessous pour qu'elle renvoie le premier rang
+        $n$ tel que $u_{n}>480$.
+\begin{python}
+def seuil():
+    n = 0
+    u = 300
+    while ...:
+        n = n + 1
+        u = ...
+    return n
+\end{python}
+  \item À l'aide de la calculatrice, déterminer le mois où le service dépassera
+        $480$ abonnés.
+\end{enumerate}
+
+\exo[Conjecturer, puis démontrer]
+Soit la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$,
+$u_{n+1}=4u_{n}+3$.
+\begin{enumerate}
+  \item Recopier et compléter le tableau.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ \\ \hline
+$u_{n}$ & $0$ & & & & \\ \hline
+$u_{n}+1$ & $1$ & & & & \\ \hline
+\end{tabular}
+\end{center}
+  \item Conjecturer l'expression de $u_{n}+1$, puis de $u_{n}$, en fonction de $n$.
+  \item Démontrer cette conjecture par récurrence.
+\end{enumerate}
+
+\exo[Une suite homographique]
+Soit la suite $(u_{n})$ définie par $u_{0}=\dfrac{1}{2}$ et, pour tout $n\in\N$,
+$u_{n+1}=\dfrac{3u_{n}}{1+2u_{n}}$. On admet que $u_{n}>0$ pour tout $n\in\N$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$ sous forme de fractions irréductibles.
+  \item Conjecturer l'expression de $u_{n}$ en fonction de $n$ (on pourra comparer
+        les numérateurs et les dénominateurs à des puissances de $3$).
+  \item Démontrer cette conjecture par récurrence.
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par
+        $v_{n}=\dfrac{1}{u_{n}}-1$. Démontrer que $(v_{n})$ est géométrique, et
+        retrouver l'expression de $u_{n}$.
+\end{enumerate}
+
+\exo[Expression et sens de variation]
+Soit la suite $(u_{n})$ définie par $u_{0}=2$ et, pour tout $n\in\N$,
+$u_{n+1}=2u_{n}-n$.
+\begin{enumerate}
+  \item Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $u_{n}=2^{n}+n+1$.
+  \item En déduire le sens de variation de la suite $(u_{n})$.
+  \item Calculer $u_{20}$.
+\end{enumerate}
+
+\partiefiche{Récurrence et sens de variation}
+
+\exo[Démontrer qu'une suite est monotone]
+Pour chaque suite, démontrer par récurrence le sens de variation annoncé.
+\begin{enumerate}[label=\alph*)]
+  \item $(a_{n})$ définie par $a_{0}=1$ et, pour tout $n\in\N$,
+        $a_{n+1}=0{,}5\,a_{n}+3$ : $(a_{n})$ est croissante.
+  \item $(b_{n})$ définie par $b_{0}=10$ et, pour tout $n\in\N$,
+        $b_{n+1}=0{,}5\,b_{n}+3$ : $(b_{n})$ est décroissante.
+  \item $(c_{n})$ définie par $c_{0}=1$ et, pour tout $n\in\N$, $c_{n+1}=3c_{n}-1$ :
+        $(c_{n})$ est croissante.
+\end{enumerate}
+
+\exo[Avec une racine carrée]
+Soit la suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$,
+$u_{n+1}=\sqrt{u_{n}+12}$. On admet que $u_{n}\geq 0$ pour tout $n\in\N$.
+\begin{enumerate}
+  \item Démontrer par récurrence que la suite $(u_{n})$ est croissante (on rappelle que
+        la fonction racine carrée est croissante sur $\intfo{0}{+\infty}$).
+  \item On remplace $u_{0}=1$ par $u_{0}=5$. Étudier le sens de variation de la suite
+        obtenue.
+  \item Que se passe-t-il si $u_{0}=4$ ?
+\end{enumerate}
+
+\exo[Une fonction et trois suites]
+Soit $f$ la fonction définie sur $\R$ par $f(x)=x^{3}-6x^{2}+12x-6$.
+\begin{enumerate}
+  \item Calculer $f'(x)$, puis étudier le sens de variation de $f$ sur $\R$ (on pourra
+        factoriser $f'(x)$).
+  \item Soit la suite $(u_{n})$ définie par $u_{0}=1{,}5$ et, pour tout $n\in\N$,
+        $u_{n+1}=f(u_{n})$. Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $u_{n}\leq u_{n+1}$. Qu'en déduit-on pour la suite $(u_{n})$ ?
+  \item Étudier de même le sens de variation de la suite $(v_{n})$ définie par
+        $v_{0}=2{,}5$ et, pour tout $n\in\N$, $v_{n+1}=f(v_{n})$.
+  \item Soit la suite $(w_{n})$ définie pour tout $n\in\N$ par $w_{n}=f(n)$. Quel est
+        son sens de variation ?
+\end{enumerate}
+
+\exo[Deux méthodes pour un même résultat]
+Soit la suite $(u_{n})$ définie par $u_{0}=6$ et, pour tout $n\in\N$,
+$u_{n+1}=3u_{n}-10$.
+\begin{enumerate}
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $u_{n}\geq 5$.
+  \item Exprimer $u_{n+1}-u_{n}$ en fonction de $u_{n}$, puis en déduire le sens de
+        variation de $(u_{n})$.
+  \item Retrouver ce sens de variation par une récurrence.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $u_{n}=3^{n}+5$.
+\end{enumerate}
+
+\partiefiche{Récurrence et encadrement d'une suite}
+
+\exo[Encadrer une suite par récurrence]
+Pour chaque suite, démontrer l'encadrement par récurrence.
+\begin{enumerate}[label=\alph*)]
+  \item $(a_{n})$ définie par $a_{0}=1$ et, pour tout $n\in\N$,
+        $a_{n+1}=0{,}5\,a_{n}+1$ : pour tout $n\in\N$, on a $1\leq a_{n}\leq 2$.
+  \item $(b_{n})$ définie par $b_{0}=1$ et, pour tout $n\in\N$,
+        $b_{n+1}=\sqrt{3b_{n}+4}$ : pour tout $n\in\N$, on a $1\leq b_{n}\leq 4$
+        (la fonction racine carrée est croissante sur $\intfo{0}{+\infty}$).
+  \item $(c_{n})$ définie par $c_{0}=3$ et, pour tout $n\in\N$,
+        $c_{n+1}=\dfrac{4}{c_{n}+1}$ : pour tout $n\in\N$, on a $1\leq c_{n}\leq 3$
+        (la fonction inverse est décroissante sur $\intoo{0}{+\infty}$).
+\end{enumerate}
+
+\exo[Encadrer une suite]
+\textbf{Partie A.} Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par
+$f(x)=0{,}25x^{2}+1$ et la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout
+$n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{enumerate}
+  \item Étudier le sens de variation de $f$ sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $0\leq u_{n}\leq u_{n+1}\leq 2$.
+  \item En déduire le sens de variation de $(u_{n})$ et un encadrement de ses termes.
+\end{enumerate}
+\textbf{Partie B.} Soit la suite $(w_{n})$ définie par $w_{0}=1$ et, pour tout
+$n\in\N$, $w_{n+1}=\sqrt{5w_{n}}$.
+\begin{enumerate}[resume]
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $1\leq w_{n}\leq w_{n+1}\leq 5$.
+  \item En déduire le sens de variation de $(w_{n})$.
+\end{enumerate}
+
+\exo[Une démonstration guidée]
+Soit la suite $(v_{n})$ définie par $v_{0}=0$ et, pour tout $n\in\N$,
+$v_{n+1}=\sqrt{v_{n}+6}$. Pour tout $n\in\N$, on note $P_{n}$ la propriété
+«~$0\leq v_{n}\leq 3$~».
+\begin{enumerate}
+  \item Vérifier que $P_{0}$ est vraie.
+  \item Soit $n\in\N$ tel que $P_{n}$ est vraie. Démontrer que $P_{n+1}$ est vraie.
+  \item Que peut-on conclure des questions précédentes ?
+  \item Démontrer de même que, pour tout $n\in\N$, on a
+        $0\leq v_{n}\leq v_{n+1}\leq 3$, puis en déduire le sens de variation de
+        $(v_{n})$.
+\end{enumerate}
+
+\exo[Des poissons dans un étang]
+Au 1\textsuperscript{er} janvier 2026, un étang compte $7\,000$ poissons. Pour tout
+$n\in\N$, on note $v_{n}$ le nombre de poissons, en millier, au 1\textsuperscript{er}
+janvier $2026+n$. On modélise : $v_{0}=7$ et, pour tout $n\in\N$, $v_{n+1}=f(v_{n})$,
+où $f$ est la fonction définie sur $\intff{0}{7{,}5}$ par $f(x)=-0{,}1x^{2}+1{,}5x$.
+\begin{enumerate}
+  \item Combien l'étang comptera-t-il de poissons au 1\textsuperscript{er} janvier 2027 ?
+  \item Démontrer que la fonction $f$ est croissante sur $\intff{0}{7{,}5}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $5\leq v_{n+1}\leq v_{n}\leq 7$.
+  \item Interpréter ce résultat dans le contexte de l'exercice.
+  \item À l'aide de la calculatrice, déterminer l'année à partir de laquelle l'étang
+        comptera moins de $5\,100$ poissons.
+\end{enumerate}
+
+\exo[Encadrement et suite auxiliaire]
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=\dfrac{4x+3}{x+2}$ et la
+suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{enumerate}
+  \item Calculer $f'(x)$, puis étudier le sens de variation de $f$ sur
+        $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $1\leq u_{n}\leq u_{n+1}\leq 3$.
+  \item En déduire le sens de variation de $(u_{n})$.
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par
+        $v_{n}=\dfrac{u_{n}-3}{u_{n}+1}$. Démontrer que $(v_{n})$ est géométrique de
+        raison $\frac{1}{5}$.
+  \item En déduire l'expression de $u_{n}$ en fonction de $n$.
+\end{enumerate}
+
+\partiefiche{Sommes et récurrence}
+
+\exo[Écrire une somme sans le symbole $\Sigma$]
+Écrire chaque somme sans le symbole $\Sigma$, puis calculer les sommes a) à d).
+\begin{center}
+a)~$\displaystyle\sum_{k=1}^{6}k$ \qquad b)~$\displaystyle\sum_{k=0}^{4}k^{2}$ \qquad
+c)~$\displaystyle\sum_{k=0}^{3}(3k+2)$ \\[4pt]
+d)~$\displaystyle\sum_{k=2}^{5}\frac{1}{k}$ \qquad e)~$\displaystyle\sum_{k=0}^{n}2^{k}$
+\end{center}
+
+\exo[Écrire une somme avec le symbole $\Sigma$]
+Écrire chaque somme avec le symbole $\Sigma$.
+\begin{enumerate}[label=\alph*)]
+  \item $1+2+3+\dots+50$
+  \item $2+4+6+\dots+100$
+  \item $1+3+5+\dots+(2n+1)$
+  \item $1+q+q^{2}+\dots+q^{n}$
+  \item $\dfrac{1}{1\times 2}+\dfrac{1}{2\times 3}+\dots+\dfrac{1}{n(n+1)}$
+  \item $u_{3}+u_{4}+\dots+u_{n}$, pour un entier $n\geq 3$
+\end{enumerate}
+
+\exo[Démontrer une formule de somme]
+Pour chaque formule, écrire la somme pour $n=3$ sans le symbole $\Sigma$ et vérifier
+la formule, puis la démontrer par récurrence pour tout $n\in\Ns$.
+\begin{enumerate}[label=\alph*)]
+  \item $\displaystyle\sum_{k=1}^{n}(6k-2)=3n^{2}+n$
+  \item $\displaystyle\sum_{k=1}^{n}(2k-1)=n^{2}$
+  \item $\displaystyle\sum_{k=1}^{n}k^{2}=\frac{n(n+1)(2n+1)}{6}$
+\end{enumerate}
+
+\exo[La somme des cubes]
+Pour tout $n\in\Ns$, on note $S_{n}=\displaystyle\sum_{k=1}^{n}k^{3}$.
+\begin{enumerate}
+  \item Calculer $S_{1}$, $S_{2}$, $S_{3}$ et $S_{4}$, puis les comparer aux carrés
+        de $1$, $1+2$, $1+2+3$ et $1+2+3+4$.
+  \item Rappeler l'expression de $1+2+\dots+n$ en fonction de $n$, et conjecturer
+        celle de $S_{n}$.
+  \item Démontrer cette conjecture par récurrence.
+\end{enumerate}
+
+\exo[Une somme de fractions]
+Pour tout $n\in\Ns$, on note $T_{n}=\displaystyle\sum_{k=1}^{n}\frac{1}{k(k+1)}$.
+\begin{enumerate}
+  \item Calculer $T_{1}$, $T_{2}$ et $T_{3}$ sous forme de fractions irréductibles.
+  \item Conjecturer l'expression de $T_{n}$ en fonction de $n$.
+  \item Démontrer cette conjecture par récurrence.
+  \item Vérifier que, pour tout $k\in\Ns$, on a
+        $\dfrac{1}{k}-\dfrac{1}{k+1}=\dfrac{1}{k(k+1)}$. En écrivant $T_{n}$ terme à
+        terme, retrouver le résultat.
+\end{enumerate}
+
+\exo[Somme des termes d'une suite géométrique]
+\begin{enumerate}
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $\displaystyle\sum_{k=0}^{n}2^{k}=2^{n+1}-1$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $\displaystyle\sum_{k=0}^{n}3^{k}=\frac{3^{n+1}-1}{2}$.
+  \item Soit $q$ un nombre réel différent de $1$. Démontrer par récurrence que, pour
+        tout $n\in\N$, on a $\displaystyle\sum_{k=0}^{n}q^{k}=\frac{q^{n+1}-1}{q-1}$.
+\end{enumerate}
+
+\exo[Un tournoi de tennis de table]
+Dans un tournoi de tennis de table, chaque joueur rencontre une fois chacun des
+autres. Pour tout entier $n\geq 2$, on note $u_{n}$ le nombre de matchs d'un tournoi
+à $n$ joueurs.
+\begin{enumerate}
+  \item Déterminer $u_{2}$, $u_{3}$ et $u_{4}$.
+  \item Un nouveau joueur rejoint un tournoi à $n$ joueurs. Justifier que
+        $u_{n+1}=u_{n}+n$.
+  \item Démontrer par récurrence que, pour tout entier $n\geq 2$, on a
+        $u_{n}=\dfrac{n(n-1)}{2}$.
+  \item Écrire $u_{n}$ avec le symbole $\Sigma$.
+  \item Combien de matchs compte un tournoi à $20$ joueurs ?
+\end{enumerate}
+
+\exo[Sommer les termes d'une suite]
+Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=3-2\times 0{,}5^{n}$. Pour
+tout $n\in\N$, on note $S_{n}=\displaystyle\sum_{k=0}^{n}u_{k}$.
+\begin{enumerate}
+  \item Calculer $u_{0}$, $u_{1}$ et $u_{2}$, puis $S_{0}$, $S_{1}$ et $S_{2}$.
+  \item Compléter la fonction Python ci-dessous pour qu'elle renvoie $S_{n}$.
+\begin{python}
+def somme(n):
+    s = 0
+    for k in range(...):
+        s = ...
+    return s
+\end{python}
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $S_{n}=3n-1+2\times 0{,}5^{n}$.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2025, Métropole]
+Une équipe de biologistes étudie l'évolution de la superficie recouverte par une algue
+marine appelée posidonie, sur le fond de la baie de l'Alycastre, près de l'île de
+Porquerolles. La zone étudiée est d'une superficie totale de $20$ hectares (ha), et au
+premier juillet 2024, la posidonie recouvrait $1$~ha de cette zone.
+
+Pour tout entier naturel $n$, on note $u_{n}$ la superficie de la zone, en hectare,
+recouverte par la posidonie au premier juillet de l'année $2024+n$. Ainsi, $u_{0}=1$.
+Une étude conduite sur cette superficie a permis d'établir que pour tout entier naturel
+$n$ : $u_{n+1}=-0{,}02\,u_{n}^{2}+1{,}3\,u_{n}$.
+\begin{enumerate}
+  \item Calculer la superficie que devrait recouvrir la posidonie au premier juillet
+        2025 d'après ce modèle.
+  \item On note $h$ la fonction définie sur $\intff{0}{20}$ par
+        $h(x)=-0{,}02x^{2}+1{,}3x$. On admet que $h$ est croissante sur
+        $\intff{0}{20}$. Démontrer que pour tout entier naturel $n$,
+        $1\leq u_{n}\leq u_{n+1}\leq 20$.
+  \item Les biologistes souhaitent savoir au bout de combien de temps la surface
+        recouverte par la posidonie dépassera les $14$ hectares.
+  \begin{enumerate}[label=\alph*)]
+    \item Recopier et compléter l'algorithme suivant pour qu'en fin d'exécution, il
+          affiche la réponse à la question des biologistes.
+\begin{python}
+def seuil():
+    n = 0
+    u = 1
+    while ...... :
+        n = ......
+        u = ......
+    return n
+\end{python}
+    \item À l'aide de la calculatrice, répondre à la question des biologistes.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2025, Polynésie]
+Une donnée binaire est une donnée qui ne peut prendre que deux valeurs : $0$ ou $1$.
+Une donnée de ce type est transmise successivement d'une machine à une autre. Chaque
+machine transmet la donnée reçue soit de manière fidèle, c'est-à-dire en transmettant
+l'information telle qu'elle l'a reçue ($1$ devient $1$ et $0$ devient $0$), soit de façon
+contraire ($1$ devient $0$ et $0$ devient $1$). La transmission est fidèle dans
+$90\,\%$ des cas, et donc contraire dans $10\,\%$ des cas. Dans tout l'exercice, la
+première machine reçoit toujours la valeur $1$.
+
+Pour tout entier naturel $n\geq 1$, on note :
+\begin{itemize}
+  \item $V_{n}$ l'événement : «~la $n$-ième machine détient la valeur~$1$~» ;
+  \item $\overline{V_{n}}$ l'événement : «~la $n$-ième machine détient la valeur~$0$~».
+\end{itemize}
+\begin{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Recopier et compléter l'arbre de probabilité ci-dessous.
+\begin{center}
+\begin{tikzpicture}[grow=right,level distance=1.9cm,font=\small,
+    level 1/.style={sibling distance=1.6cm},level 2/.style={sibling distance=0.8cm}]
+  \node {$V_{1}$}
+    child {node {$\overline{V_{2}}$}
+      child {node {$\overline{V_{3}}$} edge from parent node[below,font=\scriptsize]{$\dots$}}
+      child {node {$V_{3}$} edge from parent node[above,font=\scriptsize]{$\dots$}}
+      edge from parent node[below,font=\scriptsize]{$\dots$}}
+    child {node {$V_{2}$}
+      child {node {$\overline{V_{3}}$} edge from parent node[below,font=\scriptsize]{$\dots$}}
+      child {node {$V_{3}$} edge from parent node[above,font=\scriptsize]{$\dots$}}
+      edge from parent node[above,font=\scriptsize]{$\dots$}};
+\end{tikzpicture}
+\end{center}
+    \item Démontrer que $P(V_{3})=0{,}82$ et interpréter ce résultat dans le contexte
+          de l'exercice.
+    \item Sachant que la troisième machine a reçu la valeur $1$, calculer la
+          probabilité que la deuxième machine ait aussi reçu la valeur $1$.
+  \end{enumerate}
+  \item Pour tout entier naturel $n\geq 1$, on note $p_{n}=P(V_{n})$. La première
+        machine a reçu la valeur $1$, on a donc $p_{1}=1$.
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que pour tout entier naturel $n\geq 1$ :
+          $p_{n+1}=0{,}8\,p_{n}+0{,}1$.
+    \item Démontrer par récurrence que pour tout entier naturel $n\geq 1$,
+          $p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2026, Métropole]
+\textbf{Partie A.} Soit $f$ la fonction définie sur $\intoo{-3}{+\infty}$ par
+$f(x)=\dfrac{2x}{x+3}$. On admet que $f$ est dérivable sur $\intoo{-3}{+\infty}$.
+\begin{enumerate}
+  \item Vérifier, en détaillant les calculs, que pour tout nombre réel $x$ de
+        $\intoo{-3}{+\infty}$, $f'(x)=\dfrac{6}{(x+3)^{2}}$. En déduire que $f$ est
+        croissante sur $\intoo{-3}{+\infty}$.
+\end{enumerate}
+Soit $(u_{n})$ la suite définie par $u_{0}=1$ et pour tout entier naturel $n$ par
+$u_{n+1}=f(u_{n})$.
+\begin{enumerate}[resume]
+  \item Démontrer, par récurrence, que pour tout entier $n$, on a :
+        $0\leq u_{n+1}\leq u_{n}\leq 1$.
+\end{enumerate}
+\textbf{Partie B.} On admet que pour tout entier naturel $n$, $u_{n}\neq 0$. On note
+$(v_{n})$ et $(w_{n})$ les suites définies pour tout entier naturel $n$ par
+$v_{n}=\dfrac{1}{u_{n}}$ et $w_{n}=v_{n}+1$.
+\begin{enumerate}
+  \item Vérifier que, pour tout entier naturel $n$,
+        $v_{n+1}=\dfrac{3}{2}v_{n}+\dfrac{1}{2}$.
+  \item Démontrer que $(w_{n})$ est une suite géométrique dont on précisera les
+        paramètres.
+  \item En déduire que, pour tout entier naturel $n$,
+        $u_{n}=\dfrac{1}{2\left(\frac{3}{2}\right)^{n}-1}$.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Recopier et compléter le script suivant de telle sorte que la fonction
+          \texttt{seuil()} renvoie le plus petit entier $n$ tel que $u_{n}$ soit
+          inférieur ou égal à $10^{-3}$.
+\begin{python}
+def seuil():
+    n = 0
+    u = 1
+    while ... :
+        n = n + 1
+        u = ...
+    return ...
+\end{python}
+    \item Quelle est la valeur renvoyée par la fonction \texttt{seuil()} ?
+  \end{enumerate}
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

@@ -1,0 +1,2314 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 1 --- Suites et récurrence --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+
+\entetefiche{Chapitre 1 --- Suites et récurrence}{Terminale spécialité mathématiques}
+
+\partie{Suites arithmétiques et géométriques (rappels de 1\textsuperscript{re})}
+
+\begin{exo}[Reconnaître une suite arithmétique]
+\explique{Pour chaque suite, on calcule les premiers termes pour se faire une idée ; si les
+écarts semblent constants, on le démontre en calculant $u_{n+1}-u_{n}$ pour tout
+$n$.}{méthode 1 du cours}
+\cas{a)}
+\begin{calculs}
+a_{0} &= 5\times 0-4 = -4 &&\justif{les premiers termes}\\
+a_{1} &= 5\times 1-4 = 1 &&\\
+a_{2} &= 5\times 2-4 = 6 &&
+\end{calculs}
+\explique{Les écarts valent $5$ et $5$ : la suite semble arithmétique. On le démontre pour
+tout $n\in\N$ :}{une conjecture}
+\begin{calculs}
+a_{n+1}-a_{n} &= 5(n+1)-4-(5n-4) &&\justif{on remplace $n$ par $n+1$}\\
+a_{n+1}-a_{n} &= 5n+5-4-5n+4 &&\justif{le $-$ devant la parenthèse change les signes}\\
+a_{n+1}-a_{n} &= 5 &&
+\end{calculs}
+\explique{L'écart ne dépend pas de $n$ : \res{$(a_{n})$ est arithmétique de raison $5$ et
+de premier terme $a_{0}=-4$}.}{}
+\cas{b)}
+\begin{calculs}
+b_{0} &= 0^{2}+2 = 2 &&\\
+b_{1} &= 1^{2}+2 = 3 &&\\
+b_{2} &= 2^{2}+2 = 6 &&
+\end{calculs}
+\explique{On a $b_{1}-b_{0}=1$ et $b_{2}-b_{1}=3$ : les écarts ne sont pas égaux, donc
+\res{$(b_{n})$ n'est pas arithmétique}.}{un contre-exemple suffit}
+\cas{c)}
+\begin{calculs}
+c_{1} &= 2\times 3-1 = 5 &&\justif{$c_{1}=2c_{0}-1$}\\
+c_{2} &= 2\times 5-1 = 9 &&
+\end{calculs}
+\explique{On a $c_{1}-c_{0}=2$ et $c_{2}-c_{1}=4$ : \res{$(c_{n})$ n'est pas
+arithmétique}.}{contre-exemple}
+\cas{d)}
+\begin{calculs}
+d_{n} &= (n+3)^{2}-n^{2} &&\\
+d_{n} &= n^{2}+6n+9-n^{2} &&\justif{identité remarquable $(a+b)^{2}$}\\
+d_{n} &= 6n+9 &&
+\end{calculs}
+\begin{calculs}
+d_{n+1}-d_{n} &= 6(n+1)+9-(6n+9) &&\\
+d_{n+1}-d_{n} &= 6 &&
+\end{calculs}
+\explique{\res{$(d_{n})$ est arithmétique de raison $6$ et de premier terme $d_{0}=9$}.}{on
+développe d'abord : la forme cachait une expression affine}
+\rem{Une suite $u_{n}=an+b$ (expression affine de $n$) est toujours arithmétique de raison $a$.}
+\end{exo}
+
+\begin{exo}[Reconnaître une suite géométrique]
+\explique{On calcule les premiers termes et leurs quotients ; si le quotient semble
+constant, on écrit $u_{n+1}$ sous la forme $q\times u_{n}$.}{méthode 1 du cours}
+\cas{a)}
+\begin{calculs}
+a_{0} &= 6^{0} = 1 &&\\
+a_{1} &= 6^{1} = 6 &&\\
+a_{2} &= 6^{2} = 36 &&
+\end{calculs}
+\explique{Les quotients valent $6$ et $6$. Pour tout $n\in\N$ :}{une conjecture}
+\begin{calculs}
+a_{n+1} &= 6^{n+1} &&\\
+a_{n+1} &= 6\times 6^{n} &&\justif{$6^{n+1}=6\times 6^{n}$}\\
+a_{n+1} &= 6\,a_{n} &&
+\end{calculs}
+\explique{\res{$(a_{n})$ est géométrique de raison $6$ et de premier terme $a_{0}=1$}.}{}
+\cas{b)}
+\begin{calculs}
+b_{0} &= 0^{3} = 0 &&\\
+b_{1} &= 1^{3} = 1 &&
+\end{calculs}
+\explique{Si $(b_{n})$ était géométrique de raison $q$, on aurait $b_{1}=q\times b_{0}=0$ ;
+or $b_{1}=1$. Donc \res{$(b_{n})$ n'est pas géométrique}.}{un terme nul ne peut être suivi
+que de termes nuls}
+\cas{c)}
+\begin{calculs}
+c_{0} &= -3\times 2^{2} = -12 &&\\
+c_{1} &= -3\times 2^{3} = -24 &&\\
+c_{2} &= -3\times 2^{4} = -48 &&
+\end{calculs}
+\explique{Les quotients valent $2$ et $2$. Pour tout $n\in\N$ :}{}
+\begin{calculs}
+c_{n+1} &= -3\times 2^{n+3} &&\justif{on remplace $n$ par $n+1$}\\
+c_{n+1} &= 2\times\left(-3\times 2^{n+2}\right) &&\justif{$2^{n+3}=2\times 2^{n+2}$}\\
+c_{n+1} &= 2\,c_{n} &&
+\end{calculs}
+\explique{\res{$(c_{n})$ est géométrique de raison $2$ et de premier terme $c_{0}=-12$}.}{le
+premier terme n'est pas $-3$ : on calcule $c_{0}$}
+\cas{d)}
+\begin{calculs}
+d_{1} &= 2\times 2+4\times 0 = 4 &&\\
+d_{2} &= 2\times 4+4\times 1 = 12 &&
+\end{calculs}
+\explique{On a $\dfrac{d_{1}}{d_{0}}=2$ et $\dfrac{d_{2}}{d_{1}}=3$ : les quotients sont
+différents, donc \res{$(d_{n})$ n'est pas géométrique}.}{contre-exemple}
+\end{exo}
+
+\begin{exo}[Deux modèles pour une durée d'écoute]
+\cas{1)}
+\begin{calculs}
+a_{2} &= 30+1{,}5 = \res{31{,}5} &&\justif{on ajoute $1{,}5$~h chaque mois}\\
+a_{3} &= 31{,}5+1{,}5 = \res{33} &&\\
+b_{2} &= 16\times 1{,}08 = \res{17{,}28} &&\justif{augmenter de $8\,\%$ : multiplier par $1{,}08$}\\
+b_{3} &= 17{,}28\times 1{,}08 = \res{18{,}662\,4} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+a_{n+1} &= a_{n}+1{,}5 &&\\
+b_{n+1} &= 1{,}08\,b_{n} &&
+\end{calculs}
+\explique{\res{$(a_{n})$ est arithmétique de raison $1{,}5$} et \res{$(b_{n})$ est géométrique
+de raison $1{,}08$}, toutes deux de premier terme au rang $1$.}{forme $u_{n}+r$, forme $q\times u_{n}$}
+\cas{3)}
+\explique{Le premier terme est au rang $1$ : on utilise $u_{n}=u_{p}+(n-p)\,r$ et
+$v_{n}=v_{p}\times q^{\,n-p}$ avec $p=1$.}{de $1$ à $n$, il y a $n-1$ sauts}
+\begin{calculs}
+a_{n} &= 30+1{,}5\,(n-1) &&\\
+a_{n} &= \res{28{,}5+1{,}5\,n} &&\\
+b_{n} &= \res{16\times 1{,}08^{\,n-1}} &&
+\end{calculs}
+\cas{4)}
+\explique{Décembre 2026 est le $12$\textsuperscript{e} mois : on calcule $a_{12}$ et
+$b_{12}$.}{janvier 2026 est le mois $1$}
+\begin{calculs}
+a_{12} &= 28{,}5+1{,}5\times 12 = 46{,}5 &&\\
+b_{12} &= 16\times 1{,}08^{11} &&\\
+b_{12} &\approx 37{,}3 &&\justif{calculatrice}
+\end{calculs}
+\explique{En décembre 2026, Inès écoutera \res{$46{,}5$~h} de musique, et Noé environ
+\res{$37{,}3$~h}.}{}
+\cas{5)}
+\begin{python}
+def ecoute():
+    a = 30
+    b = 16
+    for i in range(11):
+        a = a + 1.5
+        b = 1.08 * b
+    return a, b
+\end{python}
+\explique{On part de $a_{1}$ et $b_{1}$ ; pour atteindre le rang $12$, il faut \res{$11$
+passages dans la boucle} : \texttt{range(11)}.}{de $1$ à $12$, il y a $11$ sauts}
+\cas{6)}
+\explique{À la calculatrice (mode suite, ou tableau de valeurs), on compare $a_{n}$ et
+$b_{n}$ :}{}
+\begin{calculs}
+a_{16} &= 52{,}5 &&\\
+b_{16} &\approx 50{,}75 &&\justif{donc $b_{16}<a_{16}$}\\
+a_{17} &= 54 &&\\
+b_{17} &\approx 54{,}82 &&\justif{donc $b_{17}>a_{17}$}
+\end{calculs}
+\explique{Noé écoutera plus de musique qu'Inès à partir du $17$\textsuperscript{e} mois,
+soit \res{en mai 2027}.}{mois $13$ : janvier 2027}
+\rem{Une croissance géométrique de raison supérieure à $1$ finit toujours par dépasser une
+croissance arithmétique, même partie de plus bas.}
+\end{exo}
+
+\begin{exo}[Vrai ou faux : le contre-exemple]
+\cas{a)}
+\explique{On a $u_{0}=1$, $u_{1}=2$ et $u_{2}=5$ : les écarts valent $1$ et $3$.
+L'affirmation est \res{fausse}.}{contre-exemple}
+\cas{b)}
+\explique{Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=n(n-1)(n-2)$. On a
+$v_{0}=0$, $v_{1}=0$, $v_{2}=0$ et $v_{3}=6$.}{on cherche une suite dont les trois premiers
+termes sont « réguliers »}
+\explique{Donc $v_{1}-v_{0}=v_{2}-v_{1}=0$, mais $v_{3}-v_{2}=6$ : la suite n'est pas
+arithmétique. L'affirmation est \res{fausse}.}{deux écarts égaux ne suffisent pas}
+\cas{c)}
+\explique{Soit $(w_{n})$ la suite définie pour tout $n\in\N$ par $w_{n}=2^{n}+3^{n}$, somme de
+deux suites géométriques. On a $w_{0}=2$, $w_{1}=5$ et $w_{2}=13$.}{}
+\explique{Les quotients $\dfrac{5}{2}$ et $\dfrac{13}{5}$ sont différents : $(w_{n})$ n'est
+pas géométrique. L'affirmation est \res{fausse}.}{contre-exemple}
+\cas{d)}
+\explique{Soit $(a_{n})$ et $(b_{n})$ deux suites géométriques de raisons $q$ et $q'$, et la
+suite $(p_{n})$ définie pour tout $n\in\N$ par $p_{n}=a_{n}\times b_{n}$.}{une démonstration,
+pas un exemple}
+\begin{calculs}
+p_{n+1} &= a_{n+1}\times b_{n+1} &&\\
+p_{n+1} &= q\,a_{n}\times q'\,b_{n} &&\justif{$a_{n+1}=q\,a_{n}$ et $b_{n+1}=q'\,b_{n}$}\\
+p_{n+1} &= (q\,q')\times p_{n} &&
+\end{calculs}
+\explique{L'affirmation est \res{vraie} : $(p_{n})$ est géométrique de raison
+$q\,q'$.}{}
+\rem{Pour montrer qu'une affirmation est vraie, des exemples ne suffisent pas : il faut une
+démonstration générale.}
+\end{exo}
+
+\begin{exo}[Une plateforme qui perd des abonnés]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 2{,}4\times 0{,}94 = \res{2{,}256} &&\justif{baisser de $6\,\%$ : multiplier par $1-0{,}06$}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+u_{n+1} &= 0{,}94\,u_{n} &&
+\end{calculs}
+\explique{\res{$(u_{n})$ est géométrique de raison $0{,}94$}, de premier terme $u_{0}=2{,}4$,
+donc, pour tout $n\in\N$, \res{$u_{n}=2{,}4\times 0{,}94^{n}$}.}{$u_{n}=u_{0}\times q^{n}$}
+\cas{3)}
+\begin{calculs}
+u_{4} &= 2{,}4\times 0{,}94^{4} &&\justif{janvier 2030 : $n=4$}\\
+u_{4} &\approx 1{,}874 &&
+\end{calculs}
+\explique{En janvier 2030, la plateforme comptera environ \res{$1{,}87$ million
+d'abonnés}.}{}
+\cas{4)}
+\explique{La boucle continue tant que $u\geq 1{,}2$ ; elle s'arrête au premier rang $n$ tel
+que $u_{n}<1{,}2$. La fonction renvoie \res{le nombre d'années au bout duquel le nombre
+d'abonnés passe sous $1{,}2$ million}, c'est-à-dire sous la moitié du nombre de
+2026.}{$1{,}2$ est la moitié de $2{,}4$}
+\cas{5)}
+\begin{calculs}
+u_{11} &\approx 1{,}215 &&\justif{encore au-dessus de $1{,}2$}\\
+u_{12} &\approx 1{,}142 &&\justif{premier terme sous $1{,}2$}
+\end{calculs}
+\explique{La fonction renvoie \res{$12$} : le nombre d'abonnés passera sous $1{,}2$ million
+\res{en 2038}.}{$2026+12$}
+\end{exo}
+
+\partie{Suites auxiliaires}
+
+\begin{exo}[Calcul : écrire sous la forme d'un seul quotient]
+\explique{Pour ajouter un nombre et un quotient, on écrit le nombre avec le même
+dénominateur, puis on ajoute les numérateurs.}{$a+\dfrac{b}{c}=\dfrac{ac+b}{c}$}
+\begin{calculs}
+A &= \frac{2(x+1)}{x+1}+\frac{3}{x+1} &&\justif{$2=\frac{2(x+1)}{x+1}$}\\
+A &= \frac{2x+2+3}{x+1} &&\\
+A &= \res{\frac{2x+5}{x+1}} &&
+\end{calculs}
+\begin{calculs}
+B &= \frac{4(2-x)}{2-x}-\frac{6}{2-x} &&\\
+B &= \frac{8-4x-6}{2-x} &&\\
+B &= \res{\frac{2-4x}{2-x}} &&
+\end{calculs}
+\begin{calculs}
+C &= \frac{2(2x+1)}{3(2x+1)}+\frac{3}{3(2x+1)} &&\justif{dénominateur commun $3(2x+1)$}\\
+C &= \frac{4x+2+3}{3(2x+1)} &&\\
+C &= \res{\frac{4x+5}{6x+3}} &&
+\end{calculs}
+\begin{calculs}
+D &= \frac{3(x-1)}{x-1}+\frac{x+2}{x-1} &&\\
+D &= \frac{3x-3+x+2}{x-1} &&\\
+D &= \res{\frac{4x-1}{x-1}} &&
+\end{calculs}
+\begin{calculs}
+E &= \frac{3x-4}{x+2} &&\justif{même dénominateur : on soustrait les numérateurs}\\
+E &= \res{\frac{3x-4}{x+2}} &&
+\end{calculs}
+\begin{calculs}
+F &= \frac{2(x+2)}{(x-1)(x+2)}-\frac{3(x-1)}{(x-1)(x+2)} &&\justif{dénominateur commun $(x-1)(x+2)$}\\
+F &= \frac{2x+4-3x+3}{(x-1)(x+2)} &&\justif{$-3(x-1)=-3x+3$}\\
+F &= \res{\frac{-x+7}{(x-1)(x+2)}} &&
+\end{calculs}
+\rem{Erreur fréquente : en $F$, oublier que le $-$ porte sur tout le numérateur $3(x-1)$.}
+\end{exo}
+
+\begin{exo}[Calcul : exprimer $u$ en fonction de $v$]
+\explique{On multiplie par le dénominateur, on regroupe les termes en $u$ d'un côté, on
+factorise par $u$, puis on divise.}{la démarche est toujours la même}
+\cas{a)}
+\begin{calculs}
+v &= \frac{u}{u-1} &&\\
+v(u-1) &= u &&\justif{on multiplie par $u-1$}\\
+vu-v &= u &&\\
+vu-u &= v &&\justif{les termes en $u$ à gauche}\\
+u(v-1) &= v &&\justif{on factorise par $u$}\\
+u &= \res{\frac{v}{v-1}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v &= \frac{u+1}{u-3} &&\\
+v(u-3) &= u+1 &&\\
+vu-3v &= u+1 &&\\
+vu-u &= 3v+1 &&\\
+u(v-1) &= 3v+1 &&\\
+u &= \res{\frac{3v+1}{v-1}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+v &= \frac{u-2}{u+1} &&\\
+v(u+1) &= u-2 &&\\
+vu+v &= u-2 &&\\
+vu-u &= -2-v &&\\
+u(v-1) &= -(2+v) &&\\
+u &= \res{\frac{2+v}{1-v}} &&\justif{$\frac{-(2+v)}{v-1}=\frac{2+v}{1-v}$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+v &= \frac{1}{u+3} &&\\
+v(u+3) &= 1 &&\\
+vu &= 1-3v &&\\
+u &= \res{\frac{1-3v}{v}} &&
+\end{calculs}
+\rem{On peut vérifier en remplaçant : en d), avec $u=1$, on a $v=\frac{1}{4}$, et
+$\frac{1-3\times\frac14}{\frac14}=\frac{\frac14}{\frac14}=1$.}
+\end{exo}
+
+\begin{exo}[Les abonnés d'une médiathèque]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 0{,}85\times 4\,000+450 = \res{3\,850} &&\\
+u_{2} &= 0{,}85\times 3\,850+450 = \res{3\,722{,}5} &&\justif{le modèle donne une valeur non entière}
+\end{calculs}
+\cas{2)}
+\explique{Chaque année, $15\,\%$ des abonnés partent : il en reste $85\,\%$, soit
+$0{,}85\,u_{n}$. On ajoute les $450$ nouveaux : \res{$u_{n+1}=0{,}85\,u_{n}+450$}.}{baisser
+de $15\,\%$ : multiplier par $0{,}85$}
+\cas{3)}
+\begin{python}
+def terme(n):
+    u = 4000
+    for i in range(n):
+        u = 0.85 * u + 450
+    return u
+\end{python}
+\explique{On part de $u_{0}$ et on applique \res{$n$ fois} la relation de récurrence.}{%
+\texttt{range(n)} : $n$ passages}
+\cas{4)}
+\begin{calculs}
+v_{n+1} &= u_{n+1}-3\,000 &&\justif{on remplace $n$ par $n+1$ dans $v_{n}=u_{n}-3\,000$}\\
+v_{n+1} &= 0{,}85\,u_{n}+450-3\,000 &&\justif{on remplace $u_{n+1}$}\\
+v_{n+1} &= 0{,}85\,u_{n}-2\,550 &&\\
+v_{n+1} &= 0{,}85\,(u_{n}-3\,000) &&\justif{$0{,}85\times 3\,000=2\,550$}\\
+v_{n+1} &= 0{,}85\,v_{n} &&
+\end{calculs}
+\begin{calculs}
+v_{0} &= u_{0}-3\,000 = 1\,000 &&
+\end{calculs}
+\explique{$(v_{n})$ est géométrique de raison \res{$0{,}85$} et de premier terme
+$v_{0}=\res{1\,000}$.}{}
+\cas{5)}
+\begin{calculs}
+v_{n} &= \res{1\,000\times 0{,}85^{n}} &&\justif{$v_{n}=v_{0}\times q^{n}$}\\
+u_{n} &= v_{n}+3\,000 &&\justif{car $v_{n}=u_{n}-3\,000$}\\
+u_{n} &= \res{3\,000+1\,000\times 0{,}85^{n}} &&
+\end{calculs}
+\cas{6)}
+\explique{Pour tout $n\in\N$, on a $0{,}85^{n}>0$, donc $1\,000\times 0{,}85^{n}>0$ et
+\res{$u_{n}>3\,000$} : le nombre d'abonnés restera toujours supérieur à
+$3\,000$.}{une puissance d'un nombre positif est positive}
+\end{exo}
+
+\begin{exo}[Une suite auxiliaire qui dépend de $n$]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 3\times 1-4\times 0+6 = \res{9} &&\justif{$n=0$ dans la relation}\\
+u_{2} &= 3\times 9-4\times 1+6 = \res{29} &&\justif{$n=1$}
+\end{calculs}
+\cas{2)}
+\begin{python}
+def suite(n):
+    u = 1
+    for k in range(n):
+        u = 3 * u - 4 * k + 6
+    return u
+\end{python}
+\explique{Au passage numéro $k$, on calcule $u_{k+1}=3u_{k}-4k+6$ : \res{le compteur
+\texttt{k} joue le rôle de $n$ dans la relation}.}{d'où \texttt{-4*k}}
+\cas{3)}
+\begin{calculs}
+v_{n+1} &= u_{n+1}-2(n+1)+2 &&\justif{on remplace $n$ par $n+1$}\\
+v_{n+1} &= 3u_{n}-4n+6-2n-2+2 &&\justif{on remplace $u_{n+1}$}\\
+v_{n+1} &= 3u_{n}-6n+6 &&\\
+v_{n+1} &= 3(u_{n}-2n+2) &&\justif{on factorise par $3$}\\
+v_{n+1} &= 3\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $3$}, de premier terme
+$v_{0}=1-0+2=3$.}{}
+\cas{4)}
+\begin{calculs}
+v_{n} &= 3\times 3^{n} &&\\
+v_{n} &= 3^{n+1} &&\\
+u_{n} &= v_{n}+2n-2 &&\justif{car $v_{n}=u_{n}-2n+2$}\\
+u_{n} &= \res{3^{n+1}+2n-2} &&
+\end{calculs}
+\explique{Vérification : $u_{2}=27+4-2=29$.}{on retrouve le 1)}
+\end{exo}
+
+\begin{exo}[Une suite auxiliaire géométrique définie par un quotient]
+\cas{1)}
+\begin{calculs}
+u_{1} &= \frac{3\times 0+2}{0+2} = \res{1} &&\\
+u_{2} &= \frac{3\times 1+2}{1+2} = \res{\frac{5}{3}} &&
+\end{calculs}
+\begin{calculs}
+v_{0} &= \frac{0-2}{0+1} = \res{-2} &&\\
+v_{1} &= \frac{1-2}{1+1} = \res{-\frac{1}{2}} &&\\
+v_{2} &= \frac{\frac53-2}{\frac53+1} = \frac{-\frac13}{\frac83} = \res{-\frac{1}{8}} &&\justif{$-\frac13\times\frac38$}
+\end{calculs}
+\explique{Les quotients $\frac{v_{1}}{v_{0}}$ et $\frac{v_{2}}{v_{1}}$ valent $\frac14$ : la
+suite semble géométrique de raison $\frac14$.}{une conjecture}
+\cas{2)}
+\explique{On calcule séparément le numérateur et le dénominateur de $v_{n+1}$, en remplaçant
+$u_{n+1}$ par $\dfrac{3u_{n}+2}{u_{n}+2}$.}{}
+\begin{calculs}
+u_{n+1}-2 &= \frac{3u_{n}+2-2(u_{n}+2)}{u_{n}+2} &&\justif{même dénominateur}\\
+u_{n+1}-2 &= \frac{u_{n}-2}{u_{n}+2} &&\\
+u_{n+1}+1 &= \frac{3u_{n}+2+u_{n}+2}{u_{n}+2} &&\\
+u_{n+1}+1 &= \frac{4(u_{n}+1)}{u_{n}+2} &&
+\end{calculs}
+\begin{calculs}
+v_{n+1} &= \frac{u_{n+1}-2}{u_{n+1}+1} &&\\
+v_{n+1} &= \frac{u_{n}-2}{u_{n}+2}\times\frac{u_{n}+2}{4(u_{n}+1)} &&\justif{diviser, c'est multiplier par l'inverse}\\
+v_{n+1} &= \frac{1}{4}\times\frac{u_{n}-2}{u_{n}+1} &&\justif{on simplifie par $u_{n}+2$}\\
+v_{n+1} &= \frac{1}{4}\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $\frac{1}{4}$}, de premier terme
+$v_{0}=-2$.}{}
+\cas{3)}
+\begin{calculs}
+v_{n} &= \res{-2\times\left(\frac{1}{4}\right)^{n}} &&
+\end{calculs}
+\cas{4)}
+\explique{On exprime $u_{n}$ en fonction de $v_{n}$ comme à l'exercice 7 c) :}{}
+\begin{calculs}
+v_{n}(u_{n}+1) &= u_{n}-2 &&\\
+v_{n}u_{n}-u_{n} &= -2-v_{n} &&\\
+u_{n}(v_{n}-1) &= -(2+v_{n}) &&\\
+u_{n} &= \res{\frac{2+v_{n}}{1-v_{n}}} &&
+\end{calculs}
+\begin{calculs}
+u_{n} &= \res{\frac{2-2\times\left(\frac14\right)^{n}}{1+2\times\left(\frac14\right)^{n}}} &&\justif{on remplace $v_{n}$}
+\end{calculs}
+\explique{Vérification : pour $n=1$, on a $\dfrac{2-\frac12}{1+\frac12}=\dfrac{\frac32}{\frac32}=1$,
+c'est bien $u_{1}$.}{}
+\end{exo}
+
+\begin{exo}[Une suite auxiliaire arithmétique définie par un quotient]
+\cas{1)}
+\begin{calculs}
+u_{1} &= \frac{1-1}{1+3} = \res{0} &&\\
+u_{2} &= \frac{0-1}{0+3} = \res{-\frac{1}{3}} &&
+\end{calculs}
+\begin{calculs}
+v_{0} &= \frac{1}{1+1} = \res{\frac{1}{2}} &&\\
+v_{1} &= \frac{1}{0+1} = \res{1} &&\\
+v_{2} &= \frac{1}{-\frac13+1} = \res{\frac{3}{2}} &&\justif{l'inverse de $\frac23$}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+u_{n+1}+1 &= \frac{u_{n}-1+u_{n}+3}{u_{n}+3} &&\justif{même dénominateur}\\
+u_{n+1}+1 &= \frac{2(u_{n}+1)}{u_{n}+3} &&
+\end{calculs}
+\begin{calculs}
+v_{n+1} &= \frac{1}{u_{n+1}+1} &&\\
+v_{n+1} &= \frac{u_{n}+3}{2(u_{n}+1)} &&\justif{l'inverse du quotient}\\
+v_{n+1} &= \frac{(u_{n}+1)+2}{2(u_{n}+1)} &&\justif{on fait apparaître $u_{n}+1$}\\
+v_{n+1} &= \frac{1}{2}+\frac{1}{u_{n}+1} &&\\
+v_{n+1} &= v_{n}+\frac{1}{2} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est arithmétique de raison $\frac{1}{2}$}, de premier terme
+$v_{0}=\frac12$.}{}
+\cas{3)}
+\begin{calculs}
+v_{n} &= \frac{1}{2}+\frac{1}{2}\,n &&\justif{$v_{n}=v_{0}+n\,r$}\\
+v_{n} &= \res{\frac{n+1}{2}} &&
+\end{calculs}
+\begin{calculs}
+u_{n} &= \frac{1}{v_{n}}-1 &&\justif{car $u_{n}+1=\frac{1}{v_{n}}$}\\
+u_{n} &= \frac{2}{n+1}-1 &&\\
+u_{n} &= \res{\frac{1-n}{n+1}} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+u_{n+1}-u_{n} &= \frac{u_{n}-1}{u_{n}+3}-u_{n} &&\\
+u_{n+1}-u_{n} &= \frac{u_{n}-1-u_{n}(u_{n}+3)}{u_{n}+3} &&\\
+u_{n+1}-u_{n} &= \frac{-u_{n}^{2}-2u_{n}-1}{u_{n}+3} &&\\
+u_{n+1}-u_{n} &= -\frac{(u_{n}+1)^{2}}{u_{n}+3} &&\justif{$u_{n}^{2}+2u_{n}+1=(u_{n}+1)^{2}$}
+\end{calculs}
+\explique{Un carré est positif, et $u_{n}+3>2>0$ car $u_{n}>-1$ : le quotient est positif,
+précédé d'un signe $-$. Donc $u_{n+1}-u_{n}\leq 0$, soit
+\res{$u_{n+1}\leq u_{n}$}.}{signe de chaque morceau}
+\end{exo}
+
+\partie{Suites définies par une fonction}
+
+\begin{exo}[Représenter une suite et conjecturer]
+\cas{1)}
+\begin{calculs}
+u_{1} &= f(0) = 0{,}5\times 0+3 = \res{3} &&\\
+u_{2} &= f(3) = 0{,}5\times 3+3 = \res{4{,}5} &&\\
+u_{3} &= f(4{,}5) = 0{,}5\times 4{,}5+3 = \res{5{,}25} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+u_{n+1} &= \res{0{,}5\,u_{n}+3} &&\justif{on remplace $x$ par $u_{n}$ dans $f(x)$}
+\end{calculs}
+\cas{3) et 5)}
+\explique{On part de $u_{0}$ sur l'axe des abscisses ; on monte à la courbe de $f$ (on lit
+$u_{1}$ en ordonnée), puis on rejoint horizontalement la droite $y=x$ pour reporter
+$u_{1}$ sur l'axe des abscisses, et ainsi de suite.}{l'« escalier »}
+\begin{center}
+\begin{minipage}{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{0}{0}{11}{9}
+  \gradx{2,4,6,8,10} \grady{2,4,6,8}
+  \draw[coulCourbeB,line width=0.8pt] (0,0)--(9,9) node[above,font=\footnotesize]{$y=x$};
+  \draw[coulCourbe,line width=1.1pt] (0,3)--(11,8.5);
+  \node[coulCourbe,font=\footnotesize] at (10,7.4) {$\Cf$};
+  \draw[coulRep,thick] (0,0)--(0,3)--(3,3)--(3,4.5)--(4.5,4.5)--(4.5,5.25)--(5.25,5.25);
+  \draw[coulRep,densely dashed] (3,3)--(3,0) (4.5,4.5)--(4.5,0) (5.25,5.25)--(5.25,0);
+  \foreach \x/\l in {0/u_{0},3/u_{1},4.5/u_{2},5.25/u_{3}}
+    \path (\x,0) node[croix,coulRep]{} (\x,-1.1) node[coulRep,font=\footnotesize,inner sep=1pt]{$\l$};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.48\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{0}{0}{11}{9}
+  \gradx{2,4,6,8,10} \grady{2,4,6,8}
+  \draw[coulCourbeB,line width=0.8pt] (0,0)--(9,9) node[above,font=\footnotesize]{$y=x$};
+  \draw[coulCourbe,line width=1.1pt] (0,3)--(11,8.5);
+  \node[coulCourbe,font=\footnotesize] at (10,7.4) {$\Cf$};
+  \draw[coulRep,thick] (10,0)--(10,8)--(8,8)--(8,7)--(7,7)--(7,6.5)--(6.5,6.5);
+  \draw[coulRep,densely dashed] (8,8)--(8,0) (7,7)--(7,0) (6.5,6.5)--(6.5,0);
+  \foreach \x in {10,8,7,6.5} \path (\x,0) node[croix,coulRep]{};
+  \foreach \x/\l in {10/v_{0},8/v_{1},7.25/v_{2},6.25/v_{3}}
+    \path (\x,-1.1) node[coulRep,font=\footnotesize,inner sep=1pt]{$\l$};
+\end{tikzpicture}
+\end{minipage}
+\end{center}
+\explique{Pour $(v_{n})$ : $v_{1}=f(10)=8$, $v_{2}=f(8)=7$, $v_{3}=f(7)=6{,}5$.}{mêmes
+calculs qu'au 1)}
+\cas{4) et 5)}
+\explique{\res{$(u_{n})$ semble croissante} et \res{$(v_{n})$ semble décroissante} ; les
+termes des deux suites semblent se rapprocher de \res{$6$}, abscisse du point où la courbe
+de $f$ coupe la droite $y=x$.}{$f(6)=0{,}5\times 6+3=6$}
+\rem{La même fonction $f$, croissante, donne une suite croissante ou décroissante selon le
+premier terme : le sens de variation de $f$ ne suffit pas.}
+\end{exo}
+
+\begin{exo}[Explicite ou par récurrence]
+\cas{1)}
+\begin{calculs}
+u_{0} &= f(0) = \res{5} &&\justif{on remplace $x$ par le rang}\\
+u_{1} &= f(1) = 1-4+5 = \res{2} &&\\
+u_{2} &= f(2) = 4-8+5 = \res{1} &&\\
+u_{3} &= f(3) = 9-12+5 = \res{2} &&\\
+u_{10} &= f(10) = 100-40+5 = \res{65} &&\justif{directement, sans les termes précédents}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+v_{1} &= f(v_{0}) = f(1) = \res{2} &&\justif{on remplace $x$ par le terme précédent}\\
+v_{2} &= f(v_{1}) = f(2) = \res{1} &&\\
+v_{3} &= f(v_{2}) = f(1) = \res{2} &&\\
+v_{4} &= f(v_{3}) = f(2) = \res{1} &&
+\end{calculs}
+\cas{3)}
+\explique{Non : $v_{10}$ se calcule à partir de $v_{9}$, pas à partir du rang $10$
+($f(10)=65$ n'est pas $v_{10}$). Ici, les termes valent alternativement $1$ (rangs pairs)
+et $2$ (rangs impairs), donc \res{$v_{10}=1$}.}{$10$ est pair}
+\cas{4)}
+\begin{calculs}
+w_{1} &= f(3) = \res{2} &&\\
+w_{2} &= f(2) = \res{1} &&\\
+w_{3} &= f(1) = \res{2} &&
+\end{calculs}
+\explique{Dès le rang $1$, \res{$(w_{n})$ prend les mêmes valeurs que $(v_{n})$} : $w_{1}=v_{1}$,
+et chaque terme ne dépend que du précédent.}{une suite récurrente ne « se souvient » que du
+terme précédent}
+\end{exo}
+
+\begin{exo}[Lire une suite sur un graphique]
+\cas{1)}
+\begin{calculs}
+u_{1} &= f(0) = \sqrt{3} \approx \res{1{,}73} &&\\
+v_{1} &= f(6) = \sqrt{15} \approx \res{3{,}87} &&\justif{$2\times 6+3=15$}
+\end{calculs}
+\cas{2)}
+\explique{Même construction qu'à l'exercice 12 : de la courbe à la droite $y=x$, puis
+report sur l'axe des abscisses.}{$u_{2}\approx 2{,}54$, $u_{3}\approx 2{,}84$ ;
+$v_{2}\approx 3{,}28$, $v_{3}\approx 3{,}09$}
+\begin{center}
+\begin{tikzpicture}[x=1.6cm,y=1.6cm]
+  \repere{0}{0}{7}{5}
+  \gradx{1,2,3,4,5,6,7} \grady{1,2,3,4,5}
+  \draw[coulCourbeB,line width=0.8pt] (0,0)--(5,5) node[right,font=\footnotesize]{$y=x$};
+  \draw[coulCourbe,line width=1.1pt] plot[domain=0:7,samples=80] (\x,{sqrt(2*\x+3)});
+  \node[coulCourbe,font=\footnotesize] at (6.6,4.55) {$\Cf$};
+  \draw[coulRep,thick] (0,0)--(0,1.732)--(1.732,1.732)--(1.732,2.542)--(2.542,2.542)--(2.542,2.842)--(2.842,2.842);
+  \draw[coulRep,densely dashed] (1.732,1.732)--(1.732,0) (2.542,2.542)--(2.542,0) (2.842,2.842)--(2.842,0);
+  \foreach \x in {0,1.732,2.542,2.842} \path (\x,0) node[croix,coulRep]{};
+  \foreach \x/\l in {0/u_{0},1.732/u_{1},2.45/u_{2},2.93/u_{3}}
+    \path (\x,-0.45) node[coulRep,font=\footnotesize,inner sep=1pt]{$\l$};
+  \draw[coulCourbeC,thick] (6,0)--(6,3.873)--(3.873,3.873)--(3.873,3.281)--(3.281,3.281)--(3.281,3.091)--(3.091,3.091);
+  \draw[coulCourbeC,densely dashed] (3.873,3.873)--(3.873,0) (3.281,3.281)--(3.281,0) (3.091,3.091)--(3.091,0);
+  \foreach \x in {6,3.873,3.281,3.091} \path (\x,0) node[croix,coulCourbeC]{};
+  \foreach \x/\l in {6/v_{0},3.873/v_{1},3.4/v_{2},2.98/v_{3}}
+    \path (\x,-0.75) node[coulCourbeC,font=\footnotesize,inner sep=1pt]{$\l$};
+\end{tikzpicture}
+\end{center}
+\cas{3)}
+\explique{\res{$(u_{n})$ semble croissante} et \res{$(v_{n})$ semble décroissante} ; les
+termes des deux suites semblent se rapprocher de \res{$3$}.}{abscisse du point d'intersection
+de $\Cf$ et de la droite $y=x$}
+\cas{4)}
+\explique{Pour $x\geq 0$, les deux membres de $\sqrt{2x+3}=x$ sont positifs : l'équation
+équivaut à $2x+3=x^{2}$.}{on élève au carré deux nombres positifs}
+\begin{calculs}
+x^{2}-2x-3 &= 0 &&\\
+(x-3)(x+1) &= 0 &&\justif{on vérifie en développant : $x^{2}+x-3x-3$}
+\end{calculs}
+\eqproduit{x-3 &= 0\\ x &= 3}{x+1 &= 0\\ x &= -1}
+\explique{Seule la solution positive convient : $\res{S=\ens{3}}$. C'est cohérent avec la
+conjecture : la courbe coupe la droite $y=x$ au point d'abscisse $3$.}{$-1$ n'est pas dans
+$\intfo{0}{+\infty}$}
+\end{exo}
+
+\partie{Sens de variation : trois méthodes}
+
+\begin{exo}[Étudier le sens de variation]
+\cas{a)}
+\explique{On choisit la méthode de la différence.}{polynôme en $n$}
+\begin{calculs}
+a_{n+1}-a_{n} &= 2(n+1)^{2}-9(n+1)+1-(2n^{2}-9n+1) &&\\
+a_{n+1}-a_{n} &= 2n^{2}+4n+2-9n-9+1-2n^{2}+9n-1 &&\justif{$(n+1)^{2}=n^{2}+2n+1$}\\
+a_{n+1}-a_{n} &= 4n-7 &&
+\end{calculs}
+\explique{$4n-7\geq 0$ équivaut à $n\geq 1{,}75$ : pour tout entier $n\geq 2$, on a
+$a_{n+1}\geq a_{n}$. \res{$(a_{n})$ est croissante à partir du rang $2$}.}{signe de la
+différence ; avant, elle décroît : $a_{0}=1$, $a_{1}=-6$, $a_{2}=-9$}
+\cas{b)}
+\explique{On choisit la méthode du quotient : pour tout $n\in\Ns$, on a $b_{n}>0$.}{des
+puissances $2^{n}$}
+\begin{calculs}
+\frac{b_{n+1}}{b_{n}} &= \frac{2^{n+1}}{n+1}\times\frac{n}{2^{n}} &&\justif{diviser, c'est multiplier par l'inverse}\\
+\frac{b_{n+1}}{b_{n}} &= \frac{2\times\barre{2^{n}}\times n}{(n+1)\times\barre{2^{n}}} &&\\
+\frac{b_{n+1}}{b_{n}} &= \frac{2n}{n+1} &&
+\end{calculs}
+\explique{Pour $n\geq 1$, on a $2n=n+n\geq n+1$, donc $\frac{b_{n+1}}{b_{n}}\geq 1$ :
+\res{$(b_{n})$ est croissante}.}{$b_{1}=b_{2}=2$, puis la suite augmente}
+\cas{c)}
+\explique{Ici $c_{n}=g(n)$ avec $g(x)=x^{4}+3x^{2}$ : on choisit d'étudier les variations de
+$g$ sur $\intfo{0}{+\infty}$.}{fonction associée}
+\begin{calculs}
+g'(x) &= 4x^{3}+6x &&
+\end{calculs}
+\explique{Pour $x\geq 0$, les deux termes sont positifs, donc $g'(x)\geq 0$ : $g$ est
+croissante sur $\intfo{0}{+\infty}$, donc \res{$(c_{n})$ est croissante}.}{}
+\cas{d)}
+\explique{On choisit la méthode de la différence.}{}
+\begin{calculs}
+d_{n+1}-d_{n} &= 7-\frac{4}{n+2}-\left(7-\frac{4}{n+1}\right) &&\\
+d_{n+1}-d_{n} &= \frac{4}{n+1}-\frac{4}{n+2} &&\\
+d_{n+1}-d_{n} &= \frac{4(n+2)-4(n+1)}{(n+1)(n+2)} &&\justif{même dénominateur}\\
+d_{n+1}-d_{n} &= \frac{4}{(n+1)(n+2)} &&
+\end{calculs}
+\explique{Le numérateur et le dénominateur sont positifs : $d_{n+1}-d_{n}>0$, donc
+\res{$(d_{n})$ est croissante}.}{}
+\cas{e)}
+\explique{On choisit la méthode du quotient : pour tout $n\in\N$, on a $e_{n}>0$.}{}
+\begin{calculs}
+\frac{e_{n+1}}{e_{n}} &= \frac{5\times 0{,}6^{n+1}}{5\times 0{,}6^{n}} &&\\
+\frac{e_{n+1}}{e_{n}} &= 0{,}6 &&
+\end{calculs}
+\explique{On a $0{,}6<1$, donc \res{$(e_{n})$ est décroissante}.}{suite géométrique de
+raison $0{,}6$, à termes positifs}
+\end{exo}
+
+\begin{exo}[Une suite définie par un quotient]
+\cas{1)}
+\begin{calculs}
+u_{0} &= \frac{0+1}{0+3} = \res{\frac{1}{3}} &&\\
+u_{1} &= \frac{2+1}{1+3} = \res{\frac{3}{4}} &&\\
+u_{2} &= \frac{4+1}{2+3} = \res{1} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+u_{n+1}-u_{n} &= \frac{2(n+1)+1}{(n+1)+3}-\frac{2n+1}{n+3} &&\\
+u_{n+1}-u_{n} &= \frac{2n+3}{n+4}-\frac{2n+1}{n+3} &&\\
+u_{n+1}-u_{n} &= \frac{(2n+3)(n+3)-(2n+1)(n+4)}{(n+3)(n+4)} &&\justif{dénominateur commun}\\
+u_{n+1}-u_{n} &= \frac{2n^{2}+9n+9-(2n^{2}+9n+4)}{(n+3)(n+4)} &&\justif{on développe}\\
+u_{n+1}-u_{n} &= \res{\frac{5}{(n+3)(n+4)}} &&
+\end{calculs}
+\cas{3)}
+\explique{Pour tout $n\in\N$, $(n+3)(n+4)>0$, donc $u_{n+1}-u_{n}>0$ :
+\res{$(u_{n})$ est croissante}.}{signe de la différence}
+\cas{4)}
+\begin{calculs}
+2-\frac{5}{n+3} &= \frac{2(n+3)-5}{n+3} &&\\
+2-\frac{5}{n+3} &= \frac{2n+1}{n+3} &&\justif{on retrouve $u_{n}$}
+\end{calculs}
+\explique{Comme $\frac{5}{n+3}>0$, on a $2-\frac{5}{n+3}<2$, soit \res{$u_{n}<2$} pour tout
+$n\in\N$.}{on enlève à $2$ un nombre positif}
+\cas{5)}
+\begin{calculs}
+g'(x) &= -5\times\left(-\frac{1}{(x+3)^{2}}\right) &&\justif{$\left(\frac{1}{v}\right)'=-\frac{v'}{v^{2}}$, avec $v=x+3$}\\
+g'(x) &= \frac{5}{(x+3)^{2}} &&
+\end{calculs}
+\explique{$g'(x)>0$ : $g$ est croissante sur $\intfo{0}{+\infty}$, et $u_{n}=g(n)$, donc
+\res{$(u_{n})$ est croissante}.}{méthode de la fonction associée}
+\end{exo}
+
+\begin{exo}[Décroissante à partir d'un rang]
+\cas{1)}
+\explique{Valeurs arrondies au millième (calculatrice, mode suite) :}{}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ \\ \hline
+$u_{n}$ & $0$ & $0{,}9$ & $1{,}62$ & $2{,}187$ & $2{,}624$ & $2{,}952$ & $3{,}189$ \\ \hline
+\end{tabular}
+\\[4pt]
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$n$ & $7$ & $8$ & $9$ & $10$ & $11$ & $12$ \\ \hline
+$u_{n}$ & $3{,}348$ & $3{,}444$ & $3{,}487$ & $3{,}487$ & $3{,}452$ & $3{,}389$ \\ \hline
+\end{tabular}
+\end{center}
+\explique{\res{La suite semble croissante jusqu'au rang $9$, puis décroissante}.}{une
+conjecture}
+\cas{2)}
+\begin{calculs}
+\frac{u_{n+1}}{u_{n}} &= \frac{(n+1)\times 0{,}9^{n+1}}{n\times 0{,}9^{n}} &&\justif{$u_{n}>0$ pour $n\geq 1$}\\
+\frac{u_{n+1}}{u_{n}} &= \frac{(n+1)\times 0{,}9\times\barre{0{,}9^{n}}}{n\times\barre{0{,}9^{n}}} &&\\
+\frac{u_{n+1}}{u_{n}} &= \res{\frac{0{,}9\,(n+1)}{n}} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+\frac{0{,}9\,(n+1)}{n} &\leq 1 &&\\
+0{,}9n+0{,}9 &\leq n &&\justif{on multiplie par $n>0$}\\
+0{,}9 &\leq 0{,}1\,n &&\\
+9 &\leq n &&\justif{on divise par $0{,}1>0$}
+\end{calculs}
+\explique{L'ensemble des solutions est l'ensemble des \res{entiers $n\geq 9$}.}{}
+\cas{4)}
+\explique{Pour tout entier $n\geq 9$, on a $u_{n+1}\leq u_{n}$ : \res{$(u_{n})$ est
+décroissante à partir du rang $9$}. Pour $1\leq n\leq 8$, le quotient est supérieur à $1$ :
+la suite croît jusqu'au rang $9$.}{et $u_{0}=0<u_{1}$}
+\explique{Le quotient vaut $1$ pour $n=9$, donc $u_{10}=u_{9}$. La plus grande valeur est
+\res{$u_{9}=u_{10}=9\times 0{,}9^{9}\approx 3{,}487$}.}{la suite monte jusqu'à $u_{9}$,
+puis descend}
+\end{exo}
+
+\begin{exo}[Suites récurrentes : la méthode de la différence]
+\cas{a)}
+\begin{calculs}
+u_{n+1}-u_{n} &= n^{2}-5n+6 &&\justif{la relation donne directement la différence}\\
+u_{n+1}-u_{n} &= (n-2)(n-3) &&\justif{on vérifie : $n^{2}-3n-2n+6$}
+\end{calculs}
+\explique{Pour un entier $n\leq 2$, les deux facteurs sont négatifs ou nuls ; pour un entier
+$n\geq 3$, ils sont positifs. Il n'y a pas d'entier strictement entre $2$ et $3$ : le
+produit est toujours positif ou nul, donc \res{$(u_{n})$ est croissante}.}{le seul endroit
+où le produit est négatif, $\intoo{2}{3}$, ne contient pas d'entier}
+\cas{b)}
+\begin{calculs}
+v_{n+1}-v_{n} &= -\frac{2}{v_{n}^{2}+1} &&
+\end{calculs}
+\explique{On a $v_{n}^{2}+1>0$, donc $v_{n+1}-v_{n}<0$ : \res{$(v_{n})$ est
+décroissante}.}{un carré plus $1$ est strictement positif}
+\cas{c)}
+\begin{calculs}
+w_{n+1}-w_{n} &= w_{n}^{2}-w_{n}+1-w_{n} &&\\
+w_{n+1}-w_{n} &= w_{n}^{2}-2w_{n}+1 &&\\
+w_{n+1}-w_{n} &= (w_{n}-1)^{2} &&\justif{identité remarquable}
+\end{calculs}
+\explique{Un carré est positif, donc $w_{n+1}-w_{n}\geq 0$ : \res{$(w_{n})$ est
+croissante}.}{}
+\rem{Pour une suite $u_{n+1}=f(u_{n})$, la différence $u_{n+1}-u_{n}$ s'écrit avec $u_{n}$ :
+on cherche son signe sans connaître $u_{n}$ (carré, quotient de nombres positifs).}
+\end{exo}
+
+\partie{Le raisonnement par récurrence}
+
+\begin{exo}[Comprendre une propriété $P_{n}$]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 3\times 1+2 = \res{5} &&\\
+u_{2} &= 3\times 5+2 = \res{17} &&
+\end{calculs}
+\cas{2)}
+\begin{python}
+def suite(n):
+    u = 1
+    for i in range(n):
+        u = 3 * u + 2
+    return u
+\end{python}
+\explique{On part de \res{$u_{0}=1$} et on applique $n$ fois la relation.}{}
+\cas{3)}
+\explique{Les premiers termes $1$, $5$, $17$ augmentent : \res{$(u_{n})$ semble
+croissante}.}{une conjecture}
+\cas{4)}
+\explique{On remplace $n$ par $0$, $1$ et $2$, avec $u_{0}=1$, $u_{1}=5$ et $u_{2}=17$ :}{}
+\begin{itemize}
+  \item $P_{n}$ «~$u_{n}\geq 1$~» : $1\geq 1$, $5\geq 1$, $17\geq 1$ : \res{vraie pour $n=0$,
+        $1$ et $2$}.
+  \item $Q_{n}$ «~$u_{n}=4n+1$~» : $4\times 0+1=1$ et $4\times 1+1=5$, mais
+        $4\times 2+1=9\neq 17$ : \res{vraie pour $n=0$ et $n=1$, fausse pour $n=2$}.
+  \item $R_{n}$ «~$u_{n}=2\times 3^{n}-1$~» : $2-1=1$, $6-1=5$, $18-1=17$ : \res{vraie pour
+        $n=0$, $1$ et $2$}.
+  \item $S_{n}$ «~$0<u_{n}<10$~» : $1$ et $5$ conviennent, pas $17$ : \res{vraie pour $n=0$
+        et $n=1$, fausse pour $n=2$}.
+\end{itemize}
+\cas{5)}
+\explique{\res{Non} : $Q_{2}$ est fausse. \res{Non} plus pour $S_{n}$ : $S_{2}$ est
+fausse.}{un seul rang où la propriété est fausse suffit}
+\cas{6)}
+\explique{\res{Non} : trois rangs ne prouvent rien pour les rangs suivants ($Q_{n}$ était
+vraie aux deux premiers rangs, puis fausse). Il faut une démonstration par récurrence.}{c'est
+tout l'enjeu de cette partie}
+\rem{On peut ici démontrer $R_{n}$ par récurrence : si $u_{n}=2\times 3^{n}-1$, alors
+$u_{n+1}=3(2\times 3^{n}-1)+2=2\times 3^{n+1}-1$.}
+\end{exo}
+
+\begin{exo}[L'initialisation est indispensable]
+\cas{1)}
+\begin{calculs}
+5^{n+1}+2 &= 5\times 5^{n}+2 &&\\
+5^{n+1}+2 &= 5(4k-2)+2 &&\justif{$5^{n}=4k-2$, d'après l'hypothèse}\\
+5^{n+1}+2 &= 20k-8 &&\\
+5^{n+1}+2 &= 4(5k-2) &&
+\end{calculs}
+\explique{$5k-2$ est un entier : $5^{n+1}+2$ est un multiple de $4$, donc \res{$P_{n+1}$ est
+vraie}. La propriété est héréditaire.}{}
+\cas{2)}
+\explique{$5^{0}+2=3$, qui n'est pas un multiple de $4$ : \res{$P_{0}$ est fausse}.}{}
+\cas{3)}
+\explique{\res{Non} : la propriété est héréditaire, mais elle n'est initialisée à aucun rang.
+En fait, d'après le 4), $5^{n}-1$ est un multiple de $4$, donc $5^{n}+2=(5^{n}-1)+3$ ne l'est
+jamais.}{l'hérédité seule ne prouve rien}
+\cas{4)}
+\explique{Pour tout $n\in\N$, on note $P'_{n}$ la propriété : «~$5^{n}-1$ est un multiple
+de~$4$~».}{}
+\explique{\textbf{Initialisation.} $5^{0}-1=0=4\times 0$, donc $P'_{0}$ est vraie.}{$0$ est
+un multiple de $4$}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P'_{n}$ est vraie : il existe un entier
+$k$ tel que $5^{n}-1=4k$. Montrons que $5^{n+1}-1$ est un multiple de $4$.}{}
+\begin{calculs}
+5^{n+1}-1 &= 5\times 5^{n}-1 &&\\
+5^{n+1}-1 &= 5(4k+1)-1 &&\justif{$5^{n}=4k+1$ (hypothèse de récurrence)}\\
+5^{n+1}-1 &= 20k+4 &&\\
+5^{n+1}-1 &= 4(5k+1) &&
+\end{calculs}
+\explique{$5k+1$ est un entier, donc $P'_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} $P'_{0}$ est vraie et la propriété est héréditaire ; d'après
+le principe de récurrence, \res{pour tout $n\in\N$, $5^{n}-1$ est un multiple de $4$}.}{}
+\end{exo}
+
+\begin{exo}[Démontrer une inégalité par récurrence]
+\cas{a)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$a_{n}\geq 3$~».}{}
+\explique{\textbf{Initialisation.} $a_{0}=4$ et $4\geq 3$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $a_{n}\geq 3$. Montrons que
+$a_{n+1}\geq 3$.}{}
+\begin{calculs}
+a_{n} &\geq 3 &&\justif{hypothèse de récurrence}\\
+2a_{n} &\geq 6 &&\justif{on multiplie par $2>0$}\\
+2a_{n}-3 &\geq 3 &&\\
+a_{n+1} &\geq 3 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ; d'après le
+principe de récurrence, \res{pour tout $n\in\N$, on a $a_{n}\geq 3$}.}{}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$b_{n}\leq 2$~».}{}
+\explique{\textbf{Initialisation.} $b_{0}=1$ et $1\leq 2$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $b_{n}\leq 2$. Montrons que
+$b_{n+1}\leq 2$.}{}
+\begin{calculs}
+b_{n} &\leq 2 &&\justif{hypothèse de récurrence}\\
+0{,}5\,b_{n} &\leq 1 &&\justif{on multiplie par $0{,}5>0$}\\
+0{,}5\,b_{n}+1 &\leq 2 &&\\
+b_{n+1} &\leq 2 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $b_{n}\leq 2$}.}{}
+\cas{c)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$c_{n}\geq 0$~».}{}
+\explique{\textbf{Initialisation.} $c_{0}=0$ et $0\geq 0$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $c_{n}\geq 0$. Montrons que
+$c_{n+1}\geq 0$.}{}
+\begin{calculs}
+c_{n} &\geq 0 &&\justif{hypothèse de récurrence}\\
+3c_{n} &\geq 0 &&\\
+3c_{n}+1 &\geq 1 &&\\
+c_{n+1} &\geq 1 &&
+\end{calculs}
+\explique{Or $1\geq 0$, donc $c_{n+1}\geq 0$ : $P_{n+1}$ est vraie.}{mieux que le but : on
+« retaille »}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $c_{n}\geq 0$}.}{}
+\cas{d)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$d_{n}\geq 2$~».}{}
+\explique{\textbf{Initialisation.} $d_{0}=2$ et $2\geq 2$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $d_{n}\geq 2$. Montrons que
+$d_{n+1}\geq 2$.}{}
+\begin{calculs}
+d_{n} &\geq 2 &&\justif{hypothèse de récurrence}\\
+d_{n}^{2} &\geq 4 &&\justif{la fonction carré est croissante sur $\intfo{0}{+\infty}$}\\
+d_{n}^{2}+1 &\geq 5 &&\\
+d_{n+1} &\geq 5 &&
+\end{calculs}
+\explique{Or $5\geq 2$, donc $d_{n+1}\geq 2$ : $P_{n+1}$ est vraie.}{on retaille}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $d_{n}\geq 2$}.}{}
+\rem{Erreur fréquente en d) : élever au carré sans vérifier que les nombres sont positifs
+($-3\leq 2$, mais $9\geq 4$).}
+\end{exo}
+
+\begin{exo}[Comparer une suite à $2n^{2}$]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 2+4\times 0+3 = \res{5} &&\justif{$2\times 1^{2}=2$}\\
+u_{2} &= 5+4\times 1+3 = \res{12} &&\justif{$2\times 2^{2}=8$}\\
+u_{3} &= 12+4\times 2+3 = \res{23} &&\justif{$2\times 3^{2}=18$}
+\end{calculs}
+\explique{À chaque rang, \res{$u_{n}$ est supérieur à $2n^{2}$}.}{}
+\cas{2)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}\geq 2n^{2}$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=2$ et $2\times 0^{2}=0$ ; $2\geq 0$, donc $P_{0}$
+est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\geq 2n^{2}$. Montrons que
+$u_{n+1}\geq 2(n+1)^{2}$, c'est-à-dire $u_{n+1}\geq 2n^{2}+4n+2$.}{on développe le but}
+\begin{calculs}
+u_{n} &\geq 2n^{2} &&\justif{hypothèse de récurrence}\\
+u_{n}+4n+3 &\geq 2n^{2}+4n+3 &&\justif{on ajoute $4n+3$}\\
+u_{n+1} &\geq 2n^{2}+4n+3 &&
+\end{calculs}
+\explique{Or $2n^{2}+4n+3\geq 2n^{2}+4n+2$, donc $u_{n+1}\geq 2(n+1)^{2}$ : $P_{n+1}$ est
+vraie.}{on retaille}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ; d'après le
+principe de récurrence, \res{pour tout $n\in\N$, on a $u_{n}\geq 2n^{2}$}.}{}
+\cas{3)}
+\explique{Pour $n\geq 10$, on a $n^{2}\geq 100$, donc $2n^{2}\geq 200$, et
+$u_{n}\geq 2n^{2}$ : \res{$u_{n}\geq 200$}.}{deux inégalités qui s'enchaînent}
+\end{exo}
+
+\begin{exo}[Une inégalité à partir d'un rang]
+\cas{1)}
+\begin{calculs}
+4n+2 &\geq 2n+3 &&\\
+2n &\geq 1 &&\\
+n &\geq \frac{1}{2} &&
+\end{calculs}
+\explique{Dans $\N$, les solutions sont \res{les entiers $n\geq 1$}.}{}
+\cas{2)}
+\begin{itemize}
+  \item $n=0$ : $2^{0}=1$ et $2\times 0+1=1$ : \res{vraie}.
+  \item $n=1$ : $2^{1}=2$ et $2\times 1+1=3$ : \res{fausse}.
+  \item $n=2$ : $2^{2}=4$ et $2\times 2+1=5$ : \res{fausse}.
+  \item $n=3$ : $2^{3}=8$ et $2\times 3+1=7$ : \res{vraie}.
+\end{itemize}
+\cas{3)}
+\explique{Pour tout entier $n\geq 3$, on note $P_{n}$ la propriété :
+«~$2^{n}\geq 2n+1$~».}{}
+\explique{\textbf{Initialisation.} $2^{3}=8$ et $2\times 3+1=7$ ; $8\geq 7$, donc $P_{3}$
+est vraie.}{on initialise au rang $3$}
+\explique{\textbf{Hérédité.} Soit un entier $n\geq 3$ tel que $2^{n}\geq 2n+1$. Montrons que
+$2^{n+1}\geq 2(n+1)+1$, c'est-à-dire $2^{n+1}\geq 2n+3$.}{}
+\begin{calculs}
+2^{n} &\geq 2n+1 &&\justif{hypothèse de récurrence}\\
+2\times 2^{n} &\geq 2(2n+1) &&\justif{on multiplie par $2>0$}\\
+2^{n+1} &\geq 4n+2 &&
+\end{calculs}
+\explique{D'après le 1), comme $n\geq 1$, on a $4n+2\geq 2n+3$, donc $2^{n+1}\geq 2n+3$ :
+$P_{n+1}$ est vraie.}{c'est là que sert le 1)}
+\explique{\textbf{Conclusion.} $P_{3}$ est vraie et la propriété est héréditaire à partir du
+rang $3$ ; d'après le principe de récurrence, \res{pour tout entier $n\geq 3$, on a
+$2^{n}\geq 2n+1$}.}{}
+\cas{4)}
+\explique{L'hérédité ne marche pas pour $n=0$ : $4\times 0+2=2<3$. Ainsi $P_{0}$ est vraie,
+mais \res{elle n'entraîne pas $P_{1}$, qui est fausse} ; on ne peut initialiser qu'à un
+rang à partir duquel l'hérédité fonctionne.}{dominos : celui du rang $0$ tombe, mais ne fait
+pas tomber le suivant}
+\end{exo}
+
+\begin{exo}[Une suite qui grandit vite]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 0^{2}+1 = \res{1} &&\\
+u_{2} &= 1^{2}+1 = \res{2} &&\\
+u_{3} &= 2^{2}+1 = \res{5} &&\\
+u_{4} &= 5^{2}+1 = \res{26} &&\\
+u_{5} &= 26^{2}+1 = \res{677} &&
+\end{calculs}
+\cas{2)}
+\explique{Les puissances de $2$ valent $1$, $2$, $4$, $8$, $16$, $32$. On a $u_{n}<2^{n}$
+pour $n$ de $0$ à $3$ ($0<1$, $1<2$, $2<4$, $5<8$), puis \res{$u_{n}\geq 2^{n}$ à partir du
+rang $4$} ($26\geq 16$, $677\geq 32$).}{}
+\cas{3)}
+\explique{Pour tout entier $n\geq 4$, on note $P_{n}$ la propriété : «~$u_{n}\geq 2^{n}$~».}{}
+\explique{\textbf{Initialisation.} $u_{4}=26$ et $2^{4}=16$ ; $26\geq 16$, donc $P_{4}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit un entier $n\geq 4$ tel que $u_{n}\geq 2^{n}$. Montrons
+que $u_{n+1}\geq 2^{n+1}$.}{}
+\begin{calculs}
+u_{n} &\geq 2^{n} &&\justif{hypothèse de récurrence ; les deux membres sont positifs}\\
+u_{n}^{2} &\geq 2^{n}\times 2^{n} &&\justif{la fonction carré est croissante sur $\intfo{0}{+\infty}$}\\
+u_{n}^{2}+1 &\geq 2^{n}\times 2^{n} &&\justif{on ajoute $1$ : l'inégalité reste vraie}\\
+u_{n+1} &\geq 2^{n}\times 2^{n} &&
+\end{calculs}
+\explique{Or $2^{n}\geq 2$ (car $n\geq 1$), donc $2^{n}\times 2^{n}\geq 2\times 2^{n}=2^{n+1}$,
+et $u_{n+1}\geq 2^{n+1}$ : $P_{n+1}$ est vraie.}{on retaille}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout entier
+$n\geq 4$, on a $u_{n}\geq 2^{n}$}.}{}
+\end{exo}
+
+\partie{Récurrence et terme général d'une suite}
+
+\begin{exo}[Démontrer l'expression de $u_{n}$]
+\cas{a)}
+\begin{calculs}
+u_{1} &= 2\times 5-3 = \res{7} &&\\
+u_{2} &= 2\times 7-3 = \res{11} &&
+\end{calculs}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}=2^{n+1}+3$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=5$ et $2^{1}+3=5$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=2^{n+1}+3$. Montrons que
+$u_{n+1}=2^{n+2}+3$.}{}
+\begin{calculs}
+u_{n+1} &= 2u_{n}-3 &&\\
+u_{n+1} &= 2\left(2^{n+1}+3\right)-3 &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= 2^{n+2}+6-3 &&\\
+u_{n+1} &= 2^{n+2}+3 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ; d'après le
+principe de récurrence, \res{pour tout $n\in\N$, on a $u_{n}=2^{n+1}+3$}.}{}
+\cas{b)}
+\begin{calculs}
+v_{1} &= -2+2\times 0+4 = \res{2} &&\\
+v_{2} &= 2+2\times 1+4 = \res{8} &&
+\end{calculs}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$v_{n}=n^{2}+3n-2$~».}{}
+\explique{\textbf{Initialisation.} $v_{0}=-2$ et $0+0-2=-2$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $v_{n}=n^{2}+3n-2$. Montrons que
+$v_{n+1}=(n+1)^{2}+3(n+1)-2$.}{}
+\begin{calculs}
+v_{n+1} &= v_{n}+2n+4 &&\\
+v_{n+1} &= n^{2}+3n-2+2n+4 &&\justif{hypothèse de récurrence}\\
+v_{n+1} &= n^{2}+5n+2 &&
+\end{calculs}
+\begin{calculs}
+(n+1)^{2}+3(n+1)-2 &= n^{2}+2n+1+3n+3-2 &&\justif{on développe le but}\\
+(n+1)^{2}+3(n+1)-2 &= n^{2}+5n+2 &&
+\end{calculs}
+\explique{Les deux expressions sont égales : $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $v_{n}=n^{2}+3n-2$}.}{}
+\cas{c)}
+\begin{calculs}
+w_{1} &= 1{,}2\times 80-4 = \res{92} &&\\
+w_{2} &= 1{,}2\times 92-4 = \res{106{,}4} &&
+\end{calculs}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$w_{n}=60\times 1{,}2^{n}+20$~».}{}
+\explique{\textbf{Initialisation.} $w_{0}=80$ et $60\times 1+20=80$, donc $P_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $w_{n}=60\times 1{,}2^{n}+20$. Montrons
+que $w_{n+1}=60\times 1{,}2^{n+1}+20$.}{}
+\begin{calculs}
+w_{n+1} &= 1{,}2\,w_{n}-4 &&\\
+w_{n+1} &= 1{,}2\left(60\times 1{,}2^{n}+20\right)-4 &&\justif{hypothèse de récurrence}\\
+w_{n+1} &= 60\times 1{,}2^{n+1}+24-4 &&\justif{$1{,}2\times 1{,}2^{n}=1{,}2^{n+1}$}\\
+w_{n+1} &= 60\times 1{,}2^{n+1}+20 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $w_{n}=60\times 1{,}2^{n}+20$}.}{}
+\end{exo}
+
+\begin{exo}[Des vélos en libre-service]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 0{,}8\times 300+100 = \res{340} &&\\
+u_{2} &= 0{,}8\times 340+100 = \res{372} &&
+\end{calculs}
+\cas{2)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}=500-200\times 0{,}8^{n}$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=300$ et $500-200\times 1=300$, donc $P_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=500-200\times 0{,}8^{n}$.
+Montrons que $u_{n+1}=500-200\times 0{,}8^{n+1}$.}{}
+\begin{calculs}
+u_{n+1} &= 0{,}8\,u_{n}+100 &&\\
+u_{n+1} &= 0{,}8\left(500-200\times 0{,}8^{n}\right)+100 &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= 400-200\times 0{,}8^{n+1}+100 &&\\
+u_{n+1} &= 500-200\times 0{,}8^{n+1} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ; d'après le
+principe de récurrence, \res{pour tout $n\in\N$, on a $u_{n}=500-200\times 0{,}8^{n}$}.}{}
+\cas{3)}
+\begin{calculs}
+u_{12} &= 500-200\times 0{,}8^{12} &&\justif{janvier 2027 : $12$ mois après janvier 2026}\\
+u_{12} &\approx 486{,}3 &&
+\end{calculs}
+\explique{En janvier 2027, le service comptera environ \res{$486$ abonnés}.}{}
+\cas{4)}
+\explique{Pour tout $n\in\N$, on a $200\times 0{,}8^{n}>0$, donc
+\res{$u_{n}<500$} : on enlève à $500$ un nombre strictement positif.}{}
+\cas{5)}
+\begin{python}
+def seuil():
+    n = 0
+    u = 300
+    while u <= 480:
+        n = n + 1
+        u = 0.8 * u + 100
+    return n
+\end{python}
+\explique{La boucle tourne \res{tant que $u\leq 480$} et s'arrête au premier terme
+supérieur à $480$.}{on écrit la condition contraire de celle qu'on cherche}
+\cas{6)}
+\begin{calculs}
+u_{10} &\approx 478{,}5 &&\justif{encore inférieur ou égal à $480$}\\
+u_{11} &\approx 482{,}8 &&\justif{premier terme supérieur à $480$}
+\end{calculs}
+\explique{Le service dépassera $480$ abonnés $11$ mois après janvier 2026, soit \res{en
+décembre 2026}.}{}
+\end{exo}
+
+\begin{exo}[Conjecturer, puis démontrer]
+\cas{1)}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ \\ \hline
+$u_{n}$ & $0$ & $3$ & $15$ & $63$ & $255$ \\ \hline
+$u_{n}+1$ & $1$ & $4$ & $16$ & $64$ & $256$ \\ \hline
+\end{tabular}
+\end{center}
+\explique{Par exemple, $u_{2}=4\times 3+3=15$.}{}
+\cas{2)}
+\explique{On reconnaît les puissances de $4$, soit $4^{0}$, $4^{1}$, $4^{2}$, $4^{3}$, $4^{4}$.
+On conjecture \res{$u_{n}+1=4^{n}$}, soit \res{$u_{n}=4^{n}-1$}.}{}
+\cas{3)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}=4^{n}-1$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $4^{0}-1=0$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=4^{n}-1$. Montrons que
+$u_{n+1}=4^{n+1}-1$.}{}
+\begin{calculs}
+u_{n+1} &= 4u_{n}+3 &&\\
+u_{n+1} &= 4\left(4^{n}-1\right)+3 &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= 4^{n+1}-4+3 &&\\
+u_{n+1} &= 4^{n+1}-1 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}=4^{n}-1$}.}{}
+\end{exo}
+
+\begin{exo}[Une suite homographique]
+\cas{1)}
+\begin{calculs}
+u_{1} &= \frac{3\times\frac12}{1+2\times\frac12} = \frac{\frac32}{2} = \res{\frac{3}{4}} &&\\
+u_{2} &= \frac{3\times\frac34}{1+2\times\frac34} = \frac{\frac94}{\frac52} = \res{\frac{9}{10}} &&\justif{$\frac94\times\frac25=\frac{18}{20}$}
+\end{calculs}
+\cas{2)}
+\explique{$u_{0}=\frac{1}{2}=\frac{3^{0}}{3^{0}+1}$, $u_{1}=\frac{3}{4}=\frac{3^{1}}{3^{1}+1}$,
+$u_{2}=\frac{9}{10}=\frac{3^{2}}{3^{2}+1}$ : on conjecture
+\res{$u_{n}=\dfrac{3^{n}}{3^{n}+1}$}.}{le dénominateur dépasse le numérateur de $1$}
+\cas{3)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}=\dfrac{3^{n}}{3^{n}+1}$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=\frac12$ et $\frac{3^{0}}{3^{0}+1}=\frac12$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=\dfrac{3^{n}}{3^{n}+1}$. Montrons
+que $u_{n+1}=\dfrac{3^{n+1}}{3^{n+1}+1}$.}{}
+\begin{calculs}
+3u_{n} &= \frac{3^{n+1}}{3^{n}+1} &&\justif{le numérateur de $u_{n+1}$}\\
+1+2u_{n} &= \frac{3^{n}+1+2\times 3^{n}}{3^{n}+1} &&\justif{le dénominateur}\\
+1+2u_{n} &= \frac{3^{n+1}+1}{3^{n}+1} &&\justif{$3^{n}+2\times 3^{n}=3\times 3^{n}$}
+\end{calculs}
+\begin{calculs}
+u_{n+1} &= \frac{3^{n+1}}{3^{n}+1}\times\frac{3^{n}+1}{3^{n+1}+1} &&\justif{diviser, c'est multiplier par l'inverse}\\
+u_{n+1} &= \frac{3^{n+1}}{3^{n+1}+1} &&\justif{on simplifie par $3^{n}+1$}
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}=\dfrac{3^{n}}{3^{n}+1}$}.}{}
+\cas{4)}
+\begin{calculs}
+v_{n+1} &= \frac{1}{u_{n+1}}-1 &&\\
+v_{n+1} &= \frac{1+2u_{n}}{3u_{n}}-1 &&\justif{l'inverse de $\frac{3u_{n}}{1+2u_{n}}$}\\
+v_{n+1} &= \frac{1+2u_{n}-3u_{n}}{3u_{n}} &&\\
+v_{n+1} &= \frac{1}{3}\times\frac{1-u_{n}}{u_{n}} &&\\
+v_{n+1} &= \frac{1}{3}\left(\frac{1}{u_{n}}-1\right) &&\justif{$\frac{1-u_{n}}{u_{n}}=\frac{1}{u_{n}}-1$}\\
+v_{n+1} &= \frac{1}{3}\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $\frac{1}{3}$}, de premier terme
+$v_{0}=2-1=1$, donc $v_{n}=\left(\frac13\right)^{n}$.}{}
+\begin{calculs}
+\frac{1}{u_{n}} &= 1+\left(\frac{1}{3}\right)^{n} &&\justif{car $v_{n}=\frac{1}{u_{n}}-1$}\\
+u_{n} &= \frac{1}{1+\frac{1}{3^{n}}} &&\\
+u_{n} &= \res{\frac{3^{n}}{3^{n}+1}} &&\justif{on multiplie en haut et en bas par $3^{n}$}
+\end{calculs}
+\rem{Deux chemins vers la même formule : conjecturer puis démontrer par récurrence, ou
+passer par une suite auxiliaire (partie II).}
+\end{exo}
+
+\begin{exo}[Expression et sens de variation]
+\cas{1)}
+\begin{calculs}
+u_{1} &= 2\times 2-0 = \res{4} &&\\
+u_{2} &= 2\times 4-1 = \res{7} &&\\
+u_{3} &= 2\times 7-2 = \res{12} &&
+\end{calculs}
+\cas{2)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}=2^{n}+n+1$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=2$ et $2^{0}+0+1=2$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=2^{n}+n+1$. Montrons que
+$u_{n+1}=2^{n+1}+(n+1)+1$.}{}
+\begin{calculs}
+u_{n+1} &= 2u_{n}-n &&\\
+u_{n+1} &= 2\left(2^{n}+n+1\right)-n &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= 2^{n+1}+2n+2-n &&\\
+u_{n+1} &= 2^{n+1}+(n+1)+1 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}=2^{n}+n+1$}.}{}
+\cas{3)}
+\begin{calculs}
+u_{n+1}-u_{n} &= 2^{n+1}+n+2-\left(2^{n}+n+1\right) &&\\
+u_{n+1}-u_{n} &= 2\times 2^{n}-2^{n}+1 &&\\
+u_{n+1}-u_{n} &= 2^{n}+1 &&
+\end{calculs}
+\explique{On a $2^{n}+1>0$ : \res{$(u_{n})$ est croissante}.}{l'expression trouvée au 2)
+sert à la différence}
+\cas{4)}
+\begin{calculs}
+u_{20} &= 2^{20}+20+1 = \res{1\,048\,597} &&
+\end{calculs}
+\end{exo}
+
+\partie{Récurrence et sens de variation}
+
+\begin{exo}[Démontrer qu'une suite est monotone]
+\cas{a)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$a_{n}\leq a_{n+1}$~».}{croissante}
+\explique{\textbf{Initialisation.} $a_{1}=0{,}5\times 1+3=3{,}5$ et $1\leq 3{,}5$, donc
+$P_{0}$ est vraie.}{on calcule $a_{1}$}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $a_{n}\leq a_{n+1}$. Montrons que
+$a_{n+1}\leq a_{n+2}$.}{}
+\begin{calculs}
+a_{n} &\leq a_{n+1} &&\justif{hypothèse de récurrence}\\
+0{,}5\,a_{n} &\leq 0{,}5\,a_{n+1} &&\justif{$0{,}5>0$}\\
+0{,}5\,a_{n}+3 &\leq 0{,}5\,a_{n+1}+3 &&\\
+a_{n+1} &\leq a_{n+2} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\N$, on a
+$a_{n}\leq a_{n+1}$ : \res{la suite $(a_{n})$ est croissante}.}{}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$b_{n+1}\leq b_{n}$~».}{décroissante}
+\explique{\textbf{Initialisation.} $b_{1}=0{,}5\times 10+3=8$ et $8\leq 10$, donc $P_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $b_{n+1}\leq b_{n}$. Montrons que
+$b_{n+2}\leq b_{n+1}$.}{}
+\begin{calculs}
+b_{n+1} &\leq b_{n} &&\justif{hypothèse de récurrence}\\
+0{,}5\,b_{n+1}+3 &\leq 0{,}5\,b_{n}+3 &&\justif{on multiplie par $0{,}5>0$, puis on ajoute $3$}\\
+b_{n+2} &\leq b_{n+1} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\N$, on a
+$b_{n+1}\leq b_{n}$ : \res{la suite $(b_{n})$ est décroissante}.}{même relation qu'en a),
+autre premier terme}
+\cas{c)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$c_{n}\leq c_{n+1}$~».}{}
+\explique{\textbf{Initialisation.} $c_{1}=3\times 1-1=2$ et $1\leq 2$, donc $P_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $c_{n}\leq c_{n+1}$. Montrons que
+$c_{n+1}\leq c_{n+2}$.}{}
+\begin{calculs}
+c_{n} &\leq c_{n+1} &&\justif{hypothèse de récurrence}\\
+3c_{n}-1 &\leq 3c_{n+1}-1 &&\justif{on multiplie par $3>0$, puis on retire $1$}\\
+c_{n+1} &\leq c_{n+2} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\N$, on a
+$c_{n}\leq c_{n+1}$ : \res{la suite $(c_{n})$ est croissante}.}{}
+\end{exo}
+
+\begin{exo}[Avec une racine carrée]
+\cas{1)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}\leq u_{n+1}$~».}{}
+\explique{\textbf{Initialisation.} $u_{1}=\sqrt{13}\approx 3{,}61$ et $1\leq\sqrt{13}$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\leq u_{n+1}$. Montrons que
+$u_{n+1}\leq u_{n+2}$.}{}
+\begin{calculs}
+u_{n} &\leq u_{n+1} &&\justif{hypothèse de récurrence}\\
+u_{n}+12 &\leq u_{n+1}+12 &&\justif{nombres positifs, car $u_{n}\geq 0$}\\
+\sqrt{u_{n}+12} &\leq \sqrt{u_{n+1}+12} &&\justif{la racine carrée est croissante sur $\intfo{0}{+\infty}$}\\
+u_{n+1} &\leq u_{n+2} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\N$, on a
+$u_{n}\leq u_{n+1}$ : \res{la suite $(u_{n})$ est croissante}.}{}
+\cas{2)}
+\explique{Avec $u_{0}=5$, on a $u_{1}=\sqrt{17}\approx 4{,}12\leq 5$. On note $P_{n}$ la
+propriété «~$u_{n+1}\leq u_{n}$~» : $P_{0}$ est vraie, et l'hérédité se démontre comme au 1),
+les inégalités dans l'autre sens.}{même calcul : $u_{n+1}\leq u_{n}$ donne
+$\sqrt{u_{n+1}+12}\leq\sqrt{u_{n}+12}$}
+\explique{D'après le principe de récurrence, \res{la suite obtenue est décroissante}.}{seule
+l'initialisation change}
+\cas{3)}
+\explique{Avec $u_{0}=4$, on a $u_{1}=\sqrt{16}=4$, puis $u_{2}=4$… Par récurrence (si
+$u_{n}=4$, alors $u_{n+1}=\sqrt{16}=4$), \res{la suite est constante, égale à $4$}.}{$4$ est
+la solution positive de $\sqrt{x+12}=x$}
+\end{exo}
+
+\begin{exo}[Une fonction et trois suites]
+\cas{1)}
+\begin{calculs}
+f'(x) &= 3x^{2}-12x+12 &&\\
+f'(x) &= 3(x^{2}-4x+4) &&\\
+f'(x) &= 3(x-2)^{2} &&\justif{identité remarquable}
+\end{calculs}
+\explique{Un carré est positif : $f'(x)\geq 0$ pour tout nombre réel $x$, donc \res{$f$ est
+croissante sur $\R$}.}{$f'$ ne s'annule qu'en $2$}
+\cas{2)}
+\begin{calculs}
+u_{1} &= f(1{,}5) = 3{,}375-13{,}5+18-6 = 1{,}875 &&
+\end{calculs}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}\leq u_{n+1}$~».}{}
+\explique{\textbf{Initialisation.} $1{,}5\leq 1{,}875$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\leq u_{n+1}$. Montrons que
+$u_{n+1}\leq u_{n+2}$.}{}
+\begin{calculs}
+u_{n} &\leq u_{n+1} &&\justif{hypothèse de récurrence}\\
+f(u_{n}) &\leq f(u_{n+1}) &&\justif{$f$ croissante : elle conserve l'ordre}\\
+u_{n+1} &\leq u_{n+2} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\N$, on a
+$u_{n}\leq u_{n+1}$ : \res{la suite $(u_{n})$ est croissante}.}{}
+\cas{3)}
+\begin{calculs}
+v_{1} &= f(2{,}5) = 15{,}625-37{,}5+30-6 = 2{,}125 &&
+\end{calculs}
+\explique{Cette fois $v_{1}\leq v_{0}$. On note $P_{n}$ la propriété «~$v_{n+1}\leq v_{n}$~» :
+$P_{0}$ est vraie, et si $v_{n+1}\leq v_{n}$, alors $f(v_{n+1})\leq f(v_{n})$, soit
+$v_{n+2}\leq v_{n+1}$.}{$f$ croissante}
+\explique{D'après le principe de récurrence, \res{la suite $(v_{n})$ est
+décroissante}.}{}
+\cas{4)}
+\explique{Ici $w_{n}=f(n)$ : $f$ est croissante sur $\intfo{0}{+\infty}$, donc \res{$(w_{n})$
+est croissante}.}{pour $u_{n}=f(n)$, le sens de variation de $f$ donne celui de la suite}
+\rem{Avec la même fonction croissante $f$, les suites $u_{n+1}=f(u_{n})$ peuvent croître
+ou décroître : c'est la comparaison de $u_{0}$ et $u_{1}$ qui décide.}
+\end{exo}
+
+\begin{exo}[Deux méthodes pour un même résultat]
+\cas{1)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}\geq 5$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=6$ et $6\geq 5$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\geq 5$. Montrons que
+$u_{n+1}\geq 5$.}{}
+\begin{calculs}
+u_{n} &\geq 5 &&\justif{hypothèse de récurrence}\\
+3u_{n} &\geq 15 &&\\
+3u_{n}-10 &\geq 5 &&\\
+u_{n+1} &\geq 5 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}\geq 5$}.}{}
+\cas{2)}
+\begin{calculs}
+u_{n+1}-u_{n} &= 3u_{n}-10-u_{n} &&\\
+u_{n+1}-u_{n} &= \res{2u_{n}-10} &&\\
+u_{n+1}-u_{n} &= 2(u_{n}-5) &&
+\end{calculs}
+\explique{D'après le 1), $u_{n}-5\geq 0$, donc $u_{n+1}-u_{n}\geq 0$ : \res{$(u_{n})$ est
+croissante}.}{le 1) donne le signe}
+\cas{3)}
+\explique{Pour tout $n\in\N$, on note $Q_{n}$ la propriété : «~$u_{n}\leq u_{n+1}$~».}{}
+\explique{\textbf{Initialisation.} $u_{1}=3\times 6-10=8$ et $6\leq 8$, donc $Q_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\leq u_{n+1}$. Alors
+$3u_{n}-10\leq 3u_{n+1}-10$, soit $u_{n+1}\leq u_{n+2}$.}{on multiplie par $3>0$, puis on
+retire $10$}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{$(u_{n})$ est
+croissante}.}{}
+\cas{4)}
+\explique{Pour tout $n\in\N$, on note $R_{n}$ la propriété : «~$u_{n}=3^{n}+5$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=6$ et $3^{0}+5=6$, donc $R_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=3^{n}+5$. Montrons que
+$u_{n+1}=3^{n+1}+5$.}{}
+\begin{calculs}
+u_{n+1} &= 3u_{n}-10 &&\\
+u_{n+1} &= 3\left(3^{n}+5\right)-10 &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= 3^{n+1}+5 &&\justif{$15-10=5$}
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}=3^{n}+5$}.}{qui redonne $u_{n}\geq 5$ et la croissance}
+\end{exo}
+
+\partie{Récurrence et encadrement d'une suite}
+
+\begin{exo}[Encadrer une suite par récurrence]
+\cas{a)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$1\leq a_{n}\leq 2$~».}{}
+\explique{\textbf{Initialisation.} $a_{0}=1$ et $1\leq 1\leq 2$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $1\leq a_{n}\leq 2$. Montrons que
+$1\leq a_{n+1}\leq 2$.}{}
+\begin{calculs}
+1 &\leq a_{n}\leq 2 &&\justif{hypothèse de récurrence}\\
+0{,}5 &\leq 0{,}5\,a_{n}\leq 1 &&\justif{on multiplie par $0{,}5>0$}\\
+1{,}5 &\leq 0{,}5\,a_{n}+1\leq 2 &&\\
+1{,}5 &\leq a_{n+1}\leq 2 &&
+\end{calculs}
+\explique{Comme $1\leq 1{,}5$, on a $1\leq a_{n+1}\leq 2$ : $P_{n+1}$ est vraie.}{on retaille}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $1\leq a_{n}\leq 2$}.}{}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$1\leq b_{n}\leq 4$~».}{}
+\explique{\textbf{Initialisation.} $b_{0}=1$ et $1\leq 1\leq 4$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $1\leq b_{n}\leq 4$. Montrons que
+$1\leq b_{n+1}\leq 4$.}{}
+\begin{calculs}
+1 &\leq b_{n}\leq 4 &&\justif{hypothèse de récurrence}\\
+7 &\leq 3b_{n}+4\leq 16 &&\justif{on multiplie par $3>0$, puis on ajoute $4$}\\
+\sqrt{7} &\leq \sqrt{3b_{n}+4}\leq 4 &&\justif{la racine carrée conserve l'ordre}\\
+\sqrt{7} &\leq b_{n+1}\leq 4 &&
+\end{calculs}
+\explique{Comme $1\leq\sqrt{7}$, $P_{n+1}$ est vraie.}{$\sqrt{7}\approx 2{,}65$}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $1\leq b_{n}\leq 4$}.}{}
+\cas{c)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$1\leq c_{n}\leq 3$~».}{}
+\explique{\textbf{Initialisation.} $c_{0}=3$ et $1\leq 3\leq 3$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $1\leq c_{n}\leq 3$. Montrons que
+$1\leq c_{n+1}\leq 3$.}{}
+\begin{calculs}
+1 &\leq c_{n}\leq 3 &&\justif{hypothèse de récurrence}\\
+2 &\leq c_{n}+1\leq 4 &&\\
+\frac{1}{4} &\leq \frac{1}{c_{n}+1}\leq \frac{1}{2} &&\justif{la fonction inverse renverse l'ordre sur $\intoo{0}{+\infty}$}\\
+1 &\leq \frac{4}{c_{n}+1}\leq 2 &&\justif{on multiplie par $4>0$}\\
+1 &\leq c_{n+1}\leq 2 &&
+\end{calculs}
+\explique{Comme $2\leq 3$, $P_{n+1}$ est vraie.}{on retaille}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $1\leq c_{n}\leq 3$}.}{}
+\rem{Erreur fréquente en c) : garder le sens des inégalités en passant à l'inverse ; une
+fonction décroissante échange les bornes.}
+\end{exo}
+
+\begin{exo}[Encadrer une suite]
+\cas{1)}
+\begin{calculs}
+f'(x) &= 0{,}25\times 2x &&\\
+f'(x) &= 0{,}5\,x &&
+\end{calculs}
+\explique{Pour tout $x\geq 0$, $f'(x)\geq 0$ : \res{$f$ est croissante sur
+$\intfo{0}{+\infty}$}.}{}
+\cas{2)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n}\leq u_{n+1}\leq 2$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=f(0)=1$ ; $0\leq 0\leq 1\leq 2$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $0\leq u_{n}\leq u_{n+1}\leq 2$.
+Montrons que $0\leq u_{n+1}\leq u_{n+2}\leq 2$.}{}
+\begin{calculs}
+0 &\leq u_{n}\leq u_{n+1}\leq 2 &&\justif{hypothèse de récurrence}\\
+f(0) &\leq f(u_{n})\leq f(u_{n+1})\leq f(2) &&\justif{$f$ croissante}\\
+1 &\leq u_{n+1}\leq u_{n+2}\leq 2 &&\justif{$f(2)=0{,}25\times 4+1=2$}
+\end{calculs}
+\explique{Comme $0\leq 1$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $0\leq u_{n}\leq u_{n+1}\leq 2$}.}{}
+\cas{3)}
+\explique{\res{$(u_{n})$ est croissante} ($u_{n}\leq u_{n+1}$) et \res{bornée} :
+$0\leq u_{n}\leq 2$.}{les deux informations sont dans la même inégalité}
+\cas{4)}
+\explique{Pour tout $n\in\N$, on note $Q_{n}$ la propriété :
+«~$1\leq w_{n}\leq w_{n+1}\leq 5$~». La fonction $g\colon x\mapsto\sqrt{5x}$ est croissante
+sur $\intfo{0}{+\infty}$.}{racine carrée d'une fonction affine croissante}
+\explique{\textbf{Initialisation.} $w_{1}=\sqrt{5}\approx 2{,}24$ ; $1\leq 1\leq\sqrt{5}\leq 5$,
+donc $Q_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $1\leq w_{n}\leq w_{n+1}\leq 5$.}{}
+\begin{calculs}
+1 &\leq w_{n}\leq w_{n+1}\leq 5 &&\justif{hypothèse de récurrence}\\
+g(1) &\leq g(w_{n})\leq g(w_{n+1})\leq g(5) &&\justif{$g$ croissante}\\
+\sqrt{5} &\leq w_{n+1}\leq w_{n+2}\leq 5 &&\justif{$g(5)=\sqrt{25}=5$}
+\end{calculs}
+\explique{Comme $1\leq\sqrt{5}$, $Q_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $1\leq w_{n}\leq w_{n+1}\leq 5$}.}{}
+\cas{5)}
+\explique{Pour tout $n\in\N$, $w_{n}\leq w_{n+1}$ : \res{$(w_{n})$ est croissante}.}{}
+\end{exo}
+
+\begin{exo}[Une démonstration guidée]
+\cas{1)}
+\explique{$v_{0}=0$ et $0\leq 0\leq 3$ : \res{$P_{0}$ est vraie}.}{}
+\cas{2)}
+\explique{Soit $n\in\N$ tel que $0\leq v_{n}\leq 3$. Montrons que $0\leq v_{n+1}\leq 3$.}{}
+\begin{calculs}
+0 &\leq v_{n}\leq 3 &&\justif{hypothèse de récurrence}\\
+6 &\leq v_{n}+6\leq 9 &&\\
+\sqrt{6} &\leq \sqrt{v_{n}+6}\leq 3 &&\justif{la racine carrée conserve l'ordre}\\
+\sqrt{6} &\leq v_{n+1}\leq 3 &&
+\end{calculs}
+\explique{Comme $0\leq\sqrt{6}$, on a $0\leq v_{n+1}\leq 3$ : \res{$P_{n+1}$ est
+vraie}.}{on retaille}
+\cas{3)}
+\explique{$P_{0}$ est vraie et la propriété est héréditaire ; d'après le principe de
+récurrence, \res{pour tout $n\in\N$, on a $0\leq v_{n}\leq 3$}.}{}
+\cas{4)}
+\explique{Pour tout $n\in\N$, on note $Q_{n}$ la propriété :
+«~$0\leq v_{n}\leq v_{n+1}\leq 3$~».}{}
+\explique{\textbf{Initialisation.} $v_{1}=\sqrt{6}\approx 2{,}45$ ;
+$0\leq 0\leq\sqrt{6}\leq 3$, donc $Q_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $0\leq v_{n}\leq v_{n+1}\leq 3$.}{}
+\begin{calculs}
+6 &\leq v_{n}+6\leq v_{n+1}+6\leq 9 &&\justif{on ajoute $6$}\\
+\sqrt{6} &\leq v_{n+1}\leq v_{n+2}\leq 3 &&\justif{la racine carrée conserve l'ordre}
+\end{calculs}
+\explique{Comme $0\leq\sqrt{6}$, $Q_{n+1}$ est vraie ; d'après le principe de récurrence,
+pour tout $n\in\N$, on a $0\leq v_{n}\leq v_{n+1}\leq 3$. Donc \res{$(v_{n})$ est
+croissante}.}{}
+\end{exo}
+
+\begin{exo}[Des poissons dans un étang]
+\cas{1)}
+\begin{calculs}
+v_{1} &= f(7) = -0{,}1\times 49+1{,}5\times 7 &&\\
+v_{1} &= 5{,}6 &&
+\end{calculs}
+\explique{Au 1\textsuperscript{er} janvier 2027, l'étang comptera \res{$5\,600$ poissons}.}{$v_{n}$
+est en millier}
+\cas{2)}
+\begin{calculs}
+f'(x) &= -0{,}2\,x+1{,}5 &&
+\end{calculs}
+\explique{$-0{,}2\,x+1{,}5\geq 0$ équivaut à $x\leq 7{,}5$ : sur $\intff{0}{7{,}5}$,
+$f'(x)\geq 0$, donc \res{$f$ est croissante sur $\intff{0}{7{,}5}$}.}{}
+\cas{3)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$5\leq v_{n+1}\leq v_{n}\leq 7$~».}{}
+\explique{\textbf{Initialisation.} $v_{0}=7$ et $v_{1}=5{,}6$ ; $5\leq 5{,}6\leq 7\leq 7$,
+donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $5\leq v_{n+1}\leq v_{n}\leq 7$.
+Montrons que $5\leq v_{n+2}\leq v_{n+1}\leq 7$.}{}
+\begin{calculs}
+5 &\leq v_{n+1}\leq v_{n}\leq 7 &&\justif{hypothèse de récurrence ; tous dans $\intff{0}{7{,}5}$}\\
+f(5) &\leq f(v_{n+1})\leq f(v_{n})\leq f(7) &&\justif{$f$ croissante sur $\intff{0}{7{,}5}$}\\
+5 &\leq v_{n+2}\leq v_{n+1}\leq 5{,}6 &&\justif{$f(5)=-2{,}5+7{,}5=5$}
+\end{calculs}
+\explique{Comme $5{,}6\leq 7$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $5\leq v_{n+1}\leq v_{n}\leq 7$}.}{}
+\cas{4)}
+\explique{\res{Le nombre de poissons diminue chaque année, mais reste toujours supérieur ou
+égal à $5\,000$}.}{$v_{n+1}\leq v_{n}$ et $v_{n}\geq 5$}
+\cas{5)}
+\begin{calculs}
+v_{3} &\approx 5{,}125 &&\justif{encore au-dessus de $5{,}1$}\\
+v_{4} &\approx 5{,}061 &&\justif{premier terme sous $5{,}1$}
+\end{calculs}
+\explique{La suite est décroissante : à partir de \res{2030}, l'étang comptera moins de
+$5\,100$ poissons.}{$2026+4$ ; ensuite, les termes restent plus petits}
+\end{exo}
+
+\begin{exo}[Encadrement et suite auxiliaire]
+\cas{1)}
+\begin{calculs}
+f'(x) &= \frac{4(x+2)-(4x+3)\times 1}{(x+2)^{2}} &&\justif{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+f'(x) &= \frac{5}{(x+2)^{2}} &&
+\end{calculs}
+\explique{$f'(x)>0$ : \res{$f$ est croissante sur $\intfo{0}{+\infty}$}.}{}
+\cas{2)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$1\leq u_{n}\leq u_{n+1}\leq 3$~».}{}
+\explique{\textbf{Initialisation.} $u_{1}=f(1)=\frac{7}{3}$ ;
+$1\leq 1\leq\frac73\leq 3$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $1\leq u_{n}\leq u_{n+1}\leq 3$.}{}
+\begin{calculs}
+f(1) &\leq f(u_{n})\leq f(u_{n+1})\leq f(3) &&\justif{$f$ croissante}\\
+\frac{7}{3} &\leq u_{n+1}\leq u_{n+2}\leq 3 &&\justif{$f(3)=\frac{15}{5}=3$}
+\end{calculs}
+\explique{Comme $1\leq\frac73$, $P_{n+1}$ est vraie ; d'après le principe de récurrence,
+\res{pour tout $n\in\N$, on a $1\leq u_{n}\leq u_{n+1}\leq 3$}.}{}
+\cas{3)}
+\explique{Pour tout $n\in\N$, $u_{n}\leq u_{n+1}$ : \res{$(u_{n})$ est croissante}.}{}
+\cas{4)}
+\begin{calculs}
+u_{n+1}-3 &= \frac{4u_{n}+3-3(u_{n}+2)}{u_{n}+2} &&\\
+u_{n+1}-3 &= \frac{u_{n}-3}{u_{n}+2} &&\\
+u_{n+1}+1 &= \frac{4u_{n}+3+u_{n}+2}{u_{n}+2} &&\\
+u_{n+1}+1 &= \frac{5(u_{n}+1)}{u_{n}+2} &&
+\end{calculs}
+\begin{calculs}
+v_{n+1} &= \frac{u_{n}-3}{u_{n}+2}\times\frac{u_{n}+2}{5(u_{n}+1)} &&\justif{diviser, c'est multiplier par l'inverse}\\
+v_{n+1} &= \frac{1}{5}\times\frac{u_{n}-3}{u_{n}+1} &&\\
+v_{n+1} &= \frac{1}{5}\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $\frac{1}{5}$}, de premier terme
+$v_{0}=\frac{1-3}{1+1}=-1$.}{}
+\cas{5)}
+\begin{calculs}
+v_{n} &= -\left(\frac{1}{5}\right)^{n} &&
+\end{calculs}
+\explique{Comme à l'exercice 7, on isole $u_{n}$ dans $v_{n}(u_{n}+1)=u_{n}-3$ :}{}
+\begin{calculs}
+u_{n}(v_{n}-1) &= -3-v_{n} &&\\
+u_{n} &= \frac{3+v_{n}}{1-v_{n}} &&\\
+u_{n} &= \res{\frac{3-\left(\frac15\right)^{n}}{1+\left(\frac15\right)^{n}}} &&
+\end{calculs}
+\explique{Vérification : pour $n=1$, on a $\dfrac{3-0{,}2}{1+0{,}2}=\dfrac{2{,}8}{1{,}2}=\dfrac73$.}{}
+\end{exo}
+
+\partie{Sommes et récurrence}
+
+\begin{exo}[Écrire une somme sans le symbole $\Sigma$]
+\explique{On remplace $k$ par chaque entier, du premier indice au dernier, et on
+additionne.}{}
+\begin{calculs}
+\sum_{k=1}^{6}k &= 1+2+3+4+5+6 = \res{21} &&\\
+\sum_{k=0}^{4}k^{2} &= 0+1+4+9+16 = \res{30} &&\\
+\sum_{k=0}^{3}(3k+2) &= 2+5+8+11 = \res{26} &&\\
+\sum_{k=2}^{5}\frac{1}{k} &= \frac12+\frac13+\frac14+\frac15 = \res{\frac{77}{60}} &&\justif{$\frac{30+20+15+12}{60}$}\\
+\sum_{k=0}^{n}2^{k} &= \res{1+2+2^{2}+\dots+2^{n}} &&\justif{$2^{0}=1$ : $n+1$ termes}
+\end{calculs}
+\rem{Le nombre de termes de $\displaystyle\sum_{k=p}^{n}$ est $n-p+1$ : en b), $5$ termes.}
+\end{exo}
+
+\begin{exo}[Écrire une somme avec le symbole $\Sigma$]
+\explique{On repère la forme du terme général, puis le premier et le dernier indice.}{}
+\begin{calculs}
+1+2+\dots+50 &= \res{\sum_{k=1}^{50}k} &&\\
+2+4+\dots+100 &= \res{\sum_{k=1}^{50}2k} &&\justif{$2k$ va de $2$ à $100$}\\
+1+3+\dots+(2n+1) &= \res{\sum_{k=0}^{n}(2k+1)} &&\\
+1+q+\dots+q^{n} &= \res{\sum_{k=0}^{n}q^{k}} &&\justif{$1=q^{0}$}\\
+\frac{1}{1\times 2}+\dots+\frac{1}{n(n+1)} &= \res{\sum_{k=1}^{n}\frac{1}{k(k+1)}} &&\\
+u_{3}+u_{4}+\dots+u_{n} &= \res{\sum_{k=3}^{n}u_{k}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Démontrer une formule de somme]
+\cas{a)}
+\explique{Pour $n=3$ : $4+10+16=30$ et $3\times 9+3=30$.}{}
+\explique{Pour tout $n\in\Ns$, on note $P_{n}$ la propriété :
+«~$\displaystyle\sum_{k=1}^{n}(6k-2)=3n^{2}+n$~».}{}
+\explique{\textbf{Initialisation.} Pour $n=1$, la somme vaut $6-2=4$ et $3+1=4$, donc
+$P_{1}$ est vraie.}{on initialise au rang $1$}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $P_{n}$ est vraie.}{}
+\begin{calculs}
+\sum_{k=1}^{n+1}(6k-2) &= \sum_{k=1}^{n}(6k-2)+6(n+1)-2 &&\justif{on ajoute le terme de rang $n+1$}\\
+\sum_{k=1}^{n+1}(6k-2) &= 3n^{2}+n+6n+4 &&\justif{hypothèse de récurrence}\\
+\sum_{k=1}^{n+1}(6k-2) &= 3n^{2}+7n+4 &&
+\end{calculs}
+\begin{calculs}
+3(n+1)^{2}+(n+1) &= 3n^{2}+6n+3+n+1 &&\justif{on développe le but}\\
+3(n+1)^{2}+(n+1) &= 3n^{2}+7n+4 &&
+\end{calculs}
+\explique{Les deux expressions sont égales : $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\Ns$,
+on a $\displaystyle\sum_{k=1}^{n}(6k-2)=3n^{2}+n$}.}{}
+\cas{b)}
+\explique{Pour $n=3$ : $1+3+5=9=3^{2}$. On note $P_{n}$ la propriété
+«~$\displaystyle\sum_{k=1}^{n}(2k-1)=n^{2}$~».}{}
+\explique{\textbf{Initialisation.} Pour $n=1$, la somme vaut $1=1^{2}$ : $P_{1}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $P_{n}$ est vraie.}{}
+\begin{calculs}
+\sum_{k=1}^{n+1}(2k-1) &= n^{2}+2(n+1)-1 &&\justif{hypothèse de récurrence}\\
+\sum_{k=1}^{n+1}(2k-1) &= n^{2}+2n+1 &&\\
+\sum_{k=1}^{n+1}(2k-1) &= (n+1)^{2} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\Ns$,
+on a $\displaystyle\sum_{k=1}^{n}(2k-1)=n^{2}$}.}{}
+\cas{c)}
+\explique{Pour $n=3$ : $1+4+9=14$ et $\frac{3\times 4\times 7}{6}=14$. On note $P_{n}$ la
+propriété «~$\displaystyle\sum_{k=1}^{n}k^{2}=\frac{n(n+1)(2n+1)}{6}$~».}{}
+\explique{\textbf{Initialisation.} Pour $n=1$, la somme vaut $1$ et
+$\frac{1\times 2\times 3}{6}=1$ : $P_{1}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $P_{n}$ est vraie. Montrons que la
+somme jusqu'à $n+1$ vaut $\frac{(n+1)(n+2)(2n+3)}{6}$.}{on remplace $n$ par $n+1$ dans la formule}
+\begin{calculs}
+\sum_{k=1}^{n+1}k^{2} &= \frac{n(n+1)(2n+1)}{6}+(n+1)^{2} &&\justif{hypothèse de récurrence}\\
+\sum_{k=1}^{n+1}k^{2} &= \frac{(n+1)\left[n(2n+1)+6(n+1)\right]}{6} &&\justif{on factorise par $n+1$}\\
+\sum_{k=1}^{n+1}k^{2} &= \frac{(n+1)(2n^{2}+7n+6)}{6} &&\\
+\sum_{k=1}^{n+1}k^{2} &= \frac{(n+1)(n+2)(2n+3)}{6} &&\justif{on vérifie : $(n+2)(2n+3)=2n^{2}+7n+6$}
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\Ns$,
+on a $\displaystyle\sum_{k=1}^{n}k^{2}=\frac{n(n+1)(2n+1)}{6}$}.}{}
+\rem{Factoriser par $n+1$ plutôt que tout développer : le calcul reste court.}
+\end{exo}
+
+\begin{exo}[La somme des cubes]
+\cas{1)}
+\begin{calculs}
+S_{1} &= 1 = 1^{2} &&\\
+S_{2} &= 1+8 = 9 = (1+2)^{2} &&\\
+S_{3} &= 9+27 = 36 = (1+2+3)^{2} &&\\
+S_{4} &= 36+64 = 100 = (1+2+3+4)^{2} &&
+\end{calculs}
+\explique{\res{$S_{n}$ est égale au carré de $1+2+\dots+n$}, pour $n=1$ à $4$.}{}
+\cas{2)}
+\explique{$1+2+\dots+n=\dfrac{n(n+1)}{2}$ : on conjecture
+\res{$S_{n}=\left(\dfrac{n(n+1)}{2}\right)^{2}=\dfrac{n^{2}(n+1)^{2}}{4}$}.}{formule de 1re}
+\cas{3)}
+\explique{Pour tout $n\in\Ns$, on note $P_{n}$ la propriété :
+«~$S_{n}=\dfrac{n^{2}(n+1)^{2}}{4}$~».}{}
+\explique{\textbf{Initialisation.} $S_{1}=1$ et $\frac{1\times 4}{4}=1$, donc $P_{1}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $S_{n}=\dfrac{n^{2}(n+1)^{2}}{4}$.
+Montrons que $S_{n+1}=\dfrac{(n+1)^{2}(n+2)^{2}}{4}$.}{}
+\begin{calculs}
+S_{n+1} &= S_{n}+(n+1)^{3} &&\\
+S_{n+1} &= \frac{n^{2}(n+1)^{2}}{4}+(n+1)^{3} &&\justif{hypothèse de récurrence}\\
+S_{n+1} &= \frac{(n+1)^{2}\left[n^{2}+4(n+1)\right]}{4} &&\justif{on factorise par $(n+1)^{2}$}\\
+S_{n+1} &= \frac{(n+1)^{2}(n+2)^{2}}{4} &&\justif{$n^{2}+4n+4=(n+2)^{2}$}
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\Ns$,
+on a $S_{n}=\dfrac{n^{2}(n+1)^{2}}{4}$}.}{}
+\end{exo}
+
+\begin{exo}[Une somme de fractions]
+\cas{1)}
+\begin{calculs}
+T_{1} &= \frac{1}{1\times 2} = \res{\frac{1}{2}} &&\\
+T_{2} &= \frac12+\frac16 = \frac{4}{6} = \res{\frac{2}{3}} &&\\
+T_{3} &= \frac23+\frac{1}{12} = \frac{9}{12} = \res{\frac{3}{4}} &&
+\end{calculs}
+\cas{2)}
+\explique{On conjecture \res{$T_{n}=\dfrac{n}{n+1}$}.}{numérateur $n$, dénominateur $n+1$}
+\cas{3)}
+\explique{Pour tout $n\in\Ns$, on note $P_{n}$ la propriété : «~$T_{n}=\dfrac{n}{n+1}$~».}{}
+\explique{\textbf{Initialisation.} $T_{1}=\frac12$ et $\frac{1}{1+1}=\frac12$, donc $P_{1}$
+est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $T_{n}=\dfrac{n}{n+1}$. Montrons que
+$T_{n+1}=\dfrac{n+1}{n+2}$.}{}
+\begin{calculs}
+T_{n+1} &= T_{n}+\frac{1}{(n+1)(n+2)} &&\\
+T_{n+1} &= \frac{n}{n+1}+\frac{1}{(n+1)(n+2)} &&\justif{hypothèse de récurrence}\\
+T_{n+1} &= \frac{n(n+2)+1}{(n+1)(n+2)} &&\justif{même dénominateur}\\
+T_{n+1} &= \frac{(n+1)^{2}}{(n+1)(n+2)} &&\justif{$n^{2}+2n+1=(n+1)^{2}$}\\
+T_{n+1} &= \frac{n+1}{n+2} &&\justif{on simplifie par $n+1$}
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\Ns$,
+on a $T_{n}=\dfrac{n}{n+1}$}.}{}
+\cas{4)}
+\begin{calculs}
+\frac{1}{k}-\frac{1}{k+1} &= \frac{k+1-k}{k(k+1)} &&\\
+\frac{1}{k}-\frac{1}{k+1} &= \frac{1}{k(k+1)} &&
+\end{calculs}
+\begin{calculs}
+T_{n} &= \left(\frac11-\frac12\right)+\left(\frac12-\frac13\right)+\dots+\left(\frac1n-\frac{1}{n+1}\right) &&\\
+T_{n} &= 1-\frac{1}{n+1} &&\justif{les termes intermédiaires s'annulent deux à deux}\\
+T_{n} &= \res{\frac{n}{n+1}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Somme des termes d'une suite géométrique]
+\cas{1)}
+\explique{On note $P_{n}$ la propriété «~$\displaystyle\sum_{k=0}^{n}2^{k}=2^{n+1}-1$~».
+\textbf{Initialisation.} Pour $n=0$ : $2^{0}=1$ et $2^{1}-1=1$ : $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie.}{}
+\begin{calculs}
+\sum_{k=0}^{n+1}2^{k} &= 2^{n+1}-1+2^{n+1} &&\justif{hypothèse de récurrence, plus le terme $2^{n+1}$}\\
+\sum_{k=0}^{n+1}2^{k} &= 2\times 2^{n+1}-1 &&\\
+\sum_{k=0}^{n+1}2^{k} &= 2^{n+2}-1 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $\displaystyle\sum_{k=0}^{n}2^{k}=2^{n+1}-1$}.}{}
+\cas{2)}
+\explique{\textbf{Initialisation.} Pour $n=0$ : $3^{0}=1$ et $\frac{3-1}{2}=1$.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $\displaystyle\sum_{k=0}^{n}3^{k}=\frac{3^{n+1}-1}{2}$.}{}
+\begin{calculs}
+\sum_{k=0}^{n+1}3^{k} &= \frac{3^{n+1}-1}{2}+3^{n+1} &&\justif{hypothèse de récurrence}\\
+\sum_{k=0}^{n+1}3^{k} &= \frac{3^{n+1}-1+2\times 3^{n+1}}{2} &&\\
+\sum_{k=0}^{n+1}3^{k} &= \frac{3^{n+2}-1}{2} &&\justif{$3\times 3^{n+1}=3^{n+2}$}
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $\displaystyle\sum_{k=0}^{n}3^{k}=\frac{3^{n+1}-1}{2}$}.}{}
+\cas{3)}
+\explique{\textbf{Initialisation.} Pour $n=0$ : $q^{0}=1$ et $\frac{q-1}{q-1}=1$ (car
+$q\neq 1$).}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que
+$\displaystyle\sum_{k=0}^{n}q^{k}=\frac{q^{n+1}-1}{q-1}$.}{}
+\begin{calculs}
+\sum_{k=0}^{n+1}q^{k} &= \frac{q^{n+1}-1}{q-1}+q^{n+1} &&\justif{hypothèse de récurrence}\\
+\sum_{k=0}^{n+1}q^{k} &= \frac{q^{n+1}-1+q^{n+2}-q^{n+1}}{q-1} &&\justif{$q^{n+1}(q-1)=q^{n+2}-q^{n+1}$}\\
+\sum_{k=0}^{n+1}q^{k} &= \frac{q^{n+2}-1}{q-1} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $\displaystyle\sum_{k=0}^{n}q^{k}=\frac{q^{n+1}-1}{q-1}$}.}{c'est la formule de 1re}
+\end{exo}
+
+\begin{exo}[Un tournoi de tennis de table]
+\cas{1)}
+\explique{À $2$ joueurs : \res{$u_{2}=1$} match. À $3$ joueurs A, B, C : AB, AC, BC, soit
+\res{$u_{3}=3$}. À $4$ joueurs : AB, AC, AD, BC, BD, CD, soit \res{$u_{4}=6$}.}{on liste les
+paires}
+\cas{2)}
+\explique{Le nouveau joueur rencontre une fois chacun des $n$ joueurs déjà présents : il
+ajoute $n$ matchs, donc \res{$u_{n+1}=u_{n}+n$}.}{les anciens matchs restent}
+\cas{3)}
+\explique{Pour tout entier $n\geq 2$, on note $P_{n}$ la propriété :
+«~$u_{n}=\dfrac{n(n-1)}{2}$~».}{}
+\explique{\textbf{Initialisation.} $u_{2}=1$ et $\frac{2\times 1}{2}=1$, donc $P_{2}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit un entier $n\geq 2$ tel que $u_{n}=\dfrac{n(n-1)}{2}$.
+Montrons que $u_{n+1}=\dfrac{(n+1)n}{2}$.}{}
+\begin{calculs}
+u_{n+1} &= u_{n}+n &&\\
+u_{n+1} &= \frac{n(n-1)}{2}+\frac{2n}{2} &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= \frac{n(n-1+2)}{2} &&\justif{on factorise par $n$}\\
+u_{n+1} &= \frac{(n+1)n}{2} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout entier
+$n\geq 2$, on a $u_{n}=\dfrac{n(n-1)}{2}$}.}{}
+\cas{4)}
+\explique{$u_{n}=1+2+\dots+(n-1)$, soit \res{$u_{n}=\displaystyle\sum_{k=1}^{n-1}k$}.}{en
+partant de $u_{1}=0$ et en ajoutant $1$, puis $2$, … puis $n-1$}
+\cas{5)}
+\begin{calculs}
+u_{20} &= \frac{20\times 19}{2} = \res{190} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Sommer les termes d'une suite]
+\cas{1)}
+\begin{calculs}
+u_{0} &= 3-2\times 1 = \res{1} &&\\
+u_{1} &= 3-2\times 0{,}5 = \res{2} &&\\
+u_{2} &= 3-2\times 0{,}25 = \res{2{,}5} &&
+\end{calculs}
+\begin{calculs}
+S_{0} &= u_{0} = \res{1} &&\\
+S_{1} &= 1+2 = \res{3} &&\\
+S_{2} &= 3+2{,}5 = \res{5{,}5} &&
+\end{calculs}
+\cas{2)}
+\begin{python}
+def somme(n):
+    s = 0
+    for k in range(n + 1):
+        s = s + 3 - 2 * 0.5**k
+    return s
+\end{python}
+\explique{La somme va de $k=0$ à $k=n$ : \res{$n+1$ passages}, d'où
+\texttt{range(n + 1)}.}{erreur fréquente : \texttt{range(n)} oublie $u_{n}$}
+\cas{3)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$S_{n}=3n-1+2\times 0{,}5^{n}$~».}{}
+\explique{\textbf{Initialisation.} $S_{0}=1$ et $0-1+2\times 1=1$, donc $P_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $S_{n}=3n-1+2\times 0{,}5^{n}$. Montrons
+que $S_{n+1}=3(n+1)-1+2\times 0{,}5^{n+1}$, soit $3n+2+0{,}5^{n}$.}{$2\times 0{,}5^{n+1}=0{,}5^{n}$}
+\begin{calculs}
+S_{n+1} &= S_{n}+u_{n+1} &&\\
+S_{n+1} &= 3n-1+2\times 0{,}5^{n}+3-2\times 0{,}5^{n+1} &&\justif{hypothèse de récurrence}\\
+S_{n+1} &= 3n+2+2\times 0{,}5^{n}-0{,}5^{n} &&\\
+S_{n+1} &= 3n+2+0{,}5^{n} &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $S_{n}=3n-1+2\times 0{,}5^{n}$}.}{}
+\end{exo}
+
+\partiesansnum{Exercices type bac}
+
+\begin{exo}[D'après bac 2025, Métropole]
+\cas{1.}
+\begin{calculs}
+u_{1} &= -0{,}02\times 1^{2}+1{,}3\times 1 &&\\
+u_{1} &= 1{,}28 &&
+\end{calculs}
+\explique{Au premier juillet 2025, la posidonie devrait recouvrir \res{$1{,}28$~ha}.}{}
+\cas{2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$1\leq u_{n}\leq u_{n+1}\leq 20$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=1$ et $u_{1}=1{,}28$ ;
+$1\leq 1\leq 1{,}28\leq 20$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $1\leq u_{n}\leq u_{n+1}\leq 20$.
+Montrons que $1\leq u_{n+1}\leq u_{n+2}\leq 20$.}{}
+\begin{calculs}
+h(1) &\leq h(u_{n})\leq h(u_{n+1})\leq h(20) &&\justif{$h$ croissante sur $\intff{0}{20}$}\\
+1{,}28 &\leq u_{n+1}\leq u_{n+2}\leq 18 &&\justif{$h(20)=-8+26=18$}
+\end{calculs}
+\explique{Comme $1\leq 1{,}28$ et $18\leq 20$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout entier
+naturel $n$, $1\leq u_{n}\leq u_{n+1}\leq 20$}.}{}
+\cas{3. a)}
+\begin{python}
+def seuil():
+    n = 0
+    u = 1
+    while u <= 14 :
+        n = n + 1
+        u = -0.02 * u**2 + 1.3 * u
+    return n
+\end{python}
+\explique{La boucle tourne \res{tant que $u\leq 14$} ; elle renvoie le premier rang où la
+superficie dépasse $14$~ha.}{}
+\cas{3. b)}
+\explique{À la calculatrice, $u_{17}\leq 14$ et $u_{18}\approx 14{,}12$ : la fonction renvoie
+$18$. La posidonie dépassera $14$~ha \res{au premier juillet 2042}.}{$2024+18$}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Polynésie]
+\cas{1. a)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+La transmission est fidèle avec la probabilité $0{,}9$ : de $V_{n}$ à $V_{n+1}$, et de
+$\overline{V_{n}}$ à $\overline{V_{n+1}}$, la branche porte $0{,}9$ ; les autres branches
+portent $0{,}1$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[grow=right,level distance=1.9cm,font=\small,
+    level 1/.style={sibling distance=1.6cm},level 2/.style={sibling distance=0.8cm}]
+  \node {$V_{1}$}
+    child {node {$\overline{V_{2}}$}
+      child {node {$\overline{V_{3}}$} edge from parent node[below,font=\scriptsize]{$0{,}9$}}
+      child {node {$V_{3}$} edge from parent node[above,font=\scriptsize]{$0{,}1$}}
+      edge from parent node[below,font=\scriptsize]{$0{,}1$}}
+    child {node {$V_{2}$}
+      child {node {$\overline{V_{3}}$} edge from parent node[below,font=\scriptsize]{$0{,}1$}}
+      child {node {$V_{3}$} edge from parent node[above,font=\scriptsize]{$0{,}9$}}
+      edge from parent node[above,font=\scriptsize]{$0{,}9$}};
+\end{tikzpicture}
+\end{minipage}
+\cas{1. b)}
+\begin{calculs}
+P(V_{3}) &= P(V_{2}\cap V_{3})+P(\overline{V_{2}}\cap V_{3}) &&\justif{formule des probabilités totales}\\
+P(V_{3}) &= 0{,}9\times 0{,}9+0{,}1\times 0{,}1 &&\justif{produit des probabilités le long des branches}\\
+P(V_{3}) &= 0{,}82 &&
+\end{calculs}
+\explique{\res{La probabilité que la troisième machine détienne la valeur $1$ est de
+$0{,}82$} : dans $82\,\%$ des cas, la donnée est correcte après deux transmissions.}{}
+\cas{1. c)}
+\begin{calculs}
+P_{V_{3}}(V_{2}) &= \frac{P(V_{2}\cap V_{3})}{P(V_{3})} &&\\
+P_{V_{3}}(V_{2}) &= \frac{0{,}81}{0{,}82} &&\\
+P_{V_{3}}(V_{2}) &\approx \res{0{,}988} &&
+\end{calculs}
+\cas{2. a)}
+\explique{On reprend l'arbre entre les rangs $n$ et $n+1$ : $P(V_{n})=p_{n}$ et
+$P(\overline{V_{n}})=1-p_{n}$.}{}
+\begin{calculs}
+p_{n+1} &= P(V_{n}\cap V_{n+1})+P(\overline{V_{n}}\cap V_{n+1}) &&\justif{probabilités totales}\\
+p_{n+1} &= 0{,}9\,p_{n}+0{,}1\,(1-p_{n}) &&\\
+p_{n+1} &= \res{0{,}8\,p_{n}+0{,}1} &&
+\end{calculs}
+\cas{2. b)}
+\explique{Pour tout entier $n\geq 1$, on note $P_{n}$ la propriété :
+«~$p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$~».}{}
+\explique{\textbf{Initialisation.} $p_{1}=1$ et $0{,}5\times 0{,}8^{0}+0{,}5=1$, donc $P_{1}$
+est vraie.}{}
+\explique{\textbf{Hérédité.} Soit un entier $n\geq 1$ tel que
+$p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$. Montrons que $p_{n+1}=0{,}5\times 0{,}8^{n}+0{,}5$.}{}
+\begin{calculs}
+p_{n+1} &= 0{,}8\,p_{n}+0{,}1 &&\\
+p_{n+1} &= 0{,}8\left(0{,}5\times 0{,}8^{n-1}+0{,}5\right)+0{,}1 &&\justif{hypothèse de récurrence}\\
+p_{n+1} &= 0{,}5\times 0{,}8^{n}+0{,}4+0{,}1 &&\\
+p_{n+1} &= 0{,}5\times 0{,}8^{n}+0{,}5 &&
+\end{calculs}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout entier
+naturel $n\geq 1$, $p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Métropole]
+\cas{Partie A, 1.}
+\begin{calculs}
+f'(x) &= \frac{2(x+3)-2x\times 1}{(x+3)^{2}} &&\justif{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+f'(x) &= \frac{6}{(x+3)^{2}} &&
+\end{calculs}
+\explique{Pour tout $x>-3$, $f'(x)>0$ : \res{$f$ est croissante sur
+$\intoo{-3}{+\infty}$}.}{}
+\cas{Partie A, 2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n+1}\leq u_{n}\leq 1$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=1$ et $u_{1}=f(1)$, soit $u_{1}=0{,}5$ ;
+$0\leq 0{,}5\leq 1\leq 1$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $0\leq u_{n+1}\leq u_{n}\leq 1$.}{}
+\begin{calculs}
+f(0) &\leq f(u_{n+1})\leq f(u_{n})\leq f(1) &&\justif{$f$ croissante}\\
+0 &\leq u_{n+2}\leq u_{n+1}\leq 0{,}5 &&\justif{$f(0)=0$, $f(1)=0{,}5$}
+\end{calculs}
+\explique{Comme $0{,}5\leq 1$, $P_{n+1}$ est vraie ; d'après le principe de récurrence,
+\res{pour tout entier $n$, on a $0\leq u_{n+1}\leq u_{n}\leq 1$}.}{}
+\cas{Partie B, 1.}
+\begin{calculs}
+v_{n+1} &= \frac{1}{u_{n+1}} &&\\
+v_{n+1} &= \frac{u_{n}+3}{2u_{n}} &&\justif{l'inverse de $\frac{2u_{n}}{u_{n}+3}$}\\
+v_{n+1} &= \frac{1}{2}+\frac{3}{2}\times\frac{1}{u_{n}} &&\\
+v_{n+1} &= \res{\frac{3}{2}\,v_{n}+\frac{1}{2}} &&
+\end{calculs}
+\cas{Partie B, 2.}
+\begin{calculs}
+w_{n+1} &= v_{n+1}+1 &&\\
+w_{n+1} &= \frac32\,v_{n}+\frac32 &&\\
+w_{n+1} &= \frac{3}{2}\,(v_{n}+1) &&\\
+w_{n+1} &= \frac{3}{2}\,w_{n} &&
+\end{calculs}
+\explique{\res{$(w_{n})$ est géométrique de raison $\frac{3}{2}$ et de premier terme
+$w_{0}=2$}.}{$v_{0}=\frac{1}{u_{0}}=1$}
+\cas{Partie B, 3.}
+\begin{calculs}
+w_{n} &= 2\times\left(\frac32\right)^{n} &&\\
+v_{n} &= w_{n}-1 = 2\left(\frac32\right)^{n}-1 &&\\
+u_{n} &= \frac{1}{v_{n}} = \res{\frac{1}{2\left(\frac32\right)^{n}-1}} &&
+\end{calculs}
+\cas{Partie B, 4. a)}
+\begin{python}
+def seuil():
+    n = 0
+    u = 1
+    while u > 10**(-3) :
+        n = n + 1
+        u = 2 * u / (u + 3)
+    return n
+\end{python}
+\explique{La boucle tourne \res{tant que $u>10^{-3}$} et renvoie \res{\texttt{n}}.}{}
+\cas{Partie B, 4. b)}
+\explique{$u_{n}\leq 10^{-3}$ équivaut à $2\times 1{,}5^{n}-1\geq 1\,000$, soit
+$1{,}5^{n}\geq 500{,}5$. Or $1{,}5^{15}\approx 437{,}9$ et $1{,}5^{16}\approx 656{,}8$ : la
+fonction renvoie \res{$16$}.}{à la calculatrice}
+\end{exo}
+
+\end{document}

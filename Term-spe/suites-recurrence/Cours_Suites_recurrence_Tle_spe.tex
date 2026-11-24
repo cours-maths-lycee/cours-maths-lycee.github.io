@@ -1,0 +1,1291 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.2}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@palatino
+\lycee@palatinotrue
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{mathpazo}
+\renewcommand{\ttdefault}{lmtt}
+\DeclareMathSizes{10.95}{10.95}{8}{5.5}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\gdef_#1{\sb{\scriptscriptstyle #1}}
+\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\endgroup
+\newcommand\lycee@moins{\mathbin{%
+  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
+  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
+  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
+    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
+\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
+\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
+\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newcommand\lycee@exposants{%
+  \fontdimen13\textfont2=.48\fontdimen6\textfont2
+  \fontdimen14\textfont2=.48\fontdimen6\textfont2
+  \fontdimen15\textfont2=.48\fontdimen6\textfont2
+  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
+  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
+\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{1}{Suites et récurrence}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{SUITES ET RÉCURRENCE}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+La spécialité de terminale est le temps de la maturité pour beaucoup d'élèves. Le rythme
+d'avancement et la qualité de l'approfondissement dépendent du groupe d'élèves. À titre
+indicatif, ce chapitre est prévu pour un volume de $16$~h d'enseignement ($8$ séances de
+$2$~h). Une partie importante des exercices est à faire par les élèves en autonomie.
+
+\smallskip
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec un \textbf{exemple
+corrigé} fait en classe, puis un exercice \og\textbf{À vous de jouer}\fg{} à chercher
+seul. À la fin de chaque partie, une \textbf{série d'exercices} de la fiche fait le point.
+
+\smallskip
+La rédaction des exemples est celle qu'on attend au bac : elle compte dans la note.
+
+\end{remarquebox}
+
+\partiecours{Suites arithmétiques et géométriques (rappels de 1\textsuperscript{re})}
+
+\begin{definitionbox}[Rappel 1 --- Suite arithmétique, suite géométrique]
+\textbf{Suite arithmétique.} Exemple : $u_{0}=3$ et, pour tout $n\in\N$,
+$u_{n+1}=u_{n}+5$. Alors $u_{1}=3+5=8$, puis $u_{2}=8+5=13$… : la suite \og avance de $5$
+en $5$\fg{}, et $u_{n}=3+5n$.
+\begin{itemize}
+  \item $(u_{n})$ est \textbf{arithmétique} s'il existe un nombre réel $r$ (la
+        \textbf{raison}) tel que, pour tout $n\in\N$, $u_{n+1}=u_{n}+r$. Cette relation
+        est la \textbf{relation de récurrence} : elle fait passer d'un terme au suivant,
+        de $u_{n}$ à $u_{n+1}$.
+  \item Pour tout $n\in\N$, on a $u_{n}=u_{0}+n\,r$, et plus généralement
+        $u_{n}=u_{p}+(n-p)\,r$. C'est le \textbf{terme général} : il donne $u_{n}$
+        directement, en remplaçant $n$ par sa valeur.
+  \item Pour montrer que $(u_{n})$ est arithmétique, on calcule $u_{n+1}-u_{n}$ : si on
+        trouve un nombre constant (qui ne dépend pas de $n$), elle est arithmétique.
+\end{itemize}
+
+\medskip
+\textbf{Suite géométrique.} Exemple : $v_{0}=2$ et, pour tout $n\in\N$,
+$v_{n+1}=3\,v_{n}$. Alors $v_{1}=3\times 2=6$, puis $v_{2}=3\times 6=18$… : chaque terme
+est \og multiplié par $3$\fg{}, et $v_{n}=2\times 3^{n}$.
+\begin{itemize}
+  \item $(v_{n})$ est \textbf{géométrique} s'il existe un nombre réel $q$ (la
+        \textbf{raison}) tel que, pour tout $n\in\N$, $v_{n+1}=q\times v_{n}$ : c'est sa
+        \textbf{relation de récurrence}.
+  \item Pour tout $n\in\N$, on a $v_{n}=v_{0}\times q^{n}$, et plus généralement
+        $v_{n}=v_{p}\times q^{\,n-p}$ : c'est le \textbf{terme général}.
+  \item Pour montrer que $(v_{n})$ est géométrique, on écrit $v_{n+1}$ sous la forme
+        $q\times v_{n}$, avec $q$ constant (ou, si les termes ne sont pas nuls, on calcule
+        $\frac{v_{n+1}}{v_{n}}$ et on trouve un nombre constant).
+\end{itemize}
+
+\medskip
+Pour montrer qu'une suite \textbf{n'est pas} arithmétique (ou géométrique), un
+\textbf{contre-exemple} suffit : deux écarts (ou deux quotients) différents entre des
+termes qui se suivent.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Montrer qu'une suite est (ou n'est pas) arithmétique ou géométrique]
+\etapeexemples
+Pour chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ ci-dessous, dire si elle est
+arithmétique, géométrique, ou ni l'une ni l'autre.
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=4n-7$.
+  \item $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=5\times 3^{n+1}$.
+  \item $(w_{n})$ définie par $w_{0}=1$ et, pour tout $n\in\N$,
+        $w_{n+1}=2w_{n}+3$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{0} &= 4\times 0-7 = -7 &\qquad& \rem{les premiers termes, pour se faire une idée}\\
+u_{1} &= 4\times 1-7 = -3 &&\\
+u_{2} &= 4\times 2-7 = 1 &&
+\end{calculs}
+\explique{$u_{1}-u_{0}=4$ et $u_{2}-u_{1}=4$ : la suite semble arithmétique de raison
+$4$.}{une conjecture}
+\explique{On le démontre pour tout $n\in\N$ :}{}
+\begin{calculs}
+u_{n+1}-u_{n} &= 4(n+1)-7-(4n-7) &\qquad& \rem{on calcule l'écart entre deux termes}\\
+u_{n+1}-u_{n} &= 4n+4-7-4n+7 &&\\
+u_{n+1}-u_{n} &= 4 &&
+\end{calculs}
+\explique{Pour tout $n\in\N$, on a $u_{n+1}=u_{n}+4$ : \res{$(u_{n})$ est
+arithmétique de raison $4$}, de premier terme $u_{0}=-7$.}{l'écart ne dépend pas de $n$}
+\cas{b)}
+\begin{calculs}
+v_{0} &= 5\times 3^{1} = 15 &\qquad& \rem{les premiers termes}\\
+v_{1} &= 5\times 3^{2} = 45 &&\\
+v_{2} &= 5\times 3^{3} = 135 &&
+\end{calculs}
+\explique{$\frac{v_{1}}{v_{0}}=3$ et $\frac{v_{2}}{v_{1}}=3$ : la suite semble géométrique
+de raison $3$.}{une conjecture}
+\explique{On le démontre pour tout $n\in\N$ :}{}
+\begin{calculs}
+v_{n+1} &= 5\times 3^{n+2} &\qquad& \rem{on remplace $n$ par $n+1$}\\
+v_{n+1} &= 3\times 5\times 3^{n+1} &\qquad& \rem{$3^{n+2}=3\times 3^{n+1}$}\\
+v_{n+1} &= 3\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $3$}, de premier terme
+$v_{0}=15$.}{forme $v_{n+1}=q\times v_{n}$}
+\cas{c)}
+\begin{calculs}
+w_{0} &= 1 &&\\
+w_{1} &= 2\times 1+3 = 5 &\qquad& \rem{la relation avec $n=0$}\\
+w_{2} &= 2\times 5+3 = 13 &\qquad& \rem{puis avec $n=1$}
+\end{calculs}
+\explique{$w_{1}-w_{0}=4$ et $w_{2}-w_{1}=8$ : les écarts diffèrent.}{contre-exemple}
+\explique{$\frac{w_{1}}{w_{0}}=5$ et $\frac{w_{2}}{w_{1}}=\frac{13}{5}$ : les quotients
+diffèrent.}{contre-exemple}
+\explique{\res{$(w_{n})$ n'est ni arithmétique ni géométrique.}}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ ci-dessous, dire si elle est
+arithmétique, géométrique, ou ni l'une ni l'autre.
+\begin{questions}[label=\alph*)]
+  \item $(a_{n})$ définie pour tout $n\in\N$ par $a_{n}=-3n+8$.
+  \item $(b_{n})$ définie pour tout $n\in\N$ par $b_{n}=2\times 5^{n+1}$.
+  \item $(c_{n})$ définie par $c_{0}=2$ et, pour tout $n\in\N$,
+        $c_{n+1}=3c_{n}-1$.
+\end{questions}
+\reponse{a) Arithmétique de raison $-3$.\; b) Géométrique de raison $5$.\; c) Ni l'une
+ni l'autre ($c_{1}=5$ et $c_{2}=14$).}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Modéliser une situation par une suite arithmétique ou géométrique]
+\etapeexemples
+Une association de covoiturage compte $400$ membres en 2026. On compare deux modèles
+pour l'année $2026+n$ : selon le modèle A, elle gagne $30$ membres par an ($a_{n}$
+membres) ; selon le modèle B, le nombre de membres augmente de $6\,\%$ par an ($b_{n}$
+membres). Ainsi $a_{0}=b_{0}=400$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $a_{n+1}$ en fonction de $a_{n}$, et $b_{n+1}$ en fonction de $b_{n}$ ;
+        en déduire la nature de chaque suite.
+  \item Exprimer $a_{n}$ et $b_{n}$ en fonction de $n$.
+  \item Selon chaque modèle, combien l'association aura-t-elle de membres en 2036 ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+a_{n+1} &= a_{n}+30 &\qquad& \rem{on ajoute $30$ chaque année}\\
+b_{n+1} &= 1{,}06\,b_{n} &\qquad& \rem{augmenter de $6\,\%$, c'est multiplier par $1{,}06$}
+\end{calculs}
+\explique{\res{$(a_{n})$ est arithmétique de raison $30$} et \res{$(b_{n})$ est géométrique
+de raison $1{,}06$}, de premier terme $400$.}{}
+\cas{b)}
+\begin{calculs}
+a_{n} &= a_{0}+n\,r = \res{400+30n} &\qquad& \rem{rappel 1}\\
+b_{n} &= b_{0}\times q^{n} = \res{400\times 1{,}06^{n}} &\qquad& \rem{rappel 1}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+a_{10} &= 400+30\times 10 = 700 &\qquad& \rem{2036, c'est $n=10$}\\
+b_{10} &= 400\times 1{,}06^{10} &&\\
+b_{10} &\approx 716{,}3 &\qquad& \rem{à la calculatrice}
+\end{calculs}
+\explique{En 2036 : \res{$700$ membres} selon le modèle A, environ \res{$716$ membres} selon
+le modèle B.}{on arrondit à l'unité}
+\end{correction}
+
+\etape{À vous de jouer}
+Une médiathèque a prêté $2\,000$ livres numériques en 2026. On compare deux modèles pour
+l'année $2026+n$ : selon le modèle A, les prêts augmentent de $150$ par an ($a_{n}$
+prêts) ; selon le modèle B, ils augmentent de $5\,\%$ par an ($b_{n}$ prêts). Ainsi
+$a_{0}=b_{0}=2\,000$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $a_{n+1}$ en fonction de $a_{n}$, et $b_{n+1}$ en fonction de $b_{n}$ ;
+        en déduire la nature de chaque suite.
+  \item Exprimer $a_{n}$ et $b_{n}$ en fonction de $n$.
+  \item Selon chaque modèle, combien de livres numériques seront prêtés en 2036 ?
+\end{questions}
+\reponse{a) Arithmétique de raison $150$ ; géométrique de raison $1{,}05$.\;
+b)~$a_{n}=2\,000+150n$ et $b_{n}=2\,000\times 1{,}05^{n}$.\; c)~$3\,500$ et environ
+$3\,258$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 5}
+
+\partiecours{Suites auxiliaires}
+
+\begin{definitionbox}[Définition 1 --- Suite auxiliaire]
+Une suite $(u_{n})$ n'est souvent ni arithmétique ni géométrique. L'énoncé introduit
+alors une seconde suite, dite \textbf{suite auxiliaire} $(v_{n})$, construite à partir
+de $(u_{n})$ (par exemple $v_{n}=u_{n}-24$ ou $v_{n}=\frac{1}{u_{n}}$). La suite
+auxiliaire est arithmétique ou géométrique : on obtient $v_{n}$ en fonction de $n$, puis
+on revient à $u_{n}$.
+\end{definitionbox}
+
+\afaire{exercices 6 et 7 (calcul avec des quotients, avant les méthodes)}
+
+\begin{methodebox}[Méthode 3 --- Utiliser une suite auxiliaire géométrique]
+\etapeexemples
+Soit la suite $(u_{n})$ définie par $u_{0}=10$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}75\,u_{n}+6$. Soit la suite $(v_{n})$ définie pour tout $n\in\N$
+par $v_{n}=u_{n}-24$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que la suite $(v_{n})$ est géométrique ; préciser sa raison et son
+        premier terme.
+  \item Exprimer $v_{n}$, puis $u_{n}$, en fonction de $n$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Pour tout $n\in\N$ :}{}
+\begin{calculs}
+v_{n+1} &= u_{n+1}-24 &\qquad& \rem{on remplace $n$ par $n+1$ dans $v_{n}=u_{n}-24$}\\
+v_{n+1} &= 0{,}75\,u_{n}+6-24 &\qquad& \rem{on remplace $u_{n+1}$ par $0{,}75\,u_{n}+6$}\\
+v_{n+1} &= 0{,}75\,u_{n}-18 &&\\
+v_{n+1} &= 0{,}75\,(u_{n}-24) &\qquad& \rem{on factorise : $0{,}75\times 24=18$}\\
+v_{n+1} &= 0{,}75\,v_{n} &\qquad& \rem{on reconnaît $v_{n}$}
+\end{calculs}
+\begin{calculs}
+v_{0} &= u_{0}-24 = -14 &&
+\end{calculs}
+\explique{La suite $(v_{n})$ est géométrique de raison $\res{0{,}75}$ et de premier terme
+$v_{0}=\res{-14}$.}{la phrase attendue au bac}
+\cas{b)}
+\begin{calculs}
+v_{n} &= v_{0}\times q^{n} = \res{-14\times 0{,}75^{n}} &\qquad& \rem{terme général}\\
+u_{n} &= v_{n}+24 &\qquad& \rem{car $v_{n}=u_{n}-24$}\\
+u_{n} &= \res{24-14\times 0{,}75^{n}} &&
+\end{calculs}
+\explique{Contrôle : $u_{1}=0{,}75\times 10+6=13{,}5$ et $24-14\times 0{,}75=13{,}5$.}{on
+vérifie sur un terme}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(a_{n})$ définie par $a_{0}=1$ et, pour tout $n\in\N$,
+$a_{n+1}=0{,}4\,a_{n}+3$. Soit la suite $(b_{n})$ définie pour tout $n\in\N$
+par $b_{n}=a_{n}-5$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que la suite $(b_{n})$ est géométrique ; préciser sa raison et son
+        premier terme.
+  \item Exprimer $b_{n}$, puis $a_{n}$, en fonction de $n$.
+\end{questions}
+\reponse{a) Raison $0{,}4$ et $b_{0}=-4$.\; b)~$b_{n}=-4\times 0{,}4^{n}$ et
+$a_{n}=5-4\times 0{,}4^{n}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 4 --- Utiliser une suite auxiliaire définie par un quotient]
+\etapeexemples
+Soit la suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$,
+$u_{n+1}=\dfrac{u_{n}}{1+2u_{n}}$. On admet que $u_{n}>0$ pour tout $n\in\N$.
+Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=\dfrac{1}{u_{n}}$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que la suite $(v_{n})$ est arithmétique ; préciser sa raison et son
+        premier terme.
+  \item Exprimer $v_{n}$, puis $u_{n}$, en fonction de $n$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Pour tout $n\in\N$ :}{}
+\begin{calculs}
+v_{n+1} &= \frac{1}{u_{n+1}} &\qquad& \rem{on remplace $n$ par $n+1$ dans $v_{n}=\frac{1}{u_{n}}$}\\
+v_{n+1} &= \frac{1+2u_{n}}{u_{n}} &\qquad& \rem{on remplace $u_{n+1}$ : l'inverse de $\frac{u_{n}}{1+2u_{n}}$}\\
+v_{n+1} &= \frac{1}{u_{n}}+\frac{2u_{n}}{u_{n}} &\qquad& \rem{on sépare la fraction en deux}\\
+v_{n+1} &= v_{n}+2 &\qquad& \rem{$\frac{2u_{n}}{u_{n}}=2$, car $u_{n}\neq 0$}
+\end{calculs}
+\begin{calculs}
+v_{0} &= \frac{1}{u_{0}} = 1 &&
+\end{calculs}
+\explique{La suite $(v_{n})$ est arithmétique de raison $\res{2}$ et de premier terme
+$v_{0}=\res{1}$.}{}
+\cas{b)}
+\begin{calculs}
+v_{n} &= v_{0}+n\,r = \res{1+2n} &\qquad& \rem{terme général}\\
+u_{n} &= \frac{1}{v_{n}} &\qquad& \rem{car $v_{n}=\frac{1}{u_{n}}$}\\
+u_{n} &= \res{\frac{1}{1+2n}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(a_{n})$ définie par $a_{0}=\dfrac{1}{2}$ et, pour tout $n\in\N$, $a_{n+1}=\dfrac{a_{n}}{1+3a_{n}}$. On admet que $a_{n}>0$ pour tout $n\in\N$. Soit la suite $(b_{n})$ définie pour tout $n\in\N$ par
+$b_{n}=\dfrac{1}{a_{n}}$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que la suite $(b_{n})$ est arithmétique ; préciser sa raison et son
+        premier terme.
+  \item Exprimer $b_{n}$, puis $a_{n}$, en fonction de $n$.
+\end{questions}
+\reponse{a) Raison $3$ et $b_{0}=2$.\; b)~$b_{n}=2+3n$ et $a_{n}=\frac{1}{2+3n}$.}
+\end{methodebox}
+
+\afaire{exercices 8 à 11}
+
+\partiecours{Suites définies par une fonction}
+
+\begin{definitionbox}[Définition 2 --- Deux façons de définir une suite par une fonction]
+Soit $f$ une fonction. On peut utiliser cette fonction pour définir une suite de deux
+façons :
+\begin{itemize}
+  \item \textbf{Suite définie explicitement} $u_{n}=f(n)$ : chaque terme se calcule
+        directement à partir de son rang ($u_{10}=f(10)$).
+  \item \textbf{Suite définie par récurrence} $u_{n+1}=f(u_{n})$, avec $u_{0}$ connu :
+        chaque terme se calcule à partir du précédent ; pour obtenir $u_{10}$, il faut
+        $u_{9}$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 5 --- Représenter une suite $u_{n+1}=f(u_{n})$ et conjecturer]
+\etapeexemples
+Soit $f$ la fonction définie sur $\R$ par $f(x)=0{,}5x+2$ et la suite $(u_{n})$ définie
+par $u_{0}=0$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Donner la relation de récurrence de $(u_{n})$.
+  \item Dans un repère orthonormé, tracer la droite d'équation $y=x$ et la courbe de $f$,
+        puis placer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$ sur l'axe des abscisses.
+  \item Conjecturer le sens de variation de $(u_{n})$ et le nombre dont $u_{n}$ se
+        rapproche quand $n$ devient grand.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= f(u_{0}) = 0{,}5\times 0+2 = \res{2} &\qquad& \rem{$u_{1}=f(u_{0})$}\\
+u_{2} &= f(u_{1}) = 0{,}5\times 2+2 = \res{3} &&\\
+u_{3} &= f(u_{2}) = 0{,}5\times 3+2 = \res{3{,}5} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{n+1} &= \res{0{,}5\,u_{n}+2} &\qquad& \rem{$u_{n+1}=f(u_{n})$ : on remplace $x$ par $u_{n}$}
+\end{calculs}
+\cas{c)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On part de $u_{0}$ sur l'axe des abscisses ; on monte jusqu'à la courbe de $f$ :
+l'ordonnée du point atteint est $u_{1}=f(u_{0})$. On se déplace horizontalement
+jusqu'à la droite $y=x$, puis on redescend sur l'axe : on y lit $u_{1}$. On recommence
+à partir de $u_{1}$, puis de $u_{2}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.95cm,y=0.95cm]
+  \repere{0}{0}{5}{5}
+  \grady{1,2,3,4}
+  \draw[black!70,line width=0.8pt] (0,0)--(5,5) node[above left,font=\footnotesize]{$y=x$};
+  \draw[coulCourbe,line width=1.1pt] (0,2)--(5,4.5);
+  \node[coulCourbe,font=\footnotesize] at (1,3) {$\Cf$};
+  \draw[coulCourbeB,line width=0.7pt] (0,0)--(0,2)--(2,2)--(2,3)--(3,3)--(3,3.5)--(3.5,3.5);
+  \draw[coulCourbeB,dashed,line width=0.5pt] (2,2)--(2,0) (3,3)--(3,0) (3.5,3.5)--(3.5,0);
+  \path[coulCourbeB] (0,0) node[croix]{} (2,0) node[croix]{} (3,0) node[croix]{}
+    (3.5,0) node[croix]{};
+  \node[font=\footnotesize,below,inner sep=2pt] at (0.45,0) {$u_{0}$};
+  \node[font=\footnotesize,below,inner sep=2pt] at (2,0) {$u_{1}$};
+  \node[font=\footnotesize,below,inner sep=2pt] at (2.85,0) {$u_{2}$};
+  \node[font=\footnotesize,below,inner sep=2pt] at (3.65,0) {$u_{3}$};
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}
+\explique{Les termes augmentent : \res{$(u_{n})$ semble croissante}. Ils semblent se
+rapprocher de \res{$4$}, abscisse du point où la courbe de $f$ coupe la droite
+$y=x$.}{une conjecture : elle sera démontrée en partie~VII}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g$ la fonction définie sur $\R$ par $g(x)=0{,}5x+1$ et la suite $(v_{n})$ définie
+par $v_{0}=6$ et, pour tout $n\in\N$, $v_{n+1}=g(v_{n})$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $v_{1}$, $v_{2}$ et $v_{3}$.
+  \item Donner la relation de récurrence de $(v_{n})$.
+  \item Dans un repère orthonormé, tracer la droite d'équation $y=x$ et la courbe de $g$,
+        puis placer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$ sur l'axe des abscisses.
+  \item Conjecturer le sens de variation de $(v_{n})$ et le nombre dont $v_{n}$ se
+        rapproche quand $n$ devient grand.
+\end{questions}
+\reponse{a) $v_{1}=4$ ; $v_{2}=3$ et $v_{3}=2{,}5$.\; b)~$v_{n+1}=0{,}5\,v_{n}+1$.\; d) Décroissante ; elle se rapproche
+de $2$.}
+\end{methodebox}
+
+\begin{remarquebox}[Attention]
+Pour une suite $u_{n+1}=f(u_{n})$, le sens de variation de $f$ ne donne pas celui de la
+suite : $g$ est croissante, et pourtant $(v_{n})$ semble décroissante. Pour une suite
+$u_{n}=f(n)$, au contraire, $f$ croissante sur $\intfo{0}{+\infty}$ donne $(u_{n})$
+croissante (partie~IV).
+\end{remarquebox}
+
+\afaire{exercices 12 à 14}
+
+\partiecours{Sens de variation : trois méthodes}
+
+\begin{definitionbox}[Rappel 2 --- Suite croissante, suite décroissante]
+La suite $(u_{n})$ est \textbf{croissante} si, pour tout $n\in\N$,
+$u_{n+1}\geq u_{n}$ ; \textbf{décroissante} si, pour tout $n\in\N$,
+$u_{n+1}\leq u_{n}$. Elle est croissante \textbf{à partir du rang $p$} si
+$u_{n+1}\geq u_{n}$ pour tout entier $n\geq p$.
+\end{definitionbox}
+
+\begin{proprietebox}[Rappel 3 --- Trois méthodes de 1\textsuperscript{re}]
+\begin{itemize}
+  \item \textbf{Différence} : si, pour tout $n\in\N$, $u_{n+1}-u_{n}\geq 0$,
+        alors $(u_{n})$ est croissante ; si $u_{n+1}-u_{n}\leq 0$, elle est décroissante.
+  \item \textbf{Quotient}, pour une suite à termes strictement positifs : si, pour tout $n\in\N$, $\frac{u_{n+1}}{u_{n}}\geq 1$, alors $(u_{n})$ est croissante ;
+        si $\frac{u_{n+1}}{u_{n}}\leq 1$, elle est décroissante. Utile quand $u_{n}$
+        contient des puissances $q^{n}$.
+  \item \textbf{Fonction associée}, pour une suite $u_{n}=f(n)$ : si $f$ est croissante
+        sur $\intfo{0}{+\infty}$, alors $(u_{n})$ est croissante ; si $f$ est
+        décroissante, elle est décroissante.
+\end{itemize}
+Pour chaque exercice, il y a souvent une méthode nettement plus simple que les autres :
+c'est l'expérience qui permet de la choisir. En cas d'impasse, ne pas hésiter à en essayer
+une autre.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Étudier le sens de variation d'une suite]
+\etapeexemples
+Étudier le sens de variation de chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$
+ci-dessous.
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=n^{2}-6n+1$.
+  \item $(v_{n})$ définie pour tout $n\in\Ns$ par $v_{n}=\dfrac{n}{2^{n}}$.
+  \item $(w_{n})$ définie pour tout $n\in\N$ par $w_{n}=2n^{5}+n^{3}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On choisit la méthode de la différence $u_{n+1}-u_{n}$.}{elle se simplifie
+bien}
+\begin{calculs}
+u_{n+1}-u_{n} &= (n+1)^{2}-6(n+1)+1-(n^{2}-6n+1) &&\\
+u_{n+1}-u_{n} &= n^{2}+2n+1-6n-6+1-n^{2}+6n-1 &&\\
+u_{n+1}-u_{n} &= 2n-5 &&
+\end{calculs}
+\explique{$2n-5\geq 0$ équivaut à $n\geq 2{,}5$ : pour tout entier $n\geq 3$, on a
+$u_{n+1}-u_{n}\geq 0$.}{on étudie le signe}
+\explique{\res{$(u_{n})$ est croissante à partir du rang $3$}.}{$u_{3}<u_{2}$ : pas
+croissante dès le rang $0$}
+\cas{b)}
+\explique{On choisit la méthode du quotient $\frac{v_{n+1}}{v_{n}}$ : pour tout $n\in\Ns$,
+on a $v_{n}>0$.}{une puissance $2^{n}$ se simplifie dans un quotient}
+\begin{calculs}
+\frac{v_{n+1}}{v_{n}} &= \frac{n+1}{2^{n+1}}\times\frac{2^{n}}{n} &\qquad& \rem{diviser,
+c'est multiplier par l'inverse}\\
+\frac{v_{n+1}}{v_{n}} &= \frac{(n+1)\times\barre{2^{n}}}{2\times\barre{2^{n}}\times n}
+&\qquad& \rem{$2^{n+1}=2\times 2^{n}$}\\
+\frac{v_{n+1}}{v_{n}} &= \frac{n+1}{2n} &&
+\end{calculs}
+\explique{Pour $n\geq 1$, on a $n+1\leq n+n=2n$, donc $\frac{v_{n+1}}{v_{n}}\leq 1$ :
+\res{$(v_{n})$ est décroissante}.}{on compare le quotient à $1$}
+\cas{c)}
+\explique{Ici $w_{n}=f(n)$ avec $f(x)=2x^{5}+x^{3}$ : on choisit d'étudier les variations
+de $f$ sur $\intfo{0}{+\infty}$.}{la différence serait longue}
+\begin{calculs}
+f'(x) &= 2\times 5x^{4}+3x^{2} &\qquad& \rem{$\left(x^{n}\right)'=nx^{n-1}$}\\
+f'(x) &= 10x^{4}+3x^{2} &&
+\end{calculs}
+\explique{Pour tout $x\geq 0$, on a $10x^{4}\geq 0$ et $3x^{2}\geq 0$, donc
+$f'(x)\geq 0$.}{une somme de nombres positifs}
+\explique{$f$ est croissante sur $\intfo{0}{+\infty}$, donc \res{$(w_{n})$ est
+croissante}.}{rappel 3}
+\end{correction}
+
+\etape{À vous de jouer}
+Étudier le sens de variation de chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$
+ci-dessous.
+\begin{questions}[label=\alph*)]
+  \item $(a_{n})$ définie pour tout $n\in\N$ par $a_{n}=n^{2}-8n+3$.
+  \item $(b_{n})$ définie pour tout $n\in\Ns$ par $b_{n}=\dfrac{n}{3^{n}}$.
+  \item $(c_{n})$ définie pour tout $n\in\N$ par $c_{n}=n^{3}+4n-\dfrac{2}{n+1}$.
+\end{questions}
+\reponse{a) $a_{n+1}-a_{n}=2n-7$ : croissante à partir du rang $4$.\;
+b)~$\frac{b_{n+1}}{b_{n}}=\frac{n+1}{3n}\leq 1$ : décroissante.\;
+c)~$g'(x)=3x^{2}+4+\frac{2}{(x+1)^{2}}>0$ : croissante.}
+\end{methodebox}
+
+\afaire{exercices 15 à 18}
+
+\partiecours{Le raisonnement par récurrence}
+
+\begin{definitionbox}[Définition 3 --- Propriété $P_{n}$]
+Une \textbf{propriété} $P_{n}$ est une affirmation qui dépend d'un entier $n\in\N$ : pour
+chaque $n$, elle est vraie ou fausse.
+
+\smallskip
+Exemples : soit $(u_{n})$ la suite arithmétique de premier terme $u_{0}=30$ et de raison
+$r=-5$, donc $u_{n}=30-5n$.
+\begin{itemize}
+  \item $P_{n}$ : «~$u_{n}>0$~» n'est pas vraie pour tout $n\in\N$ : elle est vraie pour
+        $n\leq 5$, mais fausse dès $n=6$ (on a $u_{6}=0$).
+  \item $Q_{n}$ : «~$u_{n}<50$~» est vraie pour tout $n\in\N$ (on a $u_{n}\leq 30$).
+\end{itemize}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Principe de récurrence]
+Soit $n_{0}\in\N$ et $P_{n}$ une propriété.
+\begin{itemize}
+  \item \textbf{Initialisation} : on montre que $P_{n_{0}}$ est vraie.
+  \item \textbf{Hérédité} : on choisit un entier $n\geq n_{0}$, on suppose que $P_{n}$ est
+        vraie, puis on montre que $P_{n+1}$ est vraie ($P_{n}$ vraie $\Rightarrow$
+        $P_{n+1}$ vraie).
+  \item \textbf{Conclusion} : $P_{n}$ est initialisée au rang $n_{0}$ et héréditaire, donc
+        vraie pour tout entier $n\geq n_{0}$.
+\end{itemize}
+Bien respecter ces trois étapes de rédaction.
+
+\smallskip
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Comme une file de dominos : celui du rang $n_{0}$ tombe (initialisation), et chaque domino
+qui tombe fait tomber le suivant, du rang $n$ au rang $n+1$ (hérédité). Alors tous
+tombent à partir du rang $n_{0}$ ; ceux d'avant restent debout.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \draw[black!60] (-0.4,0)--(10.2,0);
+  \foreach \k in {0,1} {\fill[black!20] (1.2*\k,0) rectangle (1.2*\k+0.3,1.8);}
+  \foreach \k in {2,3,4} {\fill[coulMeth!70,rotate around={-35:(1.2*\k+0.3,0)}]
+    (1.2*\k,0) rectangle (1.2*\k+0.3,1.8);}
+  \fill[coulMeth!45,rotate around={-12:(1.2*5+0.3,0)}] (1.2*5,0) rectangle (1.2*5+0.3,1.8);
+  \foreach \k in {6,7} {\fill[coulMeth!20] (1.2*\k,0) rectangle (1.2*\k+0.3,1.8);}
+  \node[font=\footnotesize] at (9.6,0.6) {\dots};
+  \node[font=\footnotesize,below] at (2.4,0) {$n_{0}$};
+  \node[font=\footnotesize,below] at (4.9,0) {$n$};
+  \node[font=\footnotesize,below] at (6.3,0) {$n+1$};
+  \draw[->,coulMeth,thick] (5.3,2.0) to[bend left=50] (6.5,2.0);
+  \node[font=\footnotesize,coulMeth,above] at (5.9,2.25) {hérédité};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{remarquebox}[La rédaction attendue]
+On nomme la propriété ($P_{n}$ : « … »), puis trois étapes titrées.
+\textbf{Initialisation} : on vérifie $P_{n_{0}}$. \textbf{Hérédité} : « Soit $n\in\N$ tel
+que $P_{n}$ est vraie (hypothèse de récurrence). Montrons que $P_{n+1}$ est vraie » ; le
+calcul utilise l'hypothèse de récurrence. \textbf{Conclusion} : «~$P_{n_{0}}$ est vraie et
+la propriété est héréditaire ; d'après le principe de récurrence, pour tout entier
+$n\geq n_{0}$, on a … ».
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 7 --- Démontrer une inégalité par récurrence]
+\etapeexemples
+Soit la suite $(u_{n})$ définie par $u_{0}=5$ et, pour tout $n\in\N$,
+$u_{n+1}=4u_{n}-6$. Démontrer par récurrence que, pour tout $n\in\N$, on a
+$u_{n}\geq 3$.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}\geq 3$~».}{on nomme la propriété}
+\explique{\textbf{Initialisation.} $u_{0}=5$ et $5\geq 3$, donc $P_{0}$ est vraie.}{on
+vérifie au premier rang}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie,
+c'est-à-dire $u_{n}\geq 3$. Montrons que $u_{n+1}\geq 3$.}{hypothèse de récurrence, puis
+le but}
+\begin{calculs}
+u_{n} &\geq 3 &\qquad& \rem{hypothèse de récurrence}\\
+4u_{n} &\geq 12 &\qquad& \rem{on multiplie par $4>0$ : l'ordre est conservé}\\
+4u_{n}-6 &\geq 6 &\qquad& \rem{on soustrait $6$}\\
+u_{n+1} &\geq 6 &\qquad& \rem{car $u_{n+1}=4u_{n}-6$}
+\end{calculs}
+\explique{Or $6\geq 3$, donc $u_{n+1}\geq 3$ : $P_{n+1}$ est vraie, la propriété est
+héréditaire.}{on obtient mieux que le but : on garde ce qui est demandé}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a
+$u_{n}\geq 3$}.}{les deux étapes sont citées}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(v_{n})$ définie par $v_{0}=2$ et, pour tout $n\in\N$,
+$v_{n+1}=3v_{n}-1$. Démontrer par récurrence que, pour tout $n\in\N$, on a
+$v_{n}\geq 1$.
+\reponse{Hérédité : $3v_{n}\geq 3$, puis $v_{n+1}=3v_{n}-1\geq 2\geq 1$.}
+\end{methodebox}
+
+\begin{remarquebox}[L'initialisation est indispensable]
+Soit la suite $(w_{n})$ définie par $w_{0}=5$ et, pour tout $n\in\N$, $w_{n+1}=2w_{n}-3$.
+La propriété «~$w_{n}\leq 3$~» est héréditaire : si $w_{n}\leq 3$, alors
+$2w_{n}-3\leq 3$. Pourtant elle est fausse dès le rang $0$, puisque $w_{0}=5$ : elle n'est
+pas initialisée (et $w_{1}=7$, $w_{2}=11$…).
+\end{remarquebox}
+
+\begin{proprietebox}[Propriété 2 --- Inégalité de Bernoulli]
+Soit $a$ un nombre réel positif. Pour tout $n\in\N$, on a
+$(1+a)^{n}\geq 1+na$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible), par récurrence.
+On note $P_{n}$ la propriété : «~$(1+a)^{n}\geq 1+na$~».
+
+\smallskip
+\textbf{Initialisation.} $(1+a)^{0}=1$ et $1+0\times a=1$ ; $1\geq 1$, donc $P_{0}$ est
+vraie.
+
+\smallskip
+\textbf{Hérédité.} Soit $n\in\N$ tel que $(1+a)^{n}\geq 1+na$. Montrons que
+$(1+a)^{n+1}\geq 1+(n+1)a$.
+\begin{calculs}
+(1+a)^{n} &\geq 1+na &\qquad& \rem{hypothèse de récurrence}\\
+(1+a)^{n}\times(1+a) &\geq (1+na)(1+a) &\qquad& \rem{on multiplie par $1+a>0$}\\
+(1+a)^{n+1} &\geq 1+a+na+na^{2} &\qquad& \rem{on développe}\\
+(1+a)^{n+1} &\geq 1+(n+1)a+na^{2}\geq 1+(n+1)a &\qquad& \rem{car $na^{2}\geq 0$}
+\end{calculs}
+Donc $P_{n+1}$ est vraie : la propriété est héréditaire.
+
+\smallskip
+\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ; d'après le
+principe de récurrence, pour tout $n\in\N$, on a $(1+a)^{n}\geq 1+na$.
+
+\end{proprietebox}
+
+\afaire{exercices 19 à 24}
+
+\partiecours{Récurrence et terme général d'une suite}
+
+\begin{methodebox}[Méthode 8 --- Démontrer par récurrence l'expression de $u_{n}$]
+\etapeexemples
+Soit la suite $(u_{n})$ définie par $u_{0}=2$ et, pour tout $n\in\N$,
+$u_{n+1}=3u_{n}-2$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $u_{n}=3^{n}+1$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 3\times 2-2 = \res{4} &\qquad& \rem{et $3^{1}+1=4$}\\
+u_{2} &= 3\times 4-2 = \res{10} &\qquad& \rem{et $3^{2}+1=10$}
+\end{calculs}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}=3^{n}+1$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=2$ et $3^{0}+1=1+1=2$, donc $P_{0}$ est
+vraie.}{on calcule les deux membres}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}=3^{n}+1$.
+Montrons que $u_{n+1}=3^{n+1}+1$.}{le but : $P_{n}$ où $n$ est remplacé par $n+1$}
+\begin{calculs}
+u_{n+1} &= 3u_{n}-2 &\qquad& \rem{relation de récurrence}\\
+u_{n+1} &= 3\left(3^{n}+1\right)-2 &\qquad& \rem{hypothèse de récurrence}\\
+u_{n+1} &= 3^{n+1}+3-2 &\qquad& \rem{$3\times 3^{n}=3^{n+1}$}\\
+u_{n+1} &= 3^{n+1}+1 &&
+\end{calculs}
+\explique{Donc $P_{n+1}$ est vraie : la propriété est héréditaire.}{}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a
+$u_{n}=3^{n}+1$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(a_{n})$ définie par $a_{0}=3$ et, pour tout $n\in\N$,
+$a_{n+1}=2a_{n}-1$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $a_{1}$ et $a_{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $a_{n}=2^{n+1}+1$.
+\end{questions}
+\reponse{a) $a_{1}=5$ et $a_{2}=9$.\; b) Hérédité :
+$a_{n+1}=2\left(2^{n+1}+1\right)-1=2^{n+2}+1$.}
+\end{methodebox}
+
+\afaire{exercices 25 à 29}
+
+\partiecours{Récurrence et sens de variation}
+
+\begin{remarquebox}[Pourquoi une récurrence]
+Parfois on peut revenir à la définition d'une suite croissante : $u_{n+1}\geq u_{n}$, ou
+décroissante : $u_{n+1}\leq u_{n}$. On démontre alors par récurrence la propriété
+$P_{n}$ : «~$u_{n}\leq u_{n+1}$~» (ou «~$u_{n+1}\leq u_{n}$~»).
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 9 --- Démontrer par récurrence qu'une suite est monotone]
+\etapeexemples
+Soit la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}5\,u_{n}+2$. Démontrer par récurrence que la suite $(u_{n})$ est croissante.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}\leq u_{n+1}$~».}{croissante : chaque terme est inférieur au suivant}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=0{,}5\times 0+2=2$ ; $0\leq 2$,
+donc $P_{0}$ est vraie.}{il faut calculer $u_{1}$}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\leq u_{n+1}$.
+Montrons que $u_{n+1}\leq u_{n+2}$.}{}
+\begin{calculs}
+u_{n} &\leq u_{n+1} &\qquad& \rem{hypothèse de récurrence}\\
+0{,}5\,u_{n} &\leq 0{,}5\,u_{n+1} &\qquad& \rem{on multiplie par $0{,}5>0$}\\
+0{,}5\,u_{n}+2 &\leq 0{,}5\,u_{n+1}+2 &\qquad& \rem{on ajoute $2$}\\
+u_{n+1} &\leq u_{n+2} &\qquad& \rem{relation de récurrence, aux rangs $n$ et $n+1$}
+\end{calculs}
+\explique{Donc $P_{n+1}$ est vraie : la propriété est héréditaire.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\N$, on a $u_{n}\leq u_{n+1}$ : \res{la suite $(u_{n})$ est croissante}.}{la conjecture de
+la partie~III est démontrée}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(v_{n})$ définie par $v_{0}=6$ et, pour tout $n\in\N$,
+$v_{n+1}=0{,}5\,v_{n}+1$. Démontrer par récurrence que la suite $(v_{n})$ est
+décroissante.
+\reponse{$P_{n}$ : «~$v_{n+1}\leq v_{n}$~» ; $v_{1}=4\leq 6$.}
+\end{methodebox}
+
+\afaire{exercices 30 à 33}
+
+\partiecours{Récurrence et encadrement d'une suite}
+
+\begin{definitionbox}[Définition 4 --- Suite majorée, minorée, bornée]
+La suite $(u_{n})$ est \textbf{majorée} s'il existe un nombre réel $M$ tel que, pour tout $n\in\N$, $u_{n}\leq M$ ($M$ est un \textbf{majorant}) ; \textbf{minorée} s'il
+existe un nombre réel $m$ tel que, pour tout $n\in\N$, $u_{n}\geq m$ ($m$ est un
+\textbf{minorant}) ; \textbf{bornée} si elle est à la fois majorée et minorée.
+
+\smallskip
+Exemple : pour tout $n\in\Ns$, on a $0<\frac{1}{n}\leq 1$ ; la suite
+$\left(\frac{1}{n}\right)$ est bornée, minorée par $0$ et majorée par $1$.
+\end{definitionbox}
+
+\begin{proprietebox}[Rappel 4 --- Une fonction monotone conserve ou renverse l'ordre]
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+Soit $f$ une fonction définie sur un intervalle $I$, et $a$, $b$ deux nombres réels de $I$
+tels que $a\leq b$.
+\begin{itemize}
+  \item Si $f$ est \textbf{croissante} sur $I$, alors $f(a)\leq f(b)$ : $f$ conserve
+        l'ordre.
+  \item Si $f$ est \textbf{décroissante} sur $I$, alors $f(a)\geq f(b)$ : $f$ renverse
+        l'ordre.
+\end{itemize}
+Pour une suite $u_{n+1}=f(u_{n})$, on applique $f$ à un encadrement de $u_{n}$ : on obtient
+un encadrement de $u_{n+1}$ (dans l'autre sens si $f$ est décroissante).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.65cm,y=0.65cm]
+  \draw[->,black!70] (-0.2,0)--(3.2,0);
+  \draw[->,black!70] (0,-0.2)--(0,2.6);
+  \draw[coulCourbe,line width=1pt] (0.2,0.4)--(2.8,2.2);
+  \draw[dashed,black!50] (1,0)--(1,0.954)--(0,0.954) (2.2,0)--(2.2,1.785)--(0,1.785);
+  \path[coulCourbe] (1,0.954) node[croix]{} (2.2,1.785) node[croix]{};
+  \node[font=\footnotesize,below] at (1,0) {$a$};
+  \node[font=\footnotesize,below] at (2.2,0) {$b$};
+  \node[font=\footnotesize,left] at (0,0.954) {$f(a)$};
+  \node[font=\footnotesize,left] at (0,1.785) {$f(b)$};
+  \node[font=\footnotesize,coulCourbe] at (1.9,2.8) {$f$ croissante};
+\end{tikzpicture}\hspace{0.6cm}%
+\begin{tikzpicture}[x=0.65cm,y=0.65cm]
+  \draw[->,black!70] (-0.2,0)--(3.2,0);
+  \draw[->,black!70] (0,-0.2)--(0,2.6);
+  \draw[coulCourbe,line width=1pt] (0.2,2.2)--(2.8,0.4);
+  \draw[dashed,black!50] (1,0)--(1,1.646)--(0,1.646) (2.2,0)--(2.2,0.815)--(0,0.815);
+  \path[coulCourbe] (1,1.646) node[croix]{} (2.2,0.815) node[croix]{};
+  \node[font=\footnotesize,below] at (1,0) {$a$};
+  \node[font=\footnotesize,below] at (2.2,0) {$b$};
+  \node[font=\footnotesize,left] at (0,1.646) {$f(a)$};
+  \node[font=\footnotesize,left] at (0,0.815) {$f(b)$};
+  \node[font=\footnotesize,coulCourbe] at (1.9,2.8) {$f$ décroissante};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Encadrer une suite $u_{n+1}=f(u_{n})$ par récurrence]
+\etapeexemples
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=0{,}1x^{3}+0{,}3$ et la
+suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{questions}[label=\alph*)]
+  \item Étudier le sens de variation de $f$ sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $0\leq u_{n}\leq u_{n+1}\leq 3$.
+  \item En déduire le sens de variation de $(u_{n})$ et un encadrement de ses termes.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f'(x) &= 0{,}1\times 3x^{2} &\qquad& \rem{$\left(x^{3}\right)'=3x^{2}$}\\
+f'(x) &= 0{,}3x^{2} &&
+\end{calculs}
+\explique{Pour tout $x\geq 0$, on a $f'(x)\geq 0$ : \res{$f$ est croissante sur
+$\intfo{0}{+\infty}$}.}{un carré est positif}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n}\leq u_{n+1}\leq 3$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=f(0)=0{,}3$ ;
+$0\leq 0\leq 0{,}3\leq 3$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que
+$0\leq u_{n}\leq u_{n+1}\leq 3$. Montrons que $0\leq u_{n+1}\leq u_{n+2}\leq 3$.}{}
+\begin{calculs}
+0 &\leq u_{n}\leq u_{n+1}\leq 3 &\qquad& \rem{hypothèse de récurrence}\\
+f(0) &\leq f(u_{n})\leq f(u_{n+1})\leq f(3) &\qquad& \rem{$f$ croissante : l'ordre est
+conservé}\\
+0{,}3 &\leq u_{n+1}\leq u_{n+2}\leq 3 &\qquad& \rem{$f(0)=0{,}3$ et $f(3)=2{,}7+0{,}3=3$}
+\end{calculs}
+\explique{Comme $0\leq 0{,}3$, on a $0\leq u_{n+1}\leq u_{n+2}\leq 3$ : $P_{n+1}$ est
+vraie.}{on obtient mieux que le but : on garde ce qui est demandé}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a
+$0\leq u_{n}\leq u_{n+1}\leq 3$}.}{}
+\cas{c)}
+\explique{Pour tout $n\in\N$, on a $u_{n}\leq u_{n+1}$ : \res{$(u_{n})$ est
+croissante}. Et $0\leq u_{n}\leq 3$ : \res{$(u_{n})$ est bornée}, minorée par $0$ et
+majorée par $3$.}{on lit les deux informations dans l'encadrement}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g$ la fonction définie sur $\intfo{0}{+\infty}$ par $g(x)=0{,}2x^{3}+0{,}4$ et la
+suite $(a_{n})$ définie par $a_{0}=0$ et, pour tout $n\in\N$, $a_{n+1}=g(a_{n})$.
+\begin{questions}[label=\alph*)]
+  \item Étudier le sens de variation de $g$ sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $0\leq a_{n}\leq a_{n+1}\leq 2$.
+  \item En déduire le sens de variation de $(a_{n})$ et un encadrement de ses termes.
+\end{questions}
+\reponse{a) $g'(x)=0{,}6x^{2}\geq 0$ : $g$ croissante.\; b)~$a_{1}=0{,}4$ ;
+$g(0)=0{,}4$ et $g(2)=2$.\; c) Croissante ; $0\leq a_{n}\leq 2$.}
+\end{methodebox}
+
+\afaire{exercices 34 à 38}
+
+\partiecours{Sommes et récurrence}
+
+\begin{definitionbox}[Définition 5 --- Le symbole $\Sigma$]
+Pour des entiers $p\leq n$, la somme $u_{p}+u_{p+1}+\dots+u_{n}$ s'écrit
+$\displaystyle\sum_{k=p}^{n}u_{k}$ (« somme des $u_{k}$ pour $k$ allant de $p$ à $n$~»).
+La lettre $k$ est muette : on peut la remplacer par une autre.
+
+\smallskip
+Exemples :
+\begin{itemize}
+  \item $\displaystyle\sum_{k=1}^{4}k^{2}=1^{2}+2^{2}+3^{2}+4^{2}$, soit $30$.
+  \item $\displaystyle\sum_{k=0}^{3}(2k+1)=1+3+5+7$, soit $16$.
+  \item La somme de 1\textsuperscript{re} $1+2+\dots+n=\frac{n(n+1)}{2}$ s'écrit
+        $\displaystyle\sum_{k=1}^{n}k=\frac{n(n+1)}{2}$.
+  \item Pour passer d'une somme à la suivante, on ajoute un terme :
+        $\displaystyle\sum_{k=1}^{n+1}u_{k}=\sum_{k=1}^{n}u_{k}+u_{n+1}$.
+\end{itemize}
+\end{definitionbox}
+
+\afaire{exercices 39 et 40 (le symbole $\Sigma$, avant la méthode)}
+
+\begin{methodebox}[Méthode 11 --- Démontrer une formule de somme par récurrence]
+\etapeexemples
+Pour tout $n\in\Ns$, on note $S_{n}=\displaystyle\sum_{k=1}^{n}(2k+1)$.
+\begin{questions}[label=\alph*)]
+  \item Écrire $S_{4}$ sans le symbole $\Sigma$, puis la calculer.
+  \item Démontrer par récurrence que, pour tout $n\in\Ns$, on a $S_{n}=n^{2}+2n$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+S_{4} &= 3+5+7+9 &\qquad& \rem{$k=1$, puis $2$, $3$ et $4$}\\
+S_{4} &= \res{24} &\qquad& \rem{et $4^{2}+2\times 4=24$}
+\end{calculs}
+\cas{b)}
+\explique{Pour tout $n\in\Ns$, on note $P_{n}$ la propriété :
+«~$S_{n}=n^{2}+2n$~».}{}
+\explique{\textbf{Initialisation.} $S_{1}=2\times 1+1=3$ et $1^{2}+2\times 1=3$, donc $P_{1}$
+est vraie.}{la somme commence à $k=1$}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $S_{n}=n^{2}+2n$. Montrons
+que $S_{n+1}=(n+1)^{2}+2(n+1)$.}{}
+\begin{calculs}
+S_{n+1} &= S_{n}+2(n+1)+1 &\qquad& \rem{on ajoute le terme de rang $n+1$}\\
+S_{n+1} &= n^{2}+2n+2n+3 &\qquad& \rem{hypothèse de récurrence}\\
+S_{n+1} &= n^{2}+4n+3 &&
+\end{calculs}
+\explique{On développe le but pour comparer :}{}
+\begin{calculs}
+(n+1)^{2}+2(n+1) &= n^{2}+2n+1+2n+2 &&\\
+(n+1)^{2}+2(n+1) &= n^{2}+4n+3 &\qquad& \rem{la même expression}
+\end{calculs}
+\explique{Donc $S_{n+1}=(n+1)^{2}+2(n+1)$ : $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} $P_{1}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\Ns$, on a
+$S_{n}=n^{2}+2n$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour tout $n\in\Ns$, on note $T_{n}=\displaystyle\sum_{k=1}^{n}(4k-1)$.
+\begin{questions}[label=\alph*)]
+  \item Écrire $T_{4}$ sans le symbole $\Sigma$, puis la calculer.
+  \item Démontrer par récurrence que, pour tout $n\in\Ns$, on a $T_{n}=2n^{2}+n$.
+\end{questions}
+\reponse{a) $T_{4}=3+7+11+15=36$.\; b)~$T_{n+1}=2n^{2}+5n+3$, qui vaut $2(n+1)^{2}+(n+1)$.}
+\end{methodebox}
+
+\afaire{exercices 41 à 46, puis les exercices type bac 47 à 49}
+
+\end{document}
