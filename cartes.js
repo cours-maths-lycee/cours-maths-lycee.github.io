@@ -36,7 +36,8 @@
    Série en classe (code projeté par le tableau de bord, tapé sur cartes-flash.html) :
    cartes.html#serie=K7FQ&parties=1,2,3&n=5&t=1&cartes=c004,c017,… : réglages imposés par
    le professeur et cartes tirées par son tableau de bord, dans l'ordre (fin de leur
-   identifiant) : la même série pour toute la classe, sans le tirage adaptatif ; sans
+   identifiant) : la même série pour toute la classe, sans le tirage adaptatif, lancée dès
+   l'arrivée sur la page (pas d'écran d'accueil) ; sans
    « cartes » (ancien lien), tirage ordinaire. Début et fin de la série envoyés au serveur
    (compteurs_google.gs, onglet « Séries en classe ») avec le code de l'élève (mode élève)
    ou, sinon, un jeton anonyme tiré par le navigateur (le tableau de bord affiche alors
@@ -145,6 +146,9 @@
         cocher(function (p) { return l.indexOf(p) >= 0; });
         poserChoix('n', CLASSE.n); poserChoix('t', CLASSE.t);
         modeClasse(true);
+        history.replaceState(null, '', location.pathname + location.search);
+        demarrer();   // code tapé par l'élève : les questions tout de suite, sans écran d'accueil
+        return;
       }
       history.replaceState(null, '', location.pathname + location.search);
       return;
