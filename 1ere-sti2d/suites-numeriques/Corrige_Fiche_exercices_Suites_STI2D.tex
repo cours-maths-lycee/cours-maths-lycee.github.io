@@ -5,8 +5,8 @@
 \makeatletter
 \newif\iflycee@unecolonne
 \lycee@unecolonnetrue
+\newif\iflycee@cm
 \newif\iflycee@palatino
-\lycee@palatinotrue
 
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
@@ -29,31 +29,14 @@
 \RequirePackage{needspace}
 
 \RequirePackage{amsmath,amssymb}
-\RequirePackage{mathpazo}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \renewcommand{\ttdefault}{lmtt}
-\DeclareMathSizes{10.95}{10.95}{8}{5.5}
 \begingroup\catcode`\_=\active \catcode`\^=\active
-\gdef_#1{\sb{\scriptscriptstyle #1}}
-\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\global\let_\sb \global\let^\sp
 \endgroup
-\newcommand\lycee@moins{\mathbin{%
-  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
-  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
-  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
-    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
-\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
-\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
-\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
 \AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
   \catcode`\^=12 \mathcode`\^="8000 }
-\newcommand\lycee@exposants{%
-  \fontdimen13\textfont2=.48\fontdimen6\textfont2
-  \fontdimen14\textfont2=.48\fontdimen6\textfont2
-  \fontdimen15\textfont2=.48\fontdimen6\textfont2
-  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
-  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
-  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
-\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
 \newlength{\retraitcalculs}
 \setlength{\retraitcalculs}{2em}
 
@@ -141,8 +124,8 @@
   \providecommand{\repere}{\lycee@repere}%
   \providecommand{\gradx}{\lycee@gradx}%
   \providecommand{\grady}{\lycee@grady}%
-  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
-  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
   \providecommand{\intff}{\lycee@intff}%
   \providecommand{\intfo}{\lycee@intfo}%
   \providecommand{\intof}{\lycee@intof}%
@@ -1240,20 +1223,23 @@ addition}
 \end{exo}
 
 \begin{exo}[Démontrer]
-\cas{1)}
+\cas{a) 1)}
 \begin{calculs}
-u_{0} &= 5\times 0-2 = \res{-2} &&\\
+u_{0} &= 5\times 0-2 = \res{-2} &&\justif{on remplace $n$ par $0$}\\
 u_{1} &= 5\times 1-2 = \res{3} &&\\
 u_{2} &= 5\times 2-2 = \res{8} &&\\
-u_{3} &= 5\times 3-2 = \res{13} &&\justif{on ajoute $5$ à chaque fois}
+u_{3} &= 5\times 3-2 = \res{13} &&
 \end{calculs}
-\cas{2)}
+\cas{a) 2)}
+\explique{$3-(-2)=\res{5}$ ; \ $8-3=\res{5}$ ; \ $13-8=\res{5}$.}{toujours le même
+résultat : il reste à le démontrer pour tout $n$}
+\cas{a) 3)}
+\explique{On exprime d'abord $u_{n+1}$ en fonction de $n$ :}{}
 \begin{calculs}
 u_{n+1} &= 5(n+1)-2 &&\justif{on remplace $n$ par $n+1$}\\
 u_{n+1} &= 5n+5-2 &&\justif{on développe}\\
-u_{n+1} &= \res{5n+3} &&
+u_{n+1} &= 5n+3 &&
 \end{calculs}
-\cas{3)}
 \begin{calculs}
 u_{n+1}-u_{n} &= 5n+3-(5n-2) &&\justif{parenthèses autour de $u_{n}$}\\
 u_{n+1}-u_{n} &= 5n+3-5n+2 &&\\
@@ -1261,8 +1247,20 @@ u_{n+1}-u_{n} &= 5 &&\justif{un nombre, sans $n$}
 \end{calculs}
 \explique{\res{$(u_{n})$ est arithmétique, de premier terme $u_{0}=-2$ et de raison
 $r=5$}.}{la différence est la même pour tout $n$}
-\rem{Les termes de la question 1) donnent une idée, mais ne démontrent rien : il faut le
+\rem{Les différences de la question 2) donnent une idée, mais ne démontrent rien : il faut le
 calcul de $u_{n+1}-u_{n}$ pour tout $n$.}
+\cas{b) 1)}
+\begin{calculs}
+v_{0} &= 2\times 0^{2}+1 = \res{1} &&\justif{le carré d'abord, puis $\times 2$}\\
+v_{1} &= 2\times 1^{2}+1 = \res{3} &&\\
+v_{2} &= 2\times 2^{2}+1 = \res{9} &&\\
+v_{3} &= 2\times 3^{2}+1 = \res{19} &&
+\end{calculs}
+\cas{b) 2)}
+\explique{$3-1=\res{2}$ ; \ $9-3=\res{6}$ ; \ $19-9=\res{10}$.}{}
+\cas{b) 3)}
+\explique{Les différences ne sont pas égales : \res{$(v_{n})$ n'est pas
+arithmétique}.}{deux différences distinctes suffisent pour dire non}
 \end{exo}
 
 \begin{exo}[Pour chaque suite]
@@ -1595,25 +1593,36 @@ liste.}
 \end{exo}
 
 \begin{exo}[Démontrer]
-\cas{1)}
+\cas{a) 1)}
 \begin{calculs}
 u_{0} &= 2\times 3^{0} = \res{2} &&\justif{$3^{0}=1$}\\
 u_{1} &= 2\times 3^{1} = \res{6} &&\\
 u_{2} &= 2\times 3^{2} = \res{18} &&\justif{la puissance d'abord : $2\times 9$}\\
 u_{3} &= 2\times 3^{3} = \res{54} &&\justif{$2\times 27$}
 \end{calculs}
-\cas{2)}
+\cas{a) 2)}
+\explique{$\dfrac{6}{2}=\res{3}$ ; \ $\dfrac{18}{6}=\res{3}$ ; \ $\dfrac{54}{18}=\res{3}$.}{toujours
+le même résultat : il reste à le démontrer pour tout $n$}
+\cas{a) 3)}
 \begin{calculs}
-u_{n+1} &= \res{2\times 3^{n+1}} &&\justif{on remplace $n$ par $n+1$}
-\end{calculs}
-\cas{3)}
-\begin{calculs}
-u_{n+1} &= 2\times 3^{n+1} &&\\
+u_{n+1} &= 2\times 3^{n+1} &&\justif{on remplace $n$ par $n+1$}\\
 u_{n+1} &= 2\times 3^{n}\times 3 &&\justif{$3^{n+1}=3^{n}\times 3$}\\
 u_{n+1} &= 3\times u_{n} &&\justif{on reconnaît $u_{n}=2\times 3^{n}$}
 \end{calculs}
 \explique{\res{$(u_{n})$ est géométrique, de premier terme $u_{0}=2$ et de raison
 $q=3$}.}{on multiplie toujours par $3$}
+\cas{b) 1)}
+\begin{calculs}
+v_{0} &= 4\times 0+1 = \res{1} &&\\
+v_{1} &= 4\times 1+1 = \res{5} &&\\
+v_{2} &= 4\times 2+1 = \res{9} &&\\
+v_{3} &= 4\times 3+1 = \res{13} &&\justif{on ajoute $4$ à chaque fois}
+\end{calculs}
+\cas{b) 2)}
+\explique{$\dfrac{5}{1}=\res{5}$ ; \ $\dfrac{9}{5}=\res{1{,}8}$ ; \ $\dfrac{13}{9}\approx\res{1{,}44}$.}{}
+\cas{b) 3)}
+\explique{Les quotients ne sont pas égaux : \res{$(v_{n})$ n'est pas
+géométrique}.}{elle est arithmétique, de raison $4$}
 \end{exo}
 
 \begin{exo}[Pour chaque suite]

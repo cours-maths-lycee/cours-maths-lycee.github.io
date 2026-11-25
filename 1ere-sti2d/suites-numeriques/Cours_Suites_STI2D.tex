@@ -1,14 +1,14 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.5}
+\def\lyceeversion{1.6}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
 \elevefalse
 
+\newif\iflycee@cm
 \newif\iflycee@palatino
-\lycee@palatinotrue
 
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
@@ -31,31 +31,14 @@
 \RequirePackage{needspace}
 
 \RequirePackage{amsmath,amssymb}
-\RequirePackage{mathpazo}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \renewcommand{\ttdefault}{lmtt}
-\DeclareMathSizes{10.95}{10.95}{8}{5.5}
 \begingroup\catcode`\_=\active \catcode`\^=\active
-\gdef_#1{\sb{\scriptscriptstyle #1}}
-\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\global\let_\sb \global\let^\sp
 \endgroup
-\newcommand\lycee@moins{\mathbin{%
-  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
-  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
-  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
-    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
-\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
-\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
-\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
 \AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
   \catcode`\^=12 \mathcode`\^="8000 }
-\newcommand\lycee@exposants{%
-  \fontdimen13\textfont2=.48\fontdimen6\textfont2
-  \fontdimen14\textfont2=.48\fontdimen6\textfont2
-  \fontdimen15\textfont2=.48\fontdimen6\textfont2
-  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
-  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
-  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
-\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
 \newlength{\retraitcalculs}
 \setlength{\retraitcalculs}{2em}
 
@@ -143,8 +126,8 @@
   \providecommand{\repere}{\lycee@repere}%
   \providecommand{\gradx}{\lycee@gradx}%
   \providecommand{\grady}{\lycee@grady}%
-  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
-  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
   \providecommand{\intff}{\lycee@intff}%
   \providecommand{\intfo}{\lycee@intfo}%
   \providecommand{\intof}{\lycee@intof}%
@@ -1022,13 +1005,32 @@ est \textbf{toujours la même} :
 \]
 \end{proprietebox}
 
+\textbf{En pratique.} On calcule les premiers termes $u_{0}$ ; $u_{1}$ ; $u_{2}$ ; $u_{3}$,
+puis les différences $u_{1}-u_{0}$ ; $u_{2}-u_{1}$ ; $u_{3}-u_{2}$.
+\begin{itemize}
+  \item Si deux différences ne sont pas égales, la suite n'est pas arithmétique.
+  \item Si on trouve toujours le même résultat, on calcule $u_{n+1}-u_{n}$ pour
+        démontrer que la suite est arithmétique.
+\end{itemize}
+
 \begin{methodebox}[Méthode 8 --- Montrer qu'une suite est arithmétique, ou ne l'est pas]
 \etapeexemples
 \begin{questions}[label=\alph*)]
   \item Les nombres $5$ ; $9$ ; $13$ ; $17$ peuvent-ils être les premiers termes d'une
         suite arithmétique ? Et $3$ ; $6$ ; $12$ ; $24$ ?
-  \item Soit la suite $(u_{n})$ définie par $u_{n}=4n-1$. Montrer que $(u_{n})$ est arithmétique.
-  \item Soit la suite $(v_{n})$ définie par $v_{n}=n^{2}+2$. La suite $(v_{n})$ est-elle arithmétique ?
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=4n-1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les différences $u_{1}-u_{0}$, $u_{2}-u_{1}$ et $u_{3}-u_{2}$.
+          \item Démontrer que $(u_{n})$ est arithmétique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=n^{2}+2$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les différences $v_{1}-v_{0}$, $v_{2}-v_{1}$ et $v_{3}-v_{2}$.
+          \item Conclure : la suite $(v_{n})$ est-elle arithmétique ?
+        \end{enumerate}
 \end{questions}
 \begin{correction}
 \cas{a)}
@@ -1036,7 +1038,16 @@ est \textbf{toujours la même} :
 \textbf{toutes} les différences}
 \explique{$6-3=3$ mais $12-6=6$ : \res{non}.}{deux différences distinctes suffisent pour dire
 non}
-\cas{b)}
+\cas{b) 1)}
+\begin{calculs}
+u_{0} &= 4\times 0-1=\res{-1} &\qquad& \rem{on remplace $n$ par $0$}\\
+u_{1} &= 4\times 1-1=\res{3} &&\\
+u_{2} &= 4\times 2-1=\res{7} &&\\
+u_{3} &= 4\times 3-1=\res{11} &&
+\end{calculs}
+\cas{b) 2)}
+\explique{$3-(-1)=\res{4}$ ; $7-3=\res{4}$ ; $11-7=\res{4}$.}{même résultat : reste à le démontrer}
+\cas{b) 3)}
 \begin{calculs}
 u_{n+1} &= 4(n+1)-1 &\qquad& \rem{on remplace $n$ par $n+1$}\\
 u_{n+1} &= 4n+3 &&
@@ -1046,21 +1057,41 @@ u_{n+1}-u_{n} &= 4n+3-(4n-1) &&\\
 u_{n+1}-u_{n} &= 4 &\qquad& \rem{un nombre, sans $n$}
 \end{calculs}
 \explique{$(u_{n})$ est \res{arithmétique}, de raison $r=\res{4}$ et de premier terme $u_{0}=\res{-1}$.}{}
-\cas{c)}
-\explique{$v_{0}=2$, $v_{1}=3$, $v_{2}=6$ ; or $v_{1}-v_{0}=1$ et $v_{2}-v_{1}=3$.}{les
+\cas{c) 1)}
+\begin{calculs}
+v_{0} &= 0^{2}+2=\res{2} &&\\
+v_{1} &= 1^{2}+2=\res{3} &&\\
+v_{2} &= 2^{2}+2=\res{6} &&\\
+v_{3} &= 3^{2}+2=\res{11} &&
+\end{calculs}
+\cas{c) 2)}
+\explique{$3-2=\res{1}$ ; $6-3=\res{3}$ ; $11-6=\res{5}$.}{}
+\cas{c) 3)}
+\explique{Les différences ne sont pas égales : $(v_{n})$ \res{n'est pas arithmétique}.}{les
 premiers termes suffisent pour dire non}
-\explique{Les différences ne sont pas égales : $(v_{n})$ \res{n'est pas arithmétique}.}{}
 \end{correction}
 
 \etape{À vous de jouer}
-Pour chacune des suites $(a_{n})$, $(b_{n})$ et $(c_{n})$ définies ci-dessous, dire si
-elle est arithmétique ; si oui, donner sa raison et son premier terme.
-\[
-  a_{n}=9-3n \qquad b_{n}=3n^{2} \qquad c_{n}=\dfrac{n+3}{2}
-\]
-\reponse{$a_{n+1}-a_{n}=-3$ : oui, $r=-3$, $a_{0}=9$ ;\; $(b_{n})$ : $0$ ; $3$ ; $12$,
-différences $3$ et $9$ : non ;\; $c_{n+1}-c_{n}=\frac{1}{2}$ : oui, $r=\frac{1}{2}$,
-$c_{0}=\frac{3}{2}$.}
+\begin{questions}[label=\alph*)]
+  \item Les nombres $7$ ; $4$ ; $1$ ; $-2$ peuvent-ils être les premiers termes d'une
+        suite arithmétique ? Et $1$ ; $2$ ; $4$ ; $7$ ?
+  \item Soit la suite $(a_{n})$ définie par $a_{n}=9-3n$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $a_{0}$, $a_{1}$, $a_{2}$ et $a_{3}$.
+          \item Calculer les différences $a_{1}-a_{0}$, $a_{2}-a_{1}$ et $a_{3}-a_{2}$.
+          \item Démontrer que $(a_{n})$ est arithmétique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(b_{n})$ définie par $b_{n}=3n^{2}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $b_{0}$, $b_{1}$, $b_{2}$ et $b_{3}$.
+          \item Calculer les différences $b_{1}-b_{0}$, $b_{2}-b_{1}$ et $b_{3}-b_{2}$.
+          \item Conclure : la suite $(b_{n})$ est-elle arithmétique ?
+        \end{enumerate}
+\end{questions}
+\reponse{a) oui, de raison $-3$ ; non ;\; b)~$9$ ; $6$ ; $3$ ; $0$, différences $-3$,
+$a_{n+1}-a_{n}=-3$ : arithmétique, $a_{0}=9$ et $r=-3$ ;\; c)~$0$ ; $3$ ; $12$ ; $27$,
+différences $3$ ; $9$ ; $15$ : non.}
 \end{methodebox}
 
 \afaire{exercices 32 à 34}
@@ -1267,13 +1298,34 @@ terme par le précédent est \textbf{toujours le même} :
 \]
 \end{proprietebox}
 
+\textbf{En pratique.} On calcule les premiers termes $u_{0}$ ; $u_{1}$ ; $u_{2}$ ; $u_{3}$,
+puis les quotients $\dfrac{u_{1}}{u_{0}}$ ; $\dfrac{u_{2}}{u_{1}}$ ; $\dfrac{u_{3}}{u_{2}}$.
+\begin{itemize}
+  \item Si deux quotients ne sont pas égaux, la suite n'est pas géométrique.
+  \item Si on trouve toujours le même résultat $q$, on écrit $u_{n+1}=q\times u_{n}$ pour
+        démontrer que la suite est géométrique.
+\end{itemize}
+
 \begin{methodebox}[Méthode 11 --- Montrer qu'une suite est géométrique, ou ne l'est pas]
 \etapeexemples
 \begin{questions}[label=\alph*)]
   \item Les nombres $2$ ; $6$ ; $18$ ; $54$ peuvent-ils être les premiers termes d'une
         suite géométrique ? Et $4$ ; $8$ ; $16$ ; $30$ ?
-  \item Soit la suite $(u_{n})$ définie par $u_{n}=3\times 5^{n}$. Montrer que $(u_{n})$ est géométrique.
-  \item Soit la suite $(v_{n})$ définie par $v_{n}=3n+2$. La suite $(v_{n})$ est-elle géométrique ?
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=3\times 5^{n}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les quotients $\dfrac{u_{1}}{u_{0}}$, $\dfrac{u_{2}}{u_{1}}$ et
+                $\dfrac{u_{3}}{u_{2}}$.
+          \item Démontrer que $(u_{n})$ est géométrique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=3n+2$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les quotients $\dfrac{v_{1}}{v_{0}}$, $\dfrac{v_{2}}{v_{1}}$ et
+                $\dfrac{v_{3}}{v_{2}}$.
+          \item Conclure : la suite $(v_{n})$ est-elle géométrique ?
+        \end{enumerate}
 \end{questions}
 \begin{correction}
 \cas{a)}
@@ -1281,29 +1333,60 @@ terme par le précédent est \textbf{toujours le même} :
 $3$}.}{on calcule \textbf{tous} les quotients}
 \explique{$\dfrac{8}{4}=2$ ; $\dfrac{16}{8}=2$ ; mais $\dfrac{30}{16}\ne 2$ : \res{non}.}{%
 $16\times 2=32$, pas $30$}
-\cas{b)}
+\cas{b) 1)}
+\begin{calculs}
+u_{0} &= 3\times 5^{0}=\res{3} &\qquad& \rem{$5^{0}=1$}\\
+u_{1} &= 3\times 5^{1}=\res{15} &&\\
+u_{2} &= 3\times 5^{2}=\res{75} &\qquad& \rem{la puissance d'abord : $3\times 25$}\\
+u_{3} &= 3\times 5^{3}=\res{375} &\qquad& \rem{$3\times 125$}
+\end{calculs}
+\cas{b) 2)}
+\explique{$\dfrac{15}{3}=\res{5}$ ; $\dfrac{75}{15}=\res{5}$ ; $\dfrac{375}{75}=\res{5}$.}{même résultat : reste à le démontrer}
+\cas{b) 3)}
 \begin{calculs}
 u_{n+1} &= 3\times 5^{n+1} &\qquad& \rem{on remplace $n$ par $n+1$}\\
 u_{n+1} &= 3\times 5^{n}\times 5 &\qquad& \rem{$5^{n+1}=5^{n}\times 5$}\\
 u_{n+1} &= 5\times u_{n} &\qquad& \rem{on reconnaît $u_{n}=3\times 5^{n}$}
 \end{calculs}
 \explique{$(u_{n})$ est \res{géométrique}, de raison $q=\res{5}$ et de premier terme
-$u_{0}=3\times 5^{0}=\res{3}$.}{$5^{0}=1$}
-\cas{c)}
-\explique{$v_{0}=2$, $v_{1}=5$, $v_{2}=8$ ; or $\dfrac{v_{1}}{v_{0}}=\dfrac{5}{2}$ et
-$\dfrac{v_{2}}{v_{1}}=\dfrac{8}{5}$.}{les premiers termes suffisent pour dire non}
+$u_{0}=\res{3}$.}{}
+\cas{c) 1)}
+\begin{calculs}
+v_{0} &= 3\times 0+2=\res{2} &&\\
+v_{1} &= 3\times 1+2=\res{5} &&\\
+v_{2} &= 3\times 2+2=\res{8} &&\\
+v_{3} &= 3\times 3+2=\res{11} &&
+\end{calculs}
+\cas{c) 2)}
+\explique{$\dfrac{5}{2}=\res{2{,}5}$ ; $\dfrac{8}{5}=\res{1{,}6}$ ; $\dfrac{11}{8}=\res{1{,}375}$.}{}
+\cas{c) 3)}
 \explique{Les quotients ne sont pas égaux : $(v_{n})$ \res{n'est pas géométrique}.}{elle est
 arithmétique, de raison $3$}
 \end{correction}
 
 \etape{À vous de jouer}
-Pour chaque suite, dire si elle est géométrique ; si oui, donner sa raison :
-\[
-  (w_{n}) : 64\ ;\ 16\ ;\ 4\ ;\ 1\ ;\ \ldots \qquad (a_{n}) : a_{n}=6\times 0{,}5^{n} \qquad (b_{n}) : b_{n}=n^{2}+1
-\]
-\reponse{$(w_{n})$ : quotients tous égaux à $\frac{1}{4}$ : oui, $q=\frac{1}{4}$ ;\;
-$a_{n+1}=0{,}5\times a_{n}$ : oui, $q=0{,}5$ et $a_{0}=6$ ;\; $(b_{n})$ : $1$ ; $2$ ; $5$,
-quotients $2$ et $2{,}5$ : non.}
+\begin{questions}[label=\alph*)]
+  \item Les nombres $64$ ; $16$ ; $4$ ; $1$ peuvent-ils être les premiers termes d'une
+        suite géométrique ? Et $3$ ; $6$ ; $12$ ; $20$ ?
+  \item Soit la suite $(a_{n})$ définie par $a_{n}=6\times 0{,}5^{n}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $a_{0}$, $a_{1}$, $a_{2}$ et $a_{3}$.
+          \item Calculer les quotients $\dfrac{a_{1}}{a_{0}}$, $\dfrac{a_{2}}{a_{1}}$ et
+                $\dfrac{a_{3}}{a_{2}}$.
+          \item Démontrer que $(a_{n})$ est géométrique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(b_{n})$ définie par $b_{n}=n^{2}+1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $b_{0}$, $b_{1}$, $b_{2}$ et $b_{3}$.
+          \item Calculer les quotients $\dfrac{b_{1}}{b_{0}}$, $\dfrac{b_{2}}{b_{1}}$ et
+                $\dfrac{b_{3}}{b_{2}}$.
+          \item Conclure : la suite $(b_{n})$ est-elle géométrique ?
+        \end{enumerate}
+\end{questions}
+\reponse{a) oui, de raison $\frac{1}{4}$ ; non ;\; b)~$6$ ; $3$ ; $1{,}5$ ; $0{,}75$,
+quotients $0{,}5$, $a_{n+1}=0{,}5\times a_{n}$ : géométrique, $a_{0}=6$ et $q=0{,}5$ ;\;
+c)~$1$ ; $2$ ; $5$ ; $10$, quotients $2$ ; $2{,}5$ ; $2$ : non.}
 \end{methodebox}
 
 \afaire{exercices 44 à 47}

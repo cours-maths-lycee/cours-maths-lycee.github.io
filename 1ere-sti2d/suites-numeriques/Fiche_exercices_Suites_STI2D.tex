@@ -1,13 +1,13 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.5}
+\def\lyceeversion{1.6}
 \documentclass[a4paper,10pt]{article}
 \makeatletter
 \newif\iflycee@niveaux
 \lycee@niveauxtrue
+\newif\iflycee@cm
 \newif\iflycee@palatino
-\lycee@palatinotrue
 
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
@@ -30,31 +30,14 @@
 \RequirePackage{needspace}
 
 \RequirePackage{amsmath,amssymb}
-\RequirePackage{mathpazo}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \renewcommand{\ttdefault}{lmtt}
-\DeclareMathSizes{10.95}{10.95}{8}{5.5}
 \begingroup\catcode`\_=\active \catcode`\^=\active
-\gdef_#1{\sb{\scriptscriptstyle #1}}
-\gdef^#1{\sp{\scriptscriptstyle\lycee@moinsepais #1}}
+\global\let_\sb \global\let^\sp
 \endgroup
-\newcommand\lycee@moins{\mathbin{%
-  \setbox\z@\hbox{$\m@th\scriptscriptstyle\lycee@moinsorig$}%
-  \dimen@=.55\wd\z@ \advance\dimen@-.5pt
-  \hbox to.75\wd\z@{\hss$\m@th\scriptscriptstyle\vcenter{\hbox{%
-    \tikz\draw[line width=.5pt,line cap=round](0,0)--(\the\dimen@,0);}}$\hss}}}
-\begingroup\lccode`\~=`\- \lowercase{\endgroup\let~}\lycee@moins
-\newcommand\lycee@moinsepais{\mathcode`\-="8000 }
-\AtBeginDocument{\mathchardef\lycee@moinsorig=\mathcode`\-\relax}
 \AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
   \catcode`\^=12 \mathcode`\^="8000 }
-\newcommand\lycee@exposants{%
-  \fontdimen13\textfont2=.48\fontdimen6\textfont2
-  \fontdimen14\textfont2=.48\fontdimen6\textfont2
-  \fontdimen15\textfont2=.48\fontdimen6\textfont2
-  \fontdimen13\scriptfont2=.48\fontdimen6\scriptfont2
-  \fontdimen14\scriptfont2=.48\fontdimen6\scriptfont2
-  \fontdimen15\scriptfont2=.48\fontdimen6\scriptfont2}
-\every@math@size\expandafter{\the\every@math@size\lycee@exposants}
 \newlength{\retraitcalculs}
 \setlength{\retraitcalculs}{2em}
 
@@ -142,8 +125,8 @@
   \providecommand{\repere}{\lycee@repere}%
   \providecommand{\gradx}{\lycee@gradx}%
   \providecommand{\grady}{\lycee@grady}%
-  \providecommand{\Cf}{\mathcal{C}\sb{\scriptscriptstyle f}}%
-  \providecommand{\Cg}{\mathcal{C}\sb{\scriptscriptstyle g}}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
   \providecommand{\intff}{\lycee@intff}%
   \providecommand{\intfo}{\lycee@intfo}%
   \providecommand{\intof}{\lycee@intof}%
@@ -670,12 +653,20 @@ donner la raison.
 \end{multicols}
 
 \exo[Démontrer]
-Soit la suite $(u_{n})$ définie par $u_{n}=5n-2$.
-\begin{enumerate}[label=\arabic*)]
-  \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
-  \item Exprimer $u_{n+1}$ en fonction de $n$.
-  \item Démontrer que $(u_{n})$ est arithmétique ; préciser son premier terme et sa
-        raison.
+\begin{enumerate}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=5n-2$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les différences $u_{1}-u_{0}$, $u_{2}-u_{1}$ et $u_{3}-u_{2}$.
+          \item Démontrer que $(u_{n})$ est arithmétique ; préciser son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=2n^{2}+1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les différences $v_{1}-v_{0}$, $v_{2}-v_{1}$ et $v_{3}-v_{2}$.
+          \item Conclure : la suite $(v_{n})$ est-elle arithmétique ?
+        \end{enumerate}
 \end{enumerate}
 
 \exo[Pour chaque suite]
@@ -819,12 +810,22 @@ donner la raison.
 \end{multicols}
 
 \exo[Démontrer]
-Soit la suite $(u_{n})$ définie par $u_{n}=2\times 3^{n}$.
-\begin{enumerate}[label=\arabic*)]
-  \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
-  \item Exprimer $u_{n+1}$ en fonction de $n$.
-  \item Démontrer que $(u_{n})$ est géométrique ; préciser son premier terme et sa
-        raison.
+\begin{enumerate}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=2\times 3^{n}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les quotients $\dfrac{u_{1}}{u_{0}}$, $\dfrac{u_{2}}{u_{1}}$ et
+                $\dfrac{u_{3}}{u_{2}}$.
+          \item Démontrer que $(u_{n})$ est géométrique ; préciser son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=4n+1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les quotients $\dfrac{v_{1}}{v_{0}}$, $\dfrac{v_{2}}{v_{1}}$ et
+                $\dfrac{v_{3}}{v_{2}}$.
+          \item Conclure : la suite $(v_{n})$ est-elle géométrique ?
+        \end{enumerate}
 \end{enumerate}
 
 \exo[Pour chaque suite]
