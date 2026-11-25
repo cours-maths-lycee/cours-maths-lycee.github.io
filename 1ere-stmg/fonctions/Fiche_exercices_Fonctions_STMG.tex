@@ -1,0 +1,945 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\raggedcolumns
+\newcommand{\qcm}[4]{\par\makebox[0.24\linewidth][l]{a) #1}%
+  \makebox[0.24\linewidth][l]{b) #2}\makebox[0.24\linewidth][l]{c) #3}d) #4}
+
+\usepackage{tkz-tab}
+\definecolor{coulCourbe}{HTML}{C0392B}
+\definecolor{coulCourbeB}{HTML}{1F4E79}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STMG --- Fonctions et pourcentages}%
+  {Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Tableau de valeurs, courbe et lecture graphique}
+
+\exo[Première lecture graphique]
+Voici la courbe d'une fonction $f$ définie sur $\intff{-2}{4}$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-3}{-5}{5}{5}
+  \gradx{-2,-1,1,2,3,4} \grady{-4,-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-2:4,samples=60] plot (\x,{-\x*\x+2*\x+3});
+  \node[coulCourbe,font=\footnotesize] at (3.8,2.6) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+Compléter par lecture graphique.
+\begin{enumerate}[label=\alph*)]
+  \item $f(0)=\dots$ \quad et \quad $f(2)=\dots$
+  \item L'image de $-1$ par $f$ est $\dots$
+  \item $4$ a pour antécédent $\dots$
+  \item Les antécédents de $0$ par $f$ sont $\dots$ et $\dots$
+  \item Le nombre $5$ a-t-il un antécédent par $f$ ? Justifier.
+\end{enumerate}
+
+\exo[Lire un tableau de valeurs]
+Voici un tableau de valeurs d'une fonction $f$.
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
+\hline
+$f(x)$ & $4$ & $2$ & $-1$ & $-3$ & $1$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Donner l'image de $-1$, de $1$, puis de $-2$.
+  \item Le nombre $1$ est-il un antécédent de $-3$ ?
+  \item Donner un antécédent de $1$.
+\end{enumerate}
+
+\exo[Lecture graphique complète]
+Voici la courbe d'une fonction $f$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-5}{-3}{6}{3}
+  \gradx{-4,-3,-2,-1,1,2,3,4,5} \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,-2) .. controls (-3,-1) and (-2,0) .. (-1,1)
+    .. controls (-0.667,1.333) and (-0.333,2) .. (0,2)
+    .. controls (0.333,2) and (0.667,1.333) .. (1,1)
+    .. controls (1.333,0.667) and (1.667,0.333) .. (2,0)
+    .. controls (2.333,-0.333) and (2.667,-1) .. (3,-1)
+    .. controls (3.333,-1) and (3.667,-0.333) .. (4,0)
+    .. controls (4.333,0.333) and (4.667,0.667) .. (5,1);
+  \path[coulCourbe] (-4,-2) node[croix]{} (5,1) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (5.4,2) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+Déterminer, par lecture graphique :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item l'intervalle sur lequel $f$ est définie ;
+  \item l'image de $3$ ;
+  \item l'image de $-1$ ;
+  \item $f(1)$ et $f(-4)$ ;
+  \item les antécédents de $2$ ;
+  \item les antécédents de $1$ ;
+  \item les antécédents de $0$ ;
+  \item les antécédents de $-1$ ;
+  \item les antécédents de $3$ ;
+  \item le maximum et le minimum de $f$, et où ils sont atteints.
+\end{enumerate}
+\end{multicols}
+
+\partiefiche{Tableau de variations d'une fonction}
+
+\exo[De la courbe au tableau]
+La fonction $f$ est définie sur $\intff{-3}{5}$ par sa courbe ci-dessous. Dresser son
+tableau de variations, puis donner son maximum et son minimum.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-3}{6}{5}
+  \gradx{-3,-2,-1,1,2,3,4,5} \grady{-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,3) .. controls (-2,0.5) and (0,-2) .. (1,-2)
+           .. controls (2,-2) and (4,1.5) .. (5,4);
+  \foreach \p in {(-3,3),(1,-2),(5,4)} \path[coulCourbe] \p node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (5.4,2.6) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+
+\exo[Décrire puis résumer]
+Voici la courbe d'une fonction $f$ définie sur $\intff{-3}{4}$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{5}{3}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-3,-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,-1) .. controls (-2.33,0.4) and (-1.67,2) .. (-1,2)
+            .. controls (0,2) and (1,-3) .. (2,-3)
+            .. controls (2.67,-3) and (3.33,-1.6) .. (4,0);
+  \foreach \p in {(-3,-1),(-1,2),(2,-3),(4,0)} \path[coulCourbe] \p node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (4.4,1.2) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Décrire par des phrases les variations de $f$.
+  \item Dresser le tableau de variations de $f$.
+\end{enumerate}
+
+\exo[Lire un tableau de variations]
+Voici le tableau de variations d'une fonction $g$.
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.5]{$x$/1,$g$/2}{$-5$,$-2$,$1$,$4$}
+  \tkzTabVar{+/$3$,-/$-2$,+/$4$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Sur quel intervalle $g$ est-elle définie ?
+  \item Décrire par des phrases les variations de $g$.
+  \item Donner le maximum et le minimum de $g$, et où ils sont atteints.
+  \item Tracer dans un repère une courbe qui peut représenter $g$.
+\end{enumerate}
+
+\exo[Résolution graphique]
+Voici la courbe d'une fonction $f$ définie sur $\intff{0}{10}$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-1}{-3}{11}{4}
+  \gradx{1,2,3,4,5,6,7,8,9,10} \grady{-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (0,2) .. controls (1,1) and (2,0) .. (3,-1)
+    .. controls (3.333,-1.333) and (3.667,-2) .. (4,-2)
+    .. controls (4.333,-2) and (4.667,-1.333) .. (5,-1)
+    .. controls (6,0) and (7,1) .. (8,2)
+    .. controls (8.333,2.333) and (8.667,3) .. (9,3)
+    .. controls (9.333,3) and (9.667,2.333) .. (10,2);
+  \path[coulCourbe] (0,2) node[croix]{} (10,2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (6.4,1.9) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Résoudre graphiquement :
+        \begin{multicols}{3}
+        \begin{enumerate}[label=\alph*)]
+          \item $f(x)=2$
+          \item $f(x)=1$
+          \item $f(x)=-2$
+          \item $f(x)=4$
+          \item $f(x)=0$
+        \end{enumerate}
+        \end{multicols}
+  \item Combien l'équation $f(x)=-1$ a-t-elle de solutions ?
+  \item Résoudre graphiquement, en donnant les solutions sous forme d'intervalles :
+        \begin{multicols}{2}
+        \begin{enumerate}[label=\alph*)]
+          \item $f(x)>-2$
+          \item $f(x)<1$
+          \item $f(x)\ge 1$
+          \item $f(x)\ge 0$
+        \end{enumerate}
+        \end{multicols}
+\end{enumerate}
+
+\partiefiche{Appliquer un pourcentage}
+
+\exo[Calcul mental]
+Calculer de tête.
+\trois{a) $10\,\%$ de $420$}{b) $25\,\%$ de $60$}{c) $50\,\%$ de $48$}
+\trois{d) $1\,\%$ de $900$}{e) $5\,\%$ de $80$}{f) $75\,\%$ de $20$}
+\trois{g) $20\,\%$ de $35$}{h) $30\,\%$ de $250$}{i) $40\,\%$ de $15$}
+
+\exo[Trois écritures d'un même nombre]
+Recopier et compléter le tableau.
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Fraction & $\dfrac{3}{5}$ & & & $\dfrac{1}{4}$ & \\
+\hline
+Décimal & & $0{,}09$ & & & $1{,}5$\\
+\hline
+Pourcentage & & & $45\,\%$ & & \\
+\hline
+\end{tabular}
+\end{center}
+
+\exo[Retrouver le total]
+Pour chaque situation, calculer l'effectif total.
+\begin{enumerate}[label=\alph*)]
+  \item $30$ chevaux représentent $5\,\%$ des animaux d'une ferme.
+  \item $9$ élèves représentent $30\,\%$ d'une classe.
+  \item $8$~€ représentent $10\,\%$ du prix d'un jeu.
+  \item $60$ adhérents représentent $75\,\%$ d'un club.
+\end{enumerate}
+
+\exo[Augmenter ou diminuer]
+Calculer chaque nouvelle valeur, en calculant d'abord le montant de la hausse ou de la
+baisse.
+\begin{enumerate}[label=\alph*)]
+  \item Un article à $60$~€ augmente de $15\,\%$.
+  \item Un ordinateur à $900$~€ est soldé à $-20\,\%$.
+  \item Un salaire de $2\,000$~€ augmente de $3\,\%$.
+  \item Une commune de $6\,000$ habitants perd $5\,\%$ de sa population.
+\end{enumerate}
+
+\exo[Prix hors taxe, prix TTC]
+Une trottinette coûte $350$~€ hors taxe (HT). On lui ajoute la TVA, de $20\,\%$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le montant de la TVA, puis le prix toutes taxes comprises (TTC).
+  \item En soldes, le prix TTC baisse de $10\,\%$. Calculer le prix soldé.
+\end{enumerate}
+
+\partiefiche{Calculer un pourcentage}
+
+\exo[Proportions]
+Écrire chaque proportion en pourcentage.
+\deux{a) $12$ élèves sur $40$}{b) $9$ admis sur $20$ candidats}
+\deux{c) $33$ garçons sur $150$ élèves}{d) $80$ clients sur $500$}
+
+\exo[Taux d'évolution]
+Calculer le taux d'évolution de chaque grandeur, en pourcentage.
+\begin{enumerate}[label=\alph*)]
+  \item Un prix passe de $150$~€ à $180$~€.
+  \item Un stock passe de $400$~kg à $340$~kg.
+  \item Un loyer passe de $800$~€ à $720$~€.
+  \item Un club passe de $60$ à $75$ adhérents.
+\end{enumerate}
+
+\exo[Plus ou moins de\ldots{} ?]
+Répondre sans calculer le taux d'évolution exact.
+\begin{enumerate}[label=\alph*)]
+  \item Un club passe de $700$ à $620$ adhérents. A-t-il perdu plus de $10\,\%$ de ses
+        adhérents ?
+  \item Une forêt passe de $1\,500$ à $1\,620$ arbres. A-t-elle gagné plus de
+        $10\,\%$ d'arbres ?
+  \item Une ville passe de $3\,000$ à $2\,880$ habitants. A-t-elle perdu plus de
+        $5\,\%$ de ses habitants ?
+\end{enumerate}
+
+\exo[Au tableur]
+Une feuille de calcul donne le nombre d'entrées d'une piscine.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+ & \multicolumn{1}{c|}{A} & B & C & D & E\\
+\hline
+1 & Année & 2022 & 2023 & 2024 & 2025\\
+\hline
+2 & Entrées & $5\,000$ & $5\,500$ & $4\,950$ & $5\,445$\\
+\hline
+3 & Taux d'évolution & \large$\times$ & & & \\
+\hline
+\end{tabular}
+\end{center}
+\rappel{Dans une formule, \texttt{B2} désigne le nombre de la cellule B2. En recopiant
+une formule vers la droite, \texttt{B2} devient \texttt{C2}, puis \texttt{D2}\ldots}
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le taux d'évolution du nombre d'entrées entre 2022 et 2023.
+  \item Parmi ces formules, laquelle saisir en C3 pour obtenir, par recopie vers la
+        droite, les taux d'évolution d'une année sur l'autre ?
+        \par\hspace*{0.6em}\makebox[0.45\linewidth][l]{\texttt{=(C2-B2)/C2}}\texttt{=C2-B2/B2}
+        \par\hspace*{0.6em}\makebox[0.45\linewidth][l]{\texttt{=(C2-B2)/B2}}\texttt{=(B2-C2)/B2}
+  \item Quelle formule contient alors la cellule D3 ?
+\end{enumerate}
+
+\partiefiche{Coefficient multiplicateur}
+
+\exo[Du taux au coefficient]
+Donner le coefficient multiplicateur de chaque évolution.
+\trois{a) $+6\,\%$}{b) $-6\,\%$}{c) $+30\,\%$}
+\trois{d) $-30\,\%$}{e) $+65\,\%$}{f) $-12\,\%$}
+\trois{g) $+4\,\%$}{h) $-45\,\%$}{i) $+200\,\%$}
+
+\exo[Du coefficient au taux]
+Donner l'évolution, en pourcentage, associée à chaque coefficient.
+\trois{a) $\times 1{,}09$}{b) $\times 0{,}91$}{c) $\times\frac{4}{5}$}
+\trois{d) $\times 0{,}7$}{e) $\times 3$}{f) $\times 0{,}98$}
+
+\exo[Appliquer une évolution]
+Calculer chaque nouvelle valeur en une seule multiplication.
+\begin{enumerate}[label=\alph*)]
+  \item $300$~€ augmentés de $15\,\%$.
+  \item $600$~€ diminués de $35\,\%$.
+  \item $50$~€ augmentés de $120\,\%$.
+  \item $2\,000$ habitants diminués de $1{,}5\,\%$.
+\end{enumerate}
+
+\exo[Le bon calcul]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item Un article à $500$~€ baisse de $12\,\%$. Son nouveau prix est :
+        \qcm{$500-0{,}12$}{$500\times 0{,}88$}{$500\times 1{,}12$}{$500\times 0{,}12$}
+  \item Un article à $150$~€ augmente de $30\,\%$. Son nouveau prix est :
+        \qcm{$150+0{,}3$}{$150\times\dfrac{30}{100}$}{$150\times 1{,}3$}{$150\times 0{,}7$}
+\end{enumerate}
+
+\partiefiche{Évolutions successives, évolution réciproque}
+
+\exo[Taux global]
+Calculer le taux d'évolution global.
+\begin{enumerate}[label=\alph*)]
+  \item Une hausse de $50\,\%$, puis une hausse de $20\,\%$.
+  \item Une baisse de $30\,\%$, puis une hausse de $30\,\%$.
+  \item Une hausse de $100\,\%$, puis une baisse de $50\,\%$.
+  \item Deux baisses successives de $20\,\%$.
+  \item Une hausse de $60\,\%$, puis une baisse de $25\,\%$.
+\end{enumerate}
+
+\exo[Le prix de l'électricité]
+Un journaliste annonce : « Une hausse de $10\,\%$ en février, puis une autre de
+$10\,\%$ en août, augmenteront le prix de l'électricité de $20\,\%$ sur l'année. »
+A-t-il raison ?
+
+\exo[Une même évolution répétée]
+Donner chaque fois le taux d'évolution global.
+\begin{enumerate}[label=\alph*)]
+  \item Une entreprise augmente sa production de $3\,\%$ par an. Par quel nombre la
+        production est-elle multipliée en $3$ ans ? On donne
+        $1{,}03^{3}\approx 1{,}09$.
+  \item Les prix augmentent de $1\,\%$ par mois pendant un an. On donne
+        $1{,}01^{12}\approx 1{,}13$. Quel est le taux d'évolution annuel ?
+\end{enumerate}
+
+\exo[Se compensent-elles ?]
+Pour chaque cas, dire si la seconde évolution ramène à la valeur de départ, en
+calculant le produit des coefficients multiplicateurs.
+\deux{a) $-20\,\%$, puis $+25\,\%$}{b) $+50\,\%$, puis $-50\,\%$}
+\deux{c) $-50\,\%$, puis $+100\,\%$}{d) $+300\,\%$, puis $-75\,\%$}
+\deux{e) $-20\,\%$, puis $+20\,\%$}{f) $+10\,\%$, puis $-10\,\%$}
+
+\exo[Quelle évolution compense ?]
+Pour chaque question, une seule réponse est exacte : tester chaque réponse.
+\begin{enumerate}[label=\arabic*.]
+  \item Un prix est multiplié par $4$. Pour revenir au prix de départ, il faut une
+        baisse de :
+        \qcm{$400\,\%$}{$75\,\%$}{$25\,\%$}{$300\,\%$}
+  \item Un prix augmente de $25\,\%$. Pour revenir au prix de départ, il faut une
+        baisse de :
+        \qcm{$25\,\%$}{$75\,\%$}{$20\,\%$}{$80\,\%$}
+  \item Une population baisse de $50\,\%$. Pour revenir à son niveau, il faut une
+        hausse de :
+        \qcm{$100\,\%$}{$50\,\%$}{$200\,\%$}{$150\,\%$}
+\end{enumerate}
+
+\partiefiche{Fonctions affines : image, antécédent}
+
+\exo[Affine ou non ?]
+Dire si chaque fonction est affine ; si oui, donner $a$ et $b$.
+\trois{a) $f(x)=5x+1$}{b) $g(x)=x^{2}-3$}{c) $h(x)=2-3x$}
+\trois{d) $k(x)=\dfrac{2}{x}$}{e) $m(x)=1{,}5x$}{f) $n(x)=-4$}
+
+\exo[Images]
+Soit $f(x)=3x-4$ et $g(x)=-4x+6$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f(0)$, $f(2)$, $f(-1)$ et $f(0{,}5)$.
+  \item Calculer $g(0)$, $g(2)$, $g(-3)$ et $g(1{,}5)$.
+\end{enumerate}
+
+\exo[Antécédents]
+Calculer chaque antécédent par une équation.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=3x+9$ : calculer l'antécédent de $15$, de $0$, puis de $-6$.
+  \item $g(x)=-2x+8$ : calculer l'antécédent de $0$, puis de $14$.
+  \item $h(x)=0{,}5x-2$ : résoudre $h(x)=3$.
+\end{enumerate}
+
+\exo[Deux tarifs]
+Répondre à chaque question par un calcul.
+\begin{enumerate}[label=\alph*)]
+  \item Un dépanneur facture $40$~€ de déplacement et $1{,}50$~€ par km. Exprimer le
+        prix $T(x)$ pour $x$~km. Quelle distance a-t-il parcourue pour $70$~€ ?
+  \item Une salle de réception se loue $200$~€, plus $15$~€ par invité. Exprimer le
+        prix $S(x)$ pour $x$ invités. Calculer $S(40)$. Combien d'invités pour
+        $650$~€ ?
+\end{enumerate}
+
+\partiefiche{Trouver une fonction affine}
+
+\exo[Mettre en équation]
+Exprimer chaque grandeur par une fonction affine de $x$.
+\begin{enumerate}[label=\alph*)]
+  \item Une location de kayak coûte $8$~€, plus $6$~€ par heure. $L(x)$ est le prix
+        pour $x$ heures.
+  \item Un réservoir de $60$~L consomme $5$~L tous les $100$~km. $R(x)$ est la quantité
+        restante après $x$~km.
+  \item Une vendeuse touche $1\,400$~€ par mois, plus $4\,\%$ de ses ventes. $S(x)$ est
+        son salaire pour $x$~€ de ventes.
+\end{enumerate}
+
+\exo[Coefficient directeur]
+Calculer le coefficient directeur de la droite $(AB)$.
+\deux{a) $A(1\,;2)$ et $B(4\,;11)$}{b) $A(0\,;6)$ et $B(2\,;2)$}
+\deux{c) $A(-2\,;3)$ et $B(-4\,;7)$}{d) $A(-3\,;-2)$ et $B(1\,;6)$}
+
+\exo[Déterminer une fonction affine]
+Pour chaque cas, déterminer la fonction affine $f$ dont la droite passe par $A$ et $B$.
+\deux{a) $A(1\,;5)$ et $B(3\,;11)$}{b) $A(0\,;-4)$ et $B(2\,;2)$}
+\deux{c) $A(-2\,;3)$ et $B(2\,;3)$}{d) $A(-4\,;-5)$ et $B(2\,;4)$}
+
+\partiefiche{Tracer une fonction affine}
+
+\exo[Sens de variation]
+Donner le sens de variation de chaque fonction affine.
+\trois{a) $f(x)=4-x$}{b) $g(x)=3x+1$}{c) $k(x)=-2$}
+\trois{d) $p(x)=-5x$}{e) $h(x)=-0{,}2x+3$}{}
+\par\hspace*{0.6em}f)~$m(x)=0{,}3x-1$
+
+\exo[Tracer des droites]
+Dans un même repère orthonormé, tracer les droites qui représentent :
+\trois{$f(x)=x+1$}{$g(x)=-3x+2$}{$h(x)=0{,}5x-2$}
+
+\exo[Location de paddles]
+Un paddle se loue $4$~€, plus $4$~€ par heure. On note $L(x)$ le prix pour $x$
+heures, avec $x$ entre $0$ et $8$.
+\begin{enumerate}[label=\alph*)]
+  \item Exprimer $L(x)$ en fonction de $x$.
+  \item Calculer $L(0)$ et $L(8)$.
+  \item Tracer la droite qui représente $L$ (en abscisse, $1$~cm pour $1$ heure ; en
+        ordonnée, $1$~cm pour $5$~€).
+  \item Lire graphiquement la durée de location pour $24$~€, puis vérifier par le
+        calcul.
+\end{enumerate}
+
+\exo[Proportionnalité et fonctions linéaires]
+Répondre à chaque question par un calcul.
+\begin{enumerate}[label=\alph*)]
+  \item Une boisson contient $10$~g de sucre pour $100$~mL. Exprimer la masse de sucre
+        $f(x)$ dans $x$~mL de boisson, puis calculer $f(330)$.
+  \item Un pouce vaut environ $2{,}5$~cm. Convertir $40$ pouces en centimètres, puis
+        $75$~cm en pouces.
+  \item Parmi $f(x)=-2x$ ; $g(x)=2x+3$ ; $h(x)=\dfrac{x}{4}$ et $k(x)=-1$, lesquelles
+        sont linéaires ?
+  \item La droite d'une fonction linéaire $\ell$ passe par le point $(5\,;15)$.
+        Déterminer $\ell(x)$.
+\end{enumerate}
+
+\partiefiche{Lire l'équation d'une droite}
+
+\exo[Lire une équation réduite]
+\begin{minipage}[t]{0.36\linewidth}\raggedright\vspace{0pt}
+Donner l'équation réduite de chaque droite, puis le sens de variation de la fonction
+qu'elle représente.
+\end{minipage}\hfill\begin{minipage}[t]{0.62\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \quadrillage{-4}{-4}{5}{5}
+  \draw[->,>=Stealth,black!70] (-4,0) -- (5.5,0) node[below,font=\tiny] {$x$};
+  \draw[->,>=Stealth,black!70] (0,-4) -- (0,5.5) node[left,font=\tiny] {$y$};
+  \foreach \i in {-4,...,-1,1,2,...,4} {\node[below,font=\tiny] at (\i,0) {$\i$};}
+  \foreach \i in {-4,...,-1,1,2,...,4} {\node[left,font=\tiny] at (0,\i) {$\i$};}
+  \node[below left,font=\tiny] at (0,0) {$0$};
+  \begin{scope}
+    \clip (-4,-4) rectangle (5,5);
+    \draw[coulCourbe,thick] (-1,-4) -- (2,5);
+    \draw[coulCourbeB,thick] (-3,5) -- (5,-3);
+    \draw[coulCourbeC,thick] (-4,-0.333) -- (5,2.667);
+    \draw[black!70,thick] (-4,-2) -- (5,-2);
+  \end{scope}
+  \node[coulCourbe,right,font=\small] at (2,4.4) {$(d_{1})$};
+  \node[coulCourbeB,left,font=\small] at (-2.6,4.4) {$(d_{2})$};
+  \node[coulCourbeC,above,font=\small] at (4.2,2.4) {$(d_{3})$};
+  \node[black!70,above,font=\small] at (4.2,-2) {$(d_{4})$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Points d'une droite]
+Soit $(d)$ la droite d'équation réduite $y=-2x+5$.
+\begin{enumerate}[label=\alph*)]
+  \item Les points $A(1\,;3)$, $B(3\,;1)$ et $C(-2\,;9)$ sont-ils sur $(d)$ ?
+  \item Calculer l'ordonnée du point de $(d)$ d'abscisse $4$.
+  \item Calculer l'abscisse du point de $(d)$ d'ordonnée $-7$.
+\end{enumerate}
+
+\exo[Équation réduite sans graphique]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item Une droite coupe l'axe des ordonnées en $2$ ; pour un déplacement horizontal
+        de $3$, son déplacement vertical est $+1$. Son équation réduite est :
+        \deux{a) $y=3x+2$}{b) $y=\dfrac{1}{3}x+2$}
+        \deux{c) $y=x+\dfrac{1}{3}$}{d) $y=\dfrac{1}{3}x-2$}
+  \item La droite qui passe par $(0\,;-3)$ et $(2\,;1)$ a pour équation réduite :
+        \deux{a) $y=-3x+2$}{b) $y=0{,}5x-3$}
+        \deux{c) $y=2x-3$}{d) $y=-2x-3$}
+  \item La droite d'équation $y=4x-1$ :
+        \par a) monte \quad b) descend \quad c) est horizontale
+\end{enumerate}
+
+\partiefiche{Comparer deux fonctions affines}
+
+\exo[Équations]
+Résoudre chaque équation.
+\deux{a) $6x+5=4x+11$}{b) $3x-2=x+8$}
+\deux{c) $2x+3=5x-9$}{d) $4x+1=-2x+4$}
+
+\exo[Deux offres d'emploi]
+Une commerciale hésite entre deux sociétés. Société A : $1\,200$~€ par mois, plus
+$10\,\%$ des ventes. Société B : $800$~€ par mois, plus $20\,\%$ des ventes. On note
+$x$ le montant des ventes du mois, en euros.
+\begin{enumerate}[label=\alph*)]
+  \item Exprimer les salaires $f(x)$ et $g(x)$ proposés par A et par B.
+  \item Pour quel montant de ventes les deux salaires sont-ils égaux ?
+  \item Elle pense vendre pour $5\,000$~€ par mois. Quelle société choisir ?
+\end{enumerate}
+
+\exo[Deux formules de piscine]
+Formule A : $5$~€ l'entrée. Formule B : abonnement de $24$~€, puis $2$~€ l'entrée. Le
+graphique donne le prix payé selon le nombre $x$ d'entrées.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.05cm]
+  \draw[grille,xstep=1,ystep=10] (0,0) grid (12,60);
+  \draw[->,>=Stealth,black!70] (0,0) -- (12.7,0) node[below,font=\tiny] {$x$};
+  \draw[->,>=Stealth,black!70] (0,0) -- (0,66) node[left,font=\tiny] {€};
+  \foreach \i in {1,...,12} {\node[below,font=\tiny] at (\i,0) {$\i$};}
+  \foreach \v in {10,20,...,60} {\node[left,font=\tiny] at (0,\v) {$\v$};}
+  \node[below left,font=\tiny] at (0,0) {$0$};
+  \draw[coulCourbe,thick] (0,0) -- (12,60);
+  \draw[coulCourbeB,thick] (0,24) -- (12,48);
+  \node[coulCourbe,left,font=\small] at (10.6,54) {A};
+  \node[coulCourbeB,below,font=\small] at (11.4,45) {B};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Exprimer les prix $f(x)$ et $g(x)$ des formules A et B.
+  \item Lire les coordonnées du point d'intersection des deux droites.
+  \item Retrouver ce résultat par le calcul.
+  \item Quelle formule choisir selon le nombre d'entrées ?
+\end{enumerate}
+
+\partiefiche{Fonction carré}
+
+\exo[Images et antécédents par la fonction carré]
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer le carré de $-4$, de $7$, de $-0{,}2$, puis de $20$.
+  \item Donner les antécédents par la fonction carré de $25$, de $0$, de $-9$, puis
+        de $11$.
+\end{enumerate}
+
+\exo[Lecture graphique avec la fonction carré]
+On considère la fonction carré $f(x)=x^{2}$, pour $x$ dans $\intff{-2}{2}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter le tableau de valeurs.
+        \begin{center}\small
+        \setlength{\tabcolsep}{3.5pt}\renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        $x$ & $-2$ & $-1{,}5$ & $-1$ & $-0{,}5$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\
+        \hline
+        $f(x)$ & & & & & & & & & \\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item Tracer la courbe de $f$ dans un repère orthonormé (unité : 1~cm).
+  \item Résoudre graphiquement :\\
+        a)~$x^{2}=1$ \quad b)~$x^{2}=4$ \quad c)~$x^{2}=-1$
+  \item Résoudre graphiquement, en donnant les solutions sous forme d'intervalles :\\
+        a)~$x^{2}\le 1$ \quad b)~$x^{2}>1$ \quad c)~$x^{2}<4$
+\end{enumerate}
+
+\exo[Équations avec des carrés]
+Résoudre dans $\R$ :
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $3x^{2}-8=x^{2}+10$
+  \item $6x^{2}-1=8x^{2}-11$
+  \item $2x^{2}+7=3$
+\end{enumerate}
+\end{multicols}
+
+\partiefichesansnum{Exercices type épreuve anticipée}
+
+\exo[Automatismes (QCM)]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item $30\,\%$ de $70$ est égal à :
+        \qcm{$21$}{$210$}{$40$}{$2{,}1$}
+  \item Un article à $100$~€ augmente de $20\,\%$, puis baisse de $20\,\%$. Il coûte :
+        \qcm{$100$~€}{$96$~€}{$104$~€}{$80$~€}
+  \item Lequel de ces nombres est inférieur à $0{,}2$ ?
+        \qcm{$\dfrac{1}{4}$}{$25\,\%$}{$\dfrac{1}{8}$}{$0{,}3$}
+  \item Une baisse de $20\,\%$ est compensée par une hausse de :
+        \qcm{$20\,\%$}{$25\,\%$}{$80\,\%$}{$120\,\%$}
+  \item La droite qui passe par $A(2\,;1)$ et $B(4\,;7)$ a pour coefficient
+        directeur :
+        \qcm{$3$}{$\dfrac{1}{3}$}{$2$}{$-3$}
+  \item La fonction $f(x)=3x-4$ est :
+        \par a) croissante \quad b) décroissante \quad c) constante
+  \item L'antécédent de $13$ par $f(x)=2x+3$ est :
+        \qcm{$29$}{$5$}{$8$}{$6{,}5$}
+  \item Le point d'abscisse $3$ de la droite d'équation $y=-2x+4$ a pour ordonnée :
+        \qcm{$-2$}{$10$}{$2$}{$-10$}
+  \item Une distance de $x$ miles vaut $1{,}6x$ kilomètres. Pour $x=25$, cela fait :
+        \qcm{$40$~km}{$26{,}6$~km}{$15{,}6$~km}{$4$~km}
+\end{enumerate}
+
+\exo[Les inscrits d'un club de judo]
+Une feuille de calcul donne le nombre d'inscrits d'un club de judo.
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+ & \multicolumn{1}{c|}{A} & B & C & D & E\\
+\hline
+1 & Année & 2020 & 2021 & 2022 & 2023\\
+\hline
+2 & Rang $x$ & $0$ & $1$ & $2$ & $3$\\
+\hline
+3 & Inscrits & $180$ & $171$ & $166$ & $156$\\
+\hline
+4 & Taux d'évolution & \large$\times$ & & & \\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer le taux d'évolution du nombre d'inscrits entre 2020 et 2021.
+  \item Quelle formule saisir en C4 pour obtenir, par recopie vers la droite, les
+        taux d'évolution d'une année sur l'autre ?
+  \item On modélise le nombre d'inscrits par $f(x)=-8x+180$, où $x$ est le rang de
+        l'année. Donner le sens de variation de $f$ et interpréter $-8$.
+  \item Selon ce modèle, combien d'inscrits y aura-t-il en 2028 ?
+  \item À partir de quelle année y aura-t-il moins de $100$ inscrits ?
+\end{enumerate}
+
+\exo[Les soldes]
+Un magasin fait une remise de $25\,\%$ sur un casque à $80$~€ et de $10\,\%$ sur une
+enceinte à $120$~€.
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer le prix soldé de chaque article.
+  \item On achète les deux articles. Calculer le prix total payé, puis le pourcentage
+        global de remise.
+  \item Après les soldes, le prix de l'enceinte augmente de $10\,\%$. Revient-il à
+        $120$~€ ?
+\end{enumerate}
+
+\end{multicols}
+\end{document}

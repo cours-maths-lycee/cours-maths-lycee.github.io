@@ -1,0 +1,1942 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 1 --- Calcul littéral --- corrigé}{1\textsuperscript{re} STMG}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newenvironment{tabsignes}[3][3.4]{\par\smallskip\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=#1,espcl=2.4]{#2}{#3}}{\end{tikzpicture}\end{center}}
+
+\begin{document}
+
+\entetefiche{Chapitre 1 --- Calcul littéral}{Première STMG}
+
+\partie{Réduire une expression littérale}
+
+\begin{exo}[Réduire une somme]
+\explique{Pour réduire une somme, on rapproche les termes semblables (les $a$ ensemble,
+les $a^{2}$ ensemble, les nombres ensemble), chacun avec le signe écrit devant lui, puis
+on additionne leurs coefficients.}{définition 1 et méthode 1 du cours}
+\cas{a)\quad A}
+\begin{calculs}
+A &= 4a+3+7a &&\justif{on recopie}\\
+A &= 4a+7a+3 &&\justif{on rapproche les termes en $a$}\\
+A &= \res{11a+3} &&\justif{$4+7=11$ ; le $3$ n'a pas de terme semblable}
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 9a+2a+5a &&\justif{trois termes semblables}\\
+B &= (9+2+5)a &&\justif{on additionne les coefficients}\\
+B &= \res{16a} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 6+2a+8a &&\justif{on recopie}\\
+C &= \res{10a+6} &&\justif{$2a+8a=10a$ ; le $6$ reste seul}
+\end{calculs}
+\rem{Erreur fréquente : écrire $C=16a$. Le nombre $6$ et les termes en $a$ ne sont pas
+semblables : $10a+6$ ne se réduit plus.}
+\cas{D}
+\begin{calculs}
+D &= 3a^{2}+7a^{2}+5a^{2} &&\justif{trois termes en $a^{2}$}\\
+D &= (3+7+5)a^{2} &&\\
+D &= \res{15a^{2}} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 2a^{2}+9+4a^{2} &&\justif{on recopie}\\
+E &= 2a^{2}+4a^{2}+9 &&\justif{on rapproche les $a^{2}$}\\
+E &= \res{6a^{2}+9} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 3a+6a^{2}+2a^{2} &&\justif{on recopie}\\
+F &= 6a^{2}+2a^{2}+3a &&\justif{les $a^{2}$ ensemble ; $3a$ n'est pas semblable à $a^{2}$}\\
+F &= \res{8a^{2}+3a} &&\justif{on s'arrête : $8a^{2}$ et $3a$ ne se regroupent pas}
+\end{calculs}
+\cas{b)\quad G}
+\begin{calculs}
+G &= 7m-12m+3m &&\justif{on recopie}\\
+G &= (7-12+3)m &&\justif{de gauche à droite : $7-12=-5$, puis $-5+3=-2$}\\
+G &= \res{-2m} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= 6m-9m+4m &&\\
+H &= (6-9+4)m &&\justif{$6-9=-3$, puis $-3+4=1$}\\
+H &= \res{m} &&\justif{$1m$ s'écrit $m$}
+\end{calculs}
+\cas{I}
+\begin{calculs}
+I &= -5m-4m-6m &&\justif{trois termes négatifs}\\
+I &= (-5-4-6)m &&\justif{on ajoute les distances à zéro : $5+4+6=15$}\\
+I &= \res{-15m} &&\justif{on garde le signe moins}
+\end{calculs}
+\cas{J}
+\begin{calculs}
+J &= 9m^{2}+2m^{2}-7m^{2} &&\\
+J &= (9+2-7)m^{2} &&\\
+J &= \res{4m^{2}} &&
+\end{calculs}
+\cas{K}
+\begin{calculs}
+K &= 5m-8m^{2}+3m^{2} &&\justif{on recopie}\\
+K &= -8m^{2}+3m^{2}+5m &&\justif{les $m^{2}$ avec leur signe, puis les $m$}\\
+K &= \res{-5m^{2}+5m} &&\justif{$-8+3=-5$}
+\end{calculs}
+\cas{L}
+\begin{calculs}
+L &= -4m^{2}+6m^{2}-9m^{2} &&\\
+L &= (-4+6-9)m^{2} &&\justif{$-4+6=2$, puis $2-9=-7$}\\
+L &= \res{-7m^{2}} &&
+\end{calculs}
+\cas{c)\quad M}
+\begin{calculs}
+M &= 3n^{2}+4n-6+5n^{2}+1+8 &&\justif{on recopie}\\
+M &= 3n^{2}+5n^{2}+4n-6+1+8 &&\justif{les $n^{2}$, puis les $n$, puis les nombres}\\
+M &= \res{8n^{2}+4n+3} &&\justif{$-6+1+8=3$}
+\end{calculs}
+\cas{N}
+\begin{calculs}
+N &= -7n^{2}+9-5n+3n^{2}-n-4 &&\justif{on recopie}\\
+N &= -7n^{2}+3n^{2}-5n-n+9-4 &&\justif{chaque terme garde le signe écrit devant lui}\\
+N &= \res{-4n^{2}-6n+5} &&\justif{$-7+3=-4$ ; $-5-1=-6$ ; $9-4=5$}
+\end{calculs}
+\cas{O}
+\begin{calculs}
+O &= -6n^{2}-3+8-2n^{2}+5n-9n &&\justif{on recopie}\\
+O &= -6n^{2}-2n^{2}+5n-9n-3+8 &&\justif{on rapproche les termes semblables}\\
+O &= \res{-8n^{2}-4n+5} &&\justif{$-6-2=-8$ ; $5-9=-4$ ; $-3+8=5$}
+\end{calculs}
+\cas{P}
+\begin{calculs}
+P &= 4+6n-3n^{2}+7n^{2}+2n-4 &&\justif{on recopie}\\
+P &= -3n^{2}+7n^{2}+6n+2n+4-4 &&\justif{on rapproche les termes semblables}\\
+P &= \res{4n^{2}+8n} &&\justif{$4-4=0$ : il ne reste pas de nombre seul}
+\end{calculs}
+\rem{Contrôle rapide : on remplace la lettre par $1$ dans l'expression de départ et dans le
+résultat. Pour $N$ : $-7+9-5+3-1-4=-5$ et $-4-6+5=-5$.}
+\end{exo}
+
+\begin{exo}[Réduire un produit]
+\explique{Pour réduire un produit, on multiplie les nombres entre eux (règle des signes),
+puis les lettres entre elles : $x\times x=x^{2}$.}{méthode 1 du cours : un produit se
+réduit toujours}
+\cas{a)\quad A}
+\begin{calculs}
+A &= 8\times 2x &&\justif{on recopie}\\
+A &= 8\times 2\times x &&\justif{les nombres, puis la lettre}\\
+A &= \res{16x} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 3x\times 4x &&\justif{on recopie}\\
+B &= 3\times 4\times x\times x &&\justif{les nombres, puis les lettres}\\
+B &= \res{12x^{2}} &&\justif{$x\times x=x^{2}$}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 5\times 2x^{2} &&\\
+C &= \res{10x^{2}} &&\justif{$5\times 2=10$ ; le $x^{2}$ ne change pas}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 7x\times 3 &&\\
+D &= \res{21x} &&\justif{une seule lettre : pas de carré}
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 3x^{2}\times 6 &&\\
+E &= \res{18x^{2}} &&\justif{$3\times 6=18$}
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 4x\times 5x &&\\
+F &= 4\times 5\times x\times x &&\\
+F &= \res{20x^{2}} &&
+\end{calculs}
+\cas{b)\quad G}
+\begin{calculs}
+G &= -2x\times 6x &&\justif{signes contraires : le produit est négatif}\\
+G &= -2\times 6\times x\times x &&\\
+G &= \res{-12x^{2}} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= -9\times 3x &&\justif{signes contraires : négatif}\\
+H &= \res{-27x} &&
+\end{calculs}
+\cas{I}
+\begin{calculs}
+I &= 5x\times(-2x) &&\justif{signes contraires : négatif}\\
+I &= 5\times(-2)\times x\times x &&\\
+I &= \res{-10x^{2}} &&
+\end{calculs}
+\cas{J}
+\begin{calculs}
+J &= -3x\times(-7x) &&\justif{deux nombres négatifs : le produit est positif}\\
+J &= (-3)\times(-7)\times x\times x &&\\
+J &= \res{21x^{2}} &&
+\end{calculs}
+\cas{K}
+\begin{calculs}
+K &= 4\times\left(-3x^{2}\right) &&\justif{signes contraires : négatif}\\
+K &= \res{-12x^{2}} &&
+\end{calculs}
+\cas{L}
+\begin{calculs}
+L &= -5x^{2}\times 3 &&\justif{signes contraires : négatif}\\
+L &= \res{-15x^{2}} &&
+\end{calculs}
+\cas{M}
+\begin{calculs}
+M &= -6\times\left(-2x^{2}\right) &&\justif{même signe : positif}\\
+M &= \res{12x^{2}} &&
+\end{calculs}
+\cas{N}
+\begin{calculs}
+N &= 3x^{2}\times(-4) &&\justif{signes contraires : négatif}\\
+N &= \res{-12x^{2}} &&
+\end{calculs}
+\cas{O}
+\begin{calculs}
+O &= -7x\times 2x &&\justif{signes contraires : négatif}\\
+O &= -7\times 2\times x\times x &&\\
+O &= \res{-14x^{2}} &&
+\end{calculs}
+\rem{Ne pas confondre somme et produit : $3x+4x=7x$, mais $3x\times 4x=12x^{2}$.}
+\end{exo}
+
+\begin{exo}[Somme ou produit ?]
+\explique{On regarde d'abord l'opération : un produit se réduit toujours ; une somme
+seulement si ses termes sont semblables.}{remarque de la partie I}
+\cas{A}
+\explique{$A=5+4x$ est une somme d'un nombre et d'un terme en $x$ : ils ne sont pas
+semblables, $A$ \res{ne se réduit pas}.}{$5+4x$ n'est pas $9x$}
+\cas{B}
+\begin{calculs}
+B &= 5\times 4x &&\justif{un produit}\\
+B &= \res{20x} &&\justif{$5\times 4=20$}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 5x\times 4x &&\justif{un produit}\\
+C &= 5\times 4\times x\times x &&\\
+C &= \res{20x^{2}} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 5x+4x &&\justif{une somme de deux termes semblables}\\
+D &= (5+4)x &&\justif{on additionne les coefficients}\\
+D &= \res{9x} &&
+\end{calculs}
+\explique{Seule $A$ ne se réduit pas : c'est une somme de termes qui ne sont pas
+semblables.}{réponse à la question}
+\rem{Erreur fréquente : $5x+4x=20x^{2}$. Dans une somme, on additionne les coefficients et
+la lettre ne change pas.}
+\end{exo}
+
+\partie{Développer}
+
+\begin{exo}[Distributivité simple]
+\explique{Le facteur devant (ou derrière) la parenthèse multiplie \emph{chaque} terme :
+$k(a+b)=ka+kb$. On réduit ensuite.}{propriété 1 et méthode 2 du cours}
+\cas{a)\quad A}
+\begin{calculs}
+A &= 4(3x+5) &&\justif{on recopie}\\
+A &= 4\times 3x+4\times 5 &&\justif{$4$ multiplie $3x$, puis $5$}\\
+A &= \res{12x+20} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (6+5x)\times 2 &&\justif{le facteur est à droite : il multiplie aussi chaque terme}\\
+B &= 6\times 2+5x\times 2 &&\\
+B &= 12+10x &&\\
+B &= \res{10x+12} &&\justif{on range : les $x$ d'abord}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= x(2x+9) &&\justif{le facteur est $x$}\\
+C &= x\times 2x+x\times 9 &&\\
+C &= \res{2x^{2}+9x} &&\justif{$x\times 2x=2x^{2}$}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 3x(4x+5) &&\\
+D &= 3x\times 4x+3x\times 5 &&\\
+D &= \res{12x^{2}+15x} &&\justif{$3x\times 4x=12x^{2}$ et $3x\times 5=15x$}
+\end{calculs}
+\cas{b)\quad E}
+\begin{calculs}
+E &= 5x+3(2x+4) &&\justif{le produit d'abord ; le $5x$ attend}\\
+E &= 5x+6x+12 &&\justif{$3\times 2x=6x$ et $3\times 4=12$}\\
+E &= \res{11x+12} &&
+\end{calculs}
+\rem{Erreur fréquente : additionner $5x$ et $3$ avant de développer. La multiplication passe
+avant l'addition.}
+\cas{F}
+\begin{calculs}
+F &= 2(5x+6)+4(2x+3) &&\justif{deux produits, développés chacun}\\
+F &= 10x+12+8x+12 &&\\
+F &= \res{18x+24} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 6(3+2x)+5x &&\\
+G &= 18+12x+5x &&\\
+G &= \res{17x+18} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= 3(4x+1)+2(7+3x) &&\\
+H &= 12x+3+14+6x &&\\
+H &= \res{18x+17} &&\justif{$12x+6x=18x$ ; $3+14=17$}
+\end{calculs}
+\cas{I}
+\begin{calculs}
+I &= x(3x+5)+2(6x+1) &&\\
+I &= 3x^{2}+5x+12x+2 &&\\
+I &= \res{3x^{2}+17x+2} &&
+\end{calculs}
+\cas{J}
+\begin{calculs}
+J &= 2x(4x+3)+3x(2x+5) &&\\
+J &= 8x^{2}+6x+6x^{2}+15x &&\justif{$2x\times 4x=8x^{2}$ ; $3x\times 2x=6x^{2}$}\\
+J &= \res{14x^{2}+21x} &&
+\end{calculs}
+\rem{Erreur fréquente : ne multiplier que le premier terme, $4(3x+5)=12x+5$. Contrôle avec
+$x=1$ : $4\times 8=32$ et $12+20=32$.}
+\end{exo}
+
+\begin{exo}[Signes et facteurs négatifs]
+\explique{Le facteur garde son signe et multiplie chaque terme : on applique la règle des
+signes à chaque produit.}{propriété 1 et méthode 2 du cours, exemple a)}
+\cas{a)\quad A}
+\begin{calculs}
+A &= 5(a+3)-4a &&\justif{on recopie}\\
+A &= 5a+15-4a &&\\
+A &= \res{a+15} &&\justif{$5a-4a=a$}
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= -7a+3(2a-4) &&\\
+B &= -7a+6a-12 &&\justif{$3\times(-4)=-12$}\\
+B &= \res{-a-12} &&\justif{$-7a+6a=-1a$, qu'on écrit $-a$}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 4(2+3a)-3(5+2a) &&\justif{le second facteur est $-3$}\\
+C &= 8+12a-15-6a &&\justif{$-3\times 5=-15$ et $-3\times 2a=-6a$}\\
+C &= \res{6a-7} &&\justif{$12a-6a=6a$ ; $8-15=-7$}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= -5(-3a+2)+2(4a-3) &&\\
+D &= 15a-10+8a-6 &&\justif{$-5\times(-3a)=+15a$ ; $-5\times 2=-10$}\\
+D &= \res{23a-16} &&
+\end{calculs}
+\cas{b)\quad E}
+\begin{calculs}
+E &= 3b+2b(5+6b) &&\\
+E &= 3b+10b+12b^{2} &&\justif{$2b\times 6b=12b^{2}$}\\
+E &= \res{12b^{2}+13b} &&\justif{on range : les $b^{2}$ d'abord}
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 4b(-3b+5)+7b^{2} &&\\
+F &= -12b^{2}+20b+7b^{2} &&\justif{$4b\times(-3b)=-12b^{2}$}\\
+F &= \res{-5b^{2}+20b} &&\justif{$-12+7=-5$}
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 3b(-4b-2)-b(2b-9) &&\justif{le second facteur est $-b$}\\
+G &= -12b^{2}-6b-2b^{2}+9b &&\justif{$-b\times 2b=-2b^{2}$ et $-b\times(-9)=+9b$}\\
+G &= \res{-14b^{2}+3b} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= -2b(5b-3)+6b(-2b-4) &&\\
+H &= -10b^{2}+6b-12b^{2}-24b &&\justif{$-2b\times(-3)=+6b$ ; $6b\times(-4)=-24b$}\\
+H &= \res{-22b^{2}-18b} &&
+\end{calculs}
+\rem{Erreur fréquente dans $C$ et $G$ : ne changer que le signe du premier terme. Le
+facteur $-3$ (ou $-b$) multiplie \emph{chaque} terme de la parenthèse.}
+\end{exo}
+
+\begin{exo}[Double distributivité]
+\explique{Chaque terme de la première parenthèse multiplie chaque terme de la seconde :
+$(a+b)(c+d)=ac+ad+bc+bd$, soit quatre produits, puis on réduit.}{propriété 1 et méthode 2
+du cours, exemple b)}
+\cas{A}
+\begin{calculs}
+A &= (2x+5)(4x+3) &&\justif{on recopie}\\
+A &= 8x^{2}+6x+20x+15 &&\justif{$2x\times 4x$ ; $2x\times 3$ ; $5\times 4x$ ; $5\times 3$}\\
+A &= \res{8x^{2}+26x+15} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (3+4x)(5x+2) &&\\
+B &= 15x+6+20x^{2}+8x &&\justif{$3\times 5x$ ; $3\times 2$ ; $4x\times 5x$ ; $4x\times 2$}\\
+B &= \res{20x^{2}+23x+6} &&\justif{on réduit et on range}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (5x+2)(4+3x) &&\\
+C &= 20x+15x^{2}+8+6x &&\\
+C &= \res{15x^{2}+26x+8} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (6x+1)(3+5x) &&\\
+D &= 18x+30x^{2}+3+5x &&\\
+D &= \res{30x^{2}+23x+3} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 6x+5(2+3x) &&\justif{un seul produit : $5$ multiplie $(2+3x)$}\\
+E &= 6x+10+15x &&\\
+E &= \res{21x+10} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (4x+3)(4x+3) &&\\
+F &= 16x^{2}+12x+12x+9 &&\\
+F &= \res{16x^{2}+24x+9} &&
+\end{calculs}
+\explique{$E$ n'est pas un produit de deux parenthèses : seul le nombre $5$ multiplie
+$(2+3x)$. C'est une distributivité simple, avec deux produits au lieu de quatre.}{réponse à
+la question}
+\rem{$F=(4x+3)^{2}$ : une identité remarquable ira plus vite (partie III).}
+\end{exo}
+
+\partie{Les trois identités remarquables}
+
+\begin{exo}[Identité $(a+b)^{2}$]
+\explique{On repère $a$ et $b$, puis on écrit $a^{2}+2ab+b^{2}$ : le carré du premier, le
+double produit, le carré du second.}{propriété 2 et méthode 3 du cours}
+\cas{A}
+\begin{calculs}
+A &= (3x+2)^{2} &&\justif{$(a+b)^{2}$, avec $a=3x$ et $b=2$}\\
+A &= (3x)^{2}+2\times 3x\times 2+2^{2} &&\justif{$a^{2}+2ab+b^{2}$}\\
+A &= \res{9x^{2}+12x+4} &&\justif{$(3x)^{2}=9x^{2}$}
+\end{calculs}
+\rem{$(3x)^{2}=9x^{2}$, et non $3x^{2}$ : le carré porte sur le nombre \emph{et} sur la
+lettre.}
+\cas{B}
+\begin{calculs}
+B &= (4+3x)^{2} &&\justif{$a=4$ et $b=3x$}\\
+B &= 4^{2}+2\times 4\times 3x+(3x)^{2} &&\\
+B &= 16+24x+9x^{2} &&\\
+B &= \res{9x^{2}+24x+16} &&\justif{on range}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (2a+7)^{2} &&\justif{premier terme $2a$, second terme $7$}\\
+C &= (2a)^{2}+2\times 2a\times 7+7^{2} &&\\
+C &= \res{4a^{2}+28a+49} &&
+\end{calculs}
+\rem{Ici la lettre est $a$ : on parle de premier et de second terme pour ne pas la confondre
+avec le $a$ de la formule.}
+\cas{D}
+\begin{calculs}
+D &= (5+4b)^{2} &&\justif{premier terme $5$, second terme $4b$}\\
+D &= 5^{2}+2\times 5\times 4b+(4b)^{2} &&\\
+D &= 25+40b+16b^{2} &&\\
+D &= \res{16b^{2}+40b+25} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (x+9)^{2} &&\justif{$a=x$ et $b=9$}\\
+E &= x^{2}+2\times x\times 9+9^{2} &&\\
+E &= \res{x^{2}+18x+81} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (6x+1)^{2} &&\justif{$a=6x$ et $b=1$}\\
+F &= (6x)^{2}+2\times 6x\times 1+1^{2} &&\\
+F &= \res{36x^{2}+12x+1} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= (2m+5)^{2} &&\justif{$a=2m$ et $b=5$}\\
+G &= (2m)^{2}+2\times 2m\times 5+5^{2} &&\\
+G &= \res{4m^{2}+20m+25} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= (3+7r)^{2} &&\justif{$a=3$ et $b=7r$}\\
+H &= 3^{2}+2\times 3\times 7r+(7r)^{2} &&\\
+H &= 9+42r+49r^{2} &&\\
+H &= \res{49r^{2}+42r+9} &&
+\end{calculs}
+\rem{Erreur fréquente : $(a+b)^{2}=a^{2}+b^{2}$. Le double produit $2ab$ ne s'oublie
+jamais : avec $x=1$, $(x+9)^{2}=100$, alors que $1+81=82$.}
+\end{exo}
+
+\begin{exo}[Identité $(a-b)^{2}$]
+\explique{On repère $a$ et $b$ (sans le signe $-$), puis on écrit $a^{2}-2ab+b^{2}$ : seul le
+double produit porte le signe $-$.}{propriété 2 et méthode 3 du cours, exemple b)}
+\cas{A}
+\begin{calculs}
+A &= (2x-3)^{2} &&\justif{$(a-b)^{2}$, avec $a=2x$ et $b=3$}\\
+A &= (2x)^{2}-2\times 2x\times 3+3^{2} &&\justif{$a^{2}-2ab+b^{2}$}\\
+A &= \res{4x^{2}-12x+9} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (5x-4)^{2} &&\justif{$a=5x$ et $b=4$}\\
+B &= (5x)^{2}-2\times 5x\times 4+4^{2} &&\\
+B &= \res{25x^{2}-40x+16} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (4-3x)^{2} &&\justif{$a=4$ et $b=3x$}\\
+C &= 4^{2}-2\times 4\times 3x+(3x)^{2} &&\\
+C &= 16-24x+9x^{2} &&\\
+C &= \res{9x^{2}-24x+16} &&\justif{on range}
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (1-6x)^{2} &&\justif{$a=1$ et $b=6x$}\\
+D &= 1^{2}-2\times 1\times 6x+(6x)^{2} &&\\
+D &= 1-12x+36x^{2} &&\\
+D &= \res{36x^{2}-12x+1} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (3a-5)^{2} &&\justif{premier terme $3a$, second terme $5$}\\
+E &= (3a)^{2}-2\times 3a\times 5+5^{2} &&\\
+E &= \res{9a^{2}-30a+25} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (2-7b)^{2} &&\justif{premier terme $2$, second terme $7b$}\\
+F &= 2^{2}-2\times 2\times 7b+(7b)^{2} &&\\
+F &= 4-28b+49b^{2} &&\\
+F &= \res{49b^{2}-28b+4} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= (4m-1)^{2} &&\justif{$a=4m$ et $b=1$}\\
+G &= (4m)^{2}-2\times 4m\times 1+1^{2} &&\\
+G &= \res{16m^{2}-8m+1} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= (n-8)^{2} &&\justif{$a=n$ et $b=8$}\\
+H &= n^{2}-2\times n\times 8+8^{2} &&\\
+H &= \res{n^{2}-16n+64} &&
+\end{calculs}
+\rem{Le dernier terme $b^{2}$ est toujours positif : $(n-8)^{2}$ se termine par $+64$, pas
+par $-64$.}
+\end{exo}
+
+\begin{exo}[Identité $(a+b)(a-b)$]
+\explique{Deux parenthèses avec les mêmes termes, l'une avec $+$, l'autre avec $-$ :
+$(a+b)(a-b)=a^{2}-b^{2}$.}{propriété 2 et méthode 3 du cours, exemple c)}
+\cas{A}
+\begin{calculs}
+A &= (3x+7)(3x-7) &&\justif{$a=3x$ et $b=7$}\\
+A &= (3x)^{2}-7^{2} &&\justif{$a^{2}-b^{2}$}\\
+A &= \res{9x^{2}-49} &&
+\end{calculs}
+\cas{B}
+\explique{$(2x+3)(2x-5)$ : les seconds termes $3$ et $5$ ne sont pas les mêmes, ce
+\res{n'est pas une identité remarquable}.}{on contrôle avant d'appliquer la formule}
+\begin{calculs}
+B &= (2x+3)(2x-5) &&\justif{double distributivité}\\
+B &= 4x^{2}-10x+6x-15 &&\justif{quatre produits}\\
+B &= \res{4x^{2}-4x-15} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (5+2x)(5-2x) &&\justif{$a=5$ et $b=2x$}\\
+C &= 5^{2}-(2x)^{2} &&\\
+C &= \res{25-4x^{2}} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (4a+1)(4a-1) &&\justif{premier terme $4a$, second terme $1$}\\
+D &= (4a)^{2}-1^{2} &&\\
+D &= \res{16a^{2}-1} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (b-6)(b+6) &&\justif{le produit ne dépend pas de l'ordre des facteurs}\\
+E &= b^{2}-6^{2} &&\justif{premier terme $b$, second terme $6$}\\
+E &= \res{b^{2}-36} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (9+c)(9-c) &&\justif{$a=9$ et $b=c$}\\
+F &= 9^{2}-c^{2} &&\\
+F &= \res{81-c^{2}} &&
+\end{calculs}
+\explique{L'expression qui n'est pas une identité remarquable est $B$.}{réponse à la
+question}
+\end{exo}
+
+\begin{exo}[Choisir la bonne méthode]
+\explique{Avant de calculer, on regarde la forme : un nombre devant une parenthèse
+(distributivité simple), un carré $(a+b)^{2}$ ou $(a-b)^{2}$, un produit $(a+b)(a-b)$,
+sinon la double distributivité.}{méthodes 2 et 3 du cours}
+\cas{a)\quad A}
+\begin{calculs}
+A &= 3(2x+7) &&\justif{distributivité simple}\\
+A &= \res{6x+21} &&\justif{$3\times 2x=6x$ et $3\times 7=21$}
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= (2x+7)^{2} &&\justif{$(a+b)^{2}$, avec $a=2x$ et $b=7$}\\
+B &= (2x)^{2}+2\times 2x\times 7+7^{2} &&\\
+B &= \res{4x^{2}+28x+49} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (5x-3)^{2} &&\justif{$(a-b)^{2}$, avec $a=5x$ et $b=3$}\\
+C &= (5x)^{2}-2\times 5x\times 3+3^{2} &&\\
+C &= \res{25x^{2}-30x+9} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (7x-1)(7x+1) &&\justif{$(a-b)(a+b)$, avec $a=7x$ et $b=1$}\\
+D &= (7x)^{2}-1^{2} &&\\
+D &= \res{49x^{2}-1} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (6x+5)(2x-3) &&\justif{pas d'identité : double distributivité}\\
+E &= 12x^{2}-18x+10x-15 &&\\
+E &= \res{12x^{2}-8x-15} &&
+\end{calculs}
+\cas{b)\quad F}
+\begin{calculs}
+F &= (x-3)^{2}+(2x+1)(2x-1) &&\justif{deux identités : $(a-b)^{2}$ et $(a+b)(a-b)$}\\
+F &= x^{2}-6x+9+4x^{2}-1 &&\justif{un $+$ devant : les signes ne changent pas}\\
+F &= \res{5x^{2}-6x+8} &&
+\end{calculs}
+\end{exo}
+
+\partie{Factoriser}
+
+\begin{exo}[Facteur commun]
+\explique{On cherche le plus grand nombre qui divise tous les coefficients, et la lettre
+présente dans chaque terme ; on écrit chaque terme comme un produit par ce facteur, puis
+$ka+kb=k(a+b)$.}{méthode 4 du cours, exemple a)}
+\cas{A}
+\begin{calculs}
+A &= 6a+6b &&\justif{$6$ est dans les deux termes}\\
+A &= \res{6(a+b)} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 48a-36b &&\justif{$48$ et $36$ sont dans la table de $12$}\\
+B &= 12\times 4a-12\times 3b &&\\
+B &= \res{12(4a-3b)} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= 45a-15b &&\\
+C &= 15\times 3a-15\times b &&\justif{$45a=15\times 3a$ : le facteur commun est $15$}\\
+C &= \res{15(3a-b)} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= 120a-80b &&\\
+D &= 40\times 3a-40\times 2b &&\justif{$120$ et $80$ sont dans la table de $40$}\\
+D &= \res{40(3a-2b)} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 7x^{2}+4x &&\justif{$x$ est dans les deux termes}\\
+E &= x\times 7x+x\times 4 &&\\
+E &= \res{x(7x+4)} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 18x^{2}-11x &&\\
+F &= x\times 18x-x\times 11 &&\\
+F &= \res{x(18x-11)} &&
+\end{calculs}
+\cas{G}
+\begin{calculs}
+G &= 15x+8x^{2} &&\\
+G &= x\times 15+x\times 8x &&\\
+G &= \res{x(15+8x)} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= 10x^{2}-4x &&\justif{$2$ et $x$ sont dans les deux termes}\\
+H &= 2x\times 5x-2x\times 2 &&\\
+H &= \res{2x(5x-2)} &&
+\end{calculs}
+\cas{I}
+\begin{calculs}
+I &= 4x^{2}+x &&\\
+I &= x\times 4x+x\times 1 &&\justif{$x=x\times 1$}\\
+I &= \res{x(4x+1)} &&
+\end{calculs}
+\rem{Dans $I$, il reste $1$ dans la parenthèse, pas $0$, car $x(4x)$ redonnerait seulement
+$4x^{2}$.}
+\cas{J}
+\begin{calculs}
+J &= 3x^{3}-x^{2} &&\justif{$x^{2}$ est dans les deux termes : $x^{3}=x^{2}\times x$}\\
+J &= x^{2}\times 3x-x^{2}\times 1 &&\\
+J &= \res{x^{2}(3x-1)} &&
+\end{calculs}
+\rem{Contrôle : on redéveloppe. $2x(5x-2)=10x^{2}-4x$, c'est bien $H$.}
+\end{exo}
+
+\begin{exo}[Identité $a^{2}+2ab+b^{2}$]
+\explique{Trois termes dont deux carrés : on trouve $a$ et $b$, puis on contrôle que le
+troisième terme est bien le double produit $2ab$. Si oui, l'expression est $(a+b)^{2}$.}{méthode
+4 du cours, exemple d)}
+\cas{A}
+\begin{calculs}
+A &= 9x^{2}+12x+4 &&\justif{$9x^{2}=(3x)^{2}$ et $4=2^{2}$}\\
+A &= (3x)^{2}+2\times 3x\times 2+2^{2} &&\justif{le double produit vaut bien $12x$}\\
+A &= \res{(3x+2)^{2}} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 25x^{2}+40x+16 &&\justif{$25x^{2}=(5x)^{2}$ et $16=4^{2}$}\\
+B &= (5x)^{2}+2\times 5x\times 4+4^{2} &&\justif{$2\times 5x\times 4=40x$ : c'est bien le terme du milieu}\\
+B &= \res{(5x+4)^{2}} &&
+\end{calculs}
+\cas{C}
+\explique{$9a^{2}=(3a)^{2}$ et $4=2^{2}$ ; le double produit serait $2\times 3a\times 2$, soit
+$12a$. Or le terme du milieu est $6a$ : $C$ \res{n'est pas un carré}.}{le contrôle échoue}
+\cas{D}
+\begin{calculs}
+D &= 25+30b+9b^{2} &&\justif{$25=5^{2}$ et $9b^{2}=(3b)^{2}$}\\
+D &= 5^{2}+2\times 5\times 3b+(3b)^{2} &&\justif{$2\times 5\times 3b=30b$}\\
+D &= \res{(5+3b)^{2}} &&
+\end{calculs}
+\cas{E}
+\explique{$16c^{2}=(4c)^{2}$ et $25=5^{2}$ ; le double produit serait $2\times 4c\times 5$,
+soit $40c$. Or le terme du milieu est $20c$ : $E$ \res{n'est pas un carré}.}{le contrôle
+échoue}
+\cas{F}
+\begin{calculs}
+F &= 28d+49d^{2}+4 &&\justif{on range d'abord}\\
+F &= 49d^{2}+28d+4 &&\justif{$49d^{2}=(7d)^{2}$ et $4=2^{2}$}\\
+F &= (7d)^{2}+2\times 7d\times 2+2^{2} &&\justif{$2\times 7d\times 2=28d$}\\
+F &= \res{(7d+2)^{2}} &&
+\end{calculs}
+\explique{Les deux expressions qui ne sont pas des carrés sont $C$ et $E$.}{réponse à la
+question}
+\rem{Erreur fréquente : factoriser $9a^{2}+6a+4$ en $(3a+2)^{2}$ sans contrôler. On vérifie
+en redéveloppant : $(3a+2)^{2}=9a^{2}+12a+4$.}
+\end{exo}
+
+\begin{exo}[Identités $a^{2}-2ab+b^{2}$ et $a^{2}-b^{2}$]
+\explique{Trois termes : deux carrés et un double produit précédé de $-$ donnent
+$(a-b)^{2}$. Deux carrés séparés par un $-$ : $a^{2}-b^{2}=(a-b)(a+b)$.}{méthode 4 du cours,
+exemples d) à f)}
+\cas{a)\quad A}
+\begin{calculs}
+A &= 16x^{2}-24x+9 &&\justif{$16x^{2}=(4x)^{2}$ et $9=3^{2}$}\\
+A &= (4x)^{2}-2\times 4x\times 3+3^{2} &&\justif{$2\times 4x\times 3=24x$, précédé de $-$}\\
+A &= \res{(4x-3)^{2}} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 9-12x+4x^{2} &&\justif{$9=3^{2}$ et $4x^{2}=(2x)^{2}$}\\
+B &= 3^{2}-2\times 3\times 2x+(2x)^{2} &&\justif{$2\times 3\times 2x=12x$}\\
+B &= \res{(3-2x)^{2}} &&
+\end{calculs}
+\cas{C}
+\explique{$4x^{2}=(2x)^{2}$ et $9=3^{2}$ ; le double produit serait $2\times 2x\times 3$, soit
+$12x$. Or le terme du milieu est $-6x$ : $C$ \res{n'est pas un carré}.}{le contrôle échoue}
+\cas{D}
+\explique{$D=25x^{2}+10x-1$ : le dernier terme $-1$ est négatif, ce n'est pas un carré. $D$
+\res{n'est pas un carré}.}{dans $a^{2}-2ab+b^{2}$, les deux carrés sont précédés d'un $+$}
+\cas{E}
+\begin{calculs}
+E &= 9a^{2}+25-30a &&\justif{on range d'abord}\\
+E &= 9a^{2}-30a+25 &&\justif{$9a^{2}=(3a)^{2}$ et $25=5^{2}$}\\
+E &= (3a)^{2}-2\times 3a\times 5+5^{2} &&\justif{$2\times 3a\times 5=30a$}\\
+E &= \res{(3a-5)^{2}} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= 49b^{2}+4-28b &&\justif{on range d'abord}\\
+F &= 49b^{2}-28b+4 &&\justif{$49b^{2}=(7b)^{2}$ et $4=2^{2}$}\\
+F &= (7b)^{2}-2\times 7b\times 2+2^{2} &&\justif{$2\times 7b\times 2=28b$}\\
+F &= \res{(7b-2)^{2}} &&
+\end{calculs}
+\explique{Les deux expressions qui ne sont pas des carrés sont $C$ et $D$.}{réponse à la
+question}
+\cas{b)\quad G}
+\begin{calculs}
+G &= 49x^{2}-25 &&\justif{différence de deux carrés}\\
+G &= (7x)^{2}-5^{2} &&\justif{$a^{2}-b^{2}$, avec $a=7x$ et $b=5$}\\
+G &= \res{(7x-5)(7x+5)} &&
+\end{calculs}
+\cas{H}
+\begin{calculs}
+H &= 64-9x^{2} &&\\
+H &= 8^{2}-(3x)^{2} &&\justif{$a=8$ et $b=3x$}\\
+H &= \res{(8-3x)(8+3x)} &&
+\end{calculs}
+\end{exo}
+
+\partie{Résoudre des équations}
+
+\begin{exo}[Équations du premier degré]
+\explique{On regroupe les $x$ d'un côté et les nombres de l'autre, en ajoutant ou en
+soustrayant le même terme aux deux membres, puis on divise par le coefficient de $x$.}{méthode
+5 du cours, exemple a)}
+\cas{a)}
+\begin{calculs}
+4x-9 &= 3x+12 &&\justif{on recopie}\\
+4x-3x &= 12+9 &&\justif{les $x$ à gauche, les nombres à droite}\\
+x &= 21 &&
+\end{calculs}
+\explique{$\res{S=\ens{21}}$.}{vérification : $84-9=75$ et $63+12=75$}
+\cas{b)}
+\begin{calculs}
+5x-17 &= 2x-5 &&\justif{on recopie}\\
+5x-2x &= -5+17 &&\\
+3x &= 12 &&\\
+x &= 4 &&\justif{on divise par $3$}
+\end{calculs}
+\explique{$\res{S=\ens{4}}$.}{vérification : $20-17=3$ et $8-5=3$}
+\cas{c)}
+\begin{calculs}
+2x-11 &= 5x+13 &&\justif{on recopie}\\
+-11-13 &= 5x-2x &&\justif{les $x$ du côté où il y en a le plus}\\
+-24 &= 3x &&\\
+x &= -8 &&\justif{on divise par $3$, soit $-24\div 3=-8$}
+\end{calculs}
+\explique{$\res{S=\ens{-8}}$.}{vérification : $-16-11=-27$ et $-40+13=-27$}
+\cas{d)}
+\begin{calculs}
+3x+8 &= 3x-4 &&\justif{on recopie}\\
+3x-3x &= -4-8 &&\\
+0x &= -12 &&\justif{les $x$ disparaissent}
+\end{calculs}
+\explique{$0x=-12$ n'est vrai pour aucune valeur de $x$ : $\res{S=\varnothing}$.}{$0\times x$
+vaut toujours $0$, jamais $-12$}
+\explique{Pour l'équation d), les $x$ disparaissent et il reste une égalité fausse :
+l'équation n'a aucune solution.}{réponse à la question}
+\end{exo}
+
+\begin{exo}[Équations avec des parenthèses]
+\explique{On développe d'abord chaque membre (un $-$ devant une parenthèse change tous les
+signes), on réduit, puis on regroupe les inconnues d'un côté.}{méthode 5 du cours,
+exemple b)}
+\cas{a)}
+\begin{calculs}
+3(x-4) &= 2(-x+4) &&\justif{on recopie}\\
+3x-12 &= -2x+8 &&\justif{on développe d'abord}\\
+3x+2x &= 8+12 &&\\
+5x &= 20 &&\\
+x &= 4 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{$\res{S=\ens{4}}$.}{vérification : $3\times 0=0$ et $2\times 0=0$}
+\cas{b)}
+\begin{calculs}
+-2(-a+5) &= 4(3-a)+8 &&\justif{l'inconnue s'appelle $a$}\\
+2a-10 &= 12-4a+8 &&\justif{$-2\times(-a)=2a$}\\
+2a-10 &= 20-4a &&\justif{on réduit le membre de droite}\\
+2a+4a &= 20+10 &&\\
+6a &= 30 &&\\
+a &= 5 &&
+\end{calculs}
+\explique{$\res{S=\ens{5}}$.}{vérification : $-2\times 0=0$ et $4\times(-2)+8=0$}
+\cas{c)}
+\begin{calculs}
+m-(7-2m) &= 2m+5 &&\justif{on recopie}\\
+m-7+2m &= 2m+5 &&\justif{le $-$ change les signes de $7-2m$}\\
+3m-7 &= 2m+5 &&\\
+3m-2m &= 5+7 &&\\
+m &= 12 &&
+\end{calculs}
+\explique{$\res{S=\ens{12}}$.}{vérification : $12-(-17)=29$ et $24+5=29$}
+\cas{d)}
+\begin{calculs}
+3(p-2)+4(p-5) &= 0 &&\justif{on recopie}\\
+3p-6+4p-20 &= 0 &&\\
+7p-26 &= 0 &&\\
+7p &= 26 &&\\
+p &= \dfrac{26}{7} &&\justif{on garde la fraction : $26\div 7$ ne tombe pas juste}
+\end{calculs}
+\explique{$\res{S=\ens{\tfrac{26}{7}}}$.}{}
+\rem{En c), erreur fréquente : $-(7-2m)=-7-2m$. Le $-$ change \emph{les deux} signes.}
+\end{exo}
+
+\begin{exo}[Équations produit]
+\explique{Un produit est nul si et seulement si l'un de ses facteurs est nul : on écrit
+« facteur $=0$ » pour chaque facteur. Si l'expression n'est pas un produit, on la factorise
+d'abord.}{propriété 3 et méthode 5 du cours, exemples c) à e)}
+\cas{a)}
+\begin{calculs}
+(3x-9)(x+5) &= 0 &&\justif{on recopie}
+\end{calculs}
+\eqproduit{3x-9 &= 0\\ 3x &= 9\\ x &= 3}{x+5 &= 0\\ x &= -5}
+\explique{$\res{S=\ens{-5\,;3}}$.}{solutions rangées dans l'ordre croissant}
+\cas{b)}
+\begin{calculs}
+(2x+10)(3-4x) &= 0 &&\justif{on recopie}
+\end{calculs}
+\eqproduit{2x+10 &= 0\\ 2x &= -10\\ x &= -5}{3-4x &= 0\\ -4x &= -3\\ x &= \dfrac{3}{4}}
+\explique{$\res{S=\ens{-5\,;\tfrac{3}{4}}}$.}{}
+\cas{c)}
+\begin{calculs}
+4x(3x-8) &= 0 &&\justif{deux facteurs : $4x$ et $3x-8$}
+\end{calculs}
+\eqproduit{4x &= 0\\ x &= 0}{3x-8 &= 0\\ 3x &= 8\\ x &= \dfrac{8}{3}}
+\explique{$\res{S=\ens{0\,;\tfrac{8}{3}}}$.}{}
+\cas{d)}
+\begin{calculs}
+(2x+5)^{2} &= 0 &&\justif{on recopie}\\
+(2x+5)(2x+5) &= 0 &&\justif{deux facteurs égaux}\\
+2x+5 &= 0 &&\justif{une seule équation}\\
+x &= -\dfrac{5}{2} &&
+\end{calculs}
+\explique{$\res{S=\ens{-\tfrac{5}{2}}}$.}{une seule solution}
+\cas{e)}
+\begin{calculs}
+6x^{2}-5x &= 0 &&\justif{ce n'est pas un produit : on factorise}\\
+x(6x-5) &= 0 &&\justif{facteur commun $x$}
+\end{calculs}
+\eqproduit{x &= 0}{6x-5 &= 0\\ 6x &= 5\\ x &= \dfrac{5}{6}}
+\explique{$\res{S=\ens{0\,;\tfrac{5}{6}}}$.}{on ne divise jamais par $x$ : on perdrait la
+solution $0$}
+\cas{f)}
+\begin{calculs}
+x^{2}-49 &= 0 &&\justif{différence de deux carrés}\\
+(x-7)(x+7) &= 0 &&\justif{$a^{2}-b^{2}$, avec $a=x$ et $b=7$}
+\end{calculs}
+\eqproduit{x-7 &= 0\\ x &= 7}{x+7 &= 0\\ x &= -7}
+\explique{$\res{S=\ens{-7\,;7}}$.}{autre rédaction : $x^{2}=49$ et $49>0$ (propriété 4)}
+\rem{Erreur fréquente en e) : diviser par $x$ et ne trouver que $\frac{5}{6}$. On factorise
+toujours.}
+\end{exo}
+
+\begin{exo}[Un premier problème]
+\cas{Résolution}
+\explique{Soit $c$ le nombre de classeurs. Il y a deux fois plus de cahiers : $2c$.
+Il y a $8$ classeurs de plus que d'agendas, donc $8$ agendas de moins que de
+classeurs : $c-8$.}{\textbf{inconnue} : on écrit ce que représente la lettre}
+\begin{calculs}
+2c+c+(c-8) &= 96 &&\justif{\textbf{équation} : les $96$ articles}\\
+4c-8 &= 96 &&\justif{on réduit}\\
+4c &= 104 &&\\
+c &= 26 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{$2\times 26=52$ cahiers et $26-8=18$ agendas ; $52+26+18=96$.}{\textbf{vérification}}
+\explique{La papeterie a reçu \res{$52$ cahiers, $26$ classeurs et $18$ agendas}.}{%
+\textbf{conclusion} : une phrase qui répond à la question}
+\rem{« $8$ classeurs de plus que d'agendas » : ce sont les agendas qui sont $8$ de moins,
+$c-8$ et non $c+8$.}
+\end{exo}
+
+\partie{Mise en équation}
+
+\begin{exo}[Deux commandes de vases]
+\cas{a)}
+\explique{Le premier fleuriste achète $x$ vases à $4$~€ : il dépense $\res{4x}$ euros.}{prix d'un
+vase $\times$ nombre de vases}
+\explique{Le second fleuriste achète $15$ vases de plus : $\res{x+15}$ vases.}{}
+\explique{Il les paie $1{,}50$~€ l'un : il dépense $\res{1{,}5(x+15)}$ euros.}{parenthèses :
+chaque vase coûte $1{,}50$~€}
+\cas{b)}
+\explique{Soit $x$ le nombre de vases achetés par le premier fleuriste. Les deux dépenses sont
+égales.}{\textbf{inconnue}, puis \textbf{équation}}
+\begin{calculs}
+4x &= 1{,}5(x+15) &&\justif{on traduit « la même somme »}\\
+4x &= 1{,}5x+22{,}5 &&\justif{$1{,}5\times 15=22{,}5$}\\
+4x-1{,}5x &= 22{,}5 &&\\
+2{,}5x &= 22{,}5 &&\\
+x &= 9 &&\justif{$22{,}5\div 2{,}5=9$}
+\end{calculs}
+\explique{Premier club : $4\times 9=36$~€ ; second fleuriste : $9+15=24$ vases et
+$1{,}5\times 24=36$~€.}{\textbf{vérification}}
+\explique{Le premier fleuriste a acheté \res{$9$ vases}.}{\textbf{conclusion}}
+\end{exo}
+
+\begin{exo}[Une question d'âges]
+\cas{Résolution}
+\explique{Soit $x$ le nombre d'années qui passent. La commerçante aura $58+x$ ans, sa
+fille $33+x$ ans et son petit-fils $7+x$ ans.}{\textbf{inconnue} : chacun vieillit de $x$ ans}
+\begin{calculs}
+(33+x)+(7+x) &= 58+x &&\justif{\textbf{équation} : la somme des deux âges, égale au sien}\\
+40+2x &= 58+x &&\justif{on réduit}\\
+2x-x &= 58-40 &&\\
+x &= 18 &&
+\end{calculs}
+\explique{Dans $18$ ans : la fille aura $51$ ans, le petit-fils $25$ ans ; $51+25=76$, l'âge de
+la commerçante à ce moment.}{\textbf{vérification}}
+\explique{L'égalité n'arrive que lorsque la commerçante a $76$ ans, après ses $70$ ans :
+\res{elle a tort}.}{\textbf{conclusion} : on compare à la condition de l'énoncé}
+\rem{Trouver $x$ ne suffit pas : on revient à la question (avant $70$ ans ?). Erreur
+fréquente : ne faire vieillir que la commerçante, $33+7=58+x$.}
+\end{exo}
+
+\begin{exo}[Trottinettes en libre-service]
+\cas{a)}
+\begin{calculs}
+\text{prix} &= 1+0{,}25\times 12 &&\justif{déverrouillage, puis $12$ minutes}\\
+\text{prix} &= 1+3 &&\\
+\text{prix} &= 4 &&
+\end{calculs}
+\explique{Un trajet de $12$ minutes coûte \res{$4$~€}.}{}
+\cas{b)}
+\explique{Soit $x$ la durée du trajet, en minutes.}{\textbf{inconnue}}
+\begin{calculs}
+1+0{,}25x &= 6{,}5 &&\justif{\textbf{équation}}\\
+0{,}25x &= 5{,}5 &&\justif{on retire $1$ aux deux membres}\\
+x &= 22 &&\justif{$5{,}5\div 0{,}25=22$ (diviser par $0{,}25$, c'est multiplier par $4$)}
+\end{calculs}
+\explique{$1+0{,}25\times 22=1+5{,}5$, soit $6{,}50$~€.}{\textbf{vérification}}
+\explique{Le trajet a duré \res{$22$ minutes}.}{\textbf{conclusion}}
+\cas{c)}
+\explique{Soit $x$ la durée du trajet, en minutes. Second opérateur : $0{,}35x$ euros.}{}
+\begin{calculs}
+1+0{,}25x &= 0{,}35x &&\justif{même prix chez les deux opérateurs}\\
+1 &= 0{,}35x-0{,}25x &&\justif{les $x$ du côté où il y en a le plus}\\
+1 &= 0{,}1x &&\\
+x &= 10 &&\justif{$1\div 0{,}1=10$}
+\end{calculs}
+\explique{$1+0{,}25\times 10=3{,}5$ et $0{,}35\times 10=3{,}5$.}{\textbf{vérification}}
+\explique{Les deux opérateurs coûtent le même prix pour un trajet de \res{$10$ minutes}
+($3{,}50$~€).}{\textbf{conclusion}}
+\end{exo}
+
+\partie{Résoudre des inéquations}
+
+\begin{exo}[Inéquations immédiates]
+\explique{On isole $x$ comme dans une équation ; quand on divise par un nombre
+\textbf{négatif}, le sens de l'inégalité change.}{propriété 5 et méthode 7 du cours}
+\cas{a)}
+\begin{calculs}
+x-5 &\le 0 &&\justif{on recopie}\\
+x &\le 5 &&\justif{on ajoute $5$}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;5\right]}$.}{$5$ est compris : inégalité large}
+\cas{b)}
+\begin{calculs}
+x+3 &> 0 &&\\
+x &> -3 &&\justif{on retire $3$}
+\end{calculs}
+\explique{$\res{S=\left]-3\,;+\infty\right[}$.}{$-3$ est exclu : inégalité stricte}
+\cas{c)}
+\begin{calculs}
+4x &\le 20 &&\\
+x &\le 5 &&\justif{on divise par $4>0$ : le sens ne change pas}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;5\right]}$.}{}
+\cas{d)}
+\begin{calculs}
+2x+9 &> 0 &&\\
+2x &> -9 &&\\
+x &> -\dfrac{9}{2} &&\justif{on divise par $2>0$}
+\end{calculs}
+\explique{$\res{S=\left]-\tfrac{9}{2}\,;+\infty\right[}$.}{}
+\cas{e)}
+\begin{calculs}
+-3x &> 12 &&\\
+x &< -4 &&\justif{on divise par $-3<0$ : \textbf{le sens change}}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;-4\right[}$.}{contrôle : $x=-5$ donne $15>12$}
+\cas{f)}
+\begin{calculs}
+-x+7 &\ge 0 &&\\
+-x &\ge -7 &&\justif{on retire $7$}\\
+x &\le 7 &&\justif{on divise par $-1<0$ : le sens change}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;7\right]}$.}{}
+\cas{g)}
+\begin{calculs}
+5x-2 &< 0 &&\\
+5x &< 2 &&\\
+x &< \dfrac{2}{5} &&\justif{on divise par $5>0$}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;\tfrac{2}{5}\right[}$.}{}
+\cas{h)}
+\begin{calculs}
+\dfrac{3-4x}{5} &\ge 0 &&\justif{on recopie}\\
+3-4x &\ge 0 &&\justif{on multiplie par $5>0$ : le sens ne change pas}\\
+-4x &\ge -3 &&\\
+x &\le \dfrac{3}{4} &&\justif{on divise par $-4<0$ : \textbf{le sens change}}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;\tfrac{3}{4}\right]}$.}{}
+\rem{Crochet fermé pour $\le$ ou $\ge$, ouvert pour $<$ ou $>$ ; toujours ouvert du côté de
+l'infini.}
+\end{exo}
+
+\begin{exo}[L'inconnue des deux côtés]
+\explique{Comme pour une équation : on développe, on regroupe les $x$ d'un côté et les
+nombres de l'autre, puis on divise, en regardant le signe du diviseur.}{méthode 7 du cours}
+\cas{a)}
+\begin{calculs}
+4x-5 &< 3-2x &&\justif{on recopie}\\
+4x+2x &< 3+5 &&\\
+6x &< 8 &&\\
+x &< \dfrac{8}{6} &&\justif{on divise par $6>0$}\\
+x &< \dfrac{\barre{2}\times 4}{\barre{2}\times 3} &&\justif{on simplifie par $2$}\\
+x &< \dfrac{4}{3} &&
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;\tfrac{4}{3}\right[}$.}{}
+\cas{b)}
+\begin{calculs}
+3x-2 &\ge 6x+7 &&\justif{on recopie}\\
+3x-6x &\ge 7+2 &&\\
+-3x &\ge 9 &&\\
+x &\le -3 &&\justif{on divise par $-3<0$ : \textbf{le sens change}}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;-3\right]}$.}{contrôle : $x=-4$ donne $-14\ge -17$}
+\cas{c)}
+\begin{calculs}
+3(x-2) &\ge 9-2x &&\justif{on recopie}\\
+3x-6 &\ge 9-2x &&\justif{on développe}\\
+3x+2x &\ge 9+6 &&\\
+5x &\ge 15 &&\\
+x &\ge 3 &&\justif{on divise par $5>0$}
+\end{calculs}
+\explique{$\res{S=\left[3\,;+\infty\right[}$.}{}
+\cas{d)}
+\begin{calculs}
+-2(x-3) &< 4-x &&\justif{on recopie}\\
+-2x+6 &< 4-x &&\justif{$-2\times(-3)=+6$}\\
+-2x+x &< 4-6 &&\\
+-x &< -2 &&\\
+x &> 2 &&\justif{on divise par $-1<0$ : le sens change}
+\end{calculs}
+\explique{$\res{S=\left]2\,;+\infty\right[}$.}{}
+\cas{e)}
+\begin{calculs}
+3(x+1) &< 5+3x &&\justif{on recopie}\\
+3x+3 &< 5+3x &&\\
+3x-3x &< 5-3 &&\\
+0x &< 2 &&\justif{les $x$ disparaissent}
+\end{calculs}
+\explique{$0<2$ est vrai pour toutes les valeurs de $x$ : $\res{S=\R}$.}{$0\times x$ vaut
+toujours $0$}
+\cas{f)}
+\begin{calculs}
+2(x-4) &\ge 2x+1 &&\justif{on recopie}\\
+2x-8 &\ge 2x+1 &&\\
+2x-2x &\ge 1+8 &&\\
+0x &\ge 9 &&\justif{les $x$ disparaissent}
+\end{calculs}
+\explique{$0\ge 9$ est faux pour toutes les valeurs de $x$ : $\res{S=\varnothing}$.}{}
+\explique{Pour e) et f), les $x$ disparaissent : il reste une inégalité toujours vraie
+(tous les nombres réels sont solutions) ou toujours fausse (aucune solution).}{réponse à la
+question}
+\end{exo}
+
+\begin{exo}[Inéquations avec des fractions]
+\explique{On multiplie les deux membres par un nombre \textbf{positif} qui supprime les
+dénominateurs : le sens ne change pas. Puis on résout comme d'habitude.}{méthode 7 du cours}
+\cas{a)}
+\begin{calculs}
+\dfrac{x}{2}+3 &\le 5 &&\justif{on recopie}\\
+\dfrac{x}{2} &\le 2 &&\justif{on retire $3$}\\
+x &\le 4 &&\justif{on multiplie par $2>0$}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;4\right]}$.}{}
+\cas{b)}
+\begin{calculs}
+\dfrac{3x-2}{4} &< 4 &&\justif{on recopie}\\
+3x-2 &< 16 &&\justif{on multiplie par $4>0$}\\
+3x &< 18 &&\\
+x &< 6 &&\justif{on divise par $3>0$}
+\end{calculs}
+\explique{$\res{S=\left]-\infty\,;6\right[}$.}{}
+\end{exo}
+
+\partie{Tableaux de signes}
+
+\begin{exo}[Signe d'une expression affine]
+\explique{On cherche où $ax+b$ s'annule ; après cette valeur, l'expression a le signe de
+$a$, avant, le signe contraire.}{propriété 6 du cours}
+\cas{1)}
+\begin{calculs}
+3x-12 &= 0 &&\justif{on cherche où l'expression s'annule}\\
+3x &= 12 &&\\
+x &= 4 &&
+\end{calculs}
+\explique{$a=3>0$ : $-$ puis $+$.}{après $4$, le signe de $a$}
+\begin{tabsignes}[2.4]{$x$/1,$3x-12$/1}{$-\infty$,$4$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+\end{tabsignes}
+\cas{2)}
+\begin{calculs}
+-2x+10 &= 0 &&\\
+-2x &= -10 &&\\
+x &= 5 &&
+\end{calculs}
+\explique{$a=-2<0$ : $+$ puis $-$.}{après $5$, le signe de $a$, négatif}
+\begin{tabsignes}[2.4]{$x$/1,$-2x+10$/1}{$-\infty$,$5$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+\end{tabsignes}
+\cas{3)}
+\explique{$x+5=0$ pour $x=-5$ ; $a=1>0$ : $-$ puis $+$.}{$x+5$ s'écrit $1x+5$}
+\begin{tabsignes}[2.4]{$x$/1,$x+5$/1}{$-\infty$,$-5$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+\end{tabsignes}
+\cas{4)}
+\explique{$7-x=0$ pour $x=7$ ; $a=-1<0$ : $+$ puis $-$.}{$7-x$ s'écrit $-1x+7$}
+\begin{tabsignes}[2.4]{$x$/1,$7-x$/1}{$-\infty$,$7$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+\end{tabsignes}
+\cas{5)}
+\begin{calculs}
+5x+2 &= 0 &&\\
+5x &= -2 &&\\
+x &= -\dfrac{2}{5} &&
+\end{calculs}
+\explique{$a=5>0$ : $-$ puis $+$.}{}
+\begin{tabsignes}[2.4]{$x$/1,$5x+2$/1}{$-\infty$,$-\frac{2}{5}$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+\end{tabsignes}
+\cas{6)}
+\begin{calculs}
+-4x-6 &= 0 &&\\
+-4x &= 6 &&\\
+x &= -\dfrac{6}{4} &&\justif{$\frac{6}{-4}$}\\
+x &= -\dfrac{3}{2} &&\justif{on simplifie par $2$}
+\end{calculs}
+\explique{$a=-4<0$ : $+$ puis $-$.}{}
+\begin{tabsignes}[2.4]{$x$/1,$-4x-6$/1}{$-\infty$,$-\frac{3}{2}$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+\end{tabsignes}
+\rem{Erreur fréquente : prendre le signe du nombre $b$. C'est le coefficient $a$ de $x$ qui
+compte : $-4x-6$ commence par $+$.}
+\end{exo}
+
+\begin{exo}[Signe d'un produit de deux facteurs]
+\explique{On cherche où chaque facteur s'annule (valeurs rangées dans l'ordre croissant en
+tête du tableau), une ligne par facteur, puis la ligne du produit par la règle des signes,
+colonne par colonne.}{méthode 8 du cours}
+\cas{1)}
+\explique{$x-5=0$ pour $x=5$ ; \quad $x-2=0$ pour $x=2$.}{valeurs qui annulent chaque facteur}
+\explique{$x-2$ : $a=1>0$, donc $-$ puis $+$. \\ $x-5$ : $a=1>0$, donc $-$ puis $+$.}{une
+ligne par facteur}
+\begin{tabsignes}{$x$/1,$x-2$/1,$x-5$/1,$(x-5)(x-2)$/1.2}{$-\infty$,$2$,$5$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{L'expression est positive sur \res{$\left]-\infty\,;2\right[$ et sur
+$\left]5\,;+\infty\right[$}, négative sur \res{$\left]2\,;5\right[$}.}{dernière ligne : règle des
+signes}
+\cas{2)}
+\begin{calculs}
+1-3x &= 0 &&\\
+-3x &= -1 &&\\
+x &= \dfrac{1}{3} &&
+\end{calculs}
+\explique{$x+4=0$ pour $x=-4$.}{$-4<\frac{1}{3}$ : $-4$ d'abord}
+\explique{$x+4$ : $a=1>0$, donc $-$ puis $+$. \\ $1-3x$ : $a=-3<0$, donc $+$ puis $-$.}{}
+\begin{tabsignes}{$x$/1,$x+4$/1,$1-3x$/1,$(1-3x)(x+4)$/1.2}{$-\infty$,$-4$,$\frac{1}{3}$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tabsignes}
+\explique{L'expression est négative sur \res{$\left]-\infty\,;-4\right[$ et sur
+$\left]\tfrac{1}{3}\,;+\infty\right[$}, positive sur \res{$\left]-4\,;\tfrac{1}{3}\right[$}.}{}
+\cas{3)}
+\explique{$2x+6=0$ pour $x=-3$ ; \quad $5-x=0$ pour $x=5$.}{}
+\explique{$2x+6$ : $a=2>0$, donc $-$ puis $+$. \\ $5-x$ : $a=-1<0$, donc $+$ puis $-$.}{}
+\begin{tabsignes}{$x$/1,$2x+6$/1,$5-x$/1,$(2x+6)(5-x)$/1.2}{$-\infty$,$-3$,$5$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tabsignes}
+\explique{L'expression est positive sur \res{$\left]-3\,;5\right[$}, négative sur
+\res{$\left]-\infty\,;-3\right[$ et sur $\left]5\,;+\infty\right[$}.}{}
+\cas{4)}
+\begin{calculs}
+x^{2}-16 &= x^{2}-4^{2} &&\justif{différence de deux carrés}\\
+x^{2}-16 &= (x-4)(x+4) &&\justif{on factorise d'abord}
+\end{calculs}
+\explique{$x+4$ : $-$ puis $+$, nul en $-4$. \\ $x-4$ : $-$ puis $+$, nul en $4$.}{}
+\begin{tabsignes}{$x$/1,$x+4$/1,$x-4$/1,$x^{2}-16$/1.2}{$-\infty$,$-4$,$4$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$x^{2}-16$ est négatif sur \res{$\left]-4\,;4\right[$}, positif sur
+\res{$\left]-\infty\,;-4\right[$ et sur $\left]4\,;+\infty\right[$}.}{}
+\rem{On ne dresse pas le tableau de signes d'une somme : on factorise d'abord, pour avoir
+des facteurs du premier degré.}
+\end{exo}
+
+\begin{exo}[Signe d'un produit de trois facteurs]
+\explique{Même méthode avec trois facteurs : trois valeurs en tête du tableau, trois lignes,
+puis celle du produit.}{méthode 8 du cours}
+\cas{1)}
+\explique{Le facteur $x$ est nul pour $x=0$ ; \quad $x-2=0$ pour $x=2$ ; \quad $x+3=0$ pour $x=-3$.}{valeurs
+rangées : $-3$ ; $0$ ; $2$}
+\explique{Les trois facteurs ont un coefficient $a=1>0$ : chacun est $-$ puis $+$.}{}
+\begin{tabsignes}{$x$/1,$x+3$/1,$x$/1,$x-2$/1,$x(x-2)(x+3)$/1.2}{$-\infty$,$-3$,$0$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,z,+,}
+\end{tabsignes}
+\explique{Le produit est négatif sur \res{$\left]-\infty\,;-3\right[$ et sur $\left]0\,;2\right[$},
+positif sur \res{$\left]-3\,;0\right[$ et sur $\left]2\,;+\infty\right[$}.}{trois $-$ : négatif ;
+deux $-$ : positif}
+\cas{2)}
+\explique{$3x=0$ pour $x=0$ ; \quad $2x-5=0$ pour $x=\dfrac{5}{2}$ ; \quad $x+4=0$ pour
+$x=-4$.}{valeurs rangées : $-4$ ; $0$ ; $\frac{5}{2}$}
+\explique{$3x$, $2x-5$ et $x+4$ ont des coefficients positifs : chacun est $-$ puis $+$.}{}
+\begin{tabsignes}{$x$/1,$x+4$/1,$3x$/1,$2x-5$/1,$3x(2x-5)(x+4)$/1.2}{$-\infty$,$-4$,$0$,$\frac{5}{2}$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,z,+,}
+\end{tabsignes}
+\explique{Le produit est négatif sur \res{$\left]-\infty\,;-4\right[$ et sur
+$\left]0\,;\tfrac{5}{2}\right[$}, positif sur \res{$\left]-4\,;0\right[$ et sur
+$\left]\tfrac{5}{2}\,;+\infty\right[$}.}{}
+\cas{3)}
+\begin{calculs}
+4-x^{2} &= 2^{2}-x^{2} &&\justif{différence de deux carrés}\\
+4-x^{2} &= (2-x)(2+x) &&\justif{$a=2$ et $b=x$}
+\end{calculs}
+\explique{Le produit s'écrit $(2-x)(2+x)(x-3)$ ; les facteurs s'annulent en $2$, en $-2$ et
+en $3$.}{valeurs rangées : $-2$ ; $2$ ; $3$}
+\explique{$2+x$ : $-$ puis $+$. \\ $2-x$ : $a=-1<0$, donc $+$ puis $-$. \\ $x-3$ : $-$ puis
+$+$.}{}
+\begin{tabsignes}{$x$/1,$2+x$/1,$2-x$/1,$x-3$/1,$\left(4-x^{2}\right)(x-3)$/1.2}{$-\infty$,$-2$,$2$,$3$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,t,-,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,z,-,}
+\end{tabsignes}
+\explique{Le produit est positif sur \res{$\left]-\infty\,;-2\right[$ et sur $\left]2\,;3\right[$},
+négatif sur \res{$\left]-2\,;2\right[$ et sur $\left]3\,;+\infty\right[$}.}{}
+\rem{Le facteur $2-x$ est positif \emph{avant} $2$ : ici, le produit commence par $+$. On
+ne devine pas l'alternance, on fait la règle des signes colonne par colonne.}
+\end{exo}
+
+\partie{Inéquations produit}
+
+\begin{exo}[Deux facteurs]
+\explique{On dresse le tableau de signes du produit, puis on lit les solutions sur la
+dernière ligne : les $+$ pour $>0$, les $-$ pour $<0$, avec les $0$ si l'inégalité est
+large.}{méthode 9 du cours}
+\cas{a)}
+\explique{Le facteur $x$ est nul pour $x=0$ ; \quad $x-3=0$ pour $x=3$.}{valeurs qui annulent les facteurs}
+\begin{tabsignes}{$x$/1,$x$/1,$x-3$/1,$x(x-3)$/1.2}{$-\infty$,$0$,$3$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left]-\infty\,;0\right]\cup\left[3\,;+\infty\right[}$.}{on lit les $+$ et
+les $0$ : bornes comprises}
+\cas{b)}
+\explique{$x+2=0$ pour $x=-2$ ; \quad $x-6=0$ pour $x=6$.}{}
+\begin{tabsignes}{$x$/1,$x+2$/1,$x-6$/1,$(x+2)(x-6)$/1.2}{$-\infty$,$-2$,$6$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left]-2\,;6\right[}$.}{on lit les $-$ ; inégalité stricte : bornes exclues}
+\cas{c)}
+\explique{$5-x=0$ pour $x=5$ ; \quad $3x+9=0$ pour $x=-3$.}{}
+\explique{$3x+9$ : $-$ puis $+$. \\ $5-x$ : $a=-1<0$, donc $+$ puis $-$.}{}
+\begin{tabsignes}{$x$/1,$3x+9$/1,$5-x$/1,$(5-x)(3x+9)$/1.2}{$-\infty$,$-3$,$5$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tabsignes}
+\explique{$\res{S=\left[-3\,;5\right]}$.}{on lit les $+$ et les $0$}
+\cas{d)}
+\explique{$3x-4=0$ pour $x=\dfrac{4}{3}$ ; \quad $1-5x=0$ pour $x=\dfrac{1}{5}$.}{$\frac{1}{5}<\frac{4}{3}$
+: $\frac{1}{5}$ d'abord}
+\explique{$1-5x$ : $a=-5<0$, donc $+$ puis $-$. \\ $3x-4$ : $-$ puis $+$.}{}
+\begin{tabsignes}{$x$/1,$1-5x$/1,$3x-4$/1,$(3x-4)(1-5x)$/1.2}{$-\infty$,$\frac{1}{5}$,$\frac{4}{3}$,$+\infty$}
+  \tkzTabLine{,+,z,-,t,-,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tabsignes}
+\explique{$\res{S=\left]-\infty\,;\tfrac{1}{5}\right[\cup\left]\tfrac{4}{3}\,;+\infty\right[}$.}{on
+lit les $-$ ; deux intervalles réunis par $\cup$}
+\rem{Inégalité large ($\le$, $\ge$) : les valeurs qui annulent sont solutions, crochets
+fermés. Inégalité stricte : crochets ouverts.}
+\end{exo}
+
+\begin{exo}[Trois facteurs]
+\explique{Trois facteurs : trois valeurs en tête du tableau, trois lignes, puis celle du
+produit.}{méthode 9 du cours, exemple c)}
+\cas{a)}
+\explique{Les facteurs $x$, $x-2$ et $x+4$ s'annulent en $0$, en $2$ et en $-4$ ; tous sont
+$-$ puis $+$.}{valeurs rangées : $-4$ ; $0$ ; $2$}
+\begin{tabsignes}{$x$/1,$x+4$/1,$x$/1,$x-2$/1,$x(x-2)(x+4)$/1.2}{$-\infty$,$-4$,$0$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left[-4\,;0\right]\cup\left[2\,;+\infty\right[}$.}{on lit les $+$ et les
+$0$}
+\cas{b)}
+\explique{$x+3=0$ pour $x=-3$ ; \quad $2-x=0$ pour $x=2$ ; \quad $2x-1=0$ pour
+$x=\dfrac{1}{2}$.}{valeurs rangées : $-3$ ; $\frac{1}{2}$ ; $2$}
+\explique{$x+3$ et $2x-1$ : $-$ puis $+$. \\ $2-x$ : $a=-1<0$, donc $+$ puis $-$.}{}
+\begin{tabsignes}{$x$/1,$x+3$/1,$2x-1$/1,$2-x$/1,$(x+3)(2-x)(2x-1)$/1.2}{$-\infty$,$-3$,$\frac{1}{2}$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,t,+,z,-,}
+  \tkzTabLine{,+,z,-,z,+,z,-,}
+\end{tabsignes}
+\explique{$\res{S=\left]-3\,;\tfrac{1}{2}\right[\cup\left]2\,;+\infty\right[}$.}{on lit les
+$-$ ; bornes exclues}
+\cas{c)}
+\explique{$2x=0$ pour $x=0$ ; \quad $3x-4=0$ pour $x=\dfrac{4}{3}$ ; \quad $x+6=0$ pour
+$x=-6$.}{valeurs rangées : $-6$ ; $0$ ; $\frac{4}{3}$}
+\explique{Les trois facteurs ont un coefficient positif : $-$ puis $+$.}{}
+\begin{tabsignes}{$x$/1,$x+6$/1,$2x$/1,$3x-4$/1,$2x(3x-4)(x+6)$/1.2}{$-\infty$,$-6$,$0$,$\frac{4}{3}$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left]-\infty\,;-6\right]\cup\left[0\,;\tfrac{4}{3}\right]}$.}{on lit les
+$-$ et les $0$}
+\cas{d)}
+\begin{calculs}
+x\left(x^{2}-16\right) &> 0 &&\justif{on recopie}\\
+x(x-4)(x+4) &> 0 &&\justif{$x^{2}-16=(x-4)(x+4)$}
+\end{calculs}
+\explique{Les facteurs s'annulent en $-4$, en $0$ et en $4$ ; tous sont $-$ puis $+$.}{}
+\begin{tabsignes}{$x$/1,$x+4$/1,$x$/1,$x-4$/1,$x(x-4)(x+4)$/1.2}{$-\infty$,$-4$,$0$,$4$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left]-4\,;0\right[\cup\left]4\,;+\infty\right[}$.}{on lit les $+$}
+\rem{En b), le facteur $2-x$ est positif \emph{avant} $2$ : le produit commence par $+$.}
+\end{exo}
+
+\begin{exo}[Factoriser avant de résoudre]
+\explique{L'expression n'est pas un produit : on la factorise d'abord (facteur commun ou
+$a^{2}-b^{2}$), puis on fait le tableau de signes.}{méthode 9 du cours, exemple b)}
+\cas{a)}
+\begin{calculs}
+x^{2}-36 &< 0 &&\justif{on recopie}\\
+(x-6)(x+6) &< 0 &&\justif{on factorise : $a^{2}-b^{2}$, avec $a=x$ et $b=6$}
+\end{calculs}
+\begin{tabsignes}{$x$/1,$x+6$/1,$x-6$/1,$(x-6)(x+6)$/1.2}{$-\infty$,$-6$,$6$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left]-6\,;6\right[}$.}{on lit les $-$ ; bornes exclues}
+\cas{b)}
+\begin{calculs}
+x^{2}-8x &\le 0 &&\justif{on recopie}\\
+x(x-8) &\le 0 &&\justif{on factorise par $x$}
+\end{calculs}
+\begin{tabsignes}{$x$/1,$x$/1,$x-8$/1,$x(x-8)$/1.2}{$-\infty$,$0$,$8$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$\res{S=\left[0\,;8\right]}$.}{on lit les $-$ et les $0$}
+\rem{Erreur fréquente en a) : $x^{2}<36$, donc $x<6$. On oublie alors que $-7$, par
+exemple, n'est pas solution ($49>36$) : le tableau de signes évite cette erreur.}
+\end{exo}
+
+\partie{Problèmes avec des inéquations}
+
+\begin{exo}[Seuil de rentabilité]
+\cas{1)}
+\begin{calculs}
+C(25) &= 15\times 25+480 &&\justif{on remplace $x$ par $25$}\\
+C(25) &= 855 &&\justif{$375+480$}\\
+R(25) &= 31\times 25 &&\\
+R(25) &= 775 &&
+\end{calculs}
+\explique{$R(25)<C(25)$ : la recette ne couvre pas le coût, l'atelier \res{ne fait pas de
+bénéfice} (il perd $80$~€).}{bénéfice : recette supérieure au coût}
+\cas{2)}
+\explique{L'atelier fait un bénéfice lorsque $R(x)>C(x)$.}{on traduit l'énoncé par une
+inéquation}
+\begin{calculs}
+31x &> 15x+480 &&\justif{on recopie}\\
+31x-15x &> 480 &&\\
+16x &> 480 &&\\
+x &> 30 &&\justif{on divise par $16>0$}
+\end{calculs}
+\explique{$R(31)=961$ et $C(31)=945$ : bénéfice de $16$~€.}{vérification pour le premier
+entier qui convient}
+\explique{L'atelier fait un bénéfice à partir de \res{$31$ modules par jour}.}{$x$ est un
+nombre entier de modules}
+\cas{3)}
+\begin{calculs}
+\dfrac{15x+480}{x} &\le 21 &&\justif{on traduit l'énoncé}\\
+\dfrac{15x+480-21x}{x} &\le 0 &&\justif{tout à gauche, même dénominateur}\\
+\dfrac{480-6x}{x} &\le 0 &&\\
+480-6x &\le 0 &&\justif{$x>0$ : le quotient a le signe du numérateur}\\
+-6x &\le -480 &&\\
+x &\ge 80 &&\justif{on divise par $-6<0$ : le sens change}
+\end{calculs}
+\explique{$C(80)=1\,680$ et $1\,680\div 80=21$ : le coût moyen vaut exactement $21$~€.}{vérification}
+\explique{Il faut assembler \res{au moins $80$ modules par jour}.}{conclusion dans le contexte}
+\rem{Ici, inutile de faire un tableau de signes : l'énoncé donne $x>0$, donc le dénominateur
+est positif.}
+\end{exo}
+
+\begin{exo}[Louer un utilitaire électrique]
+\cas{1)}
+\begin{calculs}
+\text{prix A} &= 0{,}5\times 60 &&\justif{pour $60$~km, à $0{,}50$~€ par kilomètre}\\
+\text{prix A} &= 30 &&\\
+\text{prix B} &= 36+0{,}2\times 60 &&\justif{forfait, puis les kilomètres}\\
+\text{prix B} &= 48 &&
+\end{calculs}
+\explique{Pour $60$~km, le loueur \res{A est le moins cher} ($30$~€ contre $48$~€).}{}
+\begin{calculs}
+\text{prix A} &= 0{,}5\times 150 &&\justif{pour $150$~km}\\
+\text{prix A} &= 75 &&\\
+\text{prix B} &= 36+0{,}2\times 150 &&\\
+\text{prix B} &= 66 &&
+\end{calculs}
+\explique{Pour $150$~km, le loueur \res{B est le moins cher} ($66$~€ contre $75$~€).}{le
+forfait de B est rattrapé sur les longues distances}
+\cas{2)}
+\explique{$\res{A(x)=0{,}5x}$ \quad et \quad $\res{B(x)=36+0{,}2x}$.}{prix par kilomètre
+$\times$ distance, plus le forfait}
+\cas{3)}
+\begin{calculs}
+36+0{,}2x &< 0{,}5x &&\justif{$B(x)<A(x)$}\\
+36 &< 0{,}5x-0{,}2x &&\justif{les $x$ du côté où il y en a le plus}\\
+36 &< 0{,}3x &&\\
+120 &< x &&\justif{on divise par $0{,}3>0$ : $36\div 0{,}3=120$}
+\end{calculs}
+\explique{Avec $0\le x\le 300$ : $\res{S=\left]120\,;300\right]}$.}{}
+\explique{Le loueur B est moins cher que le loueur A pour plus de $120$~km ; à $120$~km, les
+deux coûtent $60$~€.}{interprétation}
+\cas{4)}
+\begin{calculs}
+36+0{,}2x &\le 80 &&\justif{$B(x)\le 80$}\\
+0{,}2x &\le 44 &&\\
+x &\le 220 &&\justif{on divise par $0{,}2>0$ : $44\div 0{,}2=220$}
+\end{calculs}
+\explique{L'entreprise peut parcourir \res{$220$~km au plus}.}{vérification : $36+44=80$}
+\cas{5)}
+\explique{Chez C, le prix est $C(x)=60+0{,}1x$. Il faut $C(x)<A(x)$ \textbf{et}
+$C(x)<B(x)$.}{« moins cher que les deux autres »}
+\begin{calculs}
+60+0{,}1x &< 0{,}5x &&\justif{$C(x)<A(x)$}\\
+60 &< 0{,}4x &&\\
+150 &< x &&\justif{$60\div 0{,}4=150$}
+\end{calculs}
+\begin{calculs}
+60+0{,}1x &< 36+0{,}2x &&\justif{$C(x)<B(x)$}\\
+60-36 &< 0{,}2x-0{,}1x &&\\
+24 &< 0{,}1x &&\\
+240 &< x &&\justif{$24\div 0{,}1=240$}
+\end{calculs}
+\explique{Les deux conditions ensemble : $x>240$, et $x\le 300$. Le loueur C est strictement
+le moins cher pour une distance \res{comprise entre $240$~km (exclu) et $300$~km}, soit
+$x\in\left]240\,;300\right]$.}{on garde la condition la plus exigeante}
+\rem{Contrôle avec $x=250$ : A coûte $125$~€, B $86$~€ et C $85$~€.}
+\end{exo}
+
+\begin{exo}[Bénéfice d'un fabricant de trottinettes]
+\cas{1)}
+\begin{calculs}
+B(10) &= -2\times 10^{2}+240\times 10-4\,000 &&\justif{on remplace $x$ par $10$}\\
+B(10) &= -200+2\,400-4\,000 &&\justif{le carré d'abord : $10^{2}=100$}\\
+B(10) &= -1\,800 &&\\
+B(50) &= -2\times 50^{2}+240\times 50-4\,000 &&\\
+B(50) &= -5\,000+12\,000-4\,000 &&\justif{$50^{2}=2\,500$}\\
+B(50) &= 3\,000 &&
+\end{calculs}
+\explique{Pour $10$ trottinettes, $B(10)<0$ : \res{perte de $1\,800$~€}. Pour $50$
+trottinettes, \res{bénéfice de $3\,000$~€}.}{bénéfice négatif : c'est une perte}
+\cas{2)}
+\begin{calculs}
+(2x-40)(100-x) &= 200x-2x^{2}-4\,000+40x &&\justif{double distributivité ; $-40\times(-x)=40x$}\\
+(2x-40)(100-x) &= -2x^{2}+240x-4\,000 &&\justif{on réduit et on ordonne}
+\end{calculs}
+\explique{On retrouve l'expression de $B(x)$ : $\res{B(x)=(2x-40)(100-x)}$.}{forme
+factorisée du bénéfice}
+\cas{3)}
+\explique{$2x-40=0$ pour $x=20$ ; \quad $100-x=0$ pour $x=100$.}{valeurs entre $0$ et $120$}
+\explique{$2x-40$ : $-$ puis $+$. \\ $100-x$ : $a=-1<0$, donc $+$ puis $-$.}{}
+\begin{tabsignes}{$x$/1,$2x-40$/1,$100-x$/1,$B(x)$/1}{$0$,$20$,$100$,$120$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,t,+,z,-,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tabsignes}
+\explique{$\res{S=\left]20\,;100\right[}$.}{on lit les $+$ ; bornes exclues}
+\cas{4)}
+\explique{$x$ est un nombre entier de trottinettes : l'atelier fait un bénéfice s'il en
+fabrique \res{de $21$ à $99$ par semaine}.}{$20$ et $100$ donnent un bénéfice nul}
+\cas{5)}
+\begin{calculs}
+-2(x-40)(x-80) &= -2\left(x^{2}-80x-40x+3\,200\right) &&\justif{on développe d'abord le produit}\\
+-2(x-40)(x-80) &= -2\left(x^{2}-120x+3\,200\right) &&\\
+-2(x-40)(x-80) &= -2x^{2}+240x-6\,400 &&\justif{$-2$ multiplie chaque terme}\\
+B(x)-2\,400 &= -2x^{2}+240x-4\,000-2\,400 &&\\
+B(x)-2\,400 &= -2x^{2}+240x-6\,400 &&\justif{on retrouve la même expression}
+\end{calculs}
+\explique{Donc $B(x)-2\,400=-2(x-40)(x-80)$.}{égalité vérifiée}
+\begin{calculs}
+B(x) &\ge 2\,400 &&\justif{bénéfice d'au moins $2\,400$~€}\\
+B(x)-2\,400 &\ge 0 &&\justif{tout dans le membre de gauche}\\
+-2(x-40)(x-80) &\ge 0 &&\\
+(x-40)(x-80) &\le 0 &&\justif{on divise par $-2<0$ : le sens change}
+\end{calculs}
+\begin{tabsignes}{$x$/1,$x-40$/1,$x-80$/1,$(x-40)(x-80)$/1.2}{$0$,$40$,$80$,$120$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\explique{$S=\left[40\,;80\right]$ : l'atelier doit fabriquer \res{de $40$ à $80$
+trottinettes par semaine}.}{on lit les $-$ et les $0$ ; vérification : $B(40)=2\,400$}
+\rem{Le tableau est fait sur $\intff{0}{120}$ : la première colonne commence à $0$, pas à
+$-\infty$.}
+\end{exo}
+
+\partiesansnum{Exercices type épreuve anticipée}
+
+\begin{exo}[Automatismes (QCM)]
+\cas{1.}
+\explique{Réponse \res{b)} : $(x+3)^{2}=x^{2}+2\times x\times 3+3^{2}$, soit
+$x^{2}+6x+9$.}{identité $(a+b)^{2}=a^{2}+2ab+b^{2}$ : on n'oublie pas le double produit}
+\cas{2.}
+\explique{Réponse \res{c)} : $x^{2}-5x=x\times x-5\times x$, soit $x(x-5)$.}{facteur
+commun $x$ ; contrôle en développant}
+\cas{3.}
+\eqproduit{x-2 &= 0\\ x &= 2}{x+7 &= 0\\ x &= -7}
+\explique{Réponse \res{d)} : les solutions sont $2$ et $-7$.}{une solution par facteur}
+\cas{4.}
+\explique{Réponse \res{c)} : $25>0$, donc $x^{2}=25$ a deux solutions, $-5$ et $5$.}{$3x=-6$
+et $\frac{x}{4}=2$ n'en ont qu'une ; $x^{2}=-9$ n'en a aucune}
+\cas{5.}
+\begin{calculs}
+-2x+8 &\ge 0 &&\\
+-2x &\ge -8 &&\\
+x &\le 4 &&\justif{on divise par $-2<0$ : le sens change}
+\end{calculs}
+\explique{Réponse \res{a)}.}{contrôle : pour $x=0$, $-2\times 0+8=8$ est positif}
+\cas{6.}
+\explique{Réponse \res{d)} : $x+1$ s'annule en $-1$ et $x-4$ en $4$ ; entre ces deux
+nombres, les facteurs sont de signes contraires et le produit est négatif.}{tableau de
+signes : $+$, puis $-$, puis $+$}
+\end{exo}
+
+\begin{exo}[Vrai ou faux ?]
+\cas{1.}
+\begin{calculs}
+(2x-1)^{2} &= (2x)^{2}-2\times 2x\times 1+1^{2} &&\justif{identité $(a-b)^{2}$}\\
+(2x-1)^{2} &= 4x^{2}-4x+1 &&
+\end{calculs}
+\explique{Le terme $-4x$ manque : l'affirmation 1 est \res{fausse}.}{contre-exemple :
+pour $x=1$, $(2-1)^{2}$ vaut $1$, mais $4-1$ vaut $3$}
+\cas{2.}
+\eqproduit{x &= 0}{3x-6 &= 0\\ 3x &= 6\\ x &= 2}
+\explique{$S=\ens{0\,;2}$ : l'affirmation 2 est \res{vraie}.}{}
+\cas{3.}
+\explique{On étudie le signe de chaque facteur. Le facteur $3$ est toujours positif ;
+$x+2$ s'annule en $-2$ ; $x-1$ s'annule en $1$ ; $x-4$ s'annule en $4$.}{une ligne
+par facteur, puis la ligne du produit}
+\begin{tabsignes}{$x$/1,$3$/1,$x+2$/1,$x-1$/1,$x-4$/1,$P(x)$/1}{$-\infty$,$-2$,$1$,$4$,$+\infty$}
+  \tkzTabLine{,+,t,+,t,+,t,+,}
+  \tkzTabLine{,-,z,+,t,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,z,+,}
+\end{tabsignes}
+\explique{Sur $\intff{-2}{1}$, $P(x)$ est positif ou nul : l'affirmation 3 est
+\res{fausse}.}{contrôle : $P(0)=3\times 2\times(-1)\times(-4)$, soit $24$}
+\cas{4.}
+\explique{La recette pour $x$ bougies est $R(x)=9x$.}{prix d'une bougie $\times$
+nombre de bougies}
+\begin{calculs}
+R(30) &= 9\times 30 &&\\
+R(30) &= 270 &&\\
+C(30) &= 5\times 30+120 &&\\
+C(30) &= 270 &&
+\end{calculs}
+\explique{La recette est égale aux coûts : le bénéfice est nul. L'affirmation 4 est
+\res{fausse}.}{bénéfice $=$ recette $-$ coûts}
+\rem{En résolvant $9x>5x+120$, on trouve $x>30$ : l'artisane fait un bénéfice à partir
+de $31$ bougies.}
+\end{exo}
+
+\end{document}

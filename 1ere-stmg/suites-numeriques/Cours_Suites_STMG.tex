@@ -1,0 +1,1654 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{4}{Suites numériques}
+\niveaucours{1\textsuperscript{re} STMG}
+\titrecours{SUITES NUMÉRIQUES}{Cours --- Première STMG}
+
+\begin{document}
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\newcommand{\reperesuite}[4]{%
+  \draw[grille,step=1] (-1,#2) grid (#1,#3);
+  \draw[-{Stealth[length=2mm]},thick] (-1,0)--({#1+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#3+0.4})
+    node[below left=-1pt,font=\footnotesize]{$#4$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Notion de suite}
+
+\begin{exemplebox}[Pour commencer]
+Écrivons les multiples de $4$ dans l'ordre : $0$ ; $4$ ; $8$ ; $12$ ; $16$ ; \ldots{}
+On leur donne un numéro, en commençant \textbf{à $0$} :
+\[
+  u_{0}=0 \qquad u_{1}=4 \qquad u_{2}=8 \qquad u_{3}=12 \qquad \ldots
+\]
+Chaque entier $n$ reçoit un nombre $u_{n}$ : c'est une \textbf{suite}. Ici, $u_{n}=4n$.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 1 --- Suite numérique]
+Une \textbf{suite} associe un nombre $u_{n}$ à chaque entier $n=0$ ; $1$ ; $2$ ;
+\ldots{} (on lit « $u$ indice $n$ »).
+\begin{itemize}
+  \item $u_{n}$ est le \textbf{terme de rang $n$} ; la suite se note $(u_{n})$.
+  \item Le premier terme est $u_{0}$, le deuxième $u_{1}$, le troisième $u_{2}$\ldots
+  \item Le terme \textbf{suivant} $u_{n}$ est $u_{n+1}$ ; le terme
+        \textbf{précédent} est $u_{n-1}$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Suite définie de façon explicite]
+Une suite est définie \textbf{de façon explicite} quand une formule donne $u_{n}$
+directement à partir de $n$, par exemple $u_{n}=4n$. On calcule alors \textbf{n'importe
+quel terme} sans connaître les précédents.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Calculer un terme d'une suite définie de façon explicite]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=3n+4$. Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{15}$.
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=4n^{2}-1$. Calculer les quatre premiers termes.
+  \item Une carte de bus coûte $8$~€, puis chaque trajet $1{,}50$~€. Pour $n$ trajets,
+        on paie $c_{n}=8+1{,}5n$ euros. Calculer $c_{20}$ et interpréter.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{0} &= 3\times 0+4 &\qquad& \rem{on remplace $n$ par $0$}\\
+u_{0} &= \res{4} &&\\
+u_{1} &= 3\times 1+4=\res{7} &&\\
+u_{2} &= 3\times 2+4=\res{10} &&\\
+u_{15} &= 3\times 15+4=\res{49} &\qquad& \rem{directement, sans les termes d'avant}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v_{0} &= 4\times 0^{2}-1=\res{-1} &\qquad& \rem{les quatre premiers : rangs $0$ à $3$}\\
+v_{1} &= 4\times 1^{2}-1=\res{3} &&\\
+v_{2} &= 4\times 2^{2}-1=\res{15} &\qquad& \rem{le carré d'abord : $4\times 4-1$}\\
+v_{3} &= 4\times 3^{2}-1=\res{35} &\qquad& \rem{$4\times 9-1$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+c_{20} &= 8+1{,}5\times 20 &\qquad& \rem{on remplace $n$ par $20$}\\
+c_{20} &= 8+30 &&\\
+c_{20} &= \res{38} &&
+\end{calculs}
+\explique{Avec $20$ trajets, \res{on paie $38$~€ en tout, carte comprise}.}{on répond dans le
+contexte}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=4n-7$. Calculer $u_{0}$, $u_{1}$ et $u_{30}$.
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=n^{2}+3n$. Calculer les quatre premiers termes.
+  \item Une salle de sport demande $30$~€ d'inscription, puis $6$~€ par séance. Pour
+        $n$ séances, on paie $c_{n}=30+6n$ euros. Calculer $c_{12}$ et interpréter.
+\end{questions}
+\reponse{$u_{0}=-7$ ; $u_{1}=-3$ ; $u_{30}=113$ ;\; $v$ : $0$ ; $4$ ; $10$ ; $18$ ;\;
+$c_{12}=102$ : $12$ séances coûtent $102$~€.}
+\end{methodebox}
+
+\begin{remarquebox}[Ne pas confondre $u_{n+1}$ et $u_{n}+1$]
+$u_{n+1}$ est le terme \textbf{suivant} ; $u_{n}+1$ est le terme $u_{n}$ augmenté de $1$.
+Avec $u_{n}=3n+4$ et $n=2$ : $u_{3}=13$, alors que $u_{2}+1=11$.
+\end{remarquebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Suites définies par récurrence}
+
+\begin{definitionbox}[Définition 3 --- Suite définie par récurrence]
+Une suite est définie \textbf{par récurrence} quand on connaît :
+\begin{itemize}
+  \item son \textbf{premier terme} (en général $u_{0}$) ;
+  \item une \textbf{relation} qui donne chaque terme à partir du \textbf{précédent} :
+        $u_{n+1}$ en fonction de $u_{n}$.
+\end{itemize}
+Exemple : $u_{0}=6$ et $u_{n+1}=2u_{n}$ se lit « on part de $6$, et chaque terme est
+le double du précédent ».
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Calculer les termes d'une suite définie par récurrence]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{0}=2$ et $u_{n+1}=5u_{n}$. Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Soit la suite $(v_{n})$ définie par $v_{0}=4$ et $v_{n+1}=2v_{n}-3$. Calculer $v_{1}$, $v_{2}$ et $v_{3}$.
+  \item Léa a $45$ abonnés sur son compte de photos et en gagne $8$ chaque semaine. On
+        note $a_{n}$ son nombre d'abonnés après $n$ semaines. Donner $a_{0}$, exprimer
+        $a_{n+1}$ en fonction de $a_{n}$, puis calculer $a_{3}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 5\times u_{0} &\qquad& \rem{la relation avec $n=0$}\\
+u_{1} &= 5\times 2=\res{10} &\qquad& \rem{on remplace $u_{0}$ par sa valeur}\\
+u_{2} &= 5\times 10=\res{50} &\qquad& \rem{$u_{2}=5\times u_{1}$}\\
+u_{3} &= 5\times 50=\res{250} &\qquad& \rem{$u_{3}=5\times u_{2}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+v_{1} &= 2\times 4-3=\res{5} &\qquad& \rem{$v_{1}=2v_{0}-3$}\\
+v_{2} &= 2\times 5-3=\res{7} &\qquad& \rem{toujours avec le terme d'avant}\\
+v_{3} &= 2\times 7-3=\res{11} &&
+\end{calculs}
+\cas{c)}
+\explique{$a_{0}=\res{45}$}{le nombre de départ}
+\explique{$a_{n+1}=\res{a_{n}+8}$}{d'une semaine à la suivante, on ajoute $8$}
+\explique{$a_{1}=53$ ; \ $a_{2}=61$ ; \ $a_{3}=\res{69}$.}{après $3$ semaines, Léa a $69$
+abonnés}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Soit la suite $(u_{n})$ définie par $u_{0}=1$ et $u_{n+1}=3u_{n}+2$. Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Soit la suite $(v_{n})$ définie par $v_{0}=80$ et $v_{n+1}=v_{n}-12$. Calculer $v_{1}$, $v_{2}$ et $v_{3}$.
+  \item À 8~h, un parking a $300$ places libres ; chaque quart d'heure, $25$ voitures
+        s'y garent. On note $p_{n}$ le nombre de places libres après $n$ quarts
+        d'heure. Donner $p_{0}$, exprimer $p_{n+1}$ en fonction de $p_{n}$, puis
+        calculer $p_{3}$.
+\end{questions}
+\reponse{$u_{1}=5$ ; $u_{2}=17$ ; $u_{3}=53$ ;\; $v_{1}=68$ ; $v_{2}=56$ ; $v_{3}=44$ ;\;
+$p_{0}=300$, $p_{n+1}=p_{n}-25$ et $p_{3}=225$.}
+\end{methodebox}
+
+\begin{remarquebox}[Au tableur]
+Pour une suite définie par récurrence, $u_{12}$ demande d'abord $u_{11}$, donc
+$u_{10}$\ldots{} jusqu'à $u_{0}$ : douze calculs, qu'un tableur fait à notre place.
+On écrit le premier terme en B2, puis en B3 une formule qui utilise la cellule du dessus,
+recopiée vers le bas. Pour $v_{n+1}=2v_{n}-3$ : \texttt{=2*B2-3}. L'épreuve demande
+parfois cette formule.
+\end{remarquebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Programmer une suite définie par récurrence}
+
+\begin{proprietebox}[Le programme type]
+Pour une suite donnée par $u_{0}$ et une relation $u_{n+1}=\ldots$, la fonction
+\texttt{suite(n)} renvoie $u_{n}$ :
+\begin{itemize}
+  \item la variable \texttt{u} reçoit le premier terme ;
+  \item la boucle \texttt{for} refait $n$ fois le calcul du terme suivant ;
+  \item à la sortie de la boucle, \texttt{u} vaut $u_{n}$ : \texttt{return u} le renvoie.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer un terme de rang élevé avec Python]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{0}=4$ et $u_{n+1}=3u_{n}-5$. Écrire le programme, puis calculer
+        $u_{12}$.
+  \item Un service de streaming compte $800$ abonnés. Chaque mois, $20\,\%$ des abonnés
+        résilient, puis $100$ nouveaux abonnés arrivent. Combien d'abonnés compte-t-il au
+        bout de $10$ mois ?
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\noindent
+\begin{minipage}[t]{0.42\linewidth}\vspace{0pt}
+\begin{python}
+def suite(n):
+    u = 4
+    for i in range(n):
+        u = 3*u - 5
+    return u
+\end{python}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\raggedright
+{\small\itshape\color{black!60}la ligne \texttt{u = 4} donne $u_{0}$ ; dans la boucle, le
+nouveau \texttt{u} est $u_{n+1}$, l'ancien est $u_{n}$}
+\end{minipage}
+\explique{Dans la console, \texttt{suite(12)} affiche \texttt{797164} : $u_{12}=\res{797\,164}$.}{%
+contrôle : \texttt{suite(1)} affiche \texttt{7}, comme $3\times 4-5$}
+\cas{b)}
+\explique{$u_{0}=800$ et $u_{n+1}=0{,}8\,u_{n}+100$.}{perdre $20\,\%$, c'est en garder
+$80\,\%$ : on multiplie par $0{,}8$}
+\begin{python}
+def abonnes(n):
+    u = 800
+    for i in range(n):
+        u = 0.8*u + 100
+    return u
+\end{python}
+\explique{\texttt{abonnes(10)} affiche \texttt{532.21...} : environ \res{$532$ abonnés}.}{on
+arrondit à l'unité}
+\end{correction}
+
+\etape{À vous de jouer}
+Écrire le programme de la suite $(u_{n})$ définie par $u_{0}=3$ et $u_{n+1}=2u_{n}-1$, puis donner
+$u_{10}$.
+\reponse{Ligne de la boucle : \texttt{u = 2*u - 1} ; \texttt{suite(10)} affiche
+$2\,049$.}
+\end{methodebox}
+
+\begin{remarquebox}[Quand la relation contient $n$]
+Dans la boucle, \texttt{i} joue le rôle de $n$ : $t_{n+1}=-t_{n}+3+n$ s'écrit
+\texttt{u = -u + 3 + i}.
+\end{remarquebox}
+
+\afaire{exercices 9 à 11}
+
+\partiecours{Représentation graphique d'une suite}
+
+\begin{definitionbox}[Définition 4 --- Représentation graphique]
+Dans un repère, une suite $(u_{n})$ se représente par les \textbf{points} de
+coordonnées $(n\,;u_{n})$.
+
+On ne relie \textbf{pas} les points : $n$ ne prend que des valeurs entières.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 4 --- Représenter graphiquement une suite]
+\etapeexemples
+Représenter les six premiers termes de la suite $(u_{n})$ définie par $u_{n}=\dfrac{n^{2}}{2}-2$.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On calcule les termes de rang $0$ à $5$ :}{tableau de valeurs}
+\smallskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$u_{n}$ & $-2$ & $-1{,}5$ & $0$ & $2{,}5$ & $6$ & $10{,}5$\\
+\hline
+\end{tabular}
+
+\smallskip
+\explique{On place les points $(n\,;u_{n})$, sans les relier.}{$n$ en abscisse,
+$u_{n}$ en ordonnée}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}
+\begin{axis}[repere,
+    x=0.4cm,y=0.4cm,
+    xmin=-0.5,xmax=6.5,ymin=-2.5,ymax=11.5,
+    xtick={1,...,6},ytick={-2,2,4,...,10},
+    xlabel={$n$},ylabel={$u_{n}$}]
+  \addplot[only marks,mark=x,mark options={line width=0.6pt},mark size=2pt,coulCourbe]
+    coordinates {(0,-2)(1,-1.5)(2,0)(3,2.5)(4,6)(5,10.5)};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+Représenter les cinq premiers termes de chaque suite :
+\begin{questions}
+  \item $(v_{n})$ définie par $v_{n}=7-2n$ ;
+  \item $(w_{n})$ définie par $w_{n}=n^{2}-4$.
+\end{questions}
+\reponse{$v$ : $7$ ; $5$ ; $3$ ; $1$ ; $-1$ (points alignés) ;\; $w$ : $-4$ ; $-3$ ;
+$0$ ; $5$ ; $12$.}
+\end{methodebox}
+
+\afaire{exercices 12 à 15}
+
+\partiecours{Suites arithmétiques : définition}
+
+\begin{exemplebox}[Pour commencer]
+On part de $2$ et on ajoute $6$ à chaque étape : $2$ ; $8$ ; $14$ ; $20$ ; \ldots{}
+C'est la suite $(u_{n})$ définie par $u_{0}=2$ et $u_{n+1}=u_{n}+6$.
+
+On part de $10$ et on retire $3$, ce qui donne $10$ ; $7$ ; $4$ ; $1$ ; \ldots{} C'est la suite
+définie par $v_{0}=10$ et $v_{n+1}=v_{n}-3$.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 5 --- Suite arithmétique]
+Une suite $(u_{n})$ est \textbf{arithmétique} quand on passe d'un terme au suivant en
+\textbf{ajoutant toujours le même nombre} $r$ : pour tout $n$,
+\[
+  \boxed{u_{n+1}=u_{n}+r}
+\]
+Le nombre $r$ s'appelle la \textbf{raison} de la suite.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Reconnaître une suite arithmétique]
+Une suite est arithmétique quand la \textbf{différence} entre deux termes consécutifs
+est toujours la même : $u_{n+1}-u_{n}=r$. Dans un énoncé : une grandeur augmente (ou
+diminue) \textbf{de la même quantité} à chaque étape.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Reconnaître et modéliser une suite arithmétique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item En 2020, une commune compte $800$ arbres en ville et en plante $150$ de plus
+        chaque année. On note $u_{n}$ le nombre d'arbres en $2020+n$. Calculer $u_{1}$
+        et $u_{2}$, exprimer $u_{n+1}$ en fonction de $u_{n}$, puis donner la nature de
+        la suite.
+  \item Le 1\textsuperscript{er} mars, une station de ski a $120$~cm de neige ; la
+        hauteur baisse de $4$~cm par jour. On note $h_{n}$ la hauteur, en cm, $n$ jours
+        après le 1\textsuperscript{er} mars. Modéliser par une suite.
+  \item Les listes $7$ ; $11$ ; $15$ ; $19$ \;et\; $2$ ; $5$ ; $9$ ; $14$ sont-elles
+        les premiers termes de suites arithmétiques ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$u_{0}=800$ ; \ $u_{1}=800+150=\res{950}$ ; \ $u_{2}=950+150=\res{1\,100}$.}{en 2022,
+la commune compte $1\,100$ arbres}
+\explique{$u_{n+1}=\res{u_{n}+150}$}{chaque année, on ajoute $150$}
+\explique{$(u_{n})$ est \res{arithmétique, de premier terme $u_{0}=800$ et de raison
+$r=150$}.}{même nombre ajouté à chaque étape}
+\cas{b)}
+\explique{\res{$h_{0}=120$ et $h_{n+1}=h_{n}-4$}.}{on retire $4$ chaque jour}
+\explique{$(h_{n})$ est \res{arithmétique, de raison $r=-4$}.}{retirer $4$, c'est ajouter
+$-4$}
+\cas{c)}
+\explique{$11-7=4$ ; \ $15-11=4$ ; \ $19-15=4$.}{différences successives}
+\explique{Première liste : \res{arithmétique, de raison $4$}.}{les différences sont égales}
+\explique{$5-2=3$ mais $9-5=4$.}{}
+\explique{Deuxième liste : \res{pas arithmétique}.}{les différences changent}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item En 2024, une association compte $65$ bénévoles et en accueille $9$ de plus
+        chaque année. On note $b_{n}$ le nombre de bénévoles en $2024+n$. Calculer $b_{1}$
+        et $b_{2}$, exprimer $b_{n+1}$ en fonction de $b_{n}$, puis donner la nature de
+        la suite.
+  \item Les listes $30$ ; $26$ ; $22$ ; $18$ \;et\; $2$ ; $4$ ; $8$ ; $16$ sont-elles
+        les premiers termes de suites arithmétiques ?
+\end{questions}
+\reponse{$b_{1}=74$ ; $b_{2}=83$ ; $b_{n+1}=b_{n}+9$ : arithmétique de raison $9$ ;\; la première oui (raison
+$-4$), la seconde non ($2$, puis $4$).}
+\end{methodebox}
+
+\afaire{exercices 16 à 18}
+
+\partiecours{Reconnaître une suite arithmétique}
+
+\begin{proprietebox}[Propriété 2 --- Le test de la différence]
+La suite $(u_{n})$ est arithmétique quand la différence entre un terme et le précédent
+est \textbf{toujours la même} :
+\[
+  u_{n+1}-u_{n}=r \qquad\text{(un nombre, sans $n$)}
+\]
+\end{proprietebox}
+
+\textbf{En pratique.} On calcule les premiers termes $u_{0}$ ; $u_{1}$ ; $u_{2}$ ; $u_{3}$,
+puis les différences $u_{1}-u_{0}$ ; $u_{2}-u_{1}$ ; $u_{3}-u_{2}$.
+\begin{itemize}
+  \item Si deux différences ne sont pas égales, la suite n'est pas arithmétique.
+  \item Si on trouve toujours le même résultat, on calcule $u_{n+1}-u_{n}$ pour
+        démontrer que la suite est arithmétique.
+\end{itemize}
+
+\begin{methodebox}[Méthode 6 --- Montrer qu'une suite est arithmétique, ou ne l'est pas]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Les nombres $5$ ; $9$ ; $13$ ; $17$ peuvent-ils être les premiers termes d'une
+        suite arithmétique ? Et $3$ ; $6$ ; $12$ ; $24$ ?
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=4n-1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les différences $u_{1}-u_{0}$, $u_{2}-u_{1}$ et $u_{3}-u_{2}$.
+          \item Démontrer que $(u_{n})$ est arithmétique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=n^{2}+2$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les différences $v_{1}-v_{0}$, $v_{2}-v_{1}$ et $v_{3}-v_{2}$.
+          \item Conclure : la suite $(v_{n})$ est-elle arithmétique ?
+        \end{enumerate}
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$9-5=4$ ; $13-9=4$ ; $17-13=4$ : \res{oui, de raison $4$}.}{on calcule
+\textbf{toutes} les différences}
+\explique{$6-3=3$ mais $12-6=6$ : \res{non}.}{deux différences distinctes suffisent pour dire
+non}
+\cas{b) 1)}
+\begin{calculs}
+u_{0} &= 4\times 0-1=\res{-1} &\qquad& \rem{on remplace $n$ par $0$}\\
+u_{1} &= 4\times 1-1=\res{3} &&\\
+u_{2} &= 4\times 2-1=\res{7} &&\\
+u_{3} &= 4\times 3-1=\res{11} &&
+\end{calculs}
+\cas{b) 2)}
+\explique{$3-(-1)=\res{4}$ ; $7-3=\res{4}$ ; $11-7=\res{4}$.}{même résultat : reste à le démontrer}
+\cas{b) 3)}
+\begin{calculs}
+u_{n+1} &= 4(n+1)-1 &\qquad& \rem{on remplace $n$ par $n+1$}\\
+u_{n+1} &= 4n+3 &&
+\end{calculs}
+\begin{calculs}
+u_{n+1}-u_{n} &= 4n+3-(4n-1) &&\\
+u_{n+1}-u_{n} &= 4 &\qquad& \rem{un nombre, sans $n$}
+\end{calculs}
+\explique{$(u_{n})$ est \res{arithmétique}, de raison $r=\res{4}$ et de premier terme $u_{0}=\res{-1}$.}{}
+\cas{c) 1)}
+\begin{calculs}
+v_{0} &= 0^{2}+2=\res{2} &&\\
+v_{1} &= 1^{2}+2=\res{3} &&\\
+v_{2} &= 2^{2}+2=\res{6} &&\\
+v_{3} &= 3^{2}+2=\res{11} &&
+\end{calculs}
+\cas{c) 2)}
+\explique{$3-2=\res{1}$ ; $6-3=\res{3}$ ; $11-6=\res{5}$.}{}
+\cas{c) 3)}
+\explique{Les différences ne sont pas égales : $(v_{n})$ \res{n'est pas arithmétique}.}{les
+premiers termes suffisent pour dire non}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Les nombres $7$ ; $4$ ; $1$ ; $-2$ peuvent-ils être les premiers termes d'une
+        suite arithmétique ? Et $1$ ; $2$ ; $4$ ; $7$ ?
+  \item Soit la suite $(a_{n})$ définie par $a_{n}=9-3n$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $a_{0}$, $a_{1}$, $a_{2}$ et $a_{3}$.
+          \item Calculer les différences $a_{1}-a_{0}$, $a_{2}-a_{1}$ et $a_{3}-a_{2}$.
+          \item Démontrer que $(a_{n})$ est arithmétique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(b_{n})$ définie par $b_{n}=3n^{2}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $b_{0}$, $b_{1}$, $b_{2}$ et $b_{3}$.
+          \item Calculer les différences $b_{1}-b_{0}$, $b_{2}-b_{1}$ et $b_{3}-b_{2}$.
+          \item Conclure : la suite $(b_{n})$ est-elle arithmétique ?
+        \end{enumerate}
+\end{questions}
+\reponse{a) oui, de raison $-3$ ; non ;\; b)~$9$ ; $6$ ; $3$ ; $0$, différences $-3$,
+$a_{n+1}-a_{n}=-3$ : arithmétique, $a_{0}=9$ et $r=-3$ ;\; c)~$0$ ; $3$ ; $12$ ; $27$,
+différences $3$ ; $9$ ; $15$ : non.}
+\end{methodebox}
+
+\afaire{exercices 19 à 21}
+
+\partiecours{Suites arithmétiques : expression en fonction de $n$}
+
+\begin{proprietebox}[Propriété 3 --- Terme de rang $n$]
+Si $(u_{n})$ est arithmétique de raison $r$, alors, pour tout entier $n$ :
+\[
+  \boxed{u_{n}=u_{0}+n\times r}
+\]
+En effet, pour aller de $u_{0}$ à $u_{n}$, on ajoute $n$ fois la raison :
+$u_{1}=u_{0}+r$ ; $u_{2}=u_{0}+2r$ ; $u_{3}=u_{0}+3r$\ldots
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Exprimer une suite arithmétique en fonction de $n$]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{0}=12$ et $u_{n+1}=u_{n}-5$. Exprimer $u_{n}$ en fonction de $n$, puis
+        calculer $u_{30}$.
+  \item Soit la suite $(u_{n})$ définie par $u_{1}=8$ et $u_{n+1}=u_{n}+3$. Exprimer $u_{n}$ en fonction de $n$.
+  \item En 2025, une bibliothèque possède $1\,200$ livres et en achète $150$ de plus
+        chaque année. On note $u_{n}$ le nombre de livres en $2025+n$. Calculer $u_{1}$ et
+        $u_{2}$, donner la nature de la suite, exprimer $u_{n}$ en fonction de $n$, puis
+        calculer le nombre de livres en 2035.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{n} &= u_{0}+n\times r &\qquad& \rem{premier terme $12$, raison $-5$}\\
+u_{n} &= 12+n\times(-5) &&\\
+u_{n} &= \res{12-5n} &&\\
+u_{30} &= 12-5\times 30 &\qquad& \rem{on remplace $n$ par $30$}\\
+u_{30} &= \res{-138} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{0} &= u_{1}-3 &\qquad& \rem{on recule d'un rang : on retire la raison}\\
+u_{0} &= 5 &&\\
+u_{n} &= \res{5+3n} &\qquad& \rem{$u_{0}+n\times r$}
+\end{calculs}
+\explique{Contrôle : $u_{1}=5+3\times 1=8$.}{on retrouve la donnée}
+\cas{c)}
+\begin{calculs}
+u_{1} &= 1\,200+150=\res{1\,350} &\qquad& \rem{on ajoute $150$ chaque année}\\
+u_{2} &= 1\,350+150=\res{1\,500} &&
+\end{calculs}
+\explique{$(u_{n})$ est \res{arithmétique, de premier terme $1\,200$ et de raison $150$}.}{même
+quantité ajoutée}
+\begin{calculs}
+u_{n} &= \res{1\,200+150n} &\qquad& \rem{$u_{0}+n\times r$}\\
+u_{10} &= 1\,200+150\times 10 &\qquad& \rem{2035 correspond à $n=10$}\\
+u_{10} &= 2\,700 &&
+\end{calculs}
+\explique{En 2035, \res{la bibliothèque possédera $2\,700$ livres}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Soit la suite $(v_{n})$ définie par $v_{0}=-3$ et $v_{n+1}=v_{n}+7$. Exprimer $v_{n}$ en fonction de $n$ et
+        calculer $v_{20}$.
+  \item Soit la suite $(w_{n})$ définie par $w_{1}=40$ et $w_{n+1}=w_{n}-1{,}5$. Exprimer $w_{n}$ en fonction de $n$.
+  \item En 2024, un club de judo compte $70$ adhérents et en accueille $8$ de plus
+        chaque année. On note $c_{n}$ le nombre d'adhérents en $2024+n$. Calculer $c_{1}$ et
+        $c_{2}$, donner la nature de la suite, exprimer $c_{n}$ en fonction de $n$, puis
+        calculer le nombre d'adhérents en 2034.
+\end{questions}
+\reponse{$v_{n}=-3+7n$ et $v_{20}=137$ ;\; $w_{0}=41{,}5$ donc $w_{n}=41{,}5-1{,}5n$ ;\;
+$c_{1}=78$ ; $c_{2}=86$ ; arithmétique de raison $8$ ; $c_{n}=70+8n$ donc $c_{10}=150$.}
+\end{methodebox}
+
+\afaire{exercices 22 à 25}
+
+\partiecours{Suites arithmétiques : problème de seuil}
+
+\begin{remarquebox}[Problème de seuil]
+« À partir de quel rang $u_{n}$ dépasse-t-il telle valeur ? » Pour une suite
+arithmétique, on résout une \textbf{inéquation du premier degré} (vue en seconde).
+Comme $n$ est entier, on garde le \textbf{premier entier} qui convient.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 8 --- Résoudre un problème de seuil (croissance linéaire)]
+\etapeexemples
+Une cycliste parcourt $20$~km le jour $0$, puis $4$~km de plus chaque jour. On note
+$u_{n}$ la distance parcourue le jour $n$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Donner la nature de la suite, puis exprimer $u_{n}$ en fonction de $n$.
+  \item À partir de quel jour parcourra-t-elle plus de $75$~km ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 20+4=\res{24} &\qquad& \rem{on ajoute $4$ chaque jour}\\
+u_{2} &= 24+4=\res{28} &&
+\end{calculs}
+\cas{b)}
+\explique{$(u_{n})$ est \res{arithmétique, de premier terme $20$ et de raison $4$}.}{même quantité
+ajoutée}
+\explique{$u_{n}=\res{20+4n}$}{formule $u_{0}+n\times r$}
+\cas{c)}
+\begin{calculs}
+20+4n &> 75 &\qquad& \rem{on traduit la question}\\
+4n &> 55 &\qquad& \rem{on retire $20$}\\
+n &> 13{,}75 &\qquad& \rem{on divise par $4$, positif}
+\end{calculs}
+\explique{Le premier entier qui convient est $n=14$ : \res{à partir du
+$14^{\text{e}}$ jour}, elle parcourra plus de $75$~km.}{on répond dans le contexte}
+\explique{Contrôle : $u_{13}=72$ et $u_{14}=76$.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque situation, calculer les termes de rang $1$ et $2$, donner la nature de la suite,
+exprimer le terme de rang $n$ en fonction de $n$, puis répondre à la question.
+\begin{questions}
+  \item En 2020, une ville propose $800$ vélos en libre-service et en ajoute $150$
+        chaque année. On note $u_{n}$ le nombre de vélos en $2020+n$. À partir de quelle
+        année la ville proposera-t-elle au moins $2\,750$ vélos ?
+  \item Le 1\textsuperscript{er} juin, une citerne contient $120$~L d'eau et en perd $4$~L
+        par jour. On note $h_{n}$ la quantité d'eau, en litres, $n$ jours après le
+        1\textsuperscript{er} juin. À partir de quel jour de juin y aura-t-il moins de
+        $50$~L d'eau ?
+\end{questions}
+\reponse{$u_{1}=950$ ; $u_{2}=1\,100$ ; arithmétique ; $u_{n}=800+150n$ ; $150n\ge 1\,950$ donc $n\ge 13$ : en 2033 ;\; $h_{1}=116$ ; $h_{2}=112$ ; arithmétique ; $h_{n}=120-4n$ ;
+$-4n<-70$ donc $n>17{,}5$ (on divise par $-4$ : le sens change) : $n=18$, le 19 juin.}
+\end{methodebox}
+
+\afaire{exercices 26 à 29}
+
+\partiecours{Suites arithmétiques : variations et représentation graphique}
+
+\begin{proprietebox}[Propriété 4 --- Sens de variation]
+Soit $(u_{n})$ une suite arithmétique de raison $r$.
+\begin{itemize}
+  \item Si $r>0$, la suite est \textbf{croissante} : chaque terme est plus grand que le
+        précédent (les points montent).
+  \item Si $r=0$, la suite est \textbf{constante}.
+  \item Si $r<0$, la suite est \textbf{décroissante} : chaque terme est plus petit que
+        le précédent (les points descendent).
+\end{itemize}
+\end{proprietebox}
+
+\demo{$u_{n+1}=u_{n}+r$ : on ajoute $r$ à chaque terme ; si $r>0$, le terme suivant est
+plus grand.}
+
+\begin{proprietebox}[Propriété 5 --- Représentation graphique]
+Les points d'une suite arithmétique sont \textbf{alignés}, sur la droite d'équation
+$y=u_{0}+rx$ : on parle de \textbf{croissance linéaire}. La raison $r$ joue le rôle du
+coefficient directeur.
+\end{proprietebox}
+
+\begin{center}
+\begin{minipage}{0.5\linewidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[repere,
+    x=0.6cm,y=0.6cm,
+    xmin=-0.5,xmax=9.5,ymin=-0.5,ymax=5.5,
+    xtick={1,...,9},ytick={1,...,5},
+    xlabel={$n$},ylabel={$u_{n}$}]
+  \addplot[dashed,black!40,domain=0:8.6]{1+0.5*x};
+  \addplot[only marks,mark=x,mark options={line width=0.6pt},mark size=2pt,coulCourbe]
+    coordinates {(0,1)(1,1.5)(2,2)(3,2.5)(4,3)(5,3.5)(6,4)(7,4.5)(8,5)};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.46\linewidth}
+Suite arithmétique de premier terme $u_{0}=1$ et de raison $r=0{,}5$ :
+$u_{n}=1+0{,}5n$.
+
+\smallskip
+Les points sont alignés : à chaque pas de $1$ vers la droite, on monte de $0{,}5$.
+Comme $r>0$, la suite est croissante.
+\end{minipage}
+\end{center}
+
+\begin{methodebox}[Méthode 9 --- Sens de variation d'une suite arithmétique]
+\etapeexemples
+Donner le sens de variation de chaque suite.
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ définie par $u_{n}=7-2n$
+  \item $(v_{n})$ définie par $v_{0}=10$ et $v_{n+1}=v_{n}+0{,}3$
+  \item La suite représentée ci-dessus : lire aussi son premier terme et sa raison.
+  \item Le 1\textsuperscript{er} septembre, une réserve contient $900$~kg de riz ; elle
+        baisse de $30$~kg par jour. On note $r_{n}$ la masse, en kg, $n$ jours plus tard.
+        Calculer $r_{1}$ et $r_{2}$, exprimer $r_{n}$ en fonction de $n$, puis donner le
+        sens de variation.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$(u_{n})$ est arithmétique de raison $-2$ : elle est \res{décroissante}.}{la
+raison est le coefficient de $n$, et $-2<0$}
+\cas{b)}
+\explique{$(v_{n})$ est arithmétique de raison $0{,}3$ : elle est \res{croissante}.}{on
+ajoute $0{,}3$ à chaque étape, et $0{,}3>0$}
+\cas{c)}
+\explique{$u_{0}=\res{1}$}{le premier point est $(0\,;1)$}
+\explique{$r=\res{0{,}5}$ : la suite est \res{croissante}.}{d'un point au suivant, on monte de
+$0{,}5$}
+\cas{d)}
+\begin{calculs}
+r_{1} &= 900-30=\res{870} &\qquad& \rem{on retire $30$ chaque jour}\\
+r_{2} &= 870-30=\res{840} &&
+\end{calculs}
+\explique{$r_{n}=\res{900-30n}$}{arithmétique : premier terme $900$, raison $-30$}
+\explique{Raison négative ($-30<0$) : $(r_{n})$ est \res{décroissante}.}{la réserve diminue chaque
+jour}
+\end{correction}
+
+\etape{À vous de jouer}
+Donner le sens de variation de chaque suite arithmétique.
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ définie par $u_{n}=-5+0{,}5n$
+  \item $(v_{n})$ définie par $v_{0}=3$ et $v_{n+1}=v_{n}-1{,}5$
+  \item $(w_{n})$ définie par $w_{n}=4n-9$
+  \item En 2025, un parc compte $60$ éoliennes et en installe $4$ de plus chaque année. On
+        note $p_{n}$ le nombre d'éoliennes en $2025+n$. Calculer $p_{1}$ et $p_{2}$,
+        exprimer $p_{n}$ en fonction de $n$, puis donner le sens de variation.
+\end{questions}
+\reponse{$r=0{,}5$ : croissante ;\; $r=-1{,}5$ : décroissante ;\; $r=4$ : croissante ;\;
+$p_{1}=64$ ; $p_{2}=68$ ; $p_{n}=60+4n$ ; $r=4$ : croissante.}
+\end{methodebox}
+
+\afaire{exercices 30 à 32}
+
+\partiecours{Suites géométriques : définition}
+
+\begin{exemplebox}[Pour commencer]
+On part de $3$ et on multiplie par $2$ à chaque étape :
+\[
+  3 \xrightarrow{\;\times 2\;} 6 \xrightarrow{\;\times 2\;} 12 \xrightarrow{\;\times 2\;} 24
+  \xrightarrow{\;\times 2\;} \ldots
+\]
+C'est une suite \textbf{géométrique}, de premier terme $u_{0}=3$ et de raison $q=2$ :
+$u_{n+1}=2\,u_{n}$.
+\end{exemplebox}
+
+\begin{definitionbox}[Définition 6 --- Suite géométrique]
+Une suite $(u_{n})$ est \textbf{géométrique} quand on passe d'un terme au suivant en
+\textbf{multipliant toujours par le même nombre} $q>0$ : pour tout $n$,
+\[
+  \boxed{u_{n+1}=q\times u_{n}}
+\]
+Le nombre $q$ s'appelle la \textbf{raison} de la suite.
+\end{definitionbox}
+
+\begin{exemplebox}[Exemple]
+La suite géométrique de premier terme $u_{0}=3$ et de raison $q=5$ :
+\[
+  u_{0}=3 \qquad u_{1}=5\times 3=15 \qquad u_{2}=5\times 15=75 \qquad
+  u_{3}=5\times 75=375
+\]
+\end{exemplebox}
+
+\begin{remarquebox}[Rappel de seconde --- Coefficient multiplicateur]
+\begin{itemize}
+  \item Augmenter de $t\,\%$, c'est multiplier par $1+\dfrac{t}{100}$ : $+3\,\%$ donne
+        $\times 1{,}03$.
+  \item Diminuer de $t\,\%$, c'est multiplier par $1-\dfrac{t}{100}$ : $-15\,\%$ donne
+        $\times 0{,}85$.
+  \item Lien avec la raison : une grandeur qui évolue \textbf{du même pourcentage} à
+        chaque étape forme une suite géométrique ; sa raison $q$ est le
+        \textbf{coefficient multiplicateur}.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer les premiers termes d'une suite géométrique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item La suite $(u_{n})$ est géométrique, de premier terme $u_{0}=2$ et de raison
+        $q=3$. Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item On place $1\,000$~€ sur un livret à $3\,\%$ par an, intérêts compris dans le
+        capital. On note $u_{n}$ le capital, en €, au bout de $n$ années. Calculer
+        $u_{1}$ et $u_{2}$, puis exprimer $u_{n+1}$ en fonction de $u_{n}$.
+  \item En 2022, un lac contient $400$~kg de déchets plastiques ; grâce au nettoyage,
+        cette masse baisse de $20\,\%$ par an. On note $v_{n}$ la masse, en kg, en
+        $2022+n$. Calculer $v_{1}$ et $v_{2}$, puis exprimer $v_{n+1}$ en fonction de
+        $v_{n}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$u_{1}=3\times 2=\res{6}$}{on multiplie par la raison}
+\explique{$u_{2}=3\times 6=\res{18}$}{}
+\explique{$u_{3}=3\times 18=\res{54}$}{}
+\cas{b)}
+\explique{Augmenter de $3\,\%$, c'est multiplier par $1{,}03$.}{$1+\dfrac{3}{100}=1{,}03$}
+\explique{$u_{0}=1\,000$ et $u_{1}=1{,}03\times 1\,000=\res{1\,030}$.}{au bout d'un an :
+$1\,030$~€}
+\explique{$u_{2}=1{,}03\times 1\,030=\res{1\,060{,}90}$}{$1\,030+30{,}90$}
+\explique{$u_{n+1}=\res{1{,}03\,u_{n}}$ : suite géométrique de raison $q=1{,}03$.}{même
+coefficient chaque année}
+\cas{c)}
+\explique{Baisser de $20\,\%$, c'est multiplier par $0{,}8$.}{$1-\dfrac{20}{100}=0{,}8$}
+\explique{$v_{0}=400$ et $v_{1}=0{,}8\times 400=\res{320}$.}{en 2023, il reste $320$~kg}
+\explique{$v_{2}=0{,}8\times 320=\res{256}$}{en 2024, il reste $256$~kg}
+\explique{$v_{n+1}=\res{0{,}8\,v_{n}}$ : suite géométrique de raison $q=0{,}8$.}{même
+coefficient chaque année}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item La suite $(w_{n})$ est géométrique, de premier terme $w_{0}=4$ et de raison
+        $q=5$. Calculer $w_{1}$, $w_{2}$ et $w_{3}$.
+  \item En 2025, une ville compte $30\,000$ habitants ; sa population augmente de
+        $2\,\%$ par an. On note $p_{n}$ la population en $2025+n$. Calculer $p_{1}$ et
+        $p_{2}$, puis exprimer $p_{n+1}$ en fonction de $p_{n}$.
+  \item Un téléphone acheté $800$~€ perd $25\,\%$ de sa valeur chaque année. On note
+        $t_{n}$ sa valeur, en €, au bout de $n$ années. Calculer $t_{1}$ et $t_{2}$,
+        puis exprimer $t_{n+1}$ en fonction de $t_{n}$.
+\end{questions}
+\reponse{$20$ ; $100$ ; $500$ ;\; $p_{1}=30\,600$ ; $p_{2}=31\,212$ ;
+$p_{n+1}=1{,}02\,p_{n}$ ;\; $t_{1}=600$ ; $t_{2}=450$ ; $t_{n+1}=0{,}75\,t_{n}$.}
+\end{methodebox}
+
+\afaire{exercices 33 à 35}
+
+\begin{proprietebox}[Propriété 6 --- Reconnaître une suite géométrique]
+Une suite à termes strictement positifs est géométrique quand le \textbf{quotient} de
+deux termes consécutifs est toujours le même : $\dfrac{u_{n+1}}{u_{n}}=q$. Dans un
+énoncé : une grandeur évolue \textbf{du même pourcentage} à chaque étape.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Reconnaître une suite géométrique]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Les listes $5$ ; $15$ ; $45$ ; $135$ \;et\; $5$ ; $10$ ; $15$ ; $20$ sont-elles
+        les premiers termes de suites géométriques ?
+  \item Chaque mois, le nombre d'abonnés d'une chaîne vidéo augmente de $10\,\%$. Le
+        nombre d'abonnés forme-t-il une suite géométrique ? Si oui, donner sa raison.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\dfrac{15}{5}=3$ ; \ $\dfrac{45}{15}=3$ ; \ $\dfrac{135}{45}=3$.}{quotients
+successifs}
+\explique{Première liste : \res{géométrique, de raison $3$}.}{les quotients sont égaux}
+\explique{$\dfrac{10}{5}=2$ mais $\dfrac{15}{10}=1{,}5$.}{}
+\explique{Deuxième liste : \res{pas géométrique} (elle est arithmétique, de raison $5$).}{}
+\cas{b)}
+\explique{Augmenter de $10\,\%$, c'est multiplier par $1{,}1$.}{$1+\dfrac{10}{100}=1{,}1$}
+\explique{\res{Suite géométrique, de raison $q=1{,}1$}.}{même pourcentage chaque mois}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Les listes $81$ ; $27$ ; $9$ ; $3$ \;et\; $2$ ; $4$ ; $8$ ; $14$ sont-elles
+        les premiers termes de suites géométriques ?
+  \item Chaque année, la consommation d'eau d'un immeuble baisse de $5\,\%$. Forme-t-elle
+        une suite géométrique ? Si oui, donner sa raison.
+\end{questions}
+\reponse{La première oui (raison $\dfrac{1}{3}$), la seconde non ;\; oui, de raison
+$0{,}95$.}
+\end{methodebox}
+
+\afaire{exercices 33 à 35}
+
+\partiecours{Reconnaître une suite géométrique}
+
+\begin{proprietebox}[Propriété 7 --- Le test du quotient]
+La suite $(u_{n})$, dont aucun terme n'est nul, est géométrique quand le quotient d'un
+terme par le précédent est \textbf{toujours le même} :
+\[
+  \dfrac{u_{n+1}}{u_{n}}=q \qquad\text{(un nombre, sans $n$)}
+\]
+\end{proprietebox}
+
+\textbf{En pratique.} On calcule les premiers termes $u_{0}$ ; $u_{1}$ ; $u_{2}$ ; $u_{3}$,
+puis les quotients $\dfrac{u_{1}}{u_{0}}$ ; $\dfrac{u_{2}}{u_{1}}$ ; $\dfrac{u_{3}}{u_{2}}$.
+\begin{itemize}
+  \item Si deux quotients ne sont pas égaux, la suite n'est pas géométrique.
+  \item Si on trouve toujours le même résultat $q$, on écrit $u_{n+1}=q\times u_{n}$ pour
+        démontrer que la suite est géométrique.
+\end{itemize}
+
+\begin{methodebox}[Méthode 12 --- Montrer qu'une suite est géométrique, ou ne l'est pas]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Les nombres $2$ ; $6$ ; $18$ ; $54$ peuvent-ils être les premiers termes d'une
+        suite géométrique ? Et $4$ ; $8$ ; $16$ ; $30$ ?
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=3\times 5^{n}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les quotients $\dfrac{u_{1}}{u_{0}}$, $\dfrac{u_{2}}{u_{1}}$ et
+                $\dfrac{u_{3}}{u_{2}}$.
+          \item Démontrer que $(u_{n})$ est géométrique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=3n+2$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les quotients $\dfrac{v_{1}}{v_{0}}$, $\dfrac{v_{2}}{v_{1}}$ et
+                $\dfrac{v_{3}}{v_{2}}$.
+          \item Conclure : la suite $(v_{n})$ est-elle géométrique ?
+        \end{enumerate}
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\dfrac{6}{2}=3$ ; $\dfrac{18}{6}=3$ ; $\dfrac{54}{18}=3$ : \res{oui, de raison
+$3$}.}{on calcule \textbf{tous} les quotients}
+\explique{$\dfrac{8}{4}=2$ ; $\dfrac{16}{8}=2$ ; mais $\dfrac{30}{16}\ne 2$ : \res{non}.}{%
+$16\times 2=32$, pas $30$}
+\cas{b) 1)}
+\begin{calculs}
+u_{0} &= 3\times 5^{0}=\res{3} &\qquad& \rem{$5^{0}=1$}\\
+u_{1} &= 3\times 5^{1}=\res{15} &&\\
+u_{2} &= 3\times 5^{2}=\res{75} &\qquad& \rem{la puissance d'abord : $3\times 25$}\\
+u_{3} &= 3\times 5^{3}=\res{375} &\qquad& \rem{$3\times 125$}
+\end{calculs}
+\cas{b) 2)}
+\explique{$\dfrac{15}{3}=\res{5}$ ; $\dfrac{75}{15}=\res{5}$ ; $\dfrac{375}{75}=\res{5}$.}{même résultat : reste à le démontrer}
+\cas{b) 3)}
+\begin{calculs}
+u_{n+1} &= 3\times 5^{n+1} &\qquad& \rem{on remplace $n$ par $n+1$}\\
+u_{n+1} &= 3\times 5^{n}\times 5 &\qquad& \rem{$5^{n+1}=5^{n}\times 5$}\\
+u_{n+1} &= 5\times u_{n} &\qquad& \rem{on reconnaît $u_{n}=3\times 5^{n}$}
+\end{calculs}
+\explique{$(u_{n})$ est \res{géométrique}, de raison $q=\res{5}$ et de premier terme
+$u_{0}=\res{3}$.}{}
+\cas{c) 1)}
+\begin{calculs}
+v_{0} &= 3\times 0+2=\res{2} &&\\
+v_{1} &= 3\times 1+2=\res{5} &&\\
+v_{2} &= 3\times 2+2=\res{8} &&\\
+v_{3} &= 3\times 3+2=\res{11} &&
+\end{calculs}
+\cas{c) 2)}
+\explique{$\dfrac{5}{2}=\res{2{,}5}$ ; $\dfrac{8}{5}=\res{1{,}6}$ ; $\dfrac{11}{8}=\res{1{,}375}$.}{}
+\cas{c) 3)}
+\explique{Les quotients ne sont pas égaux : $(v_{n})$ \res{n'est pas géométrique}.}{elle est
+arithmétique, de raison $3$}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Les nombres $64$ ; $16$ ; $4$ ; $1$ peuvent-ils être les premiers termes d'une
+        suite géométrique ? Et $3$ ; $6$ ; $12$ ; $20$ ?
+  \item Soit la suite $(a_{n})$ définie par $a_{n}=6\times 0{,}5^{n}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $a_{0}$, $a_{1}$, $a_{2}$ et $a_{3}$.
+          \item Calculer les quotients $\dfrac{a_{1}}{a_{0}}$, $\dfrac{a_{2}}{a_{1}}$ et
+                $\dfrac{a_{3}}{a_{2}}$.
+          \item Démontrer que $(a_{n})$ est géométrique ; donner son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(b_{n})$ définie par $b_{n}=n^{2}+1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $b_{0}$, $b_{1}$, $b_{2}$ et $b_{3}$.
+          \item Calculer les quotients $\dfrac{b_{1}}{b_{0}}$, $\dfrac{b_{2}}{b_{1}}$ et
+                $\dfrac{b_{3}}{b_{2}}$.
+          \item Conclure : la suite $(b_{n})$ est-elle géométrique ?
+        \end{enumerate}
+\end{questions}
+\reponse{a) oui, de raison $\frac{1}{4}$ ; non ;\; b)~$6$ ; $3$ ; $1{,}5$ ; $0{,}75$,
+quotients $0{,}5$, $a_{n+1}=0{,}5\times a_{n}$ : géométrique, $a_{0}=6$ et $q=0{,}5$ ;\;
+c)~$1$ ; $2$ ; $5$ ; $10$, quotients $2$ ; $2{,}5$ ; $2$ : non.}
+\end{methodebox}
+
+\afaire{exercices 36 à 38}
+
+\partiecours{Suites géométriques : expression en fonction de $n$}
+
+\begin{proprietebox}[Propriété 8 --- Terme de rang $n$]
+Si $(u_{n})$ est géométrique de raison $q$, alors, pour tout entier $n$ :
+\[
+  \boxed{u_{n}=u_{0}\times q^{n}}
+\]
+En effet, pour aller de $u_{0}$ à $u_{n}$, on multiplie $n$ fois par la raison :
+$u_{1}=u_{0}\times q$ ; $u_{2}=u_{0}\times q^{2}$ ; $u_{3}=u_{0}\times q^{3}$\ldots
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 13 --- Exprimer une suite géométrique en fonction de $n$]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{0}=5$ et $u_{n+1}=3u_{n}$. Exprimer $u_{n}$ en fonction de $n$, puis
+        calculer $u_{4}$.
+  \item Soit la suite $(u_{n})$ définie par $u_{1}=12$ et $u_{n+1}=4u_{n}$. Exprimer $u_{n}$ en fonction de $n$.
+  \item Une ruche compte $1\,000$ abeilles ; ce nombre augmente de $3\,\%$ par jour. On
+        note $u_{n}$ le nombre d'abeilles au bout de $n$ jours. Calculer $u_{1}$, donner la
+        nature de la suite, exprimer $u_{n}$ en fonction de $n$, puis donner le nombre
+        d'abeilles au bout de $10$ jours. On donne $1{,}03^{10}\approx 1{,}34$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{n} &= u_{0}\times q^{n} &\qquad& \rem{premier terme $5$, raison $3$}\\
+u_{n} &= \res{5\times 3^{n}} &&\\
+u_{4} &= 5\times 3^{4} &\qquad& \rem{la puissance d'abord : $3^{4}=81$}\\
+u_{4} &= \res{405} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+u_{0} &= \dfrac{u_{1}}{4} &\qquad& \rem{on recule d'un rang : on divise par la raison}\\
+u_{0} &= 3 &&\\
+u_{n} &= \res{3\times 4^{n}} &\qquad& \rem{$u_{0}\times q^{n}$}
+\end{calculs}
+\cas{c)}
+\explique{$u_{1}=1{,}03\times 1\,000=\res{1\,030}$}{hausse de $3\,\%$ : on multiplie par $1{,}03$}
+\explique{$(u_{n})$ est \res{géométrique, de premier terme $1\,000$ et de raison $1{,}03$}.}{même
+pourcentage chaque jour}
+\begin{calculs}
+u_{n} &= \res{1\,000\times 1{,}03^{n}} &\qquad& \rem{$u_{0}\times q^{n}$}\\
+u_{10} &\approx 1\,000\times 1{,}34 &\qquad& \rem{on utilise la valeur donnée}\\
+u_{10} &\approx 1\,340 &&
+\end{calculs}
+\explique{Au bout de $10$ jours, \res{la ruche compte environ $1\,340$ abeilles}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}
+  \item Soit la suite $(v_{n})$ définie par $v_{0}=500$ et $v_{n+1}=0{,}8\,v_{n}$. Exprimer $v_{n}$ en fonction de $n$
+        et calculer $v_{2}$.
+  \item Soit la suite $(w_{n})$ définie par $w_{1}=10$ et $w_{n+1}=2w_{n}$. Exprimer $w_{n}$ en fonction de $n$ et
+        calculer $w_{5}$.
+  \item On place $3\,000$~€ à $2\,\%$ par an. On note $c_{n}$ le capital, en €, au bout de
+        $n$ années. Calculer $c_{1}$, donner la nature de la suite, exprimer $c_{n}$ en
+        fonction de $n$, puis donner le capital au bout de $10$ ans. On donne
+        $1{,}02^{10}\approx 1{,}22$.
+\end{questions}
+\reponse{$v_{n}=500\times 0{,}8^{n}$ et $v_{2}=320$ ;\; $w_{0}=5$ ; $w_{n}=5\times 2^{n}$
+et $w_{5}=160$ ;\; $c_{1}=3\,060$ ; géométrique ; $c_{n}=3\,000\times 1{,}02^{n}$ ; environ
+$3\,000\times 1{,}22=3\,660$~€.}
+\end{methodebox}
+
+\afaire{exercices 39 à 42}
+
+\partiecours{Suites géométriques : variations et représentation graphique}
+
+\begin{proprietebox}[Propriété 9 --- Sens de variation]
+Soit $(u_{n})$ une suite géométrique de raison $q>0$ et de premier terme $u_{0}>0$.
+\begin{itemize}
+  \item Si $q>1$, la suite est \textbf{croissante}.
+  \item Si $q=1$, la suite est \textbf{constante}.
+  \item Si $0<q<1$, la suite est \textbf{décroissante}.
+\end{itemize}
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 10 --- Représentation graphique]
+Les points d'une suite géométrique \textbf{ne sont pas alignés}. Quand $q>1$, l'écart
+entre deux termes consécutifs grandit de plus en plus : on parle de \textbf{croissance
+exponentielle} (de \textbf{décroissance exponentielle} quand $0<q<1$).
+\end{proprietebox}
+
+\begin{center}
+\begin{minipage}[t]{0.47\linewidth}
+\centering {\small $u_{n}=0{,}5\times 2^{n}$ : $q=2>1$}\par\vspace{2pt}
+\begin{tikzpicture}
+\begin{axis}[repere,
+    x=0.35cm,y=0.35cm,
+    xmin=-0.5,xmax=6.5,ymin=-1,ymax=17,
+    xtick={1,...,6},ytick={2,4,...,16},
+    tick label style={font=\tiny},
+    xlabel={$n$},ylabel={$u_{n}$}]
+  \addplot[only marks,mark=x,mark options={line width=0.6pt},mark size=2pt,coulCourbe]
+    coordinates {(0,0.5)(1,1)(2,2)(3,4)(4,8)(5,16)};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\centering {\small $v_{n}=16\times 0{,}5^{n}$ : $q=0{,}5<1$}\par\vspace{2pt}
+\begin{tikzpicture}
+\begin{axis}[repere,
+    x=0.35cm,y=0.35cm,
+    xmin=-0.5,xmax=6.5,ymin=-1,ymax=17,
+    xtick={1,...,6},ytick={2,4,...,16},
+    tick label style={font=\tiny},
+    xlabel={$n$},ylabel={$v_{n}$}]
+  \addplot[only marks,mark=x,mark options={line width=0.6pt},mark size=2pt,coulCourbe]
+    coordinates {(0,16)(1,8)(2,4)(3,2)(4,1)(5,0.5)};
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\end{center}
+
+\begin{methodebox}[Méthode 14 --- Sens de variation d'une suite géométrique]
+\etapeexemples
+Donner le sens de variation de chaque suite.
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ définie par $u_{n}=7\times 1{,}5^{n}$
+  \item $(v_{n})$ définie par $v_{0}=40$ et $v_{n+1}=0{,}25\,v_{n}$
+  \item En 2025, un journal papier compte $5\,000$ abonnés ; ce nombre baisse de $20\,\%$
+        par an. On note $a_{n}$ le nombre d'abonnés en $2025+n$. Calculer $a_{1}$ et
+        $a_{2}$, exprimer $a_{n}$ en fonction de $n$, puis donner le sens de variation.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$q=1{,}5>1$ : $(u_{n})$ est \res{croissante}.}{la raison est le nombre élevé à la
+puissance $n$}
+\cas{b)}
+\explique{$q=0{,}25$ et $0<q<1$ : $(v_{n})$ est \res{décroissante}.}{on multiplie par
+$0{,}25$ à chaque étape}
+\cas{c)}
+\begin{calculs}
+a_{1} &= 0{,}8\times 5\,000=\res{4\,000} &\qquad& \rem{baisse de $20\,\%$ : on multiplie par $0{,}8$}\\
+a_{2} &= 0{,}8\times 4\,000=\res{3\,200} &\qquad& \rem{on multiplie encore par $0{,}8$}
+\end{calculs}
+\explique{$a_{n}=\res{5\,000\times 0{,}8^{n}}$}{géométrique : premier terme $5\,000$, raison $0{,}8$}
+\explique{$q=0{,}8$ et $0<q<1$ : $(a_{n})$ est \res{décroissante}.}{le nombre d'abonnés diminue
+d'année en année}
+\end{correction}
+
+\etape{À vous de jouer}
+Donner le sens de variation de chaque suite géométrique.
+\begin{questions}[label=\alph*)]
+  \item $(u_{n})$ définie par $u_{n}=50\times 0{,}9^{n}$
+  \item $(v_{n})$ définie par $v_{0}=3$ et $v_{n+1}=1{,}1\,v_{n}$
+  \item En 2025, un village compte $500$ habitants ; ce nombre augmente de $10\,\%$ par an.
+        On note $p_{n}$ le nombre d'habitants en $2025+n$. Calculer $p_{1}$ et $p_{2}$,
+        exprimer $p_{n}$ en fonction de $n$, puis donner le sens de variation.
+\end{questions}
+\reponse{$q=0{,}9<1$ : décroissante ;\; $q=1{,}1>1$ : croissante ;\; $p_{1}=550$ ;
+$p_{2}=605$ ; $p_{n}=500\times 1{,}1^{n}$ ; $q=1{,}1>1$ : croissante.}
+\end{methodebox}
+
+\afaire{exercices 43 à 45}
+
+\partiecours{Suites géométriques : problème de seuil}
+
+\begin{remarquebox}[Seuil et croissance exponentielle]
+Cette année, l'inéquation $u_{0}\times q^{n}>\ldots$ ne se résout pas par le calcul.
+L'énoncé donne un \textbf{tableau de valeurs} de $q^{n}$ (comme à l'épreuve).
+\end{remarquebox}
+
+\besoinplace{12\baselineskip}
+\begin{methodebox}[Méthode 15 --- Résoudre un problème de seuil avec un tableau de valeurs]
+\etapeexemples
+En 2025, un lycée utilise $800$ ramettes de papier ; il réduit cette quantité de
+$10\,\%$ chaque année. On note $u_{n}$ le nombre de ramettes utilisées en $2025+n$.
+\begin{questions}[label=\alph*)]
+  \item Donner $u_{0}$, puis calculer $u_{1}$ et $u_{2}$.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Donner le sens de variation de la suite $(u_{n})$.
+  \item En quelle année le lycée utilisera-t-il au plus $400$ ramettes ? On donne :
+\end{questions}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$n$ & $5$ & $6$ & $7$ & $8$\\
+\hline
+$0{,}9^{n}$ (arrondi) & $0{,}59$ & $0{,}53$ & $0{,}48$ & $0{,}43$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{correction}
+\cas{a)}
+\explique{$u_{0}=\res{800}$}{2025 correspond à $n=0$}
+\begin{calculs}
+u_{1} &= 0{,}9\times 800=\res{720} &\qquad& \rem{baisse de $10\,\%$ : on multiplie par $0{,}9$}\\
+u_{2} &= 0{,}9\times 720=\res{648} &\qquad& \rem{on multiplie encore par $0{,}9$}
+\end{calculs}
+\cas{b)}
+\explique{$(u_{n})$ est géométrique, de premier terme $800$ et de raison $0{,}9$.}{on
+multiplie toujours par $0{,}9$}
+\explique{$u_{n}=\res{800\times 0{,}9^{n}}$}{formule $u_{n}=u_{0}\times q^{n}$}
+\cas{c)}
+\explique{$q=0{,}9$ et $0<q<1$ : $(u_{n})$ est \res{décroissante}.}{le nombre de ramettes diminue
+chaque année}
+\cas{d)}
+\begin{calculs}
+800\times 0{,}9^{n} &\le 400 &\qquad& \rem{on traduit la question : $u_{n}\le 400$}\\
+0{,}9^{n} &\le 0{,}5 &\qquad& \rem{on divise par $800$ et $\dfrac{400}{800}=0{,}5$}
+\end{calculs}
+\explique{$0{,}9^{6}\approx 0{,}53>0{,}5$ et $0{,}9^{7}\approx 0{,}48\le 0{,}5$ : le
+premier rang est $n=7$.}{on lit le tableau}
+\explique{Le lycée utilisera au plus $400$ ramettes en $2025+7=\res{2032}$.}{on répond dans le
+contexte}
+\end{correction}
+
+\etape{À vous de jouer}
+En 2025, une voiture est achetée $20\,000$~€ ; elle perd $20\,\%$ de sa valeur chaque
+année. On note $a_{n}$ sa valeur, en euros, en $2025+n$.
+\begin{questions}[label=\alph*)]
+  \item Donner $a_{0}$, puis calculer $a_{1}$ et $a_{2}$.
+  \item Exprimer $a_{n}$ en fonction de $n$.
+  \item Donner le sens de variation de la suite $(a_{n})$.
+  \item En quelle année la voiture vaudra-t-elle au plus $10\,000$~€ ? On donne :
+\end{questions}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$n$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$0{,}8^{n}$ (arrondi) & $0{,}64$ & $0{,}51$ & $0{,}41$ & $0{,}33$\\
+\hline
+\end{tabular}
+\end{center}
+\reponse{$a_{0}=20\,000$ ;\; $a_{1}=16\,000$ ;\; $a_{2}=12\,800$ ;\; $a_{n}=20\,000\times
+0{,}8^{n}$ ;\; décroissante ;\; $a_{n}\le 10\,000$ revient à $0{,}8^{n}\le 0{,}5$ : en 2029.}
+\end{methodebox}
+
+\afaire{exercices 46 à 48}
+
+\besoinplace{20\baselineskip}
+\partiecours{Comparer deux évolutions}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|}
+\hline
+ & \textbf{Suite arithmétique} & \textbf{Suite géométrique}\\
+\hline
+D'un terme au suivant & on \textbf{ajoute} $r$ & on \textbf{multiplie} par $q$\\
+\hline
+Relation de récurrence & $u_{n+1}=u_{n}+r$ & $u_{n+1}=q\times u_{n}$\\
+\hline
+Terme de rang $n$ & $u_{n}=u_{0}+nr$ & $u_{n}=u_{0}\times q^{n}$\\
+\hline
+Croissante quand & $r>0$ & $q>1$\\
+\hline
+Décroissante quand & $r<0$ & $0<q<1$\\
+\hline
+Graphique & points alignés & points non alignés\\
+\hline
+Dans un énoncé & même quantité ajoutée & même pourcentage d'évolution\\
+\hline
+Croissance & linéaire & exponentielle\\
+\hline
+\end{tabular}
+\end{center}
+
+\besoinplace{12\baselineskip}
+\begin{methodebox}[Méthode 16 --- Comparer une croissance linéaire et une croissance exponentielle]
+\etapeexemples
+Au 1\textsuperscript{er} janvier, deux chaînes vidéo ont chacune $5\,000$ abonnés. La
+chaîne A en gagne $300$ par mois ; celle de la chaîne B augmente de $5\,\%$ par mois. On
+note $u_{n}$ et $v_{n}$ les nombres d'abonnés de A et de B après $n$ mois.
+\begin{questions}[label=\alph*)]
+  \item Calculer $u_{1}$ et $v_{1}$.
+  \item Donner la nature de chaque suite, puis exprimer $u_{n}$ et $v_{n}$ en fonction
+        de $n$.
+  \item À partir de quel mois la chaîne B a-t-elle plus d'abonnés que la chaîne A ? On
+        donne :
+\end{questions}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$n$ & $7$ & $8$ & $9$ & $10$\\
+\hline
+$v_{n}$ (arrondi) & $7\,036$ & $7\,387$ & $7\,757$ & $8\,144$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 5\,000+300=\res{5\,300} &\qquad& \rem{A : on ajoute $300$}\\
+v_{1} &= 1{,}05\times 5\,000=\res{5\,250} &\qquad& \rem{B : hausse de $5\,\%$, on multiplie par $1{,}05$}
+\end{calculs}
+\cas{b)}
+\explique{$(u_{n})$ est \res{arithmétique, de raison $300$}, donc $u_{n}=\res{5\,000+300n}$.}{même quantité
+ajoutée}
+\explique{$(v_{n})$ est \res{géométrique, de raison $1{,}05$}, donc $v_{n}=\res{5\,000\times 1{,}05^{n}}$.}{même
+pourcentage}
+\cas{c)}
+\begin{calculs}
+u_{8} &= 5\,000+300\times 8=7\,400 &\qquad& \rem{$7\,400>7\,387$ : A devant}\\
+u_{9} &= 5\,000+300\times 9=7\,700 &\qquad& \rem{$7\,700<7\,757$ : B devant}
+\end{calculs}
+\explique{\res{À partir du $9^{\text{e}}$ mois}, la chaîne B a plus d'abonnés.}{la croissance
+exponentielle finit par dépasser la croissance linéaire}
+\end{correction}
+
+\etape{À vous de jouer}
+En 2025, la ville A compte $12\,000$ habitants et en gagne $400$ par an ; la ville B
+compte $10\,000$ habitants, avec une hausse de $4\,\%$ par an. On note $a_{n}$ et $b_{n}$
+leurs populations en $2025+n$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $a_{1}$ et $b_{1}$.
+  \item Donner la nature de chaque suite, puis exprimer $a_{n}$ et $b_{n}$ en fonction
+        de $n$.
+  \item À partir de quelle année la ville B sera-t-elle la plus peuplée ? On donne, pour
+        la ville B : $16\,651$ habitants en 2038, $17\,317$ en 2039 et $18\,009$ en 2040
+        (valeurs arrondies).
+\end{questions}
+\reponse{$a_{1}=12\,400$ ; $b_{1}=10\,400$ ;\; arithmétique et géométrique ; $a_{n}=12\,000+400n$ et $b_{n}=10\,000\times 1{,}04^{n}$ ;\; $a_{14}=17\,600>
+17\,317$ mais $a_{15}=18\,000<18\,009$ : à partir de 2040.}
+\end{methodebox}
+
+\afaire{exercices 49 à 51, puis les exercices de type épreuve 52 à 54}
+
+\end{document}

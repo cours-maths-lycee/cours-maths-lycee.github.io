@@ -1,0 +1,993 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\raggedcolumns
+\newcommand{\qcm}[4]{\par\makebox[0.24\linewidth][l]{a) #1}%
+  \makebox[0.24\linewidth][l]{b) #2}\makebox[0.24\linewidth][l]{c) #3}d) #4}
+\newcommand{\point}[2]{\path[coulCourbe] (#1,#2) node[croix=2.2pt]{};}
+\newcommand{\axes}[4]{%
+  \draw[->,>=Stealth,black!70] (0,0) -- (#1+0.6,0) node[below,font=\footnotesize] {$n$};
+  \draw[->,>=Stealth,black!70] (0,0) -- (0,#2+0.6) node[left,font=\footnotesize] {$u_{n}$};
+  \foreach \i in {#3} {\node[below,font=\tiny] at (\i,0) {$\i$};}
+  \foreach \i in {#4} {\node[left,font=\tiny] at (0,\i) {$\i$};}
+  \node[below left,font=\tiny] at (0,0) {$0$};}
+
+\tcbuselibrary{listings}
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,before skip=3pt,after skip=3pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\newcommand{\reperesuite}[4]{%
+  \draw[grille,step=1] (-1,#2) grid (#1,#3);
+  \draw[-{Stealth[length=2mm]},thick] (-1,0)--({#1+0.4},0)
+    node[below left=-1pt,font=\footnotesize]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#3+0.4})
+    node[below left=-1pt,font=\footnotesize]{$#4$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STMG --- Suites numériques}%
+  {Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Notion de suite}
+
+\exo[Calculer les premiers termes]
+Pour chaque suite, calculer les cinq premiers termes.
+\trois{$u_{n}=4n-5$}{$v_{n}=n^{2}+1$}{$w_{n}=3^{n}$}
+
+\exo[Calculer un terme]
+Pour chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ et $(t_{n})$ définies ci-dessous, calculer
+les termes demandés.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{n}=6n+5$ : calculer $u_{9}$.
+  \item $v_{n}=3n^{2}-2n+1$ : calculer $v_{4}$.
+  \item $w_{n}=\dfrac{2n}{n+1}$ : calculer $w_{0}$, $w_{1}$, $w_{2}$ et $w_{3}$.
+  \item $t_{n}=20-n^{2}$ : calculer $t_{3}$.
+\end{enumerate}
+
+\exo[Des suites dans la vie courante]
+Pour chaque situation, exprimer $u_{n}$ en fonction de $n$, puis calculer le terme
+demandé.
+\begin{enumerate}[label=\alph*)]
+  \item Une piscine vend une carte annuelle à $30$~€, puis chaque entrée $3{,}50$~€.
+        $u_{n}$ est le prix payé pour $n$ entrées dans l'année. Calculer $u_{12}$.
+  \item Une trottinette en libre-service coûte $1$~€ au départ, puis $0{,}25$~€ par
+        minute. $u_{n}$ est le prix d'un trajet de $n$ minutes. Calculer $u_{40}$.
+  \item La réserve d'eau d'un village, de $9\,000$~m$^{3}$, baisse de $600$~m$^{3}$
+        par mois. $u_{n}$ est la réserve au bout de $n$ mois. Calculer $u_{6}$.
+\end{enumerate}
+
+\exo[Ne pas confondre]
+Soit la suite $(u_{n})$ définie par $u_{n}=2n+5$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{4}$, puis $u_{4}+1$, puis $u_{5}$.
+  \item Exprimer $u_{n+1}$ en fonction de $n$.
+\end{enumerate}
+
+\partiefiche{Suites définies par récurrence}
+
+\exo[Calculer les termes pas à pas]
+Pour chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ et $(t_{n})$ définies ci-dessous, calculer
+les termes de rang $1$ à $4$.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{0}=2$ et $u_{n+1}=3u_{n}-1$
+  \item $v_{0}=5$ et $v_{n+1}=v_{n}+4$
+  \item $w_{0}=48$ et $w_{n+1}=\dfrac{w_{n}}{2}$
+  \item $t_{0}=20$ et $t_{n+1}=t_{n}-6$
+\end{enumerate}
+
+\exo[Avec des nombres négatifs]
+Pour chacune des suites $(u_{n})$ et $(v_{n})$ définies ci-dessous, calculer les termes
+demandés.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{0}=-1$ et $u_{n+1}=3-u_{n}^{2}$ : calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item $v_{0}=1$ et $v_{n+1}=-3v_{n}+2$ : calculer $v_{1}$, $v_{2}$ et $v_{3}$.
+\end{enumerate}
+
+\exo[Traduire un énoncé]
+Pour chaque situation, donner le premier terme et la relation de récurrence, puis
+calculer les deux termes suivants.
+\begin{enumerate}[label=\alph*)]
+  \item Une tirelire contient $150$~€ ; chaque semaine, on y ajoute $20$~€. On note
+        $u_{n}$ la somme après $n$ semaines.
+  \item Une algue couvre $3$~m$^{2}$ d'un étang, et sa surface triple chaque
+        semaine. On note $a_{n}$ la surface, en m$^{2}$, après $n$ semaines.
+  \item Une médiathèque compte $400$ abonnés ; chaque année, $30$ partent et $50$
+        arrivent. On note $c_{n}$ le nombre d'abonnés après $n$ années.
+\end{enumerate}
+
+\exo[Au tableur]
+Les rangs $n$ sont en colonne A, les termes en colonne B, le premier terme en B2.
+Pour chacune des suites $(u_{n})$, $(v_{n})$ et $(w_{n})$ définies ci-dessous, quelle formule
+saisir en B3, à recopier vers le bas ?
+\begin{enumerate}[label=\alph*)]
+  \item $u_{0}=30$ et $u_{n+1}=u_{n}+15$.
+  \item $v_{0}=200$ et $v_{n+1}=0{,}9v_{n}+30$.
+  \item $w_{n}=5n-1$ (la formule utilise la colonne A).
+\end{enumerate}
+
+\partiefiche{Programmer une suite définie par récurrence}
+
+\exo[Que renvoie ce programme ?]
+\begin{python}
+def suite(n):
+    u = 3
+    for i in range(n):
+        u = 3*u - 4
+    return u
+\end{python}
+\begin{enumerate}[label=\arabic*)]
+  \item Quelle suite ce programme calcule-t-il ? Donner $u_{0}$ et la relation de
+        récurrence.
+  \item Calculer à la main ce que renvoient \texttt{suite(1)}, \texttt{suite(2)} et
+        \texttt{suite(5)}.
+\end{enumerate}
+
+\exo[Même travail]
+Même travail avec la ligne \texttt{u = 160} au départ et la ligne \texttt{u = 0.5*u + 2}
+dans la boucle, pour \texttt{suite(1)}, \texttt{suite(2)} et \texttt{suite(6)}.
+
+\exo[Compléter le programme]
+Soit la suite $(u_{n})$ définie par $u_{0}=2$ et $u_{n+1}=1+2u_{n}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $u_{3}$ à la main.
+  \item Compléter le programme, puis donner $u_{10}$.
+\end{enumerate}
+\begin{python}
+def suite(n):
+    u = .....
+    for i in range(n):
+        u = .....
+    return u
+\end{python}
+\begin{enumerate}[label=\arabic*),start=3]
+  \item Même travail avec $v_{0}=1$ et $v_{n+1}=6-2v_{n}$ : écrire le programme, puis
+        donner $v_{1}$, $v_{5}$ et $v_{10}$.
+\end{enumerate}
+
+\partiefiche{Représentation graphique d'une suite}
+
+\exo[Représenter une suite]
+Pour chaque suite, dresser le tableau de valeurs pour $n$ allant de $0$ à $6$, puis
+représenter la suite dans un repère.
+\deux{a) $u_{n}=9-2n$}{b) $v_{0}=4$ et $v_{n+1}=2-v_{n}$}
+
+\exo[Lire un graphique]
+\begin{minipage}[t]{0.5\linewidth}
+\vspace{0pt}
+On a représenté les premiers termes d'une suite $(u_{n})$.
+\begin{enumerate}[label=\alph*)]
+  \item Lire $u_{0}$ et $u_{4}$.
+  \item Pour quel rang a-t-on $u_{n}=4$ ?
+  \item Les termes augmentent-ils ou diminuent-ils ?
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \quadrillage{0}{0}{6}{7}
+  \axes{6}{7}{1,2,3,4,5}{1,2,3,4,5,6,7}
+  \point{0}{1}\point{1}{2}\point{2}{2.5}\point{3}{4}\point{4}{5.5}\point{5}{7}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Calculer puis représenter]
+Soit la suite $(u_{n})$ définie par $u_{0}=-6$ et $u_{n+1}=\dfrac{u_{n}+10}{2}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{1}$, $u_{2}$, $u_{3}$ et $u_{4}$.
+  \item Représenter ces cinq termes dans un repère.
+\end{enumerate}
+
+\exo[Une suite qui descend puis remonte]
+Soit la suite $(w_{n})$ définie par $w_{n}=n^{2}-6n+8$.
+\begin{enumerate}[label=\alph*)]
+  \item Dresser le tableau de valeurs pour $n$ allant de $0$ à $6$.
+  \item Représenter ces termes dans un repère.
+  \item Décrire l'évolution des termes.
+\end{enumerate}
+
+\partiefiche{Suites arithmétiques : définition}
+
+\exo[Modéliser]
+Pour chaque situation, donner le premier terme, la relation de récurrence et la
+raison.
+\begin{enumerate}[label=\alph*)]
+  \item Un cinéma vend $50\,000$ places la première année ($u_{0}$), puis $4\,000$ de
+        plus chaque année.
+  \item Le stock d'un entrepôt, de $6\,000$ cartons, baisse de $450$ cartons par
+        semaine.
+  \item Une cagnotte contient $200$~€ ; on y ajoute $15$~€ chaque mois.
+\end{enumerate}
+
+\exo[Arithmétique ou non ?]
+Dire si chacune des suites $(u_{n})$, $(v_{n})$ et $(w_{n})$ définies ci-dessous est
+arithmétique, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{n}=7-3n$ : calculer $u_{n+1}-u_{n}$. La suite est-elle arithmétique ?
+  \item $v_{n}=n^{2}+3$ : calculer $v_{0}$, $v_{1}$ et $v_{2}$. La suite est-elle
+        arithmétique ?
+  \item $w_{n}=3(n+2)$ : montrer que la suite est arithmétique.
+\end{enumerate}
+
+\exo[Compléter]
+Les suites $(u_{n})$ et $(v_{n})$ sont arithmétiques.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{0}=9$ et $r=-4$ : calculer $u_{1}$, $u_{2}$, $u_{3}$ et $u_{4}$, puis représenter
+        ces cinq termes.
+  \item $v_{2}=13$ et $v_{3}=18$ : donner la raison, puis $v_{4}$, $v_{1}$ et $v_{0}$.
+\end{enumerate}
+
+\partiefiche{Reconnaître une suite arithmétique}
+
+\exo[À partir des termes]
+Ces nombres peuvent-ils être les premiers termes d'une suite arithmétique ? Si oui,
+donner la raison.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $3$ ; $8$ ; $13$ ; $18$
+  \item $20$ ; $14$ ; $8$ ; $2$
+  \item $2$ ; $3$ ; $5$ ; $8$
+  \item $1{,}5$ ; $2{,}25$ ; $3$ ; $3{,}75$
+  \item $401$ ; $377$ ; $353$ ; $329$
+  \item $2$ ; $4$ ; $8$ ; $16$
+\end{enumerate}
+\end{multicols}
+
+\exo[Démontrer]
+\begin{enumerate}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=5n-2$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les différences $u_{1}-u_{0}$, $u_{2}-u_{1}$ et $u_{3}-u_{2}$.
+          \item Démontrer que $(u_{n})$ est arithmétique ; préciser son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=2n^{2}+1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les différences $v_{1}-v_{0}$, $v_{2}-v_{1}$ et $v_{3}-v_{2}$.
+          \item Conclure : la suite $(v_{n})$ est-elle arithmétique ?
+        \end{enumerate}
+\end{enumerate}
+
+\exo[Pour chaque suite]
+Pour chacune des suites $(a_{n})$ à $(g_{n})$ définies ci-dessous, dire si elle est
+arithmétique. Si oui, donner sa raison et son premier
+terme ; sinon, le prouver avec les premiers termes.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=4n$
+  \item $b_{n}=2-3n$
+  \item $c_{n}=n^{2}+n$
+  \item $d_{n}=\dfrac{n}{3}$
+  \item $e_{n}=2-n^{2}$
+  \item $f_{n}=(n+2)^{2}-n^{2}$
+  \item $g_{0}=1$ et $g_{n+1}=g_{n}^{2}+1$
+\end{enumerate}
+\end{multicols}
+
+\partiefiche{Suites arithmétiques : expression en fonction de $n$}
+
+\exo[Appliquer la formule]
+Pour chaque suite arithmétique $(u_{n})$ ci-dessous, exprimer $u_{n}$ en fonction de $n$,
+puis calculer
+le terme demandé.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{0}=10$ et $r=-3$ : $u_{8}$.
+  \item $u_{0}=-4$ et $r=5$ : $u_{12}$.
+  \item $u_{1}=600$ et $r=40$ : $u_{8}$.
+  \item $u_{1}=-7$ et $r=4$ : $u_{5}$.
+\end{enumerate}
+
+\exo[Une suite qui diminue]
+On donne $u_{1}=185$ ; $u_{2}=172$ ; $u_{3}=159$ et $u_{4}=146$.
+\begin{enumerate}[label=\alph*)]
+  \item Montrer que ce sont les termes d'une suite arithmétique, et donner sa
+        raison.
+  \item Calculer $u_{5}$, puis $u_{14}$.
+\end{enumerate}
+
+\exo[Production d'un atelier]
+En 2010, un atelier fabrique $4\,000$ vélos ; sa production augmente de $250$ vélos
+par an. On note $u_{n}$ la production en $2010+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Donner la nature de la suite $(u_{n})$, puis exprimer $u_{n}$ en fonction de
+        $n$.
+  \item Calculer la production en 2013, puis en 2030.
+\end{enumerate}
+
+\exo[Lire la formule]
+Donner le premier terme $u_{0}$ et la raison de chaque suite arithmétique.
+\trois{a) $u_{n}=5+4n$}{b) $v_{n}=18-1{,}5n$}{c) $w_{n}=6n$}
+
+\partiefiche{Suites arithmétiques : problème de seuil}
+
+\exo[Acheter un vélo électrique]
+Une lycéenne veut acheter un vélo électrique à $1\,500$~€. Le 1\textsuperscript{er}
+janvier, elle a $900$~€, et elle met $60$~€ de côté chaque mois. On note $u_{1}=900$
+la somme au 1\textsuperscript{er} janvier, $u_{2}$ celle au 1\textsuperscript{er}
+février, et ainsi de suite.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{2}$, $u_{3}$ et $u_{4}$.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Calculer $u_{7}$.
+  \item Pour quelle valeur de $n$ aura-t-elle $1\,500$~€ ?
+  \item À quelle date pourra-t-elle acheter son vélo ?
+\end{enumerate}
+
+\exo[Doubler la production]
+En 2015, une coopérative produit $4\,000$~L de jus de pomme ; sa production augmente de
+$250$~L par an. On note $u_{n}$ la production, en litres, en $2015+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Donner la nature de la suite, puis exprimer $u_{n}$ en fonction de $n$.
+  \item En quelle année la production aura-t-elle doublé par rapport à 2015 ?
+\end{enumerate}
+
+\exo[Un forfait moins cher]
+En 2020, un forfait de téléphone coûte $200$~€ par an ; grâce à la concurrence, son prix
+baisse de $2$~€ chaque année. On note $d_{n}$ la dépense annuelle, en euros, en $2020+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $d_{1}$ et $d_{2}$.
+  \item Donner la nature de la suite, puis exprimer $d_{n}$ en fonction de $n$.
+  \item À partir de quelle année le forfait coûtera-t-il moins de $175$~€ ?
+\end{enumerate}
+
+\exo[Résoudre des inéquations]
+Pour chaque inéquation, donner le plus petit entier $n$ qui la vérifie.
+\trois{a) $15+5n>100$}{b) $240-30n<0$}{c) $40+6n\ge 100$}
+
+\partiefiche{Suites arithmétiques : variations et représentation graphique}
+
+\exo[Sens de variation]
+Donner la raison, puis le sens de variation des suites arithmétiques $(u_{n})$, $(v_{n})$,
+$(t_{n})$ et $(w_{n})$ ci-dessous.
+\deux{a) $u_{n}=3+8n$}{b) $v_{n}=20-0{,}4n$}
+\par\hspace*{0.6em}c)~$t_{n}=-5n$
+\par\hspace*{0.6em}d)~$w_{0}=-6$ et $w_{n+1}=w_{n}+0{,}5$
+
+\exo[Lire un graphique]
+\begin{minipage}[t]{0.5\linewidth}
+\vspace{0pt}
+Les points ci-contre représentent une suite arithmétique $(u_{n})$.
+\begin{enumerate}[label=\alph*)]
+  \item Lire $u_{0}$ et la raison $r$.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Calculer $u_{10}$.
+  \item Donner le sens de variation.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \quadrillage{0}{0}{5}{8}
+  \axes{5}{8}{1,2,3,4}{1,2,3,4,5,6,7,8}
+  \point{0}{8}\point{1}{6.5}\point{2}{5}\point{3}{3.5}\point{4}{2}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Représenter]
+Représenter les cinq premiers termes des suites $(u_{n})$ et $(v_{n})$ dans un même
+repère, puis donner leur sens de variation.
+\deux{a) $u_{n}=1+1{,}5n$}{b) $v_{0}=8$ et $v_{n+1}=v_{n}-2$}
+
+\partiefiche{Suites géométriques : définition}
+
+\exo[Coefficient multiplicateur]
+Donner le coefficient multiplicateur $q$.
+\deux{a) Augmenter de $4\,\%$}{b) Diminuer de $4\,\%$}
+\deux{c) Augmenter de $30\,\%$}{d) Diminuer de $30\,\%$}
+\deux{e) Augmenter de $60\,\%$}{f) Diminuer de $25\,\%$}
+\deux{g) Augmenter de $2\,\%$}{h) Diminuer de $45\,\%$}
+
+\exo[Retrouver l'évolution]
+Traduire chaque coefficient par « augmenter de\ldots{} \% » ou « diminuer de\ldots{}
+\% ».
+\trois{a) $q=0{,}96$}{b) $q=1{,}06$}{c) $q=0{,}4$}
+\trois{d) $q=1{,}3$}{e) $q=3$}{f) $q=0{,}98$}
+\trois{g) $q=0{,}85$}{h) $q=1{,}075$}{}
+
+\exo[Calculer les premiers termes]
+\begin{enumerate}[label=\alph*)]
+  \item La suite $(u_{n})$ est géométrique, de premier terme $u_{0}=1$ et de raison
+        $q=2$. Calculer $u_{1}$, $u_{2}$ et $u_{3}$, puis représenter ces quatre termes.
+\end{enumerate}
+Pour chaque situation, donner le premier terme, calculer les termes de rang $1$ et
+$2$, puis exprimer le terme suivant en fonction du précédent.
+\begin{enumerate}[label=\alph*),start=2]
+  \item Un capital $c_{n}$ : $5\,000$~€ placés à $2\,\%$ par an.
+  \item Une forêt de $f_{n}$ arbres : $40\,000$ arbres au départ, $5\,\%$ de pertes
+        par an.
+  \item Les émissions $e_{n}$ de CO$_{2}$ d'une usine : $800$~t, en baisse de
+        $10\,\%$ par an.
+  \item Une population $i_{n}$ d'insectes : $300$ au départ, en hausse de $50\,\%$
+        chaque semaine.
+\end{enumerate}
+
+\partiefiche{Reconnaître une suite géométrique}
+
+\exo[À partir des termes]
+Ces nombres peuvent-ils être les premiers termes d'une suite géométrique ? Si oui,
+donner la raison.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $5$ ; $10$ ; $20$ ; $40$
+  \item $3$ ; $12$ ; $48$ ; $180$
+  \item $128$ ; $32$ ; $8$ ; $2$
+  \item $4$ ; $8$ ; $12$ ; $16$
+  \item $200$ ; $220$ ; $242$ ; $266{,}2$
+  \item $50$ ; $10$ ; $2$ ; $0{,}4$
+\end{enumerate}
+\end{multicols}
+
+\exo[Démontrer]
+\begin{enumerate}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie par $u_{n}=2\times 3^{n}$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $u_{0}$, $u_{1}$, $u_{2}$ et $u_{3}$.
+          \item Calculer les quotients $\dfrac{u_{1}}{u_{0}}$, $\dfrac{u_{2}}{u_{1}}$ et
+                $\dfrac{u_{3}}{u_{2}}$.
+          \item Démontrer que $(u_{n})$ est géométrique ; préciser son premier terme et sa
+                raison.
+        \end{enumerate}
+  \item Soit la suite $(v_{n})$ définie par $v_{n}=4n+1$.
+        \begin{enumerate}[label=\arabic*)]
+          \item Calculer $v_{0}$, $v_{1}$, $v_{2}$ et $v_{3}$.
+          \item Calculer les quotients $\dfrac{v_{1}}{v_{0}}$, $\dfrac{v_{2}}{v_{1}}$ et
+                $\dfrac{v_{3}}{v_{2}}$.
+          \item Conclure : la suite $(v_{n})$ est-elle géométrique ?
+        \end{enumerate}
+\end{enumerate}
+
+\exo[La valeur d'une machine]
+La valeur d'une machine-outil (en euros) est relevée chaque année :
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$n$ (années) & $0$ & $1$ & $2$ & $3$\\
+\hline
+$v_{n}$ & $12\,000$ & $10\,800$ & $9\,720$ & $8\,748$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Montrer que ces valeurs sont celles d'une suite géométrique, dont on donnera la
+        raison.
+  \item De quel pourcentage la machine perd-elle de la valeur chaque année ?
+  \item Calculer $v_{4}$.
+\end{enumerate}
+
+\partiefiche{Suites géométriques : expression en fonction de $n$}
+
+\exo[Appliquer la formule]
+Pour chaque suite géométrique $(u_{n})$ ci-dessous, exprimer $u_{n}$ en fonction de $n$,
+puis calculer le
+terme demandé.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{0}=2$ et $q=3$ : $u_{4}$.
+  \item $u_{0}=5\,000$ et $q=0{,}1$ : $u_{3}$.
+  \item $u_{1}=6$ et $q=2$ : $u_{5}$.
+  \item $u_{0}=128$ et $q=0{,}5$ : $u_{4}$.
+\end{enumerate}
+
+\exo[Placer ses économies]
+Une étudiante place $1\,500$~€ au taux annuel de $2\,\%$. On note $c_{n}$ le capital
+au bout de $n$ années.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $c_{1}$ et $c_{2}$.
+  \item Donner la nature de $(c_{n})$, puis exprimer $c_{n}$ en fonction de $n$.
+  \item On donne $1{,}02^{10}\approx 1{,}22$. Estimer le capital au bout de $10$ ans.
+\end{enumerate}
+
+\exo[Covoiturage]
+En 2024, $80$ salariés d'une entreprise viennent au travail en covoiturage. On
+suppose que ce nombre augmente de $10\,\%$ par an, et on note $u_{n}$ ce nombre en
+$2024+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{1}$ et $u_{2}$, puis donner la nature de la suite $(u_{n})$ et sa
+        raison.
+  \item Les années sont en ligne 1 (2024 en B1) et les termes en ligne 2 ($80$ en
+        B2). Quelle formule saisir en C2, à recopier vers la droite ?
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item On donne $1{,}1^{3}=1{,}331$. Estimer $u_{3}$ à l'unité près.
+  \item L'entreprise vise un quart de ses $400$ salariés en covoiturage en 2027.
+        L'objectif sera-t-il atteint ?
+\end{enumerate}
+
+\exo[Un air plus pur]
+Dans une ville, la concentration en dioxyde d'azote est de $60$~µg/m$^{3}$ en 2020.
+Grâce aux bus électriques et aux nouvelles pistes cyclables, elle baisse de $5\,\%$ par
+an. On note $u_{n}$ la concentration en $2020+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{1}$, puis exprimer $u_{n}$ en fonction de $n$.
+  \item On donne $0{,}95^{6}\approx 0{,}74$. Estimer la concentration en 2026.
+\end{enumerate}
+
+\partiefiche{Suites géométriques : variations et représentation graphique}
+
+\exo[Sens de variation]
+Donner la raison, puis le sens de variation des suites géométriques $(u_{n})$, $(v_{n})$, $(w_{n})$ et $(t_{n})$
+ci-dessous.
+\deux{a) $u_{n}=8\times 1{,}3^{n}$}{b) $v_{n}=500\times 0{,}6^{n}$}
+\par\hspace*{0.6em}c)~$w_{0}=7$ et $w_{n+1}=1{,}02\,w_{n}$
+\par\hspace*{0.6em}d)~$t_{0}=40$ et $t_{n+1}=0{,}25\,t_{n}$
+\par\hspace*{0.6em}e) un stock de $200$~kg, noté $s_{0}$, qui baisse de $10\,\%$ par an : calculer
+$s_{1}$ et $s_{2}$, puis exprimer $s_{n}$ en fonction de $n$.
+
+\exo[Linéaire ou exponentielle ?]
+\begin{minipage}[t]{0.5\linewidth}
+\vspace{0pt}
+On a représenté deux suites : $(a_{n})$ par des croix droites ($+$), $(b_{n})$ par
+des croix obliques ($\times$).
+\begin{enumerate}[label=\alph*)]
+  \item Laquelle est arithmétique ? géométrique ? Donner leurs raisons.
+  \item Calculer $a_{5}$ et $b_{5}$.
+  \item Laquelle a une décroissance linéaire ? exponentielle ?
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \quadrillage{0}{0}{5}{8}
+  \axes{5}{8}{1,2,3,4}{1,2,3,4,5,6,7,8}
+  \foreach \n/\v in {0/8,1/6.5,2/5,3/3.5,4/2}
+    {\path[coulCourbeB] (\n,\v) node[croixdroite]{};}
+  \point{0}{8}\point{1}{4}\point{2}{2}\point{3}{1}\point{4}{0.5}
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Vrai ou faux ?]
+Justifier chaque réponse.
+\begin{enumerate}[label=\alph*)]
+  \item Une suite géométrique de raison $1{,}05$ (et de premier terme positif) est
+        décroissante.
+  \item Une quantité qui baisse de $4\,\%$ par an est modélisée par une suite
+        décroissante.
+  \item Les points d'une suite arithmétique de raison $3$ sont alignés.
+  \item La suite $(u_{n})$ définie par $u_{n}=5\times 0{,}8^{n}$ est croissante, car $5>1$.
+\end{enumerate}
+
+\partiefiche{Suites géométriques : problème de seuil}
+
+\exo[Nitrates dans une rivière]
+En 2025, une rivière contient $60$~mg de nitrates par litre ; grâce à de nouvelles
+pratiques agricoles, cette quantité baisse de $10\,\%$ chaque année. On note $u_{n}$ la quantité de nitrates, en mg par litre, en
+$2025+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Donner $u_{0}$, puis calculer $u_{1}$ et $u_{2}$.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Donner le sens de variation de la suite $(u_{n})$.
+  \item On donne $0{,}9^{2}\approx 0{,}81$ ; $0{,}9^{3}\approx 0{,}73$ et
+        $0{,}9^{4}\approx 0{,}66$. En quelle année la rivière contiendra-t-elle au plus
+        $45$~mg de nitrates par litre ?
+\end{enumerate}
+
+\exo[Lettre d'information]
+En janvier, une lettre d'information compte $2\,500$ abonnés ; ce nombre augmente
+ensuite de $6\,\%$ par mois. On note $u_{n}$ le nombre d'abonnés $n$ mois après
+janvier.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $u_{1}$.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Donner le sens de variation de la suite $(u_{n})$.
+  \item Montrer que $u_{n}\ge 5\,000$ revient à $1{,}06^{n}\ge 2$.
+  \item On donne $1{,}06^{11}\approx 1{,}90$ ; $1{,}06^{12}\approx 2{,}01$ et
+        $1{,}06^{13}\approx 2{,}13$. Au bout de combien de mois le nombre d'abonnés
+        aura-t-il doublé ?
+\end{enumerate}
+
+\exo[La valeur d'un scooter]
+Un scooter acheté $3\,000$~€ perd $20\,\%$ de sa valeur chaque année. On note $v_{n}$ sa
+valeur, en euros, après $n$ années.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $v_{1}$ et $v_{2}$.
+  \item Exprimer $v_{n}$ en fonction de $n$.
+  \item Donner le sens de variation de la suite $(v_{n})$.
+  \item On donne $0{,}8^{3}\approx 0{,}51$ ; $0{,}8^{4}\approx 0{,}41$ et
+        $0{,}8^{5}\approx 0{,}33$. Au bout de combien d'années vaudra-t-il moins de
+        $1\,200$~€ ?
+\end{enumerate}
+
+\partiefiche{Comparer deux évolutions}
+
+\exo[Arithmétique, géométrique ou aucune des deux ?]
+Donner la nature de chaque suite et, s'il y a lieu, sa raison.
+\deux{a) $u_{n}=5n$}{b) $u_{n}=n^{2}-1$}
+\deux{c) $u_{n}=4\times 3^{n}$}{d) $u_{n+1}=u_{n}-2$}
+\deux{e) $u_{n+1}=u_{n}+0{,}2\,u_{n}$}{f) $u_{n+1}=2u_{n}$}
+
+\exo[Deux placements]
+En 2025, Yanis dispose de $15\,000$~€ pour un projet qui en coûte $18\,000$.
+Placement A : $400$~€ d'intérêts chaque année ; on note $a_{n}$ le capital en
+$2025+n$. Placement B : $+3\,\%$ par an ; on note $b_{n}$ le capital en $2025+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $a_{1}$ et $b_{1}$.
+  \item Donner la nature, la raison et le sens de variation de chaque suite.
+  \item Exprimer $a_{n}$ et $b_{n}$ en fonction de $n$.
+  \item Avec le placement A, en quelle année le projet sera-t-il financé ?
+  \item On donne $b_{6}\approx 17\,911$ et $b_{7}\approx 18\,448$. Même question avec
+        le placement B. Quel placement choisir ?
+\end{enumerate}
+
+\exo[Réduire ses déchets]
+Deux entreprises veulent diviser par deux leurs déchets plastiques de 2020.
+L'entreprise A en produit $360$~t en 2020, et $15$~t de moins chaque année ;
+l'entreprise B en produit $500$~t, et $7\,\%$ de moins chaque année. On note $a_{n}$
+et $b_{n}$ leurs productions en $2020+n$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $a_{1}$ et $b_{1}$, puis donner la nature et la raison de chaque suite.
+  \item Exprimer $a_{n}$ et $b_{n}$ en fonction de $n$.
+  \item En quelle année l'entreprise A atteindra-t-elle son objectif ?
+  \item On donne $0{,}93^{9}\approx 0{,}52$ et $0{,}93^{10}\approx 0{,}48$. En quelle
+        année l'entreprise B atteindra-t-elle son objectif ?
+  \item Laquelle y parvient la première ?
+\end{enumerate}
+
+\partiefichesansnum{Exercices type épreuve anticipée}
+
+\exo[Automatismes (QCM)]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item Diminuer de $30\,\%$ revient à multiplier par :
+        \qcm{$0{,}3$}{$1{,}3$}{$0{,}7$}{$-30$}
+  \item La liste $4$ ; $8$ ; $16$ ; $32$ est celle d'une suite :
+        \par a) arithmétique de raison $4$ \quad b) géométrique de raison $2$
+        \quad c) ni l'une ni l'autre
+  \item Pour la suite $(u_{n})$ définie par $u_{0}=5$ et $u_{n+1}=2u_{n}$, $u_{3}$ vaut :
+        \qcm{$10$}{$40$}{$30$}{$20$}
+  \item Pour la suite $(u_{n})$ définie par $u_{n}=60-3n$, $u_{10}$ vaut :
+        \qcm{$57$}{$30$}{$600$}{$90$}
+  \item Une suite géométrique de raison $1{,}02$ et de premier terme $50$ est :
+        \par a) croissante \quad b) décroissante \quad c) constante
+  \item $u_{n}=400\times 0{,}5^{n}$ ; alors $u_{1}$ vaut :
+        \qcm{$200$}{$400{,}5$}{$800$}{$0{,}5$}
+\end{enumerate}
+
+\exo[Location de vélos]
+Une jeune entreprise de location possède $40$ vélos au mois $0$ et en achète $30$
+chaque mois. Elle compte $25$ clients au mois $0$, puis $20\,\%$ de clients de plus
+chaque mois. On note $u_{n}$ le nombre de vélos et $v_{n}$ le nombre de clients au
+mois $n$.
+\begin{enumerate}[label=\arabic*.]
+  \item Exprimer $u_{n}$ en fonction de $n$. Montrer qu'au mois $10$, l'entreprise
+        possède plus de $300$ vélos.
+  \item Au bout de combien de mois aura-t-elle $640$ vélos ?
+  \item Justifier que $v_{n+1}=1{,}2\,v_{n}$. En déduire la nature de $(v_{n})$.
+  \item Exprimer $v_{n}$ en fonction de $n$.
+  \item On donne $1{,}2^{5}\approx 2{,}49$. Montrer que $v_{5}\approx 62$ et
+        interpréter.
+  \item On donne $1{,}2^{9}\approx 5{,}16$ et $1{,}2^{10}\approx 6{,}19$. À partir de
+        quel mois l'entreprise aura-t-elle plus de $150$ clients ?
+\end{enumerate}
+
+\exo[Deux formules de remboursement]
+Une artisane emprunte $8\,000$~€ pour équiper son atelier. Elle remboursera en cinq
+versements annuels, de 2026 à 2030, et sa banque lui propose deux formules.
+\begin{itemize}
+  \item Formule 1 : premier versement de $1\,200$~€, puis chaque versement dépasse le
+        précédent de $300$~€.
+  \item Formule 2 : premier versement de $1\,500$~€, puis chaque versement augmente de
+        $10\,\%$ par rapport au précédent.
+\end{itemize}
+On note $u_{n}$ et $v_{n}$ les versements de l'année $2026+n$ avec les formules 1 et 2 :
+$u_{0}=1\,200$ et $v_{0}=1\,500$.
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer $u_{1}$. Quelle est la nature de la suite $(u_{n})$ ? Préciser sa raison.
+  \item Calculer le dernier versement, $u_{4}$.
+  \item Quel calcul donne $v_{1}=1\,650$ ? Quelle est la nature de la suite $(v_{n})$ ?
+        Préciser sa raison.
+  \item Le tableau donne le total remboursé depuis 2026. Quelle formule est la plus
+        avantageuse pour l'artisane ? Justifier.
+\end{enumerate}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ & $0$ & $1$ & $2$ & $3$ & $4$\\\hline
+Formule 1 & $1\,200$ & $2\,700$ & $4\,500$ & $6\,600$ & $\mathbf{9\,000}$\\\hline
+Formule 2 & $1\,500$ & $3\,150$ & $4\,965$ & $6\,961{,}50$ & $\mathbf{9\,157{,}65}$\\\hline
+\end{tabular}
+\end{center}
+
+\end{multicols}
+\end{document}
