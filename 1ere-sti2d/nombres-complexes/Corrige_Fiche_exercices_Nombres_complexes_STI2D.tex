@@ -1,0 +1,1341 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 8 --- Nombres complexes --- corrigé}{1\textsuperscript{re} STI2D}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\let\partieligne\partie
+\renewcommand{\partie}[1]{\besoinplace{16\baselineskip}\partieligne{#1}}
+\BeforeBeginEnvironment{exo}{\besoinplace{10\baselineskip}}
+\setlength{\parindent}{0pt}
+
+\ShorthandsOff
+\tikzset{
+  vecteurB/.style={-{Stealth[length=2.4mm]},line width=1.1pt,coulCourbeB},
+  unite/.style={-{Stealth[length=2mm]},line width=1.2pt,black},
+  lecture/.style={dashed,black!60,line width=0.6pt},
+  angle/.style={-{Stealth[length=1.6mm]},line width=0.9pt,coulCourbeB},
+}
+\newcommand{\planc}[4]{%
+  \quadrillage{#1}{#2}{#3}{#4}
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0);
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4});
+  \draw[unite] (0,0)-- node[midway,below,font=\footnotesize,inner sep=1.5pt]{$\vec{u}$} (1,0);
+  \draw[unite] (0,0)-- node[midway,left,font=\footnotesize,inner sep=1.5pt]{$\vec{v}$} (0,1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};}
+\newcommand{\cerclebase}{%
+  \draw[-{Stealth[length=2mm]},thick] (-1.3,0)--(1.3,0);
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.3)--(0,1.3);
+  \draw[line width=0.9pt] (0,0) circle (1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$1$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$-1$};
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (0,1) {$1$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (0,-1) {$-1$};}
+\newcommand{\verticale}[1]{\draw[lecture] ({cos(#1)},-1.15)--({cos(#1)},1.15);}
+\newcommand{\horizontale}[1]{\draw[lecture] (-1.15,{sin(#1)})--(1.15,{sin(#1)});}
+\newcommand{\valx}[2]{\pgfmathtruncatemacro{\q}{cos(#1)>0?1:0}%
+  \draw[coulCourbeB,line width=1pt] ({cos(#1)},0.05)--({cos(#1)},-0.05);
+  \ifnum\q=1 \node[below left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};
+  \else \node[below right,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};\fi}
+\newcommand{\valy}[2]{%
+  \draw[coulCourbeB,line width=1pt] (0.05,{sin(#1)})--(-0.05,{sin(#1)});
+  \node[left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,{sin(#1)}) {#2};}
+\newcommand{\ptc}[2]{%
+  \path[coulCourbeB] ({cos(#1)},{sin(#1)}) node[croix]{};
+  \node[font=\scriptsize,inner sep=1pt,align=center] at ({1.3*cos(#1)},{1.3*sin(#1)}) {#2};}
+\newcommand{\equapt}[4]{\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+  \cerclebase\verticale{#1}\horizontale{#1}\valx{#1}{#3}\valy{#1}{#4}\ptc{#1}{#2}\end{tikzpicture}}
+\ShorthandsOn
+
+\begin{document}
+
+\entetefiche{Chapitre 8 --- Nombres complexes}{Première STI2D}
+
+\partie{L'ensemble des nombres complexes}
+
+\begin{exo}[Partie réelle, partie imaginaire]
+\explique{Pour $z=a+ib$, la partie réelle est $a$, la partie imaginaire est $b$ : le
+nombre devant $i$, sans le $i$.}{méthode 1}
+\cas{Résolution}
+\explique{$z_{1}=6+2i$ : $\mathrm{Re}(z_{1})=\res{6}$ et $\mathrm{Im}(z_{1})=\res{2}$.}{}
+\explique{$z_{2}=-4-i$ : $\mathrm{Re}(z_{2})=\res{-4}$ et $\mathrm{Im}(z_{2})=\res{-1}$.}{$-i=-1\times i$}
+\explique{$z_{3}=-7i$ : $\mathrm{Re}(z_{3})=\res{0}$ et $\mathrm{Im}(z_{3})=\res{-7}$ ; $z_{3}$ est un \res{imaginaire pur}.}{$z_{3}=0-7i$}
+\explique{$z_{4}=3$ : $\mathrm{Re}(z_{4})=\res{3}$ et $\mathrm{Im}(z_{4})=\res{0}$ ; $z_{4}$ est un \res{nombre réel}.}{$z_{4}=3+0i$}
+\explique{$z_{5}=-1+5i$ : $\mathrm{Re}(z_{5})=\res{-1}$ et $\mathrm{Im}(z_{5})=\res{5}$.}{on écrit d'abord la partie réelle}
+\explique{$z_{6}=i$ : $\mathrm{Re}(z_{6})=\res{0}$ et $\mathrm{Im}(z_{6})=\res{1}$ ; $z_{6}$ est un \res{imaginaire pur}.}{$i=0+1\times i$}
+\rem{Erreur fréquente : écrire $\mathrm{Im}(z_{2})=-i$. La partie imaginaire est un nombre réel.}
+\end{exo}
+
+\begin{exo}[En phrase complète]
+\cas{Résolution}
+\explique{La partie réelle de $w_{1}$ est \res{$-3$} et sa partie imaginaire est \res{$8$}.}{$w_{1}=-3+8i$}
+\explique{La partie réelle de $w_{2}$ est \res{$0$} et sa partie imaginaire est \res{$9$} : $w_{2}$ est un imaginaire pur.}{$w_{2}=0+9i$}
+\explique{La partie réelle de $w_{3}$ est \res{$-11$} et sa partie imaginaire est \res{$0$} : $w_{3}$ est un nombre réel.}{$w_{3}=-11+0i$}
+\end{exo}
+
+\begin{exo}[Retrouver le nombre]
+\explique{On écrit $z=a+ib$, avec $a=\mathrm{Re}(z)$ et $b=\mathrm{Im}(z)$.}{définition 1}
+\cas{a)}
+\explique{$z=\res{4-3i}$}{$4+(-3)i$ s'écrit $4-3i$}
+\cas{b)}
+\explique{$z=\res{2i}$}{$0+2i$ : un imaginaire pur}
+\cas{c)}
+\explique{$z=\res{-1}$}{$-1+0i$ : un nombre réel}
+\cas{d)}
+\explique{$z=\res{\dfrac{1}{2}-\dfrac{1}{3}i}$}{les parties réelle et imaginaire peuvent être des fractions}
+\end{exo}
+
+\begin{exo}[Nombre réel ou imaginaire pur]
+\cas{a)}
+\explique{$z$ est un imaginaire pur quand sa partie réelle est nulle : $x-2=0$.}{$\mathrm{Re}(z)=x-2$}
+\begin{calculs}
+x-2 &= 0 &&\justif{on recopie l'équation}\\
+x &= \res{2} &&\justif{on ajoute $2$}
+\end{calculs}
+\explique{Contrôle : pour $x=2$, $z=0+5i=5i$.}{c'est bien un imaginaire pur}
+\cas{b)}
+\explique{$z'$ est un nombre réel quand sa partie imaginaire est nulle : $2x+6=0$.}{$\mathrm{Im}(z')=2x+6$}
+\begin{calculs}
+2x+6 &= 0 &&\justif{on recopie l'équation}\\
+2x &= -6 &&\justif{on retire $6$}\\
+x &= \res{-3} &&\justif{on divise par $2$}
+\end{calculs}
+\explique{Contrôle : pour $x=-3$, $z'=4+0i=4$.}{c'est bien un nombre réel}
+\end{exo}
+
+\partie{Somme et produit}
+
+\begin{exo}[Sommes et produits]
+\explique{On calcule avec $i$ comme avec une lettre, et on remplace $i^{2}$ par $-1$.}{méthode 2}
+\cas{A}
+\begin{calculs}
+A &= z_{1}+z_{2} &&\justif{on recopie l'expression}\\
+A &= 4+i+2-3i &&\justif{on remplace $z_{1}$ et $z_{2}$}\\
+A &= \res{6-2i} &&\justif{$4+2=6$ et $i-3i=-2i$}
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= z_{1}-z_{2} &&\justif{on recopie l'expression}\\
+B &= 4+i-(2-3i) &&\justif{parenthèses autour de $z_{2}$}\\
+B &= 4+i-2+3i &&\justif{le signe $-$ change les deux signes}\\
+B &= \res{2+4i} &&
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= z_{1}z_{2} &&\justif{on recopie l'expression}\\
+C &= (4+i)(2-3i) &&\justif{on remplace $z_{1}$ et $z_{2}$}\\
+C &= 8-12i+2i-3i^{2} &&\justif{double distributivité}\\
+C &= 8-10i+3 &&\justif{$i^{2}=-1$, donc $-3i^{2}=3$}\\
+C &= \res{11-10i} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= z_{1}^{2} &&\justif{on recopie l'expression}\\
+D &= (4+i)^{2} &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+D &= 16+8i+i^{2} &&\\
+D &= 16+8i-1 &&\justif{$i^{2}=-1$}\\
+D &= \res{15+8i} &&
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= 2z_{1}-3z_{2} &&\justif{on recopie l'expression}\\
+E &= 2(4+i)-3(2-3i) &&\justif{on remplace, entre parenthèses}\\
+E &= 8+2i-6+9i &&\justif{$-3\times(-3i)=+9i$}\\
+E &= \res{2+11i} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Forme algébrique]
+\cas{A}
+\begin{calculs}
+A &= (2-5i)+(-6+3i) &&\justif{on recopie l'expression}\\
+A &= 2-5i-6+3i &&\justif{parenthèses précédées de $+$ : on les enlève}\\
+A &= \res{-4-2i} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= 7i-4-(1-2i) &&\justif{on recopie l'expression}\\
+B &= 7i-4-1+2i &&\justif{le signe $-$ change les deux signes}\\
+B &= \res{-5+9i} &&\justif{partie réelle en premier}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= (-2+i)(3+4i) &&\justif{on recopie l'expression}\\
+C &= -6-8i+3i+4i^{2} &&\justif{double distributivité}\\
+C &= -6-5i-4 &&\justif{$4i^{2}=-4$}\\
+C &= \res{-10-5i} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= (5-i)(5+i) &&\justif{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+D &= 25-i^{2} &&\\
+D &= \res{26} &&\justif{$-i^{2}=1$ : le résultat est un nombre réel}
+\end{calculs}
+\cas{E}
+\begin{calculs}
+E &= (1+3i)^{2} &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+E &= 1+6i+9i^{2} &&\justif{$(3i)^{2}=9i^{2}$}\\
+E &= 1+6i-9 &&\justif{$i^{2}=-1$}\\
+E &= \res{-8+6i} &&
+\end{calculs}
+\cas{F}
+\begin{calculs}
+F &= (2-i)^{2} &&\justif{$(a-b)^{2}=a^{2}-2ab+b^{2}$}\\
+F &= 4-4i+i^{2} &&\\
+F &= \res{3-4i} &&\justif{$4-1=3$}
+\end{calculs}
+\rem{Erreur fréquente : oublier le double produit, $(2-i)^{2}\neq 4+i^{2}$.}
+\end{exo}
+
+\begin{exo}[Puissances de $i$]
+\cas{a)}
+\begin{calculs}
+i^{3} &= i^{2}\times i &&\justif{indication de l'énoncé}\\
+i^{3} &= \res{-i} &&\justif{$i^{2}=-1$}\\[4pt]
+i^{4} &= i^{2}\times i^{2} &&\\
+i^{4} &= \res{1} &&\justif{$(-1)\times(-1)=1$}\\[4pt]
+i^{5} &= i^{4}\times i &&\\
+i^{5} &= \res{i} &&\justif{$i^{4}=1$}\\[4pt]
+i^{6} &= i^{4}\times i^{2} &&\\
+i^{6} &= \res{-1} &&
+\end{calculs}
+\rem{Les puissances de $i$ reviennent tous les quatre : $i$, $-1$, $-i$, $1$, puis de nouveau $i$\ldots}
+\cas{b)}
+\begin{calculs}
+(2i)^{3} &= 2^{3}\times i^{3} &&\justif{la puissance porte sur chaque facteur}\\
+(2i)^{3} &= 8\times(-i) &&\justif{$i^{3}=-i$, question a)}\\
+(2i)^{3} &= \res{-8i} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+(1+i)^{2} &= 1+2i+i^{2} &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+(1+i)^{2} &= \res{2i} &&\justif{$1+i^{2}=1-1=0$}\\[4pt]
+(1+i)^{4} &= \left((1+i)^{2}\right)^{2} &&\justif{$4=2\times 2$}\\
+(1+i)^{4} &= (2i)^{2} &&\\
+(1+i)^{4} &= 4i^{2} &&\\
+(1+i)^{4} &= \res{-4} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Impédances en série]
+\cas{a)}
+\explique{La résistance du premier dipôle est $R=\res{30~\Omega}$ et sa réactance $X=\res{40~\Omega}$.}{$Z_{1}=30+40i$ : partie réelle, partie imaginaire}
+\cas{b)}
+\begin{calculs}
+Z_{1}+Z_{2} &= 30+40i+20-10i &&\justif{on remplace}\\
+Z_{1}+Z_{2} &= \res{50+30i} &&\justif{$30+20=50$ et $40i-10i=30i$}
+\end{calculs}
+\explique{Les deux dipôles en série ont pour impédance $50+30i$ (en ohms).}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+Z_{1}+Z_{3} &= 30+40i+10+Xi &&\justif{on remplace}\\
+Z_{1}+Z_{3} &= 40+(40+X)i &&\justif{on regroupe les termes en $i$}
+\end{calculs}
+\explique{C'est un nombre réel quand la partie imaginaire est nulle : $40+X=0$, soit $X=\res{-40}$.}{exercice 4}
+\rem{Une réactance négative correspond à un condensateur : il « compense » la bobine.}
+\end{exo}
+
+\begin{exo}[Vérifier une égalité]
+\cas{a)}
+\begin{calculs}
+z^{2} &= (1+2i)^{2} &&\justif{on remplace $z$}\\
+z^{2} &= 1+4i+4i^{2} &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+z^{2} &= \res{-3+4i} &&\justif{$1-4=-3$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+z^{2}-2z+5 &= -3+4i-2(1+2i)+5 &&\justif{on remplace $z^{2}$ (question a) et $z$}\\
+z^{2}-2z+5 &= -3+4i-2-4i+5 &&\\
+z^{2}-2z+5 &= \res{0} &&\justif{$-3-2+5=0$ et $4i-4i=0$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+w^{2} &= (1-2i)^{2} &&\justif{$(a-b)^{2}=a^{2}-2ab+b^{2}$}\\
+w^{2} &= 1-4i-4 &&\justif{$(2i)^{2}=-4$}\\
+w^{2} &= -3-4i &&\\
+w^{2}-2w+5 &= -3-4i-2+4i+5 &&\justif{$-2(1-2i)=-2+4i$}\\
+w^{2}-2w+5 &= \res{0} &&
+\end{calculs}
+\explique{L'égalité est donc vraie pour $z=1+2i$ et pour $w=1-2i$.}{on remarque que $w=\overline{z}$ (partie IV)}
+\end{exo}
+
+\partie{Le plan complexe}
+
+\begin{exo}[Lire et placer]
+\cas{a)}
+\explique{$z_{A}=\res{2+3i}$ ; $z_{B}=\res{-3+i}$ ; $z_{E}=\res{-2-3i}$}{abscisse, puis ordonnée devant $i$}
+\explique{$z_{C}=\res{3}$ ; $z_{D}=\res{-2i}$}{sur un axe : nombre réel, imaginaire pur}
+\explique{$z_{\vec{w}}=\res{2-3i}$}{$\vec{w}$ : $2$ vers la droite, $3$ vers le bas}
+\cas{b)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{$F$ : abscisse $-3$, ordonnée $3$ ; $K$ : abscisse $2$, ordonnée $-3$.}{partie réelle en abscisse}
+\explique{$G$ : sur l'axe des ordonnées, en $4$.}{partie réelle nulle}
+\explique{$H$ : sur l'axe des abscisses, en $-1$.}{partie imaginaire nulle}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,2,3} \grady{-3,-2,-1,2,3}
+  \pt{-3,3}{above left}{F} \pt{0,4}{right}{G} \pt{-1,0}{above left}{H} \pt{2,-3}{below right}{K}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Sur les axes]
+\cas{Figure}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{Chaque point se place avec sa partie réelle en abscisse et sa partie imaginaire en ordonnée.}{définition 2}
+\explique{Le point $C$ a pour affixe un \res{nombre réel} : il est sur l'axe des abscisses.}{$z_{C}=4$}
+\explique{Les points $D$ et $F$ ont pour affixe un \res{imaginaire pur} : ils sont sur l'axe des ordonnées.}{$z_{D}=-2i$, $z_{F}=3i$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-4}{-4}{5}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{1,2}{above right}{A} \pt{-3,1}{above left}{B} \pt{4,0}{above}{C}
+  \pt{0,-2}{right}{D} \pt{-1,-3}{below left}{E} \pt{0,3}{right}{F}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Affixe d'un vecteur]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{Depuis $A(-1+i)$, on avance de $3$ vers la droite et de $2$ vers le bas.}{$z_{\vec{w}}=3-2i$}
+\explique{L'extrémité a pour affixe $-1+i+3-2i$, soit $\res{2-i}$.}{on ajoute l'affixe du vecteur à celle de l'origine}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-3}{-3}{4}{3}
+  \gradx{-2,-1,2,3} \grady{-2,-1,2}
+  \draw[vecteurB] (-1,1)-- node[midway,above right,font=\footnotesize]{$\vec{w}$} (2,-1);
+  \pt{-1,1}{above left}{A}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Droites du plan complexe]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\cas{a)}
+\explique{Par exemple $2$, $2+i$ et $2-3i$ : tous ces points ont pour abscisse $2$.}{partie réelle $2$}
+\explique{Ils sont sur la \res{droite parallèle à l'axe des ordonnées} qui passe par le point d'affixe $2$.}{en rouge}
+\cas{b)}
+\explique{Les points d'ordonnée $-1$ sont sur la \res{droite parallèle à l'axe des abscisses} qui passe par le point d'affixe $-i$.}{en vert}
+\cas{c)}
+\begin{calculs}
+(2-i)^{2} &= 4-4i+i^{2} &&\justif{$(a-b)^{2}$}\\
+(2-i)^{2} &= \res{3-4i} &&\justif{$4-1=3$}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-3}{-5}{4}{3}
+  \gradx{-2,-1,3} \grady{-4,-3,-2,2}
+  \draw[red,line width=1pt] (2,-5)--(2,3);
+  \draw[coulCourbeC,line width=1pt] (-3,-1)--(4,-1);
+  \pt{3,-4}{right}{K}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Conjugué d'un nombre complexe}
+
+\begin{exo}[Conjugués]
+\cas{a)}
+\explique{$\overline{z_{1}}=\res{7-2i}$ ; $\overline{z_{2}}=\res{-4-3i}$ ; $\overline{z_{3}}=\res{1+i}$}{on change le signe de la partie imaginaire ; $z_{2}=-4+3i$}
+\explique{$\overline{z_{4}}=\res{-9}$ ; $\overline{z_{5}}=\res{5i}$ ; $\overline{z_{6}}=\res{-i}$}{un nombre réel est son propre conjugué}
+\cas{b)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{$M(-4+3i)$ et $M'(-4-3i)$ sont symétriques par rapport à l'axe des abscisses.}{même abscisse, ordonnées opposées}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-5}{-4}{2}{4}
+  \gradx{-4,-3,-2,-1} \grady{-3,-2,-1,2,3}
+  \draw[lecture] (-4,3)--(-4,-3);
+  \pt{-4,3}{left}{M} \pt{-4,-3}{left}{M'}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Produit $z\overline{z}$]
+\explique{Pour $z=a+ib$, on a $z\overline{z}=a^{2}+b^{2}$.}{propriété 2}
+\begin{calculs}
+z_{1}\overline{z_{1}} &= 4^{2}+(-1)^{2} &&\justif{$a=4$ et $b=-1$}\\
+z_{1}\overline{z_{1}} &= \res{17} &&\\[4pt]
+z_{2}\overline{z_{2}} &= (-3)^{2}+5^{2} &&\justif{$a=-3$ et $b=5$}\\
+z_{2}\overline{z_{2}} &= \res{34} &&\\[4pt]
+z_{3}\overline{z_{3}} &= 0^{2}+2^{2} &&\justif{$a=0$ et $b=2$}\\
+z_{3}\overline{z_{3}} &= \res{4} &&\\[4pt]
+z_{4}\overline{z_{4}} &= 6^{2}+0^{2} &&\justif{$a=6$ et $b=0$}\\
+z_{4}\overline{z_{4}} &= \res{36} &&
+\end{calculs}
+\explique{Le conjugué de $z_{1}$ est $4+i$ ; celui de $z_{2}$ est $-3-5i$ ; celui de $z_{3}$ est $-2i$ ; celui de $z_{4}$ est $6$.}{les phrases demandées}
+\rem{Contrôle sur $z_{1}$ : $(4-i)(4+i)=16-i^{2}=17$. Le produit $z\overline{z}$ est toujours un nombre réel positif.}
+\end{exo}
+
+\begin{exo}[Deux façons]
+\cas{a)}
+\begin{calculs}
+z_{1}+z_{2} &= 2+i+1-3i &&\justif{on remplace}\\
+z_{1}+z_{2} &= 3-2i &&\\
+\overline{z_{1}+z_{2}} &= \res{3+2i} &&\justif{on change le signe de la partie imaginaire}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\overline{z_{1}}+\overline{z_{2}} &= (2-i)+(1+3i) &&\justif{conjugués de $z_{1}$ et $z_{2}$}\\
+\overline{z_{1}}+\overline{z_{2}} &= \res{3+2i} &&
+\end{calculs}
+\explique{On trouve le même résultat : le conjugué d'une somme est la somme des conjugués.}{propriété 2}
+\cas{c)}
+\explique{Première façon : on calcule le produit, puis son conjugué.}{}
+\begin{calculs}
+z_{1}z_{2} &= (2+i)(1-3i) &&\justif{double distributivité}\\
+z_{1}z_{2} &= 2-6i+i-3i^{2} &&\\
+z_{1}z_{2} &= 5-5i &&\justif{$-3i^{2}=3$}\\
+\overline{z_{1}z_{2}} &= \res{5+5i} &&
+\end{calculs}
+\explique{Seconde façon : on multiplie les conjugués.}{propriété 2}
+\begin{calculs}
+\overline{z_{1}}\times\overline{z_{2}} &= (2-i)(1+3i) &&\justif{double distributivité}\\
+\overline{z_{1}}\times\overline{z_{2}} &= 2+6i-i-3i^{2} &&\\
+\overline{z_{1}}\times\overline{z_{2}} &= \res{5+5i} &&\justif{même résultat}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Somme et différence avec le conjugué]
+\cas{a)}
+\begin{calculs}
+z_{1}+\overline{z_{1}} &= (4-3i)+(4+3i) &&\justif{$\overline{z_{1}}=4+3i$}\\
+z_{1}+\overline{z_{1}} &= \res{8} &&\\[4pt]
+z_{1}-\overline{z_{1}} &= (4-3i)-(4+3i) &&\\
+z_{1}-\overline{z_{1}} &= \res{-6i} &&\justif{$4-4=0$ et $-3i-3i=-6i$}\\[4pt]
+z_{2}+\overline{z_{2}} &= (-1+2i)+(-1-2i) &&\justif{$\overline{z_{2}}=-1-2i$}\\
+z_{2}+\overline{z_{2}} &= \res{-2} &&\\[4pt]
+z_{2}-\overline{z_{2}} &= (-1+2i)-(-1-2i) &&\\
+z_{2}-\overline{z_{2}} &= \res{4i} &&
+\end{calculs}
+\cas{b)}
+\explique{$z+\overline{z}$ est un \res{nombre réel} ($8$ et $-2$) ; $z-\overline{z}$ est un \res{imaginaire pur} ($-6i$ et $4i$).}{les termes en $i$ s'annulent dans la somme, les parties réelles dans la différence}
+\cas{c)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{Les points d'affixes $4-3i$ et $4+3i$ sont symétriques par rapport à l'axe des abscisses.}{définition 3}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-1}{-4}{5}{4}
+  \gradx{2,3,4} \grady{-3,-2,-1,2,3}
+  \draw[lecture] (4,-3)--(4,3);
+  \pt{4,-3}{right}{z_{1}} \pt{4,3}{right}{\overline{z_{1}}}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Quotient de deux nombres complexes}
+
+\begin{exo}[Quotients]
+\explique{On multiplie le numérateur et le dénominateur par le conjugué du dénominateur ; en bas, $(a+ib)(a-ib)=a^{2}+b^{2}$.}{méthode 5}
+\cas{$z_{1}$}
+\begin{calculs}
+z_{1} &= \dfrac{5}{1-2i} &&\justif{conjugué du dénominateur : $1+2i$}\\
+z_{1} &= \dfrac{5(1+2i)}{(1-2i)(1+2i)} &&\\
+z_{1} &= \dfrac{5+10i}{1^{2}+2^{2}} &&\\
+z_{1} &= \dfrac{5+10i}{5} &&\\
+z_{1} &= \res{1+2i} &&\justif{on divise chaque terme par $5$}
+\end{calculs}
+\cas{$z_{2}$}
+\begin{calculs}
+z_{2} &= \dfrac{2+6i}{1+i} &&\justif{conjugué du dénominateur : $1-i$}\\
+z_{2} &= \dfrac{(2+6i)(1-i)}{(1+i)(1-i)} &&\\
+z_{2} &= \dfrac{2-2i+6i-6i^{2}}{1^{2}+1^{2}} &&\justif{double distributivité en haut}\\
+z_{2} &= \dfrac{8+4i}{2} &&\justif{$2-6i^{2}=2+6=8$}\\
+z_{2} &= \res{4+2i} &&
+\end{calculs}
+\cas{$z_{3}$}
+\begin{calculs}
+z_{3} &= \dfrac{1+5i}{i} &&\justif{conjugué de $i$ : $-i$}\\
+z_{3} &= \dfrac{(1+5i)(-i)}{i\times(-i)} &&\\
+z_{3} &= \dfrac{-i-5i^{2}}{-i^{2}} &&\\
+z_{3} &= \dfrac{-i+5}{1} &&\justif{$i^{2}=-1$}\\
+z_{3} &= \res{5-i} &&
+\end{calculs}
+\cas{$z_{4}$}
+\begin{calculs}
+z_{4} &= \dfrac{1}{4+i} &&\justif{conjugué du dénominateur : $4-i$}\\
+z_{4} &= \dfrac{4-i}{(4+i)(4-i)} &&\\
+z_{4} &= \dfrac{4-i}{4^{2}+1^{2}} &&\\
+z_{4} &= \res{\dfrac{4}{17}-\dfrac{1}{17}i} &&\justif{on sépare les deux termes}
+\end{calculs}
+\rem{Contrôle de $z_{1}$ : $(1+2i)(1-2i)=1+4=5$, on retrouve bien le numérateur $5$.}
+\end{exo}
+
+\begin{exo}[Quotients, suite des calculs]
+\cas{$w_{1}$}
+\begin{calculs}
+w_{1} &= \dfrac{4}{3i} &&\justif{conjugué de $3i$ : $-3i$}\\
+w_{1} &= \dfrac{4\times(-3i)}{3i\times(-3i)} &&\\
+w_{1} &= \dfrac{-12i}{-9i^{2}} &&\\
+w_{1} &= \dfrac{-12i}{9} &&\justif{$-9i^{2}=9$}\\
+w_{1} &= \res{-\dfrac{4}{3}i} &&\justif{on simplifie par $3$}
+\end{calculs}
+\cas{$w_{2}$}
+\begin{calculs}
+w_{2} &= \dfrac{5+2i}{3i} &&\justif{conjugué de $3i$ : $-3i$}\\
+w_{2} &= \dfrac{(5+2i)(-3i)}{9} &&\justif{$3i\times(-3i)=9$}\\
+w_{2} &= \dfrac{-15i-6i^{2}}{9} &&\\
+w_{2} &= \dfrac{6-15i}{9} &&\justif{$-6i^{2}=6$}\\
+w_{2} &= \res{\dfrac{2}{3}-\dfrac{5}{3}i} &&\justif{$\tfrac{6}{9}=\tfrac{2}{3}$ et $\tfrac{15}{9}=\tfrac{5}{3}$}
+\end{calculs}
+\cas{$w_{3}$}
+\begin{calculs}
+w_{3} &= \dfrac{1+i}{1-i} &&\justif{conjugué du dénominateur : $1+i$}\\
+w_{3} &= \dfrac{(1+i)(1+i)}{(1-i)(1+i)} &&\\
+w_{3} &= \dfrac{1+2i+i^{2}}{2} &&\justif{$(1+i)^{2}$ en haut, $1^{2}+1^{2}$ en bas}\\
+w_{3} &= \dfrac{2i}{2} &&\\
+w_{3} &= \res{i} &&
+\end{calculs}
+\cas{$w_{4}$}
+\begin{calculs}
+w_{4} &= \dfrac{3+4i}{1+2i} &&\justif{conjugué du dénominateur : $1-2i$}\\
+w_{4} &= \dfrac{(3+4i)(1-2i)}{1^{2}+2^{2}} &&\\
+w_{4} &= \dfrac{3-6i+4i-8i^{2}}{5} &&\\
+w_{4} &= \dfrac{11-2i}{5} &&\justif{$3-8i^{2}=3+8=11$}\\
+w_{4} &= \res{\dfrac{11}{5}-\dfrac{2}{5}i} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Conjugué d'un quotient]
+\cas{a)}
+\begin{calculs}
+z &= \dfrac{3-i}{2+i} &&\justif{conjugué du dénominateur : $2-i$}\\
+z &= \dfrac{(3-i)(2-i)}{2^{2}+1^{2}} &&\\
+z &= \dfrac{6-3i-2i+i^{2}}{5} &&\\
+z &= \dfrac{5-5i}{5} &&\justif{$6+i^{2}=5$}\\
+z &= \res{1-i} &&
+\end{calculs}
+\explique{Donc $\overline{z}=\res{1+i}$.}{on change le signe de la partie imaginaire}
+\cas{b)}
+\begin{calculs}
+\dfrac{3+i}{2-i} &= \dfrac{(3+i)(2+i)}{2^{2}+1^{2}} &&\justif{conjugué du dénominateur : $2+i$}\\
+\dfrac{3+i}{2-i} &= \dfrac{6+3i+2i+i^{2}}{5} &&\\
+\dfrac{3+i}{2-i} &= \dfrac{5+5i}{5} &&\\
+\dfrac{3+i}{2-i} &= \res{1+i} &&
+\end{calculs}
+\explique{On retrouve $\overline{z}$ : le conjugué d'un quotient est le \res{quotient des conjugués}.}{propriété 3 : $\tfrac{3+i}{2-i}=\tfrac{\overline{3-i}}{\overline{2+i}}$}
+\end{exo}
+
+\begin{exo}[Impédances en parallèle]
+\cas{a)}
+\begin{calculs}
+Z_{1}Z_{2} &= 10\times 10i &&\justif{on remplace}\\
+Z_{1}Z_{2} &= \res{100i} &&\\[4pt]
+Z_{1}+Z_{2} &= \res{10+10i} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+Z &= \dfrac{100i}{10+10i} &&\justif{conjugué du dénominateur : $10-10i$}\\
+Z &= \dfrac{100i(10-10i)}{10^{2}+10^{2}} &&\\
+Z &= \dfrac{1\,000i-1\,000i^{2}}{200} &&\\
+Z &= \dfrac{1\,000+1\,000i}{200} &&\justif{$-1\,000i^{2}=1\,000$}\\
+Z &= \res{5+5i} &&\justif{$1\,000\div 200=5$}
+\end{calculs}
+\cas{c)}
+\explique{$\mathrm{Re}(Z)=\res{5}$ et $\mathrm{Im}(Z)=\res{5}$ : le montage a une résistance de $5~\Omega$ et une réactance de $5~\Omega$.}{partie I}
+\end{exo}
+
+\partie{Module d'un nombre complexe}
+
+\begin{exo}[Modules]
+\cas{a)}
+\explique{Pour $z=a+ib$, on a $|z|=\sqrt{a^{2}+b^{2}}$.}{définition 4}
+\begin{calculs}
+|z_{1}| &= \sqrt{6^{2}+8^{2}} &&\justif{$36+64=100$}\\
+|z_{1}| &= \res{10} &&\\[4pt]
+|z_{2}| &= \sqrt{0^{2}+(-3)^{2}} &&\justif{$a=0$ et $b=-3$}\\
+|z_{2}| &= \res{3} &&\\[4pt]
+|z_{3}| &= \sqrt{5^{2}+(-12)^{2}} &&\justif{$25+144=169$}\\
+|z_{3}| &= \res{13} &&\\[4pt]
+|z_{4}| &= \sqrt{(-4)^{2}+0^{2}} &&\justif{$a=-4$ et $b=0$}\\
+|z_{4}| &= \res{4} &&\\[4pt]
+|z_{5}| &= \sqrt{1^{2}+1^{2}} &&\\
+|z_{5}| &= \res{\sqrt{2}} &&\\[4pt]
+|z_{6}| &= \sqrt{(\sqrt{7})^{2}+3^{2}} &&\justif{$(\sqrt{7})^{2}=7$}\\
+|z_{6}| &= \sqrt{16} &&\\
+|z_{6}| &= \res{4} &&
+\end{calculs}
+\rem{Erreur fréquente : $|-3i|=-3$. Un module est une distance, toujours positive.}
+\cas{b)}
+\begin{calculs}
+|z_{1}z_{3}| &= |z_{1}|\times|z_{3}| &&\justif{module d'un produit}\\
+|z_{1}z_{3}| &= 10\times 13 &&\\
+|z_{1}z_{3}| &= \res{130} &&\\[4pt]
+\left|\dfrac{z_{3}}{z_{1}}\right| &= \dfrac{|z_{3}|}{|z_{1}|} &&\justif{module d'un quotient}\\
+\left|\dfrac{z_{3}}{z_{1}}\right| &= \res{\dfrac{13}{10}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Module d'un produit, d'un quotient]
+\cas{A}
+\begin{calculs}
+A &= |3-4i|\times|1+2i| &&\justif{module d'un produit}\\
+A &= \sqrt{9+16}\times\sqrt{1+4} &&\\
+A &= \res{5\sqrt{5}} &&
+\end{calculs}
+\cas{B}
+\begin{calculs}
+B &= \dfrac{|1+i|}{|3-4i|} &&\justif{module d'un quotient}\\
+B &= \res{\dfrac{\sqrt{2}}{5}} &&\justif{$|1+i|=\sqrt{2}$ et $|3-4i|=5$}
+\end{calculs}
+\cas{C}
+\begin{calculs}
+C &= |2i|\times|3+4i| &&\justif{module d'un produit}\\
+C &= 2\times 5 &&\justif{$|2i|=2$}\\
+C &= \res{10} &&
+\end{calculs}
+\cas{D}
+\begin{calculs}
+D &= |1+i|\times|1+i|\times|1+i|\times|1+i| &&\justif{$(1+i)^{4}$ est un produit de quatre facteurs}\\
+D &= \left(\sqrt{2}\right)^{4} &&\\
+D &= \res{4} &&\justif{$(\sqrt{2})^{2}=2$, puis $2\times 2=4$}
+\end{calculs}
+\rem{Contrôle : $(1+i)^{4}=-4$ (exercice 7) et $|-4|=4$.}
+\end{exo}
+
+\begin{exo}[Points d'un cercle]
+\cas{a)}
+\explique{$OA=|3+4i|=\sqrt{9+16}$, donc $OA=\res{5}$.}{$OM=|z_{M}|$}
+\explique{$OB=|-5|=\res{5}$ ; $OD=|5i|=\res{5}$}{points sur les axes, à $5$ de $O$}
+\explique{$OC=|4-3i|=\sqrt{16+9}$, donc $OC=\res{5}$.}{}
+\cas{b)}
+\explique{Les quatre points sont à la distance $5$ de $O$ : ils sont sur le \res{cercle de centre $O$ et de rayon $5$}.}{on conclut par une phrase}
+\cas{c)}
+\explique{$\overline{z_{A}}=3-4i$ et $OA'=\sqrt{9+16}=5$ : \res{oui}, $A'$ est sur le même cercle.}{$A'$ est le symétrique de $A$ par rapport à l'axe des abscisses}
+\end{exo}
+
+\begin{exo}[Intensité dans un dipôle]
+\cas{a)}
+\explique{$\mathrm{Re}(Z)=\res{30}$ et $\mathrm{Im}(Z)=\res{40}$.}{résistance et réactance}
+\cas{b)}
+\begin{calculs}
+|Z| &= \sqrt{30^{2}+40^{2}} &&\justif{définition 4}\\
+|Z| &= \sqrt{900+1\,600} &&\\
+|Z| &= \res{50} &&\justif{$\sqrt{2\,500}=50$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+I &= \dfrac{230}{|Z|} &&\justif{formule de l'énoncé}\\
+I &= \dfrac{230}{50} &&\\
+I &= 4{,}6 &&
+\end{calculs}
+\explique{L'intensité vaut \res{$4{,}6$~A}.}{on conclut par une phrase, avec l'unité}
+\end{exo}
+
+\partie{Affixe d'un vecteur et distance}
+
+\begin{exo}[Nature d'un triangle]
+\cas{a)}
+\begin{calculs}
+z_{\vect{AB}} &= z_{B}-z_{A} &&\justif{arrivée moins départ}\\
+z_{\vect{AB}} &= 4+i-(1+i) &&\\
+z_{\vect{AB}} &= \res{3} &&\\[4pt]
+z_{\vect{AC}} &= 1+5i-(1+i) &&\justif{$z_{C}-z_{A}$}\\
+z_{\vect{AC}} &= \res{4i} &&\\[4pt]
+z_{\vect{BC}} &= 1+5i-(4+i) &&\justif{$z_{C}-z_{B}$}\\
+z_{\vect{BC}} &= \res{-3+4i} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+AB &= |3| &&\justif{module de $z_{\vect{AB}}$}\\
+AB &= \res{3} &&\\[4pt]
+AC &= |4i| &&\\
+AC &= \res{4} &&\\[4pt]
+BC &= \sqrt{(-3)^{2}+4^{2}} &&\justif{$9+16=25$}\\
+BC &= \res{5} &&
+\end{calculs}
+\cas{c)}
+\explique{Les trois longueurs sont différentes : le triangle $ABC$ \res{n'est pas isocèle}.}{$3$, $4$ et $5$}
+\explique{Le plus long côté est $[BC]$ : $BC^{2}=25$ et $AB^{2}+AC^{2}=9+16$, soit $25$.}{théorème de Pythagore}
+\explique{L'égalité est vraie : le triangle $ABC$ est \res{rectangle en $A$}.}{réciproque du théorème de Pythagore}
+\end{exo}
+
+\begin{exo}[Centre d'un cercle]
+\cas{a)}
+\begin{calculs}
+MA &= |z_{A}-z_{M}| &&\justif{propriété 5}\\
+MA &= |4+5i-(1+i)| &&\\
+MA &= |3+4i| &&\\
+MA &= \res{5} &&\justif{$\sqrt{9+16}$}\\[4pt]
+MB &= |-4+i-(1+i)| &&\\
+MB &= |-5| &&\\
+MB &= \res{5} &&\\[4pt]
+MC &= |1-4i-(1+i)| &&\\
+MC &= |-5i| &&\\
+MC &= \res{5} &&
+\end{calculs}
+\cas{b)}
+\explique{$A$, $B$ et $C$ sont à la même distance $5$ de $M$ : ils sont sur le \res{cercle de centre $M$ et de rayon $5$}.}{un cercle : les points à une même distance du centre}
+\end{exo}
+
+\begin{exo}[Trajet d'un drone]
+\cas{a)}
+\begin{calculs}
+z_{\vect{DE}} &= z_{E}-z_{D} &&\justif{arrivée moins départ}\\
+z_{\vect{DE}} &= 5-4i-(-3+2i) &&\\
+z_{\vect{DE}} &= \res{8-6i} &&\\
+DE &= \sqrt{8^{2}+(-6)^{2}} &&\justif{$64+36=100$}\\
+DE &= 10 &&
+\end{calculs}
+\explique{Une unité vaut $100$~m : le drone parcourt \res{$1\,000$~m}.}{$10\times 100$}
+\cas{b)}
+\explique{$z_{F}=\overline{5-4i}=\res{5+4i}$.}{on change le signe de la partie imaginaire}
+\begin{calculs}
+EF &= |z_{F}-z_{E}| &&\justif{propriété 5}\\
+EF &= |5+4i-(5-4i)| &&\\
+EF &= |8i| &&\\
+EF &= 8 &&
+\end{calculs}
+\explique{La distance $EF$ vaut \res{$800$~m}.}{$8\times 100$}
+\cas{c)}
+\begin{calculs}
+FD &= |z_{D}-z_{F}| &&\\
+FD &= |-3+2i-(5+4i)| &&\\
+FD &= |-8-2i| &&\\
+FD &= \sqrt{64+4} &&\\
+FD &= \sqrt{68} &&\justif{$\approx 8{,}246$, soit environ $824{,}6$~m}
+\end{calculs}
+\explique{Longueur totale : $1\,000+800+824{,}6=2\,624{,}6$, soit environ \res{$2\,625$~m}.}{arrondi au mètre}
+\end{exo}
+
+\partie{Milieu et parallélogramme}
+
+\begin{exo}[Parallélogramme]
+\cas{a)}
+\explique{But : on veut démontrer que $\vect{AB}=\vect{DC}$.}{méthode 8}
+\begin{calculs}
+z_{\vect{AB}} &= 4+2i-(1+i) &&\justif{$z_{B}-z_{A}$}\\
+z_{\vect{AB}} &= 3+i &&\\[4pt]
+z_{\vect{DC}} &= 3+5i-4i &&\justif{$z_{C}-z_{D}$}\\
+z_{\vect{DC}} &= 3+i &&
+\end{calculs}
+\explique{Conclusion : $\vect{AB}=\vect{DC}$, donc $ABCD$ est un \res{parallélogramme}.}{même affixe}
+\cas{b)}
+\begin{calculs}
+z_{K} &= \dfrac{z_{A}+z_{C}}{2} &&\justif{$K$ milieu de la diagonale $[AC]$}\\
+z_{K} &= \dfrac{1+i+3+5i}{2} &&\\
+z_{K} &= \dfrac{4+6i}{2} &&\\
+z_{K} &= \res{2+3i} &&
+\end{calculs}
+\rem{Contrôle avec l'autre diagonale : $\dfrac{4+2i+4i}{2}=2+3i$.}
+\end{exo}
+
+\begin{exo}[Milieux]
+\explique{Le milieu de $[AB]$ a pour affixe $\dfrac{z_{A}+z_{B}}{2}$.}{propriété 6}
+\begin{calculs}
+z_{[AB]} &= \dfrac{3+2i+1-6i}{2} &&\justif{milieu de $[AB]$}\\
+z_{[AB]} &= \dfrac{4-4i}{2} &&\\
+z_{[AB]} &= \res{2-2i} &&\\[4pt]
+z_{[CD]} &= \dfrac{-5+i+2+4i}{2} &&\justif{milieu de $[CD]$}\\
+z_{[CD]} &= \res{-\dfrac{3}{2}+\dfrac{5}{2}i} &&\\[4pt]
+z_{[EF]} &= \dfrac{4i-3}{2} &&\justif{milieu de $[EF]$}\\
+z_{[EF]} &= \res{-\dfrac{3}{2}+2i} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Quatrième sommet]
+\cas{a)}
+\explique{$ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$, soit $\res{z_{B}-z_{A}=z_{C}-z_{D}}$.}{propriété 6}
+\cas{b)}
+\begin{calculs}
+z_{B}-z_{A} &= z_{C}-z_{D} &&\justif{on recopie l'égalité}\\
+z_{D} &= z_{C}-z_{B}+z_{A} &&\justif{on isole $z_{D}$}\\
+z_{D} &= 4+4i-(3+i)+(-1+2i) &&\\
+z_{D} &= \res{5i} &&\justif{$4-3-1=0$ et $4i-i+2i=5i$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+z_{K} &= \dfrac{z_{A}+z_{C}}{2} &&\justif{milieu de la diagonale $[AC]$}\\
+z_{K} &= \dfrac{-1+2i+4+4i}{2} &&\\
+z_{K} &= \res{\dfrac{3}{2}+3i} &&
+\end{calculs}
+\cas{d)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{On place $A(-1+2i)$, $B(3+i)$, $C(4+4i)$ et $D(5i)$.}{$D$ sur l'axe des ordonnées}
+\explique{Le centre $K$ est au milieu des diagonales.}{contrôle de la figure}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-2}{-1}{5}{6}
+  \gradx{-1,2,3,4} \grady{2,3,4,5}
+  \draw[coulCourbe,line width=1pt] (-1,2)--(3,1)--(4,4)--(0,5)--cycle;
+  \draw[lecture] (-1,2)--(4,4) (3,1)--(0,5);
+  \pt{-1,2}{left}{A} \pt{3,1}{below right}{B} \pt{4,4}{right}{C} \pt{0,5}{above right}{D}
+  \pt{1.5,3}{above}{K}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Losange]
+\cas{a)}
+\explique{But : on veut démontrer que $\vect{OA}=\vect{BC}$.}{$OACB$ : côtés $[OA]$ et $[BC]$ opposés}
+\begin{calculs}
+z_{\vect{OA}} &= 3+i-0 &&\justif{$z_{O}=0$}\\
+z_{\vect{OA}} &= 3+i &&\\[4pt]
+z_{\vect{BC}} &= 4+4i-(1+3i) &&\justif{$z_{C}-z_{B}$}\\
+z_{\vect{BC}} &= 3+i &&
+\end{calculs}
+\explique{Conclusion : $\vect{OA}=\vect{BC}$, donc $OACB$ est un \res{parallélogramme}.}{même affixe}
+\cas{b)}
+\explique{$OA=|3+i|=\sqrt{9+1}$, donc $OA=\res{\sqrt{10}}$ ; $OB=|1+3i|=\sqrt{1+9}$, donc $OB=\res{\sqrt{10}}$.}{partie VI}
+\explique{Le parallélogramme $OACB$ a deux côtés consécutifs égaux : c'est un \res{losange}.}{$[OA]$ et $[OB]$ partent du même sommet}
+\cas{c)}
+\begin{calculs}
+z_{K} &= \dfrac{z_{O}+z_{C}}{2} &&\justif{milieu de la diagonale $[OC]$}\\
+z_{K} &= \dfrac{4+4i}{2} &&\\
+z_{K} &= \res{2+2i} &&
+\end{calculs}
+\end{exo}
+
+\partie{Argument d'un nombre complexe}
+
+\begin{exo}[Lire module et argument]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{$A$ : module \res{$3$}, argument \res{$0$}.}{dans le sens de $\vec{u}$}
+\explique{$B$ : module \res{$2$}, argument \res{$\pi$}.}{un demi-tour}
+\explique{$C$ : module \res{$3$}, argument \res{$\dfrac{\pi}{2}$}.}{un quart de tour vers le haut}
+\explique{$D$ : module \res{$1$}, argument \res{$-\dfrac{\pi}{2}$}.}{un quart de tour vers le bas}
+\explique{$E$ : module $\sqrt{18}=\res{3\sqrt{2}}$, argument \res{$\dfrac{\pi}{4}$}.}{diagonale, en haut à droite}
+\explique{$F$ : module $\sqrt{8}=\res{2\sqrt{2}}$, argument \res{$-\dfrac{3\pi}{4}$}.}{diagonale, en bas à gauche}
+\explique{$G$ : module \res{$\sqrt{2}$}, argument \res{$-\dfrac{\pi}{4}$}.}{diagonale, en bas à droite}
+\explique{$H$ : module $\sqrt{18}=\res{3\sqrt{2}}$, argument \res{$\dfrac{3\pi}{4}$}.}{diagonale, en haut à gauche}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \draw[coulCourbe,line width=1pt] (0,0)--(3,3) (0,0)--(-2,-2) (0,0)--(1,-1) (0,0)--(-3,3);
+  \pt{3,0}{above right}{A} \pt{-2,0}{above left}{B} \pt{0,3}{right}{C}
+  \pt{0,-1}{right}{D} \pt{3,3}{above right}{E} \pt{-2,-2}{below left}{F}
+  \pt{1,-1}{below right}{G} \pt{-3,3}{above left}{H}
+\end{tikzpicture}
+\end{minipage}
+\explique{Le point $E$ est à \res{$3\sqrt{2}$} de $O$ et l'angle $(\vec{u}\,;\vect{OE})$ mesure \res{$\dfrac{\pi}{4}$}.}{la phrase demandée}
+\rem{Module d'un point d'une diagonale : $|3+3i|=\sqrt{9+9}$, soit $\sqrt{18}$, c'est-à-dire $3\sqrt{2}$ (partie VI).}
+\end{exo}
+
+\begin{exo}[Placer avec module et argument]
+\cas{Figure}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+\explique{Chaque point est sur le cercle de centre $O$ de rayon le module, sur la demi-droite qui fait avec $\vec{u}$ l'angle donné par l'argument.}{compas, puis rapporteur}
+\explique{$\frac{\pi}{3}=60^{\circ}$ ; $-\frac{\pi}{6}=-30^{\circ}$ ; $\frac{3\pi}{4}=135^{\circ}$ ; $-\frac{2\pi}{3}=-120^{\circ}$.}{angle négatif : sens des aiguilles d'une montre}
+\explique{$N$ et $R$ sont sur les axes : $z_{N}=4i$ et $z_{R}=-3$.}{argument $\tfrac{\pi}{2}$, puis $\pi$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-3}{4}{5}
+  \gradx{-3,-2,-1,2,3} \grady{-2,-1,2,3,4}
+  \foreach \r in {1,2,3,4}{\draw[lecture] (0,0) circle (\r);}
+  \pt{1,1.732}{above right}{L} \pt{2.598,-1.5}{below right}{M} \pt{0,4}{right}{N}
+  \pt{-3,0}{above left}{R} \pt{-1.414,1.414}{above left}{S} \pt{-0.5,-0.866}{below left}{T}
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Radar]
+\cas{a)}
+\explique{L'avion $A$ est sur l'axe des ordonnées, à $6$, donc $z_{A}=\res{6i}$.}{module $6$, argument $\tfrac{\pi}{2}$}
+\explique{L'avion $B$ est sur l'axe des abscisses, à $8$, donc $z_{B}=\res{8}$.}{module $8$, argument $0$}
+\cas{b)}
+\begin{calculs}
+AB &= |z_{B}-z_{A}| &&\justif{propriété 5}\\
+AB &= |8-6i| &&\\
+AB &= \sqrt{64+36} &&\\
+AB &= 10 &&
+\end{calculs}
+\explique{Les deux avions sont à \res{$10$~km} l'un de l'autre.}{on conclut par une phrase}
+\end{exo}
+
+\partie{Forme trigonométrique}
+
+\begin{exo}[Vers la forme algébrique]
+\explique{On remplace $\cos$ et $\sin$ par leurs valeurs (cercle complet du chapitre 7), puis on distribue le module.}{méthode 10}
+\cas{$z_{1}$}
+\begin{calculs}
+z_{1} &= 3\left(\cos\dfrac{\pi}{4}+i\sin\dfrac{\pi}{4}\right) &&\justif{on recopie l'expression}\\
+z_{1} &= 3\left(\dfrac{\sqrt{2}}{2}+i\dfrac{\sqrt{2}}{2}\right) &&\\
+z_{1} &= \res{\dfrac{3\sqrt{2}}{2}+\dfrac{3\sqrt{2}}{2}i} &&
+\end{calculs}
+\cas{$z_{2}$}
+\begin{calculs}
+z_{2} &= 4\left(\cos\dfrac{\pi}{2}+i\sin\dfrac{\pi}{2}\right) &&\justif{on recopie l'expression}\\
+z_{2} &= 4(0+i\times 1) &&\\
+z_{2} &= \res{4i} &&
+\end{calculs}
+\cas{$z_{3}$}
+\begin{calculs}
+z_{3} &= 7\left(\cos\pi+i\sin\pi\right) &&\justif{on recopie l'expression}\\
+z_{3} &= 7(-1+i\times 0) &&\\
+z_{3} &= \res{-7} &&
+\end{calculs}
+\cas{$z_{4}$}
+\begin{calculs}
+z_{4} &= 6\left(\cos\left(-\dfrac{\pi}{6}\right)+i\sin\left(-\dfrac{\pi}{6}\right)\right) &&\justif{on recopie l'expression}\\
+z_{4} &= 6\left(\dfrac{\sqrt{3}}{2}-\dfrac{1}{2}i\right) &&\justif{$\sin\left(-\tfrac{\pi}{6}\right)=-\tfrac{1}{2}$}\\
+z_{4} &= \res{3\sqrt{3}-3i} &&
+\end{calculs}
+\cas{$z_{5}$}
+\begin{calculs}
+z_{5} &= 2\left(\cos\dfrac{2\pi}{3}+i\sin\dfrac{2\pi}{3}\right) &&\justif{on recopie l'expression}\\
+z_{5} &= 2\left(-\dfrac{1}{2}+i\dfrac{\sqrt{3}}{2}\right) &&\\
+z_{5} &= \res{-1+i\sqrt{3}} &&
+\end{calculs}
+\cas{$z_{6}$}
+\begin{calculs}
+z_{6} &= \sqrt{2}\left(\cos\dfrac{3\pi}{4}+i\sin\dfrac{3\pi}{4}\right) &&\justif{on recopie l'expression}\\
+z_{6} &= \sqrt{2}\left(-\dfrac{\sqrt{2}}{2}+i\dfrac{\sqrt{2}}{2}\right) &&\\
+z_{6} &= \res{-1+i} &&\justif{$\sqrt{2}\times\tfrac{\sqrt{2}}{2}=\tfrac{2}{2}=1$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Lire, placer, calculer]
+\cas{a)}
+\explique{$z_{1}$ : module \res{$3$} et argument \res{$\dfrac{5\pi}{6}$} ; $z_{2}$ : module \res{$2$} et argument \res{$-\dfrac{\pi}{3}$}.}{on lit $r$ et $\theta$ dans $r(\cos\theta+i\sin\theta)$}
+\cas{b)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\explique{Le point d'affixe $z_{1}$ est sur le cercle de rayon $3$, à l'angle $150^{\circ}$ ; celui d'affixe $z_{2}$ sur le cercle de rayon $2$, à l'angle $-60^{\circ}$.}{compas et rapporteur}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-4}{-3}{3}{3}
+  \gradx{-3,-2,-1,2} \grady{-2,-1,2}
+  \draw[lecture] (0,0) circle (3) (0,0) circle (2);
+  \pt{-2.598,1.5}{above left}{z_{1}} \pt{1,-1.732}{below right}{z_{2}}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}
+\begin{calculs}
+z_{1} &= 3\left(-\dfrac{\sqrt{3}}{2}+\dfrac{1}{2}i\right) &&\justif{valeurs du cercle complet}\\
+z_{1} &= \res{-\dfrac{3\sqrt{3}}{2}+\dfrac{3}{2}i} &&\\[4pt]
+z_{2} &= 2\left(\dfrac{1}{2}-i\dfrac{\sqrt{3}}{2}\right) &&\justif{$\sin\left(-\tfrac{\pi}{3}\right)=-\tfrac{\sqrt{3}}{2}$}\\
+z_{2} &= \res{1-i\sqrt{3}} &&
+\end{calculs}
+\rem{Contrôle sur la figure : $-\frac{3\sqrt{3}}{2}\approx -2{,}6$ et $\frac{3}{2}=1{,}5$.}
+\end{exo}
+
+\begin{exo}[Tensions de Fresnel]
+\cas{a)}
+\begin{calculs}
+U_{1} &= 10\left(\dfrac{\sqrt{3}}{2}+\dfrac{1}{2}i\right) &&\justif{$\cos\tfrac{\pi}{6}=\tfrac{\sqrt{3}}{2}$, $\sin\tfrac{\pi}{6}=\tfrac{1}{2}$}\\
+U_{1} &= \res{5\sqrt{3}+5i} &&\\[4pt]
+U_{2} &= 10\left(\dfrac{\sqrt{3}}{2}-\dfrac{1}{2}i\right) &&\justif{$\sin\left(-\tfrac{\pi}{6}\right)=-\tfrac{1}{2}$}\\
+U_{2} &= \res{5\sqrt{3}-5i} &&
+\end{calculs}
+\cas{b)}
+\explique{$\overline{U_{1}}=5\sqrt{3}-5i$, c'est bien \res{$U_{2}$}.}{on change le signe de la partie imaginaire}
+\cas{c)}
+\begin{calculs}
+U_{1}+U_{2} &= 5\sqrt{3}+5i+5\sqrt{3}-5i &&\justif{on remplace}\\
+U_{1}+U_{2} &= \res{10\sqrt{3}} &&\justif{les termes en $i$ s'annulent}\\
+|U_{1}+U_{2}| &= 10\sqrt{3} &&\justif{nombre réel positif}
+\end{calculs}
+\explique{L'amplitude de la somme vaut environ \res{$17{,}3$~V}.}{$10\sqrt{3}\approx 17{,}32$}
+\end{exo}
+
+\partie{De la forme algébrique à la forme trigonométrique}
+
+\begin{exo}[Sur les axes]
+\explique{Chaque point est sur un axe : on lit son module (distance à $O$) et son argument sur la figure.}{méthode 9}
+\explique{$z_{1}=\res{6(\cos 0+i\sin 0)}$}{à $6$ sur l'axe des abscisses, côté positif}
+\explique{$z_{2}=\res{4\left(\cos\dfrac{\pi}{2}+i\sin\dfrac{\pi}{2}\right)}$}{à $4$ vers le haut}
+\explique{$z_{3}=\res{2\left(\cos\pi+i\sin\pi\right)}$}{à $2$ vers la gauche : un demi-tour}
+\explique{$z_{4}=\res{3\left(\cos\left(-\dfrac{\pi}{2}\right)+i\sin\left(-\dfrac{\pi}{2}\right)\right)}$}{à $3$ vers le bas}
+\rem{Erreur fréquente : écrire $-2(\cos 0+i\sin 0)$. Le module est toujours positif : c'est l'argument $\pi$ qui donne le signe $-$.}
+\end{exo}
+
+\begin{exo}[Vers la forme trigonométrique]
+\explique{On calcule $r=\sqrt{a^{2}+b^{2}}$, puis $\cos\theta=\dfrac{a}{r}$ et $\sin\theta=\dfrac{b}{r}$, et on lit $\theta$ sur le cercle complet.}{méthode 11}
+\cas{$z_{1}$}
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{(\sqrt{3})^{2}+1^{2}} &&\justif{$a=\sqrt{3}$ et $b=1$}\\
+r &= 2 &&\justif{$\sqrt{3+1}$}
+\end{calculs}
+\explique{$\cos\theta=\dfrac{\sqrt{3}}{2}$ et $\sin\theta=\dfrac{1}{2}$, donc $\theta=\dfrac{\pi}{6}$.}{lecture sur le cercle}
+\explique{$z_{1}=\res{2\left(\cos\dfrac{\pi}{6}+i\sin\dfrac{\pi}{6}\right)}$}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{30}{$\frac{\pi}{6}$}{$\frac{\sqrt{3}}{2}$}{$\frac{1}{2}$}
+\end{minipage}
+\cas{$z_{2}$}
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{1^{2}+(-\sqrt{3})^{2}} &&\justif{$a=1$ et $b=-\sqrt{3}$}\\
+r &= 2 &&
+\end{calculs}
+\explique{$\cos\theta=\dfrac{1}{2}$ et $\sin\theta=-\dfrac{\sqrt{3}}{2}$, donc $\theta=-\dfrac{\pi}{3}$.}{lecture sur le cercle}
+\explique{$z_{2}=\res{2\left(\cos\left(-\dfrac{\pi}{3}\right)+i\sin\left(-\dfrac{\pi}{3}\right)\right)}$}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{-60}{$-\frac{\pi}{3}$}{$\frac{1}{2}$}{$-\frac{\sqrt{3}}{2}$}
+\end{minipage}
+\cas{$z_{3}$}
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{(-\sqrt{2})^{2}+(-\sqrt{2})^{2}} &&\justif{$a=b=-\sqrt{2}$}\\
+r &= 2 &&\justif{$\sqrt{2+2}$}
+\end{calculs}
+\explique{$\cos\theta=-\dfrac{\sqrt{2}}{2}$ et $\sin\theta=-\dfrac{\sqrt{2}}{2}$, donc $\theta=-\dfrac{3\pi}{4}$.}{lecture sur le cercle}
+\explique{$z_{3}=\res{2\left(\cos\left(-\dfrac{3\pi}{4}\right)+i\sin\left(-\dfrac{3\pi}{4}\right)\right)}$}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{-135}{$-\frac{3\pi}{4}$}{$-\frac{\sqrt{2}}{2}$}{$-\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\cas{$z_{4}$}
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{(-3\sqrt{3})^{2}+3^{2}} &&\justif{$(3\sqrt{3})^{2}=9\times 3=27$}\\
+r &= \sqrt{36} &&\\
+r &= 6 &&
+\end{calculs}
+\explique{$\cos\theta=\dfrac{-3\sqrt{3}}{6}=-\dfrac{\sqrt{3}}{2}$ et $\sin\theta=\dfrac{3}{6}=\dfrac{1}{2}$, donc $\theta=\dfrac{5\pi}{6}$.}{lecture sur le cercle}
+\explique{$z_{4}=\res{6\left(\cos\dfrac{5\pi}{6}+i\sin\dfrac{5\pi}{6}\right)}$}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{150}{$\frac{5\pi}{6}$}{$-\frac{\sqrt{3}}{2}$}{$\frac{1}{2}$}
+\end{minipage}
+\cas{$z_{5}$}
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{(2\sqrt{2})^{2}+(2\sqrt{2})^{2}} &&\justif{$(2\sqrt{2})^{2}=4\times 2=8$}\\
+r &= \sqrt{16} &&\\
+r &= 4 &&
+\end{calculs}
+\explique{$\cos\theta=\dfrac{2\sqrt{2}}{4}=\dfrac{\sqrt{2}}{2}$ et $\sin\theta=\dfrac{\sqrt{2}}{2}$, donc $\theta=\dfrac{\pi}{4}$.}{lecture sur le cercle}
+\explique{$z_{5}=\res{4\left(\cos\dfrac{\pi}{4}+i\sin\dfrac{\pi}{4}\right)}$}{}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{45}{$\frac{\pi}{4}$}{$\frac{\sqrt{2}}{2}$}{$\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Avec des $\sqrt{2}$]
+\cas{$w_{1}$}
+\begin{calculs}
+r &= \sqrt{1^{2}+1^{2}} &&\justif{$a=b=1$}\\
+r &= \sqrt{2} &&
+\end{calculs}
+\explique{$\cos\theta=\dfrac{1}{\sqrt{2}}=\dfrac{\sqrt{2}}{2}$ et $\sin\theta=\dfrac{\sqrt{2}}{2}$, donc $\theta=\dfrac{\pi}{4}$.}{rappel de l'énoncé}
+\explique{$w_{1}=\res{\sqrt{2}\left(\cos\dfrac{\pi}{4}+i\sin\dfrac{\pi}{4}\right)}$}{}
+\cas{$w_{2}$}
+\begin{calculs}
+r &= \sqrt{3^{2}+(-3)^{2}} &&\justif{$9+9=18$}\\
+r &= \sqrt{18} &&\\
+r &= 3\sqrt{2} &&\justif{$\sqrt{18}=\sqrt{9\times 2}$}
+\end{calculs}
+\explique{$\cos\theta=\dfrac{3}{3\sqrt{2}}=\dfrac{1}{\sqrt{2}}$, soit $\dfrac{\sqrt{2}}{2}$, et $\sin\theta=-\dfrac{\sqrt{2}}{2}$, donc $\theta=-\dfrac{\pi}{4}$.}{on simplifie par $3$}
+\explique{$w_{2}=\res{3\sqrt{2}\left(\cos\left(-\dfrac{\pi}{4}\right)+i\sin\left(-\dfrac{\pi}{4}\right)\right)}$}{}
+\cas{$w_{3}$}
+\begin{calculs}
+r &= \sqrt{(-5)^{2}+5^{2}} &&\justif{$25+25=50$}\\
+r &= 5\sqrt{2} &&\justif{$\sqrt{50}=\sqrt{25\times 2}$}
+\end{calculs}
+\explique{$\cos\theta=-\dfrac{5}{5\sqrt{2}}=-\dfrac{\sqrt{2}}{2}$ et $\sin\theta=\dfrac{\sqrt{2}}{2}$, donc $\theta=\dfrac{3\pi}{4}$.}{lecture sur le cercle}
+\explique{$w_{3}=\res{5\sqrt{2}\left(\cos\dfrac{3\pi}{4}+i\sin\dfrac{3\pi}{4}\right)}$}{}
+\rem{Contrôle : ces trois points sont sur les diagonales du quadrillage, d'où les angles multiples de $\frac{\pi}{4}$.}
+\end{exo}
+
+\begin{exo}[Déphasage d'un dipôle]
+\cas{a)}
+\explique{$R=\res{30\sqrt{3}~\Omega}$ et $X=\res{30~\Omega}$.}{partie réelle, partie imaginaire}
+\cas{b)}
+\begin{calculs}
+|Z| &= \sqrt{(30\sqrt{3})^{2}+30^{2}} &&\justif{$(30\sqrt{3})^{2}=900\times 3$}\\
+|Z| &= \sqrt{2\,700+900} &&\\
+|Z| &= \sqrt{3\,600} &&\\
+|Z| &= \res{60} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\cos\varphi &= \dfrac{30\sqrt{3}}{60} &&\justif{$\tfrac{a}{r}$}\\
+\cos\varphi &= \dfrac{\sqrt{3}}{2} &&\\
+\sin\varphi &= \dfrac{30}{60} &&\justif{$\tfrac{b}{r}$}\\
+\sin\varphi &= \dfrac{1}{2} &&
+\end{calculs}
+\explique{Donc $\varphi=\res{\dfrac{\pi}{6}}$.}{lecture sur le cercle complet}
+\cas{d)}
+\explique{$Z=\res{60\left(\cos\dfrac{\pi}{6}+i\sin\dfrac{\pi}{6}\right)}$}{$r(\cos\theta+i\sin\theta)$}
+\cas{e)}
+\begin{calculs}
+I &= \dfrac{230}{60} &&\justif{$|Z|=60$}\\
+I &\approx 3{,}83 &&
+\end{calculs}
+\explique{L'intensité vaut environ \res{$3{,}83$~A}.}{$230\div 60\approx 3{,}833$}
+\end{exo}
+
+\end{document}

@@ -1,0 +1,687 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+
+\providecommand{\C}{\mathbb{C}}
+\ShorthandsOff
+\tikzset{
+  vecteurB/.style={-{Stealth[length=2.4mm]},line width=1.1pt,coulCourbeB},
+  unite/.style={-{Stealth[length=2mm]},line width=1.2pt,black},
+}
+\newcommand{\planc}[4]{%
+  \quadrillage{#1}{#2}{#3}{#4}
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0);
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4});
+  \draw[unite] (0,0)-- node[midway,below,font=\footnotesize,inner sep=1.5pt]{$\vec{u}$} (1,0);
+  \draw[unite] (0,0)-- node[midway,left,font=\footnotesize,inner sep=1.5pt]{$\vec{v}$} (0,1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};}
+\ShorthandsOn
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STI2D --- Nombres complexes}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{L'ensemble des nombres complexes}
+
+\exo[Partie réelle, partie imaginaire]
+Pour chacun des nombres complexes ci-dessous, donner sa partie réelle et sa partie
+imaginaire ; dire s'il est un nombre réel ou un imaginaire pur.
+\begin{center}
+$z_{1}=6+2i$ \quad $z_{2}=-4-i$ \quad $z_{3}=-7i$ \\
+$z_{4}=3$ \quad $z_{5}=5i-1$ \quad $z_{6}=i$
+\end{center}
+
+\exo[En phrase complète]
+Pour chacun des nombres $w_{1}=-3+8i$, $w_{2}=9i$ et $w_{3}=-11$, écrire une phrase
+complète du type : « La partie réelle de $w_{1}$ est \dots{} et sa partie imaginaire
+est \dots{} ».
+
+\exo[Retrouver le nombre]
+Écrire sous forme algébrique le nombre complexe $z$ tel que :
+\begin{enumerate}[label=\alph*)]
+  \item $\mathrm{Re}(z)=4$ et $\mathrm{Im}(z)=-3$ ;
+  \item $\mathrm{Re}(z)=0$ et $\mathrm{Im}(z)=2$ ;
+  \item $\mathrm{Re}(z)=-1$ et $\mathrm{Im}(z)=0$ ;
+  \item $\mathrm{Re}(z)=\frac{1}{2}$ et $\mathrm{Im}(z)=-\frac{1}{3}$.
+\end{enumerate}
+
+\exo[Nombre réel ou imaginaire pur]
+Soit $x$ un nombre réel, $z=(x-2)+5i$ et $z'=4+(2x+6)i$.
+\begin{enumerate}[label=\alph*)]
+  \item Pour quelle valeur de $x$ le nombre $z$ est-il un imaginaire pur ?
+  \item Pour quelle valeur de $x$ le nombre $z'$ est-il un nombre réel ?
+\end{enumerate}
+
+\partiefiche{Somme et produit}
+
+\exo[Sommes et produits]
+Soit $z_{1}=4+i$ et $z_{2}=2-3i$. Écrire sous forme algébrique :
+\begin{center}
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l@{\hspace{2.5em}}l@{\hspace{2.5em}}l@{}}
+$A=z_{1}+z_{2}$ & $B=z_{1}-z_{2}$ & $C=z_{1}z_{2}$\\
+$D=z_{1}^{2}$ & $E=2z_{1}-3z_{2}$ &
+\end{tabular}}
+\end{center}
+
+\exo[Forme algébrique]
+Écrire sous forme algébrique :
+\begin{center}
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l@{\hspace{2.5em}}l@{}}
+$A=(2-5i)+(-6+3i)$ & $B=7i-4-(1-2i)$\\
+$C=(-2+i)(3+4i)$ & $D=(5-i)(5+i)$\\
+$E=(1+3i)^{2}$ & $F=(2-i)^{2}$
+\end{tabular}}
+\end{center}
+
+\exo[Puissances de $i$]
+\begin{enumerate}[label=\alph*)]
+  \item Sachant que $i^{3}=i^{2}\times i$, écrire $i^{3}$, $i^{4}$, $i^{5}$ et $i^{6}$
+    sous forme algébrique.
+  \item En déduire $(2i)^{3}$.
+  \item Calculer $(1+i)^{2}$, puis $(1+i)^{4}$.
+\end{enumerate}
+
+\exo[Impédances en série]
+En électricité, un dipôle se modélise par son impédance complexe $Z=R+iX$, en ohms :
+$R$ est sa résistance et $X$ sa réactance. Deux dipôles en série ont pour impédance la
+somme de leurs impédances. Soit $Z_{1}=30+40i$ et $Z_{2}=20-10i$.
+\begin{enumerate}[label=\alph*)]
+  \item Donner la résistance et la réactance du premier dipôle.
+  \item Calculer l'impédance $Z_{1}+Z_{2}$ des deux dipôles en série.
+  \item Un troisième dipôle a pour impédance $Z_{3}=10+Xi$. Pour quelle valeur de $X$
+    l'impédance $Z_{1}+Z_{3}$ est-elle un nombre réel ?
+\end{enumerate}
+
+\exo[Vérifier une égalité]
+Soit $z=1+2i$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $z^{2}$.
+  \item Vérifier que $z^{2}-2z+5=0$.
+  \item Vérifier que le nombre $w=1-2i$ vérifie aussi $w^{2}-2w+5=0$.
+\end{enumerate}
+
+\partiefiche{Le plan complexe}
+
+\exo[Lire et placer]
+Dans le repère ci-dessous :
+\begin{enumerate}[label=\alph*)]
+  \item lire les affixes des points $A$, $B$, $C$, $D$, $E$ et du vecteur $\vec{w}$ ;
+  \item placer les points $F(-3+3i)$, $G(4i)$, $H(-1)$ et $K(2-3i)$.
+\end{enumerate}
+\begin{center}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{2,3}{above right}{A} \pt{-3,1}{above left}{B} \pt{3,0}{above right}{C}
+  \pt{0,-2}{right}{D} \pt{-2,-3}{below left}{E}
+  \draw[vecteurB] (1,-1)-- node[midway,right,font=\footnotesize]{$\vec{w}$} (3,-4);
+\end{tikzpicture}
+\end{center}
+
+\exo[Sur les axes]
+Dans un repère orthonormé direct, placer les points $A(1+2i)$, $B(-3+i)$, $C(4)$,
+$D(-2i)$, $E(-1-3i)$ et $F(3i)$. Quels points ont pour affixe un nombre réel ? un
+imaginaire pur ? Répondre par une phrase.
+
+\exo[Affixe d'un vecteur]
+Dans un repère orthonormé direct, placer le point $A(-1+i)$, puis tracer le
+représentant d'origine $A$ du vecteur $\vec{w}$ d'affixe $3-2i$. Quelle est l'affixe
+de son extrémité ?
+
+\exo[Droites du plan complexe]
+\begin{enumerate}[label=\alph*)]
+  \item Placer trois points dont l'affixe a pour partie réelle $2$. Où sont tous ces
+    points ?
+  \item Même question avec une partie imaginaire égale à $-1$.
+  \item Calculer $(2-i)^{2}$, puis placer le point $K$ d'affixe $(2-i)^{2}$.
+\end{enumerate}
+
+\partiefiche{Conjugué d'un nombre complexe}
+
+\exo[Conjugués]
+\begin{enumerate}[label=\alph*)]
+  \item Donner le conjugué de chacun des nombres : $z_{1}=7+2i$, $z_{2}=3i-4$,
+    $z_{3}=1-i$, $z_{4}=-9$, $z_{5}=-5i$, $z_{6}=i$.
+  \item Placer le point $M$ d'affixe $z_{2}$ et le point $M'$ d'affixe
+    $\overline{z_{2}}$.
+\end{enumerate}
+
+\exo[Produit $z\overline{z}$]
+Pour chaque nombre $z_{1}=4-i$, $z_{2}=-3+5i$, $z_{3}=2i$ et $z_{4}=6$, calculer
+$z\overline{z}$, puis écrire une phrase : « Le conjugué de \dots{} est \dots{} ».
+
+\exo[Deux façons]
+Soit $z_{1}=2+i$ et $z_{2}=1-3i$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $z_{1}+z_{2}$, puis son conjugué.
+  \item Calculer $\overline{z_{1}}+\overline{z_{2}}$. Que remarque-t-on ?
+  \item Calculer $\overline{z_{1}z_{2}}$ de deux façons.
+\end{enumerate}
+
+\exo[Somme et différence avec le conjugué]
+Soit $z_{1}=4-3i$ et $z_{2}=-1+2i$.
+\begin{enumerate}[label=\alph*)]
+  \item Pour chaque nombre $z_{1}$, $z_{2}$, calculer $z+\overline{z}$ et
+    $z-\overline{z}$.
+  \item Lesquels de ces résultats sont des nombres réels ? des imaginaires purs ?
+  \item Placer les points d'affixes $z_{1}$ et $\overline{z_{1}}$.
+\end{enumerate}
+
+\partiefiche{Quotient de deux nombres complexes}
+
+\exo[Quotients]
+Écrire sous forme algébrique :
+\begin{center}
+$z_{1}=\dfrac{5}{1-2i}$ \quad $z_{2}=\dfrac{2+6i}{1+i}$ \quad
+$z_{3}=\dfrac{1+5i}{i}$ \quad $z_{4}=\dfrac{1}{4+i}$
+\end{center}
+
+\exo[Quotients, suite des calculs]
+Écrire sous forme algébrique :
+\begin{center}
+$w_{1}=\dfrac{4}{3i}$ \quad $w_{2}=\dfrac{5+2i}{3i}$ \quad
+$w_{3}=\dfrac{1+i}{1-i}$ \quad $w_{4}=\dfrac{3+4i}{1+2i}$
+\end{center}
+
+\exo[Conjugué d'un quotient]
+Soit $z=\dfrac{3-i}{2+i}$.
+\begin{enumerate}[label=\alph*)]
+  \item Écrire $z$ sous forme algébrique, puis donner $\overline{z}$.
+  \item Écrire $\dfrac{3+i}{2-i}$ sous forme algébrique. Quelle propriété du cours
+    retrouve-t-on ?
+\end{enumerate}
+
+\exo[Impédances en parallèle]
+Une résistance d'impédance $Z_{1}=10$ et une bobine d'impédance $Z_{2}=10i$ sont
+montées en parallèle. L'impédance du montage est $Z=\dfrac{Z_{1}Z_{2}}{Z_{1}+Z_{2}}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $Z_{1}Z_{2}$ et $Z_{1}+Z_{2}$.
+  \item En déduire $Z$ sous forme algébrique.
+  \item Donner la partie réelle et la partie imaginaire de $Z$.
+\end{enumerate}
+
+\partiefiche{Module d'un nombre complexe}
+
+\exo[Modules]
+Soit $z_{1}=6+8i$, $z_{2}=-3i$, $z_{3}=5-12i$, $z_{4}=-4$, $z_{5}=1+i$ et
+$z_{6}=\sqrt{7}+3i$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le module de chacun de ces nombres.
+  \item En déduire $|z_{1}z_{3}|$ et $\left|\dfrac{z_{3}}{z_{1}}\right|$.
+\end{enumerate}
+
+\exo[Module d'un produit, d'un quotient]
+Calculer, à l'aide des propriétés du module :
+\begin{center}
+$A=|(3-4i)(1+2i)|$ \quad $B=\left|\dfrac{1+i}{3-4i}\right|$ \\
+$C=|2i(3+4i)|$ \quad $D=\left|(1+i)^{4}\right|$
+\end{center}
+
+\exo[Points d'un cercle]
+Soit les points $A(3+4i)$, $B(-5)$, $C(4-3i)$ et $D(5i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $OA$, $OB$, $OC$ et $OD$.
+  \item Que peut-on dire de ces quatre points ? Répondre par une phrase.
+  \item Le point $A'$ d'affixe $\overline{z_{A}}$ est-il sur le même cercle ?
+\end{enumerate}
+
+\exo[Intensité dans un dipôle]
+Un dipôle a pour impédance $Z=30+40i$ (en ohms). Sous une tension de $230$~V,
+l'intensité qui le traverse vaut $I=\dfrac{230}{|Z|}$ (en ampères).
+\begin{enumerate}[label=\alph*)]
+  \item Donner la partie réelle et la partie imaginaire de $Z$.
+  \item Calculer $|Z|$.
+  \item En déduire l'intensité $I$.
+\end{enumerate}
+
+\partiefiche{Affixe d'un vecteur et distance}
+
+\exo[Nature d'un triangle]
+Soit les points $A(1+i)$, $B(4+i)$ et $C(1+5i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer les affixes des vecteurs $\vect{AB}$, $\vect{AC}$ et $\vect{BC}$.
+  \item En déduire les longueurs $AB$, $AC$ et $BC$.
+  \item Le triangle $ABC$ est-il isocèle ? Est-il rectangle ?
+\end{enumerate}
+
+\exo[Centre d'un cercle]
+Soit les points $M(1+i)$, $A(4+5i)$, $B(-4+i)$ et $C(1-4i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $MA$, $MB$ et $MC$.
+  \item En déduire que $A$, $B$ et $C$ sont sur un même cercle, dont on donnera le
+    centre et le rayon.
+\end{enumerate}
+
+\exo[Trajet d'un drone]
+Sur le plan d'un chantier, une unité vaut $100$~m. Un drone part du point $D(-3+2i)$
+et vole en ligne droite jusqu'au point $E(5-4i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer l'affixe du vecteur $\vect{DE}$, puis la distance parcourue, en mètres.
+  \item Le drone va ensuite au point $F$ d'affixe $\overline{z_{E}}$. Donner $z_{F}$
+    et calculer la distance $EF$, en mètres.
+  \item Il revient enfin en $D$. Calculer la longueur totale du trajet, arrondie au
+    mètre.
+\end{enumerate}
+
+\partiefiche{Milieu et parallélogramme}
+
+\exo[Parallélogramme]
+Soit les points $A(1+i)$, $B(4+2i)$, $C(3+5i)$ et $D(4i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Démontrer que $ABCD$ est un parallélogramme.
+  \item Calculer l'affixe de son centre $K$.
+\end{enumerate}
+
+\exo[Milieux]
+Calculer l'affixe du milieu de chacun des segments $[AB]$, $[CD]$ et $[EF]$, avec
+$A(3+2i)$, $B(1-6i)$, $C(-5+i)$, $D(2+4i)$, $E(4i)$ et $F(-3)$.
+
+\exo[Quatrième sommet]
+Soit les points $A(-1+2i)$, $B(3+i)$ et $C(4+4i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Écrire l'égalité des affixes qui traduit que $ABCD$ est un parallélogramme.
+  \item En déduire l'affixe du point $D$.
+  \item Calculer l'affixe du centre de $ABCD$.
+  \item Placer les quatre points dans un repère.
+\end{enumerate}
+
+\exo[Losange]
+Soit les points $A(3+i)$, $B(1+3i)$ et $C(4+4i)$.
+\begin{enumerate}[label=\alph*)]
+  \item Démontrer que $OACB$ est un parallélogramme.
+  \item Calculer $OA$ et $OB$. En déduire la nature de $OACB$.
+  \item Calculer l'affixe de son centre.
+\end{enumerate}
+
+\partiefiche{Argument d'un nombre complexe}
+
+\exo[Lire module et argument]
+Pour chacun des points de la figure, donner le module et un argument de son affixe,
+puis l'écrire en phrase pour $E$ : « Le point $E$ est à \dots{} de $O$ et l'angle
+$(\vec{u}\,;\vect{OE})$ mesure \dots{} ».
+\begin{center}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{3,0}{above right}{A} \pt{-2,0}{above left}{B} \pt{0,3}{right}{C}
+  \pt{0,-1}{right}{D} \pt{3,3}{above right}{E} \pt{-2,-2}{below left}{F}
+  \pt{1,-1}{below right}{G} \pt{-3,3}{above left}{H}
+\end{tikzpicture}
+\end{center}
+
+\exo[Placer avec module et argument]
+Dans un repère orthonormé direct d'unité $1$~cm, placer à la règle, au compas et au
+rapporteur les points :
+\begin{center}
+$L$ : $|z_{L}|=2$ et $\arg(z_{L})=\frac{\pi}{3}$ \quad
+$M$ : $|z_{M}|=3$ et $\arg(z_{M})=-\frac{\pi}{6}$ \\
+$N$ : $|z_{N}|=4$ et $\arg(z_{N})=\frac{\pi}{2}$ \quad
+$R$ : $|z_{R}|=3$ et $\arg(z_{R})=\pi$ \\
+$S$ : $|z_{S}|=2$ et $\arg(z_{S})=\frac{3\pi}{4}$ \quad
+$T$ : $|z_{T}|=1$ et $\arg(z_{T})=-\frac{2\pi}{3}$
+\end{center}
+
+\exo[Radar]
+Un radar, placé en $O$, repère chaque avion par sa distance (en km) et par l'angle
+qu'il fait avec la direction de l'est, celle de $\vec{u}$. L'avion $A$ est à $6$~km,
+dans la direction $\frac{\pi}{2}$ ; l'avion $B$ est à $8$~km, dans la direction $0$.
+\begin{enumerate}[label=\alph*)]
+  \item Donner les affixes $z_{A}$ et $z_{B}$.
+  \item Calculer la distance entre les deux avions.
+\end{enumerate}
+
+\partiefiche{Forme trigonométrique}
+
+\exo[Vers la forme algébrique]
+Écrire sous forme algébrique :
+\begin{center}
+$z_{1}=3\left(\cos\frac{\pi}{4}+i\sin\frac{\pi}{4}\right)$ \quad
+$z_{2}=4\left(\cos\frac{\pi}{2}+i\sin\frac{\pi}{2}\right)$ \\
+$z_{3}=7\left(\cos\pi+i\sin\pi\right)$ \quad
+$z_{4}=6\left(\cos\left(-\frac{\pi}{6}\right)+i\sin\left(-\frac{\pi}{6}\right)\right)$ \\
+$z_{5}=2\left(\cos\frac{2\pi}{3}+i\sin\frac{2\pi}{3}\right)$ \quad
+$z_{6}=\sqrt{2}\left(\cos\frac{3\pi}{4}+i\sin\frac{3\pi}{4}\right)$
+\end{center}
+
+\exo[Lire, placer, calculer]
+Soit $z_{1}=3\left(\cos\frac{5\pi}{6}+i\sin\frac{5\pi}{6}\right)$ et
+$z_{2}=2\left(\cos\left(-\frac{\pi}{3}\right)+i\sin\left(-\frac{\pi}{3}\right)\right)$.
+\begin{enumerate}[label=\alph*)]
+  \item Donner le module et un argument de $z_{1}$ et de $z_{2}$.
+  \item Placer les points d'affixes $z_{1}$ et $z_{2}$ (unité $1$~cm).
+  \item Écrire $z_{1}$ et $z_{2}$ sous forme algébrique.
+\end{enumerate}
+
+\exo[Tensions de Fresnel]
+En physique, une tension sinusoïdale d'amplitude $10$~V et de phase $\frac{\pi}{6}$ se
+représente par $U_{1}=10\left(\cos\frac{\pi}{6}+i\sin\frac{\pi}{6}\right)$ ; une seconde
+tension, de phase $-\frac{\pi}{6}$, par
+$U_{2}=10\left(\cos\left(-\frac{\pi}{6}\right)+i\sin\left(-\frac{\pi}{6}\right)\right)$.
+\begin{enumerate}[label=\alph*)]
+  \item Écrire $U_{1}$ et $U_{2}$ sous forme algébrique.
+  \item Vérifier que $U_{2}=\overline{U_{1}}$.
+  \item Calculer $U_{1}+U_{2}$, puis l'amplitude $|U_{1}+U_{2}|$, arrondie au dixième.
+\end{enumerate}
+
+\partiefiche{De la forme algébrique à la forme trigonométrique}
+
+\exo[Sur les axes]
+Écrire sous forme trigonométrique : $z_{1}=6$, $z_{2}=4i$, $z_{3}=-2$ et $z_{4}=-3i$.
+
+\exo[Vers la forme trigonométrique]
+Écrire sous forme trigonométrique :
+\begin{center}
+$z_{1}=\sqrt{3}+i$ \quad $z_{2}=1-i\sqrt{3}$ \quad $z_{3}=-\sqrt{2}-i\sqrt{2}$ \\
+$z_{4}=-3\sqrt{3}+3i$ \quad $z_{5}=2\sqrt{2}+2i\sqrt{2}$
+\end{center}
+
+\exo[Avec des $\sqrt{2}$]
+\rappel{$\dfrac{1}{\sqrt{2}}=\dfrac{\sqrt{2}}{2}$ (on multiplie en haut et en bas par $\sqrt{2}$).}
+Écrire sous forme trigonométrique : $w_{1}=1+i$, $w_{2}=3-3i$ et $w_{3}=-5+5i$.
+
+\exo[Déphasage d'un dipôle]
+Un dipôle a pour impédance $Z=30\sqrt{3}+30i$ (en ohms).
+\begin{enumerate}[label=\alph*)]
+  \item Donner la résistance $R=\mathrm{Re}(Z)$ et la réactance $X=\mathrm{Im}(Z)$.
+  \item Calculer $|Z|$.
+  \item L'argument $\varphi$ de $Z$ est le déphasage entre la tension et
+    l'intensité. Calculer $\cos\varphi$ et $\sin\varphi$, puis donner $\varphi$.
+  \item Écrire $Z$ sous forme trigonométrique.
+  \item Sous une tension de $230$~V, l'intensité vaut $I=\dfrac{230}{|Z|}$. La calculer,
+    arrondie au centième.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

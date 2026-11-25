@@ -1,0 +1,1283 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{8}{Nombres complexes}
+\niveaucours{1\textsuperscript{re} STI2D}
+\titrecours{NOMBRES COMPLEXES}{Cours --- Première STI2D}
+
+\begin{document}
+
+\providecommand{\C}{\mathbb{C}}
+
+\ShorthandsOff
+\tikzset{
+  vecteur/.style={-{Stealth[length=2.4mm]},line width=1.1pt,coulCourbe},
+  vecteurB/.style={-{Stealth[length=2.4mm]},line width=1.1pt,coulCourbeB},
+  unite/.style={-{Stealth[length=2mm]},line width=1.2pt,black},
+  lecture/.style={dashed,black!60,line width=0.6pt},
+  angle/.style={-{Stealth[length=1.6mm]},line width=0.9pt,coulCourbeB},
+}
+\newcommand{\planc}[4]{%
+  \quadrillage{#1}{#2}{#3}{#4}
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0);
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4});
+  \draw[unite] (0,0)-- node[midway,below,font=\footnotesize,inner sep=1.5pt]{$\vec{u}$} (1,0);
+  \draw[unite] (0,0)-- node[midway,left,font=\footnotesize,inner sep=1.5pt]{$\vec{v}$} (0,1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};}
+\newcommand{\cerclebase}{%
+  \draw[-{Stealth[length=2mm]},thick] (-1.3,0)--(1.3,0);
+  \draw[-{Stealth[length=2mm]},thick] (0,-1.3)--(0,1.3);
+  \draw[line width=0.9pt] (0,0) circle (1);
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$O$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (1,0) {$1$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (-1,0) {$-1$};
+  \node[above right,font=\scriptsize,inner sep=1.5pt] at (0,1) {$1$};
+  \node[below right,font=\scriptsize,inner sep=1.5pt] at (0,-1) {$-1$};}
+\newcommand{\verticale}[1]{\draw[lecture] ({cos(#1)},-1.15)--({cos(#1)},1.15);}
+\newcommand{\horizontale}[1]{\draw[lecture] (-1.15,{sin(#1)})--(1.15,{sin(#1)});}
+\newcommand{\valx}[2]{\pgfmathtruncatemacro{\q}{cos(#1)>0?1:0}%
+  \draw[coulCourbeB,line width=1pt] ({cos(#1)},0.05)--({cos(#1)},-0.05);
+  \ifnum\q=1 \node[below left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};
+  \else \node[below right,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at ({cos(#1)},0) {#2};\fi}
+\newcommand{\valy}[2]{%
+  \draw[coulCourbeB,line width=1pt] (0.05,{sin(#1)})--(-0.05,{sin(#1)});
+  \node[left,coulCourbeB,font=\scriptsize,inner sep=1pt,outer sep=1pt,fill=white] at (0,{sin(#1)}) {#2};}
+\newcommand{\ptc}[2]{%
+  \path[coulCourbeB] ({cos(#1)},{sin(#1)}) node[croix]{};
+  \node[font=\scriptsize,inner sep=1pt,align=center] at ({1.3*cos(#1)},{1.3*sin(#1)}) {#2};}
+\newcommand{\equapt}[4]{\begin{tikzpicture}[x=1.5cm,y=1.5cm]
+  \cerclebase\verticale{#1}\horizontale{#1}\valx{#1}{#3}\valy{#1}{#4}\ptc{#1}{#2}\end{tikzpicture}}
+\newcommand{\cerclept}[2]{\begin{tikzpicture}[x=1.5cm,y=1.5cm]
+  \cerclebase\ptc{#1}{#2}\end{tikzpicture}}
+\ShorthandsOn
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, théorèmes), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{L'ensemble des nombres complexes}
+
+Le carré d'un nombre réel est toujours positif ou nul : l'équation $x^{2}=-1$ n'a
+aucune solution parmi les nombres réels. On crée donc un nouveau nombre, dont le
+carré vaut $-1$.
+
+\begin{definitionbox}[Définition 1 --- Nombres complexes]
+\begin{itemize}
+  \item Il existe un nombre, noté $i$, tel que $i^{2}=-1$.
+  \item Un \textbf{nombre complexe} s'écrit $z=a+ib$, où $a$ et $b$ sont deux
+    nombres réels. Cette écriture, unique, est la \textbf{forme algébrique} de $z$.
+  \item $a$ est la \textbf{partie réelle} de $z$, notée $\mathrm{Re}(z)$ ;
+    $b$ est la \textbf{partie imaginaire} de $z$, notée $\mathrm{Im}(z)$.
+  \item L'ensemble des nombres complexes est noté $\C$. Il contient tous
+    les nombres réels.
+\end{itemize}
+\end{definitionbox}
+
+\begin{remarquebox}[Remarques]
+\begin{itemize}
+  \item La partie imaginaire est le nombre réel $b$, sans le $i$ : $\mathrm{Im}(3+5i)=5$.
+  \item Si $b=0$, alors $z=a$ est un nombre réel ; si $a=0$, alors $z=ib$ est un
+    \textbf{imaginaire pur}.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 1 --- Lire la partie réelle et la partie imaginaire]
+\etapeexemples
+Pour chacun des nombres complexes ci-dessous, donner sa partie réelle et sa partie
+imaginaire ; dire s'il est un nombre réel ou un imaginaire pur.
+\begin{center}
+$z_{1}=3+5i$ \qquad $z_{2}=-2-i$ \qquad $z_{3}=4i$ \qquad $z_{4}=7$ \qquad $z_{5}=2i-6$
+\end{center}
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\explique{$z_{1}=3+5i$ : $\mathrm{Re}(z_{1})=\res{3}$ et $\mathrm{Im}(z_{1})=\res{5}$.}{le nombre devant $i$}
+\explique{$z_{2}=-2-i$ : $\mathrm{Re}(z_{2})=\res{-2}$ et $\mathrm{Im}(z_{2})=\res{-1}$.}{$-i=-1\times i$}
+\explique{$z_{3}=4i$ : $\mathrm{Re}(z_{3})=\res{0}$ et $\mathrm{Im}(z_{3})=\res{4}$ ; $z_{3}$ est un \res{imaginaire pur}.}{$z_{3}=0+4i$}
+\explique{$z_{4}=7$ : $\mathrm{Re}(z_{4})=\res{7}$ et $\mathrm{Im}(z_{4})=\res{0}$ ; $z_{4}$ est un \res{nombre réel}.}{$z_{4}=7+0i$}
+\explique{$z_{5}=-6+2i$ : $\mathrm{Re}(z_{5})=\res{-6}$ et $\mathrm{Im}(z_{5})=\res{2}$.}{on écrit d'abord la partie réelle}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chacun des nombres complexes ci-dessous, donner sa partie réelle et sa partie
+imaginaire ; dire s'il est un nombre réel ou un imaginaire pur.
+\begin{center}
+$w_{1}=1+8i$ \qquad $w_{2}=-5-i$ \qquad $w_{3}=-3i$ \qquad $w_{4}=-2$ \qquad $w_{5}=4i+9$
+\end{center}
+\reponse{$w_{1}$ : $1$ et $8$ ;\; $w_{2}$ : $-5$ et $-1$ ;\; $w_{3}$ : $0$ et $-3$,
+imaginaire pur ;\; $w_{4}$ : $-2$ et $0$, nombre réel ;\; $w_{5}$ : $9$ et $4$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Somme et produit}
+
+\begin{proprietebox}[Propriété 1 --- Calculer avec des nombres complexes]
+On calcule avec $i$ comme avec une lettre $x$ : on réduit, on développe (distributivité,
+identités remarquables). Seule nouveauté : chaque $i^{2}$ est remplacé par $-1$.
+
+On regroupe enfin les parties réelles d'un côté, les termes en $i$ de l'autre :
+\begin{center}
+$(a+ib)+(a'+ib')=(a+a')+i(b+b')$
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 2 --- Calculer une somme, une différence, un produit]
+\etapeexemples
+Soit $z_{1}=3+2i$ et $z_{2}=1-4i$. Écrire sous forme algébrique :
+\begin{center}
+$A=z_{1}+z_{2}$ \qquad $B=z_{1}-z_{2}$ \qquad $C=z_{1}z_{2}$ \qquad $D=z_{1}^{2}$
+\end{center}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= z_{1}+z_{2} &\qquad& \rem{on recopie l'expression}\\
+A &= 3+2i+1-4i && \rem{on remplace $z_{1}$ et $z_{2}$}\\
+A &= \res{4-2i} && \rem{$3+1=4$ et $2i-4i=-2i$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B &= z_{1}-z_{2} &\qquad& \rem{on recopie l'expression}\\
+B &= 3+2i-(1-4i) && \rem{parenthèses autour de $z_{2}$}\\
+B &= 3+2i-1+4i && \rem{le signe $-$ change les deux signes}\\
+B &= \res{2+6i} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C &= z_{1}z_{2} &\qquad& \rem{on recopie l'expression}\\
+C &= (3+2i)(1-4i) && \rem{on remplace $z_{1}$ et $z_{2}$}\\
+C &= 3-12i+2i-8i^{2} && \rem{double distributivité}\\
+C &= 3-10i+8 && \rem{$i^{2}=-1$, donc $-8i^{2}=8$}\\
+C &= \res{11-10i} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D &= z_{1}^{2} &\qquad& \rem{on recopie l'expression}\\
+D &= (3+2i)^{2} && \rem{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+D &= 9+12i+4i^{2} && \rem{$(2i)^{2}=4i^{2}$}\\
+D &= 9+12i-4 && \rem{$i^{2}=-1$}\\
+D &= \res{5+12i} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $z_{1}=2-5i$ et $z_{2}=-3+i$. Écrire sous forme algébrique :
+\begin{center}
+$A=z_{1}+z_{2}$ \qquad $B=z_{1}-z_{2}$ \qquad $C=z_{1}z_{2}$ \qquad $D=z_{1}^{2}$
+\end{center}
+\reponse{$A=-1-4i$ ;\; $B=5-6i$ ;\; $C=-1+17i$ ;\; $D=-21-20i$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 9}
+
+\partiecours{Le plan complexe}
+
+Dans toute la suite, le plan est muni d'un repère orthonormé direct $(O\,;\vec{u},\vec{v})$.
+
+\begin{definitionbox}[Définition 2 --- Affixe d'un point, d'un vecteur]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{itemize}
+  \item Au point $M$ de coordonnées $(a\,;b)$, on associe le nombre complexe $z=a+ib$ :
+    c'est l'\textbf{affixe} du point $M$. On note $M(a+ib)$, ou $z_{M}=a+ib$.
+  \item Au vecteur $\vec{w}$ de coordonnées $(a\,;b)$, on associe de même son affixe
+    $z_{\vec{w}}=a+ib$.
+\end{itemize}
+La partie réelle se lit en abscisse, la partie imaginaire en ordonnée : un nombre réel
+est sur l'axe des abscisses, un imaginaire pur sur l'axe des ordonnées.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-1}{-1}{4}{3}
+  \gradx{2/2,3/3} \grady{2/2}
+  \draw[lecture] (3,0)--(3,2)--(0,2);
+  \pt{3,2}{above right}{M(3+2i)}
+  \draw[vecteurB] (-1,1)-- node[midway,left,font=\footnotesize]{$\vec{w}$} (0,3);
+\end{tikzpicture}
+
+\footnotesize $z_{\vec{w}}=1+2i$
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 3 --- Lire une affixe, placer un point]
+\etapeexemples
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Dans le repère ci-contre :
+\begin{questions}[label=\alph*)]
+  \item lire les affixes des points $A$, $B$, $C$, $D$ et du vecteur $\vec{w}$ ;
+  \item placer les points $E(-3-2i)$, $F(3i)$ et $G(2)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{3,1}{above right}{A} \pt{-2,2}{above left}{B} \pt{-3,0}{above left}{C} \pt{0,-2}{right}{D}
+  \draw[vecteurB] (1,-1)-- node[midway,above right,font=\footnotesize]{$\vec{w}$} (3,-3);
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\explique{$z_{A}=\res{3+i}$ ; $z_{B}=\res{-2+2i}$}{abscisse, puis ordonnée devant $i$}
+\explique{$z_{C}=\res{-3}$}{sur l'axe des abscisses : un nombre réel}
+\explique{$z_{D}=\res{-2i}$}{sur l'axe des ordonnées : un imaginaire pur}
+\explique{$z_{\vec{w}}=\res{2-2i}$}{$\vec{w}$ : $2$ vers la droite, $2$ vers le bas}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{$E$ : abscisse $-3$, ordonnée $-2$.}{$\mathrm{Re}=-3$ et $\mathrm{Im}=-2$}
+\explique{$F$ : sur l'axe des ordonnées, à la hauteur $3$.}{partie réelle nulle}
+\explique{$G$ : sur l'axe des abscisses, en $2$.}{partie imaginaire nulle}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{-3,-2}{below left}{E} \pt{0,3}{right}{F} \pt{2,0}{above}{G}
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Dans le repère ci-contre :
+\begin{questions}[label=\alph*)]
+  \item lire les affixes des points $K$, $L$, $M$, $N$ et du vecteur $\vec{t}$ ;
+  \item placer les points $R(3-2i)$, $S(-3i)$ et $U(-1)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{2,3}{above right}{K} \pt{-3,-1}{below left}{L} \pt{0,3}{right}{M} \pt{-2,0}{above left}{N}
+  \draw[vecteurB] (1,-3)-- node[midway,right,font=\footnotesize]{$\vec{t}$} (2,0);
+\end{tikzpicture}
+\end{minipage}
+\reponse{$z_{K}=2+3i$ ;\; $z_{L}=-3-i$ ;\; $z_{M}=3i$ ;\; $z_{N}=-2$ ;\;
+$z_{\vec{t}}=1+3i$.}
+\end{methodebox}
+
+\afaire{exercices 10 à 13}
+
+\partiecours{Conjugué d'un nombre complexe}
+
+\begin{definitionbox}[Définition 3 --- Conjugué]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Le \textbf{conjugué} du nombre complexe $z=a+ib$ est le nombre $\overline{z}=a-ib$ :
+on change le signe de la partie imaginaire.
+
+\smallskip
+Exemples : $\overline{3+2i}=3-2i$ ; $\overline{-4i}=4i$ ; $\overline{5}=5$.
+
+\smallskip
+Les points d'affixes $z$ et $\overline{z}$ sont symétriques par rapport à l'axe des
+abscisses.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-1}{-3}{4}{3}
+  \gradx{2/2,3/3} \grady{-2/-2,2/2}
+  \draw[lecture] (3,2)--(3,-2);
+  \pt{3,2}{right}{M(3+2i)} \pt{3,-2}{right}{M'(3-2i)}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+Avec $z=3+2i$, on calcule $z\overline{z}$ :
+\begin{calculs}
+z\overline{z} &= (3+2i)(3-2i) &\qquad& \rem{$(a+b)(a-b)=a^{2}-b^{2}$}\\
+z\overline{z} &= 9-4i^{2} && \rem{$(2i)^{2}=4i^{2}$}\\
+z\overline{z} &= 13 && \rem{$-4i^{2}=4$ : le résultat est un nombre réel}
+\end{calculs}
+On remarque que $13=3^{2}+2^{2}$.
+
+\begin{proprietebox}[Propriété 2 --- Conjugué et calculs]
+\begin{itemize}
+  \item Pour $z=a+ib$ : $z\overline{z}=a^{2}+b^{2}$, un nombre réel positif.
+  \item Le conjugué d'une somme est la somme des conjugués :
+    $\overline{z+z'}=\overline{z}+\overline{z'}$.
+  \item Le conjugué d'un produit est le produit des conjugués :
+    $\overline{z\times z'}=\overline{z}\times\overline{z'}$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Déterminer un conjugué]
+\etapeexemples
+Soit $z_{1}=5-2i$, $z_{2}=-1+3i$, $z_{3}=3i$ et $z_{4}=-6$.
+\begin{questions}[label=\alph*)]
+  \item Donner les conjugués $\overline{z_{1}}$, $\overline{z_{2}}$, $\overline{z_{3}}$ et $\overline{z_{4}}$.
+  \item Placer le point $M$ d'affixe $z_{2}$ et le point $M'$ d'affixe $\overline{z_{2}}$.
+  \item Calculer $z_{1}\overline{z_{1}}$ et $z_{2}\overline{z_{2}}$.
+  \item Calculer $\overline{z_{1}z_{2}}$ à l'aide de la propriété 2.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\explique{$\overline{z_{1}}=\res{5+2i}$ ; $\overline{z_{2}}=\res{-1-3i}$}{on change le signe de la partie imaginaire}
+\explique{$\overline{z_{3}}=\res{-3i}$ ; $\overline{z_{4}}=\res{-6}$}{un nombre réel est son propre conjugué}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{$M(-1+3i)$ et $M'(-1-3i)$ sont symétriques par rapport à l'axe des abscisses.}{même abscisse, ordonnées opposées}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-3}{-4}{3}{4}
+  \gradx{-2,-1,2} \grady{-3,-2,-1,2,3}
+  \draw[lecture] (-1,3)--(-1,-3);
+  \pt{-1,3}{left}{M} \pt{-1,-3}{left}{M'}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}
+\begin{calculs}
+z_{1}\overline{z_{1}} &= 5^{2}+(-2)^{2} &\qquad& \rem{propriété 2 : $a^{2}+b^{2}$}\\
+z_{1}\overline{z_{1}} &= \res{29} &&\\[4pt]
+z_{2}\overline{z_{2}} &= (-1)^{2}+3^{2} && \rem{$a=-1$ et $b=3$}\\
+z_{2}\overline{z_{2}} &= \res{10} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\overline{z_{1}z_{2}} &= \overline{z_{1}}\times\overline{z_{2}} &\qquad& \rem{conjugué d'un produit}\\
+\overline{z_{1}z_{2}} &= (5+2i)(-1-3i) && \rem{conjugués trouvés au a)}\\
+\overline{z_{1}z_{2}} &= -5-15i-2i-6i^{2} && \rem{double distributivité}\\
+\overline{z_{1}z_{2}} &= -5-17i+6 && \rem{$-6i^{2}=6$}\\
+\overline{z_{1}z_{2}} &= \res{1-17i} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $w_{1}=4+3i$, $w_{2}=-2-3i$, $w_{3}=-7i$ et $w_{4}=9$.
+\begin{questions}[label=\alph*)]
+  \item Donner les conjugués $\overline{w_{1}}$, $\overline{w_{2}}$, $\overline{w_{3}}$ et $\overline{w_{4}}$.
+  \item Placer le point $N$ d'affixe $w_{2}$ et le point $N'$ d'affixe $\overline{w_{2}}$.
+  \item Calculer $w_{1}\overline{w_{1}}$ et $w_{2}\overline{w_{2}}$.
+  \item Calculer $\overline{w_{1}w_{2}}$ à l'aide de la propriété 2.
+\end{questions}
+\reponse{a)~$4-3i$ ;\; $-2+3i$ ;\; $7i$ ;\; $9$ ;\; c)~$25$ et $13$ ;\; d)~$1+18i$.}
+\end{methodebox}
+
+\afaire{exercices 14 à 17}
+
+\partiecours{Quotient de deux nombres complexes}
+
+But : écrire un quotient comme $\dfrac{5}{2+i}$ sous la forme $a+ib$. Il faut pour cela
+un dénominateur sans $i$, c'est-à-dire un nombre réel.
+
+On a vu (propriété 2) que $(a+ib)(a-ib)=a^{2}+b^{2}$ est un nombre réel : on
+multiplie donc le numérateur et le dénominateur par le \textbf{conjugué du
+dénominateur}.
+
+\begin{proprietebox}[Propriété 3 --- Conjugué d'un quotient]
+Le conjugué d'un quotient est le quotient des conjugués :
+$\overline{\left(\dfrac{z}{z'}\right)}=\dfrac{\overline{z}}{\overline{z'}}$, pour $z'\neq 0$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Écrire un quotient sous forme algébrique]
+\etapeexemples
+Écrire sous forme algébrique :
+\begin{center}
+$z_{1}=\dfrac{5}{2+i}$ \qquad $z_{2}=\dfrac{1+3i}{1-i}$ \qquad
+$z_{3}=\dfrac{4+2i}{i}$ \qquad $z_{4}=\dfrac{1}{2+3i}$
+\end{center}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+z_{1} &= \dfrac{5}{2+i} &\qquad& \rem{conjugué du dénominateur : $2-i$}\\
+z_{1} &= \dfrac{5(2-i)}{(2+i)(2-i)} && \rem{on multiplie en haut et en bas}\\
+z_{1} &= \dfrac{10-5i}{2^{2}+1^{2}} && \rem{$(a+ib)(a-ib)=a^{2}+b^{2}$}\\
+z_{1} &= \dfrac{10-5i}{5} &&\\
+z_{1} &= \res{2-i} && \rem{on divise chaque terme par $5$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+z_{2} &= \dfrac{1+3i}{1-i} &\qquad& \rem{conjugué du dénominateur : $1+i$}\\
+z_{2} &= \dfrac{(1+3i)(1+i)}{(1-i)(1+i)} && \rem{on multiplie en haut et en bas}\\
+z_{2} &= \dfrac{1+i+3i+3i^{2}}{1^{2}+1^{2}} && \rem{double distributivité en haut}\\
+z_{2} &= \dfrac{-2+4i}{2} && \rem{$1+3i^{2}=1-3=-2$}\\
+z_{2} &= \res{-1+2i} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+z_{3} &= \dfrac{4+2i}{i} &\qquad& \rem{conjugué de $i$ : $-i$}\\
+z_{3} &= \dfrac{(4+2i)(-i)}{i\times(-i)} && \rem{on multiplie en haut et en bas}\\
+z_{3} &= \dfrac{-4i-2i^{2}}{-i^{2}} &&\\
+z_{3} &= \dfrac{-4i+2}{1} && \rem{$i^{2}=-1$}\\
+z_{3} &= \res{2-4i} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+z_{4} &= \dfrac{1}{2+3i} &\qquad& \rem{conjugué du dénominateur : $2-3i$}\\
+z_{4} &= \dfrac{2-3i}{(2+3i)(2-3i)} && \rem{on multiplie en haut et en bas}\\
+z_{4} &= \dfrac{2-3i}{2^{2}+3^{2}} && \rem{$(a+ib)(a-ib)=a^{2}+b^{2}$}\\
+z_{4} &= \dfrac{2-3i}{13} &&\\
+z_{4} &= \res{\dfrac{2}{13}-\dfrac{3}{13}i} && \rem{on sépare les deux termes}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Écrire sous forme algébrique :
+\begin{center}
+$w_{1}=\dfrac{10}{3-i}$ \qquad $w_{2}=\dfrac{3+i}{1+i}$ \qquad
+$w_{3}=\dfrac{1-2i}{i}$ \qquad $w_{4}=\dfrac{1}{3-2i}$
+\end{center}
+\reponse{$w_{1}=3+i$ ;\; $w_{2}=2-i$ ;\; $w_{3}=-2-i$ ;\;
+$w_{4}=\dfrac{3}{13}+\dfrac{2}{13}i$.}
+\end{methodebox}
+
+\afaire{exercices 18 à 21}
+
+\partiecours{Module d'un nombre complexe}
+
+\begin{definitionbox}[Définition 4 --- Module]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Le \textbf{module} du nombre complexe $z=a+ib$ est le nombre réel positif
+\[|z|=\sqrt{a^{2}+b^{2}}\]
+Si $M$ est le point d'affixe $z$, alors $|z|=OM$ : c'est le théorème de Pythagore dans
+le triangle rectangle ci-contre.
+
+\smallskip
+Exemple : $|3+4i|=\sqrt{9+16}=5$, donc $OM=5$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-1}{-1}{4}{4}
+  \gradx{3/3} \grady{4/4}
+  \draw[lecture] (3,0)--(3,4);
+  \draw[coulCourbe,line width=1.1pt] (0,0)-- node[midway,above left,font=\footnotesize]{$5$} (3,4);
+  \pt{3,4}{right}{M(3+4i)}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+Avec $z=3+4i$ et $z'=2-i$, on a $|z|=5$ et $|z'|=\sqrt{4+1}=\sqrt{5}$. Leur produit :
+\begin{calculs}
+zz' &= (3+4i)(2-i) &\qquad& \rem{on développe}\\
+zz' &= 6-3i+8i-4i^{2} && \rem{double distributivité}\\
+zz' &= 10+5i && \rem{$-4i^{2}=4$}
+\end{calculs}
+Son module vaut $|10+5i|=\sqrt{100+25}=\sqrt{125}$, soit $5\sqrt{5}$ : c'est
+$|z|\times|z'|$.
+
+\begin{proprietebox}[Propriété 4 --- Module d'un produit, d'un quotient]
+\begin{center}
+$|z\times z'|=|z|\times|z'|$ \qquad $\left|\dfrac{z}{z'}\right|=\dfrac{|z|}{|z'|}$, pour $z'\neq 0$
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Calculer un module]
+\etapeexemples
+Soit $z_{1}=3+4i$, $z_{2}=-5i$ et $z_{3}=2-i$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $|z_{1}|$, $|z_{2}|$ et $|z_{3}|$.
+  \item En déduire $|z_{1}z_{3}|$ et $\left|\dfrac{z_{1}}{z_{2}}\right|$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+|z_{1}| &= \sqrt{3^{2}+4^{2}} &\qquad& \rem{$a=3$ et $b=4$}\\
+|z_{1}| &= \sqrt{25} &&\\
+|z_{1}| &= \res{5} &&\\[4pt]
+|z_{2}| &= \sqrt{0^{2}+(-5)^{2}} && \rem{$a=0$ et $b=-5$}\\
+|z_{2}| &= \res{5} && \rem{le point est à $5$ de $O$ sur l'axe des ordonnées}\\[4pt]
+|z_{3}| &= \sqrt{2^{2}+(-1)^{2}} && \rem{$a=2$ et $b=-1$}\\
+|z_{3}| &= \res{\sqrt{5}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+|z_{1}z_{3}| &= |z_{1}|\times|z_{3}| &\qquad& \rem{module d'un produit}\\
+|z_{1}z_{3}| &= \res{5\sqrt{5}} && \rem{modules trouvés au a)}\\[4pt]
+\left|\dfrac{z_{1}}{z_{2}}\right| &= \dfrac{|z_{1}|}{|z_{2}|} && \rem{module d'un quotient}\\
+\left|\dfrac{z_{1}}{z_{2}}\right| &= \dfrac{5}{5} &&\\
+\left|\dfrac{z_{1}}{z_{2}}\right| &= \res{1} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $w_{1}=6-8i$, $w_{2}=7$ et $w_{3}=1+3i$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $|w_{1}|$, $|w_{2}|$ et $|w_{3}|$.
+  \item En déduire $|w_{1}w_{3}|$ et $\left|\dfrac{w_{1}}{w_{2}}\right|$.
+\end{questions}
+\reponse{a)~$10$ ;\; $7$ ;\; $\sqrt{10}$ ;\; b)~$10\sqrt{10}$ et $\dfrac{10}{7}$.}
+\end{methodebox}
+
+\afaire{exercices 22 à 25}
+
+\partiecours{Affixe d'un vecteur et distance}
+
+Au chapitre 6, les coordonnées de $\vect{AB}$ s'obtiennent par « arrivée moins
+départ » : $(x_{B}-x_{A}\,;y_{B}-y_{A})$. Avec les affixes, c'est la même soustraction.
+
+\begin{proprietebox}[Propriété 5 --- Affixe d'un vecteur, distance]
+Pour deux points $A$ et $B$ :
+\begin{itemize}
+  \item l'affixe du vecteur $\vect{AB}$ est $z_{\vect{AB}}=z_{B}-z_{A}$ ;
+  \item la distance $AB$ est le module de cette affixe : $AB=|z_{B}-z_{A}|$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer l'affixe d'un vecteur et une distance]
+\etapeexemples
+Soit les points $A(1+2i)$, $B(4-2i)$ et $C(-2-2i)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les affixes des vecteurs $\vect{AB}$, $\vect{AC}$ et $\vect{BC}$.
+  \item En déduire les longueurs $AB$, $AC$ et $BC$.
+  \item Le triangle $ABC$ est-il isocèle ? Est-il rectangle ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+z_{\vect{AB}} &= z_{B}-z_{A} &\qquad& \rem{arrivée moins départ}\\
+z_{\vect{AB}} &= 4-2i-(1+2i) && \rem{parenthèses autour de $z_{A}$}\\
+z_{\vect{AB}} &= \res{3-4i} &&\\[4pt]
+z_{\vect{AC}} &= -2-2i-(1+2i) && \rem{$z_{C}-z_{A}$}\\
+z_{\vect{AC}} &= \res{-3-4i} &&\\[4pt]
+z_{\vect{BC}} &= -2-2i-(4-2i) && \rem{$z_{C}-z_{B}$}\\
+z_{\vect{BC}} &= \res{-6} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+AB &= |3-4i| &\qquad& \rem{module de $z_{\vect{AB}}$}\\
+AB &= \sqrt{3^{2}+(-4)^{2}} &&\\
+AB &= \res{5} && \rem{$9+16=25$}\\[4pt]
+AC &= \sqrt{(-3)^{2}+(-4)^{2}} && \rem{module de $-3-4i$}\\
+AC &= \res{5} &&\\[4pt]
+BC &= \sqrt{(-6)^{2}+0^{2}} && \rem{module de $-6$}\\
+BC &= \res{6} &&
+\end{calculs}
+\cas{c)}\par\nopagebreak
+\explique{$AB=AC$ : le triangle $ABC$ est \res{isocèle en $A$}.}{deux côtés égaux}
+\explique{Le plus long côté est $[BC]$ : $BC^{2}=36$ et $AB^{2}+AC^{2}=25+25$, soit $50$.}{théorème de Pythagore}
+\explique{$36\neq 50$ : le triangle $ABC$ \res{n'est pas rectangle}.}{l'égalité de Pythagore est fausse}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit les points $A(-1+i)$, $B(2+5i)$ et $C(3-2i)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les affixes des vecteurs $\vect{AB}$, $\vect{AC}$ et $\vect{BC}$.
+  \item En déduire les longueurs $AB$, $AC$ et $BC$.
+  \item Le triangle $ABC$ est-il isocèle ? Est-il rectangle ?
+\end{questions}
+\reponse{a)~$3+4i$ ;\; $4-3i$ ;\; $1-7i$ ;\; b)~$5$ ;\; $5$ ;\; $\sqrt{50}$ ;\;
+c)~isocèle et rectangle en $A$.}
+\end{methodebox}
+
+\afaire{exercices 26 à 28}
+
+\partiecours{Milieu et parallélogramme}
+
+\begin{proprietebox}[Propriété 6 --- Milieu, parallélogramme]
+\begin{itemize}
+  \item Le milieu $I$ du segment $[AB]$ a pour affixe $z_{I}=\dfrac{z_{A}+z_{B}}{2}$.
+  \item Le quadrilatère $ABCD$ est un parallélogramme quand $\vect{AB}=\vect{DC}$
+    (seconde), c'est-à-dire quand les deux vecteurs ont la même affixe :
+    $z_{B}-z_{A}=z_{C}-z_{D}$.
+  \item Le centre d'un parallélogramme est le milieu de ses diagonales.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Démontrer qu'un quadrilatère est un parallélogramme, trouver son centre]
+\etapeexemples
+Soit les points $A(-2+i)$, $B(1+3i)$, $C(4+2i)$ et $D(1)$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que $ABCD$ est un parallélogramme.
+  \item Calculer l'affixe de son centre $K$.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+But : on veut démontrer que $\vect{AB}=\vect{DC}$.
+\begin{calculs}
+z_{\vect{AB}} &= 1+3i-(-2+i) &\qquad& \rem{$z_{B}-z_{A}$}\\
+z_{\vect{AB}} &= 3+2i &&\\[4pt]
+z_{\vect{DC}} &= 4+2i-1 && \rem{$z_{C}-z_{D}$}\\
+z_{\vect{DC}} &= 3+2i &&
+\end{calculs}
+\explique{Conclusion : $\vect{AB}=\vect{DC}$, donc $ABCD$ est un \res{parallélogramme}.}{même affixe}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-3}{-1}{5}{4}
+  \gradx{-2,-1,2,3,4} \grady{2,3}
+  \draw[coulCourbe,line width=1pt] (-2,1)--(1,3)--(4,2)--(1,0)--cycle;
+  \draw[lecture] (-2,1)--(4,2) (1,3)--(1,0);
+  \pt{-2,1}{left}{A} \pt{1,3}{above}{B} \pt{4,2}{right}{C} \pt{1,0}{below right}{D}
+  \pt{1,1.5}{right}{K}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+z_{K} &= \dfrac{z_{A}+z_{C}}{2} &\qquad& \rem{$K$ milieu de la diagonale $[AC]$}\\
+z_{K} &= \dfrac{-2+i+4+2i}{2} &&\\
+z_{K} &= \dfrac{2+3i}{2} &&\\
+z_{K} &= \res{1+\dfrac{3}{2}i} && \rem{on divise chaque terme par $2$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit les points $A(-3-i)$, $B(1-2i)$, $C(3+2i)$ et $D(-1+3i)$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que $ABCD$ est un parallélogramme.
+  \item Calculer l'affixe de son centre $K$.
+\end{questions}
+\reponse{a)~$z_{\vect{AB}}=z_{\vect{DC}}=4-i$ ;\; b)~$z_{K}=\dfrac{1}{2}i$.}
+\end{methodebox}
+
+\afaire{exercices 29 à 32}
+
+\partiecours{Argument d'un nombre complexe}
+
+Un radar repère un avion par sa distance et par un angle. De même, un point $M$ du plan
+se repère par sa distance $OM$, le module, et par un angle, l'argument.
+
+\begin{definitionbox}[Définition 5 --- Argument]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $M$ le point d'affixe $z$, avec $z\neq 0$.
+
+Un \textbf{argument} de $z$ est une mesure de l'angle orienté $(\vec{u}\,;\vect{OM})$.
+On le note $\arg(z)$ et on donne en général sa mesure principale, dans
+l'intervalle $\intof{-\pi}{\pi}$ (chapitre 7).
+
+\smallskip
+Le nombre $0$ n'a pas d'argument : le point $O$ ne donne aucune direction.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-1}{-1}{4}{3}
+  \draw[coulCourbe,line width=1.1pt] (0,0)-- node[midway,above left,font=\footnotesize]{$|z|$} (3,2);
+  \draw[angle] (1.5,0) arc (0:33.7:1.5);
+  \node[coulCourbeB,font=\footnotesize] at (2.3,0.6) {$\theta$};
+  \pt{3,2}{right}{M}
+\end{tikzpicture}
+
+\footnotesize $\arg(z)=\theta$
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 9 --- Lire un module et un argument, placer un point]
+\etapeexemples
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Dans le repère ci-contre :
+\begin{questions}[label=\alph*)]
+  \item pour chacun des points $A$, $B$, $C$ et $D$, donner le module et un argument de
+    son affixe ;
+  \item placer le point $E$ tel que $|z_{E}|=3$ et $\arg(z_{E})=\dfrac{2\pi}{3}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{3,0}{above right}{A} \pt{0,-2}{right}{B} \pt{2,2}{above right}{C} \pt{-1,-1}{below left}{D}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{$z_{A}=3$ : $|z_{A}|=\res{3}$ et $\arg(z_{A})=\res{0}$.}{$\vect{OA}$ dans le sens de $\vec{u}$}
+\explique{$z_{B}=-2i$ : $|z_{B}|=\res{2}$ et $\arg(z_{B})=\res{-\dfrac{\pi}{2}}$.}{un quart de tour vers le bas}
+\explique{$z_{C}=2+2i$ : $|z_{C}|=\sqrt{8}=\res{2\sqrt{2}}$ et $\arg(z_{C})=\res{\dfrac{\pi}{4}}$.}{diagonale du quadrillage}
+\explique{$z_{D}=-1-i$ : $|z_{D}|=\res{\sqrt{2}}$ et $\arg(z_{D})=\res{-\dfrac{3\pi}{4}}$.}{diagonale, en bas à gauche}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \draw[coulCourbe,line width=1pt] (0,0)--(2,2) (0,0)--(-1,-1);
+  \draw[angle] (1.2,0) arc (0:45:1.2);
+  \draw[angle,coulCourbeC] (0.8,0) arc (0:-135:0.8);
+  \pt{3,0}{above right}{A} \pt{0,-2}{right}{B} \pt{2,2}{above right}{C} \pt{-1,-1}{below left}{D}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{$E$ est sur le cercle de centre $O$ et de rayon $3$.}{$OE=|z_{E}|=3$}
+\explique{On trace la demi-droite d'origine $O$ qui fait l'angle $\dfrac{2\pi}{3}$, soit $120^{\circ}$, avec $\vec{u}$ ; elle coupe le cercle en $E$.}{au rapporteur}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \draw[lecture] (0,0) circle (3);
+  \draw[coulCourbe,line width=1pt] (0,0)--({3.8*cos(120)},{3.8*sin(120)});
+  \draw[angle] (1.2,0) arc (0:120:1.2);
+  \pt{-1.5,2.598}{left}{E}
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+Dans le repère ci-contre :
+\begin{questions}[label=\alph*)]
+  \item pour chacun des points $F$, $G$, $H$ et $K$, donner le module et un argument de
+    son affixe ;
+  \item placer le point $L$ tel que $|z_{L}|=2$ et $\arg(z_{L})=-\dfrac{\pi}{6}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}
+\vspace{0pt}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \planc{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,2,3} \grady{-3,-2,-1,2,3}
+  \pt{-3,0}{above left}{F} \pt{0,3}{right}{G} \pt{1,-1}{below right}{H} \pt{-2,2}{above left}{K}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a)~$F$ : $3$ et $\pi$ ;\; $G$ : $3$ et $\dfrac{\pi}{2}$ ;\; $H$ : $\sqrt{2}$ et
+$-\dfrac{\pi}{4}$ ;\; $K$ : $2\sqrt{2}$ et $\dfrac{3\pi}{4}$.}
+\end{methodebox}
+
+\afaire{exercices 33 à 35}
+
+\partiecours{Forme trigonométrique}
+
+\begin{definitionbox}[Définition 6 --- Forme trigonométrique]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $z=a+ib$ un nombre complexe non nul, de module $r$ et d'argument $\theta$.
+
+Le point $M$ est à la distance $r$ de $O$, dans la direction $\theta$ : ses
+coordonnées sont $r$ fois celles du point $(\cos\theta\,;\sin\theta)$ du cercle
+trigonométrique :
+\begin{center}
+$a=r\cos\theta$ \qquad $b=r\sin\theta$
+\end{center}
+D'où l'écriture $z=r(\cos\theta+i\sin\theta)$ : c'est la
+\textbf{forme trigonométrique} de $z$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \planc{-1}{-1}{4}{3}
+  \draw[lecture] (3,0)--(3,2)--(0,2);
+  \draw[coulCourbe,line width=1.1pt] (0,0)-- node[midway,above left,font=\footnotesize]{$r$} (3,2);
+  \draw[angle] (1.5,0) arc (0:33.7:1.5);
+  \node[coulCourbeB,font=\footnotesize] at (2.3,0.6) {$\theta$};
+  \node[below,font=\footnotesize] at (3,0) {$r\cos\theta$};
+  \node[left,font=\footnotesize] at (0,2) {$r\sin\theta$};
+  \pt{3,2}{right}{M}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 10 --- Passer de la forme trigonométrique à la forme algébrique]
+\etapeexemples
+Écrire sous forme algébrique :
+\begin{center}
+$z_{1}=4\left(\cos\dfrac{\pi}{3}+i\sin\dfrac{\pi}{3}\right)$ \qquad
+$z_{2}=2\left(\cos\dfrac{3\pi}{4}+i\sin\dfrac{3\pi}{4}\right)$ \\[4pt]
+$z_{3}=5\left(\cos\left(-\dfrac{\pi}{2}\right)+i\sin\left(-\dfrac{\pi}{2}\right)\right)$
+\end{center}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+z_{1} &= 4\left(\cos\dfrac{\pi}{3}+i\sin\dfrac{\pi}{3}\right) &\qquad& \rem{on recopie l'expression}\\
+z_{1} &= 4\left(\dfrac{1}{2}+i\dfrac{\sqrt{3}}{2}\right) && \rem{valeurs du cercle complet}\\
+z_{1} &= \res{2+2i\sqrt{3}} && \rem{on distribue le $4$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+z_{2} &= 2\left(\cos\dfrac{3\pi}{4}+i\sin\dfrac{3\pi}{4}\right) &\qquad& \rem{on recopie l'expression}\\
+z_{2} &= 2\left(-\dfrac{\sqrt{2}}{2}+i\dfrac{\sqrt{2}}{2}\right) && \rem{valeurs du cercle complet}\\
+z_{2} &= \res{-\sqrt{2}+i\sqrt{2}} && \rem{on distribue le $2$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+z_{3} &= 5\left(\cos\left(-\dfrac{\pi}{2}\right)+i\sin\left(-\dfrac{\pi}{2}\right)\right) &\qquad& \rem{on recopie l'expression}\\
+z_{3} &= 5\left(0+i\times(-1)\right) && \rem{point du bas du cercle}\\
+z_{3} &= \res{-5i} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Écrire sous forme algébrique :
+\begin{center}
+$w_{1}=6\left(\cos\dfrac{\pi}{6}+i\sin\dfrac{\pi}{6}\right)$ \qquad
+$w_{2}=2\left(\cos\left(-\dfrac{\pi}{4}\right)+i\sin\left(-\dfrac{\pi}{4}\right)\right)$ \\[4pt]
+$w_{3}=3\left(\cos\pi+i\sin\pi\right)$
+\end{center}
+\reponse{$w_{1}=3\sqrt{3}+3i$ ;\; $w_{2}=\sqrt{2}-i\sqrt{2}$ ;\; $w_{3}=-3$.}
+\end{methodebox}
+
+\afaire{exercices 36 à 38}
+
+\partiecours{De la forme algébrique à la forme trigonométrique}
+
+But : à partir de $z=a+ib$, trouver son module $r$ et son argument $\theta$.
+
+\begin{proprietebox}[Propriété 7 --- Module et argument d'après la forme algébrique]
+Pour $z=a+ib$ non nul :
+\begin{center}
+$r=|z|=\sqrt{a^{2}+b^{2}}$ \qquad $\cos\theta=\dfrac{a}{r}$ \qquad $\sin\theta=\dfrac{b}{r}$
+\end{center}
+On retrouve $\theta$ sur le cercle complet, comme à la méthode 9 du chapitre 7 : on
+place $\cos\theta$ sur l'axe des abscisses, $\sin\theta$ sur l'axe des ordonnées, et on lit
+le point du cercle où les deux droites se croisent.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Passer de la forme algébrique à la forme trigonométrique]
+\etapeexemples
+Écrire sous forme trigonométrique (les deux derniers viennent de la méthode 10) :
+\begin{center}
+$z_{1}=2\sqrt{3}+2i$ \qquad $z_{2}=-\sqrt{2}+i\sqrt{2}$ \qquad $z_{3}=-5i$
+\end{center}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{(2\sqrt{3})^{2}+2^{2}} &\qquad& \rem{$a=2\sqrt{3}$ et $b=2$}\\
+r &= \sqrt{12+4} && \rem{$(2\sqrt{3})^{2}=4\times 3$}\\
+r &= 4 &&
+\end{calculs}
+\explique{$\cos\theta=\dfrac{2\sqrt{3}}{4}=\dfrac{\sqrt{3}}{2}$}{$\dfrac{a}{r}$, simplifié par $2$}
+\explique{$\sin\theta=\dfrac{2}{4}=\dfrac{1}{2}$}{$\dfrac{b}{r}$}
+\explique{$\theta=\dfrac{\pi}{6}$}{lecture sur le cercle}
+\explique{$z_{1}=\res{4\left(\cos\dfrac{\pi}{6}+i\sin\dfrac{\pi}{6}\right)}$}{$r(\cos\theta+i\sin\theta)$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{30}{$\frac{\pi}{6}$}{$\frac{\sqrt{3}}{2}$}{$\frac{1}{2}$}
+\end{minipage}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\begin{calculs}
+r &= \sqrt{(-\sqrt{2})^{2}+(\sqrt{2})^{2}} &\qquad& \rem{$a=-\sqrt{2}$ et $b=\sqrt{2}$}\\
+r &= \sqrt{2+2} &&\\
+r &= 2 &&
+\end{calculs}
+\explique{$\cos\theta=-\dfrac{\sqrt{2}}{2}$}{$\dfrac{a}{r}$}
+\explique{$\sin\theta=\dfrac{\sqrt{2}}{2}$}{$\dfrac{b}{r}$}
+\explique{$\theta=\dfrac{3\pi}{4}$}{lecture sur le cercle}
+\explique{$z_{2}=\res{2\left(\cos\dfrac{3\pi}{4}+i\sin\dfrac{3\pi}{4}\right)}$}{on retrouve la méthode 10}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\equapt{135}{$\frac{3\pi}{4}$}{$-\frac{\sqrt{2}}{2}$}{$\frac{\sqrt{2}}{2}$}
+\end{minipage}
+\cas{c)}\par\nopagebreak
+\begin{minipage}[c]{0.68\linewidth}\raggedright
+\explique{$r=\sqrt{0^{2}+(-5)^{2}}=5$}{$a=0$ et $b=-5$}
+\explique{$\cos\theta=\dfrac{0}{5}=0$ et $\sin\theta=\dfrac{-5}{5}=-1$, donc $\theta=-\dfrac{\pi}{2}$.}{point du bas du cercle}
+\explique{$z_{3}=\res{5\left(\cos\left(-\dfrac{\pi}{2}\right)+i\sin\left(-\dfrac{\pi}{2}\right)\right)}$}{on retrouve la méthode 10}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.28\linewidth}\centering
+\cerclept{-90}{$-\frac{\pi}{2}$}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+Écrire sous forme trigonométrique (les deux derniers viennent de la méthode 10) :
+\begin{center}
+$w_{1}=1+i\sqrt{3}$ \qquad $w_{2}=\sqrt{2}-i\sqrt{2}$ \qquad $w_{3}=-3$
+\end{center}
+\reponse{$w_{1}=2\left(\cos\dfrac{\pi}{3}+i\sin\dfrac{\pi}{3}\right)$ ;\;
+$w_{2}=2\left(\cos\left(-\dfrac{\pi}{4}\right)+i\sin\left(-\dfrac{\pi}{4}\right)\right)$ ;\;
+$w_{3}=3\left(\cos\pi+i\sin\pi\right)$.}
+\end{methodebox}
+
+\afaire{exercices 39 à 42}
+
+\end{document}
