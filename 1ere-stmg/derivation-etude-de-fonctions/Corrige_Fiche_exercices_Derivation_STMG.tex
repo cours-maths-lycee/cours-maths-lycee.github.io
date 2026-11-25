@@ -1,0 +1,1706 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 5 --- Dérivation et étude de fonctions --- corrigé}{1\textsuperscript{re} STMG}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\setlength{\parindent}{0pt}
+\tikzset{lecture/.style={coulRep,line width=1pt,-{Stealth[length=2mm]}}}
+
+\begin{document}
+
+\entetefiche{Chapitre 5 --- Dérivation et étude de fonctions}{Première STMG}
+
+\partie{Fonctions affines et droites}
+
+\begin{exo}[Coefficient directeur]
+\explique{Dans chaque cas, on recopie la formule du coefficient directeur, puis on
+remplace par les coordonnées.}{ce qu'on monte, divisé par ce qu'on avance}
+\cas{a)}
+\begin{calculs}
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &&\justif{on écrit la formule}\\
+m &= \frac{8-2}{3-1} &&\justif{on remplace par les coordonnées}\\
+m &= \frac{6}{2} &&\\
+m &= \res{3} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+m &= \frac{-2-4}{2-(-1)} &&\justif{$2-(-1)=2+1$ : attention aux signes}\\
+m &= \frac{-6}{3} &&\\
+m &= \res{-2} &&\justif{la droite descend}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+m &= \frac{-1-(-3)}{4-0} &&\justif{$-1-(-3)=-1+3$}\\
+m &= \frac{2}{4} &&\\
+m &= \res{\frac{1}{2}} &&\justif{on simplifie par $2$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+m &= \frac{5-5}{1-(-3)} &&\\
+m &= \frac{0}{4} &&\\
+m &= \res{0} &&
+\end{calculs}
+\explique{$A$ et $B$ ont la même ordonnée : la droite $(AB)$ est horizontale.}{on ne
+monte pas}
+\rem{Erreur fréquente : soustraire dans un ordre en haut et dans l'autre en bas. Si l'on
+commence par $B$ au numérateur, on commence aussi par $B$ au dénominateur.}
+\end{exo}
+
+\begin{exo}[Équation d'une droite]
+\explique{Comme à la méthode 1 : on calcule le coefficient directeur $m$, puis on trouve
+$p$ avec le point $A$.}{méthode 1}
+\cas{a)}
+\begin{calculs}
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &&\justif{on écrit la formule}\\
+m &= \frac{4-1}{2-1} &&\justif{on remplace par les coordonnées}\\
+m &= 3 &&
+\end{calculs}
+\explique{L'équation est de la forme $y=3x+p$. La droite passe par $A(1\,;1)$ :}{on
+cherche maintenant $p$}\nopagebreak
+\begin{calculs}
+3\times 1+p &= 1 &&\justif{on remplace $x$ par $1$ et $y$ par $1$}\\
+p &= 1-3 &&\\
+p &= -2 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=3x-2}$.}{vérification avec $B$ :
+$3\times 2-2=4$}
+\cas{b)}
+\begin{calculs}
+m &= \frac{1-5}{1-(-1)} &&\justif{attention aux signes}\\
+m &= \frac{-4}{2} &&\\
+m &= -2 &&
+\end{calculs}
+\explique{L'équation est de la forme $y=-2x+p$. La droite passe par $A(-1\,;5)$ :}{}\nopagebreak
+\begin{calculs}
+-2\times(-1)+p &= 5 &&\justif{on remplace $x$ par $-1$ et $y$ par $5$}\\
+2+p &= 5 &&\\
+p &= 3 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=-2x+3}$.}{vérification avec $B$ :
+$-2\times 1+3=1$}
+\cas{c)}
+\begin{calculs}
+m &= \frac{5-(-3)}{2-(-2)} &&\justif{$5+3$ en haut, $2+2$ en bas}\\
+m &= \frac{8}{4} &&\\
+m &= 2 &&
+\end{calculs}
+\explique{L'équation est de la forme $y=2x+p$. La droite passe par $A(-2\,;-3)$ :}{}\nopagebreak
+\begin{calculs}
+2\times(-2)+p &= -3 &&\justif{on remplace $x$ par $-2$ et $y$ par $-3$}\\
+-4+p &= -3 &&\\
+p &= 1 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=2x+1}$.}{vérification avec $B$ :
+$2\times 2+1=5$}
+\cas{d)}
+\begin{calculs}
+m &= \frac{2-0}{6-2} &&\\
+m &= \frac{2}{4} &&\\
+m &= \frac{1}{2} &&\justif{on simplifie par $2$}
+\end{calculs}
+\explique{L'équation est de la forme $y=\frac{1}{2}x+p$. La droite passe par
+$A(2\,;0)$ :}{}\nopagebreak
+\begin{calculs}
+\frac{1}{2}\times 2+p &= 0 &&\justif{on remplace $x$ par $2$ et $y$ par $0$}\\
+1+p &= 0 &&\justif{$\frac{1}{2}\times 2=1$}\\
+p &= -1 &&
+\end{calculs}
+\explique{La droite $(AB)$ a pour équation $\res{y=\frac{1}{2}x-1}$.}{vérification avec
+$B$ : $\frac{1}{2}\times 6-1=2$}
+\rem{Le second point sert de contrôle : ses coordonnées doivent vérifier l'équation
+trouvée.}
+\end{exo}
+
+\begin{exo}[Une fonction affine par deux images]
+\explique{$f(2)=7$ veut dire que la droite qui représente $f$ passe par le point
+$(2\,;7)$ : on se ramène à l'exercice 2.}{une image, c'est un point de la droite}
+\cas{1)}
+\explique{La droite passe par $(2\,;7)$ et $(-1\,;-2)$.}{$f(2)=7$ et $f(-1)=-2$}\nopagebreak
+\begin{calculs}
+m &= \frac{7-(-2)}{2-(-1)} &&\justif{la formule du coefficient directeur}\\
+m &= \frac{9}{3} &&\\
+m &= 3 &&
+\end{calculs}
+\explique{Donc $f(x)=3x+p$, avec $f(2)=7$ :}{on cherche $p$}\nopagebreak
+\begin{calculs}
+3\times 2+p &= 7 &&\justif{on remplace $x$ par $2$}\\
+6+p &= 7 &&\\
+p &= 1 &&
+\end{calculs}
+\explique{Donc $\res{f(x)=3x+1}$.}{vérification : $f(-1)=-3+1=-2$}\nopagebreak
+\begin{calculs}
+f(10) &= 3\times 10+1 &&\justif{on remplace $x$ par $10$}\\
+f(10) &= \res{31} &&
+\end{calculs}
+\cas{2)}
+\explique{La droite passe par $(-3\,;8)$ et $(1\,;0)$.}{$g(-3)=8$ et $g(1)=0$}\nopagebreak
+\begin{calculs}
+m &= \frac{0-8}{1-(-3)} &&\\
+m &= \frac{-8}{4} &&\\
+m &= -2 &&
+\end{calculs}
+\explique{Donc $g(x)=-2x+p$, avec $g(1)=0$ :}{}\nopagebreak
+\begin{calculs}
+-2\times 1+p &= 0 &&\justif{on remplace $x$ par $1$}\\
+p &= 2 &&
+\end{calculs}
+\explique{Donc $\res{g(x)=-2x+2}$.}{vérification : $g(-3)=6+2=8$}\nopagebreak
+\begin{calculs}
+g(5) &= -2\times 5+2 &&\\
+g(5) &= \res{-8} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Lire des équations]
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Pour chaque droite, on lit $p$ là où elle coupe l'axe des ordonnées (croix), puis on
+part de ce point : on avance et on regarde de combien on monte (flèches vertes).
+
+\smallskip
+$(d_{1})$ : elle coupe l'axe en $-1$, donc $p=-1$ ; on avance de $1$, on monte de $2$,
+donc $m=2$ : $\res{y=2x-1}$.
+
+\smallskip
+$(d_{2})$ : $p=3$ ; on avance de $1$, on descend de $1$, donc $m=-1$ :
+$\res{y=-x+3}$.
+
+\smallskip
+$(d_{3})$ : $p=-2$ ; on avance de $2$, on monte de $1$, donc $m=\frac{1}{2}$ :
+$\res{y=\frac{1}{2}x-2}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.65cm,y=0.65cm]
+  \repere{-3}{-3}{5}{4}
+  \gradx{-2,-1,1,2,3,4} \grady{-2,-1,1,2,3}
+  \begin{scope}
+  \clip (-3,-3) rectangle (5,4);
+  \draw[coulCourbe,line width=1.1pt] (-1,-3)--(2.5,4);
+  \draw[coulCourbeB,line width=1.1pt] (-1,4)--(5,-2);
+  \draw[coulCourbeC,line width=1.1pt] (-2,-3)--(5,0.5);
+  \end{scope}
+  \draw[lecture] (0,-1)--(1,-1);
+  \draw[lecture] (1,-1)--(1,1);
+  \draw[lecture] (0,3)--(1,3);
+  \draw[lecture] (1,3)--(1,2);
+  \draw[lecture] (0,-2)--(2,-2);
+  \draw[lecture] (2,-2)--(2,-1);
+  \path[coulCourbe] (0,-1) node[croix]{};
+  \path[coulCourbeB] (0,3) node[croix]{};
+  \path[coulCourbeC] (0,-2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (1.4,3.6) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize] at (-0.6,2.7) {$(d_{2})$};
+  \node[coulCourbeC,font=\footnotesize] at (4.2,0.8) {$(d_{3})$};
+\end{tikzpicture}
+\end{minipage}
+\rem{Pour $(d_{3})$, avancer de $1$ ne tombe pas sur un nœud du quadrillage : on avance
+de $2$ et on divise ce qu'on monte par $2$.}
+\end{exo}
+
+\partie{Taux de variation}
+
+\begin{exo}[Calculer des taux de variation]
+\explique{On calcule d'abord les deux images, puis on divise la variation de $f(x)$ par
+la variation de $x$.}{méthode 2}
+\cas{a)}
+\begin{calculs}
+f(0) &= 3 &&\justif{on remplace $x$ par $0$}\\
+f(2) &= 4-4+3 = 3 &&\\[4pt]
+\frac{f(2)-f(0)}{2-0} &= \frac{3-3}{2} &&\justif{la formule, avec $x_{1}=0$ et $x_{2}=2$}\\
+\frac{f(2)-f(0)}{2-0} &= \res{0} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+f(1) &= 1-2+3 = 2 &&\\
+f(4) &= 16-8+3 = 11 &&\\[4pt]
+\frac{f(4)-f(1)}{4-1} &= \frac{11-2}{3} &&\\
+\frac{f(4)-f(1)}{4-1} &= \res{3} &&\justif{$\frac{9}{3}=3$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+f(-2) &= 4+4+3 = 11 &&\justif{$(-2)^{2}=4$ et $-2\times(-2)=4$ ; $f(1)=2$ (question b)}\\[4pt]
+\frac{f(1)-f(-2)}{1-(-2)} &= \frac{2-11}{3} &&\justif{$1-(-2)=1+2=3$}\\
+\frac{f(1)-f(-2)}{1-(-2)} &= \res{-3} &&\justif{$\frac{-9}{3}=-3$}
+\end{calculs}
+\rem{Un taux nul (question a) : $f(0)=f(2)$, la sécante est horizontale.}
+\end{exo}
+
+\begin{exo}[Les clients d'un site de vente en ligne]
+\cas{a)}
+\begin{calculs}
+\frac{N(2)-N(0)}{2-0} &= \frac{10-4}{2} = \res{3} &&\justif{valeurs lues dans le tableau}\\
+\frac{N(5)-N(2)}{5-2} &= \frac{16-10}{3} = \res{2} &&\\
+\frac{N(10)-N(5)}{10-5} &= \frac{21-16}{5} = \res{1} &&
+\end{calculs}
+\cas{b)}
+\explique{Entre $0$ et $2$ mois, \res{le site gagne en moyenne $3\,000$ clients par mois} ;
+entre $2$ et $5$ mois, \res{$2\,000$ clients par mois} ; entre $5$ et $10$ mois,
+\res{$1\,000$ clients par mois}.}{$N$ est en milliers : un taux de $3$ signifie
+$3\,000$ clients par mois}
+\cas{c)}
+\explique{Le plus grand taux est celui des deux premiers mois : c'est \res{entre $0$ et
+$2$ mois} que le nombre de clients augmente le plus vite en moyenne.}{tous les taux sont
+positifs : $N$ augmente, mais de moins en moins vite}
+\end{exo}
+
+\begin{exo}[Lire un taux de variation sur une courbe]
+\cas{a)}
+\explique{On lit les ordonnées des points de $\Cf$ : $f(-3)=\res{-1}$ ; $f(-1)=\res{3}$ ;
+$f(1)=\res{1}$ ; $f(3)=\res{5}$.}{points du quadrillage}
+\cas{b)}
+\begin{calculs}
+\frac{f(-1)-f(-3)}{-1-(-3)} &= \frac{3-(-1)}{2} &&\justif{$-1-(-3)=-1+3=2$}\\
+\frac{f(-1)-f(-3)}{-1-(-3)} &= \res{2} &&\\[4pt]
+\frac{f(1)-f(-1)}{1-(-1)} &= \frac{1-3}{2} &&\\
+\frac{f(1)-f(-1)}{1-(-1)} &= \res{-1} &&
+\end{calculs}
+\cas{c)}
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+\explique{La sécante passe par $(-3\,;-1)$ et $(3\,;5)$. On avance de $6$ et on monte de
+$6$ : son coefficient directeur vaut $\res{1}$.}{$\frac{6}{6}=1$}
+\explique{C'est le \res{taux de variation de $f$ entre $-3$ et $3$}.}{définition 1}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-2}{4}{6}
+  \gradx{-3,-2,-1,1,2,3} \grady{-1,1,2,3,4,5}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,-1) .. controls (-2.333,1) and (-1.667,3) .. (-1,3)
+            .. controls (-0.333,3) and (0.333,1) .. (1,1)
+            .. controls (1.667,1) and (2.333,3) .. (3,5);
+  \draw[coulCourbeB,thick] (-4,-2)--(4,6);
+  \pt{-3,-1}{left}{}
+  \pt{3,5}{left}{}
+  \node[coulCourbe,font=\footnotesize] at (2.9,3.4) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Un coût de production]
+\cas{a)}
+\begin{calculs}
+C(10) &= 100+200+100 = \res{400} &&\justif{$10^{2}+20\times 10+100$}\\
+C(20) &= 400+400+100 = \res{900} &&\\
+C(30) &= 900+600+100 = \res{1\,600} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\frac{C(20)-C(10)}{20-10} &= \frac{900-400}{10} &&\justif{la formule}\\
+\frac{C(20)-C(10)}{20-10} &= 50 &&\justif{$\frac{500}{10}=50$}
+\end{calculs}
+\explique{Entre $10$ et $20$ lampes, \res{le coût augmente en moyenne de $50$~€ par lampe
+supplémentaire}.}{des euros divisés par des lampes}
+\cas{c)}
+\begin{calculs}
+\frac{C(30)-C(20)}{30-20} &= \frac{1\,600-900}{10} &&\\
+\frac{C(30)-C(20)}{30-20} &= 70 &&
+\end{calculs}
+\explique{Entre $20$ et $30$ lampes, \res{le coût augmente en moyenne de $70$~€ par lampe
+supplémentaire}.}{}
+\cas{d)}
+\explique{\res{Oui} : le taux passe de $50$ à $70$~€ par lampe.}{chaque lampe
+supplémentaire coûte de plus en plus cher à produire}
+\cas{e)}
+\begin{calculs}
+m &= \frac{900-400}{20-10} &&\justif{c'est le taux de la question b)}\\
+m &= 50 &&\\
+50\times 10+p &= 400 &&\justif{la droite passe par $(10\,;400)$}\\
+p &= -100 &&\justif{$400-500$}
+\end{calculs}
+\explique{La droite a pour équation $\res{y=50x-100}$.}{méthode 1 ; c'est la sécante
+entre $10$ et $20$}
+\end{exo}
+
+\partie{Nombre dérivé}
+
+\begin{exo}[Nombre dérivé en $1$]
+\cas{a)}
+\begin{calculs}
+f(1) &= 1^{2}+2\times 1-1 &&\justif{on remplace $x$ par $1$}\\
+f(1) &= \res{2} &&\\[4pt]
+f(1+h) &= (1+h)^{2}+2(1+h)-1 &&\justif{on remplace $x$ par $(1+h)$}\\
+f(1+h) &= 1+2h+h^{2}+2+2h-1 &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$, puis on développe}\\
+f(1+h) &= \res{h^{2}+4h+2} &&\justif{on réduit}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+T(h) &= \frac{f(1+h)-f(1)}{h} &&\justif{la formule, avec $a=1$}\\
+T(h) &= \frac{h^{2}+4h+2-2}{h} &&\justif{on remplace}\\
+T(h) &= \frac{h^{2}+4h}{h} &&\justif{$2-2=0$}\\
+T(h) &= \frac{\barre{h}\,(h+4)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= \res{h+4} &&
+\end{calculs}
+\cas{c)}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=h+4$ se rapproche de $4$. Donc
+$\res{f'(1)=4}$.}{on remplace $h$ par $0$ dans le résultat simplifié}
+\rem{Contrôle : au numérateur de $T(h)$, les nombres seuls s'annulent toujours ($2-2$) ;
+s'il en reste un, il y a une erreur de calcul.}
+\end{exo}
+
+\begin{exo}[Nombre dérivé en $2$]
+\cas{Résolution}
+\explique{Les deux images d'abord :}{méthode 3}\nopagebreak
+\begin{calculs}
+g(2) &= 2\times 2^{2}-3\times 2 &&\justif{on remplace $x$ par $2$}\\
+g(2) &= 8-6 &&\\
+g(2) &= \res{2} &&\\[4pt]
+g(2+h) &= 2(2+h)^{2}-3(2+h) &&\justif{on remplace $x$ par $(2+h)$}\\
+g(2+h) &= 2(4+4h+h^{2})-6-3h &&\justif{on développe d'abord le carré}\\
+g(2+h) &= 8+8h+2h^{2}-6-3h &&\justif{puis on multiplie par $2$}\\
+g(2+h) &= \res{2h^{2}+5h+2} &&\justif{on réduit}
+\end{calculs}
+\explique{Puis le taux de variation :}{}\nopagebreak
+\begin{calculs}
+T(h) &= \frac{g(2+h)-g(2)}{h} &&\justif{la formule, avec $a=2$}\\
+T(h) &= \frac{2h^{2}+5h+2-2}{h} &&\justif{on remplace}\\
+T(h) &= \frac{\barre{h}\,(2h+5)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= \res{2h+5} &&
+\end{calculs}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=2h+5$ se rapproche de $5$. Donc
+$\res{g'(2)=5}$.}{$2h$ se rapproche de $0$}
+\rem{Erreur fréquente : $2(2+h)^{2}=(4+2h)^{2}$. Le carré passe avant la multiplication
+par $2$ (priorité des puissances).}
+\end{exo}
+
+\begin{exo}[Avec un coefficient négatif]
+\cas{Résolution}
+\begin{calculs}
+k(1) &= -1^{2}+5\times 1 &&\justif{$-1^{2}=-1$ : le carré porte sur $1$ seulement}\\
+k(1) &= \res{4} &&\\[4pt]
+k(1+h) &= -(1+h)^{2}+5(1+h) &&\justif{on remplace $x$ par $(1+h)$}\\
+k(1+h) &= -(1+2h+h^{2})+5+5h &&\justif{le $-$ porte sur tout le carré}\\
+k(1+h) &= -1-2h-h^{2}+5+5h &&\justif{on enlève les parenthèses : les signes changent}\\
+k(1+h) &= \res{-h^{2}+3h+4} &&\justif{on réduit}
+\end{calculs}
+\begin{calculs}
+T(h) &= \frac{k(1+h)-k(1)}{h} &&\justif{la formule, avec $a=1$}\\
+T(h) &= \frac{-h^{2}+3h+4-4}{h} &&\justif{on remplace}\\
+T(h) &= \frac{\barre{h}\,(-h+3)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= \res{-h+3} &&
+\end{calculs}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=-h+3$ se rapproche de $3$. Donc
+$\res{k'(1)=3}$.}{on remplace $h$ par $0$}
+\rem{Erreur fréquente : $-(1+h)^{2}=-1+2h+h^{2}$. Le signe $-$ change les trois termes du
+développement.}
+\end{exo}
+
+\begin{exo}[Vers le nombre dérivé]
+\cas{a)}
+\explique{Pour chaque valeur de $h$, on calcule $f(4+h)=(4+h)^{2}$, on retire
+$f(4)=16$, puis on divise par $h$. Détail pour $h=0{,}1$ :}{les carrés de $4{,}1$ et
+de $4{,}01$ sont donnés}\nopagebreak
+\begin{calculs}
+T(0{,}1) &= \frac{4{,}1^{2}-16}{0{,}1} &&\justif{$4+0{,}1=4{,}1$}\\
+T(0{,}1) &= \frac{16{,}81-16}{0{,}1} &&\\
+T(0{,}1) &= \frac{0{,}81}{0{,}1} &&\\
+T(0{,}1) &= 8{,}1 &&\justif{diviser par $0{,}1$, c'est multiplier par $10$}
+\end{calculs}
+\explique{De même pour les deux autres valeurs :}{}\nopagebreak
+\begin{calculs}
+T(1) &= \frac{25-16}{1} = 9 &&\justif{$5^{2}=25$}\\
+T(0{,}01) &= \frac{16{,}0801-16}{0{,}01} = 8{,}01 &&\justif{diviser par $0{,}01$, c'est multiplier par $100$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$h$ & $1$ & $0{,}1$ & $0{,}01$\\
+\hline
+$T(h)$ & $9$ & $8{,}1$ & $8{,}01$\\
+\hline
+\end{tabular}
+\end{center}
+\cas{b)}
+\explique{Quand $h$ se rapproche de $0$, $T(h)$ se rapproche de $8$ : le tableau
+suggère $\res{f'(4)=8}$.}{$9$, puis $8{,}1$, puis $8{,}01$ : l'écart à $8$ est divisé
+par $10$ à chaque fois}
+\end{exo}
+
+\partie{Tangente à une courbe}
+
+\begin{exo}[Lire des nombres dérivés]
+\begin{center}
+\begin{tikzpicture}[x=0.65cm,y=0.65cm]
+  \repere{-4}{-2}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,2) .. controls (-2.333,0.667) and (-1.667,-1) .. (-1,-1)
+           .. controls (-0.333,-1) and (0.333,-0.333) .. (1,1)
+           .. controls (1.667,2.333) and (2.333,3) .. (3,3)
+           .. controls (3.333,3) and (3.667,2.667) .. (4,2);
+  \draw[coulCourbeB,thick] (-4,4)--(-1.7,-0.6);
+  \draw[coulCourbeB,thick] (-2,-1)--(0,-1);
+  \draw[coulCourbeB,thick] (0,-1)--(2.5,4);
+  \draw[coulCourbeB,thick] (3,4)--(4.9,0.2);
+  \draw[lecture] (-3,2)--(-2,2);
+  \draw[lecture] (-2,2)--(-2,0);
+  \draw[lecture] (1,1)--(2,1);
+  \draw[lecture] (2,1)--(2,3);
+  \draw[lecture] (3,4)--(4,4);
+  \draw[lecture] (4,4)--(4,2);
+  \pt{-3,2}{left}{A}
+  \pt{-1,-1}{below}{B}
+  \pt{1,1}{left}{C}
+  \pt{4,2}{right}{E}
+  \node[coulCourbe,font=\footnotesize] at (2.4,2.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\explique{En $A(-3\,;2)$ : on avance de $1$, on descend de $2$. Donc
+$f'(-3)=\res{-2}$.}{on descend : nombre négatif}
+\explique{En $B(-1\,;-1)$ : la tangente est horizontale. Donc $f'(-1)=\res{0}$.}{on ne
+monte pas}
+\explique{En $C(1\,;1)$ : on avance de $1$, on monte de $2$. Donc
+$f'(1)=\res{2}$.}{la tangente passe par $(2\,;3)$}
+\explique{En $E(4\,;2)$ : la tangente passe par $(3\,;4)$ ; de là, on avance de $1$ et
+on descend de $2$ jusqu'à $E$. Donc $f'(4)=\res{-2}$.}{on part d'un nœud de la
+tangente}
+\rem{On lit $f'(a)$ sur la tangente (une pente), pas sur la courbe : en $C$, $f(1)=1$
+mais $f'(1)=2$.}
+\end{exo}
+
+\begin{exo}[Tracer des tangentes]
+\explique{Dans chaque cas, on place le point, puis on part de ce point en suivant le
+nombre dérivé : on avance de $1$ et on monte de $f'(a)$. On trace la droite qui passe par
+les deux points obtenus.}{méthode 4 ; une figure par tangente}
+\cas{a)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $A(0\,;1)$. On avance de $1$ et on monte de $2$ : on arrive en
+$(1\,;3)$.}{$f'(0)=2$}
+\explique{On trace la droite qui passe par ces deux points.}{elle passe aussi par
+$(-1\,;-1)$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \begin{scope}
+  \clip (-4,-4) rectangle (4,4);
+  \draw[coulCourbeB,thick] (-2.5,-4)--(1.5,4);
+  \end{scope}
+  \draw[lecture] (0,1)--(1,1);
+  \draw[lecture] (1,1)--(1,3);
+  \pt{0,1}{left}{A}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $B(1\,;3)$. On avance de $1$ et on descend de $1$ : on arrive en
+$(2\,;2)$.}{$f'(1)=-1$ : on descend}
+\explique{On trace la droite qui passe par ces deux points.}{elle passe aussi par
+$(4\,;0)$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \begin{scope}
+  \clip (-4,-4) rectangle (4,4);
+  \draw[coulCourbeB,thick] (-0.5,4.5)--(4.5,-0.5);
+  \end{scope}
+  \draw[lecture] (1,3)--(2,3);
+  \draw[lecture] (2,3)--(2,2);
+  \pt{1,3}{left}{B}
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $C(-2\,;-1)$. Monter de $\frac{1}{2}$ ne tombe pas sur le
+quadrillage : on avance de $2$ et on monte de $1$, on arrive en $(0\,;0)$.}{$f'(-2)=\frac{1}{2}$ :
+deux fois plus loin, on monte deux fois plus}
+\explique{On trace la droite qui passe par $C$ et par l'origine.}{elle passe aussi par
+$(2\,;1)$}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \draw[coulCourbeB,thick] (-4,-2)--(4,2);
+  \draw[lecture] (-2,-1)--(0,-1);
+  \draw[lecture] (0,-1)--(0,0);
+  \pt{-2,-1}{below}{C}
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\explique{On place $D(3\,;-2)$. Comme $f'(3)=0$, on ne monte pas : la tangente est la
+droite horizontale qui passe par $D$.}{pente nulle}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-2,2} \grady{-2,2}
+  \draw[coulCourbeB,thick] (-4,-2)--(4,-2);
+  \pt{3,-2}{below}{D}
+\end{tikzpicture}
+\end{minipage}
+\rem{Une tangente se trace avec deux points sur des nœuds du quadrillage : le point de la
+courbe, puis le point obtenu en suivant la pente. Un seul point et un tracé \og à
+l'\oe il\fg{} ne suffisent pas.}
+\end{exo}
+
+\begin{exo}[Une tangente qui passe par deux points]
+\explique{Le point de contact est sur $\Cf$ : il donne $f(a)$. Le nombre dérivé $f'(a)$
+est le coefficient directeur de la tangente, qu'on calcule avec deux de ses
+points.}{définition 3 et méthode 1}
+\cas{a)}
+\begin{calculs}
+f(1) &= \res{2} &&\justif{$A(1\,;2)$ est sur $\Cf$}\\
+f'(1) &= \frac{6-2}{3-1} &&\justif{coefficient directeur de $(T_{1})$, qui passe par $A$ et $B$}\\
+f'(1) &= \res{2} &&\justif{$\frac{4}{2}=2$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+f(-1) &= \res{4} &&\justif{$C(-1\,;4)$ est sur $\Cf$}\\
+f'(-1) &= \frac{-2-4}{2-(-1)} &&\justif{coefficient directeur de $(T_{-1})$, avec $C$ et $D$}\\
+f'(-1) &= \res{-2} &&\justif{$\frac{-6}{3}=-2$}
+\end{calculs}
+\cas{c)}
+\explique{$f(3)=\res{5}$ et, la tangente étant horizontale, $f'(3)=\res{0}$.}{une droite
+parallèle à l'axe des abscisses a un coefficient directeur nul}
+\end{exo}
+
+\begin{exo}[Tangentes qui montent, tangentes qui descendent]
+\begin{center}
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-5}{-2}{4}{4}
+  \gradx{-4,-3,-2,-1,1,2,3} \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,-1) .. controls (-3.333,1) and (-2.667,3) .. (-2,3)
+            .. controls (-1,3) and (0,-1) .. (1,-1)
+            .. controls (1.667,-1) and (2.333,1) .. (3,3);
+  \draw[coulCourbeB,thick] (-3.2,3)--(-0.8,3);
+  \draw[coulCourbeB,thick] (-0.2,-1)--(2.2,-1);
+  \pt{-2,3}{above}{}
+  \pt{1,-1}{below}{}
+  \node[coulCourbe,font=\footnotesize] at (1.6,2.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\cas{a)}
+\explique{La tangente est horizontale aux points \res{$(-2\,;3)$ et $(1\,;-1)$}, au sommet
+de la « bosse » et au fond du « creux ». Donc \res{$f'(-2)=0$ et $f'(1)=0$}.}{tangente
+horizontale : coefficient directeur nul}
+\cas{b)}
+\explique{En $-3$, la courbe monte, la tangente aussi : \res{$f'(-3)>0$}.}{}
+\explique{En $0$, la courbe descend : \res{$f'(0)<0$}.}{}
+\explique{En $2$, la courbe monte : \res{$f'(2)>0$}.}{tangente qui monte : nombre dérivé
+positif}
+\cas{c)}
+\explique{Le nombre dérivé $f'(-2)$ est le coefficient directeur de la tangente à $\Cf$ au
+point d'abscisse $-2$ ; cette tangente est horizontale, donc \res{$f'(-2)=0$}.}{une phrase
+complète, avec les mots « nombre dérivé », « coefficient directeur » et « tangente »}
+\end{exo}
+
+\begin{exo}[Retrouver l'allure d'une courbe]
+\cas{Résolution}
+\begin{center}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-4}{-4}{4}{3}
+  \gradx{-3,-2,-1,1,2,3} \grady{-3,-2,-1,1,2}
+  \draw[coulCourbeB,thick] (-3.6,-3.8)--(-2.2,0.4);
+  \draw[coulCourbeB,thick] (-2,2)--(0,2);
+  \draw[coulCourbeB,thick] (0.3,1.4)--(1.7,-1.4);
+  \draw[coulCourbeB,thick] (2,-2)--(4,-2);
+  \draw[lecture] (-3,-2)--(-2,-2);
+  \draw[lecture] (-2,-2)--(-2,1);
+  \draw[lecture] (1,0)--(2,0);
+  \draw[lecture] (2,0)--(2,-2);
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,-2) .. controls (-2.333,0) and (-1.667,2) .. (-1,2)
+            .. controls (-0.333,2) and (0.333,1.333) .. (1,0)
+            .. controls (1.667,-1.333) and (2.333,-2) .. (3,-2);
+  \pt{-3,-2}{left}{A}
+  \pt{-1,2}{above}{B}
+  \pt{1,0}{left}{C}
+  \pt{3,-2}{below}{D}
+  \node[coulCourbe,font=\footnotesize] at (-0.3,2.6) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\explique{On place les quatre points, puis on trace un morceau de chaque tangente :}{la
+pente donne le sens}
+\explique{en $A(-3\,;-2)$, on avance de $1$ et on monte de $3$ ;}{$f'(-3)=3$}
+\explique{en $B(-1\,;2)$ et en $D(3\,;-2)$, la tangente est horizontale ;}{$f'(-1)=0$ et
+$f'(3)=0$}
+\explique{en $C(1\,;0)$, on avance de $1$ et on descend de $2$.}{$f'(1)=-2$}
+\explique{On trace enfin une courbe qui passe par les quatre points en \og
+collant\fg{} à chaque tangente : elle monte jusqu'à $B$, puis descend jusqu'à
+$D$.}{plusieurs courbes conviennent ; seuls les points et les tangentes sont
+imposés}
+\rem{Les tangentes d'abord, la courbe ensuite : là où la tangente est horizontale ($B$ et
+$D$), la courbe forme un sommet en $B$ (maximum) ; en $D$, elle arrive à plat.}
+\end{exo}
+
+\partie{Équation de la tangente}
+
+\begin{exo}[Avec un nombre dérivé admis]
+\cas{a)}
+\begin{calculs}
+f(4) &= 4^{2}-3\times 4+2 &&\justif{on remplace $x$ par $4$}\\
+f(4) &= 16-12+2 &&\\
+f(4) &= 6 &&
+\end{calculs}
+\begin{calculs}
+y &= f'(4)\,(x-4)+f(4) &&\justif{la formule, avec $a=4$}\\
+y &= 5(x-4)+6 &&\justif{$f'(4)=5$ et $f(4)=6$}\\
+y &= 5x-20+6 &&\justif{on développe}\\
+y &= 5x-14 &&\justif{on réduit}
+\end{calculs}
+\explique{La tangente au point d'abscisse $4$ a pour équation $\res{y=5x-14}$.}{contrôle :
+pour $x=4$, $y=20-14$, soit $6$ : c'est bien $f(4)$}
+\cas{b)}
+\begin{calculs}
+f(1) &= 1^{2}-3\times 1+2 &&\justif{on remplace $x$ par $1$}\\
+f(1) &= 0 &&
+\end{calculs}
+\begin{calculs}
+y &= f'(1)\,(x-1)+f(1) &&\justif{la formule, avec $a=1$}\\
+y &= -1(x-1)+0 &&\justif{$f'(1)=-1$ et $f(1)=0$}\\
+y &= -x+1 &&\justif{on développe}
+\end{calculs}
+\explique{La tangente au point d'abscisse $1$ a pour équation $\res{y=-x+1}$.}{}
+\end{exo}
+
+\begin{exo}[Quatre tangentes]
+\explique{Dans chaque cas, on recopie la formule $y=f'(a)\,(x-a)+f(a)$, on remplace,
+puis on développe.}{propriété 2}
+\cas{a)}
+\begin{calculs}
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= 1(x-2)+3 &&\justif{$f'(2)=1$ et $f(2)=3$}\\
+y &= x-2+3 &&\justif{on développe}\\
+y &= \res{x+1} &&\justif{on réduit}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+y &= f'(-1)\,(x-(-1))+f(-1) &&\justif{la formule, avec $a=-1$}\\
+y &= -2(x+1)+4 &&\justif{$x-(-1)=x+1$}\\
+y &= -2x-2+4 &&\justif{on développe}\\
+y &= \res{-2x+2} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+y &= f'(3)\,(x-3)+f(3) &&\justif{la formule, avec $a=3$}\\
+y &= 0\times(x-3)+(-1) &&\justif{$f'(3)=0$ et $f(3)=-1$}\\
+y &= \res{-1} &&\justif{tangente horizontale}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= \res{-3x+5} &&\justif{$x-0=x$}
+\end{calculs}
+\rem{Ne pas inverser les rôles : $f'(a)$, la pente, multiplie $(x-a)$ ; $f(a)$,
+l'ordonnée du point, s'ajoute. Contrôle : pour $x=a$, on doit retrouver $y=f(a)$ ; en b),
+$-2\times(-1)+2=4$.}
+\end{exo}
+
+\begin{exo}[Lire, puis calculer]
+\begin{center}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-3}{-3}{3}{4}
+  \gradx{-2,-1,1,2} \grady{-2,-1,1,2,3}
+  \begin{scope}
+  \clip (-3,-3) rectangle (3,4);
+  \draw[coulCourbe,line width=1.1pt,domain=-2.4:2.4,samples=50] plot (\x,{-\x*\x+2});
+  \draw[coulCourbeB,thick] (-3,-3)--(0.5,4);
+  \end{scope}
+  \draw[lecture] (-1,1)--(0,1);
+  \draw[lecture] (0,1)--(0,3);
+  \pt{-1,1}{left}{A}
+  \node[coulCourbe,font=\footnotesize] at (1.8,0.9) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize] at (1.2,3.5) {$(T_{-1})$};
+\end{tikzpicture}
+\end{center}
+\cas{a)}
+\explique{$A(-1\,;1)$ est sur $\Cf$, donc $f(-1)=\res{1}$. Sur $(T_{-1})$, à partir de $A$,
+on avance de $1$ et on monte de $2$, donc $f'(-1)=\res{2}$.}{méthode 4}
+\cas{b)}
+\begin{calculs}
+y &= f'(-1)\,(x-(-1))+f(-1) &&\justif{la formule, avec $a=-1$}\\
+y &= 2(x+1)+1 &&\justif{$x-(-1)=x+1$}\\
+y &= 2x+2+1 &&\justif{on développe}\\
+y &= 2x+3 &&
+\end{calculs}
+\explique{$(T_{-1})$ a pour équation $\res{y=2x+3}$.}{}
+\cas{c)}
+\explique{$(T_{-1})$ coupe l'axe des ordonnées au point \res{$(0\,;3)$} : l'ordonnée à
+l'origine vaut $3$, comme dans $y=2x+3$.}{la lecture confirme le calcul}
+\end{exo}
+
+\begin{exo}[Des équations à contrôler]
+\cas{a)}
+\begin{calculs}
+f(3) &= 9-6+4 = 7 &&\justif{on remplace $x$ par $3$}\\
+y &= f'(3)\,(x-3)+f(3) &&\justif{la formule, avec $a=3$}\\
+y &= 4(x-3)+7 &&\\
+y &= 4x-5 &&\justif{$-12+7=-5$}
+\end{calculs}
+\explique{L'affirmation a) est \res{vraie}.}{}
+\cas{b)}
+\begin{calculs}
+g(1) &= -1+5 = 4 &&\justif{on remplace $x$ par $1$}\\
+y &= g'(1)\,(x-1)+g(1) &&\justif{la formule, avec $a=1$}\\
+y &= -2(x-1)+4 &&\\
+y &= -2x+6 &&\justif{$-2\times(-1)=2$ et $2+4=6$}
+\end{calculs}
+\explique{La tangente a pour équation $y=-2x+6$, pas $y=-2x+4$ : l'affirmation b) est
+\res{fausse}.}{erreur fréquente : oublier le $+2$ qui vient de $-2\times(-1)$}
+\cas{c)}
+\begin{calculs}
+y &= h'(2)\,(x-2)+h(2) &&\justif{la formule, avec $a=2$}\\
+y &= 0\times(x-2)+5 &&\\
+y &= 5 &&
+\end{calculs}
+\explique{L'affirmation c) est \res{vraie} : la tangente est horizontale.}{$h'(2)=0$}
+\end{exo}
+
+\begin{exo}[Du taux de variation à la tangente]
+\cas{a)}
+\begin{calculs}
+f(2) &= -2^{2}+3\times 2+1 &&\justif{$-2^{2}=-4$}\\
+f(2) &= \res{3} &&\\[4pt]
+f(2+h) &= -(2+h)^{2}+3(2+h)+1 &&\justif{on remplace $x$ par $(2+h)$}\\
+f(2+h) &= -(4+4h+h^{2})+6+3h+1 &&\justif{identité remarquable}\\
+f(2+h) &= -4-4h-h^{2}+6+3h+1 &&\justif{le $-$ change les trois signes}\\
+f(2+h) &= \res{-h^{2}-h+3} &&\justif{on réduit}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+T(h) &= \frac{f(2+h)-f(2)}{h} &&\justif{la formule, avec $a=2$}\\
+T(h) &= \frac{-h^{2}-h+3-3}{h} &&\justif{on remplace}\\
+T(h) &= \frac{\barre{h}\,(-h-1)}{\barre{h}} &&\justif{on factorise par $h$, puis on simplifie}\\
+T(h) &= -h-1 &&
+\end{calculs}
+\explique{Quand $h$ se rapproche de $0$, $T(h)=-h-1$ se rapproche de $-1$. Donc
+$\res{f'(2)=-1}$.}{on remplace $h$ par $0$}
+\cas{c)}
+\begin{calculs}
+y &= f'(2)\,(x-2)+f(2) &&\justif{la formule, avec $a=2$}\\
+y &= -1(x-2)+3 &&\justif{$f'(2)=-1$ et $f(2)=3$}\\
+y &= -x+2+3 &&\justif{on développe}\\
+y &= -x+5 &&
+\end{calculs}
+\explique{La tangente au point d'abscisse $2$ a pour équation $\res{y=-x+5}$.}{}
+\end{exo}
+
+\partie{Fonction dérivée d'une fonction polynôme}
+
+\begin{exo}[Dériver]
+\explique{On dérive terme par terme avec le tableau de la propriété 3 ; un nombre qui
+multiplie reste devant.}{méthode 6}
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{7} &&\justif{$mx+p$ devient $m$ : le $-5$ disparaît}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= \res{-4} &&\justif{$1$ devient $0$ ; $-4x$ devient $-4$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 2x+6+0 &&\justif{$x^{2}$ devient $2x$ ; $6x$ devient $6$ ; $-2$ devient $0$}\\
+h'(x) &= \res{2x+6} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 3\times 2x-1+0 &&\justif{le $3$ reste devant ; $-x$ devient $-1$}\\
+k'(x) &= \res{6x-1} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= -5\times 2x+10 &&\justif{terme par terme}\\
+m'(x) &= \res{-10x+10} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 3x^{2}+4\times 2x-1 &&\justif{$x^{3}$ devient $3x^{2}$}\\
+p'(x) &= \res{3x^{2}+8x-1} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+q'(x) &= 2\times 3x^{2}-3\times 2x+0 &&\justif{$x^{3}$ devient $3x^{2}$}\\
+q'(x) &= \res{6x^{2}-6x} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+r'(x) &= -2\times 3x^{2}+0 &&\justif{$5$ devient $0$}\\
+r'(x) &= \res{-6x^{2}} &&
+\end{calculs}
+\rem{Un nombre seul (le $-5$ de $7x-5$, le $8$ de $3x^{2}-x+8$) a pour dérivée $0$ : il
+disparaît.}
+\end{exo}
+
+\begin{exo}[Entraînement]
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{6} &&\justif{$mx+p$ devient $m$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= -2x+4-0 &&\justif{$-x^{2}$ devient $-2x$}\\
+g'(x) &= \res{-2x+4} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 5\times 3x^{2}-2\times 2x &&\justif{terme par terme}\\
+h'(x) &= \res{15x^{2}-4x} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 3x^{2}+2x+1+0 &&\justif{$x^{3}$ devient $3x^{2}$ ; $x$ devient $1$ ; $1$ devient $0$}\\
+k'(x) &= \res{3x^{2}+2x+1} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= -3\times 3x^{2}+6 &&\justif{le $-3$ reste devant}\\
+m'(x) &= \res{-9x^{2}+6} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 2\times 3x^{2}-5\times 2x+0 &&\justif{$3$ devient $0$}\\
+p'(x) &= \res{6x^{2}-10x} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+q'(x) &= \frac{1}{2}\times 2x+3 &&\justif{le $\frac{1}{2}$ reste devant}\\
+q'(x) &= \res{x+3} &&\justif{$\frac{1}{2}\times 2=1$}
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+r'(x) &= \frac{1}{3}\times 3x^{2}-1 &&\justif{le $\frac{1}{3}$ reste devant}\\
+r'(x) &= \res{x^{2}-1} &&\justif{$\frac{1}{3}\times 3=1$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Développer d'abord]
+\explique{Le tableau de la propriété 3 ne donne la dérivée ni d'un produit ni d'un
+carré : on développe d'abord, pour obtenir un polynôme.}{}
+\cas{a)}
+\begin{calculs}
+A(x) &= (x-1)(x+4) &&\justif{on recopie l'expression}\\
+A(x) &= x^{2}+4x-x-4 &&\justif{double distributivité}\\
+A(x) &= x^{2}+3x-4 &&\justif{on réduit}\\
+A'(x) &= \res{2x+3} &&\justif{terme par terme}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+B(x) &= (2x+1)(x-3) &&\\
+B(x) &= 2x^{2}-6x+x-3 &&\justif{double distributivité}\\
+B(x) &= 2x^{2}-5x-3 &&\\
+B'(x) &= \res{4x-5} &&\justif{$2\times 2x=4x$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+C(x) &= (x+2)^{2} &&\\
+C(x) &= x^{2}+4x+4 &&\justif{$(a+b)^{2}=a^{2}+2ab+b^{2}$}\\
+C'(x) &= \res{2x+4} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+D(x) &= x(x^{2}-5) &&\\
+D(x) &= x^{3}-5x &&\justif{on distribue $x$}\\
+D'(x) &= \res{3x^{2}-5} &&
+\end{calculs}
+\rem{Erreur fréquente : dériver chaque facteur et multiplier, $(x-1)'\times(x+4)'=1$ au
+lieu de $2x+3$.}
+\end{exo}
+
+\begin{exo}[Dérivée et tangentes]
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3x^{2}-2+0 &&\justif{$x^{3}$ devient $3x^{2}$ ; $-2x$ devient $-2$}\\
+f'(x) &= \res{3x^{2}-2} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+f(1) &= 1^{3}-2\times 1+1 &&\justif{on remplace $x$ par $1$ dans $f(x)$}\\
+f(1) &= 0 &&\\
+f'(1) &= 3\times 1^{2}-2 &&\justif{on remplace $x$ par $1$ dans $f'(x)$}\\
+f'(1) &= 1 &&
+\end{calculs}
+\begin{calculs}
+y &= f'(1)\,(x-1)+f(1) &&\justif{la formule, avec $a=1$}\\
+y &= 1(x-1)+0 &&\\
+y &= x-1 &&
+\end{calculs}
+\explique{La tangente au point d'abscisse $1$ a pour équation $\res{y=x-1}$.}{}
+\cas{c)}
+\begin{calculs}
+f(0) &= 0-0+1 &&\\
+f(0) &= 1 &&\\
+f'(0) &= 3\times 0^{2}-2 &&\\
+f'(0) &= -2 &&\\[4pt]
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= -2x+1 &&
+\end{calculs}
+\explique{La tangente au point d'abscisse $0$ a pour équation $\res{y=-2x+1}$.}{}
+\rem{Ne pas confondre $f(1)$, calculé avec $f(x)$, et $f'(1)$, calculé avec $f'(x)$.}
+\end{exo}
+
+\partie{Dérivée et sens de variation}
+
+\begin{exo}[Du signe de $f'$ aux variations]
+\cas{Résolution}
+\explique{Là où $f'(x)<0$, $f$ est décroissante ; là où $f'(x)>0$, $f$ est
+croissante.}{propriété 4}
+\explique{On place les images de l'énoncé au bout des flèches : $f$ décroît de $2$ à
+$-3$, croît de $-3$ à $4$, puis décroît de $4$ à $1$.}{une flèche va d'une valeur à la
+suivante}\nopagebreak
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-4$,$-1$,$3$,$5$}
+  \tkzTabLine{,-,z,+,z,-,}
+  \tkzTabVar{+/$2$,-/$-3$,+/$4$,-/$1$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un trinôme]
+\cas{a)}
+\begin{calculs}
+f'(x) &= 2x-6+0 &&\justif{terme par terme}\\
+f'(x) &= \res{2x-6} &&
+\end{calculs}
+\explique{On cherche quand $f'(x)$ s'annule :}{}\nopagebreak
+\begin{calculs}
+2x-6 &= 0 &&\\
+2x &= 6 &&\justif{on ajoute $6$}\\
+x &= 3 &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$2x-6$ est affine, de coefficient directeur $2>0$ : négatif avant $3$, positif
+après.}{signe d'une expression affine}
+\cas{b)}
+\explique{On calcule les images des bornes et de $3$ :}{elles complètent le tableau}\nopagebreak
+\begin{calculs}
+f(0) &= 5 &&\\
+f(3) &= 9-18+5 = -4 &&\\
+f(6) &= 36-36+5 = 5 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$3$,$6$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$5$,-/$-4$,+/$5$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un polynôme de degré 3]
+\cas{a)}
+\begin{calculs}
+f'(x) &= 3x^{2}-3\times 2x+0 &&\justif{terme par terme}\\
+f'(x) &= \res{3x^{2}-6x} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+3x(x-2) &= 3x\times x-3x\times 2 &&\justif{on distribue $3x$}\\
+3x(x-2) &= 3x^{2}-6x &&
+\end{calculs}
+\explique{On retrouve $f'(x)$, donc \res{$f'(x)=3x(x-2)$}.}{on part de la forme
+factorisée et on développe}
+\cas{c)}
+\explique{$3>0$ ; \quad $x=0$ pour $x=0$ ; \quad $x-2=0$ pour $x=2$.}{valeurs qui
+annulent les facteurs, rangées dans l'ordre croissant}\nopagebreak
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$3$/0.8,$x$/0.8,$x-2$/0.8,$f'(x)$/0.8}%
+    {$-1$,$0$,$2$,$3$}
+  \tkzTabLine{,+,t,+,t,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{$f'(x)$ est \res{positif sur $\intff{-1}{0}$ et sur $\intff{2}{3}$, négatif sur
+$\intff{0}{2}$}.}{dernière ligne : règle des signes, colonne par colonne}
+\cas{d)}
+\explique{On calcule les images des bornes et des valeurs où $f'$ s'annule :}{}\nopagebreak
+\begin{calculs}
+f(-1) &= -1-3+1 = -3 &&\justif{$(-1)^{3}=-1$ et $(-1)^{2}=1$}\\
+f(0) &= 1 &&\\
+f(2) &= 8-12+1 = -3 &&\\
+f(3) &= 27-27+1 = 1 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-1$,$0$,$2$,$3$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$-3$,+/$1$,-/$-3$,+/$1$}
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\begin{exo}[Un coefficient négatif]
+\cas{a)}
+\begin{calculs}
+g'(x) &= -2\times 3x^{2}+3\times 2x+12-0 &&\justif{terme par terme}\\
+g'(x) &= \res{-6x^{2}+6x+12} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+-6(x+1)(x-2) &= -6(x^{2}-2x+x-2) &&\justif{on développe d'abord $(x+1)(x-2)$}\\
+-6(x+1)(x-2) &= -6(x^{2}-x-2) &&\justif{on réduit}\\
+-6(x+1)(x-2) &= -6x^{2}+6x+12 &&\justif{on multiplie chaque terme par $-6$}
+\end{calculs}
+\explique{On retrouve $g'(x)$, donc \res{$g'(x)=-6(x+1)(x-2)$}.}{}
+\cas{c)}
+\explique{$-6<0$ ; \quad $x+1=0$ pour $x=-1$ ; \quad $x-2=0$ pour $x=2$.}{une ligne
+par facteur}\nopagebreak
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$-6$/0.8,$x+1$/0.8,$x-2$/0.8,$g'(x)$/0.8}%
+    {$-2$,$-1$,$2$,$3$}
+  \tkzTabLine{,-,t,-,t,-,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+\explique{$g'(x)$ est \res{négatif sur $\intff{-2}{-1}$ et sur $\intff{2}{3}$, positif sur
+$\intff{-1}{2}$}.}{règle des signes, colonne par colonne}
+\cas{d)}
+\begin{calculs}
+g(-2) &= 16+12-24-5 = -1 &&\justif{$-2\times(-2)^{3}=-2\times(-8)=16$}\\
+g(-1) &= 2+3-12-5 = -12 &&\\
+g(2) &= -16+12+24-5 = 15 &&\\
+g(3) &= -54+27+36-5 = 4 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$g'(x)$/0.8,$g(x)$/1.6}{$-2$,$-1$,$2$,$3$}
+  \tkzTabLine{,-,z,+,z,-,}
+  \tkzTabVar{+/$-1$,-/$-12$,+/$15$,-/$4$}
+\end{tikzpicture}
+\end{center}
+\rem{Le facteur $-6$ est négatif : il change tous les signes du produit $(x+1)(x-2)$.}
+\end{exo}
+
+\begin{exo}[Étude complète et tracé]
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{3x^{2}-3} &&\justif{$x^{3}$ devient $3x^{2}$ ; $-3x$ devient $-3$}
+\end{calculs}
+\begin{calculs}
+3(x+1)(x-1) &= 3(x^{2}-x+x-1) &&\justif{on développe d'abord $(x+1)(x-1)$}\\
+3(x+1)(x-1) &= 3(x^{2}-1) &&\justif{on réduit}\\
+3(x+1)(x-1) &= 3x^{2}-3 &&
+\end{calculs}
+\explique{On retrouve $f'(x)$, donc \res{$f'(x)=3(x+1)(x-1)$}.}{}
+\cas{b)}
+\explique{$3>0$ ; \quad $x+1=0$ pour $x=-1$ ; \quad $x-1=0$ pour $x=1$.}{une ligne
+par facteur}\nopagebreak
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$3$/0.8,$x+1$/0.8,$x-1$/0.8,$f'(x)$/0.8}%
+    {$-2$,$-1$,$1$,$2$}
+  \tkzTabLine{,+,t,+,t,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{$f'(x)$ est positif sur $\intff{-2}{-1}$ et sur $\intff{1}{2}$, négatif sur
+$\intff{-1}{1}$. On calcule les images des bornes et des valeurs où $f'$ s'annule :}{}\nopagebreak
+\begin{calculs}
+f(-2) &= -8+6 = -2 &&\\
+f(-1) &= -1+3 = 2 &&\\
+f(1) &= 1-3 = -2 &&\\
+f(2) &= 8-6 = 2 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.2]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-2$,$-1$,$1$,$2$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$-2$,+/$2$,-/$-2$,+/$2$}
+\end{tikzpicture}
+\end{center}
+\cas{c)}
+\begin{calculs}
+f(0) &= 0 &&\\
+f'(0) &= -3 &&\justif{$3\times 0^{2}-3$}\\[4pt]
+y &= f'(0)\,(x-0)+f(0) &&\justif{la formule, avec $a=0$}\\
+y &= -3x &&
+\end{calculs}
+\explique{La tangente $(T_{0})$ a pour équation $\res{y=-3x}$.}{}
+\cas{d)}
+\explique{Les valeurs viennent des questions b) et c) :}{}\nopagebreak
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$x$ & $-2$ & $-1$ & $0$ & $1$ & $2$\\
+\hline
+$f(x)$ & $-2$ & $2$ & $0$ & $-2$ & $2$\\
+\hline
+\end{tabular}
+\end{center}
+\cas{e)}
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+\explique{On trace $(T_{0})$ avec deux points : l'origine, puis $(1\,;-3)$ (on avance de
+$1$, on descend de $3$).}{$y=-3x$}
+\explique{On place les cinq points du tableau de valeurs, puis on trace $\Cf$ : tangente
+horizontale en $-1$ et en $1$ (extremums), tangente $(T_{0})$ en $0$.}{la courbe suit le
+tableau de variations}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-3}{-4}{3}{4}
+  \gradx{-2,-1,1,2} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbeB,thick] (-1.3,3.9)--(1.3,-3.9);
+  \draw[coulCourbe,line width=1.1pt]
+    (-2,-2) .. controls (-1.667,1) and (-1.333,2) .. (-1,2)
+            .. controls (-0.667,2) and (-0.333,1) .. (0,0)
+            .. controls (0.333,-1) and (0.667,-2) .. (1,-2)
+            .. controls (1.333,-2) and (1.667,-1) .. (2,2);
+  \path[coulCourbe] (-2,-2) node[croix]{} (-1,2) node[croix]{} (0,0) node[croix]{}
+    (1,-2) node[croix]{} (2,2) node[croix]{};
+  \path[coulCourbeB] (1,-3) node[croix]{};
+  \node[coulCourbeB,font=\footnotesize] at (-1.6,3.3) {$(T_{0})$};
+  \node[coulCourbe,font=\footnotesize] at (2.4,1.2) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\partie{Problèmes concrets : maximum et minimum}
+
+\begin{exo}[Un coût minimal]
+\cas{a)}
+\begin{calculs}
+C'(q) &= 2q-30+0 &&\justif{la variable s'appelle $q$ au lieu de $x$}\\
+C'(q) &= \res{2q-30} &&
+\end{calculs}
+\cas{b)}
+\explique{On cherche quand $C'(q)$ s'annule :}{}\nopagebreak
+\begin{calculs}
+2q-30 &= 0 &&\\
+2q &= 30 &&\\
+q &= 15 &&
+\end{calculs}
+\explique{$2q-30$ est affine, de coefficient directeur $2>0$ : négatif avant $15$,
+positif après.}{signe d'une expression affine}\nopagebreak
+\begin{calculs}
+C(0) &= 300 &&\\
+C(15) &= 225-450+300 = 75 &&\justif{$15^{2}-30\times 15+300$}\\
+C(25) &= 625-750+300 = 175 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$q$/0.8,$C'(q)$/0.8,$C(q)$/1.6}{$0$,$15$,$25$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$300$,-/$75$,+/$175$}
+\end{tikzpicture}
+\end{center}
+\cas{c)}
+\explique{Le coût est minimal pour $q=15$ dizaines, soit \res{150 pièces} ; il vaut
+alors \res{75~\euro}.}{$C'$ s'annule en $15$ en passant de $-$ à $+$ : un minimum}
+\rem{$q$ compte des dizaines de pièces : on répond à la question posée, en pièces.}
+\end{exo}
+
+\begin{exo}[La boîte la plus grande]
+\cas{a)}
+\begin{calculs}
+V(x) &= x(12-2x)^{2} &&\justif{on recopie l'expression}\\
+V(x) &= x(144-48x+4x^{2}) &&\justif{$(a-b)^{2}=a^{2}-2ab+b^{2}$ : $2\times 12\times 2x=48x$}\\
+V(x) &= 144x-48x^{2}+4x^{3} &&\justif{on distribue $x$}\\
+V(x) &= 4x^{3}-48x^{2}+144x &&\justif{c'est l'expression demandée}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+V'(x) &= 4\times 3x^{2}-48\times 2x+144 &&\justif{terme par terme}\\
+V'(x) &= \res{12x^{2}-96x+144} &&
+\end{calculs}
+\begin{calculs}
+12(x-2)(x-6) &= 12(x^{2}-6x-2x+12) &&\justif{on développe d'abord $(x-2)(x-6)$}\\
+12(x-2)(x-6) &= 12(x^{2}-8x+12) &&\justif{on réduit}\\
+12(x-2)(x-6) &= 12x^{2}-96x+144 &&\justif{on multiplie chaque terme par $12$}
+\end{calculs}
+\explique{On retrouve $V'(x)$, donc \res{$V'(x)=12(x-2)(x-6)$}.}{}
+\cas{c)}
+\explique{$12>0$ ; \quad $x-2=0$ pour $x=2$ ; \quad $x-6=0$ pour $x=6$.}{$6$ est à la
+fois une valeur qui annule un facteur et la borne}\nopagebreak
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$x$/0.8,$12$/0.8,$x-2$/0.8,$x-6$/0.8,$V'(x)$/0.8}%
+    {$0$,$2$,$6$}
+  \tkzTabLine{,+,t,+,}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabLine{,-,t,-,z}
+  \tkzTabLine{,+,z,-,z}
+\end{tikzpicture}
+\end{center}
+\explique{$V'(x)$ est \res{positif sur $\intff{0}{2}$, négatif sur $\intff{2}{6}$}.}{règle des
+signes, colonne par colonne}
+\cas{d)}
+\begin{calculs}
+V(0) &= 0 &&\\
+V(2) &= 2\times 8^{2} = 128 &&\justif{avec la forme de départ : $12-2\times 2=8$}\\
+V(6) &= 6\times 0^{2} = 0 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$x$/0.8,$V'(x)$/0.8,$V(x)$/1.6}{$0$,$2$,$6$}
+  \tkzTabLine{,+,z,-,z}
+  \tkzTabVar{-/$0$,+/$128$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\cas{e)}
+\explique{Le volume est maximal pour $\res{x=2}$~cm ; il vaut alors
+$\res{128\text{ cm}^{3}}$.}{$V'$ s'annule en $2$ en passant de $+$ à $-$ : un maximum}
+\end{exo}
+
+\begin{exo}[Les inscriptions à une course solidaire]
+\cas{a)}
+\begin{calculs}
+N'(t) &= -0{,}5\times 2t+20 &&\justif{la variable s'appelle $t$}\\
+N'(t) &= \res{-t+20} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+N'(0) &= -0+20 = 20 &&\justif{on remplace $t$ par $0$ dans $N'(t)$}\\
+N'(10) &= -10+20 = 10 &&
+\end{calculs}
+\explique{Au début, il y a \res{$20$ inscriptions par jour} ; au bout de $10$ jours,
+\res{$10$ par jour}.}{le rythme ralentit}
+\cas{c)}
+\explique{Les inscriptions s'arrêtent quand leur rythme est nul :}{$N'(t)=0$}\nopagebreak
+\begin{calculs}
+-t+20 &= 0 &&\\
+-t &= -20 &&\\
+t &= 20 &&
+\end{calculs}
+\explique{Les inscriptions s'arrêtent au bout de $\res{20}$ jours.}{avant, $-t+20>0$ : le
+nombre d'inscrits augmente}
+\cas{d)}
+\begin{calculs}
+N(20) &= -0{,}5\times 20^{2}+20\times 20 &&\justif{on remplace $t$ par $20$}\\
+N(20) &= -200+400 &&\\
+N(20) &= 200 &&
+\end{calculs}
+\explique{Il y a alors $\res{200}$ personnes inscrites.}{$N$ est maximal en $20$ : le
+nombre d'inscrits n'augmente plus}
+\end{exo}
+
+\partiesansnum{Exercices type épreuve anticipée}
+
+\begin{exo}[QCM]
+\cas{1.}
+\begin{calculs}
+f'(x) &= 3x^{2}-2\times 2x+0 &&\justif{terme par terme ; $5$ devient $0$}\\
+f'(x) &= 3x^{2}-4x &&
+\end{calculs}
+\explique{Réponse \res{b)}.}{a) garde le $5$, qui disparaît}
+\cas{2.}
+\begin{calculs}
+g'(x) &= 2x-6 &&\justif{terme par terme}\\
+g'(1) &= 2\times 1-6 &&\justif{on remplace $x$ par $1$ dans $g'(x)$}\\
+g'(1) &= -4 &&
+\end{calculs}
+\explique{Réponse \res{a)}.}{$-2$ est $g(1)$, pas $g'(1)$}
+\cas{3.}
+\explique{Le coefficient directeur de la tangente est le nombre dérivé : $f'(2)=-3$.
+Réponse \res{c)}.}{et $f(2)=-3\times 2+4$, soit $-2$ : ni a) ni d)}
+\cas{4.}
+\explique{$f$ décroît sur $\intff{0}{3}$, puis croît sur $\intff{3}{5}$ : elle a un
+minimum en $3$. Réponse \res{c)}.}{$f'$ passe de $-$ à $+$ en $3$}
+\cas{5.}
+\explique{$h$ est croissante là où $h'(x)\ge 0$ :}{}\nopagebreak
+\begin{calculs}
+-2x+6 &\ge 0 &&\\
+-2x &\ge -6 &&\justif{on retire $6$}\\
+x &\le 3 &&\justif{on divise par $-2<0$ : le sens change}
+\end{calculs}
+\explique{Réponse \res{a)}.}{contrôle : $h'(0)=6>0$, et $0$ est bien dans $\left]-\infty\,;3\right]$}
+\cas{6.}
+\explique{La dérivée de $x^{3}+2x$ est $3x^{2}+2$. Réponse \res{a)}.}{b) a pour dérivée
+$3x^{2}$ ; c), $9x^{2}+2$ ; d), $6$}
+\end{exo}
+
+\begin{exo}[Vrai ou faux ?]
+\cas{1.}
+\begin{calculs}
+f(1) &= 4-3+1 = 2 &&\justif{on remplace $x$ par $1$ dans $f(x)$}\\
+f'(x) &= 8x-3 &&\justif{terme par terme}\\
+f'(1) &= 8-3 = 5 &&\\[4pt]
+y &= f'(1)\,(x-1)+f(1) &&\justif{la formule, avec $a=1$}\\
+y &= 5(x-1)+2 &&\\
+y &= 5x-3 &&\justif{$-5+2=-3$}
+\end{calculs}
+\explique{L'affirmation 1 est \res{vraie}.}{}
+\cas{2.}
+\begin{calculs}
+g(0) &= 0 &&\\
+g(2) &= 8-24 = -16 &&\justif{$2^{3}=8$ et $12\times 2=24$}
+\end{calculs}
+\explique{$2>0$, mais $g(2)<g(0)$ : $g$ n'est pas croissante sur $\intff{0}{4}$.
+L'affirmation 2 est \res{fausse}.}{un contre-exemple suffit ; en effet
+$g'(x)=3x^{2}-12$ est négatif sur $\intfo{0}{2}$}
+\cas{3.}
+\begin{calculs}
+h'(x) &= -2x+8 &&\justif{terme par terme}\\
+-2x+8 &= 0 &&\justif{on cherche quand $h'(x)$ s'annule}\\
+x &= 4 &&
+\end{calculs}
+\explique{$-2x+8$ est affine, de coefficient directeur $-2<0$ : positif avant $4$,
+négatif après. $h$ croît, puis décroît : son maximum est $h(4)$.}{}\nopagebreak
+\begin{calculs}
+h(4) &= -16+32 = 16 &&\justif{$-4^{2}+8\times 4$}
+\end{calculs}
+\explique{L'affirmation 3 est \res{vraie}.}{}
+\end{exo}
+
+\begin{exo}[Une courbe et sa tangente]
+\cas{1.}
+\explique{Le point de coordonnées $(4\,;4)$ est sur $\Cf$ : $\res{f(4)=4}$.}{}
+\begin{calculs}
+f'(4) &= \frac{0-4}{6-4} &&\justif{coefficient directeur de $(T_{4})$, avec $(4\,;4)$ et $(6\,;0)$}\\
+f'(4) &= \res{-2} &&\justif{on avance de $2$, on descend de $4$}
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+f'(x) &= -0{,}5\times 2x+2+0 &&\justif{terme par terme}\\
+f'(x) &= \res{-x+2} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+f'(4) &= -4+2 &&\justif{on remplace $x$ par $4$ dans $f'(x)$}\\
+f'(4) &= \res{-2} &&\justif{on retrouve la lecture}
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+y &= f'(4)\,(x-4)+f(4) &&\justif{la formule, avec $a=4$}\\
+y &= -2(x-4)+4 &&\\
+y &= -2x+8+4 &&\justif{on développe}\\
+y &= -2x+12 &&
+\end{calculs}
+\explique{$(T_{4})$ a pour équation $\res{y=-2x+12}$.}{contrôle : pour $x=6$, $y=-12+12$,
+soit $0$}
+\cas{5.}
+\begin{calculs}
+-x+2 &= 0 &&\justif{on cherche quand $f'(x)$ s'annule}\\
+x &= 2 &&
+\end{calculs}
+\explique{$-x+2$ est affine, de coefficient directeur $-1<0$ : $f'(x)$ est \res{positif sur
+$\intff{-2}{2}$, négatif sur $\intff{2}{6}$}.}{signe d'une expression affine}\nopagebreak
+\begin{calculs}
+f(-2) &= -2-4+4 = -2 &&\justif{$-0{,}5\times 4=-2$}\\
+f(2) &= -2+4+4 = 6 &&\\
+f(6) &= -18+12+4 = -2 &&\justif{$-0{,}5\times 36=-18$}
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.6]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-2$,$2$,$6$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$-2$,+/$6$,-/$-2$}
+\end{tikzpicture}
+\end{center}
+\cas{6.}
+\explique{Le maximum de $f$ sur $\intff{-2}{6}$ est $f(2)=6$ : pour tout $x$ de
+$\intff{-2}{6}$ on a $f(x)\le 6$. L'affirmation est \res{vraie}.}{tableau de variations}
+\end{exo}
+
+\begin{exo}[Le bénéfice d'un fabricant de vélos]
+\cas{1.}
+\begin{calculs}
+B(0) &= -0+0+0-100 &&\justif{on remplace $x$ par $0$}\\
+B(0) &= \res{-100} &&
+\end{calculs}
+\explique{Sans aucune vente, l'entreprise perd \res{$100\,000$~€} : ce sont ses charges
+fixes (locaux, machines).}{$B$ est en milliers d'euros}
+\cas{2.}
+\begin{calculs}
+B'(x) &= -3x^{2}+9\times 2x+48-0 &&\justif{terme par terme}\\
+B'(x) &= \res{-3x^{2}+18x+48} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+(-3x+24)(x+2) &= -3x^{2}-6x+24x+48 &&\justif{double distributivité}\\
+(-3x+24)(x+2) &= -3x^{2}+18x+48 &&\justif{on réduit : on retrouve $B'(x)$}
+\end{calculs}
+\cas{4.}
+\explique{$-3x+24=0$ pour $x=8$ ; $x+2=0$ pour $x=-2$, qui n'est pas dans
+$\intff{0}{10}$ : sur cet intervalle, $x+2$ est positif.}{$-3x+24$ : coefficient
+directeur $-3<0$, donc $+$ puis $-$}\nopagebreak
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2.6,espcl=2.6]{$x$/0.8,$-3x+24$/0.8,$x+2$/0.8,$B'(x)$/0.8,$B(x)$/1.6}%
+    {$0$,$8$,$10$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabLine{,+,t,+,}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$-100$,+/$348$,-/$280$}
+\end{tikzpicture}
+\end{center}
+\explique{$B'(x)$ est \res{positif sur $\intff{0}{8}$, négatif sur $\intff{8}{10}$} : $B$
+croît, puis décroît.}{valeurs de $B(8)$ et $B(10)$ données}
+\cas{5.}
+\explique{Le bénéfice est maximal pour $x=8$, soit \res{$800$ vélos} ; il vaut alors
+\res{$348\,000$~€}.}{$B'$ s'annule en $8$ en passant de $+$ à $-$ ; $x$ en centaines}
+\end{exo}
+
+\end{document}

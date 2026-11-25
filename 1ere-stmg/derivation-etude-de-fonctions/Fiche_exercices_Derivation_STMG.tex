@@ -1,0 +1,801 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+\newcommand{\qcm}[4]{\par\hspace*{0.6em}\makebox[0.48\linewidth][l]{a) #1}b) #2
+  \par\hspace*{0.6em}\makebox[0.48\linewidth][l]{c) #3}d) #4}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STMG --- Dérivation et étude de fonctions}{Fiche d'exercices du chapitre}
+
+\begin{multicols*}{2}\raggedcolumns
+
+\partiefiche{Fonctions affines et droites}
+
+\exo[Coefficient directeur]
+Pour chaque couple de points, calculer le coefficient directeur de la droite $(AB)$.
+\begin{enumerate}[label=\alph*)]
+  \item $A(1\,;2)$ et $B(3\,;8)$
+  \item $A(-1\,;4)$ et $B(2\,;-2)$
+  \item $A(0\,;-3)$ et $B(4\,;-1)$
+  \item $A(-3\,;5)$ et $B(1\,;5)$
+\end{enumerate}
+
+\exo[Équation d'une droite]
+Pour chaque couple de points, déterminer l'équation réduite de la droite $(AB)$.
+\begin{enumerate}[label=\alph*)]
+  \item $A(1\,;1)$ et $B(2\,;4)$
+  \item $A(-1\,;5)$ et $B(1\,;1)$
+  \item $A(-2\,;-3)$ et $B(2\,;5)$
+  \item $A(2\,;0)$ et $B(6\,;2)$
+\end{enumerate}
+
+\exo[Une fonction affine par deux images]
+\begin{enumerate}[label=\arabic*)]
+  \item $f$ est affine, avec $f(2)=7$ et $f(-1)=-2$. Déterminer $f(x)$, puis calculer
+  $f(10)$.
+  \item $g$ est affine, avec $g(-3)=8$ et $g(1)=0$. Déterminer $g(x)$, puis calculer
+  $g(5)$.
+\end{enumerate}
+
+\exo[Lire des équations]
+Lire l'équation réduite de chacune des droites $(d_{1})$, $(d_{2})$ et $(d_{3})$.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-3}{-3}{5}{4}
+  \gradx{-2,-1,1,2,3,4} \grady{-2,-1,1,2,3}
+  \begin{scope}
+  \clip (-3,-3) rectangle (5,4);
+  \draw[coulCourbe,line width=1.1pt] (-1,-3)--(2.5,4);
+  \draw[coulCourbeB,line width=1.1pt] (-1,4)--(5,-2);
+  \draw[coulCourbeC,line width=1.1pt] (-2,-3)--(5,0.5);
+  \end{scope}
+  \node[coulCourbe,font=\footnotesize] at (1.4,3.6) {$(d_{1})$};
+  \node[coulCourbeB,font=\footnotesize] at (-0.6,2.7) {$(d_{2})$};
+  \node[coulCourbeC,font=\footnotesize] at (4.2,0.8) {$(d_{3})$};
+\end{tikzpicture}
+\end{center}
+
+\partiefiche{Taux de variation}
+
+\exo[Calculer des taux de variation]
+Soit $f(x)=x^{2}-2x+3$. Calculer le taux de variation de $f$ :
+\begin{enumerate}[label=\alph*)]
+  \item entre $0$ et $2$ ;
+  \item entre $1$ et $4$ ;
+  \item entre $-2$ et $1$.
+\end{enumerate}
+
+\exo[Les clients d'un site de vente en ligne]
+Le nombre de clients d'un site de vente en ligne, en milliers, $t$ mois après son
+ouverture, est donné par le tableau suivant.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$t$ (mois) & $0$ & $2$ & $5$ & $10$\\
+\hline
+$N(t)$ (milliers) & $4$ & $10$ & $16$ & $21$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Calculer le taux de variation de $N$ entre $0$ et $2$, entre $2$ et $5$, puis
+  entre $5$ et $10$.
+  \item Interpréter chacun de ces taux par une phrase.
+  \item Pendant quelle période le nombre de clients augmente-t-il le plus vite en
+  moyenne ?
+\end{enumerate}
+
+\exo[Lire un taux de variation sur une courbe]
+On a tracé la courbe $\Cf$ d'une fonction $f$.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-2}{4}{6}
+  \gradx{-3,-2,-1,1,2,3} \grady{-1,1,2,3,4,5}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,-1) .. controls (-2.333,1) and (-1.667,3) .. (-1,3)
+            .. controls (-0.333,3) and (0.333,1) .. (1,1)
+            .. controls (1.667,1) and (2.333,3) .. (3,5);
+  \pt{-3,-1}{left}{}
+  \pt{-1,3}{above}{}
+  \pt{1,1}{below}{}
+  \pt{3,5}{left}{}
+  \node[coulCourbe,font=\footnotesize] at (2.9,3.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Lire $f(-3)$, $f(-1)$, $f(1)$ et $f(3)$.
+  \item Calculer le taux de variation de $f$ entre $-3$ et $-1$, puis entre $-1$ et $1$.
+  \item Tracer la sécante qui passe par les points de $\Cf$ d'abscisses $-3$ et $3$, puis
+  lire son coefficient directeur. Que représente ce nombre pour $f$ ?
+\end{enumerate}
+
+\exo[Un coût de production]
+Un atelier fabrique $q$ lampes par mois, avec $0\le q\le 50$. Le coût de production,
+en euros, est $C(q)=q^{2}+20q+100$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $C(10)$, $C(20)$ et $C(30)$.
+  \item Calculer le taux de variation de $C$ entre $10$ et $20$, puis l'interpréter.
+  \item Même question entre $20$ et $30$.
+  \item Le coût augmente-t-il de plus en plus vite ?
+  \item Déterminer l'équation réduite de la droite qui passe par les points de
+  coordonnées $(10\,;400)$ et $(20\,;900)$.
+\end{enumerate}
+
+\partiefiche{Nombre dérivé}
+
+\exo[Nombre dérivé en $1$]
+Soit $f(x)=x^{2}+2x-1$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f(1)$, puis $f(1+h)$.
+  \item Simplifier le taux de variation $T(h)=\dfrac{f(1+h)-f(1)}{h}$.
+  \item En déduire $f'(1)$.
+\end{enumerate}
+
+\exo[Nombre dérivé en $2$]
+Soit $g(x)=2x^{2}-3x$. Calculer $g(2)$ et $g(2+h)$, simplifier
+le taux de variation $T(h)=\dfrac{g(2+h)-g(2)}{h}$, puis en déduire $g'(2)$.
+
+\exo[Avec un coefficient négatif]
+Soit $k(x)=-x^{2}+5x$. Calculer $k(1)$ et $k(1+h)$, simplifier
+le taux de variation $T(h)=\dfrac{k(1+h)-k(1)}{h}$, puis en déduire $k'(1)$.
+
+\exo[Vers le nombre dérivé]
+Soit $f(x)=x^{2}$. On donne $4{,}1^{2}=16{,}81$ et $4{,}01^{2}=16{,}0801$.
+\begin{enumerate}[label=\alph*)]
+  \item Compléter le tableau, où $T(h)=\dfrac{f(4+h)-f(4)}{h}$.
+  \begin{center}
+  \renewcommand{\arraystretch}{1.4}
+  \begin{tabular}{|c|c|c|c|}
+  \hline
+  $h$ & $1$ & $0{,}1$ & $0{,}01$\\
+  \hline
+  $T(h)$ & & & \\
+  \hline
+  \end{tabular}
+  \end{center}
+  \item Quelle valeur de $f'(4)$ ce tableau suggère-t-il ?
+\end{enumerate}
+
+\partiefiche{Tangente à une courbe}
+
+\exo[Lire des nombres dérivés]
+\begin{minipage}[c]{0.42\linewidth}\raggedright
+On a tracé $\Cf$ et ses tangentes aux points $A$, $B$, $C$ et $E$.
+
+\smallskip
+Lire $f'(-3)$, $f'(-1)$, $f'(1)$ et $f'(4)$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.56\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-2}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,2) .. controls (-2.333,0.667) and (-1.667,-1) .. (-1,-1)
+           .. controls (-0.333,-1) and (0.333,-0.333) .. (1,1)
+           .. controls (1.667,2.333) and (2.333,3) .. (3,3)
+           .. controls (3.333,3) and (3.667,2.667) .. (4,2);
+  \draw[coulCourbeB,thick] (-3.8,3.6)--(-2.2,0.4);
+  \draw[coulCourbeB,thick] (-2,-1)--(0,-1);
+  \draw[coulCourbeB,thick] (0.2,-0.6)--(1.8,2.6);
+  \draw[coulCourbeB,thick] (3.4,3.2)--(4.6,0.8);
+  \pt{-3,2}{left}{A}
+  \pt{-1,-1}{below}{B}
+  \pt{1,1}{right}{C}
+  \pt{4,2}{right}{E}
+  \node[coulCourbe,font=\footnotesize] at (2.2,3.5) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Tracer des tangentes]
+Dans un repère, placer chaque point de $\Cf$, puis tracer la tangente à $\Cf$ en ce
+point.
+\begin{enumerate}[label=\alph*)]
+  \item $A(0\,;1)$ et $f'(0)=2$
+  \item $B(1\,;3)$ et $f'(1)=-1$
+  \item $C(-2\,;-1)$ et $f'(-2)=\frac{1}{2}$
+  \item $D(3\,;-2)$ et $f'(3)=0$
+\end{enumerate}
+
+\exo[Une tangente qui passe par deux points]
+Pour chacune des tangentes $(T_{1})$, $(T_{-1})$ et $(T_{3})$ à $\Cf$, donner $f(a)$ et
+calculer $f'(a)$, où $a$ est l'abscisse du point de contact.
+\begin{enumerate}[label=\alph*)]
+  \item $(T_{1})$ touche $\Cf$ au point $A(1\,;2)$ et passe par $B(3\,;6)$.
+  \item $(T_{-1})$ touche $\Cf$ au point $C(-1\,;4)$ et passe par $D(2\,;-2)$.
+  \item $(T_{3})$ touche $\Cf$ au point $E(3\,;5)$ et est parallèle à l'axe des
+  abscisses.
+\end{enumerate}
+
+\exo[Tangentes qui montent, tangentes qui descendent]
+On a tracé la courbe $\Cf$ d'une fonction $f$.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-5}{-2}{4}{4}
+  \gradx{-4,-3,-2,-1,1,2,3} \grady{-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-4,-1) .. controls (-3.333,1) and (-2.667,3) .. (-2,3)
+            .. controls (-1,3) and (0,-1) .. (1,-1)
+            .. controls (1.667,-1) and (2.333,1) .. (3,3);
+  \node[coulCourbe,font=\footnotesize] at (1.6,2.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item En quels points de $\Cf$ la tangente est-elle horizontale ? Que valent les
+  nombres dérivés en ces points ?
+  \item Sans tracer de tangente, donner le signe de $f'(-3)$, de $f'(0)$ et de $f'(2)$.
+  \item Écrire une phrase qui relie le nombre $f'(-2)$ et la tangente à $\Cf$ au point
+  d'abscisse $-2$.
+\end{enumerate}
+
+\exo[Retrouver l'allure d'une courbe]
+Dans un repère, tracer une courbe qui passe par $A(-3\,;-2)$, $B(-1\,;2)$,
+$C(1\,;0)$ et $D(3\,;-2)$, avec $f'(-3)=3$, $f'(-1)=0$, $f'(1)=-2$ et $f'(3)=0$.
+Commencer par tracer les quatre tangentes.
+
+\partiefiche{Équation de la tangente}
+
+\exo[Avec un nombre dérivé admis]
+Soit $f(x)=x^{2}-3x+2$. On admet que $f'(4)=5$ et $f'(1)=-1$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f(4)$, puis déterminer l'équation réduite de la tangente à $\Cf$
+  au point d'abscisse $4$.
+  \item Même question au point d'abscisse $1$.
+\end{enumerate}
+
+\exo[Quatre tangentes]
+Pour chaque cas, déterminer l'équation réduite de la tangente à $\Cf$ au point
+d'abscisse $a$.
+\begin{enumerate}[label=\alph*)]
+  \item $a=2$ ; $f(2)=3$ et $f'(2)=1$
+  \item $a=-1$ ; $f(-1)=4$ et $f'(-1)=-2$
+  \item $a=3$ ; $f(3)=-1$ et $f'(3)=0$
+  \item $a=0$ ; $f(0)=5$ et $f'(0)=-3$
+\end{enumerate}
+
+\exo[Lire, puis calculer]
+On a tracé la courbe $\Cf$ et sa tangente $(T_{-1})$ au point $A$ d'abscisse $-1$.
+\begin{center}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-3}{-3}{3}{4}
+  \gradx{-2,-1,1,2} \grady{-2,-1,1,2,3}
+  \begin{scope}
+  \clip (-3,-3) rectangle (3,4);
+  \draw[coulCourbe,line width=1.1pt,domain=-2.4:2.4,samples=50] plot (\x,{-\x*\x+2});
+  \draw[coulCourbeB,thick] (-3,-3)--(0.5,4);
+  \end{scope}
+  \pt{-1,1}{left}{A}
+  \node[coulCourbe,font=\footnotesize] at (1.8,0.9) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize] at (1.2,3.5) {$(T_{-1})$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\alph*)]
+  \item Lire $f(-1)$ et $f'(-1)$.
+  \item En déduire l'équation réduite de $(T_{-1})$.
+  \item Lire le point où $(T_{-1})$ coupe l'axe des ordonnées, et contrôler la réponse
+  b).
+\end{enumerate}
+
+\exo[Des équations à contrôler]
+Pour chaque affirmation, dire si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item Soit $f(x)=x^{2}-2x+4$ ; on admet que $f'(3)=4$. \emph{La tangente à $\Cf$ au
+  point d'abscisse $3$ a pour équation $y=4x-5$.}
+  \item Soit $g(x)=-x^{2}+5$ ; on admet que $g'(1)=-2$. \emph{La tangente à $\Cg$ au
+  point d'abscisse $1$ a pour équation $y=-2x+4$.}
+  \item On sait que $h(2)=5$ et $h'(2)=0$. \emph{La tangente à la courbe de $h$ au point
+  d'abscisse $2$ a pour équation $y=5$.}
+\end{enumerate}
+
+\exo[Du taux de variation à la tangente]
+Soit $f(x)=-x^{2}+3x+1$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f(2)$, puis $f(2+h)$.
+  \item Simplifier le taux de variation $T(h)=\dfrac{f(2+h)-f(2)}{h}$ et en déduire
+  $f'(2)$.
+  \item Déterminer l'équation réduite de la tangente à $\Cf$ au point d'abscisse $2$.
+\end{enumerate}
+
+\partiefiche{Fonction dérivée d'une fonction polynôme}
+
+\exo[Dériver]
+Calculer la dérivée de chaque fonction.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=7x-5$
+  \item $g(x)=1-4x$
+  \item $h(x)=x^{2}+6x-2$
+  \item $k(x)=3x^{2}-x+8$
+  \item $m(x)=-5x^{2}+10x$
+  \item $p(x)=x^{3}+4x^{2}-x$
+  \item $q(x)=2x^{3}-3x^{2}+1$
+  \item $r(x)=-2x^{3}+5$
+\end{enumerate}
+\end{multicols}
+
+\exo[Entraînement]
+Calculer la dérivée de chaque fonction.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=6x-2$
+  \item $g(x)=-x^{2}+4x-3$
+  \item $h(x)=5x^{3}-2x^{2}$
+  \item $k(x)=x^{3}+x^{2}+x+1$
+  \item $m(x)=-3x^{3}+6x$
+  \item $p(x)=2x^{3}-5x^{2}+3$
+  \item $q(x)=\frac{1}{2}x^{2}+3x$
+  \item $r(x)=\frac{1}{3}x^{3}-x$
+\end{enumerate}
+\end{multicols}
+
+\exo[Développer d'abord]
+Développer chaque expression, puis calculer sa dérivée.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $A(x)=(x-1)(x+4)$
+  \item $B(x)=(2x+1)(x-3)$
+  \item $C(x)=(x+2)^{2}$
+  \item $D(x)=x(x^{2}-5)$
+\end{enumerate}
+\end{multicols}
+
+\exo[Dérivée et tangentes]
+Soit $f(x)=x^{3}-2x+1$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f'(x)$.
+  \item Calculer $f(1)$ et $f'(1)$, puis déterminer l'équation de la tangente au point
+  d'abscisse $1$.
+  \item Même question au point d'abscisse $0$.
+\end{enumerate}
+
+\partiefiche{Dérivée et sens de variation}
+
+\exo[Du signe de $f'$ aux variations]
+Voici le signe de $f'(x)$ sur $\intff{-4}{5}$. On sait que $f(-4)=2$, $f(-1)=-3$,
+$f(3)=4$ et $f(5)=1$.
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.6,espcl=1.8]{$x$/1,$f'(x)$/1}{$-4$,$-1$,$3$,$5$}
+  \tkzTabLine{,-,z,+,z,-,}
+\end{tikzpicture}
+\end{center}
+Dresser le tableau de variations de $f$.
+
+\exo[Un trinôme]
+Soit $f(x)=x^{2}-6x+5$ sur $\intff{0}{6}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f'(x)$ et étudier son signe.
+  \item Dresser le tableau de variations de $f$.
+\end{enumerate}
+
+\exo[Un polynôme de degré 3]
+Soit $f(x)=x^{3}-3x^{2}+1$ sur $\intff{-1}{3}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f'(x)$.
+  \item Vérifier que $f'(x)=3x(x-2)$.
+  \item Étudier le signe de $f'(x)$.
+  \item Dresser le tableau de variations de $f$.
+\end{enumerate}
+
+\exo[Un coefficient négatif]
+Soit $g(x)=-2x^{3}+3x^{2}+12x-5$ sur $\intff{-2}{3}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $g'(x)$.
+  \item Vérifier que $g'(x)=-6(x+1)(x-2)$.
+  \item Étudier le signe de $g'(x)$.
+  \item Dresser le tableau de variations de $g$.
+\end{enumerate}
+
+\exo[Étude complète et tracé]
+Soit $f(x)=x^{3}-3x$ sur $\intff{-2}{2}$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $f'(x)$, puis vérifier que $f'(x)=3(x+1)(x-1)$.
+  \item Étudier le signe de $f'(x)$, puis dresser le tableau de variations de $f$.
+  \item Déterminer l'équation de la tangente $(T_{0})$ au point d'abscisse $0$.
+  \item Compléter un tableau de valeurs de $f$ pour $x=-2$, $-1$, $0$, $1$ et $2$.
+  \item Dans un repère, tracer $(T_{0})$, puis $\Cf$.
+\end{enumerate}
+
+\partiefiche{Problèmes concrets : maximum et minimum}
+
+\exo[Un coût minimal]
+Une usine fabrique $q$ dizaines de pièces par jour, avec $0\le q\le 25$. Le coût de
+fabrication, en euros, est $C(q)=q^{2}-30q+300$.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $C'(q)$.
+  \item Dresser le tableau de variations de $C$ sur $\intff{0}{25}$.
+  \item Combien de pièces faut-il fabriquer pour que le coût soit minimal ? Que
+  vaut-il ?
+\end{enumerate}
+
+\exo[La boîte la plus grande]
+Une entreprise d'emballage fabrique des boîtes sans couvercle : dans un carton carré
+de $12$~cm de côté, on découpe aux quatre coins un carré de côté $x$ (en cm), puis on
+relève les bords. Le volume de la boîte est $V(x)=x(12-2x)^{2}$, pour $0\le x\le 6$.
+\begin{enumerate}[label=\alph*)]
+  \item Montrer que $V(x)=4x^{3}-48x^{2}+144x$.
+  \item Calculer $V'(x)$, puis vérifier que $V'(x)=12(x-2)(x-6)$.
+  \item Étudier le signe de $V'(x)$ sur $\intff{0}{6}$.
+  \item Dresser le tableau de variations de $V$.
+  \item Pour quelle valeur de $x$ le volume est-il maximal ? Que vaut-il ?
+\end{enumerate}
+
+\exo[Les inscriptions à une course solidaire]
+Une association ouvre les inscriptions à sa course solidaire. Au bout de $t$ jours,
+$N(t)=-0{,}5t^{2}+20t$ personnes sont inscrites, pour $0\le t\le 20$. Le nombre
+$N'(t)$ est le rythme des inscriptions, en inscriptions par jour.
+\begin{enumerate}[label=\alph*)]
+  \item Calculer $N'(t)$.
+  \item Quel est le rythme des inscriptions au début ($t=0$) ? Au bout de $10$ jours ?
+  \item Au bout de combien de jours les inscriptions s'arrêtent-elles ?
+  \item Combien de personnes sont alors inscrites ?
+\end{enumerate}
+
+\partiefichesansnum{Exercices type épreuve anticipée}
+
+\exo[QCM]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item La dérivée de $f(x)=x^{3}-2x^{2}+5$ est :
+        \qcm{$3x^{2}-4x+5$}{$3x^{2}-4x$}{$x^{2}-4x$}{$3x^{2}-2x$}
+  \item Soit $g(x)=x^{2}-6x+3$. Le nombre dérivé $g'(1)$ vaut :
+        \qcm{$-4$}{$-2$}{$4$}{$-5$}
+  \item La tangente à $\Cf$ au point d'abscisse $2$ a pour équation $y=-3x+4$. Alors :
+        \qcm{$f(2)=4$}{$f'(2)=4$}{$f'(2)=-3$}{$f(2)=-3$}
+  \item Sur $\intff{0}{5}$, $f'(x)$ est négatif sur $\intff{0}{3}$ et positif sur
+        $\intff{3}{5}$. La fonction $f$ :
+        \qcm{croît sur $\intff{0}{5}$}{a un maximum en $3$}{a un minimum en $3$}{décroît
+        sur $\intff{0}{5}$}
+  \item Si $h'(x)=-2x+6$, la fonction $h$ est croissante sur :
+        \qcm{$\left]-\infty\,;3\right]$}{$\left[3\,;+\infty\right[$}{$\left]-\infty\,;6\right]$}{$\left[-2\,;+\infty\right[$}
+  \item Une fonction dont la dérivée est $3x^{2}+2$ est :
+        \qcm{$x^{3}+2x$}{$x^{3}+2$}{$3x^{3}+2x$}{$6x$}
+\end{enumerate}
+
+\exo[Vrai ou faux ?]
+Pour chacune des trois affirmations, dire si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\arabic*.]
+  \item Soit $f(x)=4x^{2}-3x+1$. \emph{La tangente à $\Cf$ au point d'abscisse $1$ a
+        pour équation $y=5x-3$.}
+  \item Soit $g(x)=x^{3}-12x$. \emph{La fonction $g$ est croissante sur
+        $\intff{0}{4}$.}
+  \item Soit $h(x)=-x^{2}+8x$ sur $\intff{0}{8}$. \emph{Le maximum de $h$ sur
+        $\intff{0}{8}$ vaut $16$.}
+\end{enumerate}
+
+\exo[Une courbe et sa tangente]
+La courbe $\Cf$ ci-dessous représente la fonction $f$ définie sur $\intff{-2}{6}$ par
+$f(x)=-0{,}5x^{2}+2x+4$. La droite $(T_{4})$ est la tangente à $\Cf$ au point
+d'abscisse $4$ ; elle passe par les points de coordonnées $(4\,;4)$ et $(6\,;0)$.
+\begin{center}
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \repere{-3}{-3}{7}{7}
+  \gradx{-2,-1,1,2,3,4,5,6} \grady{-2,-1,1,2,3,4,5,6}
+  \begin{scope}
+  \clip (-3,-3) rectangle (7,7);
+  \draw[coulCourbe,line width=1.1pt,domain=-2:6,samples=50] plot (\x,{-0.5*\x*\x+2*\x+4});
+  \draw[coulCourbeB,thick] (2.5,7)--(6.5,-1);
+  \end{scope}
+  \pt{4,4}{above right}{}
+  \pt{6,0}{above right}{}
+  \node[coulCourbe,font=\footnotesize] at (-1.2,2.4) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize] at (6.3,1.6) {$(T_{4})$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*.]
+  \item Par lecture graphique, donner $f(4)$ et $f'(4)$.
+  \item Calculer $f'(x)$.
+  \item Retrouver $f'(4)$ par le calcul.
+  \item Déterminer l'équation réduite de $(T_{4})$.
+  \item Étudier le signe de $f'(x)$ sur $\intff{-2}{6}$, puis dresser le tableau de
+        variations de $f$.
+  \item \emph{Affirmation : pour tout nombre réel $x$ de $\intff{-2}{6}$ on a
+        $f(x)\le 6$.} Est-elle vraie ou fausse ?
+\end{enumerate}
+
+\exo[Le bénéfice d'un fabricant de vélos]
+Une entreprise fabrique et vend chaque année $x$ centaines de vélos électriques, avec
+$0\le x\le 10$. Son bénéfice, en milliers d'euros, est
+$B(x)=-x^{3}+9x^{2}+48x-100$.
+\begin{enumerate}[label=\arabic*.]
+  \item Calculer $B(0)$ et interpréter ce résultat.
+  \item Calculer $B'(x)$.
+  \item Montrer que $B'(x)=(-3x+24)(x+2)$.
+  \item Étudier le signe de $B'(x)$ sur $\intff{0}{10}$, puis dresser le tableau de
+        variations de $B$. On donne $B(8)=348$ et $B(10)=280$.
+  \item Combien de vélos l'entreprise doit-elle vendre pour que son bénéfice soit
+        maximal ? Quel est ce bénéfice ?
+\end{enumerate}
+
+\end{multicols*}
+
+\end{document}
