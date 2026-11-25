@@ -1,0 +1,1646 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{10}{Probabilités conditionnelles}
+\niveaucours{1\textsuperscript{re} STI2D}
+\titrecours{PROBABILITÉS CONDITIONNELLES}{Cours --- Première STI2D}
+
+\begin{document}
+
+\newcommand{\venn}[6]{%
+  \draw (-1.75,-1.35) rectangle (2.75,1.35);
+  \node[font=\footnotesize] at (-1.5,1.1) {$\Omega$};
+  \draw[coulCourbe,thick] (0,0) circle (1.1);
+  \draw[coulCourbeB,thick] (1,0) circle (1.1);
+  \node[coulCourbe] at (-0.95,0.95) {$#1$};
+  \node[coulCourbeB] at (1.95,0.95) {$#2$};
+  \node at (-0.6,0) {#3};
+  \node at (0.5,0) {#4};
+  \node at (1.6,0) {#5};
+  \node at (2.3,-1.05) {#6};}
+\newcommand{\vennbord}{%
+  \draw (-1.75,-1.35) rectangle (2.75,1.35);
+  \draw (0,0) circle (1.1) (1,0) circle (1.1);
+  \node[font=\scriptsize] at (-0.95,0.95) {$A$};
+  \node[font=\scriptsize] at (1.95,0.95) {$B$};}
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt},
+  arbA/.style={},arbnA/.style={},arbAB/.style={},arbAnB/.style={},
+  arbnAB/.style={},arbnAnB/.style={},chemin/.style={coulExo,line width=1.4pt}}
+\newcommand{\arbre}[8]{%
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (2.6,1.4) {$#1$};
+  \node[evt] (nA) at (2.6,-1.4) {$\overline{#1}$};
+  \node[evt] (AB) at (5.2,2.1) {$#2$};
+  \node[evt] (AnB) at (5.2,0.7) {$\overline{#2}$};
+  \node[evt] (nAB) at (5.2,-0.7) {$#2$};
+  \node[evt] (nAnB) at (5.2,-2.1) {$\overline{#2}$};
+  \draw[arbA] (O.center) -- node[proba]{$#3$} (A);
+  \draw[arbnA] (O.center) -- node[proba]{$#4$} (nA);
+  \draw[arbAB] (A) -- node[proba]{$#5$} (AB);
+  \draw[arbAnB] (A) -- node[proba]{$#6$} (AnB);
+  \draw[arbnAB] (nA) -- node[proba]{$#7$} (nAB);
+  \draw[arbnAnB] (nA) -- node[proba]{$#8$} (nAnB);}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\feuilles}[2]{\feuille{AB}{$#1\cap #2$}\feuille{AnB}{$#1\cap\overline{#2}$}%
+  \feuille{nAB}{$\overline{#1}\cap #2$}\feuille{nAnB}{$\overline{#1}\cap\overline{#2}$}}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Vocabulaire des événements}
+
+On lance un dé : on connaît tous les résultats possibles, mais on ne peut pas prévoir
+celui qui sortira. Les probabilités mesurent les chances de chacun.
+
+\begin{definitionbox}[Définition 1 --- Expérience aléatoire, issue, univers]
+Une expérience est \textbf{aléatoire} quand on connaît tous ses résultats possibles,
+appelés \textbf{issues}, sans pouvoir prévoir celui qui se produira.
+
+\smallskip
+L'ensemble de toutes les issues est l'\textbf{univers}, noté $\Omega$ (\og oméga\fg{}).
+Pour un lancer de dé à six faces : $\Omega=\ens{1\,;2\,;3\,;4\,;5\,;6}$.
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Événement]
+Un \textbf{événement} est un ensemble d'issues. On le décrit par une phrase, ou par la
+liste de ses issues entre accolades. Il est \textbf{réalisé} quand l'issue obtenue en
+fait partie.
+
+\smallskip
+Par exemple, pour un lancer de dé, l'événement $A$ \og obtenir un nombre pair\fg{} s'écrit
+$A=\ens{2\,;4\,;6}$ ; si on obtient $4$, l'événement $A$ est réalisé.
+
+\smallskip
+Un événement qui ne contient aucune issue est \textbf{impossible}, noté $\varnothing$ ;
+l'univers $\Omega$ est l'événement \textbf{certain}.
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 3 --- Intersection, réunion, contraire]
+Soit $A$ et $B$ deux événements d'une même expérience.
+
+\smallskip
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}m{0.25\linewidth}
+  >{\raggedright\arraybackslash}m{0.47\linewidth}>{\centering\arraybackslash}m{0.18\linewidth}@{}}
+$A\cap B$ \newline \og $A$ inter $B$\fg{}, \og $A$ et $B$\fg{}
+  & les issues qui sont \textbf{à la fois} dans $A$ et dans $B$
+  & \begin{tikzpicture}[scale=0.42,baseline=(current bounding box.center)]
+      \begin{scope}\clip (0,0) circle (1.1); \fill[coulMeth!30] (1,0) circle (1.1);\end{scope}
+      \vennbord
+    \end{tikzpicture}\\
+$A\cup B$ \newline \og $A$ union $B$\fg{}, \og $A$ ou $B$\fg{}
+  & les issues qui sont dans $A$, dans $B$ ou dans les deux : \textbf{au moins un}
+    des deux événements est réalisé
+  & \begin{tikzpicture}[scale=0.42,baseline=(current bounding box.center)]
+      \fill[coulMeth!30] (0,0) circle (1.1) (1,0) circle (1.1);
+      \vennbord
+    \end{tikzpicture}\\
+$\overline{A}$ \newline \og $A$ barre\fg{}, contraire de $A$
+  & les issues de $\Omega$ qui \textbf{ne sont pas} dans $A$
+  & \begin{tikzpicture}[scale=0.42,baseline=(current bounding box.center)]
+      \fill[coulMeth!30,even odd rule] (-1.75,-1.35) rectangle (2.75,1.35) (0,0) circle (1.1);
+      \vennbord
+    \end{tikzpicture}\\
+$A$ et $B$ \textbf{incompatibles}
+  & $A\cap B=\varnothing$ : aucune issue commune ; $A$ et $B$ ne peuvent pas être
+    réalisés en même temps
+  & \begin{tikzpicture}[scale=0.42,baseline=(current bounding box.center)]
+      \draw (-1.75,-1.35) rectangle (2.75,1.35);
+      \draw (-0.3,0) circle (0.9) (1.6,0) circle (0.9);
+      \node[font=\scriptsize] at (-1.25,0.95) {$A$};
+      \node[font=\scriptsize] at (2.5,0.95) {$B$};
+    \end{tikzpicture}
+\end{tabular}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Décrire des événements]
+\etapeexemples
+On lance un dé équilibré à $12$ faces, numérotées de $1$ à $12$. On note $A$ \og obtenir un
+nombre pair\fg{}, $B$ \og obtenir un multiple de $3$\fg{} et $C$ \og obtenir un nombre impair
+inférieur à $6$\fg{}.
+\begin{questions}[label=\alph*)]
+  \item Écrire l'univers $\Omega$, puis les événements $A$ et $B$ sous forme d'ensembles.
+  \item Décrire par une phrase, puis écrire sous forme d'ensembles, les événements $A\cap B$
+        et $A\cup B$.
+  \item Écrire l'événement $\overline{A}$ sous forme d'ensemble, puis le décrire par une phrase.
+  \item Les événements $A$ et $C$ sont-ils incompatibles ? Et les événements $B$ et $C$ ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\Omega=\res{\ens{1\,;2\,;3\,;\dots\,;12}}$ : $12$ issues.}{toutes les faces du dé}
+\explique{$A=\res{\ens{2\,;4\,;6\,;8\,;10\,;12}}$}{les nombres pairs de $1$ à $12$}
+\explique{$B=\res{\ens{3\,;6\,;9\,;12}}$}{les multiples de $3$ jusqu'à $12$}
+\cas{b)}
+\explique{$A\cap B$ : \og obtenir un nombre pair \textbf{et} multiple de $3$\fg{} ;
+$A\cap B=\res{\ens{6\,;12}}$.}{les issues communes à $A$ et à $B$}
+\explique{$A\cup B$ : \og obtenir un nombre pair \textbf{ou} un multiple de $3$\fg{} ;
+$A\cup B=\res{\ens{2\,;3\,;4\,;6\,;8\,;9\,;10\,;12}}$.}{les issues de $A$, puis celles de $B$
+qui manquent : $3$ et $9$}
+\cas{c)}
+\explique{$\overline{A}=\res{\ens{1\,;3\,;5\,;7\,;9\,;11}}$ : \og obtenir un nombre
+\res{impair}\fg{}.}{les issues de $\Omega$ qui ne sont pas dans $A$}
+\cas{d)}
+\explique{$C=\ens{1\,;3\,;5}$ et $A\cap C=\varnothing$, donc \res{$A$ et $C$ sont
+incompatibles}.}{aucun nombre n'est à la fois pair et impair}
+\explique{$B\cap C=\ens{3}$, donc \res{$B$ et $C$ ne sont pas incompatibles}.}{si on
+obtient $3$, $B$ et $C$ sont réalisés en même temps}
+\end{correction}
+
+\etape{À vous de jouer}
+On lance un dé équilibré à $8$ faces, numérotées de $1$ à $8$. On note $A$ \og obtenir un
+nombre impair\fg{}, $B$ \og obtenir un nombre supérieur ou égal à $5$\fg{} et $C$ \og obtenir un
+multiple de $4$\fg{}.
+\begin{questions}[label=\alph*)]
+  \item Écrire l'univers $\Omega$, puis les événements $A$ et $B$ sous forme d'ensembles.
+  \item Décrire par une phrase, puis écrire sous forme d'ensembles, les événements $A\cap B$
+        et $A\cup B$.
+  \item Écrire l'événement $\overline{A}$ sous forme d'ensemble, puis le décrire par une phrase.
+  \item Les événements $A$ et $C$ sont-ils incompatibles ? Et les événements $B$ et $C$ ?
+\end{questions}
+\reponse{a) $\Omega=\ens{1\,;2\,;\dots\,;8}$ ; $A=\ens{1\,;3\,;5\,;7}$ ;
+$B=\ens{5\,;6\,;7\,;8}$ ;\; b)~$A\cap B=\ens{5\,;7}$ ;
+$A\cup B=\ens{1\,;3\,;5\,;6\,;7\,;8}$ ;\; c)~$\overline{A}=\ens{2\,;4\,;6\,;8}$, \og obtenir
+un nombre pair\fg{} ;\; d)~$A$ et $C$ incompatibles ; $B$ et $C$ non ($B\cap C=\ens{8}$).}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Diagramme de Venn}
+
+Dans une population (les membres d'un club, les emplacements d'un camping), on range
+chaque élément selon deux critères. Un diagramme de Venn montre combien d'éléments
+vérifient l'un, l'autre, les deux ou aucun.
+
+\begin{definitionbox}[Définition 4 --- Diagramme de Venn]
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Un \textbf{diagramme de Venn} représente l'univers par un rectangle et deux événements
+$A$ et $B$ par deux cercles. Il partage la population en quatre zones, sans
+chevauchement :
+\begin{itemize}
+  \item $A\cap B$ : dans les deux cercles ;
+  \item $A\cap\overline{B}$ : dans $A$ seulement ;
+  \item $\overline{A}\cap B$ : dans $B$ seulement ;
+  \item $\overline{A}\cap\overline{B}$ : hors des deux cercles (ni $A$ ni $B$).
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[scale=0.95]
+  \venn{A}{B}{\footnotesize$A\cap\overline{B}$}{\footnotesize$A\cap B$}%
+    {\footnotesize$\overline{A}\cap B$}{\footnotesize$\overline{A}\cap\overline{B}$}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{remarquebox}[À retenir]
+L'effectif de $A$ est la somme des \textbf{deux} zones de son cercle : \og dans $A$\fg{} n'est
+pas \og dans $A$ seulement\fg{}. On remplit donc le diagramme en commençant par la zone
+commune.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 2 --- Compléter un diagramme de Venn]
+\etapeexemples
+Un club de robotique compte $40$ membres : $18$ programment les robots (ensemble $I$,
+informatique), $25$ conçoivent les pièces (ensemble $M$, mécanique) et $9$ font les deux.
+\begin{questions}[label=\alph*)]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Combien de membres font au moins une des deux activités ? Aucune ? Une seule ?
+\end{questions}
+Un camping compte $50$ emplacements ; on note $E$ l'ensemble de ceux qui ont
+l'électricité et $O$ l'ensemble de ceux qui ont un point d'eau. $30$ emplacements ont
+l'électricité, $5$ ont l'électricité et un point d'eau, $10$ n'ont ni l'un ni l'autre.
+\begin{questions}[label=\alph*),start=3]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Combien d'emplacements ont un point d'eau ?
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On part de la zone commune : $9$ membres font les deux.
+\begin{calculs}
+18-9 &= \res{9} &\qquad& \rem{informatique seulement}\\
+25-9 &= \res{16} && \rem{mécanique seulement}\\
+40-(9+9+16) &= \res{6} && \rem{ni l'un ni l'autre}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{I}{M}{$9$}{$9$}{$16$}{$6$}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+9+9+16 &= \res{34} &\qquad& \rem{au moins une activité : les trois zones des cercles}\\
+9+16 &= \res{25} && \rem{une seule : les deux zones \og seulement\fg{}}
+\end{calculs}
+\explique{$34$ membres font au moins une activité, \res{$6$} n'en font aucune et $25$ en
+font une seule.}{aucune : la zone hors des cercles}
+\cas{c)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On part de la zone commune : $5$ emplacements ont les deux.
+\begin{calculs}
+30-5 &= \res{25} &\qquad& \rem{électricité seulement}\\
+50-10 &= 40 && \rem{dans au moins un des cercles}\\
+40-(25+5) &= \res{10} && \rem{point d'eau seulement}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{E}{O}{$25$}{$5$}{$10$}{$10$}
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}
+\begin{calculs}
+5+10 &= \res{15} &\qquad& \rem{les deux zones du cercle $O$}
+\end{calculs}
+\explique{$15$ emplacements ont un point d'eau.}{\og point d'eau\fg{} n'est pas \og point d'eau
+seulement\fg{}}
+\end{correction}
+
+\etape{À vous de jouer}
+Lors des portes ouvertes d'un lycée, $120$ visiteurs sont venus : $70$ ont assisté à la
+démonstration de drones (ensemble $D$), $50$ à l'atelier d'impression 3D (ensemble $I$) et
+$30$ aux deux.
+\begin{questions}[label=\alph*)]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Combien de visiteurs ont assisté à au moins une des deux activités ? À aucune ? À
+        une seule ?
+\end{questions}
+Une résidence compte $80$ logements ; on note $S$ l'ensemble de ceux qui ont des panneaux
+solaires et $C$ l'ensemble de ceux qui ont une pompe à chaleur. $45$ logements ont des
+panneaux solaires, $15$ ont des panneaux solaires et une pompe à chaleur, $20$ n'ont ni l'un
+ni l'autre.
+\begin{questions}[label=\alph*),start=3]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Combien de logements ont une pompe à chaleur ?
+\end{questions}
+\reponse{a) $D$ seulement $40$, les deux $30$, $I$ seulement $20$, aucun $30$ ;\;
+b)~$90$ ; $30$ ; $60$ ;\; c)~$S$ seulement $30$, les deux $15$, $C$ seulement $15$, aucun
+$20$ ;\; d)~$30$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Équiprobabilité}
+
+\begin{definitionbox}[Définition 5 --- Probabilité d'un événement]
+La \textbf{probabilité} d'un événement $A$, notée $P(A)$, est un nombre compris entre $0$
+et $1$ qui mesure la chance que $A$ a de se réaliser : $P(A)=0{,}8$ signifie que $A$ a
+$8$ chances sur $10$ de se réaliser, soit $80\,\%$.
+
+\smallskip
+Un événement impossible a une probabilité égale à $0$, l'événement certain une
+probabilité égale à $1$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Équiprobabilité]
+Quand toutes les issues ont la même probabilité (dé équilibré, tirage au hasard, boules
+indiscernables au toucher), on dit qu'il y a \textbf{équiprobabilité}, et
+\[
+  P(A)=\dfrac{\text{nombre d'issues de $A$}}{\text{nombre d'issues de $\Omega$}}.
+\]
+Quand on choisit au hasard un élément d'une population, $P(A)$ est l'effectif de $A$
+divisé par l'effectif total.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer une probabilité dans une situation d'équiprobabilité]
+\etapeexemples
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\begin{questions}[label=\alph*)]
+  \item On lance un dé équilibré à $12$ faces, numérotées de $1$ à $12$. On note $A$
+        \og obtenir un nombre pair\fg{} et $B$ \og obtenir un multiple de $3$\fg{}. Calculer $P(A)$,
+        $P(B)$ et $P(A\cap B)$.
+  \item Le diagramme ci-contre décrit les $40$ membres d'un club de robotique ($I$ :
+        informatique ; $M$ : mécanique). On choisit un membre au hasard. Calculer
+        $P(I\cap M)$, $P(I\cup M)$ et $P(\overline{I}\cap\overline{M})$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{I}{M}{$9$}{$9$}{$16$}{$6$}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{Le dé est équilibré : il y a équiprobabilité, avec $12$ issues.}{chaque face a
+la même chance}
+\begin{calculs}
+P(A) &= \dfrac{6}{12} &\qquad& \rem{$A=\ens{2\,;4\,;6\,;8\,;10\,;12}$ ; $6$ issues sur $12$}\\
+P(A) &= \dfrac{\barre{6}\times 1}{\barre{6}\times 2} && \rem{on simplifie par $6$}\\
+P(A) &= \res{\dfrac{1}{2}} &&\\
+P(B) &= \dfrac{4}{12} = \res{\dfrac{1}{3}} && \rem{$B=\ens{3\,;6\,;9\,;12}$ ; on
+simplifie par $4$}\\
+P(A\cap B) &= \dfrac{2}{12} = \res{\dfrac{1}{6}} && \rem{$A\cap B=\ens{6\,;12}$ ; on
+simplifie par $2$}
+\end{calculs}
+\cas{b)}
+\explique{Le membre est choisi au hasard : il y a équiprobabilité, et on divise chaque
+effectif par $40$.}{$40$ membres en tout}
+\begin{calculs}
+P(I\cap M) &= \dfrac{9}{40} = \res{0{,}225} &\qquad& \rem{la zone commune}\\
+P(I\cup M) &= \dfrac{9+9+16}{40} && \rem{les trois zones des cercles}\\
+P(I\cup M) &= \dfrac{34}{40} = \res{0{,}85} &&\\
+P(\overline{I}\cap\overline{M}) &= \dfrac{6}{40} = \res{0{,}15} && \rem{ni informatique ni
+mécanique}
+\end{calculs}
+\explique{Un membre choisi au hasard fait au moins une des deux activités avec une
+probabilité de $0{,}85$, soit $85\,\%$.}{on traduit par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\begin{questions}[label=\alph*)]
+  \item Une urne contient $15$ boules indiscernables, numérotées de $1$ à $15$. On en tire
+        une au hasard. On note $A$ \og obtenir un multiple de $3$\fg{} et $B$ \og obtenir un nombre
+        pair\fg{}. Calculer $P(A)$, $P(B)$ et $P(A\cap B)$.
+  \item Le diagramme ci-contre décrit les $120$ visiteurs des portes ouvertes d'un lycée
+        ($D$ : démonstration de drones ; $I$ : impression 3D). On choisit un visiteur au
+        hasard. Calculer $P(D\cap I)$, $P(D\cup I)$ et $P(\overline{D}\cap\overline{I})$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{D}{I}{$40$}{$30$}{$20$}{$30$}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $P(A)=\frac{1}{3}$ ; $P(B)=\frac{7}{15}$ ; $P(A\cap B)=\frac{2}{15}$ ;\;
+b)~$0{,}25$ ; $0{,}75$ ; $0{,}25$.}
+\end{methodebox}
+
+\afaire{exercices 9 à 12}
+
+\partiecours{Loi de probabilité}
+
+Quand les issues n'ont pas toutes la même chance (dé truqué, relevés sur une longue
+période), on donne la probabilité de chacune dans un tableau.
+
+\begin{definitionbox}[Définition 6 --- Loi de probabilité]
+Donner la \textbf{loi de probabilité} d'une expérience, c'est donner la probabilité de
+chacune de ses issues, le plus souvent dans un tableau.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Somme des probabilités]
+\begin{itemize}
+  \item La somme des probabilités de toutes les issues est égale à $1$.
+  \item La probabilité d'un événement est la somme des probabilités des issues qui le
+        réalisent.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 4 --- Utiliser une loi de probabilité]
+\etapeexemples
+Sur une aire de covoiturage, on choisit au hasard une voiture qui part et on compte les
+personnes à bord. Le tableau donne la loi de probabilité.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Personnes à bord & $2$ & $3$ & $4$ & $5$\\
+\hline
+Probabilité & $0{,}45$ & $0{,}30$ & $p$ & $0{,}05$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer $p$.
+  \item Calculer la probabilité de l'événement $A$ \og il y a au moins $3$ personnes à bord\fg{}.
+  \item Calculer la probabilité de l'événement $B$ \og il y a un nombre pair de personnes à
+        bord\fg{}.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+0{,}45+0{,}30+p+0{,}05 &= 1 &\qquad& \rem{la somme des probabilités vaut $1$}\\
+0{,}80+p &= 1 &&\\
+p &= 1-0{,}80 &&\\
+p &= \res{0{,}20} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+P(A) &= 0{,}30+0{,}20+0{,}05 &\qquad& \rem{$A=\ens{3\,;4\,;5}$ : on additionne}\\
+P(A) &= \res{0{,}55} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(B) &= 0{,}45+0{,}20 &\qquad& \rem{$B=\ens{2\,;4}$}\\
+P(B) &= \res{0{,}65} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Lors d'un tournoi, un judoka dispute quatre combats. Le tableau donne la loi de
+probabilité du nombre de combats qu'il gagne.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+Combats gagnés & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+Probabilité & $0{,}10$ & $0{,}25$ & $0{,}35$ & $p$ & $0{,}10$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Calculer $p$.
+  \item Calculer la probabilité de l'événement $A$ \og il gagne au moins $2$ combats\fg{}.
+  \item Calculer la probabilité de l'événement $B$ \og il gagne un nombre impair de
+        combats\fg{}.
+\end{questions}
+\reponse{a) $p=0{,}20$ ;\; b)~$P(A)=0{,}65$ ;\; c)~$P(B)=0{,}45$.}
+\end{methodebox}
+
+\afaire{exercices 13 à 15}
+
+\partiecours{Événement contraire, réunion}
+
+\begin{proprietebox}[Propriété 3 --- Contraire et réunion]
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+Pour deux événements $A$ et $B$ :
+\begin{itemize}
+  \item $P(\overline{A})=1-P(A)$ ;
+  \item $P(A\cup B)=P(A)+P(B)-P(A\cap B)$ ;
+  \item si $A$ et $B$ sont incompatibles, $P(A\cup B)=P(A)+P(B)$.
+\end{itemize}
+Dans $P(A)+P(B)$, les issues de $A\cap B$ sont comptées deux fois : on retire une fois
+$P(A\cap B)$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[scale=0.7]
+  \begin{scope}\clip (0,0) circle (1.1); \fill[coulMeth!30] (1,0) circle (1.1);\end{scope}
+  \vennbord
+  \node[font=\scriptsize,align=center] at (0.5,-1.8) {$A\cap B$ : compté dans $A$\\et
+    dans $B$};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Calculer la probabilité d'un contraire, d'une réunion]
+\etapeexemples
+Une usine fabrique des panneaux solaires. On choisit un panneau au hasard à la sortie de la
+chaîne et on note $A$ \og le panneau a un défaut de cadre\fg{}, $B$ \og le panneau a un défaut de
+câblage\fg{}, $C$ \og le panneau a un défaut de verre\fg{}. On sait que $P(A)=0{,}04$ ;
+$P(B)=0{,}03$ ; $P(A\cap B)=0{,}01$ ; $P(C)=0{,}02$ ; et aucun panneau n'a à la fois un
+défaut de cadre et un défaut de verre.
+\begin{questions}[label=\alph*)]
+  \item Calculer $P(\overline{A})$ et traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'un panneau ait au moins un des défauts $A$ et $B$.
+  \item En déduire la probabilité qu'un panneau n'ait ni défaut de cadre ni défaut de
+        câblage.
+  \item Calculer $P(A\cup C)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P(\overline{A}) &= 1-P(A) &\qquad& \rem{probabilité du contraire}\\
+P(\overline{A}) &= 1-0{,}04 = \res{0{,}96} &&
+\end{calculs}
+\explique{$96\,\%$ des panneaux n'ont pas de défaut de cadre.}{$\overline{A}$ : \og le
+panneau n'a pas de défaut de cadre\fg{}}
+\cas{b)}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &\qquad& \rem{\og au moins un des deux\fg{} : la réunion}\\
+P(A\cup B) &= 0{,}04+0{,}03-0{,}01 &&\\
+P(A\cup B) &= \res{0{,}06} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(\overline{A}\cap\overline{B}) &= 1-P(A\cup B) &\qquad& \rem{\og ni l'un ni l'autre\fg{} :
+contraire de \og au moins un\fg{}}\\
+P(\overline{A}\cap\overline{B}) &= 1-0{,}06 = \res{0{,}94} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+P(A\cup C) &= P(A)+P(C) &\qquad& \rem{$A$ et $C$ sont incompatibles}\\
+P(A\cup C) &= 0{,}04+0{,}02 = \res{0{,}06} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Une usine fabrique des batteries de trottinette. On choisit une batterie au hasard et on
+note $A$ \og la batterie a un défaut d'autonomie\fg{}, $B$ \og la batterie a un défaut de
+connecteur\fg{}, $C$ \og la batterie a un défaut de boîtier\fg{}. On sait que $P(A)=0{,}05$ ;
+$P(B)=0{,}04$ ; $P(A\cap B)=0{,}02$ ; $P(C)=0{,}03$ ; et aucune batterie n'a à la fois un
+défaut d'autonomie et un défaut de boîtier.
+\begin{questions}[label=\alph*)]
+  \item Calculer $P(\overline{A})$ et traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'une batterie ait au moins un des défauts $A$ et $B$.
+  \item En déduire la probabilité qu'une batterie n'ait ni défaut d'autonomie ni défaut de
+        connecteur.
+  \item Calculer $P(A\cup C)$.
+\end{questions}
+\reponse{a) $P(\overline{A})=0{,}95$ : $95\,\%$ des batteries n'ont pas de défaut
+d'autonomie ;\; b)~$0{,}07$ ;\; c)~$0{,}93$ ;\; d)~$0{,}08$.}
+\end{methodebox}
+
+\afaire{exercices 16 à 19}
+
+\partiecours{Arbre des possibles}
+
+Une expérience peut se faire en plusieurs étapes : taper les deux chiffres d'un code, tirer
+deux jetons l'un après l'autre. Un arbre montre alors toutes les issues.
+
+\begin{definitionbox}[Définition 7 --- Arbre des possibles]
+Dans un \textbf{arbre des possibles}, chaque étape de l'expérience forme un niveau de
+branches ; chaque chemin, du départ au bout de l'arbre, est une issue.
+
+\smallskip
+Quand chaque nœud d'une même étape porte le même nombre de branches, le nombre d'issues est
+le \textbf{produit} des nombres de branches de chaque étape.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 6 --- Dénombrer les issues avec un arbre]
+\etapeexemples
+Un cadenas de vélo s'ouvre avec un code de deux chiffres, chacun égal à $1$, à $2$ ou à $3$.
+On essaie un code au hasard.
+\begin{questions}[label=\alph*)]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité de trouver le bon code.
+  \item Calculer la probabilité de l'événement $A$ \og les deux chiffres sont différents\fg{}.
+\end{questions}
+Un sac contient quatre jetons numérotés de $1$ à $4$. On tire un jeton au hasard, on le
+garde, puis on en tire un deuxième : le premier donne le chiffre des dizaines, le second
+celui des unités.
+\begin{questions}[label=\alph*),start=4]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité de l'événement $B$ \og le nombre formé est supérieur à $40$\fg{}.
+  \item Calculer la probabilité de l'événement $C$ \og le nombre formé est un multiple de $3$\fg{}.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Premier chiffre : $3$ branches ; au bout de chacune, deuxième chiffre : $3$ branches.
+\begin{calculs}
+3\times 3 &= \res{9} &\qquad& \rem{$3$ choix, puis $3$ choix}
+\end{calculs}
+Il y a $9$ codes possibles.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.4cm,font=\small]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya in {1/3,2/0,3/-3}{%
+    \node[evt] (N\ca) at (1.2,\ya) {$\ca$};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb/\db in {1/1,2/0,3/-1}{%
+      \node[evt] (N\ca\cb) at (2.4,\ya+\db) {$\cb$};
+      \draw (N\ca) -- (N\ca\cb);
+      \node[right,font=\footnotesize] at (N\ca\cb.east) {\ca\cb};}}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\explique{Un seul code est le bon, parmi $9$ codes qui ont la même chance : la probabilité
+de le trouver est $\res{\dfrac{1}{9}}$.}{code choisi au hasard : équiprobabilité}
+\cas{c)}
+\begin{calculs}
+P(A) &= \dfrac{6}{9} = \res{\dfrac{2}{3}} &\qquad& \rem{$A=\ens{12\,;13\,;21\,;23\,;31\,;32}$ ;
+on simplifie par $3$}
+\end{calculs}
+\cas{d)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Premier jeton : $4$ branches ; il n'est pas remis dans le sac, donc il reste $3$ jetons
+pour le deuxième : $3$ branches au bout de chacune.
+\begin{calculs}
+4\times 3 &= \res{12} &\qquad& \rem{$4$ choix, puis $3$ choix}
+\end{calculs}
+Il y a $12$ nombres possibles.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.4cm,font=\small]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya/\reste in {1/4.5/{2,3,4},2/1.5/{1,3,4},3/-1.5/{1,2,4},4/-4.5/{1,2,3}}{%
+    \node[evt] (N\ca) at (1.2,\ya) {$\ca$};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb [count=\k] in \reste {%
+      \node[evt] (N\ca\cb) at (2.4,\ya+2-\k) {$\cb$};
+      \draw (N\ca) -- (N\ca\cb);
+      \node[right,font=\footnotesize] at (N\ca\cb.east) {\ca\cb};}}
+\end{tikzpicture}
+\end{minipage}
+\cas{e)}
+\begin{calculs}
+P(B) &= \dfrac{3}{12} = \res{\dfrac{1}{4}} &\qquad& \rem{$B=\ens{41\,;42\,;43}$ ; on
+simplifie par $3$}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+P(C) &= \dfrac{4}{12} = \res{\dfrac{1}{3}} &\qquad& \rem{$C=\ens{12\,;21\,;24\,;42}$ ; on
+simplifie par $4$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Un antivol s'ouvre avec un code formé d'une lettre, X ou Y, suivie d'un chiffre, égal à
+$1$, à $2$ ou à $3$. On essaie un code au hasard.
+\begin{questions}[label=\alph*)]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité de trouver le bon code.
+  \item Calculer la probabilité de l'événement $A$ \og le code se termine par $3$\fg{}.
+\end{questions}
+Un sac contient trois jetons numérotés de $1$ à $3$. On tire un jeton au hasard, on le
+garde, puis on en tire un deuxième : le premier donne le chiffre des dizaines, le second
+celui des unités.
+\begin{questions}[label=\alph*),start=4]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité de l'événement $B$ \og le nombre formé est supérieur à $30$\fg{}.
+  \item Calculer la probabilité de l'événement $C$ \og le nombre formé est impair\fg{}.
+\end{questions}
+\reponse{a) $2\times 3=6$ issues ;\; b)~$\frac{1}{6}$ ;\; c)~$\frac{1}{3}$ ;\; d)~$3\times
+2=6$ issues ;\; e)~$\frac{1}{3}$ ;\; f)~$\frac{2}{3}$.}
+\end{methodebox}
+
+\afaire{exercices 20 à 22}
+
+\partiecours{Probabilité conditionnelle et tableau croisé}
+
+\textbf{But :} on sait déjà qu'un événement $A$ est réalisé (le vélo loué est électrique) et
+on cherche la probabilité d'un autre événement $B$ (la location est à la journée). On ne
+regarde plus toute la population, mais seulement celle de $A$.
+
+\begin{definitionbox}[Définition 8 --- Probabilité conditionnelle]
+Soit $A$ un événement de probabilité non nulle. La \textbf{probabilité de $B$ sachant $A$},
+notée $P_A(B)$, est la probabilité que $B$ soit réalisé quand on sait que $A$ l'est.
+
+\smallskip
+Dans un tableau d'effectifs, on ne garde que la ligne ou la colonne de $A$ :
+\[
+  P_A(B)=\dfrac{\text{effectif de $A\cap B$}}{\text{effectif de $A$}}.
+\]
+\end{definitionbox}
+
+\begin{remarquebox}[À ne pas confondre]
+Ces trois probabilités ont le même numérateur, l'effectif de $A\cap B$, mais pas le même
+dénominateur :
+\begin{itemize}
+  \item $P(A\cap B)$ : on divise par l'effectif \textbf{total} (\og $A$ et $B$\fg{}) ;
+  \item $P_A(B)$ : on divise par l'effectif de $A$ (\og parmi les $A$, la part des $B$\fg{}) ;
+  \item $P_B(A)$ : on divise par l'effectif de $B$ (\og parmi les $B$, la part des $A$\fg{}).
+\end{itemize}
+Les mots \og sachant que\fg{} et \og parmi\fg{} annoncent une probabilité conditionnelle.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer une probabilité conditionnelle avec un tableau croisé]
+\etapeexemples
+Un loueur de vélos a enregistré $400$ locations cet été. Le tableau, à compléter, les range
+selon le vélo et la durée de la location.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Électrique & Classique & Total\\
+\hline
+À la journée & $150$ & $90$ & \\
+\hline
+À l'heure & $50$ & & \\
+\hline
+Total & & $200$ & $400$\\
+\hline
+\end{tabular}
+\end{center}
+On choisit une location au hasard ; on note $E$ \og le vélo est électrique\fg{} et $J$ \og la
+location est à la journée\fg{}.
+\begin{questions}[label=\alph*)]
+  \item Compléter le tableau.
+  \item Calculer $P(E)$ et $P(E\cap J)$.
+  \item Calculer $P_E(J)$ et traduire le résultat par une phrase.
+  \item Calculer $P_J(E)$ et traduire le résultat par une phrase.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+\begin{calculs}
+150+90 &= \res{240} &\qquad& \rem{total à la journée}\\
+150+50 &= \res{200} && \rem{total des électriques}\\
+200-90 &= \res{110} && \rem{classiques à l'heure}\\
+50+110 &= \res{160} && \rem{total à l'heure}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Électrique & Classique & Total\\
+\hline
+À la journée & $150$ & $90$ & $240$\\
+\hline
+À l'heure & $50$ & $110$ & $160$\\
+\hline
+Total & $200$ & $200$ & $400$\\
+\hline
+\end{tabular}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(E) &= \dfrac{200}{400} = \res{0{,}5} &\qquad& \rem{$200$ électriques sur $400$ locations}\\
+P(E\cap J) &= \dfrac{150}{400} = \res{0{,}375} && \rem{électriques \textbf{et} à la journée,
+sur le total}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P_E(J) &= \dfrac{150}{200} = \res{0{,}75} &\qquad& \rem{on ne garde que la colonne
+\og Électrique\fg{}}
+\end{calculs}
+\explique{$75\,\%$ des locations de vélos électriques sont à la journée.}{\og parmi les vélos
+électriques\fg{}}
+\cas{d)}
+\begin{calculs}
+P_J(E) &= \dfrac{150}{240} = \res{0{,}625} &\qquad& \rem{on ne garde que la ligne \og À la
+journée\fg{}}
+\end{calculs}
+\explique{$62{,}5\,\%$ des locations à la journée concernent un vélo électrique.}{$P_E(J)$
+et $P_J(E)$ ne sont pas égales}
+\end{correction}
+
+\etape{À vous de jouer}
+Un club de judo compte $250$ adhérents. Le tableau, à compléter, les range selon l'âge et
+la pratique.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Enfant & Adulte & Total\\
+\hline
+Compétition & $60$ & $20$ & \\
+\hline
+Loisir & $90$ & & \\
+\hline
+Total & & $100$ & $250$\\
+\hline
+\end{tabular}
+\end{center}
+On choisit un adhérent au hasard ; on note $E$ \og l'adhérent est un enfant\fg{} et $C$
+\og l'adhérent fait de la compétition\fg{}.
+\begin{questions}[label=\alph*)]
+  \item Compléter le tableau.
+  \item Calculer $P(E)$ et $P(E\cap C)$.
+  \item Calculer $P_E(C)$ et traduire le résultat par une phrase.
+  \item Calculer $P_C(E)$ et traduire le résultat par une phrase.
+\end{questions}
+\reponse{a) totaux en compétition $80$, en loisir $170$, des enfants $150$ ; adultes en
+loisir $80$ ;\; b)~$P(E)=0{,}6$ et $P(E\cap C)=0{,}24$ ;\;
+c)~$P_E(C)=0{,}4$ : $40\,\%$ des enfants font de la compétition ;\; d)~$P_C(E)=0{,}75$ :
+$75\,\%$ des compétiteurs sont des enfants.}
+\end{methodebox}
+
+\afaire{exercices 23 à 26}
+
+\partiecours{Formule des probabilités conditionnelles}
+
+Souvent, on ne connaît pas les effectifs, seulement des pourcentages. On passe de la
+définition 8 à une formule sur les probabilités en divisant le numérateur et le
+dénominateur par l'effectif total $N$ :
+\begin{calculs}
+P_A(B) &= \dfrac{\text{effectif de $A\cap B$}}{\text{effectif de $A$}} &\qquad& \rem{définition 8}\\
+P_A(B) &= \dfrac{\dfrac{\text{effectif de $A\cap B$}}{N}}{\dfrac{\text{effectif de $A$}}{N}}
+  && \rem{on divise en haut et en bas par $N$}\\
+P_A(B) &= \dfrac{P(A\cap B)}{P(A)} && \rem{chaque quotient est une probabilité}
+\end{calculs}
+Avec les vélos de la partie VII : $\dfrac{P(E\cap J)}{P(E)}=\dfrac{0{,}375}{0{,}5}=0{,}75$,
+c'est bien $P_E(J)$.
+
+\begin{proprietebox}[Propriété 4 --- Formule des probabilités conditionnelles]
+Si $P(A)\neq 0$ :
+\begin{center}
+$P_A(B)=\dfrac{P(A\cap B)}{P(A)}$ \qquad et donc \qquad $P(A\cap B)=P(A)\times P_A(B)$.
+\end{center}
+\end{proprietebox}
+
+\begin{remarquebox}[Traduire un énoncé]
+On choisit un salarié d'une entreprise au hasard ; $A$ : \og il a un abonnement de
+transport\fg{}, $V$ : \og il a un vélo électrique\fg{}.
+\begin{itemize}
+  \item \og $30\,\%$ des salariés ont un abonnement\fg{} : $P(A)=0{,}3$ ;
+  \item \og $12\,\%$ des salariés ont un abonnement \textbf{et} un vélo électrique\fg{} :
+        $P(A\cap V)=0{,}12$ ;
+  \item \og \textbf{parmi} les abonnés, $40\,\%$ ont un vélo électrique\fg{}, ou \og $40\,\%$
+        \textbf{des abonnés} ont un vélo électrique\fg{} : $P_A(V)=0{,}4$.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 8 --- Traduire un énoncé et utiliser la formule]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Chez un concessionnaire, $60\,\%$ des voitures vendues sont électriques, et
+        $45\,\%$ des voitures vendues sont électriques et équipées d'une pompe à chaleur.
+        On choisit une vente au hasard ; on note $E$ \og la voiture est électrique\fg{} et $C$
+        \og la voiture a une pompe à chaleur\fg{}. Traduire les données par des probabilités,
+        puis calculer $P_E(C)$ et traduire le résultat par une phrase.
+  \item Dans une salle d'escalade, $30\,\%$ des grimpeurs sont débutants ; parmi les
+        débutants, $80\,\%$ louent leurs chaussons. On choisit un grimpeur au hasard ; on
+        note $D$ \og le grimpeur est débutant\fg{} et $L$ \og le grimpeur loue ses chaussons\fg{}.
+        Traduire les données par des probabilités, puis calculer $P(D\cap L)$ et traduire
+        le résultat par une phrase.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Données : $P(E)=\res{0{,}6}$ et $P(E\cap C)=\res{0{,}45}$.}{\og électriques
+\textbf{et} équipées\fg{} : une intersection}
+\begin{calculs}
+P_E(C) &= \dfrac{P(E\cap C)}{P(E)} &\qquad& \rem{formule de la propriété 4}\\
+P_E(C) &= \dfrac{0{,}45}{0{,}6} &&\\
+P_E(C) &= \res{0{,}75} &&
+\end{calculs}
+\explique{$75\,\%$ des voitures électriques vendues ont une pompe à chaleur.}{$P_E(C)$ :
+parmi les électriques}
+\cas{b)}
+\explique{Données : $P(D)=\res{0{,}3}$ et $P_D(L)=\res{0{,}8}$.}{\og parmi les débutants\fg{} :
+probabilité sachant $D$}
+\begin{calculs}
+P(D\cap L) &= P(D)\times P_D(L) &\qquad& \rem{formule de la propriété 4}\\
+P(D\cap L) &= 0{,}3\times 0{,}8 &&\\
+P(D\cap L) &= \res{0{,}24} &&
+\end{calculs}
+\explique{$24\,\%$ des grimpeurs sont débutants et louent leurs chaussons.}{$D$
+\textbf{et} $L$, sur l'ensemble des grimpeurs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Dans une compagnie de bus, $70\,\%$ des bus sont électriques, et $56\,\%$ des bus
+        sont électriques et climatisés. On choisit un bus au hasard ; on note $E$ \og le bus
+        est électrique\fg{} et $C$ \og le bus est climatisé\fg{}. Traduire les données par des
+        probabilités, puis calculer $P_E(C)$ et traduire le résultat par une phrase.
+  \item Dans un lycée, $40\,\%$ des élèves viennent à vélo ; parmi eux, $25\,\%$ ont un vélo
+        à assistance électrique. On choisit un élève au hasard ; on note $V$ \og l'élève vient
+        à vélo\fg{} et $A$ \og l'élève a un vélo à assistance électrique\fg{}. Traduire les données
+        par des probabilités, puis calculer $P(V\cap A)$ et traduire le résultat par une
+        phrase.
+\end{questions}
+\reponse{a) $P(E)=0{,}7$ et $P(E\cap C)=0{,}56$ ; $P_E(C)=0{,}8$ : $80\,\%$ des bus
+électriques sont climatisés ;\; b)~$P(V)=0{,}4$ et $P_V(A)=0{,}25$ ; $P(V\cap A)=0{,}1$ :
+$10\,\%$ des élèves viennent avec un vélo à assistance électrique.}
+\end{methodebox}
+
+\afaire{exercices 27 à 29}
+
+\partiecours{Arbre pondéré}
+
+Quand une expérience se déroule en deux temps (le temps qu'il fait, puis la livraison), on
+la représente par un arbre dont les branches portent des probabilités.
+
+\begin{definitionbox}[Définition 9 --- Arbre pondéré]
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Un \textbf{arbre pondéré} porte une probabilité sur chaque branche :
+\begin{itemize}
+  \item au premier niveau, $P(A)$ et $P(\overline{A})$ ;
+  \item au second niveau, des probabilités conditionnelles : après $A$, $P_A(B)$ et
+        $P_A(\overline{B})$ ; après $\overline{A}$, $P_{\overline{A}}(B)$ et
+        $P_{\overline{A}}(\overline{B})$.
+\end{itemize}
+Chaque chemin mène à une intersection : $A\cap B$, $A\cap\overline{B}$\dots
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{A}{B}{P(A)}{P(\overline{A})}{P_A(B)}{P_A(\overline{B})}%
+    {P_{\overline{A}}(B)}{P_{\overline{A}}(\overline{B})}
+  \feuilles{A}{B}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 5 --- Règles de calcul sur un arbre]
+\begin{itemize}
+  \item La somme des probabilités des branches issues d'un même nœud est égale à $1$ ;
+        par exemple, $P(\overline{A})=1-P(A)$ et $P_A(\overline{B})=1-P_A(B)$.
+  \item La probabilité d'un chemin est le \textbf{produit} des probabilités de ses
+        branches : $P(A\cap B)=P(A)\times P_A(B)$ (propriété 4).
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Construire un arbre pondéré, calculer la probabilité d'un chemin]
+\etapeexemples
+Une entreprise livre des colis par drone. $75\,\%$ des livraisons ont lieu par beau temps.
+Par beau temps, $96\,\%$ des livraisons arrivent à l'heure ; par mauvais temps, $72\,\%$.
+On choisit une livraison au hasard ; on note $B$ \og la livraison a lieu par beau temps\fg{} et
+$H$ \og la livraison arrive à l'heure\fg{}.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré de la situation.
+  \item Calculer la probabilité qu'une livraison ait lieu par beau temps et arrive à
+        l'heure ; traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'une livraison ait lieu par mauvais temps et arrive en
+        retard.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Données : $P(B)=0{,}75$ ; $P_B(H)=0{,}96$ ; $P_{\overline{B}}(H)=0{,}72$. Les autres
+branches s'en déduisent : branches d'un même nœud, somme $1$.
+\begin{calculs}
+P(\overline{B}) &= 1-0{,}75 = \res{0{,}25} &&\\
+P_B(\overline{H}) &= 1-0{,}96 = \res{0{,}04} &&\\
+P_{\overline{B}}(\overline{H}) &= 1-0{,}72 = \res{0{,}28} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{B}{H}{0{,}75}{0{,}25}{0{,}96}{0{,}04}{0{,}72}{0{,}28}
+  \feuilles{B}{H}
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\begin{calculs}
+P(B\cap H) &= P(B)\times P_B(H) &\qquad& \rem{chemin $B$ puis $H$ : on multiplie}\\
+P(B\cap H) &= 0{,}75\times 0{,}96 &&\\
+P(B\cap H) &= \res{0{,}72} &&
+\end{calculs}
+\explique{$72\,\%$ des livraisons ont lieu par beau temps et arrivent à l'heure.}{$B$
+\textbf{et} $H$, sur l'ensemble des livraisons}
+\cas{c)}
+\begin{calculs}
+P(\overline{B}\cap\overline{H}) &= P(\overline{B})\times P_{\overline{B}}(\overline{H})
+  &\qquad& \rem{chemin $\overline{B}$ puis $\overline{H}$}\\
+P(\overline{B}\cap\overline{H}) &= 0{,}25\times 0{,}28 &&\\
+P(\overline{B}\cap\overline{H}) &= \res{0{,}07} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Une maison est équipée de panneaux solaires. $60\,\%$ des jours de l'année sont
+ensoleillés. Un jour ensoleillé, la production couvre toute la consommation de la maison
+avec une probabilité de $0{,}9$ ; un jour sans soleil, avec une probabilité de $0{,}45$. On
+choisit un jour au hasard ; on note $S$ \og le jour est ensoleillé\fg{} et $C$ \og la production
+couvre la consommation\fg{}.
+\begin{questions}[label=\alph*)]
+  \item Construire l'arbre pondéré de la situation.
+  \item Calculer la probabilité qu'un jour soit ensoleillé et que la production couvre la
+        consommation ; traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'un jour soit sans soleil et que la production ne couvre
+        pas la consommation.
+\end{questions}
+\reponse{a) $P(\overline{S})=0{,}4$ ; $P_S(\overline{C})=0{,}1$ ;
+$P_{\overline{S}}(\overline{C})=0{,}55$ ;\; b)~$P(S\cap C)=0{,}54$ ;\;
+c)~$P(\overline{S}\cap\overline{C})=0{,}22$.}
+\end{methodebox}
+
+\afaire{exercices 30 à 32}
+
+\partiecours{Formule des probabilités totales}
+
+\textbf{But :} un événement peut se réaliser de deux façons ; une livraison arrive à l'heure
+par beau temps \emph{ou} par mauvais temps. Pour obtenir sa probabilité, on additionne les
+probabilités des chemins qui y mènent.
+
+\begin{proprietebox}[Propriété 6 --- Formule des probabilités totales]
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+L'événement $B$ se réalise avec $A$ ou avec $\overline{A}$ :
+\begin{calculs}
+P(B) &= P(A\cap B)+P(\overline{A}\cap B) &&\\
+P(B) &= P(A)\times P_A(B)+P(\overline{A})\times P_{\overline{A}}(B) &&
+\end{calculs}
+Sur l'arbre, $P(B)$ est la somme des probabilités des chemins qui mènent à $B$ (en rouge).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[arbA/.style={chemin},arbAB/.style={chemin},arbnA/.style={chemin},
+    arbnAB/.style={chemin}]
+  \arbre{A}{B}{P(A)}{P(\overline{A})}{P_A(B)}{P_A(\overline{B})}%
+    {P_{\overline{A}}(B)}{P_{\overline{A}}(\overline{B})}
+  \feuille{AB}{$A\cap B$}
+  \feuille{nAB}{$\overline{A}\cap B$}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer une probabilité avec la formule des probabilités totales]
+\etapeexemples
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Une entreprise livre des colis par drone ; l'arbre ci-contre décrit la situation ($B$ \og la
+livraison a lieu par beau temps\fg{}, $H$ \og la livraison arrive à l'heure\fg{}).
+\begin{questions}[label=\alph*)]
+  \item Calculer $P(H)$.
+  \item Une livraison est arrivée à l'heure. Calculer la probabilité qu'elle ait eu lieu
+        par beau temps.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{B}{H}{0{,}75}{0{,}25}{0{,}96}{0{,}04}{0{,}72}{0{,}28}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+Une usine assemble des trottinettes électriques sur deux lignes : la ligne 1 en produit
+$60\,\%$, la ligne 2 le reste. À la sortie, $2\,\%$ des trottinettes de la ligne 1 ont un
+réglage à reprendre, contre $5\,\%$ de celles de la ligne 2. On choisit une trottinette au
+hasard ; on note $L$ \og elle vient de la ligne 1\fg{} et $R$ \og elle a un réglage à reprendre\fg{}.
+\begin{questions}[label=\alph*),start=3]
+  \item Construire l'arbre pondéré, puis calculer $P(R)$.
+  \item Une trottinette a un réglage à reprendre. Calculer la probabilité qu'elle vienne de
+        la ligne 1.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Deux chemins mènent à $H$ : $B$ puis $H$, et $\overline{B}$ puis $H$.}{$H$ se
+réalise par beau ou par mauvais temps}
+\begin{calculs}
+P(H) &= P(B\cap H)+P(\overline{B}\cap H) &\qquad& \rem{formule des probabilités totales}\\
+P(H) &= 0{,}75\times 0{,}96+0{,}25\times 0{,}72 && \rem{produit sur chaque chemin}\\
+P(H) &= 0{,}72+0{,}18 &&\\
+P(H) &= \res{0{,}9} &&
+\end{calculs}
+\explique{$90\,\%$ des livraisons arrivent à l'heure.}{on traduit par une phrase}
+\cas{b)}
+\begin{calculs}
+P_H(B) &= \dfrac{P(H\cap B)}{P(H)} &\qquad& \rem{on sait que $H$ est réalisé : propriété 4}\\
+P_H(B) &= \dfrac{0{,}72}{0{,}9} && \rem{$P(H\cap B)=P(B\cap H)$, calculé en a)}\\
+P_H(B) &= \res{0{,}8} &&
+\end{calculs}
+\explique{$80\,\%$ des livraisons arrivées à l'heure ont eu lieu par beau temps.}{à ne pas
+confondre avec $P_B(H)=0{,}96$}
+\cas{c)}\par\nopagebreak
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Données : $P(L)=0{,}6$ ; $P_L(R)=0{,}02$ ; $P_{\overline{L}}(R)=0{,}05$. Les autres
+branches s'en déduisent : $P(\overline{L})=0{,}4$ ; $P_L(\overline{R})=0{,}98$ ;
+$P_{\overline{L}}(\overline{R})=0{,}95$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{L}{R}{0{,}6}{0{,}4}{0{,}02}{0{,}98}{0{,}05}{0{,}95}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+P(R) &= P(L)\times P_L(R)+P(\overline{L})\times P_{\overline{L}}(R) &\qquad& \rem{deux
+chemins mènent à $R$}\\
+P(R) &= 0{,}6\times 0{,}02+0{,}4\times 0{,}05 &&\\
+P(R) &= 0{,}012+0{,}02 &&\\
+P(R) &= \res{0{,}032} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+P_R(L) &= \dfrac{P(R\cap L)}{P(R)} &\qquad& \rem{on sait que $R$ est réalisé}\\
+P_R(L) &= \dfrac{0{,}012}{0{,}032} && \rem{$P(R\cap L)=0{,}6\times 0{,}02$, calculé en c)}\\
+P_R(L) &= \res{0{,}375} &&
+\end{calculs}
+\explique{$37{,}5\,\%$ des trottinettes à régler viennent de la ligne 1.}{la ligne 1
+produit plus, mais se trompe moins}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Une maison est équipée de panneaux solaires ; l'arbre ci-contre décrit la situation ($S$ \og le
+jour est ensoleillé\fg{}, $C$ \og la production couvre la consommation\fg{}).
+\begin{questions}[label=\alph*)]
+  \item Calculer $P(C)$.
+  \item Un jour, la production a couvert la consommation. Calculer la probabilité que ce
+        jour ait été ensoleillé.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{S}{C}{0{,}6}{0{,}4}{0{,}9}{0{,}1}{0{,}45}{0{,}55}
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+Lors d'un concours de robotique, $70\,\%$ des robots sont à roues, les autres à chenilles.
+$20\,\%$ des robots à roues réussissent l'épreuve tout-terrain, contre $70\,\%$ des robots à
+chenilles. On choisit un robot au hasard ; on note $R$ \og le robot est à roues\fg{} et $T$ \og le
+robot réussit l'épreuve tout-terrain\fg{}.
+\begin{questions}[label=\alph*),start=3]
+  \item Construire l'arbre pondéré, puis calculer $P(T)$.
+  \item Un robot a réussi l'épreuve tout-terrain. Calculer la probabilité qu'il soit à
+        roues.
+\end{questions}
+\reponse{a) $P(C)=0{,}72$ ;\; b)~$P_C(S)=0{,}75$ ;\; c)~$P(T)=0{,}35$ ;\;
+d)~$P_T(R)=0{,}4$.}
+\end{methodebox}
+
+\afaire{exercices 33 à 35}
+
+\partiecours{Événements indépendants}
+
+\textbf{But :} savoir si le fait que $A$ soit réalisé change la probabilité de $B$. Par
+exemple, la pluie change-t-elle la probabilité qu'un tramway soit à l'heure ?
+
+\begin{definitionbox}[Définition 10 --- Événements indépendants]
+Soit $A$ un événement de probabilité non nulle. L'événement $B$ est \textbf{indépendant}
+de $A$ si $P_A(B)=P(B)$ : savoir que $A$ est réalisé ne change pas la probabilité de $B$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 7 --- Indépendance et produit]
+Soit $A$ et $B$ deux événements de probabilités non nulles. Si $B$ est indépendant de $A$,
+alors
+\begin{center}
+$P(A\cap B)=P(A)\times P(B)$ \qquad et \qquad $P_B(A)=P(A)$ :
+\end{center}
+$A$ est aussi indépendant de $B$. On dit simplement que $A$ et $B$ sont
+\textbf{indépendants}.
+\end{proprietebox}
+
+\demo{\textbf{But :} on veut démontrer que, si $P_A(B)=P(B)$, alors $P(A\cap B)=P(A)\times
+P(B)$ et $P_B(A)=P(A)$.}
+\begin{calculs}
+P(A\cap B) &= P(A)\times P_A(B) &\qquad& \rem{propriété 4}\\
+P(A\cap B) &= P(A)\times P(B) && \rem{car $P_A(B)=P(B)$}
+\end{calculs}
+\begin{calculs}
+P_B(A) &= \dfrac{P(A\cap B)}{P(B)} &\qquad& \rem{propriété 4, en échangeant $A$ et $B$}\\
+P_B(A) &= \dfrac{P(A)\times\barre{P(B)}}{\barre{P(B)}} && \rem{ligne précédente ; on
+simplifie par $P(B)$}\\
+P_B(A) &= P(A) &&
+\end{calculs}
+\textbf{Conclusion :} $A$ est indépendant de $B$.
+
+\begin{methodebox}[Méthode 11 --- Justifier ou utiliser l'indépendance de deux événements]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Sur une ligne de tramway, on a relevé $200$ trajets. On choisit un trajet au
+        hasard ; on note $R$ \og il pleut pendant le trajet\fg{} et $H$ \og le tramway est à
+        l'heure\fg{}. Les événements $R$ et $H$ sont-ils indépendants ?
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|l|c|c|c|}
+        \hline
+         & Pluie & Pas de pluie & Total\\
+        \hline
+        À l'heure & $45$ & $135$ & $180$\\
+        \hline
+        En retard & $5$ & $15$ & $20$\\
+        \hline
+        Total & $50$ & $150$ & $200$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item Une entreprise livre des colis par drone. Par beau temps, $96\,\%$ des livraisons
+        arrivent à l'heure ; au total, $90\,\%$ des livraisons arrivent à l'heure. On note
+        $B$ \og la livraison a lieu par beau temps\fg{} et $H$ \og la livraison arrive à
+        l'heure\fg{}. Les événements $B$ et $H$ sont-ils indépendants ?
+  \item Un circuit comporte deux composants montés en série, qui tombent en panne
+        indépendamment l'un de l'autre. Sur un an, le composant 1 fonctionne avec une
+        probabilité de $0{,}95$ et le composant 2 avec une probabilité de $0{,}9$. Le circuit
+        fonctionne quand les deux composants fonctionnent. Calculer la probabilité que le
+        circuit fonctionne pendant un an, puis la probabilité qu'il tombe en panne.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P_R(H) &= \dfrac{45}{50} = \res{0{,}9} &\qquad& \rem{colonne \og Pluie\fg{} : $50$ trajets}\\
+P(H) &= \dfrac{180}{200} = \res{0{,}9} && \rem{sur l'ensemble des $200$ trajets}
+\end{calculs}
+\explique{Conclusion : $P_R(H)=P(H)$, donc \res{$R$ et $H$ sont indépendants} : la pluie ne
+change pas la probabilité que le tramway soit à l'heure.}{on compare $P_R(H)$ à $P(H)$ ;
+le tramway roule sur une voie réservée}
+\cas{b)}
+\explique{$P_B(H)=0{,}96$ et $P(H)=0{,}9$.}{\og par beau temps\fg{} : sachant $B$ ; \og au
+total\fg{} : $P(H)$}
+\explique{Conclusion : $P_B(H)\neq P(H)$, donc \res{$B$ et $H$ ne sont pas
+indépendants} : le beau temps augmente la probabilité d'arriver à l'heure.}{une différence
+suffit}
+\cas{c)}
+\explique{On note $F_1$ \og le composant 1 fonctionne\fg{} et $F_2$ \og le composant 2
+fonctionne\fg{}.}{on nomme les événements}
+\begin{calculs}
+P(F_1\cap F_2) &= P(F_1)\times P(F_2) &\qquad& \rem{$F_1$ et $F_2$ sont indépendants
+(propriété 7)}\\
+P(F_1\cap F_2) &= 0{,}95\times 0{,}9 &&\\
+P(F_1\cap F_2) &= \res{0{,}855} &&\\
+P(\overline{F_1\cap F_2}) &= 1-0{,}855 = \res{0{,}145} && \rem{la panne est le
+contraire du fonctionnement}
+\end{calculs}
+\explique{Le circuit fonctionne pendant un an avec une probabilité de $0{,}855$ ; il tombe
+en panne avec une probabilité de $0{,}145$.}{on traduit par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Une station de vélos en libre-service a enregistré $300$ locations. On choisit une
+        location au hasard ; on note $W$ \og la location a lieu le week-end\fg{} et $E$ \og le vélo
+        est électrique\fg{}. Les événements $W$ et $E$ sont-ils indépendants ?
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|l|c|c|c|}
+        \hline
+         & Week-end & Semaine & Total\\
+        \hline
+        Électrique & $40$ & $80$ & $120$\\
+        \hline
+        Classique & $60$ & $120$ & $180$\\
+        \hline
+        Total & $100$ & $200$ & $300$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item Une maison est équipée de panneaux solaires. Un jour ensoleillé, la production
+        couvre la consommation avec une probabilité de $0{,}9$ ; sur l'ensemble des jours de
+        l'année, avec une probabilité de $0{,}72$. On note $S$ \og le jour est ensoleillé\fg{} et
+        $C$ \og la production couvre la consommation\fg{}. Les événements $S$ et $C$ sont-ils
+        indépendants ?
+  \item Un vélo électrique roule en mode assisté quand sa batterie et son moteur
+        fonctionnent ; ils tombent en panne indépendamment l'un de l'autre. Sur un an, la
+        batterie fonctionne avec une probabilité de $0{,}9$ et le moteur avec une probabilité
+        de $0{,}8$. Calculer la probabilité que l'assistance fonctionne pendant un an, puis la
+        probabilité qu'elle tombe en panne.
+\end{questions}
+\reponse{a) $P_W(E)=0{,}4=P(E)$ : indépendants ;\; b)~$P_S(C)=0{,}9\neq 0{,}72$ : non
+indépendants ;\; c)~$0{,}72$ puis $0{,}28$.}
+\end{methodebox}
+
+\afaire{exercices 36 à 38}
+
+\end{document}

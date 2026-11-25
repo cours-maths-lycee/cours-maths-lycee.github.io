@@ -1,0 +1,1375 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\entete{Chapitre 9 --- Primitives --- corrigé}{1\textsuperscript{re} STI2D}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\let\partieligne\partie
+\renewcommand{\partie}[1]{\besoinplace{16\baselineskip}\partieligne{#1}}
+\BeforeBeginEnvironment{exo}{\besoinplace{10\baselineskip}}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\newenvironment{tabsignes}[3][2.4]{\par\smallskip\begin{center}\begin{tikzpicture}
+  \tkzTabInit[lgt=#1,espcl=2.4]{#2}{#3}}{\end{tikzpicture}\end{center}}
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,before skip=3pt,after skip=3pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\colorlet{coulEuler}{red!75!black}
+
+\begin{document}
+
+\entetefiche{Chapitre 9 --- Primitives}{Première STI2D}
+
+\partie{Primitive d'une fonction}
+
+\begin{exo}[Vérifier une primitive]
+\explique{\textbf{But :} on dérive $F$ et on compare $F'(x)$ à $f(x)$ ; s'ils sont
+égaux, $F$ est une primitive de $f$.}{méthode 1 (définition 1)}
+\cas{a)}
+\begin{calculs}
+F(x) &= 5x-2 &&\justif{on part de $F$}\\
+F'(x) &= 5 &&\justif{$5x$ devient $5$ ; $-2$ devient $0$}
+\end{calculs}
+\explique{Conclusion : $F'(x)=f(x)$, donc \res{$F$ est une primitive de $f$}.}{on
+retrouve $f(x)=5$}
+\cas{b)}
+\begin{calculs}
+F(x) &= 3x^{2}+x-4 &&\justif{on part de $F$}\\
+F'(x) &= 3\times 2x+1-0 &&\justif{terme par terme : $x^{2}$ devient $2x$}\\
+F'(x) &= 6x+1 &&
+\end{calculs}
+\explique{Conclusion : $F'(x)=f(x)$, donc \res{$F$ est une primitive de $f$}.}{on
+retrouve $f(x)$}
+\cas{c)}
+\begin{calculs}
+F(x) &= x^{2}-7 &&\justif{on part de $F$}\\
+F'(x) &= 2x &&\justif{$-7$ est une constante : il devient $0$}
+\end{calculs}
+\explique{Conclusion : $F'(x)\neq f(x)$, donc \res{$F$ n'est pas une primitive de
+$f$}.}{on trouve $2x$ au lieu de $2x-7$}
+\cas{d)}
+\begin{calculs}
+F(x) &= x^{3}-4x^{2}+2x+9 &&\justif{on part de $F$}\\
+F'(x) &= 3x^{2}-4\times 2x+2+0 &&\justif{terme par terme}\\
+F'(x) &= 3x^{2}-8x+2 &&
+\end{calculs}
+\explique{Conclusion : $F'(x)=f(x)$, donc \res{$F$ est une primitive de $f$}.}{on
+retrouve $f(x)$}
+\cas{e)}
+\begin{calculs}
+F(x) &= 2x^{2}+\dfrac{1}{x} &&\justif{on part de $F$}\\
+F'(x) &= 2\times 2x+\left(-\dfrac{1}{x^{2}}\right) &&\justif{la dérivée de $\frac{1}{x}$ est
+$-\frac{1}{x^{2}}$}\\
+F'(x) &= 4x-\dfrac{1}{x^{2}} &&
+\end{calculs}
+\explique{Conclusion : $F'(x)=f(x)$, donc \res{$F$ est une primitive de $f$}.}{on
+retrouve $f(x)$}
+\cas{f)}
+\begin{calculs}
+F(x) &= 2x^{3}+\dfrac{5}{x} &&\justif{$\frac{5}{x}=5\times\frac{1}{x}$}\\
+F'(x) &= 2\times 3x^{2}+5\times\left(-\dfrac{1}{x^{2}}\right) &&\justif{le $5$ reste devant}\\
+F'(x) &= 6x^{2}-\dfrac{5}{x^{2}} &&
+\end{calculs}
+\explique{Conclusion : $F'(x)\neq f(x)$, donc \res{$F$ n'est pas une primitive de
+$f$}.}{on trouve $-\frac{5}{x^{2}}$ au lieu de $+\frac{5}{x^{2}}$}
+\rem{Erreur fréquente : oublier le signe $-$ de la dérivée de $\frac{1}{x}$, qui est
+$-\frac{1}{x^{2}}$.}
+\end{exo}
+
+\begin{exo}[En phrase complète]
+\cas{1)}
+\explique{\leavevmode\res{$G$ est une primitive de $g$.}}{$G'(x)=g(x)$ : $g$ est la dérivée de $G$}
+\cas{2)}
+\explique{\leavevmode\res{La dérivée de $H$ est $h$.}}{$H$ est une primitive de $h$, donc $H'(x)=h(x)$}
+\cas{3)}
+\explique{\leavevmode\res{La position $d$ du vélo est une primitive de sa vitesse $v$.}}{$d'=v$ :
+on passe de $v$ à $d$ par le chemin inverse de la dérivation}
+\rem{« $F$ est une primitive de $f$ » et « $f$ est la dérivée de $F$ » disent la même
+chose.}
+\end{exo}
+
+\begin{exo}[Laquelle est une primitive ?]
+\explique{On dérive chacune des trois fonctions : celle dont la dérivée redonne la
+fonction de départ en est une primitive.}{méthode 1}
+\cas{a)}
+\begin{calculs}
+F_{1}'(x) &= 8x-3 &&\justif{$4x^{2}$ devient $8x$ : ce n'est pas $f(x)$}\\
+F_{2}'(x) &= 4x-3 &&\justif{$2x^{2}$ devient $4x$ ; $1$ devient $0$}\\
+F_{3}'(x) &= 0 &&\justif{la dérivée d'un nombre est $0$}
+\end{calculs}
+\explique{$F_{2}'(x)=f(x)$ : \res{$F_{2}$ est une primitive de $f$}.}{la seule qui redonne
+$f(x)$}
+\cas{b)}
+\begin{calculs}
+G_{1}'(x) &= 6 &&\justif{$6x$ devient $6$}\\
+G_{2}'(x) &= 3x^{2} &&\justif{le $+2$ est une constante : il devient $0$}\\
+G_{3}'(x) &= 3x^{2}+2 &&\justif{$2x$ devient $2$ ; $-5$ devient $0$}
+\end{calculs}
+\explique{$G_{3}'(x)=g(x)$ : \res{$G_{3}$ est une primitive de $g$}.}{$G_{2}$ est un
+piège : son $+2$ disparaît en dérivant}
+\cas{c)}
+\begin{calculs}
+H_{1}'(x) &= -2\times\left(-\dfrac{1}{x^{2}}\right) &&\justif{la dérivée de $\frac{1}{x}$
+est $-\frac{1}{x^{2}}$}\\
+H_{1}'(x) &= \dfrac{2}{x^{2}} &&\justif{moins par moins : plus}\\
+H_{2}'(x) &= 2\times\left(-\dfrac{1}{x^{2}}\right)+0 &&\justif{$3$ devient $0$}\\
+H_{2}'(x) &= -\dfrac{2}{x^{2}} &&\\
+H_{3}'(x) &= -2 &&
+\end{calculs}
+\explique{$H_{2}'(x)=h(x)$ : \res{$H_{2}$ est une primitive de $h$}.}{la constante $+3$
+ne change pas la dérivée}
+\end{exo}
+
+\begin{exo}[Sur une piste d'essai]
+\cas{1)}
+\begin{calculs}
+d(4) &= 0{,}25\times 4^{2}+2\times 4 &&\justif{on remplace $t$ par $4$}\\
+d(4) &= 4+8 &&\justif{$0{,}25\times 16=4$}\\
+d(4) &= \res{12} &&
+\end{calculs}
+\explique{Au bout de $4$~s, le vélo a parcouru $12$~m.}{on conclut par une phrase}
+\cas{2)}
+\explique{\textbf{But :} on veut démontrer que $d'(t)=v(t)$.}{méthode 1}
+\begin{calculs}
+d(t) &= 0{,}25t^{2}+2t &&\justif{on part de $d$}\\
+d'(t) &= 0{,}25\times 2t+2 &&\justif{terme par terme}\\
+d'(t) &= 0{,}5t+2 &&
+\end{calculs}
+\explique{Conclusion : $d'(t)=v(t)$, donc \res{$d$ est une primitive de $v$}.}{on
+retrouve $v(t)$}
+\cas{3)}
+\explique{$v(t)=d'(t)$ est la dérivée de la position : c'est \res{la vitesse du vélo}
+(en m/s) à l'instant $t$.}{chapitre 5 : la vitesse est la dérivée de la position}
+\cas{4)}
+\begin{calculs}
+v(8) &= 0{,}5\times 8+2 &&\justif{on remplace $t$ par $8$}\\
+v(8) &= \res{6} &&\justif{en m/s}
+\end{calculs}
+\begin{calculs}
+6\times 3{,}6 &= \res{21{,}6} &&\justif{$1$~m/s $=3{,}6$~km/h ($3\,600$~s par heure, $1\,000$~m par km)}
+\end{calculs}
+\explique{Au bout de $8$~s, le vélo roule à $6$~m/s, soit $21{,}6$~km/h.}{moins que les
+$25$~km/h de l'assistance électrique}
+\end{exo}
+
+\partie{Toutes les primitives d'une fonction}
+
+\begin{exo}[Primitive qui vérifie une condition]
+\explique{Les primitives de $f$ sont les fonctions $F(x)+C$ : on remplace la constante
+de $F$ par $C$, puis la condition donne une équation d'inconnue $C$.}{propriété 1,
+méthode 2}
+\cas{a)}
+\begin{calculs}
+G(x) &= 2x^{2}+x+C &&\justif{toutes les primitives : $5$ devient $C$}\\
+G(1) &= 2\times 1^{2}+1+C &&\justif{on remplace $x$ par $1$}\\
+G(1) &= 3+C &&
+\end{calculs}
+\begin{calculs}
+3+C &= 0 &&\justif{$G(1)$ doit valoir $0$}\\
+C &= -3 &&\justif{on retire $3$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{2x^{2}+x-3}$.}{contrôle : $G(1)=2+1-3=0$}
+\cas{b)}
+\begin{calculs}
+G(x) &= 3x^{2}-2x+C &&\justif{toutes les primitives}\\
+G(2) &= 3\times 2^{2}-2\times 2+C &&\justif{on remplace $x$ par $2$}\\
+G(2) &= 8+C &&\justif{$12-4=8$}
+\end{calculs}
+\begin{calculs}
+8+C &= 1 &&\justif{$G(2)$ doit valoir $1$}\\
+C &= -7 &&\justif{on retire $8$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{3x^{2}-2x-7}$.}{contrôle : $G(2)=12-4-7=1$}
+\cas{c)}
+\begin{calculs}
+G(x) &= x^{3}-2x^{2}+C &&\justif{toutes les primitives : $7$ devient $C$}\\
+G(-1) &= (-1)^{3}-2\times(-1)^{2}+C &&\justif{on remplace $x$ par $(-1)$}\\
+G(-1) &= -3+C &&\justif{$(-1)^{3}=-1$ et $(-1)^{2}=1$}
+\end{calculs}
+\begin{calculs}
+-3+C &= 2 &&\justif{$G(-1)$ doit valoir $2$}\\
+C &= 5 &&\justif{on ajoute $3$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{x^{3}-2x^{2}+5}$.}{contrôle : $G(-1)=-1-2+5=2$}
+\cas{d)}
+\begin{calculs}
+G(x) &= x^{5}+x^{3}+C &&\justif{toutes les primitives}\\
+G(-1) &= (-1)^{5}+(-1)^{3}+C &&\justif{on remplace $x$ par $(-1)$}\\
+G(-1) &= -2+C &&\justif{une puissance impaire de $-1$ vaut $-1$}
+\end{calculs}
+\begin{calculs}
+-2+C &= -3 &&\justif{$G(-1)$ doit valoir $-3$}\\
+C &= -1 &&\justif{on ajoute $2$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{x^{5}+x^{3}-1}$.}{contrôle : $G(-1)=-1-1-1=-3$}
+\cas{e)}
+\begin{calculs}
+G(x) &= \dfrac{x^{3}}{3}+x+C &&\justif{toutes les primitives}\\
+G(3) &= \dfrac{3^{3}}{3}+3+C &&\justif{on remplace $x$ par $3$}\\
+G(3) &= 12+C &&\justif{$\frac{27}{3}=9$ et $9+3=12$}
+\end{calculs}
+\begin{calculs}
+12+C &= 4 &&\justif{$G(3)$ doit valoir $4$}\\
+C &= -8 &&\justif{on retire $12$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{\dfrac{x^{3}}{3}+x-8}$.}{contrôle : $G(3)=9+3-8=4$}
+\end{exo}
+
+\begin{exo}[Deux primitives]
+\cas{1)}
+\begin{calculs}
+G(x) &= (x-3)^{2} &&\justif{identité remarquable $(a-b)^{2}=a^{2}-2ab+b^{2}$}\\
+G(x) &= x^{2}-2\times x\times 3+3^{2} &&\\
+G(x) &= \res{x^{2}-6x+9} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+F'(x) &= 2x-6 &&\justif{terme par terme}\\
+G'(x) &= 2x-6 &&\justif{avec la forme développée}
+\end{calculs}
+\explique{$F$ et $G$ ont la même dérivée : \res{$F$ et $G$ sont deux primitives de la même
+fonction $f(x)=2x-6$}.}{définition 1}
+\cas{3)}
+\begin{calculs}
+G(x)-F(x) &= x^{2}-6x+9-(x^{2}-6x+4) &&\justif{parenthèses : on soustrait tout $F(x)$}\\
+G(x)-F(x) &= x^{2}-6x+9-x^{2}+6x-4 &&\justif{le $-$ change tous les signes}\\
+G(x)-F(x) &= \res{5} &&
+\end{calculs}
+\explique{On retrouve la propriété 1 : deux primitives d'une même fonction diffèrent
+d'une constante, ici $5$.}{$G(x)=F(x)+5$}
+\cas{4)}
+\begin{calculs}
+H(x) &= x^{2}-6x+C &&\justif{toutes les primitives de $f$}\\
+H(0) &= 0^{2}-6\times 0+C &&\justif{on remplace $x$ par $0$}\\
+H(0) &= C &&
+\end{calculs}
+\explique{La condition $H(0)=0$ donne $C=0$, donc $H(x)=\res{x^{2}-6x}$.}{en $0$, la
+constante est la valeur de départ}
+\end{exo}
+
+\begin{exo}[Faire monter une courbe]
+\cas{1)}
+\explique{\textbf{But :} on veut démontrer que $F'(x)=f(x)$.}{méthode 1}
+\begin{calculs}
+F(x) &= x^{2}-2x-3 &&\justif{on part de $F$}\\
+F'(x) &= 2x-2 &&\justif{terme par terme ; $-3$ devient $0$}
+\end{calculs}
+\explique{Conclusion : $F'(x)=f(x)$, donc \res{$F$ est une primitive de $f$}.}{on
+retrouve $f(x)$}
+\cas{2)}
+\explique{$\mathcal{C}_{F}$ coupe l'axe des ordonnées au point $(0\,;-3)$, donc
+$F(0)=\res{-3}$.}{$F(0)$ est l'ordonnée du point d'abscisse $0$}
+\begin{calculs}
+F(0) &= 0^{2}-2\times 0-3 &&\justif{on remplace $x$ par $0$}\\
+F(0) &= \res{-3} &&\justif{on retrouve la lecture}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+G(x) &= x^{2}-2x+C &&\justif{toutes les primitives : $-3$ devient $C$}\\
+G(0) &= C &&\justif{on remplace $x$ par $0$}
+\end{calculs}
+\explique{La condition $G(0)=-1$ donne $C=-1$, donc $G(x)=\res{x^{2}-2x-1}$.}{contrôle :
+$G(0)=-1$}
+\cas{4)}
+\begin{calculs}
+G(x)-F(x) &= x^{2}-2x-1-(x^{2}-2x-3) &&\justif{on soustrait tout $F(x)$}\\
+G(x)-F(x) &= -1+3 &&\justif{$x^{2}$ et $-2x$ s'éliminent}\\
+G(x)-F(x) &= \res{2} &&
+\end{calculs}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Pour chaque $x$, $G(x)=F(x)+2$ : chaque point de $\mathcal{C}_{G}$ est $2$ unités
+au-dessus du point de $\mathcal{C}_{F}$ de même abscisse. On obtient donc
+\res{$\mathcal{C}_{G}$ en faisant monter $\mathcal{C}_{F}$ de $2$ unités}.
+
+\smallskip
+{\small\itshape\color{black!60}Pour la tracer, on monte de $2$ carreaux les points
+du quadrillage de $\mathcal{C}_{F}$ : $(-1\,;0)$ devient $(-1\,;2)$, $(0\,;-3)$ devient
+$(0\,;-1)$, $(1\,;-4)$ devient $(1\,;-2)$\dots}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-3}{-5}{5}{5}
+  \gradx{-2,-1,1,2,3,4} \grady{-4,-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-1.6:3.6,samples=50]
+    plot (\x,{\x*\x-2*\x-3});
+  \draw[coulCourbeB,line width=1.1pt,domain=-1.6:3.6,samples=50]
+    plot (\x,{\x*\x-2*\x-1});
+  \foreach \a in {-1,1,3}{\draw[-{Stealth[length=1.5mm]},thick,black!60]
+    (\a,{\a*\a-2*\a-3})--(\a,{\a*\a-2*\a-1.2});}
+  \path[coulCourbeB] (-1,2) node[croix]{} (0,-1) node[croix]{} (1,-2) node[croix]{}
+    (2,-1) node[croix]{} (3,2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (4.3,1.4) {$\mathcal{C}_{F}$};
+  \node[coulCourbeB,font=\footnotesize] at (4.3,4.3) {$\mathcal{C}_{G}$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Un ballon-sonde]
+\cas{1)}
+\begin{calculs}
+F(t) &= 5t &&\justif{on part de $F$}\\
+F'(t) &= 5 &&\justif{$5t$ devient $5$}
+\end{calculs}
+\explique{$F'(t)=v(t)$, donc \res{$F$ est une primitive de $v$}.}{méthode 1}
+\cas{2)}
+\begin{calculs}
+h(t) &= 5t+C &&\justif{toutes les primitives de $v$}\\
+h(0) &= 5\times 0+C &&\justif{on remplace $t$ par $0$}\\
+h(0) &= C &&
+\end{calculs}
+\explique{La condition $h(0)=15$ donne $C=15$, donc $h(t)=\res{5t+15}$.}{au départ, le
+ballon est à $15$~m du sol}
+\cas{3)}
+\begin{calculs}
+h(60) &= 5\times 60+15 &&\justif{une minute, c'est $60$~s}\\
+h(60) &= \res{315} &&
+\end{calculs}
+\explique{Au bout d'une minute, le ballon est à $315$~m d'altitude.}{on conclut par une
+phrase}
+\cas{4)}
+\explique{On cherche $t$ tel que $h(t)=1\,015$ :}{une équation du premier degré}
+\begin{calculs}
+5t+15 &= 1\,015 &&\justif{on recopie l'équation}\\
+5t &= 1\,000 &&\justif{on retire $15$ des deux côtés}\\
+t &= 200 &&\justif{on divise par $5$}
+\end{calculs}
+\explique{Le ballon atteint $1\,015$~m au bout de \res{$200$~s, soit $3$~min $20$~s}.}{$200=3\times 60+20$}
+\end{exo}
+
+\partie{Primitive d'un polynôme}
+
+\begin{exo}[Primitives de polynômes]
+\explique{Terme par terme : $x^{n}$ donne $\dfrac{x^{n+1}}{n+1}$, un nombre $k$ donne $kx$ ;
+un nombre qui multiplie reste devant.}{propriété 2, méthode 3}
+\cas{a)}
+\begin{calculs}
+F(x) &= \res{7x} &&\justif{le nombre $7$ donne $7x$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+G(x) &= 6\times\dfrac{x^{2}}{2} &&\justif{$x$ donne $\frac{x^{2}}{2}$}\\
+G(x) &= \res{3x^{2}} &&\justif{$\frac{6}{2}=3$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+H(x) &= 9\times\dfrac{x^{3}}{3} &&\justif{$x^{2}$ donne $\frac{x^{3}}{3}$}\\
+H(x) &= \res{3x^{3}} &&\justif{$\frac{9}{3}=3$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+K(x) &= 4\times\dfrac{x^{4}}{4}-2\times\dfrac{x^{2}}{2}+3x &&\justif{terme par terme}\\
+K(x) &= \res{x^{4}-x^{2}+3x} &&\justif{on simplifie les fractions}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+M(x) &= 12\times\dfrac{x^{3}}{3}-10\times\dfrac{x^{2}}{2}+x &&\justif{$1$ donne $x$}\\
+M(x) &= \res{4x^{3}-5x^{2}+x} &&\justif{$\frac{12}{3}=4$ et $\frac{10}{2}=5$}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+P(x) &= 5\times\dfrac{x^{5}}{5}+8\times\dfrac{x^{4}}{4}-6\times\dfrac{x^{3}}{3} &&\justif{$x^{4}$
+donne $\frac{x^{5}}{5}$}\\
+P(x) &= \res{x^{5}+2x^{4}-2x^{3}} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+Q(x) &= \dfrac{x^{3}}{3}+3\times\dfrac{x^{2}}{2}-4x &&\justif{terme par terme}\\
+Q(x) &= \res{\dfrac{1}{3}x^{3}+\dfrac{3}{2}x^{2}-4x} &&\justif{les fractions restent}
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+R(x) &= -2\times\dfrac{x^{4}}{4}+5\times\dfrac{x^{2}}{2}-\dfrac{1}{3}x &&\justif{le nombre
+$-\frac{1}{3}$ donne $-\frac{1}{3}x$}\\
+R(x) &= \res{-\dfrac{1}{2}x^{4}+\dfrac{5}{2}x^{2}-\dfrac{1}{3}x} &&\justif{$\frac{2}{4}=\frac{1}{2}$}
+\end{calculs}
+\rem{Pour contrôler, on dérive : $M'(x)=12x^{2}-10x+1$, c'est bien $m(x)$.}
+\end{exo}
+
+\begin{exo}[Toutes les primitives]
+\explique{On calcule une primitive, puis on ajoute une constante $C$ (un nombre réel
+quelconque).}{propriété 1}
+\cas{a)}
+\begin{calculs}
+F(x) &= 2\times\dfrac{x^{2}}{2}+5x+C &&\justif{terme par terme}\\
+F(x) &= \res{x^{2}+5x+C} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+G(x) &= 3\times\dfrac{x^{3}}{3}-4\times\dfrac{x^{2}}{2}+x+C &&\justif{terme par terme}\\
+G(x) &= \res{x^{3}-2x^{2}+x+C} &&
+\end{calculs}
+\cas{c)}
+\explique{On sépare la fraction en deux termes :}{chaque terme du numérateur est divisé
+par $2$}
+\begin{calculs}
+h(x) &= \dfrac{3x^{2}}{2}-\dfrac{2x}{2} &&\\
+h(x) &= \dfrac{3}{2}x^{2}-x &&
+\end{calculs}
+\begin{calculs}
+H(x) &= \dfrac{3}{2}\times\dfrac{x^{3}}{3}-\dfrac{x^{2}}{2}+C &&\justif{terme par terme}\\
+H(x) &= \res{\dfrac{1}{2}x^{3}-\dfrac{1}{2}x^{2}+C} &&\justif{$\frac{3}{2}\times\frac{1}{3}=\frac{1}{2}$}
+\end{calculs}
+\cas{d)}
+\explique{On développe d'abord :}{on n'a pas de formule pour un produit}
+\begin{calculs}
+k(x) &= (x+1)(x-3) &&\\
+k(x) &= x^{2}-3x+x-3 &&\justif{double distributivité}\\
+k(x) &= x^{2}-2x-3 &&
+\end{calculs}
+\begin{calculs}
+K(x) &= \dfrac{x^{3}}{3}-2\times\dfrac{x^{2}}{2}-3x+C &&\justif{terme par terme}\\
+K(x) &= \res{\dfrac{1}{3}x^{3}-x^{2}-3x+C} &&
+\end{calculs}
+\rem{Erreur fréquente : prendre une primitive de chaque facteur et les multiplier. Une
+primitive d'un produit n'est pas le produit des primitives : on développe d'abord.}
+\end{exo}
+
+\begin{exo}[Avec une condition initiale]
+\explique{Toutes les primitives (terme par terme, plus $C$), puis la condition donne
+$C$.}{méthodes 2 et 3}
+\cas{a)}
+\begin{calculs}
+F(x) &= 4x+C &&\justif{le nombre $4$ donne $4x$}\\
+F(1) &= 4+C &&\justif{on remplace $x$ par $1$}
+\end{calculs}
+\begin{calculs}
+4+C &= 0 &&\justif{$F(1)$ doit valoir $0$}\\
+C &= -4 &&\justif{on retire $4$ des deux côtés}
+\end{calculs}
+\explique{Donc $F(x)=\res{4x-4}$.}{contrôle : $F(1)=4-4=0$}
+\cas{b)}
+\begin{calculs}
+G(x) &= x^{2}-6x+C &&\justif{$2x$ donne $x^{2}$}\\
+G(3) &= 3^{2}-6\times 3+C &&\justif{on remplace $x$ par $3$}\\
+G(3) &= -9+C &&
+\end{calculs}
+\begin{calculs}
+-9+C &= 1 &&\justif{$G(3)$ doit valoir $1$}\\
+C &= 10 &&\justif{on ajoute $9$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{x^{2}-6x+10}$.}{contrôle : $G(3)=9-18+10=1$}
+\cas{c)}
+\begin{calculs}
+H(x) &= 6\times\dfrac{x^{3}}{3}+2\times\dfrac{x^{2}}{2}+C &&\justif{terme par terme}\\
+H(x) &= 2x^{3}+x^{2}+C &&\\
+H(1) &= 3+C &&\justif{on remplace $x$ par $1$}
+\end{calculs}
+\begin{calculs}
+3+C &= 0 &&\justif{$H(1)$ doit valoir $0$}\\
+C &= -3 &&\justif{on retire $3$ des deux côtés}
+\end{calculs}
+\explique{Donc $H(x)=\res{2x^{3}+x^{2}-3}$.}{contrôle : $H(1)=2+1-3=0$}
+\cas{d)}
+\begin{calculs}
+K(x) &= 8\times\dfrac{x^{4}}{4}-3\times\dfrac{x^{3}}{3}+x+C &&\justif{terme par terme}\\
+K(x) &= 2x^{4}-x^{3}+x+C &&\\
+K(-1) &= 2\times(-1)^{4}-(-1)^{3}+(-1)+C &&\justif{on remplace $x$ par $(-1)$}\\
+K(-1) &= 2+1-1+C &&\justif{$(-1)^{4}=1$ et $-(-1)^{3}=+1$}\\
+K(-1) &= 2+C &&
+\end{calculs}
+\begin{calculs}
+2+C &= 5 &&\justif{$K(-1)$ doit valoir $5$}\\
+C &= 3 &&\justif{on retire $2$ des deux côtés}
+\end{calculs}
+\explique{Donc $K(x)=\res{2x^{4}-x^{3}+x+3}$.}{contrôle : $K(-1)=2+1-1+3=5$}
+\cas{e)}
+\begin{calculs}
+M(x) &= \dfrac{x^{3}}{3}-x+C &&\justif{$-1$ donne $-x$}\\
+M(3) &= \dfrac{3^{3}}{3}-3+C &&\justif{on remplace $x$ par $3$}\\
+M(3) &= 6+C &&\justif{$\frac{27}{3}=9$ et $9-3=6$}
+\end{calculs}
+\begin{calculs}
+6+C &= 0 &&\justif{$M(3)$ doit valoir $0$}\\
+C &= -6 &&\justif{on retire $6$ des deux côtés}
+\end{calculs}
+\explique{Donc $M(x)=\res{\dfrac{1}{3}x^{3}-x-6}$.}{contrôle : $M(3)=9-3-6=0$}
+\rem{Avec un nombre négatif, des parenthèses : $(-1)^{3}=-1$, donc $-(-1)^{3}=+1$.}
+\end{exo}
+
+\begin{exo}[Variations d'une primitive]
+\cas{1)}
+\begin{calculs}
+F(x) &= 3\times\dfrac{x^{3}}{3}-12x+C &&\justif{terme par terme}\\
+F(x) &= x^{3}-12x+C &&\\
+F(0) &= C &&\justif{on remplace $x$ par $0$}
+\end{calculs}
+\explique{La condition $F(0)=5$ donne $C=5$, donc $F(x)=\res{x^{3}-12x+5}$.}{méthode 3}
+\cas{2)}
+\explique{\textbf{But :} on développe $3(x-2)(x+2)$ et on doit retrouver $f(x)$.}{on part
+de l'expression factorisée}
+\begin{calculs}
+3(x-2)(x+2) &= 3(x^{2}-4) &&\justif{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+3(x-2)(x+2) &= 3x^{2}-12 &&\justif{on distribue le $3$}
+\end{calculs}
+\explique{Conclusion : \res{$f(x)=3(x-2)(x+2)$}.}{on retrouve $f(x)$}
+\cas{3)}
+\explique{$x+2=0$ pour $x=-2$, et $x-2=0$ pour $x=2$ ; pour chaque facteur, $a=1>0$ :
+$-$ puis $+$. Le facteur $3$ est toujours positif.}{chapitre 1 : après la racine, le
+signe de $a$}
+\explique{On applique la règle des signes colonne par colonne.}{$+$ et $-$ donnent $-$}
+\begin{tabsignes}[2.4]{$x$/1,$3$/1,$x+2$/1,$x-2$/1,$f(x)$/1}{$-3$,$-2$,$2$,$3$}
+  \tkzTabLine{,+,t,+,t,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tabsignes}
+\cas{4)}
+\explique{$F$ est une primitive de $f$, donc $F'(x)=f(x)$ : le signe de $f(x)$ donne le
+sens de variation de $F$.}{chapitre 5 : $F'>0$, $F$ croissante ; $F'<0$, $F$
+décroissante}
+\explique{Les images, une par ligne :}{$F(x)=x^{3}-12x+5$}
+\begin{calculs}
+F(-3) &= -27+36+5 = \res{14} &&\justif{$(-3)^{3}=-27$ et $-12\times(-3)=36$}\\
+F(-2) &= -8+24+5 = \res{21} &&\\
+F(2) &= 8-24+5 = \res{-11} &&\\
+F(3) &= 27-36+5 = \res{-4} &&
+\end{calculs}
+\begin{tabsignes}[2.4]{$x$/0.8,$F'(x)=f(x)$/0.8,$F(x)$/1.6}{$-3$,$-2$,$2$,$3$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/$14$,+/$21$,-/$-11$,+/$-4$}
+\end{tabsignes}
+\end{exo}
+
+\begin{exo}[Une fusée à eau]
+\cas{1)}
+\begin{calculs}
+v(t) &= -10t+C &&\justif{le nombre $-10$ donne $-10t$}\\
+v(0) &= C &&\justif{on remplace $t$ par $0$}
+\end{calculs}
+\explique{La condition $v(0)=20$ donne $C=20$, donc $v(t)=\res{-10t+20}$.}{la vitesse
+de départ}
+\cas{2)}
+\begin{calculs}
+h(t) &= -10\times\dfrac{t^{2}}{2}+20t+C &&\justif{terme par terme}\\
+h(t) &= -5t^{2}+20t+C &&\\
+h(0) &= C &&\justif{on remplace $t$ par $0$}
+\end{calculs}
+\explique{La condition $h(0)=2$ donne $C=2$, donc $h(t)=\res{-5t^{2}+20t+2}$.}{l'altitude
+de départ}
+\cas{3)}
+\explique{La fusée monte tant que sa vitesse est positive ; elle cesse de monter quand
+$v(t)=0$ :}{ensuite, $v(t)<0$ : elle redescend}
+\begin{calculs}
+-10t+20 &= 0 &&\justif{on recopie l'équation}\\
+-10t &= -20 &&\justif{on retire $20$ des deux côtés}\\
+t &= 2 &&\justif{on divise par $-10$}
+\end{calculs}
+\explique{La fusée cesse de monter au bout de \res{$2$~s}.}{on conclut par une phrase}
+\cas{4)}
+\begin{calculs}
+h(2) &= -5\times 2^{2}+20\times 2+2 &&\justif{on remplace $t$ par $2$}\\
+h(2) &= -20+40+2 &&\\
+h(2) &= \res{22} &&
+\end{calculs}
+\explique{L'altitude maximale de la fusée est $22$~m.}{$h'=v$ : $h$ croît jusqu'à
+$t=2$, puis décroît}
+\cas{5)}
+\begin{calculs}
+h(4) &= -5\times 4^{2}+20\times 4+2 &&\justif{on remplace $t$ par $4$}\\
+h(4) &= -80+80+2 &&\\
+h(4) &= \res{2} &&
+\end{calculs}
+\explique{Au bout de $4$~s, la fusée est revenue à $2$~m du sol, son altitude de
+départ.}{elle met autant de temps à monter qu'à redescendre}
+\end{exo}
+
+\partie{Primitives de cosinus et sinus}
+
+\begin{exo}[Primitives avec cosinus et sinus]
+\explique{$\cos x$ donne $\sin x$ ; $\sin x$ donne $-\cos x$ ; terme par terme, un nombre
+qui multiplie reste devant.}{propriété 3, méthode 4}
+\cas{a)}
+\begin{calculs}
+F(x) &= \res{5\sin x} &&\justif{$\cos x$ donne $\sin x$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+G(x) &= -4\times(-\cos x) &&\justif{$\sin x$ donne $-\cos x$}\\
+G(x) &= \res{4\cos x} &&\justif{moins par moins : plus}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+H(x) &= 2\times(-\cos x)+\sin x &&\justif{terme par terme}\\
+H(x) &= \res{-2\cos x+\sin x} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+K(x) &= 3\times\dfrac{x^{3}}{3}-2\sin x &&\justif{$x^{2}$ donne $\frac{x^{3}}{3}$}\\
+K(x) &= \res{x^{3}-2\sin x} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+M(x) &= 6\times\dfrac{x^{2}}{2}+7\times(-\cos x) &&\justif{terme par terme}\\
+M(x) &= \res{3x^{2}-7\cos x} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+P(x) &= x-(-\cos x) &&\justif{$1$ donne $x$ ; $\sin x$ donne $-\cos x$}\\
+P(x) &= \res{x+\cos x} &&
+\end{calculs}
+\rem{Contrôle en dérivant : $(4\cos x)'=4\times(-\sin x)=-4\sin x$, c'est bien $g(x)$.
+Erreur fréquente : oublier le signe $-$ de la primitive de $\sin x$.}
+\end{exo}
+
+\begin{exo}[Avec une condition initiale]
+\explique{Toutes les primitives, puis la condition donne $C$ ; on utilise les valeurs du
+rappel.}{méthode 4}
+\cas{a)}
+\begin{calculs}
+F(x) &= \sin x+C &&\justif{toutes les primitives}\\
+F(0) &= \sin 0+C &&\justif{on remplace $x$ par $0$}\\
+F(0) &= C &&\justif{$\sin 0=0$}
+\end{calculs}
+\explique{La condition $F(0)=3$ donne $C=3$, donc $F(x)=\res{\sin x+3}$.}{contrôle :
+$F(0)=0+3=3$}
+\cas{b)}
+\begin{calculs}
+G(x) &= -\cos x+C &&\justif{$\sin x$ donne $-\cos x$}\\
+G(0) &= -\cos 0+C &&\justif{on remplace $x$ par $0$}\\
+G(0) &= -1+C &&\justif{$\cos 0=1$}
+\end{calculs}
+\begin{calculs}
+-1+C &= 0 &&\justif{$G(0)$ doit valoir $0$}\\
+C &= 1 &&\justif{on ajoute $1$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(x)=\res{-\cos x+1}$.}{contrôle : $G(0)=-1+1=0$}
+\cas{c)}
+\begin{calculs}
+H(x) &= 2\sin x+4\times\dfrac{x^{2}}{2}+C &&\justif{terme par terme}\\
+H(x) &= 2\sin x+2x^{2}+C &&\\
+H(0) &= 2\sin 0+2\times 0^{2}+C &&\justif{on remplace $x$ par $0$}\\
+H(0) &= C &&
+\end{calculs}
+\explique{La condition $H(0)=-1$ donne $C=-1$, donc $H(x)=\res{2\sin x+2x^{2}-1}$.}{contrôle :
+$H(0)=0+0-1=-1$}
+\cas{d)}
+\begin{calculs}
+K(x) &= 3\times(-\cos x)-\sin x+C &&\justif{terme par terme}\\
+K(x) &= -3\cos x-\sin x+C &&\\
+K(\pi) &= -3\cos\pi-\sin\pi+C &&\justif{on remplace $x$ par $\pi$}\\
+K(\pi) &= -3\times(-1)-0+C &&\justif{$\cos\pi=-1$ et $\sin\pi=0$}\\
+K(\pi) &= 3+C &&
+\end{calculs}
+\begin{calculs}
+3+C &= 2 &&\justif{$K(\pi)$ doit valoir $2$}\\
+C &= -1 &&\justif{on retire $3$ des deux côtés}
+\end{calculs}
+\explique{Donc $K(x)=\res{-3\cos x-\sin x-1}$.}{contrôle : $K(\pi)=3-0-1=2$}
+\cas{e)}
+\begin{calculs}
+M(x) &= -2\times(-\cos x)+C &&\justif{$\sin x$ donne $-\cos x$}\\
+M(x) &= 2\cos x+C &&\\
+M\left(\dfrac{\pi}{2}\right) &= 2\cos\dfrac{\pi}{2}+C &&\justif{on remplace $x$ par
+$\frac{\pi}{2}$}\\
+M\left(\dfrac{\pi}{2}\right) &= C &&\justif{$\cos\frac{\pi}{2}=0$}
+\end{calculs}
+\explique{La condition $M\left(\frac{\pi}{2}\right)=4$ donne $C=4$, donc
+$M(x)=\res{2\cos x+4}$.}{contrôle : $M\left(\frac{\pi}{2}\right)=0+4=4$}
+\end{exo}
+
+\begin{exo}[Dériver pour trouver une primitive]
+\cas{1)}
+\explique{$F$ est un produit $u\times v$, avec $u(x)=x$ et $v(x)=\sin x$, donc $u'(x)=1$
+et $v'(x)=\cos x$.}{chapitre 5 : $(uv)'=u'v+uv'$}
+\begin{calculs}
+F'(x) &= 1\times\sin x+x\times\cos x &&\justif{$u'v+uv'$}\\
+F'(x) &= \res{\sin x+x\cos x} &&
+\end{calculs}
+\cas{2)}
+\explique{$F'(x)=f(x)$, donc \res{$F(x)=x\sin x$ est une primitive de $f$}.}{définition 1}
+\cas{3)}
+\begin{calculs}
+G(x) &= x\sin x+C &&\justif{toutes les primitives de $f$}\\
+G(\pi) &= \pi\sin\pi+C &&\justif{on remplace $x$ par $\pi$}\\
+G(\pi) &= C &&\justif{$\sin\pi=0$, donc $\pi\times 0=0$}
+\end{calculs}
+\explique{La condition $G(\pi)=1$ donne $C=1$, donc $G(x)=\res{x\sin x+1}$.}{contrôle :
+$G(\pi)=0+1=1$}
+\cas{4)}
+\explique{De $f(x)=\sin x+x\cos x$, on tire $g(x)=x\cos x=f(x)-\sin x$.}{on retire $\sin
+x$ des deux côtés}
+\explique{Terme par terme : $f(x)$ donne $x\sin x$ (question 2) et $-\sin x$ donne
+$-(-\cos x)=\cos x$.}{propriété 3}
+\begin{calculs}
+G_{1}(x) &= \res{x\sin x+\cos x} &&\justif{une primitive de $g$}
+\end{calculs}
+\rem{Contrôle : $(x\sin x+\cos x)'=\sin x+x\cos x-\sin x=x\cos x$, c'est bien $g(x)$.}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{1)}
+\explique{\leavevmode\res{Vrai} : la dérivée de $\sin x$ est $\cos x$.}{définition 1}
+\cas{2)}
+\explique{\leavevmode\res{Faux} : la dérivée de $\cos x$ est $-\sin x$, et non $\sin x$. Une primitive
+de $\sin x$ est $-\cos x$.}{attention au signe $-$}
+\cas{3)}
+\explique{\leavevmode\res{Vrai} : $F'(x)=\cos x$ et $G'(x)=\cos x$ ; ce sont deux primitives de $\cos x$,
+qui diffèrent de la constante $7$.}{propriété 1}
+\cas{4)}
+\explique{\leavevmode\res{Faux} : $\cos x$ est bien une primitive de $-\sin x$, mais $\cos 0=1$ : elle
+ne vaut pas $0$ en $0$. La bonne primitive est $\cos x-1$.}{$F(0)$ doit valoir $0$}
+\cas{5)}
+\explique{\leavevmode\res{Vrai} : $\left(\dfrac{x^{4}}{4}-7\right)'=\dfrac{4x^{3}}{4}$, soit $x^{3}$.}{la
+constante $-7$ disparaît en dérivant}
+\end{exo}
+
+\partie{Primitives de $A\cos(\omega t+\varphi)$ et $A\sin(\omega t+\varphi)$}
+
+\begin{exo}[Primitives de fonctions sinusoïdales]
+\explique{$A\cos(\omega t+\varphi)$ donne $\dfrac{A}{\omega}\sin(\omega t+\varphi)$ ;
+$A\sin(\omega t+\varphi)$ donne $-\dfrac{A}{\omega}\cos(\omega t+\varphi)$ : on divise par la
+pulsation $\omega$, la parenthèse ne change pas.}{propriété 4, méthode 5}
+\cas{a)}
+\begin{calculs}
+F(t) &= \dfrac{8}{4}\sin(4t) &&\justif{$A=8$ et $\omega=4$}\\
+F(t) &= \res{2\sin(4t)} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+G(t) &= -\dfrac{9}{3}\cos(3t) &&\justif{$A=9$ et $\omega=3$ ; sinus : signe $-$}\\
+G(t) &= \res{-3\cos(3t)} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+H(t) &= \res{\dfrac{1}{2}\sin(2t)} &&\justif{$A=1$ et $\omega=2$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+K(t) &= \dfrac{4}{2}\sin\left(2t+\dfrac{\pi}{3}\right) &&\justif{$A=4$ et $\omega=2$}\\
+K(t) &= \res{2\sin\left(2t+\dfrac{\pi}{3}\right)} &&\justif{la parenthèse ne change pas}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+M(t) &= -\dfrac{10}{5}\cos\left(5t-\dfrac{\pi}{2}\right) &&\justif{$A=10$ et $\omega=5$ ;
+sinus : signe $-$}\\
+M(t) &= \res{-2\cos\left(5t-\dfrac{\pi}{2}\right)} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+P(t) &= \dfrac{-6}{3}\sin(3t+\pi) &&\justif{$A=-6$ et $\omega=3$}\\
+P(t) &= \res{-2\sin(3t+\pi)} &&
+\end{calculs}
+\rem{Contrôle en dérivant : $\big(2\sin(4t)\big)'=2\times 4\cos(4t)=8\cos(4t)$, c'est
+bien $f(t)$.}
+\end{exo}
+
+\begin{exo}[Toutes les primitives]
+\explique{Terme par terme, avec les propriétés 2 et 4, puis on ajoute une constante
+$C$.}{propriété 1}
+\cas{a)}
+\begin{calculs}
+F(t) &= 4\times\dfrac{t^{2}}{2}-\dfrac{-6}{2}\cos(2t)+C &&\justif{pour $-6\sin(2t)$ :
+$A=-6$ et $\omega=2$}\\
+F(t) &= \res{2t^{2}+3\cos(2t)+C} &&\justif{$-\frac{-6}{2}=+3$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+G(t) &= 5t+\dfrac{-8}{4}\sin\left(4t-\dfrac{\pi}{6}\right)+C &&\justif{$A=-8$ et
+$\omega=4$}\\
+G(t) &= \res{5t-2\sin\left(4t-\dfrac{\pi}{6}\right)+C} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+H(t) &= 6\times\dfrac{t^{3}}{3}+\dfrac{2}{3}\sin(3t)+C &&\justif{pour $2\cos(3t)$ : $A=2$
+et $\omega=3$}\\
+H(t) &= \res{2t^{3}+\dfrac{2}{3}\sin(3t)+C} &&\justif{$\frac{2}{3}$ ne se simplifie pas}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+K(t) &= -\dfrac{3}{2}\cos(2t)-\dfrac{-4}{4}\cos(4t)+C &&\justif{sinus : signe $-$, deux
+fois}\\
+K(t) &= \res{-\dfrac{3}{2}\cos(2t)+\cos(4t)+C} &&\justif{$-\frac{-4}{4}=+1$}
+\end{calculs}
+\rem{Quand $A$ est négatif, on écrit d'abord $\frac{A}{\omega}$ avec son signe, puis on
+simplifie les signes.}
+\end{exo}
+
+\begin{exo}[Avec une condition initiale]
+\cas{a)}
+\begin{calculs}
+F(t) &= \dfrac{6}{3}\sin(3t)+C &&\justif{$A=6$ et $\omega=3$}\\
+F(t) &= 2\sin(3t)+C &&\\
+F(0) &= 2\sin 0+C &&\justif{on remplace $t$ par $0$}\\
+F(0) &= C &&\justif{$\sin 0=0$}
+\end{calculs}
+\explique{La condition $F(0)=1$ donne $C=1$, donc $F(t)=\res{2\sin(3t)+1}$.}{contrôle :
+$F(0)=0+1=1$}
+\cas{b)}
+\begin{calculs}
+G(t) &= -\dfrac{4}{2}\cos(2t)+C &&\justif{$A=4$ et $\omega=2$ ; sinus : signe $-$}\\
+G(t) &= -2\cos(2t)+C &&\\
+G(0) &= -2\cos 0+C &&\justif{on remplace $t$ par $0$}\\
+G(0) &= -2+C &&\justif{$\cos 0=1$}
+\end{calculs}
+\begin{calculs}
+-2+C &= 0 &&\justif{$G(0)$ doit valoir $0$}\\
+C &= 2 &&\justif{on ajoute $2$ des deux côtés}
+\end{calculs}
+\explique{Donc $G(t)=\res{-2\cos(2t)+2}$.}{contrôle : $G(0)=-2+2=0$}
+\cas{c)}
+\begin{calculs}
+H(t) &= \dfrac{4}{2}\sin(2t)+C &&\justif{$A=4$ et $\omega=2$}\\
+H(t) &= 2\sin(2t)+C &&\\
+H\left(\dfrac{\pi}{4}\right) &= 2\sin\left(2\times\dfrac{\pi}{4}\right)+C &&\justif{on
+remplace $t$ par $\frac{\pi}{4}$}\\
+H\left(\dfrac{\pi}{4}\right) &= 2\sin\dfrac{\pi}{2}+C &&\justif{$2\times\frac{\pi}{4}=\frac{\pi}{2}$}\\
+H\left(\dfrac{\pi}{4}\right) &= 2+C &&\justif{$\sin\frac{\pi}{2}=1$}
+\end{calculs}
+\begin{calculs}
+2+C &= 3 &&\justif{$H\left(\frac{\pi}{4}\right)$ doit valoir $3$}\\
+C &= 1 &&\justif{on retire $2$ des deux côtés}
+\end{calculs}
+\explique{Donc $H(t)=\res{2\sin(2t)+1}$.}{contrôle : $H\left(\frac{\pi}{4}\right)=2+1=3$}
+\cas{d)}
+\begin{calculs}
+K(t) &= -\dfrac{6}{3}\cos\left(3t+\dfrac{\pi}{2}\right)+C &&\justif{$A=6$ et $\omega=3$ ;
+sinus : signe $-$}\\
+K(t) &= -2\cos\left(3t+\dfrac{\pi}{2}\right)+C &&\\
+K(0) &= -2\cos\dfrac{\pi}{2}+C &&\justif{on remplace $t$ par $0$}\\
+K(0) &= C &&\justif{$\cos\frac{\pi}{2}=0$}
+\end{calculs}
+\explique{La condition $K(0)=5$ donne $C=5$, donc
+$K(t)=\res{-2\cos\left(3t+\dfrac{\pi}{2}\right)+5}$.}{contrôle : $K(0)=0+5=5$}
+\end{exo}
+
+\begin{exo}[Courant et charge d'un condensateur]
+\cas{1)}
+\explique{« $q$ est une \res{primitive} de $i$ ».}{$q'=i$ : $i$ est la dérivée de $q$}
+\cas{2)}
+\begin{calculs}
+q(t) &= \dfrac{2}{100}\sin(100t)+C &&\justif{$A=2$ et $\omega=100$}\\
+q(t) &= 0{,}02\sin(100t)+C &&\\
+q(0) &= 0{,}02\sin 0+C &&\justif{on remplace $t$ par $0$}\\
+q(0) &= C &&\justif{$\sin 0=0$}
+\end{calculs}
+\explique{La condition $q(0)=0$ donne $C=0$, donc $q(t)=\res{0{,}02\sin(100t)}$.}{au
+départ, le condensateur n'est pas chargé}
+\cas{3)}
+\begin{calculs}
+q\left(\dfrac{\pi}{200}\right) &= 0{,}02\sin\left(100\times\dfrac{\pi}{200}\right)
+&&\justif{on remplace $t$ par $\frac{\pi}{200}$}\\
+q\left(\dfrac{\pi}{200}\right) &= 0{,}02\sin\dfrac{\pi}{2} &&\justif{$\frac{100}{200}=\frac{1}{2}$}\\
+q\left(\dfrac{\pi}{200}\right) &= \res{0{,}02} &&\justif{$\sin\frac{\pi}{2}=1$}
+\end{calculs}
+\explique{À l'instant $\frac{\pi}{200}$~s (environ $0{,}016$~s), la charge vaut
+$0{,}02$~C : c'est sa plus grande valeur.}{un sinus vaut au plus $1$}
+\cas{4)}
+\begin{calculs}
+q'(t) &= 0{,}02\times 100\cos(100t) &&\justif{la dérivée de $\sin(100t)$ est
+$100\cos(100t)$}\\
+q'(t) &= 2\cos(100t) &&
+\end{calculs}
+\explique{On retrouve $q'(t)=i(t)$ : \res{le résultat de la question 2 est juste}.}{on
+vérifie toujours une primitive en dérivant}
+\end{exo}
+
+\begin{exo}[L'énergie des vagues]
+\cas{1)}
+\begin{calculs}
+h(t) &= -\dfrac{1}{0{,}5}\cos(0{,}5t)+C &&\justif{$A=1$ et $\omega=0{,}5$ ; sinus :
+signe $-$}\\
+h(t) &= -2\cos(0{,}5t)+C &&\justif{diviser par $0{,}5$, c'est multiplier par $2$}\\
+h(0) &= -2\cos 0+C &&\justif{on remplace $t$ par $0$}\\
+h(0) &= -2+C &&\justif{$\cos 0=1$}
+\end{calculs}
+\begin{calculs}
+-2+C &= 8 &&\justif{$h(0)$ doit valoir $8$}\\
+C &= 10 &&\justif{on ajoute $2$ des deux côtés}
+\end{calculs}
+\explique{Donc $h(t)=\res{10-2\cos(0{,}5t)}$.}{contrôle : $h(0)=10-2=8$}
+\cas{2)}
+\begin{calculs}
+h(2\pi) &= 10-2\cos(0{,}5\times 2\pi) &&\justif{on remplace $t$ par $2\pi$}\\
+h(2\pi) &= 10-2\cos\pi &&\justif{$0{,}5\times 2\pi=\pi$}\\
+h(2\pi) &= 10-2\times(-1) &&\justif{$\cos\pi=-1$}\\
+h(2\pi) &= \res{12} &&
+\end{calculs}
+\explique{Au bout de $2\pi$~s (environ $6{,}3$~s), le flotteur est à $12$~m du fond : en
+haut de la vague.}{au départ, il était en bas, à $8$~m}
+\cas{3)}
+\begin{calculs}
+T &= \dfrac{2\pi}{\omega} &&\justif{la formule}\\
+T &= \dfrac{2\pi}{0{,}5} &&\justif{$\omega=0{,}5$}\\
+T &= 4\pi &&\\
+T &\approx \res{12{,}6} &&\justif{en secondes}
+\end{calculs}
+\explique{Le flotteur refait le même mouvement toutes les $12{,}6$~s environ.}{une vague
+toutes les $12{,}6$~s}
+\cas{4)}
+\explique{Pour tout nombre réel $t$, $\cos(0{,}5t)$ est compris entre $-1$ et $1$.}{un
+cosinus est toujours entre $-1$ et $1$}
+\explique{Donc $-2\cos(0{,}5t)$ est compris entre $-2$ et $2$.}{multiplier par $-2$ :
+$-1$ donne $2$ et $1$ donne $-2$}
+\explique{Et $h(t)=10-2\cos(0{,}5t)$ est compris entre $10-2$ et $10+2$, c'est-à-dire
+\res{entre $8$~m et $12$~m}.}{on ajoute $10$}
+\rem{Les valeurs $8$ et $12$ sont atteintes : $h(0)=8$ et $h(2\pi)=12$. La hauteur des
+vagues est donc $12-8=4$~m.}
+\end{exo}
+
+\partie{Méthode d'Euler}
+
+\begin{exo}[Méthode d'Euler]
+\cas{1)}
+\explique{On part de $t=0$, où $F(0)=0$, et on avance de $0{,}5$ jusqu'à $t=2$ : quatre
+étapes. Nouvelle valeur ${}\approx{}$ ancienne ${}+0{,}5\times f(\text{ancien }t)$.}{propriété 5,
+méthode 6}
+\explique{Les valeurs de $f$, une par ligne :}{$f(t)=\frac{6}{t+2}$}
+\begin{calculs}
+f(0) &= \dfrac{6}{2} = \res{3} &&\\
+f(0{,}5) &= \dfrac{6}{2{,}5} = \res{2{,}4} &&\\
+f(1) &= \dfrac{6}{3} = \res{2} &&\\
+f(1{,}5) &= \dfrac{6}{3{,}5} \approx \res{1{,}71} &&\\
+f(2) &= \dfrac{6}{4} = \res{1{,}5} &&\justif{inutile pour $F$, mais demandé dans le tableau}
+\end{calculs}
+\explique{Les valeurs approchées de $F$, une étape par ligne :}{la valeur trouvée devient
+l'ancienne valeur}
+\begin{calculs}
+F(0{,}5) &\approx 0+0{,}5\times 3 = \res{1{,}5} &&\justif{$F(0)=0$ et $f(0)=3$}\\
+F(1) &\approx 1{,}5+0{,}5\times 2{,}4 = \res{2{,}7} &&\justif{$f(0{,}5)=2{,}4$}\\
+F(1{,}5) &\approx 2{,}7+0{,}5\times 2 = \res{3{,}7} &&\justif{$f(1)=2$}\\
+F(2) &\approx 3{,}7+0{,}5\times\dfrac{6}{3{,}5} \approx \res{4{,}56} &&\justif{on garde la
+valeur exacte de $f(1{,}5)$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{6pt}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$t$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\
+\hline
+$f(t)$ & $3$ & $2{,}4$ & $2$ & $1{,}71$ & $1{,}5$\\
+\hline
+$F(t)\approx$ & $0$ & $1{,}5$ & $2{,}7$ & $3{,}7$ & $4{,}56$\\
+\hline
+\end{tabular}
+\end{center}
+\cas{2)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On place les points $(t\,;F(t))$ du tableau, puis on les relie par des segments : c'est
+une approximation de la courbe de $F$ sur $\intff{0}{2}$.
+
+\smallskip
+{\small\itshape\color{black!60}Figure réduite : chaque carreau vaut $0{,}5$ dans les deux
+directions (dans le cahier, $1$~cm avec l'unité de $2$~cm).}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.42cm]
+  \quadrillage{0}{0}{5}{10}
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(5.4,0) node[below left=-1pt]{$t$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,10.4) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \foreach \k/\l in {2/1,4/2}{\draw (\k,0.1)--(\k,-0.1)
+    node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}
+  \foreach \k/\l in {2/1,4/2,6/3,8/4}{\draw (0.1,\k)--(-0.1,\k)
+    node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}
+  \draw[coulEuler,thick] (0,0)--(1,3)--(2,5.4)--(3,7.4)--(4,9.12);
+  \path[coulEuler] (0,0) node[croix]{} (1,3) node[croix]{} (2,5.4) node[croix]{}
+    (3,7.4) node[croix]{} (4,9.12) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Un pas plus petit]
+\explique{Nouvelle valeur ${}\approx{}$ ancienne ${}+h\times f(\text{ancien }t)$, en partant
+de $F(0)=0$.}{méthode 6}
+\cas{1)}
+\begin{calculs}
+F(0{,}5) &\approx 0+0{,}5\times 2 = 1 &&\justif{$f(0)=\frac{2}{1}=2$}\\
+F(1) &\approx 1+0{,}5\times\dfrac{2}{1{,}5} \approx \res{1{,}67} &&\justif{$f(0{,}5)=\frac{2}{1{,}5}$}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+F(0{,}25) &\approx 0+0{,}25\times 2 = 0{,}5 &&\justif{$f(0)=2$}\\
+F(0{,}5) &\approx 0{,}5+0{,}25\times 1{,}6 = 0{,}9 &&\justif{$f(0{,}25)=\frac{2}{1{,}25}=1{,}6$}\\
+F(0{,}75) &\approx 0{,}9+0{,}25\times\dfrac{2}{1{,}5} \approx 1{,}23 &&\justif{$f(0{,}5)=\frac{2}{1{,}5}$}\\
+F(1) &\approx 1{,}23+0{,}25\times\dfrac{2}{1{,}75} \approx \res{1{,}52} &&\justif{$f(0{,}75)=\frac{2}{1{,}75}$}
+\end{calculs}
+\cas{3)}
+\explique{Avec $h=0{,}5$, l'écart avec $1{,}39$ est $1{,}67-1{,}39=0{,}28$ ; avec $h=0{,}25$,
+il est $1{,}52-1{,}39=0{,}13$.}{on compare les écarts}
+\explique{Le pas \res{$h=0{,}25$} donne la meilleure approximation.}{propriété 5 : plus le
+pas est petit, plus les points sont proches de la courbe}
+\end{exo}
+
+\begin{exo}[Programmer la méthode d'Euler]
+\cas{1)}
+\begin{minipage}[t]{0.42\linewidth}\vspace{0pt}
+\begin{python}
+def f(t):
+    return 4/(1 + t**2)
+
+def euler(t, y, h, n):
+    for i in range(n):
+        y = y + h*f(t)
+        t = t + h
+    return y
+\end{python}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\raggedright
+\res{\texttt{return 4/(1 + t**2)}} : en Python, $t^{2}$ s'écrit \texttt{t**2} (ou
+\texttt{t*t}).
+
+\smallskip
+\res{\texttt{y = y + h*f(t)}} : nouvelle valeur ${}\approx{}$ ancienne ${}+h\times f(t)$.
+
+\smallskip
+\res{\texttt{t = t + h}} : on avance d'un pas.
+\end{minipage}
+\rem{L'ordre des deux lignes compte : \texttt{y} se calcule avec l'ancien \texttt{t}, avant
+que \texttt{t} n'avance.}
+\cas{2)}
+\explique{Au départ, \texttt{t} vaut $0$ et \texttt{y} vaut $0$ ; la boucle fait
+\texttt{n}~$=2$ tours.}{\texttt{h}~$=0{,}5$}
+\begin{calculs}
+y &= 0+0{,}5\times\dfrac{4}{1+0^{2}} = \res{2} &&\justif{1\textsuperscript{er} tour, avec $t=0$ ; puis $t$ devient \res{$0{,}5$}}\\
+y &= 2+0{,}5\times\dfrac{4}{1+0{,}5^{2}} = \res{3{,}6} &&\justif{2\textsuperscript{e} tour,
+avec $t=0{,}5$ ; puis $t$ devient \res{$1$}}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{8pt}
+\begin{tabular}{|l|c|c|}
+\hline
+ & \texttt{t} & \texttt{y}\\
+\hline
+au départ & $0$ & $0$\\
+\hline
+après le 1\textsuperscript{er} tour & $0{,}5$ & $2$\\
+\hline
+après le 2\textsuperscript{e} tour & $1$ & $3{,}6$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Le programme renvoie $3{,}6$, une valeur approchée de $F(1)$.}{$\frac{4}{1{,}25}=3{,}2$
+et $0{,}5\times 3{,}2=1{,}6$}
+\cas{3)}
+\explique{Pour aller de $0$ à $1$ avec un pas de $0{,}01$, il faut $\frac{1}{0{,}01}=100$
+étapes : \res{\texttt{euler(0, 0, 0.01, 100)}}.}{il renvoie environ $3{,}15$}
+\end{exo}
+
+\begin{exo}[Un bateau électrique ralentit]
+\cas{1)}
+\begin{calculs}
+v(0) &= \dfrac{12}{0+2} = \res{6} &&\justif{en m/s}\\
+v(4) &= \dfrac{12}{4+2} = \res{2} &&\justif{en m/s}
+\end{calculs}
+\explique{Au départ, le bateau avance à $6$~m/s ; au bout de $4$~s, à $2$~m/s.}{on
+conclut par une phrase}
+\cas{2)}
+\explique{$v(t)=12\times\dfrac{1}{u(t)}$, avec $u(t)=t+2$, donc $u'(t)=1$.}{chapitre 5 :
+la dérivée de $\frac{1}{u}$ est $-\frac{u'}{u^{2}}$}
+\begin{calculs}
+v'(t) &= 12\times\left(-\dfrac{1}{(t+2)^{2}}\right) &&\justif{le $12$ reste devant}\\
+v'(t) &= -\dfrac{12}{(t+2)^{2}} &&
+\end{calculs}
+\explique{Pour $t\geq 0$, $(t+2)^{2}>0$, donc $v'(t)<0$ : $v$ est décroissante, et
+\res{le bateau ralentit}.}{un carré non nul est positif ; $-\frac{12}{\text{positif}}<0$}
+\cas{3)}
+\explique{On part de $d(0)=0$ ; pas $h=1$ : nouvelle valeur ${}\approx{}$ ancienne
+${}+1\times v(\text{ancien }t)$.}{méthode 6, avec $v$ à la place de $f$}
+\begin{calculs}
+d(1) &\approx 0+1\times 6 = \res{6} &&\justif{$v(0)=6$}\\
+d(2) &\approx 6+1\times 4 = \res{10} &&\justif{$v(1)=\frac{12}{3}=4$}\\
+d(3) &\approx 10+1\times 3 = \res{13} &&\justif{$v(2)=\frac{12}{4}=3$}\\
+d(4) &\approx 13+1\times 2{,}4 = \res{15{,}4} &&\justif{$v(3)=\frac{12}{5}=2{,}4$}
+\end{calculs}
+\explique{Au bout de $4$~s, le bateau a parcouru environ $15$~m.}{valeur approchée}
+\cas{4)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On place les points $(0\,;0)$, $(1\,;6)$, $(2\,;10)$, $(3\,;13)$ et $(4\,;15{,}4)$, puis on
+les relie par des segments.
+
+\smallskip
+{\small\itshape\color{black!60}Le temps et la distance n'ont pas la même unité : le
+repère n'est pas orthonormé ; ici, un carreau vaut $1$~s en abscisse et $2$~m en
+ordonnée.}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.8cm,y=0.4cm]
+  \quadrillage{0}{0}{5}{9}
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(5.4,0) node[below left=-1pt]{$t$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,9.4) node[below left=-1pt]{$d$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \foreach \k in {1,2,3,4}{\draw (\k,0.12)--(\k,-0.12)
+    node[below,font=\scriptsize,inner sep=1.5pt]{$\k$};}
+  \foreach \k/\l in {2/4,4/8,6/12,8/16}{\draw (0.06,\k)--(-0.06,\k)
+    node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}
+  \draw[coulEuler,thick] (0,0)--(1,3)--(2,5)--(3,6.5)--(4,7.7);
+  \path[coulEuler] (0,0) node[croix]{} (1,3) node[croix]{} (2,5) node[croix]{}
+    (3,6.5) node[croix]{} (4,7.7) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\end{document}

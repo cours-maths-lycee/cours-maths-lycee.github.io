@@ -1,0 +1,926 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+
+\newcommand{\venn}[6]{%
+  \draw (-1.75,-1.35) rectangle (2.75,1.35);
+  \node[font=\footnotesize] at (-1.5,1.1) {$\Omega$};
+  \draw[coulCourbe,thick] (0,0) circle (1.1);
+  \draw[coulCourbeB,thick] (1,0) circle (1.1);
+  \node[coulCourbe] at (-0.95,0.95) {$#1$};
+  \node[coulCourbeB] at (1.95,0.95) {$#2$};
+  \node at (-0.6,0) {#3};
+  \node at (0.5,0) {#4};
+  \node at (1.6,0) {#5};
+  \node at (2.3,-1.05) {#6};}
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt}}
+\newcommand{\arbre}[8]{%
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (2.6,1.4) {$#1$};
+  \node[evt] (nA) at (2.6,-1.4) {$\overline{#1}$};
+  \node[evt] (AB) at (5.2,2.1) {$#2$};
+  \node[evt] (AnB) at (5.2,0.7) {$\overline{#2}$};
+  \node[evt] (nAB) at (5.2,-0.7) {$#2$};
+  \node[evt] (nAnB) at (5.2,-2.1) {$\overline{#2}$};
+  \draw (O.center) -- node[proba]{$#3$} (A);
+  \draw (O.center) -- node[proba]{$#4$} (nA);
+  \draw (A) -- node[proba]{$#5$} (AB);
+  \draw (A) -- node[proba]{$#6$} (AnB);
+  \draw (nA) -- node[proba]{$#7$} (nAB);
+  \draw (nA) -- node[proba]{$#8$} (nAnB);}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STI2D --- Probabilités conditionnelles}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Vocabulaire des événements}
+
+\exo[Décrire des événements]
+On tire au hasard un jeton dans un sac de $20$ jetons numérotés de $1$ à $20$. On note $A$
+\og obtenir un multiple de $4$\fg{}, $B$ \og obtenir un nombre supérieur ou égal à
+$15$\fg{} et $C$ \og obtenir un nombre impair\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Écrire l'univers $\Omega$, puis les événements $A$ et $B$ sous forme d'ensembles.
+  \item Décrire par une phrase, puis écrire sous forme d'ensembles, les événements
+        $A\cap B$ et $A\cup B$.
+  \item Écrire l'événement $\overline{B}$ sous forme d'ensemble, puis le décrire par une
+        phrase.
+  \item Les événements $A$ et $C$ sont-ils incompatibles ? Et les événements $B$ et $C$ ?
+\end{enumerate}
+
+\exo[Écrire l'univers]
+Pour chaque expérience aléatoire, écrire l'univers $\Omega$.
+\begin{enumerate}[label=\alph*)]
+  \item On lance une pièce et on note le côté visible : Pile (P) ou Face (F).
+  \item On fait tourner une roue partagée en quatre secteurs : rouge (R), vert (V), bleu
+        (B) et jaune (J).
+  \item On forme un nombre de deux chiffres, chacun égal à $1$ ou à $2$.
+  \item On lance un dé dont une face porte un $6$, deux faces un $1$ et trois faces un
+        $2$, et on note le nombre obtenu.
+  \item On choisit un jour de la semaine au hasard et on note son initiale.
+\end{enumerate}
+
+\exo[En phrase complète]
+On choisit au hasard un élève d'un lycée. On note $A$ \og l'élève est en première\fg{} et
+$B$ \og l'élève fait partie de l'association sportive\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Décrire par une phrase chacun des événements $A\cap B$, $A\cup B$, $\overline{A}$
+        et $\overline{A}\cap B$.
+  \item L'élève choisi est en seconde et fait partie de l'association sportive. Lesquels
+        des événements $A$, $B$, $A\cap B$, $A\cup B$ et $\overline{A}$ sont réalisés ?
+        Justifier par une phrase.
+\end{enumerate}
+
+\exo[Des mots dans une urne]
+On écrit chacun des mots suivants sur un carton, on place les cartons dans une urne et on
+en tire un au hasard :
+\begin{center}
+vélo \; ; \; tram \; ; \; bus \; ; \; car \; ; \; train \; ; \; métro \; ; \; taxi \; ; \;
+ferry
+\end{center}
+On note $A$ \og le mot contient la lettre r\fg{} et $B$ \og le mot a quatre lettres\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Écrire les événements $A$ et $B$ sous forme d'ensembles.
+  \item Écrire les événements $A\cap B$ et $A\cup B$.
+  \item Écrire l'événement $\overline{A}$, puis le décrire par une phrase.
+  \item Écrire l'événement $\overline{A}\cap\overline{B}$, puis le décrire par une phrase.
+\end{enumerate}
+
+\partiefiche{Diagramme de Venn}
+
+\exo[Compléter un diagramme de Venn]
+Une association de quartier compte $60$ bénévoles : $35$ réparent des vélos (ensemble
+$R$), $28$ donnent de l'aide aux devoirs (ensemble $D$) et $12$ font les deux ; les autres
+tiennent l'accueil.
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Combien de bénévoles font au moins une des deux activités $R$ et $D$ ? Aucune ?
+        Une seule ?
+\end{enumerate}
+
+\exo[Partir de la zone commune]
+Dans une classe de $30$ élèves, on note $S$ l'ensemble des élèves qui pratiquent un sport
+en club et $M$ l'ensemble de ceux qui jouent d'un instrument de musique. $18$ élèves
+pratiquent un sport en club, $8$ pratiquent un sport en club et jouent d'un instrument,
+$5$ ne font ni l'un ni l'autre.
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Combien d'élèves jouent d'un instrument de musique ?
+  \item Combien d'élèves font une seule des deux activités ?
+\end{enumerate}
+
+\exo[Ranger des nombres]
+On choisit au hasard un nombre entier de $1$ à $12$. Pour chaque couple d'événements,
+tracer un diagramme de Venn et écrire chaque nombre de $1$ à $12$ dans sa zone.
+\begin{enumerate}[label=\alph*)]
+  \item $A$ \og le nombre est pair\fg{} et $B$ \og le nombre est un multiple de $3$\fg{}
+  \item $A$ \og le nombre est pair\fg{} et $C$ \og le nombre est un multiple de $4$\fg{}
+  \item $A$ \og le nombre est pair\fg{} et $D$ \og le nombre est impair\fg{}
+\end{enumerate}
+Dans quel cas les deux événements sont-ils incompatibles ? Dans le cas b), quelle zone est
+vide ? Expliquer pourquoi par une phrase.
+
+\exo[Lire un diagramme de Venn]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+Lors d'un salon de la mobilité, $200$ visiteurs ont pu essayer un vélo électrique
+(ensemble $V$) et une trottinette électrique (ensemble $T$). Le diagramme ci-contre donne
+les effectifs.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[scale=0.72]
+  \venn{V}{T}{$70$}{$30$}{$40$}{$60$}
+\end{tikzpicture}
+\end{minipage}
+\par\smallskip
+\begin{enumerate}[label=\arabic*)]
+  \item Combien de visiteurs ont essayé un vélo électrique ?
+  \item Dire par une phrase ce que représente le nombre $30$, puis le nombre $60$.
+  \item Combien de visiteurs ont essayé un seul des deux engins ?
+  \item Décrire par une phrase l'ensemble $V\cup T$, puis donner son effectif.
+\end{enumerate}
+
+\partiefiche{Équiprobabilité}
+
+\exo[Calculer des probabilités]
+\begin{enumerate}[label=\alph*)]
+  \item Une urne contient $30$ boules indiscernables, numérotées de $1$ à $30$. On en tire
+        une au hasard. On note $A$ \og obtenir un multiple de $3$\fg{} et $B$ \og obtenir
+        un multiple de $5$\fg{}. Calculer $P(A)$, $P(B)$ et $P(A\cap B)$.
+  \item \begin{minipage}[t]{0.55\linewidth}\raggedright
+        Le diagramme ci-contre décrit les $60$ bénévoles d'une association ($R$ :
+        réparation de vélos ; $D$ : aide aux devoirs). On choisit un bénévole au hasard.
+        Calculer $P(R\cap D)$, $P(R\cup D)$ et $P(\overline{R}\cap\overline{D})$.
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.4\linewidth}\centering\vspace{0pt}
+        \begin{tikzpicture}[scale=0.7]
+          \venn{R}{D}{$23$}{$12$}{$16$}{$9$}
+        \end{tikzpicture}
+        \end{minipage}
+\end{enumerate}
+
+\exo[Dans la boîte à outils]
+Une boîte à outils contient $100$ vis, rangées selon le diamètre de leur tête et leur
+longueur.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & $30$ mm & $40$ mm & $50$ mm\\
+\hline
+Tête de $4$ mm & $35$ & $15$ & $5$\\
+\hline
+Tête de $5$ mm & $10$ & $20$ & $15$\\
+\hline
+\end{tabular}
+\end{center}
+On choisit une vis au hasard. Calculer la probabilité que la vis :
+\begin{enumerate}[label=\arabic*)]
+  \item ait une tête de $5$ mm ;
+  \item mesure plus de $30$ mm de long ;
+  \item ait une tête de $4$ mm et mesure $30$ mm de long ;
+  \item mesure $50$ mm de long.
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Dire si chaque affirmation est vraie ou fausse, puis justifier par une phrase.
+\begin{enumerate}[label=\alph*)]
+  \item \og Avec un dé équilibré à six faces, la probabilité d'obtenir $7$ est égale à
+        $0$.\fg{}
+  \item \og Une probabilité peut être égale à $1{,}2$.\fg{}
+  \item \og Une urne contient $5$ boules rouges et $3$ boules vertes, indiscernables ; la
+        probabilité de tirer une boule verte est $\dfrac{3}{5}$.\fg{}
+  \item \og On lance un dé équilibré dont une face porte un $6$, deux faces un $1$ et trois
+        faces un $2$ : les trois issues possibles ont la même probabilité.\fg{}
+\end{enumerate}
+
+\exo[Un jeu de 32 cartes]
+Un jeu de $32$ cartes compte quatre couleurs : pique, cœur, carreau et trèfle. Dans chaque
+couleur, il y a les cartes de $7$ à $10$, puis le valet, la dame, le roi et l'as. On tire
+une carte au hasard ; on note $R$ \og tirer un roi\fg{}, $C$ \og tirer un cœur\fg{} et $F$
+\og tirer une figure\fg{} (valet, dame ou roi).
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $P(R)$, $P(C)$ et $P(F)$.
+  \item Décrire par une phrase l'événement $R\cap C$, puis calculer sa probabilité.
+  \item Calculer la probabilité de tirer une figure de cœur.
+\end{enumerate}
+
+\partiefiche{Loi de probabilité}
+
+\exo[Utiliser une loi de probabilité]
+Un archer tire une flèche sur une cible. Le tableau donne la loi de probabilité du nombre
+de points marqués.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Points & $0$ & $2$ & $4$ & $6$ & $8$ & $10$\\
+\hline
+Probabilité & $0{,}05$ & $0{,}10$ & $0{,}15$ & $p$ & $0{,}30$ & $0{,}15$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $p$.
+  \item Calculer la probabilité de l'événement $A$ \og marquer au moins $6$ points\fg{}.
+  \item Calculer la probabilité de l'événement $B$ \og marquer $4$ points ou moins\fg{}.
+\end{enumerate}
+
+\exo[À la borne de recharge]
+\begin{minipage}[c]{0.46\linewidth}\raggedright
+Sur une aire d'autoroute, on a relevé pendant un an le temps d'attente à une borne de
+recharge rapide. On choisit un conducteur au hasard ; le tableau donne la loi de
+probabilité de son temps d'attente.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.52\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|l|c|}
+\hline
+Attente & Probabilité\\
+\hline
+moins de $5$ min & $0{,}35$\\
+\hline
+de $5$ à $10$ min & $0{,}40$\\
+\hline
+de $10$ à $15$ min & $0{,}20$\\
+\hline
+plus de $15$ min & $p$\\
+\hline
+\end{tabular}
+\end{minipage}
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $p$.
+  \item Calculer la probabilité d'attendre moins de $10$ minutes.
+  \item Calculer la probabilité d'attendre plus de $5$ minutes.
+  \item Décrire par une phrase l'événement contraire de \og attendre moins de $10$
+        minutes\fg{}, puis donner sa probabilité.
+\end{enumerate}
+
+\exo[Un dé truqué]
+On lance un dé à six faces truqué : la face $1$ sort avec une probabilité de $0{,}05$, la
+face $6$ avec une probabilité de $0{,}35$, et les quatre autres faces ont toutes la même
+probabilité $p$.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $p$.
+  \item Calculer la probabilité de l'événement $A$ \og obtenir un nombre impair\fg{}.
+  \item Calculer la probabilité de l'événement $B$ \og obtenir au moins $3$\fg{}.
+  \item Quelle serait la probabilité de $A$ avec un dé équilibré ?
+\end{enumerate}
+
+\partiefiche{Événement contraire, réunion}
+
+\exo[Contraire et réunion]
+Un entrepôt expédie des colis. On choisit un colis au hasard et on note $A$ \og le colis
+est volumineux\fg{}, $B$ \og le colis est fragile\fg{}, $C$ \og le colis est une
+enveloppe\fg{}. On sait que $P(A)=0{,}25$ ; $P(B)=0{,}15$ ; $P(A\cap B)=0{,}05$ ;
+$P(C)=0{,}3$ ; et une enveloppe n'est jamais volumineuse.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $P(\overline{A})$ et traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'un colis soit volumineux ou fragile.
+  \item En déduire la probabilité qu'un colis ne soit ni volumineux ni fragile.
+  \item Calculer $P(A\cup C)$.
+\end{enumerate}
+
+\exo[Retrouver une intersection]
+Pour trois événements $A$, $B$ et $C$ d'une même expérience, on sait que $P(A)=0{,}2$ ;
+$P(B)=0{,}35$ ; $P(A\cup B)=0{,}45$ ; $P(C)=0{,}4$ ; et $B$ et $C$ sont incompatibles.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $P(\overline{B})$.
+  \item Calculer $P(B\cup C)$.
+  \item Calculer $P(A\cap B)$.
+  \item Calculer $P(\overline{A}\cap\overline{B})$.
+\end{enumerate}
+
+\exo[Des données impossibles]
+$A$ et $B$ sont deux événements d'une même expérience. Dans chaque cas, expliquer par une
+phrase pourquoi les données sont impossibles.
+\begin{enumerate}[label=\alph*)]
+  \item $P(A)=0{,}6$ et $P(\overline{A})=0{,}5$.
+  \item $P(A)=0{,}7$ ; $P(B)=0{,}4$ ; et $A$ et $B$ sont incompatibles.
+  \item $P(A)=0{,}3$ ; $P(B)=0{,}4$ ; $P(A\cap B)=0{,}5$.
+  \item $P(A)=0{,}5$ ; $P(B)=0{,}6$ ; $P(A\cup B)=0{,}4$.
+\end{enumerate}
+
+\exo[Des roulements à billes]
+Une usine fabrique des roulements à billes. Dans un lot de $5\,000$ roulements, $3\,\%$ ont
+un défaut de diamètre (ensemble $A$), $5\,\%$ un défaut de surface (ensemble $B$) et
+$1\,\%$ ont les deux défauts.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer le nombre de roulements de $A$, de $B$ et de $A\cap B$, puis représenter le
+        lot par un diagramme de Venn.
+  \item On choisit un roulement au hasard dans le lot. Calculer la probabilité qu'il ait au
+        moins un des deux défauts.
+  \item Calculer la probabilité qu'il n'ait aucun défaut.
+  \item Calculer la probabilité qu'il ait un seul des deux défauts.
+\end{enumerate}
+
+\partiefiche{Arbre des possibles}
+
+\exo[Dénombrer avec un arbre]
+Le local à vélos d'un lycée s'ouvre avec un code de deux chiffres, chacun égal à $1$, à
+$2$, à $3$ ou à $4$. On essaie un code au hasard.
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité de trouver le bon code.
+  \item Calculer la probabilité de l'événement $A$ \og les deux chiffres sont égaux\fg{}.
+\end{enumerate}
+Un sac contient trois jetons : un rouge (R), un vert (V) et un jaune (J). On tire un jeton
+au hasard, on le garde, puis on en tire un deuxième.
+\begin{enumerate}[label=\arabic*),start=4]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité de l'événement $B$ \og le premier jeton est rouge\fg{}.
+  \item Calculer la probabilité de l'événement $C$ \og le jeton rouge fait partie des deux
+        jetons tirés\fg{}.
+\end{enumerate}
+
+\exo[Trois lancers]
+On lance trois fois de suite une pièce équilibrée ; on note P pour Pile et F pour Face.
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité d'obtenir trois fois Pile.
+  \item Calculer la probabilité de l'événement $A$ \og obtenir exactement une fois
+        Pile\fg{}.
+  \item À l'aide de l'événement contraire, calculer la probabilité d'obtenir au moins une
+        fois Pile.
+\end{enumerate}
+
+\exo[La tenue du cycliste]
+Pour une sortie, un cycliste choisit au hasard un maillot parmi trois (rouge, bleu, blanc)
+et un casque parmi deux (noir, blanc).
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter toutes les tenues possibles par un arbre. Combien y en a-t-il ?
+  \item Calculer la probabilité que le maillot et le casque soient blancs.
+  \item On note $M$ \og le maillot est blanc\fg{} et $C$ \og le casque est blanc\fg{}.
+        Calculer $P(M)$ et $P(C)$, puis $P(M\cup C)$ avec la formule de la réunion.
+\end{enumerate}
+
+\partiefiche{Probabilité conditionnelle et tableau croisé}
+
+\exo[Probabilités dans un tableau croisé]
+Une piscine compte $400$ abonnés. Le tableau, à compléter, les range selon leur formule et
+le moment où ils viennent le plus souvent.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Mensuelle & Annuelle & Total\\
+\hline
+Matin & $100$ & $100$ & \\
+\hline
+Soir & $50$ & & \\
+\hline
+Total & & & $400$\\
+\hline
+\end{tabular}
+\end{center}
+On choisit un abonné au hasard ; on note $A$ \og l'abonné a une formule annuelle\fg{} et
+$S$ \og l'abonné vient le soir\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter le tableau.
+  \item Calculer $P(A)$ et $P(A\cap S)$.
+  \item Calculer $P_A(S)$ et traduire le résultat par une phrase.
+  \item Calculer $P_S(A)$ et traduire le résultat par une phrase.
+\end{enumerate}
+
+\exo[Une équipe de rugby]
+Une équipe de rugby compte $40$ joueurs : $24$ avants et $16$ arrières. $18$ avants
+mesurent plus de $1{,}85$ m, contre $2$ arrières. On note $A$ \og le joueur est un
+avant\fg{} et $G$ \og le joueur mesure plus de $1{,}85$ m\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Présenter ces données dans un tableau croisé d'effectifs.
+  \item On choisit un joueur au hasard. Calculer $P(A)$, $P(G)$ et $P(A\cap G)$.
+  \item Calculer $P_A(G)$, puis traduire ce résultat par une phrase.
+  \item Calculer $P_G(A)$, puis traduire ce résultat par une phrase.
+  \item Expliquer par une phrase la différence entre $P(A\cap G)$ et $P_A(G)$.
+\end{enumerate}
+
+\exo[Au magasin de cycles]
+Un magasin de cycles a vendu $400$ vélos : $55\,\%$ de VTT, $30\,\%$ de VTC, et les autres
+sont des vélos de ville. $60\,\%$ des VTT, $50\,\%$ des VTC et $80\,\%$ des vélos de ville
+vendus sont à assistance électrique.
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter le tableau d'effectifs.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{|l|c|c|c|}
+        \hline
+         & Électrique & Non électrique & Total\\
+        \hline
+        VTT & & & \\
+        \hline
+        VTC & & & \\
+        \hline
+        Ville & & & \\
+        \hline
+        Total & & & $400$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item On choisit un vélo vendu au hasard ; on note $E$ \og le vélo est électrique\fg{} et
+        $T$ \og le vélo est un VTT\fg{}. Calculer $P(E)$, puis $P(\overline{E})$.
+  \item Calculer $P_E(T)$ et traduire le résultat par une phrase.
+  \item Un client a acheté un vélo non électrique. Calculer la probabilité que ce soit un
+        VTC.
+\end{enumerate}
+
+\exo[Vacances sportives]
+Un centre de vacances accueille $120$ personnes : $48$ font du VTT, $30$ de l'escalade et
+$12$ font les deux. On choisit une personne au hasard ; on note $T$ \og la personne fait du
+VTT\fg{} et $E$ \og la personne fait de l'escalade\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter la situation par un diagramme de Venn.
+  \item Compléter un tableau croisé d'effectifs, avec $T$ et $\overline{T}$ en colonnes, $E$
+        et $\overline{E}$ en lignes.
+  \item Calculer $P(\overline{T}\cap\overline{E})$.
+  \item Calculer $P_T(E)$ et $P_E(T)$.
+\end{enumerate}
+
+\partiefiche{Formule des probabilités conditionnelles}
+
+\exo[Traduire et utiliser la formule]
+\begin{enumerate}[label=\alph*)]
+  \item Dans une ville, $40\,\%$ des maisons ont une pompe à chaleur, et $10\,\%$ des maisons
+        ont une pompe à chaleur et des panneaux solaires. On choisit une maison au hasard ;
+        on note $C$ \og la maison a une pompe à chaleur\fg{} et $S$ \og la maison a des
+        panneaux solaires\fg{}. Traduire les données par des probabilités, puis calculer
+        $P_C(S)$ et traduire le résultat par une phrase.
+  \item Dans un lycée, $60\,\%$ des élèves déjeunent à la cantine ; parmi eux, $30\,\%$
+        choisissent le menu végétarien. On choisit un élève au hasard ; on note $D$
+        \og l'élève déjeune à la cantine\fg{} et $V$ \og l'élève choisit le menu
+        végétarien\fg{}. Traduire les données par des probabilités, puis calculer
+        $P(D\cap V)$ et traduire le résultat par une phrase.
+\end{enumerate}
+
+\exo[Conditionnelle ou pas ?]
+Une station météo choisit un jour de l'année au hasard. On note $R$ \og il a plu ce
+jour-là\fg{} et $V$ \og le vent a soufflé fort ce jour-là\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Pour chaque information, dire s'il s'agit d'une probabilité conditionnelle, puis
+        l'écrire avec la notation qui convient.
+        \begin{enumerate}[label=\alph*)]
+          \item Dans l'année, $40\,\%$ des jours sont pluvieux.
+          \item $75\,\%$ des jours pluvieux sont ventés.
+          \item Parmi les jours sans vent fort, $20\,\%$ sont pluvieux.
+          \item $30\,\%$ des jours sont à la fois pluvieux et ventés.
+          \item Quand le vent souffle fort, il pleut $6$ jours sur $10$.
+        \end{enumerate}
+  \item Vérifier que les informations a), b) et d) sont cohérentes.
+  \item Calculer la probabilité qu'un jour choisi au hasard ne soit pas pluvieux.
+\end{enumerate}
+
+\exo[Au club nautique]
+Dans un club nautique, $60\,\%$ des adhérents font de la voile, $50\,\%$ du kayak, et
+$15\,\%$ font les deux. On choisit un adhérent au hasard ; on note $V$ \og l'adhérent fait
+de la voile\fg{} et $K$ \og l'adhérent fait du kayak\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Donner $P(V)$, $P(K)$ et $P(V\cap K)$.
+  \item Calculer $P_V(K)$ et traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'un adhérent qui fait du kayak fasse aussi de la voile.
+  \item Calculer la probabilité qu'un adhérent fasse au moins une des deux activités.
+\end{enumerate}
+
+\partiefiche{Arbre pondéré}
+
+\exo[Construire un arbre pondéré]
+Dans une salle d'escalade, $40\,\%$ des grimpeurs sont débutants. Parmi les débutants,
+$30\,\%$ réussissent la voie rouge ; parmi les autres grimpeurs, $80\,\%$. On choisit un
+grimpeur au hasard ; on note $D$ \og le grimpeur est débutant\fg{} et $R$ \og le grimpeur
+réussit la voie rouge\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre pondéré de la situation.
+  \item Calculer la probabilité qu'un grimpeur soit débutant et réussisse la voie rouge ;
+        traduire le résultat par une phrase.
+  \item Calculer la probabilité qu'un grimpeur soit débutant et échoue sur la voie rouge.
+\end{enumerate}
+
+\exo[Le jeu de la fête de quartier]
+Lors d'une fête de quartier, un jeu se déroule en deux étapes. On tire au hasard une carte
+parmi $40$ cartes numérotées de $1$ à $40$. Si le numéro est inférieur ou égal à $10$, on
+fait tourner une roue de $10$ secteurs égaux dont $6$ portent une étoile ; sinon, une autre
+roue de $10$ secteurs égaux dont $3$ portent une étoile. On gagne un lot si la roue
+s'arrête sur une étoile. On note $N$ \og le numéro est inférieur ou égal à $10$\fg{} et $E$
+\og la roue s'arrête sur une étoile\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Justifier que $P(N)=0{,}25$ et que $P_N(E)=0{,}6$.
+  \item Construire l'arbre pondéré de la situation.
+  \item Calculer la probabilité de tirer un numéro inférieur ou égal à $10$ et de gagner un
+        lot.
+  \item Calculer $P(\overline{N}\cap E)$.
+\end{enumerate}
+
+\exo[Compléter et lire un arbre]
+\begin{minipage}[c]{0.4\linewidth}\raggedright
+À la sortie d'un lycée, on choisit un élève au hasard. On note $B$ \og l'élève rentre en
+bus\fg{} et $H$ \og l'élève est chez lui avant 17~h~30\fg{}.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.57\linewidth}\centering
+\begin{tikzpicture}[scale=0.78]
+  \arbre{B}{H}{0{,}65}{\dots}{0{,}4}{\dots}{0{,}7}{\dots}
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter l'arbre.
+  \item Traduire par une phrase les probabilités $P(B)=0{,}65$ et
+        $P_{\overline{B}}(H)=0{,}7$.
+  \item Calculer la probabilité qu'un élève rentre en bus et soit chez lui après 17~h~30.
+\end{enumerate}
+
+\partiefiche{Formule des probabilités totales}
+
+\exo[Probabilités totales]
+\begin{minipage}[c]{0.4\linewidth}\raggedright
+Dans une salle d'escalade, l'arbre ci-contre décrit les grimpeurs ($D$ \og le grimpeur est
+débutant\fg{}, $R$ \og il réussit la voie rouge\fg{}).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.57\linewidth}\centering
+\begin{tikzpicture}[scale=0.78]
+  \arbre{D}{R}{0{,}4}{0{,}6}{0{,}3}{0{,}7}{0{,}8}{0{,}2}
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $P(R)$.
+  \item Un grimpeur a réussi la voie rouge. Calculer la probabilité qu'il soit débutant.
+\end{enumerate}
+Un installateur de panneaux solaires achète $60\,\%$ de ses onduleurs à un premier
+fournisseur, et les autres à un second. La première année, $2\,\%$ des onduleurs du premier
+fournisseur tombent en panne, contre $7\,\%$ de ceux du second. On choisit un onduleur au
+hasard ; on note $F$ \og il vient du premier fournisseur\fg{} et $D$ \og il tombe en panne
+la première année\fg{}.
+\begin{enumerate}[label=\arabic*),start=3]
+  \item Construire l'arbre pondéré, puis calculer $P(D)$.
+  \item Un onduleur est tombé en panne. Calculer la probabilité qu'il vienne du premier
+        fournisseur.
+\end{enumerate}
+
+\exo[Le sonar du bateau de pêche]
+Un bateau de pêche arrive sur sa zone. La probabilité qu'un banc de poissons s'y trouve est
+$0{,}7$. Le sonar du bateau signale un banc dans $80\,\%$ des cas quand il y en a un, et
+dans $10\,\%$ des cas quand il n'y en a pas. On note $B$ \og un banc est présent\fg{} et
+$S$ \og le sonar signale un banc\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre pondéré de la situation.
+  \item Calculer $P(B\cap S)$ et $P(\overline{B}\cap S)$.
+  \item En déduire $P(S)$.
+  \item Le sonar signale un banc. Calculer la probabilité qu'il se trompe, arrondie au
+        centième.
+\end{enumerate}
+
+\exo[Aller en train, revenir en bus ?]
+Pour une excursion, chaque voyageur fait l'aller en train ou en bus, puis le retour en
+train ou en bus. À l'aller, $60\,\%$ des voyageurs prennent le train. Parmi ceux qui ont
+pris le train à l'aller, $90\,\%$ le reprennent au retour ; parmi ceux qui ont pris le bus à
+l'aller, $70\,\%$ prennent le train au retour. On note $A$ \og l'aller se fait en
+train\fg{} et $R$ \og le retour se fait en train\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre pondéré de la situation.
+  \item Calculer la probabilité qu'un voyageur fasse l'aller et le retour en train.
+  \item Calculer $P(R)$.
+  \item Calculer la probabilité qu'un voyageur utilise les deux moyens de transport.
+  \item Un voyageur est revenu en train. Calculer la probabilité qu'il soit aussi allé en
+        train, arrondie au centième.
+\end{enumerate}
+
+\partiefiche{Événements indépendants}
+
+\exo[Indépendants ou pas ?]
+\begin{enumerate}[label=\alph*)]
+  \item Un atelier a révisé $250$ vélos électriques. On choisit un vélo au hasard ; on note
+        $F$ \og les freins sont à régler\fg{} et $N$ \og un pneu est à changer\fg{}. Les
+        événements $F$ et $N$ sont-ils indépendants ?
+        \begin{center}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{|l|c|c|c|}
+        \hline
+         & $F$ & $\overline{F}$ & Total\\
+        \hline
+        $N$ & $20$ & $30$ & $50$\\
+        \hline
+        $\overline{N}$ & $80$ & $120$ & $200$\\
+        \hline
+        Total & $100$ & $150$ & $250$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item Dans un lycée, un jour de pluie, $30\,\%$ des élèves viennent en bus ; sur
+        l'ensemble de l'année, $20\,\%$ des élèves viennent en bus. On choisit un jour et un
+        élève au hasard ; on note $R$ \og il pleut ce jour-là\fg{} et $B$ \og l'élève vient
+        en bus\fg{}. Les événements $R$ et $B$ sont-ils indépendants ?
+  \item Un éclairage de secours comporte deux lampes qui tombent en panne indépendamment
+        l'une de l'autre. Sur un an, la première fonctionne avec une probabilité de
+        $0{,}98$ et la seconde avec une probabilité de $0{,}9$. L'éclairage est complet
+        quand les deux lampes fonctionnent. Calculer la probabilité que l'éclairage reste
+        complet pendant un an, puis la probabilité qu'il ne le reste pas.
+\end{enumerate}
+
+\exo[Une pièce et un dé]
+On lance une pièce équilibrée, puis un dé équilibré à six faces. On note $A$ \og la pièce
+donne Pile\fg{} et $B$ \og le dé donne $6$\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Représenter toutes les issues par un arbre. Combien y en a-t-il ?
+  \item Calculer $P(A)$, $P(B)$ et $P(A\cap B)$.
+  \item Calculer $P_A(B)$. Les événements $A$ et $B$ sont-ils indépendants ?
+  \item Vérifier que $P(A\cap B)=P(A)\times P(B)$.
+\end{enumerate}
+
+\exo[L'imprimante 3D]
+Pendant une impression, une imprimante 3D s'arrête si la bobine de filament est vide
+(événement $A$) ou si la buse se bouche (événement $B$). Les événements $A$ et $B$ sont
+indépendants, avec $P(A)=0{,}05$ et $P(B)=0{,}02$.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer la probabilité que la bobine soit vide et que la buse se bouche.
+  \item Calculer la probabilité que l'impression s'arrête.
+  \item En déduire la probabilité que l'impression aille jusqu'au bout.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

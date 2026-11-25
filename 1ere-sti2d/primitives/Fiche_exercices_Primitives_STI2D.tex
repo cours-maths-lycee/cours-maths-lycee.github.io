@@ -1,0 +1,649 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,before skip=3pt,after skip=3pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STI2D --- Primitives}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Primitive d'une fonction}
+
+\exo[Vérifier une primitive]
+Dans chaque cas, dire si $F$ est une primitive de $f$.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=5$ \quad et \quad $F(x)=5x-2$
+  \item $f(x)=6x+1$ \quad et \quad $F(x)=3x^{2}+x-4$
+  \item $f(x)=2x-7$ \quad et \quad $F(x)=x^{2}-7$
+  \item $f(x)=3x^{2}-8x+2$ \quad et \quad $F(x)=x^{3}-4x^{2}+2x+9$
+  \item $f(x)=4x-\dfrac{1}{x^{2}}$ \quad et \quad $F(x)=2x^{2}+\dfrac{1}{x}$ \quad ($x>0$)
+  \item $f(x)=6x^{2}+\dfrac{5}{x^{2}}$ \quad et \quad $F(x)=2x^{3}+\dfrac{5}{x}$ \quad ($x>0$)
+\end{enumerate}
+
+\exo[En phrase complète]
+Écrire chaque information par une phrase complète avec le mot « primitive » s'il
+s'agit d'une dérivée, avec le mot « dérivée » s'il s'agit d'une primitive.
+\begin{enumerate}[label=\arabic*)]
+  \item La dérivée de $G(x)=x^{3}+4x$ est $g(x)=3x^{2}+4$.
+  \item $H(x)=5x^{2}-x$ est une primitive de $h(x)=10x-1$.
+  \item La vitesse $v$ d'un vélo est la dérivée de sa position $d$.
+\end{enumerate}
+
+\exo[Laquelle est une primitive ?]
+Pour chaque fonction, trouver parmi les trois fonctions qui la suivent celle qui en est
+une primitive, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=4x-3$ : \quad $F_{1}(x)=4x^{2}-3x$ ; \quad $F_{2}(x)=2x^{2}-3x+1$ ;
+        \quad $F_{3}(x)=4$
+  \item $g(x)=3x^{2}+2$ : \quad $G_{1}(x)=6x$ ; \quad $G_{2}(x)=x^{3}+2$ ;
+        \quad $G_{3}(x)=x^{3}+2x-5$
+  \item $h(x)=-\dfrac{2}{x^{2}}$ \ ($x>0$) : \quad $H_{1}(x)=-\dfrac{2}{x}$ ;
+        \quad $H_{2}(x)=\dfrac{2}{x}+3$ ; \quad $H_{3}(x)=-2x$
+\end{enumerate}
+
+\exo[Sur une piste d'essai]
+Sur une piste d'essai, un vélo à assistance électrique démarre. Au bout de $t$ secondes
+(pour $0\leq t\leq 8$), il a parcouru ${d(t)=0{,}25t^{2}+2t}$ mètres.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer la distance parcourue au bout de $4$ secondes.
+  \item Montrer que $d$ est une primitive de la fonction $v$ définie par
+        ${v(t)=0{,}5t+2}$.
+  \item En physique, que représente $v(t)$ ?
+  \item Calculer $v(8)$, puis le convertir en km/h.
+\end{enumerate}
+
+\partiefiche{Toutes les primitives d'une fonction}
+
+\exo[Primitive qui vérifie une condition]
+Pour chaque fonction $f$, la fonction $F$ en est une primitive. Déterminer la primitive
+$G$ de $f$ qui vérifie la condition écrite en dernier.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=4x+1$ ; \quad $F(x)=2x^{2}+x+5$ ; \quad $G(1)=0$
+  \item $f(x)=6x-2$ ; \quad $F(x)=3x^{2}-2x$ ; \quad $G(2)=1$
+  \item $f(x)=3x^{2}-4x$ ; \quad $F(x)=x^{3}-2x^{2}+7$ ; \quad $G(-1)=2$
+  \item $f(x)=5x^{4}+3x^{2}$ ; \quad $F(x)=x^{5}+x^{3}$ ; \quad $G(-1)=-3$
+  \item $f(x)=x^{2}+1$ ; \quad $F(x)=\dfrac{x^{3}}{3}+x$ ; \quad $G(3)=4$
+\end{enumerate}
+
+\exo[Deux primitives]
+Soit ${F(x)=x^{2}-6x+4}$ et ${G(x)=(x-3)^{2}}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Développer $G(x)$.
+  \item Calculer $F'(x)$ et $G'(x)$. Que peut-on en déduire pour $F$ et $G$ ?
+  \item Calculer $G(x)-F(x)$. Quelle propriété du cours retrouve-t-on ?
+  \item Déterminer la primitive $H$ de ${f(x)=2x-6}$ telle que ${H(0)=0}$.
+\end{enumerate}
+
+\exo[Faire monter une courbe]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Ci-contre, $\mathcal{C}_{F}$ est la courbe de la fonction $F$ définie par
+${F(x)=x^{2}-2x-3}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Vérifier que $F$ est une primitive de ${f(x)=2x-2}$.
+  \item Lire $F(0)$ sur le graphique, puis le calculer.
+  \item Déterminer la primitive $G$ de $f$ telle que ${G(0)=-1}$.
+  \item Calculer $G(x)-F(x)$. En déduire comment obtenir la courbe de $G$ à partir de
+        $\mathcal{C}_{F}$, puis la tracer.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-3}{-5}{5}{5}
+  \gradx{-2,-1,1,2,3,4} \grady{-4,-3,-2,-1,1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt,domain=-1.6:3.6,samples=50]
+    plot (\x,{\x*\x-2*\x-3});
+  \node[coulCourbe,font=\footnotesize] at (4.2,2.4) {$\mathcal{C}_{F}$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Un ballon-sonde]
+Un ballon-sonde météorologique est lâché du toit d'une station météo, à $15$~m du sol.
+Il monte à la vitesse constante de $5$~m/s : au bout de $t$ secondes, sa vitesse est
+${v(t)=5}$. Son altitude $h(t)$ (en m) est la primitive de $v$ telle que ${h(0)=15}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Vérifier que ${F(t)=5t}$ est une primitive de $v$.
+  \item Déterminer $h(t)$.
+  \item Calculer l'altitude du ballon au bout d'une minute.
+  \item Au bout de combien de temps le ballon atteint-il $1\,015$~m d'altitude ?
+\end{enumerate}
+
+\partiefiche{Primitive d'un polynôme}
+
+\exo[Primitives de polynômes]
+Déterminer une primitive de chaque fonction.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=7$
+  \item $g(x)=6x$
+  \item $h(x)=9x^{2}$
+  \item $k(x)=4x^{3}-2x+3$
+  \item $m(x)=12x^{2}-10x+1$
+  \item $p(x)=5x^{4}+8x^{3}-6x^{2}$
+  \item $q(x)=x^{2}+3x-4$
+  \item $r(x)=-2x^{3}+5x-\dfrac{1}{3}$
+\end{enumerate}
+\end{multicols}
+
+\exo[Toutes les primitives]
+Déterminer toutes les primitives de chaque fonction (en c) et d), transformer d'abord
+l'écriture).
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=2x+5$
+  \item $g(x)=3x^{2}-4x+1$
+  \item $h(x)=\dfrac{3x^{2}-2x}{2}$
+  \item $k(x)=(x+1)(x-3)$
+\end{enumerate}
+\end{multicols}
+
+\exo[Avec une condition initiale]
+Pour chaque fonction, déterminer sa primitive qui vérifie la condition écrite.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=4$ ; \ $F(1)=0$
+  \item $g(x)=2x-6$ ; \ $G(3)=1$
+  \item $h(x)=6x^{2}+2x$ ; \ $H(1)=0$
+  \item $k(x)=8x^{3}-3x^{2}+1$ ; \ $K(-1)=5$
+  \item $m(x)=x^{2}-1$ ; \ $M(3)=0$
+\end{enumerate}
+\end{multicols}
+
+\exo[Variations d'une primitive]
+Soit ${f(x)=3x^{2}-12}$, et $F$ la primitive de $f$ telle que ${F(0)=5}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Déterminer $F(x)$.
+  \item Montrer que ${f(x)=3(x-2)(x+2)}$.
+  \item Dresser le tableau de signes de $f(x)$ sur $\intff{-3}{3}$.
+  \item Que vaut $F'(x)$ ? En déduire le tableau de variations de $F$ sur
+        $\intff{-3}{3}$, avec les valeurs de $F$.
+\end{enumerate}
+
+\exo[Une fusée à eau]
+Le club de sciences du lycée lance une fusée à eau à la verticale. À l'instant ${t=0}$,
+toute l'eau est éjectée : la fusée est à $2$~m du sol et monte à $20$~m/s. Ensuite, la
+pesanteur la freine : son accélération vaut ${a(t)=-10}$ (en m/s$^{2}$). La vitesse $v$
+(en m/s) est une primitive de l'accélération, et l'altitude $h$ (en m) une primitive de
+la vitesse.
+\begin{enumerate}[label=\arabic*)]
+  \item Déterminer $v(t)$, sachant que ${v(0)=20}$.
+  \item Déterminer $h(t)$, sachant que ${h(0)=2}$.
+  \item À quel instant la fusée cesse-t-elle de monter ?
+  \item Calculer son altitude maximale.
+  \item Montrer qu'au bout de $4$~s, la fusée est revenue à son altitude de départ.
+\end{enumerate}
+
+\partiefiche{Primitives de cosinus et sinus}
+
+\exo[Primitives avec cosinus et sinus]
+Déterminer une primitive de chaque fonction.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=5\cos x$
+  \item $g(x)=-4\sin x$
+  \item $h(x)=2\sin x+\cos x$
+  \item $k(x)=3x^{2}-2\cos x$
+  \item $m(x)=6x+7\sin x$
+  \item $p(x)=1-\sin x$
+\end{enumerate}
+\end{multicols}
+
+\exo[Avec une condition initiale]
+Pour chaque fonction, déterminer sa primitive qui vérifie la condition écrite.
+\rappel{$\cos 0=1$ ; \ $\sin 0=0$ ; \ $\cos\dfrac{\pi}{2}=0$ ; \ $\sin\dfrac{\pi}{2}=1$ ;
+\ $\cos\pi=-1$ ; \ $\sin\pi=0$.}
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\cos x$ ; \ $F(0)=3$
+  \item $g(x)=\sin x$ ; \ $G(0)=0$
+  \item $h(x)=2\cos x+4x$ ; \ $H(0)=-1$
+  \item $k(x)=3\sin x-\cos x$ ; \ $K(\pi)=2$
+  \item $m(x)=-2\sin x$ ; \ $M\left(\dfrac{\pi}{2}\right)=4$
+\end{enumerate}
+
+\exo[Dériver pour trouver une primitive]
+Soit ${F(x)=x\sin x}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $F'(x)$ (dérivée d'un produit).
+  \item En déduire une primitive de ${f(x)=\sin x+x\cos x}$.
+  \item Déterminer la primitive $G$ de $f$ telle que ${G(\pi)=1}$.
+  \item On pose ${g(x)=x\cos x}$. Écrire $g(x)$ à l'aide de $f(x)$ et de $\sin x$, puis
+        en déduire une primitive de $g$.
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Dire si chaque affirmation est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\arabic*)]
+  \item $\sin x$ est une primitive de $\cos x$.
+  \item $\cos x$ est une primitive de $\sin x$.
+  \item ${F(x)=\sin x+2}$ et ${G(x)=\sin x-5}$ sont deux primitives d'une même fonction.
+  \item La primitive de ${f(x)=-\sin x}$ qui vaut $0$ en $0$ est ${F(x)=\cos x}$.
+  \item $\dfrac{x^{4}}{4}-7$ est une primitive de $x^{3}$.
+\end{enumerate}
+
+\partiefiche{Primitives de $A\cos(\omega t+\varphi)$ et $A\sin(\omega t+\varphi)$}
+
+\exo[Primitives de fonctions sinusoïdales]
+Déterminer une primitive de chaque fonction.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(t)=8\cos(4t)$
+  \item $g(t)=9\sin(3t)$
+  \item $h(t)=\cos(2t)$
+  \item $k(t)=4\cos\left(2t+\dfrac{\pi}{3}\right)$
+  \item $m(t)=10\sin\left(5t-\dfrac{\pi}{2}\right)$
+  \item $p(t)=-6\cos(3t+\pi)$
+\end{enumerate}
+\end{multicols}
+
+\exo[Toutes les primitives]
+Déterminer toutes les primitives de chaque fonction.
+\begin{multicols}{2}
+\begin{enumerate}[label=\alph*)]
+  \item $f(t)=4t-6\sin(2t)$
+  \item $g(t)=5-8\cos\left(4t-\dfrac{\pi}{6}\right)$
+  \item $h(t)=6t^{2}+2\cos(3t)$
+  \item $k(t)=3\sin(2t)-4\sin(4t)$
+\end{enumerate}
+\end{multicols}
+
+\exo[Avec une condition initiale]
+Pour chaque fonction, déterminer sa primitive qui vérifie la condition écrite.
+\begin{enumerate}[label=\alph*)]
+  \item $f(t)=6\cos(3t)$ ; \ $F(0)=1$
+  \item $g(t)=4\sin(2t)$ ; \ $G(0)=0$
+  \item $h(t)=4\cos(2t)$ ; \ $H\left(\dfrac{\pi}{4}\right)=3$
+  \item $k(t)=6\sin\left(3t+\dfrac{\pi}{2}\right)$ ; \ $K(0)=5$
+\end{enumerate}
+
+\exo[Courant et charge d'un condensateur]
+Dans un circuit, un condensateur reçoit un courant d'intensité ${i(t)=2\cos(100t)}$ (en
+ampères, $t$ en secondes). Sa charge $q(t)$ (en coulombs) vérifie ${q'(t)=i(t)}$ et
+${q(0)=0}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter la phrase avec un mot du cours : « $q$ est une \dots{} de $i$ ».
+  \item Déterminer $q(t)$.
+  \item Calculer $q\left(\dfrac{\pi}{200}\right)$.
+  \item Vérifier le résultat de la question 2 en dérivant $q$.
+\end{enumerate}
+
+\exo[L'énergie des vagues]
+Un houlomoteur produit de l'électricité avec les vagues : son flotteur monte et descend
+avec la houle. Au bout de $t$ secondes, la vitesse verticale du flotteur (en m/s) est
+${v(t)=\sin(0{,}5t)}$, et sa hauteur au-dessus du fond (en m) est la primitive $h$ de
+$v$ telle que ${h(0)=8}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Déterminer $h(t)$.
+  \item Calculer $h(2\pi)$.
+  \item Calculer la période de $h$ (au chapitre 7, ${T=\dfrac{2\pi}{\omega}}$),
+        arrondie au dixième de seconde.
+  \item Justifier que le flotteur reste entre $8$~m et $12$~m de hauteur.
+\end{enumerate}
+
+\partiefiche{Méthode d'Euler}
+
+\exo[Méthode d'Euler]
+Soit ${f(t)=\dfrac{6}{t+2}}$ pour $t\geq 0$, et $F$ la primitive de $f$ telle que
+${F(0)=0}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Avec la méthode d'Euler et un pas ${h=0{,}5}$, compléter le tableau (valeurs
+        arrondies à $0{,}01$).
+\end{enumerate}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$t$ & $0$ & $0{,}5$ & $1$ & $1{,}5$ & $2$\\
+\hline
+$f(t)$ & & & & & \\
+\hline
+$F(t)\approx$ & $0$ & & & & \\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*),start=2]
+  \item Placer les points dans un repère (unité $2$~cm), puis les relier.
+\end{enumerate}
+
+\exo[Un pas plus petit]
+Soit ${f(t)=\dfrac{2}{t+1}}$ pour $t\geq 0$, et $F$ la primitive de $f$ telle que
+${F(0)=0}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Avec la méthode d'Euler et un pas ${h=0{,}5}$, calculer une valeur approchée de
+        $F(1)$, arrondie à $0{,}01$.
+  \item Même question avec un pas ${h=0{,}25}$ (quatre étapes).
+  \item Avec un pas très petit, un programme donne ${F(1)\approx 1{,}39}$. Quel pas
+        donne la meilleure approximation ?
+\end{enumerate}
+
+\exo[Programmer la méthode d'Euler]
+Le programme ci-dessous, incomplet, applique la méthode d'Euler à
+${f(t)=\dfrac{4}{1+t^{2}}}$, avec ${F(0)=0}$.
+\begin{python}
+def f(t):
+    return .....
+
+def euler(t, y, h, n):
+    for i in range(n):
+        y = .....
+        t = .....
+    return y
+\end{python}
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter les trois lignes en pointillés.
+  \item Pour l'appel \texttt{euler(0, 0, 0.5, 2)}, donner à la main les valeurs de
+        \texttt{t} et de \texttt{y} après chaque tour de boucle.
+  \item Quel appel calcule une valeur approchée de $F(1)$ avec un pas de $0{,}01$ ?
+\end{enumerate}
+
+\exo[Un bateau électrique ralentit]
+Un bateau électrique coupe son moteur et glisse sur un lac en ralentissant. Au bout de
+$t$ secondes, sa vitesse (en m/s) est ${v(t)=\dfrac{12}{t+2}}$. La distance parcourue
+$d(t)$ (en m) vérifie ${d'(t)=v(t)}$ et ${d(0)=0}$.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer la vitesse du bateau au départ, puis au bout de $4$~s.
+  \item Montrer que ${v'(t)=-\dfrac{12}{(t+2)^{2}}}$, puis justifier que le bateau
+        ralentit.
+  \item Avec la méthode d'Euler et un pas ${h=1}$, calculer des valeurs approchées de
+        $d(1)$ ; $d(2)$ ; $d(3)$ et $d(4)$.
+  \item Placer les points dans un repère, puis les relier.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
