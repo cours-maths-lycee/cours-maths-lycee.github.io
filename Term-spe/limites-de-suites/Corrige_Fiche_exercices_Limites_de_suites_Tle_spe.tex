@@ -1,0 +1,1830 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 2 --- Limites de suites --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=4pt,right=4pt,top=1pt,bottom=1pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\newcommand{\limn}{\lim\limits_{n\to+\infty}}
+
+\begin{document}
+
+\entetefiche{Chapitre 2 --- Limites de suites}{Terminale spécialité mathématiques}
+
+\partie{Limite finie, suite convergente}
+
+\begin{exo}[Conjecturer une limite]
+\explique{Pour chaque suite, on calcule les termes demandés, puis on regarde de quel nombre
+leur écriture décimale se rapproche.}{méthode 1 du cours}
+\cas{a)}
+\begin{calculs}
+a_{10} &= 3-0{,}2 = 2{,}8 &&\justif{$\frac{2}{10}=0{,}2$}\\
+a_{100} &= 3-0{,}02 = 2{,}98 &&\\
+a_{1\,000} &= 3-0{,}002 = 2{,}998 &&
+\end{calculs}
+\explique{On conjecture que \res{$\limn a_{n}=3$}.}{$2{,}99\ldots9$ : de plus en plus de $9$}
+\cas{b)}
+\explique{Pour tout $n\in\Ns$, on a $b_{n}=\frac{n}{n}+\frac{1}{n}$, soit $1+\frac{1}{n}$.}{on
+sépare la fraction}
+\begin{calculs}
+b_{10} &= 1+0{,}1 = 1{,}1 &&\\
+b_{100} &= 1+0{,}01 = 1{,}01 &&\\
+b_{1\,000} &= 1+0{,}001 = 1{,}001 &&
+\end{calculs}
+\explique{On conjecture que \res{$\limn b_{n}=1$}.}{}
+\cas{c)}
+\begin{calculs}
+c_{10} &= 5+0{,}01 = 5{,}01 &&\justif{$10^{2}=100$}\\
+c_{100} &= 5+0{,}0001 = 5{,}0001 &&\\
+c_{1\,000} &= 5+0{,}000001 = 5{,}000001 &&
+\end{calculs}
+\explique{On conjecture que \res{$\limn c_{n}=5$}.}{}
+\cas{d)}
+\begin{calculs}
+d_{10} &= \frac{1}{10} = 0{,}1 &&\justif{$10$ est pair : $(-1)^{10}=1$}\\
+d_{100} &= 0{,}01 &&\\
+d_{1\,000} &= 0{,}001 &&
+\end{calculs}
+\explique{On conjecture que \res{$\limn d_{n}=0$}.}{}
+\rem{Les rangs $10$, $100$ et $1\,000$ sont pairs ; aux rangs impairs, les termes sont
+négatifs ($d_{11}\approx -0{,}09$), mais ils se rapprochent aussi de $0$.}
+\end{exo}
+
+\begin{exo}[Trouver un rang]
+\cas{1. a)}
+\explique{$u_{10}=-0{,}4$ ; $u_{100}=-0{,}04$ ; $u_{1\,000}=-0{,}004$ : on conjecture que
+\res{$\limn u_{n}=0$}.}{on calcule quelques termes}
+\cas{1. b)}
+\explique{Soit $n\in\Ns$. On a $-\frac{4}{n}<0$, donc $u_{n}<0{,}01$ : tous les termes sont
+sous $0{,}01$. Il reste à résoudre $u_{n}>-0{,}01$.}{on regarde d'abord le côté facile}
+\begin{calculs}
+u_{n} &> -0{,}01 &&\justif{la condition cherchée}\\
+-\frac{4}{n} &> -0{,}01 &&\justif{on remplace $u_{n}$}\\
+\frac{4}{n} &< 0{,}01 &&\justif{on multiplie par $-1$ : l'ordre change}\\
+4 &< 0{,}01\,n &&\justif{on multiplie par $n>0$}\\
+n &> 400 &&\justif{on divise par $0{,}01>0$}
+\end{calculs}
+\explique{\res{À partir du rang $401$}, tous les termes $u_{n}$ appartiennent à
+$\intoo{-0{,}01}{0{,}01}$.}{$u_{400}=-0{,}01$ n'est pas dans l'intervalle ouvert}
+\cas{2. a)}
+\explique{$v_{10}=5{,}2$ ; $v_{100}=5{,}02$ ; $v_{1\,000}=5{,}002$ : on conjecture que
+\res{$\limn v_{n}=5$}.}{}
+\cas{2. b)}
+\explique{Soit $n\in\Ns$. On a $\frac{2}{n}>0$, donc $v_{n}>5$ : tous les termes sont
+au-dessus de $4{,}999$. Il reste à résoudre $v_{n}<5{,}001$.}{}
+\begin{calculs}
+v_{n} &< 5{,}001 &&\\
+5+\frac{2}{n} &< 5{,}001 &&\justif{on remplace $v_{n}$}\\
+\frac{2}{n} &< 0{,}001 &&\justif{on retire $5$}\\
+2 &< 0{,}001\,n &&\justif{on multiplie par $n>0$}\\
+n &> 2\,000 &&\justif{on divise par $0{,}001>0$}
+\end{calculs}
+\explique{\res{À partir du rang $2\,001$}, tous les termes $v_{n}$ appartiennent à
+$\intoo{4{,}999}{5{,}001}$.}{}
+\end{exo}
+
+\begin{exo}[Une écriture décimale]
+\cas{1.}
+\begin{calculs}
+u_{1} &= 2-0{,}1 = 1{,}9 &&\\
+u_{2} &= 2-0{,}01 = 1{,}99 &&\\
+u_{3} &= 2-0{,}001 = 1{,}999 &&
+\end{calculs}
+\explique{\res{$u_{n}$ s'écrit $1{,}99\ldots9$ avec $n$ chiffres $9$} après la
+virgule.}{$\frac{1}{10^{n}}=0{,}00\ldots01$ ($n$ chiffres après la virgule)}
+\cas{2.}
+\explique{On conjecture que \res{$\limn u_{n}=2$}.}{}
+\cas{3.}
+\explique{Soit $n\in\Ns$. On a $u_{n}<2$, donc $u_{n}<2{,}00001$. Il reste à résoudre
+$u_{n}>1{,}99999$.}{}
+\begin{calculs}
+u_{n} &> 1{,}99999 &&\\
+2-\frac{1}{10^{n}} &> 1{,}99999 &&\justif{on remplace $u_{n}$}\\
+\frac{1}{10^{n}} &< 0{,}00001 &&\justif{on retire $2$, puis on multiplie par $-1$}\\
+\frac{1}{10^{n}} &< \frac{1}{10^{5}} &&\justif{$0{,}00001=10^{-5}$}\\
+10^{n} &> 10^{5} &&\justif{deux nombres positifs et leurs inverses : l'ordre change}\\
+n &> 5 &&\justif{les puissances de $10$ sont rangées comme leurs exposants}
+\end{calculs}
+\explique{\res{À partir du rang $6$}, tous les termes $u_{n}$ appartiennent à
+$\intoo{1{,}99999}{2{,}00001}$.}{$u_{5}=1{,}99999$ n'est pas dans l'intervalle ouvert}
+\end{exo}
+
+\begin{exo}[Exécuter un programme à la main]
+\cas{1.}
+\explique{Soit $n\in\Ns$. On étudie le signe de $v_{n+1}-v_{n}$.}{méthode de la différence
+(chapitre~1)}
+\begin{calculs}
+v_{n+1}-v_{n} &= 3-\frac{2}{n+1}-\left(3-\frac{2}{n}\right) &&\\
+v_{n+1}-v_{n} &= \frac{2}{n}-\frac{2}{n+1} &&\\
+v_{n+1}-v_{n} &= \frac{2(n+1)-2n}{n(n+1)} &&\justif{même dénominateur $n(n+1)$}\\
+v_{n+1}-v_{n} &= \frac{2}{n(n+1)} &&
+\end{calculs}
+\explique{Comme $n>0$, on a $\frac{2}{n(n+1)}>0$, donc $v_{n+1}>v_{n}$ : \res{la suite
+$(v_{n})$ est croissante}.}{}
+\cas{2.}
+\explique{La boucle tourne tant que $3-\frac{2}{n}<2{,}8$ ; on teste la condition pour
+$n=1$, $2$, $3$… :}{valeurs arrondies au centième}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$ & $9$ & $10$\\ \hline
+$3-2/n$ & $1$ & $2$ & $2{,}33$ & $2{,}5$ & $2{,}6$ & $2{,}67$ & $2{,}71$ & $2{,}75$ & $2{,}78$ & $2{,}8$\\ \hline
+$3-2/n<2{,}8$ & vrai & vrai & vrai & vrai & vrai & vrai & vrai & vrai & vrai & faux\\ \hline
+\end{tabular}
+\end{center}
+\explique{La boucle s'arrête pour $n=10$ : \texttt{seuil(2.8)} renvoie \res{$10$}.}{$3-\frac{2}{10}=2{,}8$
+n'est pas strictement inférieur à $2{,}8$}
+\cas{3.}
+\explique{La valeur renvoyée est \res{le plus petit entier $n$ tel que $v_{n}\geq 2{,}8$}.}{}
+\begin{calculs}
+v_{n} &\geq 2{,}8 &&\\
+3-\frac{2}{n} &\geq 2{,}8 &&\justif{on remplace $v_{n}$}\\
+\frac{2}{n} &\leq 0{,}2 &&\justif{on retire $3$, puis on multiplie par $-1$}\\
+2 &\leq 0{,}2\,n &&\justif{on multiplie par $n>0$}\\
+n &\geq 10 &&\justif{on divise par $0{,}2>0$}
+\end{calculs}
+\explique{Le plus petit entier qui convient est bien \res{$n=10$}.}{la suite est croissante :
+les termes suivants restent au-dessus de $2{,}8$}
+\end{exo}
+
+\partie{Limite infinie, suite divergente}
+
+\begin{exo}[Seuils par le calcul]
+\cas{a)}
+\begin{calculs}
+u_{n} &\geq 1\,000 &&\\
+5n-12 &\geq 1\,000 &&\justif{on remplace $u_{n}$}\\
+5n &\geq 1\,012 &&\justif{on ajoute $12$}\\
+n &\geq 202{,}4 &&\justif{on divise par $5>0$}
+\end{calculs}
+\explique{Le plus petit entier qui convient est \res{$n=203$}.}{$u_{202}=998$ et $u_{203}=1\,003$}
+\cas{b)}
+\explique{Soit $n\in\N$. Les nombres $n$ et $1\,000$ sont positifs, et $10^{6}=1\,000^{2}$.}{}
+\begin{calculs}
+v_{n} &\geq 10^{6} &&\\
+n^{2} &\geq 1\,000^{2} &&\justif{on remplace $v_{n}$}\\
+n &\geq 1\,000 &&\justif{deux nombres positifs sont rangés comme leurs carrés}
+\end{calculs}
+\explique{Le plus petit entier qui convient est \res{$n=1\,000$}.}{}
+\cas{c)}
+\begin{calculs}
+w_{n} &\leq -500 &&\\
+-3n+4 &\leq -500 &&\justif{on remplace $w_{n}$}\\
+-3n &\leq -504 &&\justif{on retire $4$}\\
+n &\geq 168 &&\justif{on divise par $-3<0$ : l'ordre change}
+\end{calculs}
+\explique{Le plus petit entier qui convient est \res{$n=168$}.}{$w_{168}=-500$ exactement}
+\end{exo}
+
+\begin{exo}[Un seuil avec Python]
+\cas{1.}
+\begin{calculs}
+u_{1} &= 2\times 3-1 = 5 &&\\
+u_{2} &= 2\times 5-1 = 9 &&\\
+u_{3} &= 2\times 9-1 = 17 &&
+\end{calculs}
+\explique{\res{$u_{1}=5$ ; $u_{2}=9$ et $u_{3}=17$}.}{}
+\cas{2.}
+\begin{python}
+def seuil(A):
+    n = 0
+    u = 3
+    while u < A :
+        n = n + 1
+        u = 2*u - 1
+    return n
+\end{python}
+\explique{La boucle tourne \res{tant que $u<A$}, et chaque tour calcule le terme suivant
+\res{$u=2u-1$}.}{on s'arrête au premier terme $\geq A$}
+\cas{3.}
+\explique{Les termes sont $3$ ; $5$ ; $9$ ; $17$ ; $33$ ; $65$ ; $129$ ; $257$ ; $513$ ;
+$1\,025$ : on a $u_{8}=513<1\,000$ et $u_{9}=1\,025\geq 1\,000$. \texttt{seuil(1000)}
+renvoie \res{$9$}.}{on calcule les termes un par un}
+\cas{4.}
+\explique{On cherche le plus petit $n$ tel que $2^{n+1}+1\geq 10^{6}$. À la calculatrice,
+$u_{18}=2^{19}+1=524\,289$ et $u_{19}=2^{20}+1=1\,048\,577$.}{}
+\explique{\texttt{seuil(10**6)} renvoie \res{$19$}.}{la suite est croissante : les termes
+suivants restent au-dessus}
+\end{exo}
+
+\begin{exo}[Convergente, divergente, sans limite]
+\cas{a)}
+\explique{$a_{1}=-2$ ; $a_{2}=4$ ; $a_{3}=-2$ ; $a_{4}=4$ ; $a_{5}=-2$.}{$(-1)^{n}$ vaut $1$ si
+$n$ est pair, $-1$ si $n$ est impair}
+\explique{Les termes valent alternativement $-2$ et $4$ : ils ne se rapprochent d'aucun
+nombre et ne dépassent aucun seuil. On conjecture que \res{$(a_{n})$ n'a pas de
+limite}.}{elle diverge, comme $(-1)^{n}$}
+\cas{b)}
+\explique{$b_{1}=-1$ ; $b_{2}=\frac{1}{4}$ ; $b_{3}=-\frac{1}{9}$ ; $b_{4}=\frac{1}{16}$ ;
+$b_{5}=-\frac{1}{25}$.}{}
+\explique{Les termes changent de signe, mais leur distance à $0$, $\frac{1}{n^{2}}$, devient
+aussi petite qu'on veut : on conjecture que \res{$(b_{n})$ converge vers $0$}.}{}
+\cas{c)}
+\explique{$c_{1}=-1$ ; $c_{2}=2$ ; $c_{3}=-3$ ; $c_{4}=4$ ; $c_{5}=-5$.}{}
+\explique{Les termes de rang pair grandissent vers $+\infty$, ceux de rang impair vers
+$-\infty$ : on conjecture que \res{$(c_{n})$ n'a pas de limite}.}{elle n'est ni convergente,
+ni de limite $+\infty$ ou $-\infty$}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{a)}
+\explique{\res{Faux}. Contre-exemple : la suite définie pour tout $n\in\Ns$ par
+$u_{n}=1-\frac{1}{n}$ est croissante, mais converge vers $1$.}{$\frac{1}{n}$ diminue, donc
+$1-\frac{1}{n}$ augmente}
+\cas{b)}
+\explique{\res{Faux}. Pour $u_{n}=n+2\times(-1)^{n}$ : $u_{0}=2$ ; $u_{1}=-1$ ; $u_{2}=4$ ;
+$u_{3}=1$. On a $u_{1}<u_{0}$ : la suite n'est pas croissante.}{elle monte et descend}
+\explique{Pourtant elle tend vers $+\infty$ : pour tout $n\in\N$, $u_{n}\geq n-2$, car
+$2\times(-1)^{n}\geq -2$. Pour tout nombre réel $A$, dès que $n\geq A+2$, on a
+$u_{n}\geq A$.}{définition~2 : tous les termes dépassent $A$ à partir d'un rang}
+\cas{c)}
+\explique{\res{Faux}. Contre-exemple : la suite $\left((-1)^{n}\right)$ diverge, mais n'a pas
+de limite.}{définition~3}
+\cas{d)}
+\explique{\res{Vrai}. Si $(u_{n})$ tend vers $+\infty$, pour tout nombre réel $M$,
+l'intervalle $\intfo{M+1}{+\infty}$ contient tous les termes à partir d'un certain rang :
+certains termes dépassent $M$. Aucun nombre $M$ n'est donc un majorant.}{on raisonne avec la
+définition~2}
+\end{exo}
+
+\partie{Limites usuelles et opérations sur les limites}
+
+\begin{exo}[Avec des sommes]
+\cas{a)}
+\explique{$\limn n^{3}=+\infty$ et $\limn \sqrt{n}=+\infty$, donc par somme,
+\res{$\limn a_{n}=+\infty$}.}{$(+\infty)+(+\infty)$}
+\cas{b)}
+\explique{$\limn \frac{2}{n}=0$ et $\limn \left(-n^{2}\right)=-\infty$, donc par somme,
+\res{$\limn b_{n}=-\infty$}.}{$0+(-\infty)$}
+\cas{c)}
+\explique{$\limn \frac{1}{n}=0$ et $\limn \frac{3}{n^{2}}=0$, donc par somme,
+\res{$\limn c_{n}=4$}.}{$4+0+0$}
+\cas{d)}
+\explique{$\limn \left(-5n^{2}\right)=-\infty$ et $\limn \left(2-\frac{1}{n}\right)=2$, donc
+par somme, \res{$\limn d_{n}=-\infty$}.}{$-5\times(+\infty)$, puis $(-\infty)+2$}
+\end{exo}
+
+\begin{exo}[Avec des produits]
+\cas{a)}
+\explique{$\limn (3n+2)=+\infty$ et $\limn \left(\frac{1}{n}+4\right)=4$, donc par produit,
+\res{$\limn a_{n}=+\infty$}.}{$(+\infty)\times 4$}
+\cas{b)}
+\explique{$\limn \left(2+\frac{5}{n}\right)=2$ et $\limn \left(\frac{1}{n^{2}}-3\right)=-3$,
+donc par produit, \res{$\limn b_{n}=-6$}.}{$2\times(-3)$}
+\cas{c)}
+\explique{$\limn \left(1-\frac{2}{n}\right)=1$ et $\limn \left(3+\frac{1}{n^{2}}\right)=3$,
+donc par produit, \res{$\limn c_{n}=3$}.}{}
+\cas{d)}
+\explique{$\limn (2n+1)=+\infty$ et $\limn \left(\frac{1}{n}-3\right)=-3$, donc par produit,
+\res{$\limn d_{n}=-\infty$}.}{$(+\infty)\times(-3)$ : règle des signes}
+\end{exo}
+
+\begin{exo}[Avec des quotients]
+\cas{a)}
+\explique{$\limn \left(n^{2}+3\right)=+\infty$, donc par quotient,
+\res{$\limn a_{n}=0$}.}{$7$ divisé par « très grand »}
+\cas{b)}
+\explique{$\limn \left(4+\frac{2}{n^{2}}\right)=4$ et $\limn \left(\frac{3}{n}-2\right)=-2$,
+donc par quotient, \res{$\limn b_{n}=-2$}.}{$\frac{4}{-2}$}
+\cas{c)}
+\explique{$\limn \left(-2+\frac{5}{n}\right)=-2$ et $\limn \frac{1}{n^{2}}=0$, avec
+$\frac{1}{n^{2}}>0$ pour tout $n\in\Ns$. Par quotient,
+\res{$\limn c_{n}=-\infty$}.}{$-2$ divisé par « très proche de zéro », positif}
+\cas{d)}
+\explique{$\limn \left(5+\sqrt{n}\right)=+\infty$ et $\limn \left(1+\frac{3}{n}\right)=1$,
+donc par quotient, \res{$\limn d_{n}=+\infty$}.}{$\frac{+\infty}{1}$}
+\cas{e)}
+\explique{$\limn (-2-n)=-\infty$, donc par quotient, \res{$\limn e_{n}=0$}.}{$6$ divisé par
+« très grand »}
+\end{exo}
+
+\begin{exo}[Recycler des panneaux solaires]
+\cas{1.}
+\begin{calculs}
+r_{1} &= 1\,000-\frac{500}{2} = 750 &&\\
+r_{4} &= 1\,000-\frac{500}{5} = 900 &&
+\end{calculs}
+\explique{Le centre traitera \res{$750$~tonnes en 2027 et $900$~tonnes en 2030}.}{$2026+1$ et
+$2026+4$}
+\cas{2.}
+\explique{$\limn (n+1)=+\infty$, donc par quotient, $\limn \frac{500}{n+1}=0$ ; par somme,
+\res{$\limn r_{n}=1\,000$}.}{}
+\explique{Selon ce modèle, \res{le tonnage traité chaque année se rapproche de
+$1\,000$~tonnes}, sans jamais les atteindre.}{interprétation : on revient au contexte}
+\cas{3.}
+\begin{calculs}
+r_{n} &> 980 &&\\
+1\,000-\frac{500}{n+1} &> 980 &&\justif{on remplace $r_{n}$}\\
+\frac{500}{n+1} &< 20 &&\justif{on retire $1\,000$, puis on multiplie par $-1$}\\
+500 &< 20(n+1) &&\justif{on multiplie par $n+1>0$}\\
+25 &< n+1 &&\justif{on divise par $20$}\\
+n &> 24 &&
+\end{calculs}
+\explique{Le plus petit entier qui convient est $n=25$ : le centre traitera plus de
+$980$~tonnes \res{à partir de 2051}.}{$2026+25$ ; $r_{24}=980$ exactement}
+\end{exo}
+
+\partie{Lever une indétermination}
+
+\begin{exo}[Sommes et produits]
+\cas{a)}
+\explique{$3n^{2}$ tend vers $+\infty$ et $-5n$ vers $-\infty$ : \res{forme indéterminée}
+« $\infty-\infty$ ». Pour tout $n\in\Ns$, on a $n\neq 0$ :}{on peut factoriser par $n^{2}$}
+\begin{calculs}
+a_{n} &= n^{2}\left(3-\frac{5}{n}+\frac{1}{n^{2}}\right) &&\justif{on factorise par $n^{2}$,
+terme de plus haut degré}
+\end{calculs}
+\explique{La parenthèse tend vers $3$ par somme ; par produit,
+\res{$\limn a_{n}=+\infty$}.}{$(+\infty)\times 3$}
+\cas{b)}
+\explique{$-2n^{3}$ tend vers $-\infty$ et $n^{2}$ vers $+\infty$ : \res{forme
+indéterminée} « $\infty-\infty$ ». Pour tout $n\in\Ns$, on a $n\neq 0$ :}{}
+\begin{calculs}
+b_{n} &= n^{3}\left(-2+\frac{1}{n}+\frac{4}{n^{3}}\right) &&\justif{on factorise par $n^{3}$}
+\end{calculs}
+\explique{La parenthèse tend vers $-2$ ; par produit, \res{$\limn b_{n}=-\infty$}.}{$(+\infty)\times(-2)$}
+\cas{c)}
+\explique{$\limn (n+3)=+\infty$ et $\limn (-2n+1)=-\infty$ : \res{ce n'est pas une forme
+indéterminée}. Par produit, \res{$\limn c_{n}=-\infty$}.}{$(+\infty)\times(-\infty)$ : pas
+besoin de développer}
+\cas{d)}
+\explique{$n$ et $5\sqrt{n}$ tendent vers $+\infty$ : \res{forme indéterminée}
+« $\infty-\infty$ ». Pour tout $n\in\Ns$, on a $n\neq 0$ :}{}
+\begin{calculs}
+d_{n} &= n\left(1-\frac{5\sqrt{n}}{n}\right) &&\justif{on factorise par $n$}\\
+d_{n} &= n\left(1-\frac{5}{\sqrt{n}}\right) &&\justif{$\frac{\sqrt{n}}{n}=\frac{\sqrt{n}}{\sqrt{n}\times\sqrt{n}}=\frac{1}{\sqrt{n}}$}
+\end{calculs}
+\explique{$\limn \frac{5}{\sqrt{n}}=0$, donc la parenthèse tend vers $1$ ; par produit,
+\res{$\limn d_{n}=+\infty$}.}{}
+\cas{e)}
+\explique{\res{Forme indéterminée} « $\infty-\infty$ ». Pour tout $n\in\Ns$, on a
+$n\neq 0$ :}{}
+\begin{calculs}
+e_{n} &= n\left(\frac{\sqrt{n}}{n}-1\right) &&\justif{on factorise par $n$}\\
+e_{n} &= n\left(\frac{1}{\sqrt{n}}-1\right) &&
+\end{calculs}
+\explique{La parenthèse tend vers $-1$ ; par produit, \res{$\limn e_{n}=-\infty$}.}{$n$
+« grandit plus vite » que $\sqrt{n}$}
+\end{exo}
+
+\begin{exo}[Quotients]
+\explique{Chaque quotient est une forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout
+$n\in\Ns$, on a $n\neq 0$ : on factorise le numérateur et le dénominateur par leur terme de
+plus haut degré.}{méthode 4 et remarque qui la suit}
+\cas{a)}
+\begin{calculs}
+a_{n} &= \frac{n^{2}\left(4+\frac{1}{n}+\frac{3}{n^{2}}\right)}{n^{2}\left(2-\frac{1}{n^{2}}\right)} &&\\
+a_{n} &= \frac{4+\frac{1}{n}+\frac{3}{n^{2}}}{2-\frac{1}{n^{2}}} &&\justif{on simplifie par $n^{2}\neq 0$}
+\end{calculs}
+\explique{Le numérateur tend vers $4$ et le dénominateur vers $2$ ; par quotient,
+\res{$\limn a_{n}=2$}.}{}
+\cas{b)}
+\begin{calculs}
+b_{n} &= \frac{n^{2}\left(3+\frac{2}{n^{2}}\right)}{n\left(1+\frac{5}{n}\right)} &&\\
+b_{n} &= n\times\frac{3+\frac{2}{n^{2}}}{1+\frac{5}{n}} &&\justif{$\frac{n^{2}}{n}=n$}
+\end{calculs}
+\explique{Le quotient tend vers $3$ ; par produit, \res{$\limn b_{n}=+\infty$}.}{le degré du
+numérateur l'emporte}
+\cas{c)}
+\begin{calculs}
+c_{n} &= \frac{n\left(5+\frac{1}{n}\right)}{n^{2}\left(1+\frac{3}{n^{2}}\right)} &&\\
+c_{n} &= \frac{1}{n}\times\frac{5+\frac{1}{n}}{1+\frac{3}{n^{2}}} &&\justif{$\frac{n}{n^{2}}=\frac{1}{n}$}
+\end{calculs}
+\explique{Le quotient tend vers $5$ et $\frac{1}{n}$ vers $0$ ; par produit,
+\res{$\limn c_{n}=0$}.}{le degré du dénominateur l'emporte}
+\cas{d)}
+\begin{calculs}
+d_{n} &= \frac{n^{3}\left(2-\frac{1}{n^{2}}\right)}{n^{3}\left(\frac{4}{n^{3}}-1\right)} &&\\
+d_{n} &= \frac{2-\frac{1}{n^{2}}}{\frac{4}{n^{3}}-1} &&\justif{on simplifie par $n^{3}\neq 0$}
+\end{calculs}
+\explique{Par quotient, \res{$\limn d_{n}=-2$}.}{$\frac{2}{-1}$}
+\cas{e)}
+\explique{Ici, $1-3n^{2}$ tend vers $-\infty$ : forme « $\frac{\infty}{\infty}$ » aussi.}{}
+\begin{calculs}
+e_{n} &= \frac{n^{2}\left(\frac{1}{n^{2}}-3\right)}{n\left(2+\frac{1}{n}\right)} &&\\
+e_{n} &= n\times\frac{\frac{1}{n^{2}}-3}{2+\frac{1}{n}} &&
+\end{calculs}
+\explique{Le quotient tend vers $-\frac{3}{2}$ ; par produit,
+\res{$\limn e_{n}=-\infty$}.}{$(+\infty)\times\left(-\frac{3}{2}\right)$}
+\end{exo}
+
+\begin{exo}[La quantité conjuguée]
+\explique{Chaque suite est une forme indéterminée « $\infty-\infty$ » avec des racines : on
+multiplie et on divise par la quantité conjuguée.}{méthode 5 ; $(a-b)(a+b)=a^{2}-b^{2}$}
+\cas{a)}
+\begin{calculs}
+a_{n} &= \frac{\left(\sqrt{n+4}-\sqrt{n}\right)\left(\sqrt{n+4}+\sqrt{n}\right)}{\sqrt{n+4}+\sqrt{n}} &&\\
+a_{n} &= \frac{(n+4)-n}{\sqrt{n+4}+\sqrt{n}} &&\justif{$a^{2}-b^{2}$}\\
+a_{n} &= \frac{4}{\sqrt{n+4}+\sqrt{n}} &&
+\end{calculs}
+\explique{Le dénominateur tend vers $+\infty$ par somme ; par quotient,
+\res{$\limn a_{n}=0$}.}{}
+\cas{b)}
+\begin{calculs}
+b_{n} &= \frac{\left(\sqrt{n^{2}+1}-n\right)\left(\sqrt{n^{2}+1}+n\right)}{\sqrt{n^{2}+1}+n} &&\\
+b_{n} &= \frac{\left(n^{2}+1\right)-n^{2}}{\sqrt{n^{2}+1}+n} &&\\
+b_{n} &= \frac{1}{\sqrt{n^{2}+1}+n} &&
+\end{calculs}
+\explique{Le dénominateur tend vers $+\infty$ ; par quotient, \res{$\limn b_{n}=0$}.}{}
+\cas{c)}
+\begin{calculs}
+c_{n} &= \frac{\left(\sqrt{4n+1}-2\sqrt{n}\right)\left(\sqrt{4n+1}+2\sqrt{n}\right)}{\sqrt{4n+1}+2\sqrt{n}} &&\\
+c_{n} &= \frac{(4n+1)-4n}{\sqrt{4n+1}+2\sqrt{n}} &&\justif{$\left(2\sqrt{n}\right)^{2}=4n$}\\
+c_{n} &= \frac{1}{\sqrt{4n+1}+2\sqrt{n}} &&
+\end{calculs}
+\explique{Le dénominateur tend vers $+\infty$ ; par quotient, \res{$\limn c_{n}=0$}.}{}
+\end{exo}
+
+\begin{exo}[Deux écritures d'une même suite]
+\cas{1.}
+\explique{$3n^{2}$ tend vers $+\infty$ et $-12n$ vers $-\infty$ : \res{c'est une forme
+indéterminée} « $\infty-\infty$ », que les tableaux ne permettent pas de conclure.}{}
+\cas{2.}
+\explique{Soit $n\in\N$. On développe la forme proposée :}{on part de l'expression la plus
+compliquée}
+\begin{calculs}
+3(n-2)^{2}-7 &= 3\left(n^{2}-4n+4\right)-7 &&\justif{identité remarquable $(a-b)^{2}$}\\
+3(n-2)^{2}-7 &= 3n^{2}-12n+12-7 &&\\
+3(n-2)^{2}-7 &= 3n^{2}-12n+5 &&\\
+3(n-2)^{2}-7 &= u_{n} &&
+\end{calculs}
+\explique{$\limn (n-2)=+\infty$, donc par produit, $\limn (n-2)^{2}=+\infty$ ; par produit
+par $3>0$, puis par somme, \res{$\limn u_{n}=+\infty$}.}{}
+\cas{3.}
+\explique{Pour tout $n\in\Ns$, on a $n\neq 0$ :}{}
+\begin{calculs}
+u_{n} &= n^{2}\left(3-\frac{12}{n}+\frac{5}{n^{2}}\right) &&\justif{on factorise par $n^{2}$}
+\end{calculs}
+\explique{La parenthèse tend vers $3$ ; par produit, on retrouve
+\res{$\limn u_{n}=+\infty$}.}{}
+\end{exo}
+
+\begin{exo}[Une division]
+\cas{1.}
+\explique{Soit $n\in\N$. On met $n+2+\frac{5}{n+1}$ au même dénominateur :}{on part de la
+forme proposée}
+\begin{calculs}
+n+2+\frac{5}{n+1} &= \frac{(n+2)(n+1)+5}{n+1} &&\justif{même dénominateur $n+1\neq 0$}\\
+n+2+\frac{5}{n+1} &= \frac{n^{2}+3n+2+5}{n+1} &&\justif{on développe}\\
+n+2+\frac{5}{n+1} &= \frac{n^{2}+3n+7}{n+1} &&\\
+n+2+\frac{5}{n+1} &= d_{n} &&
+\end{calculs}
+\explique{\res{Pour tout $n\in\N$, on a $d_{n}=n+2+\frac{5}{n+1}$}.}{}
+\cas{2.}
+\explique{$\limn (n+2)=+\infty$ et, par quotient, $\limn \frac{5}{n+1}=0$ ; par somme,
+\res{$\limn d_{n}=+\infty$}.}{l'écriture évite la forme « $\frac{\infty}{\infty}$ »}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $d_{n}-(n+2)=\frac{5}{n+1}$ ; par quotient,
+\res{$\limn \left(d_{n}-(n+2)\right)=0$}.}{}
+\explique{Pour $n$ grand, \res{$d_{n}$ est très proche de $n+2$} : l'écart
+$\frac{5}{n+1}$ devient aussi petit qu'on veut.}{par exemple $d_{99}=101{,}05$}
+\end{exo}
+
+\partie{Limites et comparaison}
+
+\begin{exo}[Par comparaison]
+\explique{Chaque suite contient un terme sans limite ($(-1)^{n}$, $\cos$, $\sin$), mais
+borné : on la compare à une suite plus simple.}{méthode 6}
+\cas{a)}
+\begin{calculs}
+(-1)^{n} &\geq -1 &&\justif{$(-1)^{n}$ vaut $1$ ou $-1$}\\
+3\times(-1)^{n} &\geq -3 &&\justif{on multiplie par $3>0$}\\
+n^{2}+3\times(-1)^{n} &\geq n^{2}-3 &&\justif{on ajoute $n^{2}$}\\
+a_{n} &\geq n^{2}-3 &&
+\end{calculs}
+\explique{$\limn \left(n^{2}-3\right)=+\infty$, donc par comparaison,
+\res{$\limn a_{n}=+\infty$}.}{la suite minorante « pousse » vers le haut}
+\cas{b)}
+\begin{calculs}
+\cos(n) &\leq 1 &&\\
+-2n+\cos(n) &\leq -2n+1 &&\justif{on ajoute $-2n$}\\
+b_{n} &\leq -2n+1 &&
+\end{calculs}
+\explique{$\limn (-2n+1)=-\infty$, donc par comparaison,
+\res{$\limn b_{n}=-\infty$}.}{la suite majorante « pousse » vers le bas}
+\cas{c)}
+\begin{calculs}
+\sin\left(n^{2}\right) &\geq -1 &&\\
+n+\sin\left(n^{2}\right) &\geq n-1 &&\justif{on ajoute $n$}\\
+c_{n} &\geq n-1 &&
+\end{calculs}
+\explique{$\limn (n-1)=+\infty$, donc par comparaison, \res{$\limn c_{n}=+\infty$}.}{}
+\cas{d)}
+\explique{Soit $n\in\Ns$.}{}
+\begin{calculs}
+\sin(n) &\leq 1 &&\\
+n\sin(n) &\leq n &&\justif{on multiplie par $n>0$}\\
+n\sin(n)-n^{2} &\leq n-n^{2} &&\justif{on retire $n^{2}$}\\
+d_{n} &\leq n-n^{2} &&
+\end{calculs}
+\explique{$n-n^{2}$ est une forme indéterminée ; comme $n\neq 0$,
+$n-n^{2}=n^{2}\left(\frac{1}{n}-1\right)$, qui tend vers $-\infty$ par produit.}{on lève
+l'indétermination de la suite majorante}
+\explique{Par comparaison, \res{$\limn d_{n}=-\infty$}.}{}
+\end{exo}
+
+\begin{exo}[Par encadrement]
+\explique{Pour une limite finie, on encadre la suite entre deux suites de même
+limite.}{méthode 7 : théorème des gendarmes}
+\cas{a)}
+\begin{calculs}
+-1 &\leq \sin(n)\leq 1 &&\\
+-2 &\leq 2\sin(n)\leq 2 &&\justif{on multiplie par $2>0$}\\
+1 &\leq 3+2\sin(n)\leq 5 &&\justif{on ajoute $3$}\\
+\frac{1}{n} &\leq \frac{3+2\sin(n)}{n}\leq \frac{5}{n} &&\justif{on divise par $n>0$}\\
+\frac{1}{n} &\leq a_{n}\leq \frac{5}{n} &&
+\end{calculs}
+\explique{Les deux gendarmes convergent vers $0$ ; d'après le théorème des gendarmes,
+\res{$\limn a_{n}=0$}.}{}
+\cas{b)}
+\begin{calculs}
+-1 &\leq \cos(n)\leq 1 &&\\
+-1 &\leq -\cos(n)\leq 1 &&\justif{on multiplie par $-1$ : l'encadrement se retourne}\\
+-\frac{1}{\sqrt{n}} &\leq -\frac{\cos(n)}{\sqrt{n}}\leq \frac{1}{\sqrt{n}} &&\justif{on divise par $\sqrt{n}>0$}\\
+4-\frac{1}{\sqrt{n}} &\leq 4-\frac{\cos(n)}{\sqrt{n}}\leq 4+\frac{1}{\sqrt{n}} &&\justif{on ajoute $4$}\\
+4-\frac{1}{\sqrt{n}} &\leq b_{n}\leq 4+\frac{1}{\sqrt{n}} &&
+\end{calculs}
+\explique{$\limn \frac{1}{\sqrt{n}}=0$ : les deux gendarmes convergent vers $4$ ; d'après le
+théorème des gendarmes, \res{$\limn b_{n}=4$}.}{}
+\cas{c)}
+\begin{calculs}
+-1 &\leq (-1)^{n}\leq 1 &&\\
+2n-1 &\leq 2n+(-1)^{n}\leq 2n+1 &&\justif{on ajoute $2n$}\\
+\frac{2n-1}{n+1} &\leq c_{n}\leq \frac{2n+1}{n+1} &&\justif{on divise par $n+1>0$}
+\end{calculs}
+\explique{Pour tout $n\in\Ns$, $n\neq 0$, et
+$\frac{2n-1}{n+1}=\frac{2-\frac{1}{n}}{1+\frac{1}{n}}$, qui tend vers $2$ par quotient ; de
+même, $\frac{2n+1}{n+1}=\frac{2+\frac{1}{n}}{1+\frac{1}{n}}$ tend vers $2$.}{on factorise
+par $n$ et on simplifie}
+\explique{D'après le théorème des gendarmes, \res{$\limn c_{n}=2$}.}{}
+\end{exo}
+
+\begin{exo}[Deux gendarmes à trouver]
+\cas{1.}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+-1 &\leq \sin(n)\leq 1 &&\\
+2n-1 &\leq 2n+\sin(n)\leq 2n+1 &&\justif{on ajoute $2n$}\\
+\frac{2n-1}{n^{2}+1} &\leq \frac{2n+\sin(n)}{n^{2}+1}\leq \frac{2n+1}{n^{2}+1} &&\justif{on divise par $n^{2}+1>0$}\\
+\frac{2n-1}{n^{2}+1} &\leq v_{n}\leq \frac{2n+1}{n^{2}+1} &&
+\end{calculs}
+\explique{\res{L'encadrement est démontré pour tout $n\in\N$}.}{}
+\cas{2.}
+\explique{Forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout $n\in\Ns$, on a
+$n\neq 0$ :}{}
+\begin{calculs}
+\frac{2n-1}{n^{2}+1} &= \frac{n\left(2-\frac{1}{n}\right)}{n^{2}\left(1+\frac{1}{n^{2}}\right)} &&\\
+\frac{2n-1}{n^{2}+1} &= \frac{1}{n}\times\frac{2-\frac{1}{n}}{1+\frac{1}{n^{2}}} &&
+\end{calculs}
+\explique{Le quotient tend vers $2$ et $\frac{1}{n}$ vers $0$ ; par produit, la limite est
+\res{$0$}. De même, $\frac{2n+1}{n^{2}+1}=\frac{1}{n}\times\frac{2+\frac{1}{n}}{1+\frac{1}{n^{2}}}$
+tend vers \res{$0$}.}{le degré du dénominateur l'emporte}
+\cas{3.}
+\explique{Les deux gendarmes convergent vers $0$ ; d'après le théorème des gendarmes,
+\res{$\limn v_{n}=0$}.}{}
+\end{exo}
+
+\begin{exo}[Récurrence et comparaison]
+\cas{1.}
+\begin{calculs}
+s_{1} &= 0^{2}+0+3 = 3 &&\\
+s_{2} &= 3^{2}+3+3 = 15 &&\\
+s_{3} &= 15^{2}+15+3 = 243 &&
+\end{calculs}
+\explique{On conjecture que \res{la suite $(s_{n})$ est croissante et tend vers
+$+\infty$}.}{les termes grandissent très vite}
+\cas{2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$s_{n}\geq n$~».}{}
+\explique{\textbf{Initialisation.} $s_{0}=0$ et $0\geq 0$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$s_{n+1}\geq n+1$.}{}
+\begin{calculs}
+s_{n}^{2} &\geq 0 &&\justif{un carré est positif}\\
+s_{n}^{2}+s_{n}+3 &\geq s_{n}+3 &&\justif{on ajoute $s_{n}+3$}\\
+s_{n+1} &\geq s_{n}+3 &&\\
+s_{n+1} &\geq n+3 &&\justif{hypothèse de récurrence : $s_{n}\geq n$}
+\end{calculs}
+\explique{Comme $n+3\geq n+1$, on a $s_{n+1}\geq n+1$ : $P_{n+1}$ est vraie.}{on obtient
+mieux que le but}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a $s_{n}\geq n$}.}{}
+\cas{3.}
+\explique{$\limn n=+\infty$ et, pour tout $n\in\N$, $s_{n}\geq n$ ; par comparaison,
+\res{$\limn s_{n}=+\infty$}.}{}
+\end{exo}
+
+\begin{exo}[Un compte d'épargne]
+\cas{1.}
+\begin{calculs}
+L_{1} &= 1{,}02\times 2\,000+150 = 2\,190 &&\\
+L_{2} &= 1{,}02\times 2\,190+150 = 2\,383{,}8 &&
+\end{calculs}
+\explique{\res{$L_{1}=2\,190$~€ et $L_{2}=2\,383{,}80$~€}.}{}
+\cas{2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$L_{n}\geq 2\,000+150n$~».}{}
+\explique{\textbf{Initialisation.} $L_{0}=2\,000$ et $2\,000+150\times 0=2\,000$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$L_{n+1}\geq 2\,000+150(n+1)$, soit $L_{n+1}\geq 2\,150+150n$.}{}
+\begin{calculs}
+L_{n} &\geq 2\,000+150n &&\justif{hypothèse de récurrence}\\
+1{,}02\,L_{n} &\geq 2\,040+153n &&\justif{on multiplie par $1{,}02>0$}\\
+1{,}02\,L_{n}+150 &\geq 2\,190+153n &&\justif{on ajoute $150$}\\
+L_{n+1} &\geq 2\,190+153n &&
+\end{calculs}
+\explique{Or $2\,190\geq 2\,150$ et $153n\geq 150n$, car $n\geq 0$ : on a
+$L_{n+1}\geq 2\,150+150n$, donc $P_{n+1}$ est vraie.}{on « retaille » le résultat}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $L_{n}\geq 2\,000+150n$}.}{}
+\cas{3.}
+\explique{$\limn (2\,000+150n)=+\infty$ ; par comparaison,
+\res{$\limn L_{n}=+\infty$}.}{}
+\cas{4.}
+\explique{À la calculatrice (mode suite), $L_{9}\approx 3\,853{,}38$ et
+$L_{10}\approx 4\,080{,}45$.}{la suite est croissante : on s'arrête au premier terme qui
+dépasse}
+\explique{La somme dépassera $4\,000$~€ \res{après $10$ années}.}{}
+\end{exo}
+
+\partie{Convergence des suites monotones}
+
+\begin{exo}[Croissante et majorée]
+\cas{1.}
+\begin{calculs}
+u_{1} &= 0{,}6\times 2+2 = 3{,}2 &&\\
+u_{2} &= 0{,}6\times 3{,}2+2 = 3{,}92 &&
+\end{calculs}
+\explique{\res{$u_{1}=3{,}2$ et $u_{2}=3{,}92$}.}{}
+\cas{2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}\leq u_{n+1}\leq 5$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=2$ et $u_{1}=3{,}2$ ; $2\leq 3{,}2\leq 5$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$u_{n+1}\leq u_{n+2}\leq 5$.}{}
+\begin{calculs}
+u_{n} &\leq u_{n+1}\leq 5 &&\justif{hypothèse de récurrence}\\
+0{,}6\,u_{n} &\leq 0{,}6\,u_{n+1}\leq 3 &&\justif{on multiplie par $0{,}6>0$}\\
+0{,}6\,u_{n}+2 &\leq 0{,}6\,u_{n+1}+2\leq 5 &&\justif{on ajoute $2$}\\
+u_{n+1} &\leq u_{n+2}\leq 5 &&\justif{on reconnaît $u_{n+1}$ et $u_{n+2}$}
+\end{calculs}
+\explique{$P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a
+$u_{n}\leq u_{n+1}\leq 5$}.}{}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $u_{n}\leq u_{n+1}$ : $(u_{n})$ est croissante ; et
+$u_{n}\leq 5$ : elle est majorée par $5$.}{}
+\explique{D'après le théorème de convergence monotone, \res{$(u_{n})$ converge} vers un
+nombre réel $\ell$, et \res{$\ell\leq 5$}.}{propriété~3 : passage à la limite dans
+$u_{n}\leq 5$}
+\rem{Le théorème ne dit pas que la limite vaut $5$ ; ici, c'est le cas (point fixe :
+$\ell=0{,}6\,\ell+2$), mais ce n'est pas démontré par cette question.}
+\end{exo}
+
+\begin{exo}[Décroissante et minorée]
+\cas{1.}
+\begin{calculs}
+v_{1} &= 0{,}5\times 10+2 = 7 &&\\
+v_{2} &= 0{,}5\times 7+2 = 5{,}5 &&
+\end{calculs}
+\explique{\res{$v_{1}=7$ et $v_{2}=5{,}5$}.}{}
+\cas{2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$4\leq v_{n+1}\leq v_{n}\leq 10$~».}{}
+\explique{\textbf{Initialisation.} $v_{0}=10$ et $v_{1}=7$ ; $4\leq 7\leq 10\leq 10$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$4\leq v_{n+2}\leq v_{n+1}\leq 10$.}{}
+\begin{calculs}
+4 &\leq v_{n+1}\leq v_{n}\leq 10 &&\justif{hypothèse de récurrence}\\
+2 &\leq 0{,}5\,v_{n+1}\leq 0{,}5\,v_{n}\leq 5 &&\justif{on multiplie par $0{,}5>0$}\\
+4 &\leq 0{,}5\,v_{n+1}+2\leq 0{,}5\,v_{n}+2\leq 7 &&\justif{on ajoute $2$}\\
+4 &\leq v_{n+2}\leq v_{n+1}\leq 7 &&
+\end{calculs}
+\explique{Comme $7\leq 10$, $P_{n+1}$ est vraie.}{on « retaille »}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $4\leq v_{n+1}\leq v_{n}\leq 10$}.}{}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $v_{n+1}\leq v_{n}$ : $(v_{n})$ est décroissante ; et
+$v_{n}\geq 4$ : elle est minorée par $4$.}{$v_{0}=10\geq 4$ aussi}
+\explique{D'après le théorème de convergence monotone, \res{$(v_{n})$ converge} vers un
+nombre réel $\ell$ ; comme $4\leq v_{n}\leq 10$, on a \res{$4\leq\ell\leq 10$}.}{propriété~3}
+\end{exo}
+
+\begin{exo}[Une racine carrée]
+\cas{1.}
+\explique{Soit $x_{1}$ et $x_{2}$ deux nombres réels tels que $0\leq x_{1}<x_{2}$.}{on compare
+les images sans dériver}
+\begin{calculs}
+x_{1}^{2} &< x_{2}^{2} &&\justif{la fonction carré est strictement croissante sur $\intfo{0}{+\infty}$}\\
+0{,}75\,x_{1}^{2}+4 &< 0{,}75\,x_{2}^{2}+4 &&\justif{on multiplie par $0{,}75>0$, puis on ajoute $4$}\\
+\sqrt{0{,}75\,x_{1}^{2}+4} &< \sqrt{0{,}75\,x_{2}^{2}+4} &&\justif{la racine carrée est strictement croissante}\\
+f(x_{1}) &< f(x_{2}) &&\justif{on reconnaît $f$}
+\end{calculs}
+\explique{Deux nombres de $\intfo{0}{+\infty}$ et leurs images sont rangés dans le même
+ordre : \res{$f$ est strictement croissante sur $\intfo{0}{+\infty}$}.}{définition d'une
+fonction strictement croissante}
+\cas{2.}
+\explique{On calcule d'abord $f(0)=\sqrt{4}=2$ et $f(4)=\sqrt{0{,}75\times 16+4}=\sqrt{16}=4$.}{}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n}\leq u_{n+1}\leq 4$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=f(0)=2$ ; $0\leq 0\leq 2\leq 4$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$0\leq u_{n+1}\leq u_{n+2}\leq 4$.}{}
+\begin{calculs}
+0 &\leq u_{n}\leq u_{n+1}\leq 4 &&\justif{hypothèse de récurrence}\\
+f(0) &\leq f(u_{n})\leq f(u_{n+1})\leq f(4) &&\justif{$f$ croissante : l'ordre est conservé}\\
+2 &\leq u_{n+1}\leq u_{n+2}\leq 4 &&
+\end{calculs}
+\explique{Comme $0\leq 2$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $0\leq u_{n}\leq u_{n+1}\leq 4$}.}{}
+\cas{3.}
+\explique{$(u_{n})$ est croissante et majorée par $4$ ; d'après le théorème de convergence
+monotone, \res{$(u_{n})$ converge vers un nombre réel $\ell$}, et $0\leq\ell\leq 4$.}{}
+\cas{4.}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+v_{n+1} &= u_{n+1}^{2}-16 &&\\
+v_{n+1} &= 0{,}75\,u_{n}^{2}+4-16 &&\justif{$u_{n+1}^{2}=0{,}75\,u_{n}^{2}+4$ : le carré d'une racine}\\
+v_{n+1} &= 0{,}75\,u_{n}^{2}-12 &&\\
+v_{n+1} &= 0{,}75\left(u_{n}^{2}-16\right) &&\justif{$0{,}75\times 16=12$}\\
+v_{n+1} &= 0{,}75\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $0{,}75$}, de premier terme
+$v_{0}=0^{2}-16=-16$.}{}
+\cas{5.}
+\explique{Pour tout $n\in\N$, $v_{n}=-16\times 0{,}75^{n}$, donc
+\res{$u_{n}^{2}=v_{n}+16=16-16\times 0{,}75^{n}$}.}{$v_{n}=v_{0}\times q^{n}$}
+\explique{$-1<0{,}75<1$, donc $\limn 0{,}75^{n}=0$ ; par produit puis par somme,
+\res{$\limn u_{n}^{2}=16$}.}{limite de $q^{n}$, partie~VII}
+\cas{6.}
+\explique{$(u_{n})$ converge vers $\ell$ ; par produit, $u_{n}^{2}=u_{n}\times u_{n}$ tend
+vers $\ell^{2}$. La limite est unique, donc $\ell^{2}=16$.}{deux limites pour la même suite
+$\left(u_{n}^{2}\right)$}
+\explique{Or $\ell\geq 0$, donc \res{$\ell=4$}.}{$\ell=-4$ est exclu}
+\end{exo}
+
+\begin{exo}[Vrai ou faux : suites monotones]
+\cas{a)}
+\explique{\res{Faux}. La suite définie pour tout $n\in\Ns$ par $u_{n}=1-\frac{1}{n}$ est
+croissante et majorée par $5$, mais converge vers $1$.}{le théorème ne donne pas la limite}
+\cas{b)}
+\explique{\res{Vrai}. D'après le théorème de convergence monotone, la suite converge vers un
+nombre réel $\ell$ ; ses termes sont tous positifs ou nuls, donc $\ell\geq 0$.}{propriété~3}
+\cas{c)}
+\explique{\res{Faux}. La suite définie pour tout $n\in\N$ par $c_{n}=n\times(-1)^{n}$ n'est
+pas majorée (ses termes de rang pair dépassent tout nombre), mais n'a pas de limite.}{la
+propriété~4 demande aussi que la suite soit croissante}
+\cas{d)}
+\explique{\res{Faux}. Avec $u_{n}=1$, $v_{n}=2+(-1)^{n}$ et $w_{n}=3$, on a bien
+$u_{n}\leq v_{n}\leq w_{n}$ ; mais $(v_{n})$ vaut alternativement $3$ et $1$ : elle ne
+converge pas.}{les gendarmes doivent avoir la même limite}
+\end{exo}
+
+\partie{Limite d'une suite géométrique}
+
+\begin{exo}[Limites de suites géométriques]
+\explique{On cherche la limite de $q^{n}$ dans le tableau de la propriété~5, puis on applique
+les opérations.}{méthode 9}
+\cas{a)}
+\explique{$4>1$, donc \res{$\limn a_{n}=+\infty$}.}{}
+\cas{b)}
+\explique{$-1<-0{,}3<1$, donc \res{$\limn b_{n}=0$}.}{le signe alterne, mais les termes sont
+« écrasés » vers $0$}
+\cas{c)}
+\explique{$-1<0{,}7<1$, donc $\limn 0{,}7^{n}=0$ ; par produit puis par somme,
+\res{$\limn c_{n}=5$}.}{$2\times 0+5$}
+\cas{d)}
+\explique{$1{,}1>1$, donc $\limn 1{,}1^{n}=+\infty$ ; par produit par $-3<0$,
+\res{$\limn d_{n}=-\infty$}.}{}
+\cas{e)}
+\explique{$3^{n+1}=3\times 3^{n}$ et $5^{n}$ tendent vers $+\infty$ : forme indéterminée
+« $\infty-\infty$ ». On factorise par $5^{n}$, qui « grandit le plus vite ».}{comme le terme
+de plus haut degré}
+\begin{calculs}
+e_{n} &= 3\times 3^{n}-5^{n} &&\\
+e_{n} &= 5^{n}\left(3\times\frac{3^{n}}{5^{n}}-1\right) &&\justif{on factorise par $5^{n}\neq 0$}\\
+e_{n} &= 5^{n}\left(3\times 0{,}6^{n}-1\right) &&\justif{$\frac{3^{n}}{5^{n}}=\left(\frac{3}{5}\right)^{n}$}
+\end{calculs}
+\explique{$\limn 0{,}6^{n}=0$, donc la parenthèse tend vers $-1$ ; $\limn 5^{n}=+\infty$ ; par
+produit, \res{$\limn e_{n}=-\infty$}.}{}
+\cas{f)}
+\begin{calculs}
+f_{n} &= \frac{2^{n}}{4^{n}}+\frac{3^{n}}{4^{n}} &&\justif{on sépare la fraction}\\
+f_{n} &= 0{,}5^{n}+0{,}75^{n} &&\justif{$\left(\frac{2}{4}\right)^{n}$ et $\left(\frac{3}{4}\right)^{n}$}
+\end{calculs}
+\explique{$-1<0{,}5<1$ et $-1<0{,}75<1$ ; par somme, \res{$\limn f_{n}=0$}.}{}
+\end{exo}
+
+\begin{exo}[Un traceur médical]
+\cas{1.}
+\explique{Diminuer de $11\,\%$, c'est multiplier par $1-0{,}11=0{,}89$ : pour tout
+$n\in\N$, \res{$m_{n+1}=0{,}89\,m_{n}$}.}{coefficient multiplicateur}
+\explique{$(m_{n})$ est géométrique de raison $0{,}89$ et de premier terme $20$ : pour tout
+$n\in\N$, \res{$m_{n}=20\times 0{,}89^{n}$}.}{}
+\cas{2.}
+\explique{$-1<0{,}89<1$, donc $\limn 0{,}89^{n}=0$ ; par produit,
+\res{$\limn m_{n}=0$}.}{}
+\explique{\res{La masse de traceur dans l'organisme devient aussi petite qu'on veut} : le
+traceur finit par être presque entièrement éliminé.}{}
+\cas{3.}
+\begin{python}
+def heures():
+    n = 0
+    m = 20
+    while m >= 1 :
+        n = n + 1
+        m = 0.89*m
+    return n
+\end{python}
+\explique{La boucle tourne \res{tant que $m\geq 1$} ; chaque tour fait passer une heure :
+\res{$m=0{,}89\,m$}.}{elle s'arrête dès qu'il reste moins de $1$~mg}
+\cas{4.}
+\explique{À la calculatrice, $m_{25}=20\times 0{,}89^{25}\approx 1{,}09$ et
+$m_{26}\approx 0{,}97$ : la fonction renvoie \res{$26$}.}{}
+\explique{Il reste moins de $1$~mg de traceur \res{au bout de $26$~heures}.}{}
+\end{exo}
+
+\begin{exo}[Démontrer la limite de $q^{n}$ pour $-1<q<0$]
+\cas{1.}
+\begin{calculs}
+-1 &< q<0 &&\\
+0 &< -q<1 &&\justif{on multiplie par $-1$ : l'encadrement se retourne}\\
+0 &< p<1 &&\justif{$p=-q$}
+\end{calculs}
+\explique{\res{$0<p<1$}, donc d'après la propriété~5, \res{$\limn p^{n}=0$}.}{cas
+$-1<q<1$ déjà démontré pour $0<q<1$}
+\cas{2.}
+\explique{Soit $n\in\N$. On a $q=-p$, donc $q^{n}=(-p)^{n}=(-1)^{n}\,p^{n}$, et $p^{n}>0$.}{}
+\explique{Si $n$ est pair, $q^{n}=p^{n}$ ; comme $-p^{n}<0<p^{n}$, on a bien
+$-p^{n}\leq q^{n}\leq p^{n}$.}{$(-1)^{n}=1$}
+\explique{Si $n$ est impair, $q^{n}=-p^{n}$ ; comme $-p^{n}<p^{n}$, on a encore
+$-p^{n}\leq q^{n}\leq p^{n}$.}{$(-1)^{n}=-1$}
+\explique{\res{Pour tout $n\in\N$, on a $-p^{n}\leq q^{n}\leq p^{n}$}.}{}
+\cas{3.}
+\explique{$\limn p^{n}=0$, donc par produit, $\limn \left(-p^{n}\right)=0$. D'après le
+théorème des gendarmes, \res{$\limn q^{n}=0$}.}{}
+\end{exo}
+
+\partie{Sommes de termes (rappels de 1\textsuperscript{re}) et limite}
+
+\begin{exo}[Calculer des sommes]
+\cas{a)}
+\begin{calculs}
+S_{1} &= \frac{50\times 51}{2} &&\justif{$1+2+\dots+n=\frac{n(n+1)}{2}$, avec $n=50$}\\
+S_{1} &= \res{1\,275} &&
+\end{calculs}
+\cas{b)}
+\explique{Les termes $3$ ; $5$ ; … ; $101$ sont ceux d'une suite arithmétique de raison
+$2$ ; il y a $\frac{101-3}{2}+1=50$ termes.}{on compte les écarts, plus un}
+\begin{calculs}
+S_{2} &= 50\times\frac{3+101}{2} &&\justif{(nombre de termes) $\times$ $\frac{\text{premier}+\text{dernier}}{2}$}\\
+S_{2} &= \res{2\,600} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+S_{3} &= \frac{1-2^{11}}{1-2} &&\justif{$1+q+\dots+q^{n}=\frac{1-q^{n+1}}{1-q}$, avec $n=10$}\\
+S_{3} &= \frac{1-2\,048}{-1} &&\\
+S_{3} &= \res{2\,047} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+S_{4} &= \frac{1-\left(\frac{1}{3}\right)^{6}}{1-\frac{1}{3}} &&\justif{$q=\frac{1}{3}$ et $n=5$ : exposant $6$}\\
+S_{4} &= \frac{1-\frac{1}{729}}{\frac{2}{3}} &&\\
+S_{4} &= \frac{728}{729}\times\frac{3}{2} &&\justif{diviser par $\frac{2}{3}$, c'est multiplier par $\frac{3}{2}$}\\
+S_{4} &= \res{\frac{364}{243}} &&\justif{on simplifie par $6$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Limites de sommes]
+\explique{Chaque somme commence à $q^{0}$ et s'arrête à $q^{n}$ : elle compte $n+1$
+termes.}{méthode 10}
+\cas{a)}
+\begin{calculs}
+a_{n} &= \frac{1-0{,}5^{n+1}}{1-0{,}5} &&\\
+a_{n} &= 2\left(1-0{,}5^{n+1}\right) &&\justif{$\frac{1}{0{,}5}=2$}
+\end{calculs}
+\explique{$-1<0{,}5<1$, donc $\limn 0{,}5^{n+1}=0$ ; par somme puis par produit,
+\res{$\limn a_{n}=2$}.}{}
+\cas{b)}
+\begin{calculs}
+b_{n} &= \frac{1-\left(-\frac{1}{3}\right)^{n+1}}{1-\left(-\frac{1}{3}\right)} &&\justif{$q=-\frac{1}{3}$}\\
+b_{n} &= \frac{3}{4}\left(1-\left(-\frac{1}{3}\right)^{n+1}\right) &&\justif{$1+\frac{1}{3}=\frac{4}{3}$}
+\end{calculs}
+\explique{$-1<-\frac{1}{3}<1$ ; par somme puis par produit,
+\res{$\limn b_{n}=\frac{3}{4}$}.}{}
+\cas{c)}
+\begin{calculs}
+c_{n} &= 5\times\frac{1-0{,}2^{n+1}}{1-0{,}2} &&\justif{on factorise par $5$}\\
+c_{n} &= 6{,}25\left(1-0{,}2^{n+1}\right) &&\justif{$\frac{5}{0{,}8}=6{,}25$}
+\end{calculs}
+\explique{$-1<0{,}2<1$ ; par somme puis par produit, \res{$\limn c_{n}=6{,}25$}.}{}
+\cas{d)}
+\begin{calculs}
+d_{n} &= \frac{1-2^{n+1}}{1-2} &&\\
+d_{n} &= 2^{n+1}-1 &&\justif{on divise par $-1$}
+\end{calculs}
+\explique{$2>1$, donc $\limn 2^{n+1}=+\infty$ ; par somme, \res{$\limn d_{n}=+\infty$}.}{une
+somme de termes qui grandissent ne reste pas finie}
+\end{exo}
+
+\begin{exo}[Des chiffres qui se répètent]
+\cas{1.}
+\explique{Soit $n\in\Ns$. La somme a $n$ termes, de premier terme $7\times 0{,}1=0{,}7$ et
+de raison $0{,}1$.}{}
+\begin{calculs}
+a_{n} &= 0{,}7\times\frac{1-0{,}1^{n}}{1-0{,}1} &&\justif{premier terme $\times\frac{1-q^{\text{nombre de termes}}}{1-q}$}\\
+a_{n} &= \frac{0{,}7}{0{,}9}\left(1-0{,}1^{n}\right) &&\\
+a_{n} &= \res{\frac{7}{9}\left(1-0{,}1^{n}\right)} &&
+\end{calculs}
+\explique{$-1<0{,}1<1$, donc $\limn 0{,}1^{n}=0$ ; par somme puis par produit,
+\res{$\limn a_{n}=\frac{7}{9}$}.}{l'écriture $0{,}777\ldots$ « sans fin » vaut
+$\frac{7}{9}$}
+\cas{2.}
+\explique{De même, $b_{n}=2+3\times 0{,}1+3\times 0{,}1^{2}+\dots+3\times 0{,}1^{n}$.}{}
+\begin{calculs}
+b_{n} &= 2+0{,}3\times\frac{1-0{,}1^{n}}{0{,}9} &&\\
+b_{n} &= 2+\frac{1}{3}\left(1-0{,}1^{n}\right) &&\justif{$\frac{0{,}3}{0{,}9}=\frac{1}{3}$}
+\end{calculs}
+\explique{Par somme puis par produit, $\limn b_{n}=2+\frac{1}{3}$, soit
+\res{$\frac{7}{3}$}.}{}
+\end{exo}
+
+\begin{exo}[Un drone qui monte]
+\cas{1.}
+\explique{La troisième étape fait monter le drone de $0{,}8\times 24=19{,}2$~m.}{$80\,\%$ de
+la hauteur gagnée juste avant}
+\begin{calculs}
+H_{3} &= 30+24+19{,}2 &&\\
+H_{3} &= \res{73{,}2} &&
+\end{calculs}
+\cas{2.}
+\explique{Les hauteurs gagnées sont $30$ ; $30\times 0{,}8$ ; $30\times 0{,}8^{2}$… : celle de
+l'étape $k$ vaut $30\times 0{,}8^{k-1}$. Après $n$ étapes,
+\res{$H_{n}=30+30\times 0{,}8+\dots+30\times 0{,}8^{n-1}$}.}{une suite géométrique de raison
+$0{,}8$}
+\begin{calculs}
+H_{n} &= 30\times\frac{1-0{,}8^{n}}{1-0{,}8} &&\justif{$n$ termes, de $0{,}8^{0}$ à $0{,}8^{n-1}$}\\
+H_{n} &= \frac{30}{0{,}2}\left(1-0{,}8^{n}\right) &&\\
+H_{n} &= \res{150\left(1-0{,}8^{n}\right)} &&
+\end{calculs}
+\cas{3.}
+\explique{$-1<0{,}8<1$, donc $\limn 0{,}8^{n}=0$ ; par somme puis par produit,
+\res{$\limn H_{n}=150$}.}{}
+\cas{4.}
+\explique{Pour tout $n\in\Ns$, $0{,}8^{n}>0$, donc $H_{n}<150$ : \res{le drone ne
+dépasse jamais $150$~m}, donc pas $160$~m.}{}
+\explique{À la calculatrice, $H_{12}\approx 139{,}69$ et $H_{13}\approx 141{,}75$ : le drone
+dépasse $140$~m \res{à partir de l'étape $13$}.}{la suite est croissante}
+\end{exo}
+
+\partie{Suites arithmético-géométriques}
+
+\begin{exo}[Une suite arithmético-géométrique]
+\cas{1.}
+\begin{calculs}
+c &= 0{,}5\,c+4 &&\\
+0{,}5\,c &= 4 &&\justif{on retire $0{,}5\,c$}\\
+c &= 8 &&\justif{on divise par $0{,}5$}
+\end{calculs}
+\explique{\res{$c=8$}.}{c'est aussi $\frac{b}{1-a}=\frac{4}{0{,}5}$}
+\cas{2.}
+\explique{Soit $n\in\N$.}{méthode 11}
+\begin{calculs}
+v_{n+1} &= u_{n+1}-8 &&\\
+v_{n+1} &= 0{,}5\,u_{n}+4-8 &&\justif{on remplace $u_{n+1}$}\\
+v_{n+1} &= 0{,}5\,u_{n}-4 &&\\
+v_{n+1} &= 0{,}5\left(u_{n}-8\right) &&\justif{$0{,}5\times 8=4$}\\
+v_{n+1} &= 0{,}5\,v_{n} &&
+\end{calculs}
+\explique{\res{$(v_{n})$ est géométrique de raison $0{,}5$ et de premier terme
+$v_{0}=2-8=-6$}.}{}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $v_{n}=-6\times 0{,}5^{n}$ et $u_{n}=v_{n}+8$, donc
+\res{$u_{n}=8-6\times 0{,}5^{n}$}.}{}
+\cas{4.}
+\explique{$-1<0{,}5<1$, donc $\limn 0{,}5^{n}=0$ ; par produit puis par somme,
+\res{$\limn u_{n}=8$}.}{la limite est le nombre $c$}
+\end{exo}
+
+\begin{exo}[Une suite qui diverge]
+\cas{1.}
+\begin{calculs}
+w_{1} &= 3\times 1-4 = -1 &&\\
+w_{2} &= 3\times(-1)-4 = -7 &&
+\end{calculs}
+\explique{\res{$w_{1}=-1$ et $w_{2}=-7$}.}{}
+\cas{2.}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+t_{n+1} &= w_{n+1}-2 &&\\
+t_{n+1} &= 3w_{n}-4-2 &&\\
+t_{n+1} &= 3w_{n}-6 &&\\
+t_{n+1} &= 3\left(w_{n}-2\right) &&\\
+t_{n+1} &= 3t_{n} &&
+\end{calculs}
+\explique{\res{$(t_{n})$ est géométrique de raison $3$ et de premier terme
+$t_{0}=1-2=-1$}.}{}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $t_{n}=-3^{n}$ et $w_{n}=t_{n}+2$, donc
+\res{$w_{n}=2-3^{n}$}.}{}
+\explique{$3>1$, donc $\limn 3^{n}=+\infty$ ; par somme,
+\res{$\limn w_{n}=-\infty$}.}{ici $a=3>1$ : la suite ne converge pas vers $2$}
+\end{exo}
+
+\begin{exo}[Les adhérents d'une ressourcerie]
+\cas{1.}
+\explique{Garder $75\,\%$ des adhérents, c'est multiplier par $0{,}75$ ; on ajoute les $500$
+nouveaux : pour tout $n\in\N$, \res{$a_{n+1}=0{,}75\,a_{n}+500$}.}{}
+\cas{2.}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+b_{n+1} &= a_{n+1}-2\,000 &&\\
+b_{n+1} &= 0{,}75\,a_{n}+500-2\,000 &&\\
+b_{n+1} &= 0{,}75\,a_{n}-1\,500 &&\\
+b_{n+1} &= 0{,}75\left(a_{n}-2\,000\right) &&\justif{$0{,}75\times 2\,000=1\,500$}\\
+b_{n+1} &= 0{,}75\,b_{n} &&
+\end{calculs}
+\explique{\res{$(b_{n})$ est géométrique de raison $0{,}75$}, de premier terme
+$b_{0}=1\,500-2\,000=-500$.}{}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $b_{n}=-500\times 0{,}75^{n}$, donc
+\res{$a_{n}=2\,000-500\times 0{,}75^{n}$}.}{$a_{n}=b_{n}+2\,000$}
+\explique{$-1<0{,}75<1$ ; par produit puis par somme, \res{$\limn a_{n}=2\,000$} : le nombre
+d'adhérents se rapproche de $2\,000$.}{}
+\cas{4.}
+\begin{python}
+def annee():
+    n = 0
+    a = 1500
+    while a <= 1950 :
+        n = n + 1
+        a = 0.75*a + 500
+    return 2026 + n
+\end{python}
+\explique{La boucle tourne \res{tant que $a\leq 1\,950$}, avec \res{$a=0{,}75\,a+500$}.}{}
+\explique{À la calculatrice, $a_{8}\approx 1\,949{,}9$ et $a_{9}\approx 1\,962{,}5$ : la
+fonction renvoie \res{$2035$}.}{$2026+9$}
+\end{exo}
+
+\begin{exo}[Une perfusion]
+\cas{1.}
+\explique{Éliminer $25\,\%$, c'est multiplier par $0{,}75$ ; la machine ajoute $1{,}5$~mL :
+pour tout $n\in\N$, \res{$q_{n+1}=0{,}75\,q_{n}+1{,}5$}.}{}
+\cas{2.}
+\begin{calculs}
+c &= 0{,}75\,c+1{,}5 &&\justif{on cherche le nombre $c$ de la propriété~6}\\
+0{,}25\,c &= 1{,}5 &&\\
+c &= 6 &&
+\end{calculs}
+\explique{Soit la suite $(r_{n})$ définie pour tout $n\in\N$ par $r_{n}=q_{n}-6$. Soit
+$n\in\N$.}{}
+\begin{calculs}
+r_{n+1} &= 0{,}75\,q_{n}+1{,}5-6 &&\\
+r_{n+1} &= 0{,}75\,q_{n}-4{,}5 &&\\
+r_{n+1} &= 0{,}75\left(q_{n}-6\right) &&\justif{$0{,}75\times 6=4{,}5$}\\
+r_{n+1} &= 0{,}75\,r_{n} &&
+\end{calculs}
+\explique{\res{$(r_{n})$ est géométrique de raison $0{,}75$}, de premier terme
+$r_{0}=12-6=6$ ; donc pour tout $n\in\N$, \res{$q_{n}=6+6\times 0{,}75^{n}$}.}{}
+\cas{3.}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+q_{n+1}-q_{n} &= 6\times 0{,}75^{n+1}-6\times 0{,}75^{n} &&\\
+q_{n+1}-q_{n} &= 6\times 0{,}75^{n}\left(0{,}75-1\right) &&\justif{on factorise par $6\times 0{,}75^{n}$}\\
+q_{n+1}-q_{n} &= -1{,}5\times 0{,}75^{n} &&
+\end{calculs}
+\explique{$0{,}75^{n}>0$, donc $q_{n+1}-q_{n}<0$ : \res{la suite $(q_{n})$ est
+décroissante}.}{}
+\cas{4.}
+\explique{$-1<0{,}75<1$ ; par produit puis par somme, $\limn q_{n}=6$. Une fois stabilisée,
+\res{la quantité de médicament sera d'environ $6$~mL}.}{}
+\end{exo}
+
+\partie{Théorème du point fixe}
+
+\begin{exo}[Avec une fonction affine]
+\cas{1.}
+\explique{Pour tout $n\in\N$, $u_{n}\leq u_{n+1}$ : $(u_{n})$ est croissante ; et
+$u_{n}\leq 5$ : elle est majorée par $5$. D'après le théorème de convergence monotone,
+\res{$(u_{n})$ converge} vers un nombre réel $\ell$.}{}
+\cas{2.}
+\explique{$f$ est une fonction affine : elle est dérivable sur $\R$, donc \res{continue sur
+$\R$}.}{sa courbe est une droite, tracée sans lever le crayon}
+\cas{3.}
+\explique{$f$ est continue sur $\R$ ; pour tout $n\in\N$, $u_{n}\in\R$ et
+$u_{n+1}=f(u_{n})$ ; $\ell\in\R$. D'après le théorème du point fixe, $f(\ell)=\ell$.}{on
+vérifie les hypothèses une à une}
+\begin{calculs}
+0{,}4\,\ell+3 &= \ell &&\justif{équation du point fixe}\\
+3 &= 0{,}6\,\ell &&\justif{on retire $0{,}4\,\ell$}\\
+\ell &= 5 &&\justif{$\frac{3}{0{,}6}=5$}
+\end{calculs}
+\explique{\res{$(u_{n})$ converge vers $5$}.}{}
+\end{exo}
+
+\begin{exo}[Avec un quotient]
+\cas{1.}
+\explique{$f$ est un quotient dont le dénominateur $x+2$ ne s'annule pas sur
+$\intfo{0}{+\infty}$ : elle y est dérivable. Soit $x\geq 0$.}{méthode 12}
+\begin{calculs}
+f'(x) &= \frac{3(x+2)-(3x+2)\times 1}{(x+2)^{2}} &&\justif{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+f'(x) &= \frac{3x+6-3x-2}{(x+2)^{2}} &&\\
+f'(x) &= \frac{4}{(x+2)^{2}} &&
+\end{calculs}
+\explique{Pour tout $x\geq 0$, $f'(x)>0$ : \res{$f$ est strictement croissante sur
+$\intfo{0}{+\infty}$}.}{}
+\cas{2.}
+\explique{On calcule $f(0)=\frac{2}{2}=1$ et $f(2)=\frac{8}{4}=2$.}{}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n}\leq u_{n+1}\leq 2$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=f(0)=1$ ; $0\leq 0\leq 1\leq 2$, donc
+$P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$0\leq u_{n+1}\leq u_{n+2}\leq 2$.}{}
+\begin{calculs}
+0 &\leq u_{n}\leq u_{n+1}\leq 2 &&\justif{hypothèse de récurrence}\\
+f(0) &\leq f(u_{n})\leq f(u_{n+1})\leq f(2) &&\justif{$f$ croissante : l'ordre est conservé}\\
+1 &\leq u_{n+1}\leq u_{n+2}\leq 2 &&
+\end{calculs}
+\explique{Comme $0\leq 1$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $0\leq u_{n}\leq u_{n+1}\leq 2$}.}{}
+\cas{3.}
+\explique{$(u_{n})$ est croissante et majorée par $2$ ; d'après le théorème de convergence
+monotone, \res{$(u_{n})$ converge} vers un nombre réel $\ell$, avec $0\leq\ell\leq 2$.}{propriété~3}
+\cas{4.}
+\explique{$f$ est dérivable, donc continue, sur $\intfo{0}{+\infty}$ ; pour tout $n\in\N$,
+$u_{n}\in\intfo{0}{+\infty}$, et $\ell\in\intfo{0}{+\infty}$. D'après le théorème du point
+fixe, $f(\ell)=\ell$.}{}
+\begin{calculs}
+\frac{3\ell+2}{\ell+2} &= \ell &&\\
+3\ell+2 &= \ell(\ell+2) &&\justif{on multiplie par $\ell+2\neq 0$}\\
+\ell^{2}-\ell-2 &= 0 &&\justif{une équation du second degré}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-1)^{2}-4\times 1\times(-2) = 9 &&\\
+x_{1} &= \frac{1-3}{2} = -1 &&\\
+x_{2} &= \frac{1+3}{2} = 2 &&
+\end{calculs}
+\explique{Or $0\leq\ell\leq 2$, donc $\ell\neq -1$ : \res{$(u_{n})$ converge vers $2$}.}{l'encadrement
+élimine une solution}
+\end{exo}
+
+\begin{exo}[Avec une racine carrée]
+\cas{1.}
+\explique{Soit $x_{1}$ et $x_{2}$ deux nombres réels tels que $0\leq x_{1}<x_{2}$.}{on compare
+les images sans dériver}
+\begin{calculs}
+x_{1}+6 &< x_{2}+6 &&\justif{on ajoute $6$}\\
+\sqrt{x_{1}+6} &< \sqrt{x_{2}+6} &&\justif{la racine carrée est strictement croissante}\\
+f(x_{1}) &< f(x_{2}) &&
+\end{calculs}
+\explique{\res{$f$ est strictement croissante sur $\intfo{0}{+\infty}$}.}{}
+\cas{2.}
+\explique{On calcule $f(0)=\sqrt{6}$ et $f(3)=\sqrt{9}=3$.}{$\sqrt{6}\approx 2{,}45$}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n}\leq u_{n+1}\leq 3$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=\sqrt{6}$ ;
+$0\leq 0\leq\sqrt{6}\leq 3$, donc $P_{0}$ est vraie.}{$6\leq 9$}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie.}{}
+\begin{calculs}
+0 &\leq u_{n}\leq u_{n+1}\leq 3 &&\justif{hypothèse de récurrence}\\
+f(0) &\leq f(u_{n})\leq f(u_{n+1})\leq f(3) &&\justif{$f$ croissante}\\
+\sqrt{6} &\leq u_{n+1}\leq u_{n+2}\leq 3 &&
+\end{calculs}
+\explique{Comme $0\leq\sqrt{6}$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $0\leq u_{n}\leq u_{n+1}\leq 3$}.}{}
+\cas{3.}
+\explique{$(u_{n})$ est croissante et majorée par $3$ ; d'après le théorème de convergence
+monotone, \res{$(u_{n})$ converge} vers un nombre réel $\ell$, avec $0\leq\ell\leq 3$.}{}
+\explique{$f$ est continue sur $\intfo{0}{+\infty}$ (admis dans l'énoncé) ; pour tout
+$n\in\N$, $u_{n}\geq 0$, et $\ell\geq 0$. D'après le théorème du point fixe,
+$f(\ell)=\ell$.}{on vérifie les hypothèses une à une}
+\begin{calculs}
+\sqrt{\ell+6} &= \ell &&\\
+\ell+6 &= \ell^{2} &&\justif{on élève au carré : $\ell\geq 0$}\\
+\ell^{2}-\ell-6 &= 0 &&
+\end{calculs}
+\begin{calculs}
+\Delta &= 1+24 = 25 &&\\
+x_{1} &= \frac{1-5}{2} = -2 &&\\
+x_{2} &= \frac{1+5}{2} = 3 &&
+\end{calculs}
+\explique{Or $\ell\geq 0$ : \res{$(u_{n})$ converge vers $3$}.}{}
+\end{exo}
+
+\begin{exo}[Un piège]
+\cas{1.}
+\explique{Soit $f$ la fonction définie sur $\R$ par $f(x)=2x^{2}$ : pour tout $n\in\N$,
+$u_{n+1}=f(u_{n})$. $f$ est un polynôme, donc continue sur $\R$ ; si $(u_{n})$ converge vers
+$\ell\in\R$, d'après le théorème du point fixe, \res{$\ell=2\ell^{2}$}.}{}
+\begin{calculs}
+2\ell^{2}-\ell &= 0 &&\\
+\ell(2\ell-1) &= 0 &&\justif{on factorise par $\ell$}
+\end{calculs}
+\eqproduit{\ell &= 0}{2\ell-1 &= 0\\ \ell &= 0{,}5}
+\explique{\res{$\ell=0$ ou $\ell=0{,}5$}.}{}
+\cas{2.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété : «~$u_{n}\geq 1$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=1\geq 1$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $u_{n}\geq 1$. Montrons que
+$u_{n+1}\geq 1$.}{}
+\begin{calculs}
+u_{n} &\geq 1 &&\justif{hypothèse de récurrence}\\
+u_{n}^{2} &\geq 1 &&\justif{deux nombres positifs sont rangés comme leurs carrés}\\
+2u_{n}^{2} &\geq 2 &&\justif{on multiplie par $2>0$}\\
+u_{n+1} &\geq 2 &&
+\end{calculs}
+\explique{Comme $2\geq 1$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}\geq 1$}.}{}
+\cas{3.}
+\explique{Si $(u_{n})$ convergeait vers $\ell$, on aurait $\ell\geq 1$, car $u_{n}\geq 1$
+pour tout $n\in\N$ ; or $\ell=0$ ou $\ell=0{,}5$. C'est impossible : \res{$(u_{n})$ ne
+converge pas}.}{propriété~3 ; raisonnement par l'absurde}
+\rem{Le théorème du point fixe donne seulement les limites possibles : il faut d'abord
+démontrer que la suite converge.}
+\cas{4.}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+u_{n+1}-2u_{n} &= 2u_{n}^{2}-2u_{n} &&\\
+u_{n+1}-2u_{n} &= 2u_{n}(u_{n}-1) &&\justif{on factorise par $2u_{n}$}
+\end{calculs}
+\explique{Comme $u_{n}\geq 1$, on a $2u_{n}>0$ et $u_{n}-1\geq 0$ : le produit est positif,
+donc \res{$u_{n+1}\geq 2u_{n}$}.}{question~2}
+\explique{Par récurrence : $u_{0}=1=2^{0}$ ; si $u_{n}\geq 2^{n}$, alors
+$u_{n+1}\geq 2u_{n}\geq 2\times 2^{n}$, soit $2^{n+1}$. D'après le principe de récurrence,
+\res{pour tout $n\in\N$, on a $u_{n}\geq 2^{n}$}.}{même rédaction que plus haut, en plus
+court}
+\explique{$2>1$, donc $\limn 2^{n}=+\infty$ ; par comparaison,
+\res{$\limn u_{n}=+\infty$}.}{}
+\end{exo}
+
+\partiesansnum{Exercices type bac}
+
+\begin{exo}[D'après bac 2025, Amérique du Nord]
+\cas{1.}
+\begin{calculs}
+u_{1} &= \frac{2\times 2+1}{2+2} &&\\
+u_{1} &= \res{\frac{5}{4}} &&\justif{soit $1{,}25$}
+\end{calculs}
+\cas{2. a)}
+\begin{calculs}
+a_{0} &= \frac{2}{2-1} = 2 &&\\
+a_{1} &= \frac{1{,}25}{1{,}25-1} = \frac{1{,}25}{0{,}25} &&\\
+a_{1} &= 5 &&
+\end{calculs}
+\explique{\res{$a_{0}=2$ et $a_{1}=5$}.}{}
+\cas{2. b)}
+\explique{Soit $n\in\N$. On calcule d'abord $u_{n+1}-1$, le dénominateur de $a_{n+1}$.}{on
+découpe le calcul en blocs courts}
+\begin{calculs}
+u_{n+1}-1 &= \frac{2u_{n}+1}{u_{n}+2}-\frac{u_{n}+2}{u_{n}+2} &&\justif{même dénominateur}\\
+u_{n+1}-1 &= \frac{u_{n}-1}{u_{n}+2} &&
+\end{calculs}
+\begin{calculs}
+a_{n+1} &= \frac{u_{n+1}}{u_{n+1}-1} &&\\
+a_{n+1} &= \frac{2u_{n}+1}{u_{n}+2}\times\frac{u_{n}+2}{u_{n}-1} &&\justif{diviser, c'est multiplier par l'inverse}\\
+a_{n+1} &= \frac{2u_{n}+1}{u_{n}-1} &&\justif{on simplifie par $u_{n}+2$}
+\end{calculs}
+\explique{D'autre part :}{on calcule le membre de droite séparément}
+\begin{calculs}
+3a_{n}-1 &= \frac{3u_{n}}{u_{n}-1}-\frac{u_{n}-1}{u_{n}-1} &&\\
+3a_{n}-1 &= \frac{2u_{n}+1}{u_{n}-1} &&\justif{$3u_{n}-u_{n}+1$}
+\end{calculs}
+\explique{\res{Pour tout $n\in\N$, on a $a_{n+1}=3a_{n}-1$}.}{les deux expressions sont égales}
+\cas{2. c)}
+\explique{Pour tout entier $n\geq 1$, on note $P_{n}$ la propriété : «~$a_{n}\geq 3n-1$~».}{}
+\explique{\textbf{Initialisation.} $a_{1}=5$ et $3\times 1-1=2$ ; $5\geq 2$, donc $P_{1}$
+est vraie.}{la propriété commence au rang $1$}
+\explique{\textbf{Hérédité.} Soit $n\geq 1$ un entier tel que $P_{n}$ est vraie. Montrons
+que $a_{n+1}\geq 3(n+1)-1$, soit $a_{n+1}\geq 3n+2$.}{}
+\begin{calculs}
+a_{n} &\geq 3n-1 &&\justif{hypothèse de récurrence}\\
+3a_{n} &\geq 9n-3 &&\justif{on multiplie par $3>0$}\\
+3a_{n}-1 &\geq 9n-4 &&\justif{on retire $1$}\\
+a_{n+1} &\geq 9n-4 &&\justif{question 2. b)}
+\end{calculs}
+\explique{Or $9n-4-(3n+2)=6n-6=6(n-1)\geq 0$, car $n\geq 1$ : on a
+$a_{n+1}\geq 3n+2$, donc $P_{n+1}$ est vraie.}{on « retaille » le résultat}
+\explique{\textbf{Conclusion.} $P_{1}$ est vraie et la propriété est héréditaire ; d'après
+le principe de récurrence, \res{pour tout entier $n\geq 1$, on a $a_{n}\geq 3n-1$}.}{}
+\cas{2. d)}
+\explique{$\limn (3n-1)=+\infty$ ; par comparaison, \res{$\limn a_{n}=+\infty$}.}{}
+\cas{3. a)}
+\explique{Soit $n\in\N$. Si l'on avait $a_{n}=1$, on aurait $u_{n}=u_{n}-1$, ce qui est
+impossible : $a_{n}-1\neq 0$.}{on vérifie qu'on pourra diviser}
+\begin{calculs}
+a_{n}(u_{n}-1) &= u_{n} &&\justif{on multiplie $a_{n}=\frac{u_{n}}{u_{n}-1}$ par $u_{n}-1\neq 0$}\\
+a_{n}u_{n}-u_{n} &= a_{n} &&\justif{on développe, puis on ajoute $a_{n}-u_{n}$}\\
+u_{n}(a_{n}-1) &= a_{n} &&\justif{on factorise par $u_{n}$}\\
+u_{n} &= \frac{a_{n}}{a_{n}-1} &&\justif{on divise par $a_{n}-1\neq 0$}
+\end{calculs}
+\explique{\res{Pour tout $n\in\N$, on a $u_{n}=\frac{a_{n}}{a_{n}-1}$}.}{}
+\cas{3. b)}
+\explique{$\limn a_{n}=+\infty$ : forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout
+$n\in\N$, $a_{n}\neq 0$ ($a_{0}=2$ et $a_{n}\geq 3n-1>0$ pour $n\geq 1$) :}{on factorise
+par $a_{n}$}
+\begin{calculs}
+u_{n} &= \frac{a_{n}}{a_{n}\left(1-\frac{1}{a_{n}}\right)} &&\\
+u_{n} &= \frac{1}{1-\frac{1}{a_{n}}} &&
+\end{calculs}
+\explique{Par quotient, $\limn \frac{1}{a_{n}}=0$ ; par somme, le dénominateur tend vers
+$1$ ; par quotient, \res{$\limn u_{n}=1$}.}{}
+\cas{4. a)}
+\explique{La suite est décroissante et converge vers $1$ : pour tout $n\in\N$, $u_{n}\geq 1$,
+et $u_{n}-1$ est l'écart entre $u_{n}$ et sa limite.}{}
+\explique{\res{\texttt{n} est le premier rang pour lequel l'écart $u_{n}-1$ est inférieur ou
+égal à $p$, et \texttt{u} est la valeur de $u_{n}$ à ce rang}.}{la boucle tourne tant que
+l'écart dépasse $p$}
+\cas{4. b)}
+\explique{À la calculatrice, $u_{5}\approx 1{,}0027$ et $u_{6}\approx 1{,}0009$ : pour
+$p=0{,}001$, on obtient \res{$n=6$}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Métropole]
+\textbf{Partie A}
+
+\cas{1.}
+\explique{Soit $x_{1}$ et $x_{2}$ deux nombres réels tels que $2\leq x_{1}<x_{2}$.}{on compare
+les images, sans dériver}
+\begin{calculs}
+3x_{1}-2 &< 3x_{2}-2 &&\justif{on multiplie par $3>0$, puis on retire $2$}\\
+\sqrt{3x_{1}-2} &< \sqrt{3x_{2}-2} &&\justif{$3x_{1}-2\geq 4>0$ ; la racine carrée est strictement croissante}\\
+f(x_{1}) &< f(x_{2}) &&
+\end{calculs}
+\explique{\res{$f$ est strictement croissante sur $\intfo{2}{+\infty}$}, et
+$f(2)=\sqrt{4}$, soit \res{$f(2)=2$}.}{}
+\cas{2. a)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$2\leq u_{n+1}\leq u_{n}\leq 6$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=6$ et $u_{1}=f(6)=4$ ;
+$2\leq 4\leq 6\leq 6$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$2\leq u_{n+2}\leq u_{n+1}\leq 6$.}{}
+\begin{calculs}
+2 &\leq u_{n+1}\leq u_{n}\leq 6 &&\justif{hypothèse de récurrence}\\
+f(2) &\leq f(u_{n+1})\leq f(u_{n})\leq f(6) &&\justif{$f$ croissante sur $\intfo{2}{+\infty}$}\\
+2 &\leq u_{n+2}\leq u_{n+1}\leq 4 &&
+\end{calculs}
+\explique{Comme $4\leq 6$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $2\leq u_{n+1}\leq u_{n}\leq 6$}.}{}
+\cas{2. b)}
+\explique{$(u_{n})$ est décroissante et minorée par $2$ ; d'après le théorème de convergence
+monotone, \res{$(u_{n})$ converge} vers un nombre réel $\ell$, avec $\ell\geq 2$.}{propriété~3}
+\cas{3.}
+\explique{Soit $x\geq 2$. Les deux membres de $\sqrt{3x-2}=x$ sont positifs :}{on peut élever
+au carré}
+\begin{calculs}
+\sqrt{3x-2} &= x &&\\
+3x-2 &= x^{2} &&\justif{on élève au carré}\\
+x^{2}-3x+2 &= 0 &&
+\end{calculs}
+\begin{calculs}
+\Delta &= 9-8 = 1 &&\\
+x_{1} &= \frac{3-1}{2} = 1 &&\\
+x_{2} &= \frac{3+1}{2} = 2 &&
+\end{calculs}
+\explique{Comme $\ell\geq 2$, \res{$\ell=2$}.}{$1$ n'est pas dans $\intfo{2}{+\infty}$}
+\cas{4. a)}
+\explique{$(u_{n})$ converge vers $2$ : l'intervalle ouvert $\intoo{1}{2{,}000001}$, qui
+contient $2$, contient tous les termes à partir d'un certain rang. Il existe donc un rang où
+$u_{n}<2{,}000001$ : \res{la boucle s'arrête, et \texttt{rang(2.000001)} renvoie une
+valeur}.}{définition~1}
+\cas{4. b)}
+\explique{Si $a>2$, le même raisonnement montre que la boucle s'arrête. Si $a\leq 2$, on a
+$u_{n}\geq 2\geq a$ pour tout $n\in\N$ : la boucle ne s'arrête jamais. \res{\texttt{rang(a)}
+renvoie un résultat si et seulement si $a>2$}.}{}
+
+\textbf{Partie B}
+
+\cas{1.}
+\begin{calculs}
+v_{1} &= 3-\frac{2}{6} = 3-\frac{1}{3} &&\\
+v_{1} &= \res{\frac{8}{3}} &&
+\end{calculs}
+\cas{2. a)}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+w_{n+1} &= \frac{v_{n+1}-1}{v_{n+1}-2} &&\\
+w_{n+1} &= \frac{2-\frac{2}{v_{n}}}{1-\frac{2}{v_{n}}} &&\justif{$3-\frac{2}{v_{n}}-1$ et $3-\frac{2}{v_{n}}-2$}\\
+w_{n+1} &= \frac{2v_{n}-2}{v_{n}-2} &&\justif{on multiplie en haut et en bas par $v_{n}$}\\
+w_{n+1} &= 2\times\frac{v_{n}-1}{v_{n}-2} &&\\
+w_{n+1} &= 2w_{n} &&
+\end{calculs}
+\explique{\res{$(w_{n})$ est géométrique de raison $2$}, de premier terme
+$w_{0}=\frac{6-1}{6-2}$, soit \res{$w_{0}=\frac{5}{4}$}.}{}
+\cas{2. b)}
+\explique{Pour tout $n\in\N$, $w_{n}=1{,}25\times 2^{n}$, et $w_{n}-1\neq 0$ (car
+$\frac{1}{v_{n}-2}\neq 0$).}{$\frac{5}{4}=1{,}25$}
+\begin{calculs}
+v_{n}-2 &= \frac{1}{w_{n}-1} &&\justif{on prend l'inverse de $w_{n}-1=\frac{1}{v_{n}-2}$}\\
+v_{n} &= 2+\frac{1}{w_{n}-1} &&\\
+v_{n} &= 2+\frac{1}{1{,}25\times 2^{n}-1} &&
+\end{calculs}
+\explique{\res{Pour tout $n\in\N$, on a $v_{n}=2+\frac{1}{1{,}25\times 2^{n}-1}$}.}{}
+\cas{2. c)}
+\explique{$2>1$, donc $\limn 2^{n}=+\infty$ ; par produit et par somme, le dénominateur tend
+vers $+\infty$ ; par quotient puis par somme, \res{$\limn v_{n}=2$}.}{}
+\cas{3.}
+\explique{Pour tout $n\in\N$, $1{,}25\times 2^{n}-1\geq 0{,}25>0$.}{on pourra multiplier
+par ce dénominateur}
+\begin{calculs}
+v_{n} &< 2{,}01 &&\\
+2+\frac{1}{1{,}25\times 2^{n}-1} &< 2{,}01 &&\justif{on remplace $v_{n}$}\\
+\frac{1}{1{,}25\times 2^{n}-1} &< 0{,}01 &&\justif{on retire $2$}\\
+1 &< 0{,}01\left(1{,}25\times 2^{n}-1\right) &&\justif{on multiplie par le dénominateur, positif}\\
+100 &< 1{,}25\times 2^{n}-1 &&\justif{on multiplie par $100$}\\
+2^{n} &> 80{,}8 &&\justif{on ajoute $1$, puis on divise par $1{,}25$}
+\end{calculs}
+\explique{$2^{6}=64$ et $2^{7}=128$ ; la suite $(2^{n})$ est croissante : le plus petit
+entier qui convient est \res{$n=7$}.}{pas de logarithme : on encadre par deux puissances de
+$2$}
+
+\textbf{Partie C}
+
+\cas{Résolution}
+\explique{Pour tout $n\in\N$, $v_{n}>2$ et $u_{n}\geq 2$ : les deux suites restent
+au-dessus de $1{,}99$. Il reste à savoir quand elles passent sous $2{,}01$.}{}
+\explique{$(v_{n})$ est décroissante (son dénominateur augmente) : $v_{n}<2{,}01$ pour tout
+$n\geq 7$ (partie~B).}{}
+\explique{$(u_{n})$ est décroissante ; à la calculatrice, $u_{16}\approx 2{,}0116$ et
+$u_{17}\approx 2{,}0087$ : $u_{n}<2{,}01$ pour tout $n\geq 17$.}{on peut programmer
+\texttt{rang(2.01)}, qui renvoie $17$}
+\explique{Les deux conditions sont réunies à partir du plus grand des deux rangs :
+\res{$N=17$}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Asie]
+\textbf{Partie A}
+
+\cas{1.}
+\explique{$f$ est un quotient dont le dénominateur $2x-3$ ne s'annule pas sur
+$\intoo{-\infty}{\frac{3}{2}}$ : elle y est dérivable. Soit $x<\frac{3}{2}$.}{}
+\begin{calculs}
+f'(x) &= \frac{1\times(2x-3)-(x-2)\times 2}{(2x-3)^{2}} &&\justif{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+f'(x) &= \frac{2x-3-2x+4}{(2x-3)^{2}} &&\\
+f'(x) &= \frac{1}{(2x-3)^{2}} &&
+\end{calculs}
+\explique{Pour tout $x<\frac{3}{2}$, $(2x-3)^{2}>0$, donc $f'(x)>0$ : \res{$f$ est
+strictement croissante sur $\intoo{-\infty}{\frac{3}{2}}$}.}{}
+\cas{2.}
+\explique{$\intff{0}{1}$ est inclus dans $\intoo{-\infty}{\frac{3}{2}}$, où $f$ est
+croissante. Soit $x\in\intff{0}{1}$.}{}
+\begin{calculs}
+0 &\leq x\leq 1 &&\\
+f(0) &\leq f(x)\leq f(1) &&\justif{$f$ croissante : l'ordre est conservé}\\
+\frac{2}{3} &\leq f(x)\leq 1 &&\justif{$f(0)=\frac{-2}{-3}$ et $f(1)=\frac{-1}{-1}$}
+\end{calculs}
+\explique{Comme $0\leq\frac{2}{3}$, \res{pour tout $x\in\intff{0}{1}$, on a
+$f(x)\in\intff{0}{1}$}.}{}
+
+\textbf{Partie B}
+
+\cas{1.}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$0\leq u_{n}\leq u_{n+1}\leq 1$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=f(0)=\frac{2}{3}$ ;
+$0\leq 0\leq\frac{2}{3}\leq 1$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$0\leq u_{n+1}\leq u_{n+2}\leq 1$.}{}
+\begin{calculs}
+0 &\leq u_{n}\leq u_{n+1}\leq 1 &&\justif{hypothèse de récurrence}\\
+f(0) &\leq f(u_{n})\leq f(u_{n+1})\leq f(1) &&\justif{$f$ croissante sur $\intff{0}{1}$}\\
+\frac{2}{3} &\leq u_{n+1}\leq u_{n+2}\leq 1 &&
+\end{calculs}
+\explique{Comme $0\leq\frac{2}{3}$, $P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $0\leq u_{n}\leq u_{n+1}\leq 1$}.}{}
+\cas{2.}
+\explique{$(u_{n})$ est croissante et majorée par $1$ ; d'après le théorème de convergence
+monotone, \res{$(u_{n})$ converge} vers un nombre réel $\ell$, avec $0\leq\ell\leq 1$.}{}
+\cas{3.}
+\explique{Soit $x\in\intff{0}{1}$ ; on a $2x-3\neq 0$.}{}
+\begin{calculs}
+\frac{x-2}{2x-3} &= x &&\\
+x-2 &= x(2x-3) &&\justif{on multiplie par $2x-3\neq 0$}\\
+2x^{2}-4x+2 &= 0 &&\justif{on regroupe tout dans un membre}\\
+2(x-1)^{2} &= 0 &&\justif{$x^{2}-2x+1=(x-1)^{2}$}
+\end{calculs}
+\explique{La seule solution est $x=1$ ; donc \res{$\ell=1$}.}{}
+\cas{4.}
+\explique{La fonction renvoie le premier rang $n$ tel que $u_{n}\geq 1-0{,}0001$ :
+\res{$u_{5\,000}$ est le premier terme supérieur ou égal à $0{,}9999$}.}{la suite est
+croissante : tous les suivants le sont aussi}
+\cas{5. a)}
+\begin{calculs}
+u_{1} &= f(0) = \frac{2}{3} &&\\
+u_{2} &= \frac{\frac{2}{3}-2}{\frac{4}{3}-3} = \frac{-\frac{4}{3}}{-\frac{5}{3}} &&\\
+u_{2} &= \frac{4}{5} &&\\
+u_{3} &= \frac{\frac{4}{5}-2}{\frac{8}{5}-3} = \frac{-\frac{6}{5}}{-\frac{7}{5}} &&\\
+u_{3} &= \frac{6}{7} &&
+\end{calculs}
+\explique{\res{$u_{0}=0$ ; $u_{1}=\frac{2}{3}$ ; $u_{2}=\frac{4}{5}$ et
+$u_{3}=\frac{6}{7}$}.}{}
+\cas{5. b)}
+\explique{Le numérateur augmente de $2$ à chaque rang, et le dénominateur vaut le numérateur
+plus $1$ : on conjecture que, pour tout $n\in\N$, \res{$u_{n}=\frac{2n}{2n+1}$}.}{}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}=\frac{2n}{2n+1}$~».}{}
+\explique{\textbf{Initialisation.} $\frac{2\times 0}{2\times 0+1}=0=u_{0}$, donc $P_{0}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$u_{n+1}=\frac{2n+2}{2n+3}$.}{$\frac{2(n+1)}{2(n+1)+1}$}
+\begin{calculs}
+u_{n+1} &= \frac{\frac{2n}{2n+1}-2}{2\times\frac{2n}{2n+1}-3} &&\justif{hypothèse de récurrence}\\
+u_{n+1} &= \frac{\frac{2n-2(2n+1)}{2n+1}}{\frac{4n-3(2n+1)}{2n+1}} &&\justif{même dénominateur}\\
+u_{n+1} &= \frac{-2n-2}{-2n-3} &&\justif{on simplifie par $2n+1$}\\
+u_{n+1} &= \frac{2n+2}{2n+3} &&
+\end{calculs}
+\explique{$P_{n+1}$ est vraie.}{}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, \res{pour tout $n\in\N$,
+on a $u_{n}=\frac{2n}{2n+1}$}.}{}
+\end{exo}
+
+\end{document}

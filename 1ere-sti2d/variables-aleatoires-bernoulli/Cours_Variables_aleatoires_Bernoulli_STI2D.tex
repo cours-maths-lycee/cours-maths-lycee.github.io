@@ -1,0 +1,1438 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{11}{Variables aléatoires, loi de Bernoulli}
+\niveaucours{1\textsuperscript{re} STI2D}
+\titrecours{VARIABLES ALÉATOIRES, LOI DE BERNOULLI}{Cours --- Première STI2D}
+
+\begin{document}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt}}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\arbredeux}[3]{%
+  \node (O) at (0,0) {};
+  \node[evt] (S) at (2.2,1.2) {$#1$};
+  \node[evt] (E) at (2.2,-1.2) {$\overline{#1}$};
+  \node[evt] (SS) at (4.4,1.8) {$#1$};
+  \node[evt] (SE) at (4.4,0.6) {$\overline{#1}$};
+  \node[evt] (ES) at (4.4,-0.6) {$#1$};
+  \node[evt] (EE) at (4.4,-1.8) {$\overline{#1}$};
+  \draw (O.center) -- node[proba]{$#2$} (S);
+  \draw (O.center) -- node[proba]{$#3$} (E);
+  \draw (S) -- node[proba]{$#2$} (SS);
+  \draw (S) -- node[proba]{$#3$} (SE);
+  \draw (E) -- node[proba]{$#2$} (ES);
+  \draw (E) -- node[proba]{$#3$} (EE);}
+\newcommand{\arbretrois}[3]{%
+  \node (O) at (0,0) {};
+  \node[evt] (S) at (1.9,2) {$#1$};
+  \node[evt] (E) at (1.9,-2) {$\overline{#1}$};
+  \foreach \a/\y in {S/2,E/-2}{%
+    \node[evt] (\a S) at (3.8,\y+1) {$#1$};
+    \node[evt] (\a E) at (3.8,\y-1) {$\overline{#1}$};
+    \draw (\a) -- node[proba]{$#2$} (\a S);
+    \draw (\a) -- node[proba]{$#3$} (\a E);}
+  \foreach \a/\y in {SS/3,SE/1,ES/-1,EE/-3}{%
+    \node[evt] (\a S) at (5.7,\y+0.5) {$#1$};
+    \node[evt] (\a E) at (5.7,\y-0.5) {$\overline{#1}$};
+    \draw (\a) -- node[proba,pos=0.62]{$#2$} (\a S);
+    \draw (\a) -- node[proba,pos=0.62]{$#3$} (\a E);}
+  \draw (O.center) -- node[proba]{$#2$} (S);
+  \draw (O.center) -- node[proba]{$#3$} (E);}
+
+\begin{remarquebox}[Comment utiliser ce cours]
+Chaque partie commence par ce qu'il faut \textbf{savoir} (définitions, propriétés), puis
+vient ce qu'il faut \textbf{savoir faire} : une méthode, avec des
+\textbf{exemples corrigés} faits en classe, puis des exercices
+\og\textbf{À vous de jouer}\fg{} à chercher seul.
+
+\end{remarquebox}
+
+\partiecours{Variable aléatoire}
+
+Dans beaucoup d'expériences aléatoires, ce qui nous intéresse est un nombre : le gain à
+un jeu, le nombre de pièces réussies par une imprimante 3D, le nombre de bornes de
+recharge libres sur un parking. Ce nombre dépend de l'issue de l'expérience.
+
+\begin{definitionbox}[Définition 1 --- Variable aléatoire]
+Une \textbf{variable aléatoire} associe un nombre réel à chaque issue d'une expérience
+aléatoire (un gain, un nombre de succès\dots). On la note par une lettre majuscule : $X$,
+$Y$\dots
+\end{definitionbox}
+
+\begin{remarquebox}[Une \og variable\fg{} qui est en fait une fonction]
+Le nom est trompeur : dans $f(x)$, $x$ est une variable ; $X$, lui, est une
+\textbf{fonction}, qui à chaque issue associe un nombre :
+\[
+\text{issue}\longmapsto X(\text{issue}).
+\]
+On ne connaît sa valeur qu'après l'expérience : elle dépend du hasard.
+\end{remarquebox}
+
+\begin{definitionbox}[Définition 2 --- Événements $\{X=a\}$ et $\{X\le a\}$]
+Soit $a$ un nombre réel.
+\begin{itemize}
+  \item $\{X=a\}$ est l'événement \og $X$ prend la valeur $a$\fg{} : il réunit les issues
+        pour lesquelles $X$ vaut $a$. Sa probabilité se note $P(X=a)$.
+  \item $\{X\le a\}$ est l'événement \og $X$ prend une valeur inférieure ou égale à
+        $a$\fg{} ; sa probabilité se note $P(X\le a)$. De même pour $\{X\ge a\}$ et
+        $\{X<a\}$.
+\end{itemize}
+En français, avec une variable $X$ qui prend les valeurs entières de $0$ à $4$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|}
+\hline
+En français & Événement & Valeurs de $X$\\
+\hline
+$X$ vaut $2$ & $\{X=2\}$ & $2$\\
+$X$ vaut \textbf{au plus} $2$ & $\{X\le 2\}$ & $0$ ; $1$ ; $2$\\
+$X$ vaut \textbf{au moins} $3$ & $\{X\ge 3\}$ & $3$ ; $4$\\
+$X$ vaut \textbf{moins de} $2$ & $\{X<2\}$ & $0$ ; $1$\\
+\hline
+\end{tabular}
+\end{center}
+\end{definitionbox}
+
+\begin{exemplebox}
+On lance deux fois une pièce équilibrée ($P$ : pile, $F$ : face) et on note $X$ le
+nombre de \og pile\fg{} obtenus. Le tableau donne la valeur de $X$ pour chacune des $4$
+issues, qui ont la même probabilité.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Issue & $PP$ & $PF$ & $FP$ & $FF$\\
+\hline
+Valeur de $X$ & $2$ & $1$ & $1$ & $0$\\
+\hline
+\end{tabular}
+\end{center}
+L'événement $\{X=1\}$ réunit les issues $PF$ et $FP$ : $2$ issues sur $4$, donc
+$P(X=1)=\frac{2}{4}$, soit $\frac{1}{2}$.
+\end{exemplebox}
+
+\begin{methodebox}[Méthode 1 --- Calculer des probabilités avec une variable aléatoire]
+\etapeexemples
+À la fête du lycée, le club d'astronomie propose un jeu : on lance un dé équilibré à six
+faces ; on gagne $4$~€ avec un $6$, $1$~€ avec un $4$ ou un $5$, et on perd $1$~€ sinon. On
+note $X$ le gain en euros (une perte est un gain négatif).
+\begin{questions}[label=\alph*)]
+  \item Donner la valeur de $X$ pour chaque issue, puis les valeurs prises par $X$.
+  \item Calculer $P(X=1)$ et $P(X=-1)$.
+  \item Traduire par une phrase l'événement $\{X\ge 1\}$, puis calculer sa probabilité.
+  \item Calculer $P(X\le 1)$.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Issue & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+Valeur de $X$ & $-1$ & $-1$ & $-1$ & $1$ & $1$ & $4$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$X$ prend les valeurs \res{$-1$ ; $1$ et $4$}.}{perte de $1$~€, gain de $1$~€ ou
+de $4$~€}
+\cas{b)}
+\begin{calculs}
+P(X=1) &= \dfrac{2}{6} &\qquad& \rem{issues $4$ et $5$, soit $2$ issues sur $6$}\\
+P(X=1) &= \dfrac{\barre{2}\times 1}{\barre{2}\times 3} && \rem{on simplifie par $2$}\\
+P(X=1) &= \res{\dfrac{1}{3}} &&
+\end{calculs}
+\begin{calculs}
+P(X=-1) &= \dfrac{3}{6} &\qquad& \rem{issues $1$ ; $2$ ; $3$}\\
+P(X=-1) &= \dfrac{\barre{3}\times 1}{\barre{3}\times 2} && \rem{on simplifie par $3$}\\
+P(X=-1) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{c)}
+\explique{$\{X\ge 1\}$ : \res{\og on gagne de l'argent\fg{}}, c'est-à-dire \og on obtient
+un $4$, un $5$ ou un $6$\fg{}.}{$X$ vaut $1$ ou $4$}
+\begin{calculs}
+P(X\ge 1) &= P(X=1)+P(X=4) &\qquad& \rem{les valeurs $1$ et $4$}\\
+P(X\ge 1) &= \dfrac{2}{6}+\dfrac{1}{6} && \rem{issues $4$ ; $5$ et issue $6$}\\
+P(X\ge 1) &= \dfrac{3}{6} &&\\
+P(X\ge 1) &= \dfrac{\barre{3}\times 1}{\barre{3}\times 2} && \rem{on simplifie par $3$}\\
+P(X\ge 1) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+P(X\le 1) &= 1-P(X=4) &\qquad& \rem{contraire de $\{X=4\}$ : on n'obtient pas $6$}\\
+P(X\le 1) &= 1-\dfrac{1}{6} &&\\
+P(X\le 1) &= \res{\dfrac{5}{6}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Le foyer des élèves propose un autre jeu : on lance un dé équilibré à six faces ; on
+gagne $6$~€ avec un $6$, $2$~€ avec un $1$, un $2$ ou un $3$, et on perd $3$~€ sinon. On note
+$X$ le gain en euros.
+\begin{questions}[label=\alph*)]
+  \item Donner la valeur de $X$ pour chaque issue, puis les valeurs prises par $X$.
+  \item Calculer $P(X=2)$ et $P(X=-3)$.
+  \item Traduire par une phrase l'événement $\{X\ge 2\}$, puis calculer sa probabilité.
+  \item Calculer $P(X\le 2)$.
+\end{questions}
+\reponse{a) $X$ prend les valeurs $-3$ ; $2$ et $6$ ;\; b)~$P(X=2)=\frac{1}{2}$ ;
+$P(X=-3)=\frac{1}{3}$ ;\; c)~\og on gagne de l'argent\fg{}, $P(X\ge 2)=\frac{2}{3}$ ;\;
+d)~$P(X\le 2)=\frac{5}{6}$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Loi de probabilité d'une variable aléatoire}
+
+\begin{definitionbox}[Définition 3 --- Loi de probabilité d'une variable aléatoire]
+La \textbf{loi de probabilité} d'une variable aléatoire $X$ est en fait un
+\textbf{tableau} : sur la première ligne, les valeurs que $X$ peut prendre ; sous chacune,
+sa probabilité. Si $X$ prend les valeurs $x_1$, $x_2$, \dots, $x_n$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & $x_1$ & $x_2$ & \dots & $x_n$\\
+\hline
+$P(X=x_i)$ & $P(X=x_1)$ & $P(X=x_2)$ & \dots & $P(X=x_n)$\\
+\hline
+\end{tabular}
+\end{center}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Somme des probabilités]
+La somme des probabilités de la loi de $X$ est égale à $1$ :
+$P(X=x_1)+P(X=x_2)+\dots+P(X=x_n)=1$.
+\end{proprietebox}
+
+\begin{exemplebox}
+Nombre $X$ de \og pile\fg{} en deux lancers d'une pièce (partie I) : $X$ vaut $0$ pour
+$FF$, $1$ pour $PF$ et $FP$, $2$ pour $PP$ ; chaque issue a la probabilité $\frac{1}{4}$.
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_i$ & $0$ & $1$ & $2$\\
+\hline
+$P(X=x_i)$ & $\dfrac{1}{4}$ & $\dfrac{2}{4}$ & $\dfrac{1}{4}$\\
+\hline
+\end{tabular}
+\end{center}
+Vérification : $1+2+1=4$, donc la somme des probabilités vaut $\frac{4}{4}=1$.
+\end{exemplebox}
+
+\begin{methodebox}[Méthode 2 --- Déterminer et utiliser la loi d'une variable aléatoire]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item À la fête du lycée, le club de robotique vend $50$ tickets de tombola à $2$~€
+        pour financer son robot de compétition : $1$ ticket fait gagner un lot de
+        $30$~€, $4$ tickets un lot de $5$~€, les autres ne font rien gagner. Un visiteur
+        achète un ticket au hasard. On note $X$ son gain en euros, prix du ticket
+        déduit. Déterminer la loi de probabilité de $X$.
+  \item Dans un jeu de plateau, on lance deux dés équilibrés à quatre faces, numérotées
+        de $1$ à $4$. On note $Y$ la somme des deux nombres obtenus. Déterminer la loi de
+        probabilité de $Y$.
+  \item Le parking d'une entreprise compte $4$ bornes de recharge pour voitures
+        électriques. On choisit un jour au hasard et on note $Z$ le nombre de bornes
+        libres à $9$~h ; sa loi est donnée ci-dessous. Calculer $a$, puis $P(Z\le 2)$ et
+        la probabilité qu'au moins $3$ bornes soient libres.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        $z_i$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+        \hline
+        $P(Z=z_i)$ & $0{,}10$ & $0{,}25$ & $a$ & $0{,}20$ & $0{,}15$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Avec le lot de $30$~€, le gain vaut $30-2=28$ ; avec un lot de $5$~€, $5-2=3$ ;
+sans lot, $-2$. Donc $X$ prend les valeurs $-2$ ; $3$ et $28$.}{on déduit le prix du
+ticket : un gain peut être négatif}
+\begin{calculs}
+P(X=28) &= \dfrac{1}{50} = \res{0{,}02} &\qquad& \rem{$1$ ticket sur $50$}\\
+P(X=3) &= \dfrac{4}{50} = \res{0{,}08} && \rem{$4$ tickets sur $50$}\\
+P(X=-2) &= \dfrac{45}{50} = \res{0{,}9} && \rem{$50-1-4=45$ tickets sans lot}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_i$ & $-2$ & $3$ & $28$\\
+\hline
+$P(X=x_i)$ & $0{,}9$ & $0{,}08$ & $0{,}02$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}9+0{,}08+0{,}02=1$.}{propriété 1}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Le tableau donne la somme pour chacune des $4\times 4=16$ issues, qui ont la même
+probabilité $\frac{1}{16}$. $Y$ prend les valeurs entières de $2$ à $8$ ; on compte les
+cases de chaque valeur (par exemple, $Y=4$ dans $3$ cases).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$3$ & $4$ & $5$ & $6$ & $7$\\
+\hline
+$4$ & $5$ & $6$ & $7$ & $8$\\
+\hline
+\end{tabular}
+\end{minipage}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$y_i$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$\\
+\hline
+$P(Y=y_i)$ & $\dfrac{1}{16}$ & $\dfrac{2}{16}$ & $\dfrac{3}{16}$ & $\dfrac{4}{16}$
+  & $\dfrac{3}{16}$ & $\dfrac{2}{16}$ & $\dfrac{1}{16}$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $1+2+3+4+3+2+1=16$, donc la somme des probabilités vaut
+$\frac{16}{16}=1$.}{on garde le dénominateur $16$ pour vérifier}
+\cas{c)}
+\begin{calculs}
+0{,}10+0{,}25+a+0{,}20+0{,}15 &= 1 &\qquad& \rem{la somme des probabilités vaut $1$}\\
+0{,}70+a &= 1 &&\\
+a &= 1-0{,}70 &&\\
+a &= \res{0{,}30} &&
+\end{calculs}
+\begin{calculs}
+P(Z\le 2) &= P(Z=0)+P(Z=1)+P(Z=2) &\qquad& \rem{les valeurs $0$ ; $1$ ; $2$}\\
+P(Z\le 2) &= 0{,}10+0{,}25+0{,}30 &&\\
+P(Z\le 2) &= \res{0{,}65} &&
+\end{calculs}
+\explique{\og Au moins $3$ bornes sont libres\fg{} s'écrit $\{Z\ge 3\}$.}{$Z$ vaut $3$ ou
+$4$}
+\begin{calculs}
+P(Z\ge 3) &= P(Z=3)+P(Z=4) &\qquad& \rem{c'est aussi $1-P(Z\le 2)$ : contraire}\\
+P(Z\ge 3) &= 0{,}20+0{,}15 &&\\
+P(Z\ge 3) &= \res{0{,}35} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Le foyer des élèves vend $100$ tickets de tombola à $1$~€ pour équiper sa salle :
+        $2$ tickets font gagner un lot de $20$~€, $10$ tickets un lot de $5$~€, les autres
+        ne font rien gagner. Un élève achète un ticket au hasard. On note $X$ son gain en
+        euros, prix du ticket déduit. Déterminer la loi de probabilité de $X$.
+  \item On lance deux dés équilibrés à quatre faces, numérotées de $1$ à $4$. On note $Y$
+        le plus grand des deux nombres obtenus (s'ils sont égaux, ce nombre). Déterminer
+        la loi de probabilité de $Y$.
+  \item Un fablab possède $4$ imprimantes 3D. On choisit un jour au hasard et on note $Z$
+        le nombre d'imprimantes en marche à $14$~h ; sa loi est donnée ci-dessous.
+        Calculer $a$, puis $P(Z\le 2)$ et la probabilité qu'au moins $3$ imprimantes
+        soient en marche.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        $z_i$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+        \hline
+        $P(Z=z_i)$ & $0{,}05$ & $0{,}10$ & $a$ & $0{,}40$ & $0{,}20$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{questions}
+\reponse{a) $X$ vaut $-1$ ; $4$ ; $19$ avec les probabilités $0{,}88$ ; $0{,}10$ ;
+$0{,}02$ ;\; b)~$Y$ vaut $1$ ; $2$ ; $3$ ; $4$ avec les probabilités $\frac{1}{16}$ ;
+$\frac{3}{16}$ ; $\frac{5}{16}$ ; $\frac{7}{16}$ ;\; c)~$a=0{,}25$ ; $P(Z\le 2)=0{,}40$ ;
+$P(Z\ge 3)=0{,}60$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Espérance}
+
+\textbf{But :} prévoir la valeur moyenne de $X$ quand on répète l'expérience un grand
+nombre de fois : le gain moyen par ticket, le nombre moyen de bornes libres.
+
+\begin{remarquebox}[Rappel : moyenne pondérée]
+Si les valeurs $x_1$, \dots, $x_n$ d'une série ont les fréquences $f_1$, \dots, $f_n$,
+la moyenne de la série est $x_1f_1+x_2f_2+\dots+x_nf_n$. L'espérance fait le même calcul,
+avec les probabilités à la place des fréquences.
+\end{remarquebox}
+
+\begin{definitionbox}[Définition 4 --- Espérance]
+Soit $X$ une variable aléatoire qui prend les valeurs $x_1$, $x_2$, \dots, $x_n$.
+L'\textbf{espérance} de $X$ est le nombre
+\[
+E(X)=x_1\times P(X=x_1)+x_2\times P(X=x_2)+\dots+x_n\times P(X=x_n).
+\]
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Interprétation de l'espérance (admise)]
+Quand on répète l'expérience un grand nombre de fois, la moyenne des valeurs obtenues
+pour $X$ est proche de $E(X)$ (loi des grands nombres, vue en seconde) : $E(X)$ est la
+valeur moyenne de $X$ \og à long terme\fg{}.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer et interpréter une espérance]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Le parking d'une entreprise compte $4$ bornes de recharge. On note $X$ le nombre
+        de bornes libres à $9$~h un jour pris au hasard ; sa loi est donnée ci-dessous.
+        Calculer $E(X)$ et interpréter le résultat.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        $x_i$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+        \hline
+        $P(X=x_i)$ & $0{,}10$ & $0{,}25$ & $0{,}30$ & $0{,}20$ & $0{,}15$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item À une tombola, on note $Y$ le gain en euros d'un visiteur qui achète un ticket à
+        $2$~€, prix du ticket déduit ; sa loi est donnée ci-dessous. Calculer $E(Y)$ et
+        interpréter le résultat, pour le visiteur puis pour le club qui organise la
+        tombola.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|}
+        \hline
+        $y_i$ & $-2$ & $3$ & $28$\\
+        \hline
+        $P(Y=y_i)$ & $0{,}9$ & $0{,}08$ & $0{,}02$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+E(X) &= 0\times 0{,}10+1\times 0{,}25+2\times 0{,}30+3\times 0{,}20+4\times 0{,}15
+  &\qquad& \rem{valeur $\times$ probabilité}\\
+E(X) &= 0+0{,}25+0{,}6+0{,}6+0{,}6 &&\\
+E(X) &= \res{2{,}05} &&
+\end{calculs}
+\explique{Sur un grand nombre de jours, il y a \res{en moyenne $2{,}05$ bornes libres à
+$9$~h}, soit environ $2$.}{propriété 2 : une moyenne n'est pas forcément entière}
+\cas{b)}
+\begin{calculs}
+E(Y) &= (-2)\times 0{,}9+3\times 0{,}08+28\times 0{,}02 &\qquad& \rem{valeur $\times$
+probabilité}\\
+E(Y) &= -1{,}8+0{,}24+0{,}56 &&\\
+E(Y) &= \res{-1} &&
+\end{calculs}
+\explique{Sur un grand nombre de tickets, un visiteur \res{perd en moyenne $1$~€ par
+ticket} ; le club \res{gagne en moyenne $1$~€ par ticket vendu}.}{$E(Y)<0$ : perte pour le
+joueur, gain pour l'organisateur}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Un fablab possède $4$ imprimantes 3D. On note $X$ le nombre d'imprimantes en
+        marche à $14$~h un jour pris au hasard ; sa loi est donnée ci-dessous. Calculer
+        $E(X)$ et interpréter le résultat.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        $x_i$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+        \hline
+        $P(X=x_i)$ & $0{,}05$ & $0{,}10$ & $0{,}25$ & $0{,}40$ & $0{,}20$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item À une tombola, on note $Y$ le gain en euros d'un élève qui achète un ticket à
+        $1$~€, prix du ticket déduit ; sa loi est donnée ci-dessous. Calculer $E(Y)$ et
+        interpréter le résultat, pour l'élève puis pour le foyer qui organise la tombola.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|}
+        \hline
+        $y_i$ & $-1$ & $4$ & $19$\\
+        \hline
+        $P(Y=y_i)$ & $0{,}88$ & $0{,}10$ & $0{,}02$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{questions}
+\reponse{a) $E(X)=2{,}6$ : en moyenne $2{,}6$ imprimantes en marche à $14$~h ;\;
+b)~$E(Y)=-0{,}10$ : l'élève perd en moyenne $0{,}10$~€ par ticket, le foyer gagne en
+moyenne $0{,}10$~€ par ticket.}
+\end{methodebox}
+
+\afaire{exercices 9 à 12}
+
+\partiecours{Loi de Bernoulli}
+
+Beaucoup d'expériences n'ont que deux issues : une pièce est réussie ou non, une flèche
+atteint la cible ou non, un feu est vert ou non.
+
+\begin{definitionbox}[Définition 5 --- Épreuve de Bernoulli]
+Une \textbf{épreuve de Bernoulli} est une expérience aléatoire qui n'a que deux issues :
+le \textbf{succès} $S$, de probabilité $p$, et l'\textbf{échec} $\overline{S}$, de
+probabilité $1-p$. Le succès est l'issue qu'on choisit de compter.
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 6 --- Loi de Bernoulli]
+La variable aléatoire $X$ qui vaut $1$ en cas de succès et $0$ en cas d'échec suit la
+\textbf{loi de Bernoulli de paramètre $p$} :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$x_i$ & $1$ & $0$\\
+\hline
+$P(X=x_i)$ & $p$ & $1-p$\\
+\hline
+\end{tabular}
+\end{center}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 3 --- Espérance d'une loi de Bernoulli]
+Si $X$ suit la loi de Bernoulli de paramètre $p$, alors $E(X)=p$.
+\end{proprietebox}
+
+\demo{\textbf{But :} on veut démontrer que $E(X)=p$.}
+\begin{calculs}
+E(X) &= 1\times p+0\times(1-p) &\qquad& \rem{définition 4 : valeur $\times$ probabilité}\\
+E(X) &= p+0 &&\\
+E(X) &= p &&
+\end{calculs}
+\textbf{Conclusion :} l'espérance d'une loi de Bernoulli est son paramètre $p$ ; sur un
+grand nombre d'épreuves, la moyenne des $1$ et des $0$ obtenus, c'est-à-dire la fréquence
+des succès, est proche de $p$.
+
+\begin{methodebox}[Méthode 4 --- Reconnaître une loi de Bernoulli]
+\etapeexemples
+Pour chaque variable aléatoire $X$, $Y$ et $Z$, dire si elle suit une loi de Bernoulli.
+Si oui, donner son paramètre, sa loi et son espérance.
+\begin{questions}[label=\alph*)]
+  \item Une imprimante 3D réussit une pièce avec la probabilité $0{,}9$. On lance
+        l'impression d'une pièce ; $X$ vaut $1$ si la pièce est réussie, $0$ sinon.
+  \item On lance un dé équilibré à six faces ; $Y$ vaut $1$ si on obtient $5$ ou $6$, $0$
+        sinon.
+  \item On lance un dé équilibré à six faces ; $Z$ est le nombre obtenu.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{L'impression a deux issues ; le succès est \og la pièce est réussie\fg{}, de
+probabilité $0{,}9$. Donc \res{$X$ suit la loi de Bernoulli de paramètre $p=0{,}9$}.}{$X$
+vaut $1$ (succès) ou $0$ (échec)}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$x_i$ & $1$ & $0$\\
+\hline
+$P(X=x_i)$ & $0{,}9$ & $0{,}1$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$E(X)=p$, soit \res{$E(X)=0{,}9$}.}{propriété 3}
+\cas{b)}
+\explique{Le succès est \og obtenir $5$ ou $6$\fg{} : $2$ faces sur $6$, qui ont la même
+probabilité.}{équiprobabilité}
+\begin{calculs}
+p &= \dfrac{2}{6} &\qquad& \rem{$2$ faces favorables sur $6$}\\
+p &= \dfrac{\barre{2}\times 1}{\barre{2}\times 3} && \rem{on simplifie par $2$}\\
+p &= \dfrac{1}{3} &&
+\end{calculs}
+\explique{Donc \res{$Y$ suit la loi de Bernoulli de paramètre $p=\dfrac{1}{3}$}.}{$Y$
+vaut $1$ (succès) ou $0$ (échec)}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$y_i$ & $1$ & $0$\\
+\hline
+$P(Y=y_i)$ & $\dfrac{1}{3}$ & $\dfrac{2}{3}$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$E(Y)=p$, soit \res{$E(Y)=\dfrac{1}{3}$}.}{propriété 3}
+\cas{c)}
+\explique{$Z$ prend six valeurs, de $1$ à $6$, et pas seulement $1$ et $0$ : \res{$Z$ ne
+suit pas une loi de Bernoulli}.}{une loi de Bernoulli n'a que les valeurs $1$ et $0$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque variable aléatoire $X$, $Y$ et $Z$, dire si elle suit une loi de Bernoulli.
+Si oui, donner son paramètre, sa loi et son espérance.
+\begin{questions}[label=\alph*)]
+  \item Un archer atteint la cible avec la probabilité $0{,}7$. Il tire une flèche ; $X$
+        vaut $1$ si la flèche atteint la cible, $0$ sinon.
+  \item On fait tourner une roue équilibrée partagée en $8$ secteurs égaux, numérotés de
+        $1$ à $8$ ; $Y$ vaut $1$ si on obtient un multiple de $3$, $0$ sinon.
+  \item On fait tourner la même roue ; $Z$ est le numéro obtenu.
+\end{questions}
+\reponse{a) oui, $p=0{,}7$, loi : $P(X=1)=0{,}7$ et $P(X=0)=0{,}3$, $E(X)=0{,}7$ ;\;
+b)~oui, $p=\frac{1}{4}$ ($3$ ou $6$), $P(Y=1)=\frac{1}{4}$ et $P(Y=0)=\frac{3}{4}$,
+$E(Y)=\frac{1}{4}$ ;\; c)~non, $Z$ prend huit valeurs.}
+\end{methodebox}
+
+\afaire{exercices 13 à 16}
+
+\partiecours{Répétition d'épreuves de Bernoulli}
+
+On répète plusieurs fois la même épreuve : une imprimante lance deux pièces, un cycliste
+passe trois feux. Au chapitre 10, la probabilité d'un chemin d'un arbre pondéré est le
+produit des probabilités de ses branches ; quand les épreuves sont indépendantes, les
+branches du second niveau ne dépendent pas du premier résultat.
+
+\begin{definitionbox}[Définition 7 --- Épreuves identiques et indépendantes]
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+On répète $n$ fois la \textbf{même} épreuve de Bernoulli de paramètre $p$, de façon
+\textbf{indépendante} : le résultat d'une épreuve ne change pas les probabilités des
+suivantes (on parle aussi de schéma de Bernoulli).
+
+\smallskip
+On la représente par un arbre à $n$ niveaux : chaque nœud a deux branches, $S$ de
+probabilité $p$ et $\overline{S}$ de probabilité $1-p$. Chaque chemin est une liste de
+résultats, par exemple $(S\,;\overline{S})$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.44\linewidth}\centering
+\begin{tikzpicture}
+  \arbredeux{S}{p}{1-p}
+  \feuille{SS}{$(S\,;S)$}
+  \feuille{SE}{$(S\,;\overline{S})$}
+  \feuille{ES}{$(\overline{S}\,;S)$}
+  \feuille{EE}{$(\overline{S}\,;\overline{S})$}
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 4 --- Probabilités sur l'arbre]
+\begin{itemize}
+  \item La probabilité d'un chemin est le \textbf{produit} des probabilités de ses
+        branches : $P\big((S\,;\overline{S})\big)=p\times(1-p)$.
+  \item La probabilité d'un événement est la \textbf{somme} des probabilités des chemins
+        qui le réalisent.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Calculer une probabilité avec un arbre]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Une imprimante 3D réussit une pièce avec la probabilité $0{,}9$, indépendamment
+        des autres pièces. On lance l'impression de $2$ pièces ; on note $X$ le nombre de
+        pièces réussies. Construire l'arbre, puis calculer $P(X=2)$ et $P(X=1)$.
+  \item Pour aller au lycée, un cycliste passe $3$ feux tricolores, réglés indépendamment
+        les uns des autres. Chaque feu est vert à son arrivée avec la probabilité
+        $0{,}6$. On note $Y$ le nombre de feux verts. Construire l'arbre, puis calculer
+        $P(Y=3)$, $P(Y=2)$ et $P(Y\ge 1)$.
+\end{questions}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+On note $R$ \og la pièce est réussie\fg{} : $P(R)=0{,}9$ et $P(\overline{R})=1-0{,}9$,
+soit \res{$P(\overline{R})=0{,}1$}. Au bout de chaque chemin, la valeur de $X$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.44\linewidth}\centering
+\begin{tikzpicture}
+  \arbredeux{R}{0{,}9}{0{,}1}
+  \feuille{SS}{$X=2$}
+  \feuille{SE}{$X=1$}
+  \feuille{ES}{$X=1$}
+  \feuille{EE}{$X=0$}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+P(X=2) &= 0{,}9\times 0{,}9 &\qquad& \rem{un seul chemin : $(R\,;R)$}\\
+P(X=2) &= \res{0{,}81} &&
+\end{calculs}
+\begin{calculs}
+P(X=1) &= 0{,}9\times 0{,}1+0{,}1\times 0{,}9 &\qquad& \rem{deux chemins :
+$(R\,;\overline{R})$ et $(\overline{R}\,;R)$}\\
+P(X=1) &= 0{,}09+0{,}09 &&\\
+P(X=1) &= \res{0{,}18} &&
+\end{calculs}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[c]{0.46\linewidth}\raggedright
+On note $V$ \og le feu est vert\fg{} : $P(V)=0{,}6$ et $P(\overline{V})=1-0{,}6$, soit
+\res{$P(\overline{V})=0{,}4$}. Au bout de chaque chemin, la valeur de $Y$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.50\linewidth}\centering
+\begin{tikzpicture}[y=0.75cm]
+  \arbretrois{V}{0{,}6}{0{,}4}
+  \feuille{SSS}{$Y=3$} \feuille{SSE}{$Y=2$} \feuille{SES}{$Y=2$}
+  \feuille{SEE}{$Y=1$} \feuille{ESS}{$Y=2$} \feuille{ESE}{$Y=1$}
+  \feuille{EES}{$Y=1$} \feuille{EEE}{$Y=0$}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+P(Y=3) &= 0{,}6\times 0{,}6\times 0{,}6 &\qquad& \rem{un seul chemin : $(V\,;V\,;V)$}\\
+P(Y=3) &= \res{0{,}216} &&
+\end{calculs}
+\begin{calculs}
+P(Y=2) &= 0{,}144+0{,}144+0{,}144 &\qquad& \rem{trois chemins, chacun
+$0{,}6\times 0{,}6\times 0{,}4$}\\
+P(Y=2) &= \res{0{,}432} &&
+\end{calculs}
+\explique{L'événement contraire de $\{Y\ge 1\}$, \og au moins un feu vert\fg{}, est
+$\{Y=0\}$, \og aucun feu vert\fg{} : un seul chemin.}{plus court que d'additionner sept
+chemins}
+\begin{calculs}
+P(Y=0) &= 0{,}4\times 0{,}4\times 0{,}4 &\qquad& \rem{chemin
+$(\overline{V}\,;\overline{V}\,;\overline{V})$}\\
+P(Y=0) &= 0{,}064 &&\\
+P(Y\ge 1) &= 1-0{,}064 && \rem{événement contraire}\\
+P(Y\ge 1) &= \res{0{,}936} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Un archer atteint la cible avec la probabilité $0{,}7$, indépendamment d'un tir à
+        l'autre. Il tire $2$ flèches ; on note $X$ le nombre de flèches dans la cible.
+        Construire l'arbre, puis calculer $P(X=2)$ et $P(X=1)$.
+  \item Lors d'un concours, un robot doit franchir $3$ obstacles. Il franchit chacun
+        avec la probabilité $0{,}8$, indépendamment des autres. On note $Y$ le nombre
+        d'obstacles franchis. Construire l'arbre, puis calculer $P(Y=3)$, $P(Y=2)$ et
+        $P(Y\ge 1)$.
+\end{questions}
+\reponse{a) $P(X=2)=0{,}49$ ; $P(X=1)=0{,}42$ ;\; b)~$P(Y=3)=0{,}512$ ;
+$P(Y=2)=0{,}384$ ; $P(Y\ge 1)=0{,}992$.}
+\end{methodebox}
+
+\afaire{exercices 17 à 21}
+
+\partiecours{Simulation d'échantillons}
+
+\textbf{But :} faire répéter par l'ordinateur un grand nombre de fois une épreuve de
+Bernoulli, pour observer les fréquences de succès qu'on obtient.
+
+\begin{definitionbox}[Définition 8 --- Échantillon d'une loi de Bernoulli]
+Un \textbf{échantillon de taille $n$} d'une loi de Bernoulli de paramètre $p$ est la liste
+des $n$ résultats ($1$ ou $0$) de $n$ épreuves identiques et indépendantes (partie V).
+La \textbf{fréquence observée} des $1$ dans l'échantillon est
+\[
+f=\frac{\text{nombre de }1}{n}.
+\]
+\end{definitionbox}
+
+\begin{remarquebox}[En Python]
+\begin{minipage}[t]{0.46\linewidth}\vspace{0pt}
+\begin{python}
+from random import random
+
+def bernoulli(p):
+    if random() < p:
+        return 1
+    else:
+        return 0
+
+def frequence(n, p):
+    nb = 0
+    for i in range(n):
+        nb = nb + bernoulli(p)
+    return nb / n
+
+def simulation(N, n, p):
+    L = []
+    for j in range(N):
+        L.append(frequence(n, p))
+    return L
+\end{python}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.50\linewidth}\vspace{0pt}\raggedright
+\texttt{random()} donne un nombre au hasard entre $0$ et $1$ ; le test
+\texttt{random() < p} est vrai avec la probabilité $p$ (seconde).
+
+\smallskip
+\texttt{bernoulli(p)} simule une épreuve : elle renvoie $1$ (succès) ou $0$ (échec).
+
+\smallskip
+\texttt{frequence(n, p)} simule un échantillon de taille $n$ : \texttt{nb} compte les
+succès, et la fonction renvoie la fréquence observée des $1$.
+
+\smallskip
+\texttt{simulation(N, n, p)} simule $N$ échantillons et renvoie la liste \texttt{L} de
+leurs $N$ fréquences (\texttt{L.append} ajoute une valeur à la liste). On les représente
+ensuite par un nuage de points ou un histogramme (partie VII).
+\end{minipage}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 6 --- Compléter et utiliser un programme de simulation]
+\etapeexemples
+Une imprimante 3D réussit une pièce avec la probabilité $0{,}9$, indépendamment des
+autres pièces.
+\begin{questions}[label=\alph*)]
+  \item Compléter la fonction \texttt{piece()}, qui renvoie $1$ si la pièce est réussie
+        et $0$ sinon.
+  \item Compléter la fonction \texttt{frequence(n)}, qui renvoie la fréquence des pièces
+        réussies dans un échantillon de $n$ pièces.
+  \item Compléter la fonction \texttt{simulation(N, n)}, qui renvoie la liste des
+        fréquences de $N$ échantillons de $n$ pièces.
+  \item \texttt{simulation(5, 50)} a renvoyé \texttt{[0.88, 0.92, 0.9, 0.86, 0.94]}.
+        Combien de pièces réussies compte le premier échantillon ? Pourquoi les cinq
+        fréquences sont-elles différentes ?
+\end{questions}
+\begin{python}
+from random import random
+
+def piece():
+    if random() < .....:
+        return 1
+    else:
+        return .....
+
+def frequence(n):
+    nb = 0
+    for i in range(n):
+        nb = nb + piece()
+    return .....
+
+def simulation(N, n):
+    L = []
+    for j in range(N):
+        L.append(.....)
+    return L
+\end{python}
+\begin{correction}
+\cas{a)}
+\explique{\texttt{if random() < \res{0.9}:} puis \texttt{return \res{0}}.}{vrai avec la
+probabilité $0{,}9$ : pièce réussie ; sinon, échec}
+\cas{b)}
+\explique{\texttt{return \res{nb / n}}.}{\texttt{nb} compte les pièces réussies ; on
+divise par $n$}
+\cas{c)}
+\explique{\texttt{L.append(\res{frequence(n)})}.}{chaque tour de boucle simule un
+échantillon de $n$ pièces}
+\cas{d)}
+\begin{calculs}
+\text{nombre de pièces réussies} &= 0{,}88\times 50 &\qquad& \rem{fréquence $\times$
+taille de l'échantillon}\\
+\text{nombre de pièces réussies} &= \res{44} &&
+\end{calculs}
+\explique{Chaque échantillon est tiré au hasard : \res{la fréquence change d'un échantillon
+à l'autre}, autour de $0{,}9$.}{$E(X)=0{,}9$ pour une pièce (partie IV)}
+\end{correction}
+
+\etape{À vous de jouer}
+Un archer atteint la cible avec la probabilité $0{,}7$, indépendamment d'un tir à
+l'autre.
+\begin{questions}[label=\alph*)]
+  \item Compléter la fonction \texttt{tir()}, qui renvoie $1$ si la flèche atteint la
+        cible et $0$ sinon.
+  \item Compléter la fonction \texttt{frequence(n)}, qui renvoie la fréquence des flèches
+        dans la cible sur un échantillon de $n$ tirs.
+  \item Compléter la fonction \texttt{simulation(N, n)}, qui renvoie la liste des
+        fréquences de $N$ échantillons de $n$ tirs.
+  \item \texttt{simulation(4, 20)} a renvoyé \texttt{[0.65, 0.75, 0.7, 0.8]}. Combien de
+        flèches dans la cible compte le premier échantillon ? Pourquoi les quatre
+        fréquences sont-elles différentes ?
+\end{questions}
+\begin{python}
+from random import random
+
+def tir():
+    if random() < .....:
+        return 1
+    else:
+        return .....
+
+def frequence(n):
+    nb = 0
+    for i in range(n):
+        nb = nb + tir()
+    return .....
+
+def simulation(N, n):
+    L = []
+    for j in range(N):
+        L.append(.....)
+    return L
+\end{python}
+\reponse{a) \texttt{0.7} et \texttt{0} ;\; b)~\texttt{nb / n} ;\;
+c)~\texttt{frequence(n)} ;\; d)~$13$ flèches ; chaque échantillon est tiré au hasard, la
+fréquence change d'un échantillon à l'autre.}
+\end{methodebox}
+
+\afaire{exercices 22 à 25}
+
+\partiecours{Fluctuation d'échantillonnage}
+
+\textbf{But :} savoir si la fréquence observée sur un échantillon est \og normale\fg{}
+pour le modèle de paramètre $p$, ou si elle en est étonnamment loin.
+
+\begin{definitionbox}[Définition 9 --- Fluctuation d'échantillonnage]
+La fréquence observée des $1$ change d'un échantillon à l'autre, même quand ils ont la même
+taille : c'est la \textbf{fluctuation d'échantillonnage}. On mesure sa dispersion par
+l'\textbf{écart-type} $s$ de la série des fréquences de $N$ échantillons simulés, calculé
+à la calculatrice ou au tableur, comme en seconde.
+\end{definitionbox}
+
+Dans une région, $20\,\%$ des foyers sont équipés de panneaux solaires. Choisir $100$
+foyers au hasard revient à répéter $100$ fois une épreuve de Bernoulli de paramètre
+$p=0{,}2$ (la région compte des centaines de milliers de foyers). On a simulé
+$N=200$ échantillons de $100$ foyers ; chaque croix donne la fréquence des foyers
+équipés dans un échantillon.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[x=0.05cm,y=14cm,xmin=0,xmax=208,ymin=0.06,ymax=0.36,
+  axis lines=left,axis line style={-{Stealth[length=2mm]}},
+  xtick={0,50,100,150,200},ytick={0.08,0.12,0.16,0.2,0.24,0.28,0.32},
+  yticklabel style={/pgf/number format/.cd,fixed,fixed zerofill,precision=2,use comma},
+  tick label style={font=\scriptsize},label style={font=\footnotesize},
+  xlabel={numéro de l'échantillon},ylabel={fréquence},
+  every axis x label/.style={at={(axis description cs:1,0)},anchor=north east,yshift=-14pt},
+  every axis y label/.style={at={(axis description cs:0,1)},anchor=south west},
+  clip=false]
+\draw[coulGrille,dashed] (axis cs:0,0.12) -- (axis cs:200,0.12)
+  node[right,black,font=\footnotesize]{$p-2s$};
+\draw[coulGrille] (axis cs:0,0.2) -- (axis cs:200,0.2)
+  node[right,black,font=\footnotesize]{$p$};
+\draw[coulGrille,dashed] (axis cs:0,0.28) -- (axis cs:200,0.28)
+  node[right,black,font=\footnotesize]{$p+2s$};
+\draw[red,line width=1.6pt] (axis cs:0,0.12) -- (axis cs:0,0.28);
+\addplot[only marks,mark=x,mark size=1.4pt,coulCourbe] coordinates {
+    (1,0.19) (2,0.15) (3,0.25) (4,0.16) (5,0.17) (6,0.14) (7,0.24) (8,0.17) (9,0.19)
+    (10,0.14) (11,0.26) (12,0.26) (13,0.18) (14,0.20) (15,0.15) (16,0.19) (17,0.19)
+    (18,0.20) (19,0.22) (20,0.26) (21,0.22) (22,0.14) (23,0.22) (24,0.18) (25,0.18)
+    (26,0.17) (27,0.15) (28,0.21) (29,0.23) (30,0.16) (31,0.19) (32,0.23) (33,0.21)
+    (34,0.19) (35,0.23) (36,0.19) (37,0.22) (38,0.22) (39,0.15) (40,0.26) (41,0.18)
+    (42,0.20) (43,0.15) (44,0.13) (45,0.15) (46,0.20) (47,0.21) (48,0.20) (49,0.13)
+    (50,0.18) (51,0.25) (52,0.19) (53,0.21) (54,0.16) (55,0.22) (56,0.18) (57,0.28)
+    (58,0.26) (59,0.19) (60,0.21) (61,0.26) (62,0.27) (63,0.22) (64,0.19) (65,0.14)
+    (66,0.15) (67,0.23) (69,0.17) (70,0.21) (71,0.17) (72,0.16) (74,0.21) (75,0.21)
+    (76,0.21) (77,0.18) (78,0.21) (79,0.13) (80,0.22) (81,0.20) (82,0.20) (83,0.23)
+    (84,0.20) (86,0.23) (88,0.19) (89,0.21) (90,0.24) (91,0.23) (92,0.15) (93,0.19)
+    (94,0.25) (95,0.23) (97,0.14) (98,0.22) (99,0.23) (100,0.21) (101,0.19)
+    (102,0.15) (103,0.28) (104,0.16) (105,0.21) (106,0.19) (107,0.15) (108,0.23)
+    (109,0.23) (110,0.20) (111,0.20) (112,0.21) (113,0.21) (114,0.19) (115,0.16)
+    (117,0.15) (118,0.22) (119,0.22) (120,0.22) (121,0.15) (122,0.19) (123,0.26)
+    (124,0.17) (125,0.20) (126,0.14) (127,0.18) (128,0.21) (129,0.20) (130,0.18)
+    (131,0.24) (132,0.19) (133,0.23) (134,0.17) (135,0.24) (136,0.18) (137,0.18)
+    (138,0.22) (139,0.16) (140,0.19) (141,0.16) (142,0.21) (143,0.20) (144,0.18)
+    (145,0.27) (146,0.21) (147,0.21) (148,0.24) (149,0.24) (151,0.17) (152,0.22)
+    (153,0.18) (154,0.19) (155,0.13) (156,0.23) (157,0.21) (158,0.22) (159,0.21)
+    (160,0.15) (161,0.20) (162,0.20) (163,0.27) (164,0.25) (165,0.21) (167,0.19)
+    (168,0.14) (169,0.20) (170,0.16) (171,0.14) (172,0.21) (173,0.15) (175,0.16)
+    (176,0.21) (177,0.24) (178,0.26) (180,0.23) (181,0.24) (182,0.17) (183,0.19)
+    (184,0.21) (185,0.13) (186,0.20) (187,0.14) (188,0.16) (189,0.21) (190,0.21)
+    (191,0.19) (192,0.22) (193,0.15) (194,0.19) (195,0.23) (196,0.15) (197,0.17)
+    (198,0.18) (199,0.25) (200,0.22)
+};
+\addplot[only marks,mark=x,mark size=1.8pt,coulCourbeB,thick] coordinates {
+    (68,0.29) (73,0.29) (85,0.29) (87,0.29) (96,0.29) (116,0.11) (150,0.31)
+    (166,0.11) (174,0.11) (179,0.29)
+};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+Les fréquences fluctuent entre $0{,}11$ et $0{,}31$, autour de $p=0{,}2$. Leur écart-type
+vaut $s\approx 0{,}04$. On compte : $71\,\%$ des fréquences dans
+$[p-s\,;p+s]=[0{,}16\,;0{,}24]$, $95\,\%$ dans $[p-2s\,;p+2s]=[0{,}12\,;0{,}28]$ (les
+$10$ croix rouges sont dehors) et toutes dans $[p-3s\,;p+3s]=[0{,}08\,;0{,}32]$.
+
+\begin{proprietebox}[Propriété 5 --- Dispersion des fréquences (constatée sur des simulations)]
+On simule plusieurs centaines d'échantillons de taille $n$ d'une loi de Bernoulli de
+paramètre $p$ ; $s$ est l'écart-type de la série de leurs fréquences.
+\begin{itemize}
+  \item Environ $95\,\%$ des fréquences sont dans l'intervalle $[p-2s\,;p+2s]$ : à une
+        distance de $p$ inférieure ou égale à $2s$.
+  \item Presque toutes (plus de $99\,\%$) sont dans l'intervalle $[p-3s\,;p+3s]$.
+  \item $s$ est proportionnel à $\frac{1}{\sqrt{n}}$ : quand on multiplie $n$ par $4$,
+        $s$ est divisé par $2$ ; pour diviser $s$ par $10$, il faut multiplier $n$ par
+        $100$. Avec $p=0{,}2$ :
+\end{itemize}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Taille $n$ de l'échantillon & $25$ & $100$ & $400$ & $1\,600$\\
+\hline
+Écart-type $s$ des fréquences & $0{,}08$ & $0{,}04$ & $0{,}02$ & $0{,}01$\\
+\hline
+\end{tabular}
+\end{center}
+\end{proprietebox}
+
+\begin{definitionbox}[Définition 10 --- Situation fréquente, situation rare]
+Soit $f$ la fréquence observée sur un échantillon.
+\begin{itemize}
+  \item Si $f$ est dans $[p-2s\,;p+2s]$, c'est une situation \textbf{fréquente} dans le
+        modèle : rien d'étonnant.
+  \item Sinon, c'est une situation \textbf{rare} (environ $5\,\%$ des échantillons) : un
+        hasard peu probable, ou un modèle qui ne convient pas à cet échantillon. Hors de
+        $[p-3s\,;p+3s]$, elle est très rare, et on peut douter du modèle.
+\end{itemize}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 7 --- Interpréter la distance entre une fréquence observée et $p$]
+\etapeexemples
+Dans une région, $20\,\%$ des foyers sont équipés de panneaux solaires ($p=0{,}2$). Sur
+$200$ échantillons simulés de $100$ foyers, l'écart-type des fréquences vaut
+$s\approx 0{,}04$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $p-2s$, $p+2s$, $p-3s$ et $p+3s$.
+  \item Dans la commune A, $25$ des $100$ foyers choisis au hasard sont équipés. Est-ce une
+        situation fréquente ou rare dans le modèle ?
+  \item Dans la commune B, $36$ des $100$ foyers choisis au hasard sont équipés. Même
+        question ; que peut-on en penser ?
+  \item Avec des échantillons de $400$ foyers, quelle valeur de $s$ peut-on prévoir ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+p-2s &= 0{,}2-2\times 0{,}04 = \res{0{,}12} &\qquad& \rem{$2s=0{,}08$}\\
+p+2s &= 0{,}2+2\times 0{,}04 = \res{0{,}28} &&\\
+p-3s &= 0{,}2-3\times 0{,}04 = \res{0{,}08} && \rem{$3s=0{,}12$}\\
+p+3s &= 0{,}2+3\times 0{,}04 = \res{0{,}32} &&
+\end{calculs}
+\cas{b)}
+\explique{$f=\dfrac{25}{100}=0{,}25$, qui est dans $[0{,}12\,;0{,}28]$ : c'est une
+\res{situation fréquente}. Rien d'étonnant : la commune A ressemble à la
+région.}{distance à $p$ : $0{,}05$, inférieure à $2s=0{,}08$}
+\cas{c)}
+\explique{$f=\dfrac{36}{100}=0{,}36$, qui est hors de $[0{,}08\,;0{,}32]$ : c'est une
+\res{situation très rare} dans le modèle. On peut penser que la commune B compte plus de
+$20\,\%$ de foyers équipés.}{distance à $p$ : $0{,}16$, supérieure à $3s=0{,}12$}
+\cas{d)}
+\explique{$400=4\times 100$ : la taille est multipliée par $4$, donc $s$ est divisé par
+$2$ : \res{$s\approx 0{,}02$}.}{propriété 5}
+\end{correction}
+
+\etape{À vous de jouer}
+Chez un fabricant de vélos électriques, $40\,\%$ des vélos vendus ont une batterie longue
+autonomie ($p=0{,}4$). Sur $200$ échantillons simulés de $100$ vélos, l'écart-type des
+fréquences vaut $s\approx 0{,}05$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $p-2s$, $p+2s$, $p-3s$ et $p+3s$.
+  \item Dans le magasin A, $46$ des $100$ vélos vendus choisis au hasard ont une batterie
+        longue autonomie. Est-ce une situation fréquente ou rare dans le modèle ?
+  \item Dans le magasin B, $22$ des $100$ vélos vendus choisis au hasard ont une batterie
+        longue autonomie. Même question ; que peut-on en penser ?
+  \item Avec des échantillons de $400$ vélos, quelle valeur de $s$ peut-on prévoir ?
+\end{questions}
+\reponse{a) $0{,}30$ ; $0{,}50$ ; $0{,}25$ ; $0{,}55$ ;\; b)~fréquente ($0{,}46$) ;\;
+c)~très rare ($0{,}22$) : le magasin B vend sans doute moins de $40\,\%$ de batteries
+longue autonomie ;\; d)~$s\approx 0{,}025$.}
+\end{methodebox}
+
+\afaire{exercices 26 à 29}
+
+\end{document}

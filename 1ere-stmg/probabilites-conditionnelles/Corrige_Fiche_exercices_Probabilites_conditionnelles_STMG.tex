@@ -1,0 +1,1573 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 6 --- Probabilités conditionnelles --- corrigé}{1\textsuperscript{re} STMG}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\let\partieligne\partie
+\renewcommand{\partie}[1]{\besoinplace{16\baselineskip}\partieligne{#1}}
+\BeforeBeginEnvironment{exo}{\besoinplace{10\baselineskip}}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\newcommand{\venn}[6]{%
+  \draw (-1.75,-1.35) rectangle (2.75,1.35);
+  \node[font=\footnotesize] at (-1.5,1.1) {$\Omega$};
+  \draw[coulCourbe,thick] (0,0) circle (1.1);
+  \draw[coulCourbeB,thick] (1,0) circle (1.1);
+  \node[coulCourbe] at (-0.95,0.95) {$#1$};
+  \node[coulCourbeB] at (1.95,0.95) {$#2$};
+  \node at (-0.6,0) {#3};
+  \node at (0.5,0) {#4};
+  \node at (1.6,0) {#5};
+  \node at (2.15,-1.05) {#6};}
+\newcommand{\vennliste}[6]{%
+  \draw (-1.75,-1.95) rectangle (2.75,1.35);
+  \node[font=\footnotesize] at (-1.5,1.1) {$\Omega$};
+  \draw[coulCourbe,thick] (0,0) circle (1.1);
+  \draw[coulCourbeB,thick] (1,0) circle (1.1);
+  \node[coulCourbe] at (-0.95,0.95) {$#1$};
+  \node[coulCourbeB] at (1.95,0.95) {$#2$};
+  \node[font=\footnotesize,align=center] at (-0.55,0) {#3};
+  \node[font=\footnotesize,align=center] at (0.5,0) {#4};
+  \node[font=\footnotesize,align=center] at (1.55,0) {#5};
+  \node[font=\footnotesize] at (0.5,-1.6) {#6};}
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt}}
+\newcommand{\arbre}[8]{%
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (2.6,1.4) {$#1$};
+  \node[evt] (nA) at (2.6,-1.4) {$\overline{#1}$};
+  \node[evt] (AB) at (5.2,2.1) {$#2$};
+  \node[evt] (AnB) at (5.2,0.7) {$\overline{#2}$};
+  \node[evt] (nAB) at (5.2,-0.7) {$#2$};
+  \node[evt] (nAnB) at (5.2,-2.1) {$\overline{#2}$};
+  \draw (O.center) -- node[proba]{$#3$} (A);
+  \draw (O.center) -- node[proba]{$#4$} (nA);
+  \draw (A) -- node[proba]{$#5$} (AB);
+  \draw (A) -- node[proba]{$#6$} (AnB);
+  \draw (nA) -- node[proba]{$#7$} (nAB);
+  \draw (nA) -- node[proba]{$#8$} (nAnB);}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\feuilles}[2]{\feuille{AB}{$#1\cap #2$}\feuille{AnB}{$#1\cap\overline{#2}$}%
+  \feuille{nAB}{$\overline{#1}\cap #2$}\feuille{nAnB}{$\overline{#1}\cap\overline{#2}$}}
+
+\begin{document}
+
+\entetefiche{Chapitre 6 --- Probabilités conditionnelles}{Première STMG}
+
+\partie{Vocabulaire des événements}
+
+\begin{exo}[Décrire des événements]
+\cas{1)}
+\explique{$\Omega=\res{\ens{1\,;2\,;3\,;\dots\,;20}}$ : $20$ issues.}{tous les numéros des
+jetons}
+\explique{$A=\res{\ens{4\,;8\,;12\,;16\,;20}}$}{les multiples de $4$ jusqu'à $20$}
+\explique{$B=\res{\ens{15\,;16\,;17\,;18\,;19\,;20}}$}{$15$ compris : \og supérieur ou
+égal\fg{}}
+\cas{2)}
+\explique{$A\cap B$ : \og obtenir un multiple de $4$ \textbf{et} un nombre supérieur ou égal
+à $15$\fg{} ; $A\cap B=\res{\ens{16\,;20}}$.}{les issues communes à $A$ et à $B$}
+\explique{$A\cup B$ : \og obtenir un multiple de $4$ \textbf{ou} un nombre supérieur ou égal
+à $15$\fg{} ;\\ $A\cup B=\res{\ens{4\,;8\,;12\,;15\,;16\,;17\,;18\,;19\,;20}}$.}{les issues
+de $A$, puis celles de $B$ qui manquent ; $16$ et $20$ ne s'écrivent qu'une fois}
+\cas{3)}
+\explique{$\overline{B}=\res{\ens{1\,;2\,;3\,;\dots\,;14}}$ : \og obtenir un nombre
+\res{inférieur ou égal à $14$}\fg{}.}{les issues de $\Omega$ qui ne sont pas dans $B$}
+\cas{4)}
+\explique{$C=\ens{1\,;3\,;5\,;\dots\,;19}$ et $A\cap C=\varnothing$, donc \res{$A$ et $C$
+sont incompatibles}.}{un multiple de $4$ est pair, jamais impair}
+\explique{$B\cap C=\ens{15\,;17\,;19}$, donc \res{$B$ et $C$ ne sont pas incompatibles}.}{si
+on obtient $15$, $B$ et $C$ sont réalisés en même temps}
+\end{exo}
+
+\begin{exo}[Écrire l'univers]
+\cas{a)}
+\explique{$\Omega=\res{\ens{\text{P}\,;\text{F}}}$}{deux issues}
+\cas{b)}
+\explique{$\Omega=\res{\ens{\text{R}\,;\text{V}\,;\text{B}\,;\text{J}}}$}{une issue par
+secteur}
+\cas{c)}
+\explique{$\Omega=\res{\ens{11\,;12\,;21\,;22}}$}{$2$ choix pour le premier chiffre, puis $2$
+pour le second}
+\cas{d)}
+\explique{$\Omega=\res{\ens{1\,;2\,;6}}$}{on note le nombre lu : trois résultats
+possibles, même si le dé a six faces}
+\rem{Dans d), une issue s'écrit une seule fois dans l'univers, même quand elle peut se
+produire de plusieurs façons.}
+\end{exo}
+
+\begin{exo}[En phrase complète]
+\cas{1)}
+\explique{$A\cap B$ : \og \res{l'élève est en première \textbf{et} fait partie de
+l'association sportive}\fg{}.}{les deux à la fois}
+\explique{$A\cup B$ : \og \res{l'élève est en première \textbf{ou} fait partie de
+l'association sportive}\fg{} (ou les deux).}{au moins un des deux}
+\explique{$\overline{A}$ : \og \res{l'élève n'est pas en première}\fg{}.}{il est en
+seconde ou en terminale}
+\explique{$\overline{A}\cap B$ : \og \res{l'élève fait partie de l'association sportive,
+mais n'est pas en première}\fg{}.}{$B$ \textbf{et} le contraire de $A$}
+\cas{2)}
+\explique{L'élève fait partie de l'association sportive : \res{$B$ est réalisé}, donc
+\res{$A\cup B$ aussi}.}{pour $A\cup B$, il suffit qu'un des deux soit réalisé}
+\explique{Il est en seconde, donc pas en première : \res{$\overline{A}$ est réalisé}, mais
+\res{$A$ et $A\cap B$ ne le sont pas}.}{pour $A\cap B$, il faudrait qu'il soit aussi en
+première}
+\end{exo}
+
+\partie{Diagramme de Venn}
+
+\begin{exo}[Compléter un diagramme de Venn]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On part de la zone commune : $12$ bénévoles font les deux.
+\begin{calculs}
+35-12 &= \res{23} &&\justif{réparation seulement}\\
+28-12 &= \res{16} &&\justif{aide aux devoirs seulement}\\
+60-(23+12+16) &= \res{9} &&\justif{ni l'un ni l'autre : l'accueil}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{R}{D}{$23$}{$12$}{$16$}{$9$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+23+12+16 &= \res{51} &&\justif{au moins une activité : les trois zones des cercles}\\
+23+16 &= \res{39} &&\justif{une seule : les deux zones \og seulement\fg{}}
+\end{calculs}
+\explique{$51$ bénévoles font au moins une des deux activités, \res{$9$} n'en font aucune
+(ils tiennent l'accueil) et $39$ en font une seule.}{aucune : la zone hors des cercles}
+\rem{Erreur fréquente : additionner $35+28=63$, plus que $60$ ; les $12$ bénévoles qui font
+les deux sont alors comptés deux fois.}
+\end{exo}
+
+\begin{exo}[Partir de la zone commune]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On part de la zone commune : $8$ élèves font les deux.
+\begin{calculs}
+18-8 &= \res{10} &&\justif{sport seulement}\\
+30-5 &= 25 &&\justif{élèves dans au moins un des cercles}\\
+25-(10+8) &= \res{7} &&\justif{musique seulement}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{S}{M}{$10$}{$8$}{$7$}{$5$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+8+7 &= \res{15} &&\justif{les deux zones du cercle $M$}
+\end{calculs}
+\explique{$15$ élèves jouent d'un instrument de musique.}{zone commune et \og musique
+seulement\fg{}}
+\cas{3)}
+\begin{calculs}
+10+7 &= \res{17} &&\justif{les deux zones \og seulement\fg{}}
+\end{calculs}
+\explique{$17$ élèves font une seule des deux activités.}{la zone commune n'est pas
+comptée}
+\end{exo}
+
+\begin{exo}[Lire un diagramme de Venn]
+\cas{1)}
+\begin{calculs}
+70+30 &= \res{100} &&\justif{les deux zones du cercle $V$}
+\end{calculs}
+\explique{$100$ visiteurs ont essayé un vélo électrique.}{zone commune comprise}
+\cas{2)}
+\explique{$30$ est le \res{nombre de visiteurs qui ont essayé le vélo électrique
+\textbf{et} la trottinette électrique}.}{la zone commune, $V\cap T$}
+\explique{$60$ est le \res{nombre de visiteurs qui n'ont essayé ni le vélo ni la
+trottinette}.}{hors des deux cercles}
+\cas{3)}
+\begin{calculs}
+70+40 &= \res{110} &&\justif{les deux zones \og seulement\fg{}}
+\end{calculs}
+\explique{$110$ visiteurs ont essayé un seul des deux engins.}{la zone commune n'est pas
+comptée}
+\cas{4)}
+\explique{$V\cup T$ est l'ensemble des \res{visiteurs qui ont essayé le vélo électrique ou
+la trottinette électrique} (au moins un des deux).}{la réunion}
+\begin{calculs}
+70+30+40 &= \res{140} &&\justif{les trois zones des cercles ; ou $200-60$}
+\end{calculs}
+\end{exo}
+
+\partie{Équiprobabilité}
+
+\begin{exo}[Calculer des probabilités]
+\cas{a)}
+\explique{Les boules sont indiscernables : il y a équiprobabilité, avec $30$ issues.}{chaque
+boule a la même chance}
+\begin{calculs}
+P(A) &= \dfrac{10}{30} &&\justif{$A=\ens{3\,;6\,;9\,;\dots\,;30}$ : $10$ multiples de $3$}\\
+P(A) &= \dfrac{\barre{10}\times 1}{\barre{10}\times 3} &&\justif{on simplifie par $10$}\\
+P(A) &= \res{\dfrac{1}{3}} &&\\
+P(B) &= \dfrac{6}{30} = \res{\dfrac{1}{5}} &&\justif{$B=\ens{5\,;10\,;15\,;20\,;25\,;30}$ ;
+on simplifie par $6$}\\
+P(A\cap B) &= \dfrac{2}{30} = \res{\dfrac{1}{15}} &&\justif{$A\cap B=\ens{15\,;30}$ ; on
+simplifie par $2$}
+\end{calculs}
+\cas{b)}
+\explique{Le bénévole est choisi au hasard : il y a équiprobabilité, et on divise chaque
+effectif par $60$.}{$60$ bénévoles en tout}
+\begin{calculs}
+P(R\cap D) &= \dfrac{12}{60} = \res{0{,}2} &&\justif{la zone commune}\\
+P(R\cup D) &= \dfrac{23+12+16}{60} &&\justif{les trois zones des cercles}\\
+P(R\cup D) &= \dfrac{51}{60} = \res{0{,}85} &&\\
+P(\overline{R}\cap\overline{D}) &= \dfrac{9}{60} = \res{0{,}15} &&\justif{ni réparation ni
+aide aux devoirs}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Le stock d'une boutique]
+\explique{La veste est choisie au hasard : il y a équiprobabilité, et on divise chaque
+effectif par $100$.}{$35+15+5+10+20+15=100$ vestes}
+\cas{1)}
+\begin{calculs}
+P(N) &= \dfrac{10+20+15}{100} &&\justif{$N$ : \og la veste est noire\fg{} ; toute la
+deuxième ligne}\\
+P(N) &= \dfrac{45}{100} = \res{0{,}45} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+P(G) &= \dfrac{15+5+20+15}{100} &&\justif{$G$ : \og taille M ou L\fg{} ; colonnes M et
+L}\\
+P(G) &= \dfrac{55}{100} = \res{0{,}55} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(E) &= \dfrac{35}{100} = \res{0{,}35} &&\justif{$E$ : \og bleue et de taille S\fg{} : une
+seule case}
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(F) &= \dfrac{5+15}{100} &&\justif{$F$ : \og taille L\fg{} ; toute la dernière
+colonne}\\
+P(F) &= \dfrac{20}{100} = \res{0{,}2} &&
+\end{calculs}
+\rem{On nomme chaque événement par une lettre : on écrit ensuite $P(N)$ plutôt qu'une
+phrase.}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{a)}
+\explique{\res{Vrai} : obtenir $7$ est impossible avec un dé numéroté de $1$ à $6$, et un
+événement impossible a une probabilité égale à $0$.}{définition 5}
+\cas{b)}
+\explique{\res{Faux} : une probabilité est toujours comprise entre $0$ et $1$.}{$1{,}2$ est
+plus grand que $1$}
+\cas{c)}
+\explique{\res{Faux} : l'urne contient $5+3=8$ boules, dont $3$ vertes ; la probabilité de
+tirer une boule verte est $\res{\dfrac{3}{8}}$.}{on divise par le nombre \textbf{total} de
+boules, pas par le nombre de boules rouges}
+\cas{d)}
+\explique{\res{Faux} : le $2$ est écrit sur trois faces sur six, il a une probabilité de
+$\dfrac{3}{6}$, soit $\dfrac{1}{2}$ ; le $6$, sur une seule face, a une probabilité de
+$\dfrac{1}{6}$.}{les six faces sont équiprobables, pas les trois nombres lus}
+\end{exo}
+
+\partie{Loi de probabilité}
+
+\begin{exo}[Utiliser une loi de probabilité]
+\cas{1)}
+\begin{calculs}
+0{,}05+0{,}10+0{,}15+p+0{,}30+0{,}15 &= 1 &&\justif{la somme des probabilités vaut $1$}\\
+0{,}75+p &= 1 &&\\
+p &= 1-0{,}75 &&\\
+p &= \res{0{,}25} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+P(A) &= 0{,}25+0{,}30+0{,}15 &&\justif{$A=\ens{6\,;8\,;10}$ : on additionne}\\
+P(A) &= \res{0{,}70} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(B) &= 0{,}05+0{,}10+0{,}15 &&\justif{$B=\ens{0\,;2\,;4}$}\\
+P(B) &= \res{0{,}30} &&
+\end{calculs}
+\rem{On peut vérifier : $A$ et $B$ réunissent toutes les issues, sans issue commune, et
+$0{,}70+0{,}30=1$.}
+\end{exo}
+
+\begin{exo}[À la caisse]
+\cas{1)}
+\begin{calculs}
+0{,}35+0{,}40+0{,}20+p &= 1 &&\justif{la somme des probabilités vaut $1$}\\
+0{,}95+p &= 1 &&\\
+p &= 1-0{,}95 &&\\
+p &= \res{0{,}05} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+0{,}35+0{,}40 &= \res{0{,}75} &&\justif{\og moins de $5$ min\fg{} et \og de $5$ à $10$
+min\fg{}}
+\end{calculs}
+\explique{La probabilité d'attendre moins de $10$ minutes est $0{,}75$.}{on additionne les
+deux premières lignes}
+\cas{3)}
+\begin{calculs}
+0{,}40+0{,}20+0{,}05 &= \res{0{,}65} &&\justif{toutes les lignes sauf \og moins de $5$
+min\fg{}}
+\end{calculs}
+\cas{4)}
+\explique{Le contraire de \og attendre moins de $10$ minutes\fg{} est \og \res{attendre $10$
+minutes ou plus}\fg{}.}{les deux dernières lignes du tableau}
+\begin{calculs}
+0{,}20+0{,}05 &= \res{0{,}25} &&\justif{on retrouve $1-0{,}75$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Un dé truqué]
+\cas{1)}
+\begin{calculs}
+0{,}05+4p+0{,}35 &= 1 &&\justif{les quatre autres faces ont chacune la probabilité $p$}\\
+0{,}40+4p &= 1 &&\\
+4p &= 1-0{,}40 &&\\
+4p &= 0{,}60 &&\\
+p &= \dfrac{0{,}60}{4} &&\justif{on divise par $4$}\\
+p &= \res{0{,}15} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+P(A) &= 0{,}05+0{,}15+0{,}15 &&\justif{$A=\ens{1\,;3\,;5}$}\\
+P(A) &= \res{0{,}35} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(B) &= 0{,}15+0{,}15+0{,}15+0{,}35 &&\justif{$B=\ens{3\,;4\,;5\,;6}$}\\
+P(B) &= \res{0{,}80} &&
+\end{calculs}
+\cas{4)}
+\explique{Avec un dé équilibré, il y aurait équiprobabilité : $P(A)=\dfrac{3}{6}$, soit
+$\res{\dfrac{1}{2}}$.}{$3$ faces impaires sur $6$}
+\rem{Le dé truqué donne un nombre impair moins souvent : $0{,}35$ au lieu de $0{,}5$.}
+\end{exo}
+
+\partie{Événement contraire, réunion}
+
+\begin{exo}[Contraire et réunion]
+\cas{1)}
+\begin{calculs}
+P(\overline{A}) &= 1-P(A) &&\justif{probabilité du contraire}\\
+P(\overline{A}) &= 1-0{,}25 = \res{0{,}75} &&
+\end{calculs}
+\explique{$75\,\%$ des colis ne sont pas volumineux.}{$\overline{A}$ : \og le colis n'est pas
+volumineux\fg{}}
+\cas{2)}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{\og volumineux ou fragile\fg{} : la réunion}\\
+P(A\cup B) &= 0{,}25+0{,}15-0{,}05 &&\\
+P(A\cup B) &= \res{0{,}35} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(\overline{A}\cap\overline{B}) &= 1-P(A\cup B) &&\justif{\og ni l'un ni l'autre\fg{} :
+contraire de \og au moins un\fg{}}\\
+P(\overline{A}\cap\overline{B}) &= 1-0{,}35 = \res{0{,}65} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(A\cup C) &= P(A)+P(C) &&\justif{$A$ et $C$ sont incompatibles : une enveloppe n'est
+jamais volumineuse}\\
+P(A\cup C) &= 0{,}25+0{,}3 = \res{0{,}55} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Retrouver une intersection]
+\cas{1)}
+\begin{calculs}
+P(\overline{B}) &= 1-P(B) &&\justif{probabilité du contraire}\\
+P(\overline{B}) &= 1-0{,}35 = \res{0{,}65} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+P(B\cup C) &= P(B)+P(C) &&\justif{$B$ et $C$ sont incompatibles}\\
+P(B\cup C) &= 0{,}35+0{,}4 = \res{0{,}75} &&
+\end{calculs}
+\cas{3)}
+\explique{On part de la formule de la réunion : la seule valeur inconnue est
+$P(A\cap B)$.}{on connaît $P(A)$, $P(B)$ et $P(A\cup B)$}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{formule de la réunion}\\
+0{,}45 &= 0{,}2+0{,}35-P(A\cap B) &&\justif{on remplace par les valeurs connues}\\
+0{,}45 &= 0{,}55-P(A\cap B) &&\\
+P(A\cap B) &= 0{,}55-0{,}45 &&\justif{on isole $P(A\cap B)$}\\
+P(A\cap B) &= \res{0{,}1} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(\overline{A}\cap\overline{B}) &= 1-P(A\cup B) &&\justif{contraire de \og au moins un des
+deux\fg{}}\\
+P(\overline{A}\cap\overline{B}) &= 1-0{,}45 = \res{0{,}55} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Au cinéma]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{calculs}
+0{,}3\times 5\,000 &= \res{1\,500} &&\justif{billets de $A$ : $30\,\%$ de $5\,000$}\\
+0{,}5\times 5\,000 &= \res{2\,500} &&\justif{billets de $B$}\\
+0{,}1\times 5\,000 &= \res{500} &&\justif{billets de $A\cap B$}
+\end{calculs}
+On part de la zone commune : $500$ billets.
+\begin{calculs}
+1\,500-500 &= 1\,000 &&\justif{menu seulement}\\
+2\,500-500 &= 2\,000 &&\justif{tarif réduit seulement}\\
+5\,000-(1\,000+500+2\,000) &= 1\,500 &&\justif{ni l'un ni l'autre}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[scale=0.8]
+  \venn{A}{B}{\footnotesize$1\,000$}{\footnotesize$500$}{\footnotesize$2\,000$}{\footnotesize$1\,500$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{Le billet est choisi au hasard : il y a équiprobabilité ; \og menu pop-corn
+\textbf{ou} tarif réduit\fg{} est la réunion.}{$5\,000$ billets}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{formule de la réunion}\\
+P(A\cup B) &= 0{,}3+0{,}5-0{,}1 &&\\
+P(A\cup B) &= \res{0{,}7} &&
+\end{calculs}
+\rem{Avec le diagramme : $\dfrac{1\,000+500+2\,000}{5\,000}=\dfrac{3\,500}{5\,000}=0{,}7$.}
+\cas{3)}
+\begin{calculs}
+P(\overline{A}\cap\overline{B}) &= 1-P(A\cup B) &&\justif{\og ni l'un ni l'autre\fg{} :
+contraire de \og l'un ou l'autre\fg{}}\\
+P(\overline{A}\cap\overline{B}) &= 1-0{,}7 = \res{0{,}3} &&
+\end{calculs}
+\cas{4)}
+\explique{Un seul des deux cas : les deux zones \og seulement\fg{}, soit
+$1\,000+2\,000=3\,000$ billets.}{la zone commune n'est pas comptée}
+\begin{calculs}
+\dfrac{3\,000}{5\,000} &= \res{0{,}6} &&\justif{on divise par l'effectif total}
+\end{calculs}
+\end{exo}
+
+\partie{Arbre des possibles}
+
+\begin{exo}[Dénombrer avec un arbre]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Premier chiffre : $4$ branches ; au bout de chacune, deuxième chiffre : $4$ branches (un
+chiffre peut revenir).
+\begin{calculs}
+4\times 4 &= \res{16} &&\justif{$4$ choix, puis $4$ choix}
+\end{calculs}
+Il y a $16$ codes possibles.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.34cm,font=\small]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya in {1/6,2/2,3/-2,4/-6}{%
+    \node[evt] (N\ca) at (1.2,\ya) {$\ca$};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb/\db in {1/1.5,2/0.5,3/-0.5,4/-1.5}{%
+      \node[evt,font=\footnotesize] (N\ca\cb) at (2.4,\ya+\db) {$\cb$};
+      \draw (N\ca) -- (N\ca\cb);
+      \node[right,font=\footnotesize] at (N\ca\cb.east) {\ca\cb};}}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{Un seul code est le bon, parmi $16$ codes qui ont la même chance : la probabilité
+de le trouver est $\res{\dfrac{1}{16}}$.}{code choisi au hasard : équiprobabilité}
+\cas{3)}
+\begin{calculs}
+P(A) &= \dfrac{4}{16} = \res{\dfrac{1}{4}} &&\justif{$A=\ens{11\,;22\,;33\,;44}$ ; on
+simplifie par $4$}
+\end{calculs}
+\cas{4)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Premier jeton : $3$ branches ; il n'est pas remis dans le sac, donc il reste $2$ jetons pour
+le deuxième : $2$ branches au bout de chacune.
+\begin{calculs}
+3\times 2 &= \res{6} &&\justif{$3$ choix, puis $2$ choix}
+\end{calculs}
+Il y a $6$ tirages possibles.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.4cm,font=\small]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya/\reste in {R/3/{V,J},V/0/{R,J},J/-3/{R,V}}{%
+    \node[evt] (N\ca) at (1.2,\ya) {\ca};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb [count=\k] in \reste {%
+      \node[evt] (N\ca\cb) at (2.4,\ya+1.5-\k) {\cb};
+      \draw (N\ca) -- (N\ca\cb);
+      \node[right,font=\footnotesize] at (N\ca\cb.east) {\ca\cb};}}
+\end{tikzpicture}
+\end{minipage}
+\cas{5)}
+\begin{calculs}
+P(B) &= \dfrac{2}{6} = \res{\dfrac{1}{3}} &&\justif{$B=\ens{\text{RV}\,;\text{RJ}}$ ; on
+simplifie par $2$}
+\end{calculs}
+\cas{6)}
+\begin{calculs}
+P(C) &= \dfrac{4}{6} = \res{\dfrac{2}{3}} &&\justif{$C=\ens{\text{RV}\,;\text{RJ}\,;\text{VR}\,;\text{JR}}$
+; on simplifie par $2$}
+\end{calculs}
+\rem{$B$ et $C$ sont différents : dans $C$, le jeton rouge peut sortir en premier ou en
+second.}
+\end{exo}
+
+\begin{exo}[Trois lancers]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Trois lancers : $2$ branches au bout de chaque nœud, à chaque étape.
+\begin{calculs}
+2\times 2\times 2 &= \res{8} &&\justif{$2$ choix à chacun des trois lancers}
+\end{calculs}
+Il y a $8$ issues.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.42cm,font=\small]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya in {P/2,F/-2}{%
+    \node[evt] (N\ca) at (1.1,\ya) {\ca};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb/\db in {P/1,F/-1}{%
+      \node[evt] (N\ca\cb) at (2.2,\ya+\db) {\cb};
+      \draw (N\ca) -- (N\ca\cb);
+      \foreach \cc/\dc in {P/0.5,F/-0.5}{%
+        \node[evt,font=\footnotesize] (N\ca\cb\cc) at (3.3,\ya+\db+\dc) {\cc};
+        \draw (N\ca\cb) -- (N\ca\cb\cc);
+        \node[right,font=\footnotesize] at (N\ca\cb\cc.east) {\ca\cb\cc};}}}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{Un seul chemin donne PPP, parmi $8$ issues qui ont la même chance : la probabilité
+est $\res{\dfrac{1}{8}}$.}{pièce équilibrée : équiprobabilité}
+\cas{3)}
+\begin{calculs}
+P(A) &= \res{\dfrac{3}{8}} &&\justif{$A=\ens{\text{PFF}\,;\text{FPF}\,;\text{FFP}}$ : $3$
+issues sur $8$}
+\end{calculs}
+\cas{4)}
+\explique{On note $E$ \og obtenir au moins une fois Pile\fg{} ; son contraire est \og ne
+jamais obtenir Pile\fg{} : $\overline{E}=\ens{\text{FFF}}$.}{une seule issue, plus simple à
+compter}
+\begin{calculs}
+P(E) &= 1-P(\overline{E}) &&\justif{probabilité du contraire}\\
+P(E) &= 1-\dfrac{1}{8} = \res{\dfrac{7}{8}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[La tenue du cycliste]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Maillot : $3$ branches ; au bout de chacune, casque : $2$ branches.
+\begin{calculs}
+3\times 2 &= \res{6} &&\justif{$3$ choix, puis $2$ choix}
+\end{calculs}
+Il y a $6$ tenues possibles.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.42cm,font=\footnotesize]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya in {rouge/3,bleu/0,blanc/-3}{%
+    \node[evt] (N\ca) at (1.4,\ya) {\ca};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb/\db in {noir/0.7,blanc/-0.7}{%
+      \node[evt] (N\ca\cb) at (3,\ya+\db) {\cb};
+      \draw (N\ca) -- (N\ca\cb);}}
+  \node[font=\scriptsize] at (1.4,4.4) {maillot};
+  \node[font=\scriptsize] at (3,4.4) {casque};
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{Une seule tenue est toute blanche, parmi $6$ tenues qui ont la même chance : la
+probabilité est $\res{\dfrac{1}{6}}$.}{choix au hasard : équiprobabilité}
+\cas{3)}
+\begin{calculs}
+P(M) &= \dfrac{2}{6} = \res{\dfrac{1}{3}} &&\justif{maillot blanc : $2$ tenues (casque noir
+ou blanc)}\\
+P(C) &= \dfrac{3}{6} = \res{\dfrac{1}{2}} &&\justif{casque blanc : $3$ tenues, une par
+maillot}\\
+P(M\cap C) &= \dfrac{1}{6} &&\justif{question 2}
+\end{calculs}
+\begin{calculs}
+P(M\cup C) &= P(M)+P(C)-P(M\cap C) &&\justif{formule de la réunion}\\
+P(M\cup C) &= \dfrac{2}{6}+\dfrac{3}{6}-\dfrac{1}{6} &&\justif{on garde le dénominateur
+$6$}\\
+P(M\cup C) &= \dfrac{4}{6} = \res{\dfrac{2}{3}} &&\justif{on simplifie par $2$}
+\end{calculs}
+\rem{On vérifie sur l'arbre : $4$ tenues sur $6$ ont au moins un élément blanc.}
+\end{exo}
+
+\partie{Probabilité conditionnelle et tableau croisé}
+
+\begin{exo}[Probabilités dans un tableau croisé]
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+\begin{calculs}
+100+100 &= \res{200} &&\justif{total du matin}\\
+400-200 &= \res{200} &&\justif{total du soir}\\
+200-50 &= \res{150} &&\justif{annuelles le soir}\\
+100+50 &= \res{150} &&\justif{total des mensuelles}\\
+100+150 &= \res{250} &&\justif{total des annuelles}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Mensuelle & Annuelle & Total\\
+\hline
+Matin & $100$ & $100$ & $200$\\
+\hline
+Soir & $50$ & $150$ & $200$\\
+\hline
+Total & $150$ & $250$ & $400$\\
+\hline
+\end{tabular}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+P(A) &= \dfrac{250}{400} = \res{0{,}625} &&\justif{$250$ formules annuelles sur $400$
+abonnés}\\
+P(A\cap S) &= \dfrac{150}{400} = \res{0{,}375} &&\justif{annuelles \textbf{et} le soir,
+sur le total}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P_A(S) &= \dfrac{150}{250} = \res{0{,}6} &&\justif{on ne garde que la colonne
+\og Annuelle\fg{}}
+\end{calculs}
+\explique{$60\,\%$ des abonnés à l'année viennent le soir.}{\og parmi les formules
+annuelles\fg{}}
+\cas{4)}
+\begin{calculs}
+P_S(A) &= \dfrac{150}{200} = \res{0{,}75} &&\justif{on ne garde que la ligne \og Soir\fg{}}
+\end{calculs}
+\explique{$75\,\%$ des abonnés qui viennent le soir ont une formule annuelle.}{$P_A(S)$ et
+$P_S(A)$ ne sont pas égales}
+\end{exo}
+
+\begin{exo}[Une équipe de rugby]
+\cas{1)}
+\begin{minipage}[c]{0.46\linewidth}\raggedright
+\begin{calculs}
+24-18 &= \res{6} &&\justif{avants de $1{,}85$ m ou moins}\\
+16-2 &= \res{14} &&\justif{arrières de $1{,}85$ m ou moins}\\
+18+2 &= \res{20} &&\justif{joueurs de plus de $1{,}85$ m}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.5\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & $G$ & $\overline{G}$ & Total\\
+\hline
+Avants ($A$) & $18$ & $6$ & $24$\\
+\hline
+Arrières & $2$ & $14$ & $16$\\
+\hline
+Total & $20$ & $20$ & $40$\\
+\hline
+\end{tabular}
+\end{minipage}
+\cas{2)}
+\explique{Le joueur est choisi au hasard : il y a équiprobabilité, et on divise par
+$40$.}{$40$ joueurs}
+\begin{calculs}
+P(A) &= \dfrac{24}{40} = \res{0{,}6} &&\justif{la ligne des avants}\\
+P(G) &= \dfrac{20}{40} = \res{0{,}5} &&\justif{la colonne $G$}\\
+P(A\cap G) &= \dfrac{18}{40} = \res{0{,}45} &&\justif{avants \textbf{et} plus de $1{,}85$ m}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P_A(G) &= \dfrac{18}{24} = \res{0{,}75} &&\justif{on ne garde que la ligne \og Avants\fg{} :
+$24$ joueurs}
+\end{calculs}
+\explique{$75\,\%$ des avants mesurent plus de $1{,}85$ m.}{\og parmi les avants\fg{}}
+\cas{4)}
+\begin{calculs}
+P_G(A) &= \dfrac{18}{20} = \res{0{,}9} &&\justif{on ne garde que la colonne $G$ : $20$
+joueurs}
+\end{calculs}
+\explique{$90\,\%$ des joueurs de plus de $1{,}85$ m sont des avants.}{\og parmi les joueurs
+de plus de $1{,}85$ m\fg{}}
+\cas{5)}
+\explique{$P(A\cap G)=0{,}45$ : \res{parmi \textbf{tous} les joueurs, $45\,\%$ sont des
+avants de plus de $1{,}85$ m}. $P_A(G)=0{,}75$ : \res{parmi les \textbf{avants} seulement,
+$75\,\%$ mesurent plus de $1{,}85$ m}.}{même numérateur, $18$ ; dénominateur $40$ ou $24$}
+\end{exo}
+
+\begin{exo}[Au magasin de cycles]
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+\begin{calculs}
+0{,}55\times 400 &= 220 &&\justif{VTT}\\
+0{,}30\times 400 &= 120 &&\justif{VTC}\\
+400-(220+120) &= 60 &&\justif{vélos de ville}\\
+0{,}60\times 220 &= \res{132} &&\justif{VTT électriques}\\
+0{,}50\times 120 &= \res{60} &&\justif{VTC électriques}\\
+0{,}80\times 60 &= \res{48} &&\justif{vélos de ville électriques}\\
+132+60+48 &= \res{240} &&\justif{total des électriques}
+\end{calculs}
+Les vélos non électriques s'obtiennent par différence :
+$220-132=88$ ; $120-60=60$ ; $60-48=12$ ; $400-240=160$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & Électrique & Non électrique & Total\\
+\hline
+VTT & $132$ & $88$ & $220$\\
+\hline
+VTC & $60$ & $60$ & $120$\\
+\hline
+Ville & $48$ & $12$ & $60$\\
+\hline
+Total & $240$ & $160$ & $400$\\
+\hline
+\end{tabular}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+P(E) &= \dfrac{240}{400} = \res{0{,}6} &&\justif{$240$ vélos électriques sur $400$}\\
+P(\overline{E}) &= 1-0{,}6 = \res{0{,}4} &&\justif{probabilité du contraire}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P_E(T) &= \dfrac{132}{240} = \res{0{,}55} &&\justif{on ne garde que la colonne
+\og Électrique\fg{} : $240$ vélos}
+\end{calculs}
+\explique{$55\,\%$ des vélos électriques vendus sont des VTT.}{\og parmi les vélos
+électriques\fg{}}
+\cas{4)}
+\explique{On sait que le vélo n'est pas électrique : on ne garde que la colonne \og Non
+électrique\fg{}, $160$ vélos, dont $60$ VTC. On note $V$ \og le vélo est un VTC\fg{}.}{probabilité
+sachant $\overline{E}$}
+\begin{calculs}
+P_{\overline{E}}(V) &= \dfrac{60}{160} = \res{0{,}375} &&
+\end{calculs}
+\end{exo}
+
+\partie{Formule des probabilités conditionnelles}
+
+\begin{exo}[Traduire et utiliser la formule]
+\cas{a)}
+\explique{Données : $P(C)=\res{0{,}4}$ et $P(C\cap S)=\res{0{,}1}$.}{\og une pompe à chaleur
+\textbf{et} des panneaux solaires\fg{} : une intersection}
+\begin{calculs}
+P_C(S) &= \dfrac{P(C\cap S)}{P(C)} &&\justif{formule de la propriété 4}\\
+P_C(S) &= \dfrac{0{,}1}{0{,}4} &&\\
+P_C(S) &= \dfrac{1}{4} &&\justif{en haut et en bas $\times 10$}\\
+P_C(S) &= \res{0{,}25} &&
+\end{calculs}
+\explique{$25\,\%$ des maisons qui ont une pompe à chaleur ont aussi des panneaux
+solaires.}{$P_C(S)$ : parmi les maisons avec pompe à chaleur}
+\cas{b)}
+\explique{Données : $P(D)=\res{0{,}6}$ et $P_D(V)=\res{0{,}3}$.}{\og parmi eux\fg{} :
+probabilité sachant $D$}
+\begin{calculs}
+P(D\cap V) &= P(D)\times P_D(V) &&\justif{formule de la propriété 4}\\
+P(D\cap V) &= 0{,}6\times 0{,}3 &&\\
+P(D\cap V) &= \res{0{,}18} &&
+\end{calculs}
+\explique{$18\,\%$ des élèves déjeunent à la cantine et choisissent le menu
+végétarien.}{$D$ \textbf{et} $V$, sur l'ensemble des élèves}
+\end{exo}
+
+\begin{exo}[Conditionnelle ou pas ?]
+\cas{1)}
+\explique{a) Pas conditionnelle : $P(R)=\res{0{,}4}$.}{\og dans l'année\fg{} : sur tous les
+jours}
+\explique{b) Conditionnelle : $P_R(V)=\res{0{,}75}$.}{\og des jours pluvieux\fg{} : parmi les
+jours de pluie}
+\explique{c) Conditionnelle : $P_{\overline{V}}(R)=\res{0{,}2}$.}{\og parmi les jours sans
+vent fort\fg{} : sachant $\overline{V}$}
+\explique{d) Pas conditionnelle : $P(R\cap V)=\res{0{,}3}$.}{\og à la fois\fg{} : une
+intersection}
+\explique{e) Conditionnelle : $P_V(R)=\res{0{,}6}$.}{\og quand le vent souffle fort\fg{} :
+sachant $V$ ; $6$ sur $10$}
+\cas{2)}
+\begin{calculs}
+P_R(V) &= \dfrac{P(R\cap V)}{P(R)} &&\justif{formule de la propriété 4, avec a) et d)}\\
+P_R(V) &= \dfrac{0{,}3}{0{,}4} &&\\
+P_R(V) &= \dfrac{3}{4} &&\justif{en haut et en bas $\times 10$}\\
+P_R(V) &= \res{0{,}75} &&
+\end{calculs}
+\explique{On retrouve la valeur de b) : les trois informations sont cohérentes.}{a), b) et
+d) disent la même chose de deux façons}
+\cas{3)}
+\begin{calculs}
+P(\overline{R}) &= 1-0{,}4 = \res{0{,}6} &&\justif{probabilité du contraire}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Au club nautique]
+\cas{1)}
+\explique{$P(V)=\res{0{,}6}$ ; $P(K)=\res{0{,}5}$ ; $P(V\cap K)=\res{0{,}15}$.}{\og font les
+deux\fg{} : l'intersection}
+\cas{2)}
+\begin{calculs}
+P_V(K) &= \dfrac{P(V\cap K)}{P(V)} &&\justif{formule de la propriété 4}\\
+P_V(K) &= \dfrac{0{,}15}{0{,}6} &&\\
+P_V(K) &= \dfrac{15}{60} = \dfrac{1}{4} &&\justif{en haut et en bas $\times 100$ ; on
+simplifie par $15$}\\
+P_V(K) &= \res{0{,}25} &&
+\end{calculs}
+\explique{$25\,\%$ des adhérents qui font de la voile font aussi du kayak.}{parmi les
+adhérents qui font de la voile}
+\cas{3)}
+\explique{On sait que l'adhérent fait du kayak : on cherche $P_K(V)$.}{\og qui fait du
+kayak\fg{} : sachant $K$}
+\begin{calculs}
+P_K(V) &= \dfrac{P(V\cap K)}{P(K)} &&\justif{formule de la propriété 4}\\
+P_K(V) &= \dfrac{0{,}15}{0{,}5} &&\\
+P_K(V) &= \dfrac{15}{50} = \dfrac{3}{10} &&\justif{en haut et en bas $\times 100$ ; on
+simplifie par $5$}\\
+P_K(V) &= \res{0{,}3} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(V\cup K) &= P(V)+P(K)-P(V\cap K) &&\justif{\og au moins une des deux\fg{} : la réunion}\\
+P(V\cup K) &= 0{,}6+0{,}5-0{,}15 &&\\
+P(V\cup K) &= \res{0{,}95} &&
+\end{calculs}
+\end{exo}
+
+\partie{Arbre pondéré}
+
+\begin{exo}[Construire un arbre pondéré]
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Données : $P(D)=0{,}4$ ; $P_D(R)=0{,}3$ ; $P_{\overline{D}}(R)=0{,}8$. Les autres branches
+s'en déduisent : branches d'un même nœud, somme $1$.
+\begin{calculs}
+P(\overline{D}) &= 1-0{,}4 = \res{0{,}6} &&\\
+P_D(\overline{R}) &= 1-0{,}3 = \res{0{,}7} &&\\
+P_{\overline{D}}(\overline{R}) &= 1-0{,}8 = \res{0{,}2} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{D}{R}{0{,}4}{0{,}6}{0{,}3}{0{,}7}{0{,}8}{0{,}2}
+  \feuilles{D}{R}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+P(D\cap R) &= P(D)\times P_D(R) &&\justif{chemin $D$ puis $R$ : on multiplie}\\
+P(D\cap R) &= 0{,}4\times 0{,}3 &&\\
+P(D\cap R) &= \res{0{,}12} &&
+\end{calculs}
+\explique{$12\,\%$ des grimpeurs sont des débutants qui réussissent la voie
+rouge.}{$D$ \textbf{et} $R$, sur l'ensemble des grimpeurs}
+\cas{3)}
+\begin{calculs}
+P(D\cap\overline{R}) &= P(D)\times P_D(\overline{R}) &&\justif{chemin $D$ puis
+$\overline{R}$}\\
+P(D\cap\overline{R}) &= 0{,}4\times 0{,}7 &&\\
+P(D\cap\overline{R}) &= \res{0{,}28} &&
+\end{calculs}
+\rem{Erreur fréquente : multiplier par $0{,}8$, la probabilité de réussir \textbf{sans} être
+débutant ; on suit le chemin qui part de $D$.}
+\end{exo}
+
+\begin{exo}[Le jeu de la fête de quartier]
+\cas{1)}
+\explique{Les $40$ cartes ont la même chance, et $N$ contient les numéros de $1$ à $10$ :
+$P(N)=\dfrac{10}{40}=\res{0{,}25}$.}{équiprobabilité (partie III)}
+\explique{Si $N$ est réalisé, on fait tourner la première roue : $6$ secteurs sur $10$
+portent une étoile, donc $P_N(E)=\dfrac{6}{10}=\res{0{,}6}$.}{probabilité sachant $N$}
+\cas{2)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Sinon, on tourne la seconde roue : $P_{\overline{N}}(E)=\dfrac{3}{10}=0{,}3$. Les autres
+branches : somme $1$.
+\begin{calculs}
+P(\overline{N}) &= 1-0{,}25 = \res{0{,}75} &&\\
+P_N(\overline{E}) &= 1-0{,}6 = \res{0{,}4} &&\\
+P_{\overline{N}}(\overline{E}) &= 1-0{,}3 = \res{0{,}7} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{N}{E}{0{,}25}{0{,}75}{0{,}6}{0{,}4}{0{,}3}{0{,}7}
+  \feuilles{N}{E}
+\end{tikzpicture}
+\end{minipage}
+\cas{3)}
+\begin{calculs}
+P(N\cap E) &= P(N)\times P_N(E) &&\justif{chemin $N$ puis $E$}\\
+P(N\cap E) &= 0{,}25\times 0{,}6 &&\\
+P(N\cap E) &= \res{0{,}15} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(\overline{N}\cap E) &= P(\overline{N})\times P_{\overline{N}}(E) &&\justif{chemin
+$\overline{N}$ puis $E$}\\
+P(\overline{N}\cap E) &= 0{,}75\times 0{,}3 &&\\
+P(\overline{N}\cap E) &= \res{0{,}225} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Compléter et lire un arbre]
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Branches d'un même nœud : somme $1$.
+\begin{calculs}
+P(\overline{B}) &= 1-0{,}65 = \res{0{,}35} &&\\
+P_B(\overline{H}) &= 1-0{,}4 = \res{0{,}6} &&\\
+P_{\overline{B}}(\overline{H}) &= 1-0{,}7 = \res{0{,}3} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{B}{H}{0{,}65}{0{,}35}{0{,}4}{0{,}6}{0{,}7}{0{,}3}
+  \feuilles{B}{H}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{$P(B)=0{,}65$ : \res{$65\,\%$ des élèves rentrent en bus}.}{premier niveau : sur
+l'ensemble des élèves}
+\explique{$P_{\overline{B}}(H)=0{,}7$ : \res{parmi les élèves qui ne rentrent pas en bus,
+$70\,\%$ sont chez eux avant 17~h~30}.}{second niveau : probabilité sachant
+$\overline{B}$}
+\cas{3)}
+\begin{calculs}
+P(B\cap\overline{H}) &= P(B)\times P_B(\overline{H}) &&\justif{chemin $B$ puis
+$\overline{H}$ : après 17~h~30}\\
+P(B\cap\overline{H}) &= 0{,}65\times 0{,}6 &&\\
+P(B\cap\overline{H}) &= \res{0{,}39} &&
+\end{calculs}
+\explique{$39\,\%$ des élèves rentrent en bus et sont chez eux après 17~h~30.}{on traduit
+par une phrase}
+\end{exo}
+
+\partie{Formule des probabilités totales}
+
+\begin{exo}[Probabilités totales]
+\cas{1)}
+\explique{Deux chemins mènent à $R$ : $D$ puis $R$, et $\overline{D}$ puis $R$.}{$R$ se
+réalise avec un débutant ou avec un grimpeur confirmé}
+\begin{calculs}
+P(R) &= P(D\cap R)+P(\overline{D}\cap R) &&\justif{formule des probabilités totales}\\
+P(R) &= 0{,}4\times 0{,}3+0{,}6\times 0{,}8 &&\justif{produit sur chaque chemin}\\
+P(R) &= 0{,}12+0{,}48 &&\\
+P(R) &= \res{0{,}6} &&
+\end{calculs}
+\explique{$60\,\%$ des grimpeurs réussissent la voie rouge.}{on traduit par une phrase}
+\cas{2)}
+\begin{calculs}
+P_R(D) &= \dfrac{P(R\cap D)}{P(R)} &&\justif{on sait que $R$ est réalisé : propriété 4}\\
+P_R(D) &= \dfrac{0{,}12}{0{,}6} &&\justif{$P(R\cap D)=P(D\cap R)$, calculé en 1)}\\
+P_R(D) &= \dfrac{12}{60} = \dfrac{2}{10} &&\justif{en haut et en bas $\times 100$ ; on
+simplifie par $6$}\\
+P_R(D) &= \res{0{,}2} &&
+\end{calculs}
+\explique{$20\,\%$ des grimpeurs qui réussissent la voie rouge sont débutants.}{à ne pas
+confondre avec $P_D(R)=0{,}3$}
+\cas{3)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Données : $P(F)=0{,}6$ ; $P_F(D)=0{,}02$ ; $P_{\overline{F}}(D)=0{,}07$. Les autres
+branches s'en déduisent : $P(\overline{F})=0{,}4$ ; $P_F(\overline{D})=0{,}98$ ;
+$P_{\overline{F}}(\overline{D})=0{,}93$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{F}{D}{0{,}6}{0{,}4}{0{,}02}{0{,}98}{0{,}07}{0{,}93}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+P(D) &= P(F)\times P_F(D)+P(\overline{F})\times P_{\overline{F}}(D) &&\justif{deux chemins
+mènent à $D$}\\
+P(D) &= 0{,}6\times 0{,}02+0{,}4\times 0{,}07 &&\\
+P(D) &= 0{,}012+0{,}028 &&\\
+P(D) &= \res{0{,}04} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P_D(F) &= \dfrac{P(D\cap F)}{P(D)} &&\justif{on sait que $D$ est réalisé}\\
+P_D(F) &= \dfrac{0{,}012}{0{,}04} &&\justif{$P(D\cap F)=0{,}6\times 0{,}02$, calculé en 3)}\\
+P_D(F) &= \dfrac{12}{40} = \dfrac{3}{10} &&\justif{en haut et en bas $\times 1\,000$ ; on
+simplifie par $4$}\\
+P_D(F) &= \res{0{,}3} &&
+\end{calculs}
+\explique{$30\,\%$ des aspirateurs tombés en panne viennent du premier fournisseur.}{il
+fournit plus d'aspirateurs, mais ils tombent moins souvent en panne}
+\end{exo}
+
+\begin{exo}[Les visiteurs d'un site]
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Données : $P(M)=0{,}75$ ; $P_M(C)=0{,}2$ ; $P_{\overline{M}}(C)=0{,}4$. Les autres
+branches s'en déduisent : branches d'un même nœud, somme $1$.
+\begin{calculs}
+P(\overline{M}) &= 1-0{,}75 = \res{0{,}25} &&\\
+P_M(\overline{C}) &= 1-0{,}2 = \res{0{,}8} &&\\
+P_{\overline{M}}(\overline{C}) &= 1-0{,}4 = \res{0{,}6} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{M}{C}{0{,}75}{0{,}25}{0{,}2}{0{,}8}{0{,}4}{0{,}6}
+  \feuilles{M}{C}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+P(M\cap C) &= 0{,}75\times 0{,}2 = \res{0{,}15} &&\justif{chemin $M$ puis $C$}\\
+P(\overline{M}\cap C) &= 0{,}25\times 0{,}4 = \res{0{,}1} &&\justif{chemin $\overline{M}$
+puis $C$}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(C) &= P(M\cap C)+P(\overline{M}\cap C) &&\justif{formule des probabilités totales}\\
+P(C) &= 0{,}15+0{,}1 &&\justif{question 2}\\
+P(C) &= \res{0{,}25} &&
+\end{calculs}
+\explique{$25\,\%$ des visiteurs passent commande.}{on traduit par une phrase}
+\cas{4)}
+\explique{On sait que le visiteur a passé commande : on cherche $P_C(M)$.}{on sait que $C$
+est réalisé}
+\begin{calculs}
+P_C(M) &= \dfrac{P(C\cap M)}{P(C)} &&\justif{propriété 4}\\
+P_C(M) &= \dfrac{0{,}15}{0{,}25} &&\justif{$P(C\cap M)=P(M\cap C)$, calculé en 2)}\\
+P_C(M) &= \dfrac{15}{25} = \dfrac{3}{5} &&\justif{en haut et en bas $\times 100$ ; on
+simplifie par $5$}\\
+P_C(M) &= \res{0{,}6} &&
+\end{calculs}
+\explique{$60\,\%$ des commandes viennent de visiteurs arrivés par un moteur de
+recherche.}{à ne pas confondre avec $P_M(C)=0{,}2$}
+\end{exo}
+
+\begin{exo}[Aller en train, revenir en bus ?]
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Données : $P(A)=0{,}6$ ; $P_A(R)=0{,}8$ ; $P_{\overline{A}}(R)=0{,}4$. Les autres branches
+s'en déduisent : branches d'un même nœud, somme $1$.
+\begin{calculs}
+P(\overline{A}) &= 1-0{,}6 = \res{0{,}4} &&\\
+P_A(\overline{R}) &= 1-0{,}8 = \res{0{,}2} &&\\
+P_{\overline{A}}(\overline{R}) &= 1-0{,}4 = \res{0{,}6} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{A}{R}{0{,}6}{0{,}4}{0{,}8}{0{,}2}{0{,}4}{0{,}6}
+  \feuilles{A}{R}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+P(A\cap R) &= P(A)\times P_A(R) &&\justif{chemin $A$ puis $R$}\\
+P(A\cap R) &= 0{,}6\times 0{,}8 &&\\
+P(A\cap R) &= \res{0{,}48} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(R) &= P(A\cap R)+P(\overline{A}\cap R) &&\justif{formule des probabilités totales}\\
+P(R) &= 0{,}48+0{,}4\times 0{,}4 &&\justif{$P(A\cap R)$ calculé en 2)}\\
+P(R) &= 0{,}48+0{,}16 &&\\
+P(R) &= \res{0{,}64} &&
+\end{calculs}
+\cas{4)}
+\explique{On note $E$ \og le voyageur utilise les deux moyens de transport\fg{} : train puis
+bus ($A\cap\overline{R}$), ou bus puis train ($\overline{A}\cap R$).}{deux chemins de
+l'arbre, qu'on ne peut pas suivre en même temps}
+\begin{calculs}
+P(E) &= P(A\cap\overline{R})+P(\overline{A}\cap R) &&\justif{on additionne les deux
+chemins}\\
+P(E) &= 0{,}6\times 0{,}2+0{,}4\times 0{,}4 &&\\
+P(E) &= 0{,}12+0{,}16 &&\\
+P(E) &= \res{0{,}28} &&
+\end{calculs}
+\cas{5)}
+\begin{calculs}
+P_R(A) &= \dfrac{P(R\cap A)}{P(R)} &&\justif{on sait que $R$ est réalisé : propriété 4}\\
+P_R(A) &= \dfrac{0{,}48}{0{,}64} &&\justif{questions 2 et 3}\\
+P_R(A) &= \dfrac{48}{64} = \dfrac{3}{4} &&\justif{en haut et en bas $\times 100$ ; on
+simplifie par $16$}\\
+P_R(A) &= \res{0{,}75} &&
+\end{calculs}
+\end{exo}
+
+\partie{Événements indépendants}
+
+\begin{exo}[Indépendants ou pas ?]
+\cas{a)}
+\begin{calculs}
+P_F(N) &= \dfrac{20}{100} = \res{0{,}2} &&\justif{colonne $F$ : $100$ vélos, dont $20$ avec
+un pneu à changer}\\
+P(N) &= \dfrac{50}{250} = \res{0{,}2} &&\justif{sur l'ensemble des $250$ vélos}
+\end{calculs}
+\explique{Conclusion : $P_F(N)=P(N)$, donc \res{$F$ et $N$ sont indépendants}.}{savoir que
+les freins sont à régler ne change pas la probabilité d'avoir un pneu à changer}
+\cas{b)}
+\explique{$P_R(B)=0{,}3$ et $P(B)=0{,}2$.}{\og un jour de pluie\fg{} : sachant $R$ ; \og sur
+l'année\fg{} : $P(B)$}
+\explique{Conclusion : $P_R(B)\neq P(B)$, donc \res{$R$ et $B$ ne sont pas
+indépendants} : la pluie augmente la probabilité de venir en bus.}{une différence suffit}
+\cas{c)}
+\explique{On note $F_1$ \og le premier distributeur fonctionne toute la journée\fg{} et
+$F_2$ \og le second distributeur fonctionne toute la journée\fg{}.}{on nomme les
+événements}
+\begin{calculs}
+P(F_1\cap F_2) &= P(F_1)\times P(F_2) &&\justif{$F_1$ et $F_2$ sont indépendants
+(propriété 7)}\\
+P(F_1\cap F_2) &= 0{,}98\times 0{,}9 &&\\
+P(F_1\cap F_2) &= \res{0{,}882} &&\\
+P(\overline{F_1\cap F_2}) &= 1-0{,}882 = \res{0{,}118} &&\justif{\og au moins un en
+panne\fg{} : le contraire}
+\end{calculs}
+\explique{Les deux distributeurs fonctionnent toute la journée avec une probabilité de
+$0{,}882$ ; au moins un tombe en panne avec une probabilité de $0{,}118$.}{on traduit par
+une phrase}
+\end{exo}
+
+\begin{exo}[Une pièce et un dé]
+\cas{1)}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Pièce : $2$ branches ; au bout de chacune, dé : $6$ branches.
+\begin{calculs}
+2\times 6 &= \res{12} &&\justif{$2$ choix, puis $6$ choix}
+\end{calculs}
+Il y a $12$ issues.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.32cm,font=\small]
+  \node (O) at (0,0) {};
+  \foreach \ca/\ya in {P/3.5,F/-3.5}{%
+    \node[evt] (N\ca) at (1.2,\ya) {\ca};
+    \draw (O.center) -- (N\ca);
+    \foreach \cb/\db in {1/2.5,2/1.5,3/0.5,4/-0.5,5/-1.5,6/-2.5}{%
+      \node[evt,font=\footnotesize] (N\ca\cb) at (2.4,\ya+\db) {$\cb$};
+      \draw (N\ca) -- (N\ca\cb);
+      \node[right,font=\footnotesize] at (N\ca\cb.east) {\ca\cb};}}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{La pièce et le dé sont équilibrés : les $12$ issues sont équiprobables.}{chaque
+chemin a la même chance}
+\begin{calculs}
+P(A) &= \dfrac{6}{12} = \res{\dfrac{1}{2}} &&\justif{les $6$ issues qui commencent par P}\\
+P(B) &= \dfrac{2}{12} = \res{\dfrac{1}{6}} &&\justif{P6 et F6}\\
+P(A\cap B) &= \res{\dfrac{1}{12}} &&\justif{une seule issue : P6}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P_A(B) &= \dfrac{P(A\cap B)}{P(A)} &&\justif{propriété 4}\\
+P_A(B) &= \dfrac{1}{12}\div\dfrac{1}{2} &&\\
+P_A(B) &= \dfrac{1}{12}\times 2 &&\justif{diviser par $\frac{1}{2}$, c'est multiplier par
+$2$}\\
+P_A(B) &= \dfrac{2}{12} = \res{\dfrac{1}{6}} &&\justif{on simplifie par $2$}
+\end{calculs}
+\explique{Conclusion : $P_A(B)=P(B)$, donc \res{$A$ et $B$ sont indépendants}.}{le
+résultat de la pièce ne change rien au dé}
+\rem{On le voit aussi sur l'arbre : parmi les $6$ issues qui commencent par P, une seule
+finit par $6$.}
+\cas{4)}
+\begin{calculs}
+P(A)\times P(B) &= \dfrac{1}{2}\times\dfrac{1}{6} = \res{\dfrac{1}{12}} &&\justif{on
+multiplie les numérateurs et les dénominateurs}
+\end{calculs}
+\explique{On retrouve $P(A\cap B)=\dfrac{1}{12}$ (question 2).}{propriété 7}
+\end{exo}
+
+\begin{exo}[Une commande en retard]
+\cas{1)}
+\begin{calculs}
+P(A\cap B) &= P(A)\times P(B) &&\justif{$A$ et $B$ sont indépendants (propriété 7)}\\
+P(A\cap B) &= 0{,}05\times 0{,}02 &&\\
+P(A\cap B) &= \res{0{,}001} &&
+\end{calculs}
+\cas{2)}
+\explique{La commande part en retard si $A$ ou $B$ est réalisé : on cherche
+$P(A\cup B)$.}{au moins une des deux causes}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{formule de la réunion}\\
+P(A\cup B) &= 0{,}05+0{,}02-0{,}001 &&\\
+P(A\cup B) &= \res{0{,}069} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(\overline{A\cup B}) &= 1-0{,}069 = \res{0{,}931} &&\justif{partir à temps : contraire de
+partir en retard}
+\end{calculs}
+\explique{Une commande part à temps avec une probabilité de $0{,}931$, soit
+$93{,}1\,\%$.}{on traduit par une phrase}
+\end{exo}
+
+\partiesansnum{Exercices type épreuve anticipée}
+
+\begin{exo}[QCM]
+\cas{1.}
+\explique{On note $A$ \og obtenir au moins $3$\fg{} : son contraire est \og obtenir $1$ ou
+$2$\fg{}.}{les faces $1$ et $2$ ont une probabilité connue}
+\begin{calculs}
+P(A) &= 1-(0{,}1+0{,}25) &&\justif{probabilité du contraire}\\
+P(A) &= 1-0{,}35 = 0{,}65 &&
+\end{calculs}
+\explique{Réponse \res{d)}.}{a) est la probabilité du contraire}
+\cas{2.}
+\begin{calculs}
+\dfrac{10}{25} &= \dfrac{4}{10} = 0{,}4 &&\justif{équiprobabilité ; on simplifie par $5$,
+puis on écrit sur $10$}
+\end{calculs}
+\explique{Réponse \res{c)}.}{d) est plus grand que $1$ : ce n'est pas une probabilité}
+\cas{3.}
+\explique{On ne garde que les vélos pour enfant : $70$ vélos, dont $10$ électriques.
+Réponse \res{a)}.}{$\dfrac{10}{200}$ est la probabilité d'un vélo électrique \textbf{et}
+pour enfant}
+\cas{4.}
+\begin{calculs}
+P(A\cap B) &= P(A)\times P_A(B) &&\justif{propriété 4}\\
+P(A\cap B) &= 0{,}4\times 0{,}5 = 0{,}2 &&
+\end{calculs}
+\explique{Réponse \res{c)}.}{}
+\cas{5.}
+\explique{\og Parmi les salariés qui viennent en train\fg{} : on sait que $T$ est réalisé,
+donc $P_T(A)=0{,}3$. Réponse \res{b)}.}{une probabilité sachant $T$}
+\cas{6.}
+\explique{$A$ et $B$ sont indépendants : $P_A(B)=P(B)=0{,}4$. Réponse \res{d)}.}{définition
+de l'indépendance}
+\end{exo}
+
+\begin{exo}[Vrai ou faux ?]
+\explique{L'abonné est choisi au hasard : il y a équiprobabilité.}{$400$ abonnés}
+\cas{1.}
+\begin{calculs}
+P(A) &= \dfrac{240}{400} = 0{,}6 &&\justif{ligne \og Annuelle\fg{}}
+\end{calculs}
+\explique{$60\,\%$ des abonnés ont une formule annuelle, et $60\,\%\geq 50\,\%$ :
+l'affirmation 1 est \res{vraie}.}{}
+\cas{2.}
+\begin{calculs}
+P(\overline{A}\cap\overline{C}) &= \dfrac{120}{400} = 0{,}3 &&\justif{case
+\og Mensuelle\fg{}, \og Sans cours\fg{}}
+\end{calculs}
+\explique{$0{,}3\neq 0{,}25$ : l'affirmation 2 est \res{fausse}.}{}
+\cas{3.}
+\begin{calculs}
+P_{\overline{A}}(C) &= \dfrac{40}{160} = \dfrac{1}{4} &&\justif{ligne \og Mensuelle\fg{} :
+$160$ abonnés ; on simplifie par $40$}
+\end{calculs}
+\explique{$\dfrac{1}{4}<\dfrac{1}{3}$ : un quart seulement des abonnés à formule mensuelle
+suivent des cours. L'affirmation 3 est \res{fausse}.}{un quart est moins qu'un tiers}
+\cas{4.}
+\begin{calculs}
+P_A(C) &= \dfrac{60}{240} = 0{,}25 &&\justif{ligne \og Annuelle\fg{} : $240$ abonnés}\\
+P(C) &= \dfrac{100}{400} = 0{,}25 &&\justif{sur l'ensemble des $400$ abonnés}
+\end{calculs}
+\explique{$P_A(C)=P(C)$ : $A$ et $C$ sont indépendants ; l'affirmation 4 est
+\res{vraie}.}{on compare $P_A(C)$ à $P(C)$}
+\end{exo}
+
+\begin{exo}[Le filtre anti-spam]
+\explique{Le courriel est choisi au hasard : il y a équiprobabilité.}{$500$ courriels}
+\cas{1.}
+\begin{calculs}
+P(S) &= \dfrac{100}{500} = \res{0{,}2} &&\justif{ligne \og Spams\fg{} : $100$ courriels
+sur $500$}
+\end{calculs}
+\cas{2.}
+\explique{$S\cap B$ : \og \res{le courriel est un spam et le filtre le bloque}\fg{}.}{spam
+\textbf{et} bloqué}
+\begin{calculs}
+P(S\cap B) &= \dfrac{96}{500} = \dfrac{192}{1\,000} &&\justif{en haut et en bas $\times 2$}\\
+P(S\cap B) &= \res{0{,}192} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P_S(B) &= \dfrac{96}{100} = \res{0{,}96} &&\justif{ligne \og Spams\fg{} : $100$ courriels}
+\end{calculs}
+\explique{Le filtre bloque $96\,\%$ des spams.}{parmi les spams}
+\cas{4.}
+\explique{On cherche $P_B(\overline{S})$ : on ne garde que la colonne \og Bloqués\fg{},
+$120$ courriels, dont $24$ ne sont pas des spams.}{sachant que le courriel est bloqué}
+\begin{calculs}
+P_B(\overline{S}) &= \dfrac{24}{120} &&\\
+P_B(\overline{S}) &= \dfrac{\barre{24}\times 1}{\barre{24}\times 5} &&\justif{$120=5\times
+24$ ; on simplifie par $24$}\\
+P_B(\overline{S}) &= \dfrac{1}{5} = 0{,}2 &&
+\end{calculs}
+\explique{$0{,}2>0{,}15$ : le filtre \res{n'est pas fiable}.}{il bloque trop de courriels
+qui ne sont pas des spams}
+\cas{5.}
+\explique{Le filtre se trompe sur $4$ spams non bloqués et $24$ autres courriels bloqués,
+soit $28$ courriels.}{deux cases du tableau}
+\begin{calculs}
+\dfrac{28}{500} &= \dfrac{56}{1\,000} = \res{0{,}056} &&\justif{en haut et en bas $\times 2$}
+\end{calculs}
+\end{exo}
+
+\end{document}

@@ -1,0 +1,962 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.1}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Limites de suites}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Limite finie, suite convergente}
+
+\exo[Conjecturer une limite]
+Pour chacune des suites $(a_{n})$ à $(d_{n})$ définies pour tout $n\in\Ns$ ci-dessous,
+calculer les termes de rang $10$, $100$ et $1\,000$, puis conjecturer la limite.
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=3-\dfrac{2}{n}$
+  \item $b_{n}=\dfrac{n+1}{n}$
+  \item $c_{n}=5+\dfrac{1}{n^{2}}$
+  \item $d_{n}=\dfrac{(-1)^{n}}{n}$
+\end{enumerate}
+
+\exo[Trouver un rang]
+\begin{enumerate}
+  \item Soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par $u_{n}=-\dfrac{4}{n}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Conjecturer la limite de $(u_{n})$.
+    \item Déterminer à partir de quel rang tous les termes $u_{n}$ appartiennent à
+          l'intervalle $\intoo{-0{,}01}{0{,}01}$.
+  \end{enumerate}
+  \item Mêmes questions pour la suite $(v_{n})$ définie pour tout $n\in\Ns$ par
+        $v_{n}=5+\dfrac{2}{n}$, avec l'intervalle $\intoo{4{,}999}{5{,}001}$.
+\end{enumerate}
+
+\exo[Une écriture décimale]
+Soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par $u_{n}=2-\dfrac{1}{10^{n}}$.
+\begin{enumerate}
+  \item Écrire $u_{1}$, $u_{2}$ et $u_{3}$ sous forme décimale. Que remarque-t-on ?
+  \item Conjecturer la limite de $(u_{n})$.
+  \item Déterminer à partir de quel rang tous les termes $u_{n}$ appartiennent à
+        l'intervalle $\intoo{1{,}99999}{2{,}00001}$.
+\end{enumerate}
+
+\exo[Exécuter un programme à la main]
+Soit la suite $(v_{n})$ définie pour tout $n\in\Ns$ par $v_{n}=3-\dfrac{2}{n}$.
+\begin{enumerate}
+  \item Démontrer que la suite $(v_{n})$ est croissante.
+  \item On considère la fonction Python ci-dessous.
+\begin{python}
+def seuil(s):
+    n = 1
+    while 3 - 2/n < s:
+        n = n + 1
+    return n
+\end{python}
+        Recopier et compléter le tableau d'exécution de \texttt{seuil(2.8)}, jusqu'à
+        l'arrêt de la boucle.
+        \begin{center}
+        {\small\renewcommand{\arraystretch}{1.3}%
+        \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        $n$ & $1$ & $2$ & $\dots$ & \\ \hline
+        $3-2/n<2{,}8$ & vrai & & & \\ \hline
+        \end{tabular}}
+        \end{center}
+  \item Que représente la valeur renvoyée ? La retrouver par le calcul.
+\end{enumerate}
+
+\partiefiche{Limite infinie, suite divergente}
+
+\exo[Seuils par le calcul]
+Pour chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ définies pour tout $n\in\N$
+ci-dessous, déterminer le plus petit entier $n$ qui vérifie la condition indiquée.
+\begin{enumerate}[label=\alph*)]
+  \item $u_{n}=5n-12$ et $u_{n}\geq 1\,000$.
+  \item $v_{n}=n^{2}$ et $v_{n}\geq 10^{6}$.
+  \item $w_{n}=-3n+4$ et $w_{n}\leq -500$.
+\end{enumerate}
+
+\exo[Un seuil avec Python]
+Soit la suite $(u_{n})$ définie par $u_{0}=3$ et, pour tout $n\in\N$,
+$u_{n+1}=2u_{n}-1$. On admet qu'elle est croissante et tend vers $+\infty$.
+\begin{enumerate}
+  \item Calculer $u_{1}$, $u_{2}$ et $u_{3}$.
+  \item Recopier et compléter la fonction \texttt{seuil} pour qu'elle renvoie le plus
+        petit entier $n$ tel que $u_{n}\geq A$.
+\begin{python}
+def seuil(A):
+    n = 0
+    u = 3
+    while .......... :
+        n = n + 1
+        u = ..........
+    return n
+\end{python}
+  \item Quelle valeur renvoie \texttt{seuil(1000)} ?
+  \item On admet que, pour tout $n\in\N$, $u_{n}=2^{n+1}+1$. À l'aide de la
+        calculatrice, déterminer la valeur renvoyée par \texttt{seuil(10**6)}.
+\end{enumerate}
+
+\exo[Convergente, divergente, sans limite]
+Pour chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ définies pour tout $n\in\Ns$
+ci-dessous, calculer les cinq premiers termes, puis conjecturer si elle converge, si
+elle tend vers $+\infty$ ou $-\infty$, ou si elle n'a pas de limite.
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=3\times(-1)^{n}+1$
+  \item $b_{n}=\dfrac{(-1)^{n}}{n^{2}}$
+  \item $c_{n}=n\times(-1)^{n}$
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Pour chaque affirmation, dire si elle est vraie ou fausse, en justifiant. Pour une
+affirmation fausse, un contre-exemple suffit.
+\begin{enumerate}[label=\alph*)]
+  \item Toute suite croissante tend vers $+\infty$.
+  \item Une suite qui tend vers $+\infty$ est croissante. (On pourra étudier la suite
+        définie pour tout $n\in\N$ par $u_{n}=n+2\times(-1)^{n}$.)
+  \item Une suite divergente tend vers $+\infty$ ou vers $-\infty$.
+  \item Une suite qui tend vers $+\infty$ n'est pas majorée.
+\end{enumerate}
+
+\partiefiche{Limites usuelles et opérations sur les limites}
+
+\exo[Avec des sommes]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(d_{n})$ définies pour tout
+$n\in\Ns$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=n^{3}+\sqrt{n}$
+  \item $b_{n}=\dfrac{2}{n}-n^{2}$
+  \item $c_{n}=4+\dfrac{1}{n}+\dfrac{3}{n^{2}}$
+  \item $d_{n}=-5n^{2}+2-\dfrac{1}{n}$
+\end{enumerate}
+
+\exo[Avec des produits]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(d_{n})$ définies pour tout
+$n\in\Ns$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=(3n+2)\left(\dfrac{1}{n}+4\right)$
+  \item $b_{n}=\left(2+\dfrac{5}{n}\right)\left(\dfrac{1}{n^{2}}-3\right)$
+  \item $c_{n}=\left(1-\dfrac{2}{n}\right)\left(3+\dfrac{1}{n^{2}}\right)$
+  \item $d_{n}=(2n+1)\left(\dfrac{1}{n}-3\right)$
+\end{enumerate}
+
+\exo[Avec des quotients]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(e_{n})$ définies pour tout
+$n\in\Ns$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=\dfrac{7}{n^{2}+3}$
+  \item $b_{n}=\dfrac{4+\frac{2}{n^{2}}}{\frac{3}{n}-2}$
+  \item $c_{n}=\dfrac{-2+\frac{5}{n}}{\frac{1}{n^{2}}}$
+  \item $d_{n}=\dfrac{5+\sqrt{n}}{1+\frac{3}{n}}$
+  \item $e_{n}=\dfrac{6}{-2-n}$
+\end{enumerate}
+
+\exo[Recycler des panneaux solaires]
+Un centre de recyclage de panneaux solaires a traité $500$~tonnes en 2026. Selon un
+modèle, il traitera $r_{n}=1\,000-\dfrac{500}{n+1}$ tonnes l'année $2026+n$, pour tout
+$n\in\N$.
+\begin{enumerate}
+  \item Calculer $r_{1}$ et $r_{4}$.
+  \item Déterminer la limite de la suite $(r_{n})$, puis l'interpréter.
+  \item Déterminer, par le calcul, à partir de quelle année le centre traitera plus de
+        $980$~tonnes.
+\end{enumerate}
+
+\partiefiche{Lever une indétermination}
+
+\exo[Sommes et produits]
+Pour chacune des suites $(a_{n})$ à $(e_{n})$ définies pour tout $n\in\Ns$ ci-dessous,
+dire d'abord s'il s'agit d'une forme indéterminée, puis déterminer sa limite.
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=3n^{2}-5n+1$
+  \item $b_{n}=-2n^{3}+n^{2}+4$
+  \item $c_{n}=(n+3)(-2n+1)$
+  \item $d_{n}=n-5\sqrt{n}$
+  \item $e_{n}=\sqrt{n}-n$
+\end{enumerate}
+
+\exo[Quotients]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(e_{n})$ définies pour tout
+$n\in\Ns$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=\dfrac{4n^{2}+n+3}{2n^{2}-1}$
+  \item $b_{n}=\dfrac{3n^{2}+2}{n+5}$
+  \item $c_{n}=\dfrac{5n+1}{n^{2}+3}$
+  \item $d_{n}=\dfrac{2n^{3}-n}{4-n^{3}}$
+  \item $e_{n}=\dfrac{1-3n^{2}}{2n+1}$
+\end{enumerate}
+
+\exo[La quantité conjuguée]
+Déterminer la limite de chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ définies pour
+tout $n\in\N$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=\sqrt{n+4}-\sqrt{n}$
+  \item $b_{n}=\sqrt{n^{2}+1}-n$
+  \item $c_{n}=\sqrt{4n+1}-2\sqrt{n}$
+\end{enumerate}
+
+\exo[Deux écritures d'une même suite]
+Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=3n^{2}-12n+5$.
+\begin{enumerate}
+  \item Expliquer pourquoi les règles d'opérations ne permettent pas de conclure
+        directement.
+  \item Démontrer que, pour tout $n\in\N$, $u_{n}=3(n-2)^{2}-7$, puis en déduire la
+        limite de $(u_{n})$.
+  \item Retrouver ce résultat en factorisant $u_{n}$ par $n^{2}$, pour $n\neq 0$.
+\end{enumerate}
+
+\exo[Une division]
+Soit la suite $(d_{n})$ définie pour tout $n\in\N$ par
+$d_{n}=\dfrac{n^{2}+3n+7}{n+1}$.
+\begin{enumerate}
+  \item Démontrer que, pour tout $n\in\N$, $d_{n}=n+2+\dfrac{5}{n+1}$.
+  \item En déduire la limite de la suite $(d_{n})$.
+  \item Déterminer la limite de la suite $\left(d_{n}-(n+2)\right)$. Comment
+        l'interpréter pour $n$ grand ?
+\end{enumerate}
+
+\partiefiche{Limites et comparaison}
+
+\exo[Par comparaison]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(d_{n})$ définies pour tout
+$n\in\Ns$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=n^{2}+3\times(-1)^{n}$
+  \item $b_{n}=-2n+\cos(n)$
+  \item $c_{n}=n+\sin\left(n^{2}\right)$
+  \item $d_{n}=n\sin(n)-n^{2}$
+\end{enumerate}
+
+\exo[Par encadrement]
+Déterminer la limite de chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ définies pour
+tout $n\in\Ns$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=\dfrac{3+2\sin(n)}{n}$
+  \item $b_{n}=4-\dfrac{\cos(n)}{\sqrt{n}}$
+  \item $c_{n}=\dfrac{2n+(-1)^{n}}{n+1}$
+\end{enumerate}
+
+\exo[Deux gendarmes à trouver]
+Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par
+$v_{n}=\dfrac{2n+\sin(n)}{n^{2}+1}$.
+\begin{enumerate}
+  \item Justifier que, pour tout $n\in\N$,
+        $\dfrac{2n-1}{n^{2}+1}\leq v_{n}\leq\dfrac{2n+1}{n^{2}+1}$.
+  \item Déterminer les limites des suites $\left(\dfrac{2n-1}{n^{2}+1}\right)$ et
+        $\left(\dfrac{2n+1}{n^{2}+1}\right)$.
+  \item En déduire la limite de la suite $(v_{n})$.
+\end{enumerate}
+
+\exo[Récurrence et comparaison]
+Soit la suite $(s_{n})$ définie par $s_{0}=0$ et, pour tout $n\in\N$,
+$s_{n+1}=s_{n}^{2}+s_{n}+3$.
+\begin{enumerate}
+  \item Calculer $s_{1}$, $s_{2}$ et $s_{3}$. Que peut-on conjecturer ?
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $s_{n}\geq n$.
+  \item En déduire la limite de la suite $(s_{n})$.
+\end{enumerate}
+
+\exo[Un compte d'épargne]
+Léa ouvre un compte d'épargne avec $2\,000$~€. Le compte rapporte $2\,\%$ par an et,
+à la fin de chaque année, Léa y ajoute $150$~€. On note $L_{n}$ la somme, en euro,
+sur le compte après $n$ années : $L_{0}=2\,000$ et, pour tout $n\in\N$,
+$L_{n+1}=1{,}02\,L_{n}+150$.
+\begin{enumerate}
+  \item Calculer $L_{1}$ et $L_{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $L_{n}\geq 2\,000+150n$.
+  \item En déduire la limite de la suite $(L_{n})$.
+  \item À l'aide de la calculatrice, déterminer après combien d'années la somme
+        dépassera $4\,000$~€.
+\end{enumerate}
+
+\partiefiche{Convergence des suites monotones}
+
+\exo[Croissante et majorée]
+Soit la suite $(u_{n})$ définie par $u_{0}=2$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}6\,u_{n}+2$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et $u_{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $u_{n}\leq u_{n+1}\leq 5$.
+  \item En déduire que la suite $(u_{n})$ converge, et donner une majoration de sa
+        limite.
+\end{enumerate}
+
+\exo[Décroissante et minorée]
+Soit la suite $(v_{n})$ définie par $v_{0}=10$ et, pour tout $n\in\N$,
+$v_{n+1}=0{,}5\,v_{n}+2$.
+\begin{enumerate}
+  \item Calculer $v_{1}$ et $v_{2}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $4\leq v_{n+1}\leq v_{n}\leq 10$.
+  \item En déduire que la suite $(v_{n})$ converge. Que peut-on dire de sa limite ?
+\end{enumerate}
+
+\exo[Une racine carrée]
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=\sqrt{0{,}75x^{2}+4}$ et
+la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{enumerate}
+  \item Soit $x_{1}$ et $x_{2}$ deux nombres réels tels que $0\leq x_{1}<x_{2}$.
+        Démontrer que $\sqrt{0{,}75x_{1}^{2}+4}<\sqrt{0{,}75x_{2}^{2}+4}$, puis en déduire
+        que $f$ est strictement croissante sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $0\leq u_{n}\leq u_{n+1}\leq 4$.
+  \item En déduire que la suite $(u_{n})$ converge vers un nombre réel $\ell$.
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=u_{n}^{2}-16$.
+        Démontrer que $(v_{n})$ est géométrique.
+  \item En déduire $u_{n}^{2}$ en fonction de $n$, puis la limite de la suite
+        $\left(u_{n}^{2}\right)$.
+  \item En déduire la valeur de $\ell$.
+\end{enumerate}
+
+\exo[Vrai ou faux : suites monotones]
+Pour chaque affirmation, dire si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item Une suite croissante et majorée par $5$ converge vers $5$.
+  \item Une suite décroissante et minorée par $0$ converge vers un nombre positif ou nul.
+  \item Une suite non majorée tend vers $+\infty$.
+  \item Si, pour tout $n\in\N$, $u_{n}\leq v_{n}\leq w_{n}$, avec
+        $\lim\limits_{n\to+\infty}u_{n}=1$ et $\lim\limits_{n\to+\infty}w_{n}=3$, alors
+        la suite $(v_{n})$ converge.
+\end{enumerate}
+
+\partiefiche{Limite d'une suite géométrique}
+
+\exo[Limites de suites géométriques]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(f_{n})$ définies pour tout
+$n\in\N$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=4^{n}$
+  \item $b_{n}=(-0{,}3)^{n}$
+  \item $c_{n}=2\times 0{,}7^{n}+5$
+  \item $d_{n}=-3\times 1{,}1^{n}$
+  \item $e_{n}=3^{n+1}-5^{n}$
+  \item $f_{n}=\dfrac{2^{n}+3^{n}}{4^{n}}$
+\end{enumerate}
+
+\exo[Un traceur médical]
+En médecine nucléaire, on injecte à un patient $20$~mg d'un traceur radioactif qui
+permet de réaliser une image d'un organe. Chaque heure, la masse de traceur diminue de
+$11\,\%$. On note $m_{n}$ la masse, en mg, de traceur après $n$ heures : $m_{0}=20$.
+\begin{enumerate}
+  \item Exprimer $m_{n+1}$ en fonction de $m_{n}$, puis $m_{n}$ en fonction de $n$.
+  \item Déterminer la limite de la suite $(m_{n})$ et l'interpréter.
+  \item Recopier et compléter la fonction Python ci-dessous pour qu'elle renvoie le
+        nombre d'heures au bout duquel il reste moins de $1$~mg de traceur.
+\begin{python}
+def heures():
+    n = 0
+    m = 20
+    while .......... :
+        n = n + 1
+        m = ..........
+    return n
+\end{python}
+  \item À l'aide de la calculatrice, donner la valeur renvoyée.
+\end{enumerate}
+
+\exo[Démontrer la limite de $q^{n}$ pour $-1<q<0$]
+Soit $q$ un nombre réel tel que $-1<q<0$. On pose $p=-q$.
+\begin{enumerate}
+  \item Justifier que $0<p<1$, puis donner la limite de la suite $(p^{n})$.
+  \item Justifier que, pour tout $n\in\N$, $-p^{n}\leq q^{n}\leq p^{n}$. (On pourra
+        distinguer $n$ pair et $n$ impair.)
+  \item En déduire la limite de la suite $(q^{n})$.
+\end{enumerate}
+
+\partiefiche{Sommes de termes (rappels de 1\textsuperscript{re}) et limite}
+
+\exo[Calculer des sommes]
+Calculer les sommes suivantes.
+\begin{enumerate}[label=\alph*)]
+  \item $S_{1}=1+2+3+\dots+50$
+  \item $S_{2}=3+5+7+\dots+101$
+  \item $S_{3}=1+2+2^{2}+\dots+2^{10}$
+  \item $S_{4}=1+\dfrac{1}{3}+\left(\dfrac{1}{3}\right)^{2}+\dots+\left(\dfrac{1}{3}\right)^{5}$
+\end{enumerate}
+
+\exo[Limites de sommes]
+Déterminer la limite de chacune des suites $(a_{n})$ à $(d_{n})$ définies pour tout
+$n\in\N$ par :
+\begin{enumerate}[label=\alph*)]
+  \item $a_{n}=1+\dfrac{1}{2}+\left(\dfrac{1}{2}\right)^{2}+\dots+\left(\dfrac{1}{2}\right)^{n}$
+  \item $b_{n}=1-\dfrac{1}{3}+\left(-\dfrac{1}{3}\right)^{2}+\dots+\left(-\dfrac{1}{3}\right)^{n}$
+  \item $c_{n}=5+5\times 0{,}2+5\times 0{,}2^{2}+\dots+5\times 0{,}2^{n}$
+  \item $d_{n}=1+2+2^{2}+\dots+2^{n}$
+\end{enumerate}
+
+\exo[Des chiffres qui se répètent]
+\begin{enumerate}
+  \item Pour tout $n\in\Ns$, on note $a_{n}$ le nombre $0{,}77\dots7$ écrit avec $n$
+        chiffres $7$ après la virgule. Ainsi
+        $a_{n}=7\times 0{,}1+7\times 0{,}1^{2}+\dots+7\times 0{,}1^{n}$.
+        Exprimer $a_{n}$ en fonction de $n$, puis déterminer sa limite.
+  \item Pour tout $n\in\Ns$, on note $b_{n}$ le nombre $2{,}33\dots3$ écrit avec $n$
+        chiffres $3$ après la virgule. Déterminer la limite de $(b_{n})$.
+\end{enumerate}
+
+\exo[Un drone qui monte]
+Un drone d'inspection d'éoliennes monte de $30$~m, puis, à chaque étape, il monte de
+$80\,\%$ de la hauteur gagnée à l'étape précédente. On note $H_{n}$ son altitude, en
+mètre, après $n$ étapes : $H_{1}=30$ ; $H_{2}=30+24$…
+\begin{enumerate}
+  \item Calculer $H_{3}$.
+  \item Justifier que, pour tout $n\in\Ns$,
+        $H_{n}=30+30\times 0{,}8+\dots+30\times 0{,}8^{n-1}$, puis que
+        $H_{n}=150\left(1-0{,}8^{n}\right)$.
+  \item Déterminer la limite de la suite $(H_{n})$.
+  \item Le drone peut-il dépasser $160$~m ? À l'aide de la calculatrice, déterminer à
+        partir de quelle étape il dépasse $140$~m.
+\end{enumerate}
+
+\partiefiche{Suites arithmético-géométriques}
+
+\exo[Une suite arithmético-géométrique]
+Soit la suite $(u_{n})$ définie par $u_{0}=2$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}5\,u_{n}+4$.
+\begin{enumerate}
+  \item Déterminer le nombre réel $c$ tel que $c=0{,}5\,c+4$.
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=u_{n}-c$.
+        Démontrer que $(v_{n})$ est géométrique ; préciser sa raison et son premier
+        terme.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Déterminer la limite de la suite $(u_{n})$.
+\end{enumerate}
+
+\exo[Une suite qui diverge]
+Soit la suite $(w_{n})$ définie par $w_{0}=1$ et, pour tout $n\in\N$,
+$w_{n+1}=3w_{n}-4$.
+\begin{enumerate}
+  \item Calculer $w_{1}$ et $w_{2}$.
+  \item Soit la suite $(t_{n})$ définie pour tout $n\in\N$ par $t_{n}=w_{n}-2$.
+        Démontrer que $(t_{n})$ est géométrique ; préciser sa raison et son premier
+        terme.
+  \item Exprimer $w_{n}$ en fonction de $n$, puis déterminer la limite de $(w_{n})$.
+\end{enumerate}
+
+\exo[Les adhérents d'une ressourcerie]
+Une ressourcerie, qui répare et revend des objets, compte $1\,500$ adhérents en 2026.
+Chaque année, $75\,\%$ des adhérents renouvellent leur adhésion et $500$ nouveaux
+adhérents s'inscrivent. On note $a_{n}$ le nombre d'adhérents l'année $2026+n$ :
+$a_{0}=1\,500$.
+\begin{enumerate}
+  \item Justifier que, pour tout $n\in\N$, $a_{n+1}=0{,}75\,a_{n}+500$.
+  \item Soit la suite $(b_{n})$ définie pour tout $n\in\N$ par $b_{n}=a_{n}-2\,000$.
+        Démontrer que $(b_{n})$ est géométrique.
+  \item Exprimer $a_{n}$ en fonction de $n$, puis déterminer la limite de $(a_{n})$ et
+        l'interpréter.
+  \item Recopier et compléter la fonction Python ci-dessous pour qu'elle renvoie la
+        première année où la ressourcerie compte plus de $1\,950$ adhérents, puis
+        donner la valeur renvoyée.
+\begin{python}
+def annee():
+    n = 0
+    a = 1500
+    while .......... :
+        n = n + 1
+        a = ..........
+    return 2026 + n
+\end{python}
+\end{enumerate}
+
+\exo[Une perfusion]
+À l'instant $t=0$, on injecte à un patient $12$~mL d'un médicament. Chaque heure,
+$25\,\%$ du médicament présent dans le sang est éliminé, et une machine injecte
+$1{,}5$~mL. On note $q_{n}$ la quantité, en mL, de médicament dans le sang après $n$
+heures : $q_{0}=12$.
+\begin{enumerate}
+  \item Justifier que, pour tout $n\in\N$, $q_{n+1}=0{,}75\,q_{n}+1{,}5$.
+  \item Déterminer une suite auxiliaire géométrique, puis exprimer $q_{n}$ en fonction
+        de $n$.
+  \item Étudier le sens de variation de la suite $(q_{n})$.
+  \item Quelle quantité de médicament le sang contiendra-t-il quand elle sera
+        stabilisée ?
+\end{enumerate}
+
+\partiefiche{Théorème du point fixe}
+
+\exo[Avec une fonction affine]
+Soit $f$ la fonction définie sur $\R$ par $f(x)=0{,}4x+3$ et la suite $(u_{n})$ définie
+par $u_{0}=1$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$. On admet que, pour tout
+$n\in\N$, $u_{n}\leq u_{n+1}\leq 5$.
+\begin{enumerate}
+  \item Justifier que la suite $(u_{n})$ converge.
+  \item Justifier que $f$ est continue sur $\R$.
+  \item Déterminer la limite de la suite $(u_{n})$.
+\end{enumerate}
+
+\exo[Avec un quotient]
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=\dfrac{3x+2}{x+2}$ et la
+suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$.
+\begin{enumerate}
+  \item Étudier le sens de variation de $f$ sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $0\leq u_{n}\leq u_{n+1}\leq 2$.
+  \item En déduire que la suite $(u_{n})$ converge.
+  \item Déterminer sa limite.
+\end{enumerate}
+
+\exo[Avec une racine carrée]
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=\sqrt{x+6}$ et la suite
+$(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$, $u_{n+1}=f(u_{n})$. On admet que
+$f$ est continue sur $\intfo{0}{+\infty}$.
+\begin{enumerate}
+  \item Soit $x_{1}$ et $x_{2}$ deux nombres réels tels que $0\leq x_{1}<x_{2}$.
+        Démontrer que $\sqrt{x_{1}+6}<\sqrt{x_{2}+6}$, puis en déduire que $f$ est
+        strictement croissante sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $0\leq u_{n}\leq u_{n+1}\leq 3$.
+  \item En déduire que la suite $(u_{n})$ converge, puis déterminer sa limite.
+\end{enumerate}
+
+\exo[Un piège]
+Soit la suite $(u_{n})$ définie par $u_{0}=1$ et, pour tout $n\in\N$,
+$u_{n+1}=2u_{n}^{2}$.
+\begin{enumerate}
+  \item On suppose que $(u_{n})$ converge vers un nombre réel $\ell$. Justifier que
+        $\ell=2\ell^{2}$, puis que $\ell=0$ ou $\ell=0{,}5$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, $u_{n}\geq 1$.
+  \item En déduire que la suite $(u_{n})$ ne converge pas.
+  \item Démontrer que, pour tout $n\in\N$, $u_{n+1}\geq 2u_{n}$, puis que
+        $u_{n}\geq 2^{n}$. En déduire la limite de $(u_{n})$.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2025, Amérique du Nord]
+On considère la suite numérique $(u_{n})$ définie par son premier terme $u_{0}=2$ et
+pour tout entier naturel $n$, par :
+\[u_{n+1}=\dfrac{2u_{n}+1}{u_{n}+2}.\]
+On admet que la suite $(u_{n})$ est bien définie.
+\begin{enumerate}
+  \item Calculer le terme $u_{1}$.
+  \item On définit la suite $(a_{n})$ pour tout entier naturel $n$, par :
+        $a_{n}=\dfrac{u_{n}}{u_{n}-1}$. On admet que la suite $(a_{n})$ est bien
+        définie.
+  \begin{enumerate}[label=\alph*)]
+    \item Calculer $a_{0}$ et $a_{1}$.
+    \item Démontrer que, pour tout entier naturel $n$, $a_{n+1}=3a_{n}-1$.
+    \item Démontrer par récurrence que, pour tout entier naturel $n$ supérieur ou égal
+          à~$1$, $a_{n}\geq 3n-1$.
+    \item En déduire la limite de la suite $(a_{n})$.
+  \end{enumerate}
+  \item On souhaite étudier la limite de la suite $(u_{n})$.
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que pour tout entier naturel $n$, $u_{n}=\dfrac{a_{n}}{a_{n}-1}$.
+    \item En déduire la limite de la suite $(u_{n})$.
+  \end{enumerate}
+  \item On admet que la suite $(u_{n})$ est décroissante. On considère le programme
+        suivant écrit en langage Python :
+\begin{python}
+def algo(p):
+    u = 2
+    n = 0
+    while u - 1 > p:
+        u = (2*u + 1)/(u + 2)
+        n = n + 1
+    return (n, u)
+\end{python}
+  \begin{enumerate}[label=\alph*)]
+    \item Interpréter les valeurs \texttt{n} et \texttt{u} renvoyées par l'appel de la
+          fonction \texttt{algo(p)} dans le contexte de l'exercice.
+    \item Donner, sans justifier, la valeur de $n$ pour $p=0{,}001$.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2025, Métropole]
+Le but de cet exercice est d'étudier les convergences de deux suites vers une même
+limite.
+
+\smallskip
+\textbf{Partie A.} On considère la fonction $f$ définie sur $\intfo{2}{+\infty}$ par
+$f(x)=\sqrt{3x-2}$.
+\begin{enumerate}
+  \item Soit $x_{1}$ et $x_{2}$ deux nombres réels tels que $2\leq x_{1}<x_{2}$.
+        Démontrer que $\sqrt{3x_{1}-2}<\sqrt{3x_{2}-2}$, puis en déduire que $f$ est
+        strictement croissante sur $\intfo{2}{+\infty}$. Calculer $f(2)$.
+\end{enumerate}
+On admet que la suite $(u_{n})$ vérifiant $u_{0}=6$ et, pour tout $n$ entier naturel,
+$u_{n+1}=f(u_{n})$ est bien définie.
+\begin{enumerate}[resume]
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer par récurrence que, pour tout $n$ entier naturel :
+          $2\leq u_{n+1}\leq u_{n}\leq 6$.
+    \item En déduire que la suite $(u_{n})$ converge.
+  \end{enumerate}
+  \item On appelle $\ell$ la limite de $(u_{n})$. On admet qu'elle est solution de
+        l'équation $f(x)=x$. Déterminer la valeur de $\ell$.
+  \item On considère la fonction \texttt{rang} écrite ci-dessous en langage Python. On
+        rappelle que \texttt{sqrt(x)} renvoie la racine carrée du nombre $x$.
+\begin{python}
+from math import *
+
+def rang(a):
+    u = 6
+    n = 0
+    while u >= a:
+        u = sqrt(3*u - 2)
+        n = n + 1
+    return n
+\end{python}
+  \begin{enumerate}[label=\alph*)]
+    \item Pourquoi peut-on affirmer que \texttt{rang(2.000001)} renvoie une valeur ?
+    \item Pour quelles valeurs du paramètre $a$ l'instruction \texttt{rang(a)}
+          renvoie-t-elle un résultat ?
+  \end{enumerate}
+\end{enumerate}
+
+\textbf{Partie B.} On admet que la suite $(v_{n})$ vérifiant $v_{0}=6$ et, pour tout $n$
+entier naturel, $v_{n+1}=3-\dfrac{2}{v_{n}}$ est bien définie.
+\begin{enumerate}
+  \item Calculer $v_{1}$.
+  \item Pour tout $n$ entier naturel, on admet que $v_{n}\neq 2$ et on pose :
+        $w_{n}=\dfrac{v_{n}-1}{v_{n}-2}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que la suite $(w_{n})$ est géométrique de raison $2$ et préciser
+          son premier terme $w_{0}$.
+    \item On admet que, pour tout $n$ entier naturel, $w_{n}-1=\dfrac{1}{v_{n}-2}$. En
+          déduire que, pour tout $n$ entier naturel,
+          $v_{n}=2+\dfrac{1}{1{,}25\times 2^{n}-1}$.
+    \item Calculer la limite de $(v_{n})$.
+  \end{enumerate}
+  \item Déterminer le plus petit entier naturel $n$ pour lequel $v_{n}<2{,}01$ en
+        résolvant l'inéquation.
+\end{enumerate}
+
+\textbf{Partie C.} À l'aide des parties précédentes, déterminer le plus petit entier $N$
+tel que pour tout $n\geq N$, les termes $v_{n}$ et $u_{n}$ appartiennent à l'intervalle
+$\intoo{1{,}99}{2{,}01}$.
+
+\exo[D'après bac 2026, Asie]
+\textbf{Partie A.} On considère la fonction $f$ définie sur
+$\intoo{-\infty}{\frac{3}{2}}$ par : $f(x)=\dfrac{x-2}{2x-3}$.
+\begin{enumerate}
+  \item Démontrer que $f$ est croissante sur $\intoo{-\infty}{\frac{3}{2}}$.
+  \item En déduire que pour tout $x\in\intff{0}{1}$, on a : $f(x)\in\intff{0}{1}$.
+\end{enumerate}
+
+\textbf{Partie B.} On considère la suite $(u_{n})$ définie par $u_{0}=0$ et
+$u_{n+1}=\dfrac{u_{n}-2}{2u_{n}-3}$, pour tout entier naturel $n$.
+\begin{enumerate}
+  \item En utilisant la fonction $f$, démontrer par récurrence que pour tout entier
+        naturel $n$ : $0\leq u_{n}\leq u_{n+1}\leq 1$.
+  \item En déduire que la suite $(u_{n})$ converge.
+  \item On note $\ell$ la limite de la suite $(u_{n})$. En admettant que $\ell$ est
+        solution de l'équation $f(x)=x$ sur l'intervalle $\intff{0}{1}$, montrer que
+        $\ell=1$.
+  \item On donne ci-dessous une fonction \texttt{seuil} écrite en langage Python.
+\begin{python}
+def seuil(h):
+    n = 0
+    u = 0
+    while u < 1-h:
+        n = n+1
+        u = (u-2)/(2*u-3)
+    return n
+\end{python}
+        L'appel \texttt{seuil(0.0001)} renvoie la valeur $5\,000$. Interpréter cette
+        valeur dans le contexte de l'exercice.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Donner les quatre premiers termes de la suite $(u_{n})$ sous forme de
+          fractions irréductibles.
+    \item Conjecturer l'expression de $u_{n}$ en fonction de $n$ et démontrer cette
+          conjecture.
+  \end{enumerate}
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

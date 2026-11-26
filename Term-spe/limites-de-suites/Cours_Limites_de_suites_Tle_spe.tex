@@ -1,0 +1,1450 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{2}{Limites de suites}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{LIMITES DE SUITES}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\partiecours{Limite finie, suite convergente}
+
+Au chapitre~1, on a conjecturé sur des graphiques qu'une suite « se rapproche » d'un
+nombre. On donne ici un sens précis à cette idée : la \textbf{limite} d'une suite décrit
+ce que deviennent ses termes $u_{n}$ quand $n$ devient de plus en plus grand.
+
+\smallskip
+Exemple : soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par $u_{n}=2+\frac{1}{n}$.
+On a $u_{1}=3$ ; $u_{10}=2{,}1$ ; $u_{100}=2{,}01$ et $u_{1\,000}=2{,}001$. L'écriture
+décimale de $u_{n}$ commence par $2{,}00\ldots0$ avec de plus en plus de zéros : les termes
+finissent par être aussi proches de $2$ qu'on le veut. On dit que $(u_{n})$
+\textbf{converge vers $2$}.
+
+\begin{definitionbox}[Définition 1 --- Suite convergente]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\textbf{En mots :} la suite $(u_{n})$ converge vers le nombre réel $\ell$ si ses termes
+finissent par rester aussi près de $\ell$ qu'on le veut.
+
+\smallskip
+\textbf{Définition :} la suite $(u_{n})$ \textbf{converge} vers le nombre réel $\ell$ si
+tout intervalle ouvert contenant $\ell$ contient tous les termes $u_{n}$ à partir d'un
+certain rang. On note $\lim\limits_{n\to+\infty}u_{n}=\ell$ et on dit que $(u_{n})$ est
+\textbf{convergente}.
+
+\smallskip
+Si elle existe, la limite est unique.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.75cm]
+  \fill[red!12] (0,1.65) rectangle (12.5,2.35);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(13,0) node[below left]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,3.6) node[below left]{$u_{n}$};
+  \draw[dashed,black!60] (0,2)--(12.5,2) node[right,font=\footnotesize]{$\ell$};
+  \draw[dotted,black!60] (4,0)--(4,3.4);
+  \draw (4,0.07)--(4,-0.07) node[below,font=\footnotesize]{$N$};
+  \foreach \n in {1,...,12} {%
+    \pgfmathsetmacro\yy{2+2*cos(180*\n)*0.6^\n}
+    \path[coulCourbe] (\n,\yy) node[croix]{};}
+\end{tikzpicture}
+
+{\footnotesize À partir du rang $N$, tous les termes sont dans la bande rouge, aussi
+étroite soit-elle.}
+\end{minipage}
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Conjecturer une limite et trouver un rang]
+\etapeexemples
+Soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par $u_{n}=2+\frac{5}{n}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $u_{1}$ ; $u_{10}$ ; $u_{100}$ et $u_{1\,000}$, puis conjecturer la limite
+        de $(u_{n})$.
+  \item Déterminer à partir de quel rang tous les termes $u_{n}$ appartiennent à
+        l'intervalle $\intoo{1{,}99}{2{,}01}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+u_{1} &= 2+5 = 7 &\qquad& \rem{on remplace $n$ par $1$}\\
+u_{10} &= 2+0{,}5 = 2{,}5 &&\\
+u_{100} &= 2+0{,}05 = 2{,}05 &&\\
+u_{1\,000} &= 2+0{,}005 = 2{,}005 &&
+\end{calculs}
+\explique{Les termes se rapprochent de $2$ : on conjecture que
+\res{$\lim\limits_{n\to+\infty}u_{n}=2$}.}{une conjecture, pas une preuve}
+\cas{b)}
+\explique{Soit $n\in\Ns$. On a $\frac{5}{n}>0$, donc $u_{n}>2$ : tous les termes sont
+au-dessus de $1{,}99$.}{il reste à rester sous $2{,}01$}
+\begin{calculs}
+u_{n} &< 2{,}01 &\qquad& \rem{la condition cherchée}\\
+2+\frac{5}{n} &< 2{,}01 &\qquad& \rem{on remplace $u_{n}$}\\
+\frac{5}{n} &< 0{,}01 &\qquad& \rem{on retire $2$}\\
+5 &< 0{,}01\,n &\qquad& \rem{on multiplie par $n>0$}\\
+n &> 500 &\qquad& \rem{on divise par $0{,}01$}
+\end{calculs}
+\explique{\res{À partir du rang $501$}, tous les termes $u_{n}$ appartiennent à
+l'intervalle $\intoo{1{,}99}{2{,}01}$.}{avec un intervalle plus étroit, on trouverait un
+rang plus grand}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(v_{n})$ définie pour tout $n\in\Ns$ par $v_{n}=4-\frac{3}{n}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $v_{1}$ ; $v_{10}$ ; $v_{100}$ et $v_{1\,000}$, puis conjecturer la limite
+        de $(v_{n})$.
+  \item Déterminer à partir de quel rang tous les termes $v_{n}$ appartiennent à
+        l'intervalle $\intoo{3{,}99}{4{,}01}$.
+\end{questions}
+\reponse{a) $1$ ; $3{,}7$ ; $3{,}97$ et $3{,}997$ ; limite $4$.\; b)~À partir du rang $301$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Limite infinie, suite divergente}
+
+\begin{definitionbox}[Définition 2 --- Limite infinie]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\textbf{En mots :} la suite $(u_{n})$ tend vers $+\infty$ si ses termes finissent par
+dépasser n'importe quel seuil, aussi grand soit-il, et ne plus redescendre en dessous.
+
+\smallskip
+\textbf{Définition :} la suite $(u_{n})$ \textbf{tend vers $+\infty$} si, pour tout
+nombre réel $A$, l'intervalle $\intfo{A}{+\infty}$ contient tous les termes $u_{n}$ à partir d'un
+certain rang. On note $\lim\limits_{n\to+\infty}u_{n}=+\infty$.
+
+\smallskip
+De même, $(u_{n})$ tend vers $-\infty$ si, pour tout nombre réel $A$, l'intervalle
+$\intof{-\infty}{A}$ contient tous les termes $u_{n}$ à partir d'un certain rang.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.17cm]
+  \fill[red!12] (0,10) rectangle (10.5,22);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(11,0) node[below left]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,23) node[below left]{$u_{n}$};
+  \draw[dashed,black!60] (0,10)--(10.5,10);
+  \node[left,font=\footnotesize] at (0,10) {$A$};
+  \draw[dotted,black!60] (7,0)--(7,22);
+  \draw (7,0.4)--(7,-0.4) node[below,font=\footnotesize]{$N$};
+  \foreach \n in {0,...,9} {%
+    \pgfmathsetmacro\yy{\n*\n/4}
+    \path[coulCourbe] (\n,\yy) node[croix]{};}
+\end{tikzpicture}
+
+{\footnotesize À partir du rang $N$, tous les termes dépassent $A$, aussi grand
+soit-il.}
+\end{minipage}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 3 --- Suite divergente]
+Une suite qui n'est pas convergente est dite \textbf{divergente}. Elle peut tendre vers
+$+\infty$ ou vers $-\infty$, ou n'avoir aucune limite : la suite $(w_{n})$ définie pour
+tout $n\in\N$ par $w_{n}=(-1)^{n}$ vaut alternativement $1$ et $-1$ ; elle ne se
+rapproche d'aucun nombre et ne dépasse aucun seuil : elle diverge sans limite.
+\end{definitionbox}
+
+Une suite qui tend vers $+\infty$ dépasse donc tout seuil $A$ : chercher le premier rang
+où cela arrive est un \textbf{problème de seuil}. On le résout par le calcul quand
+l'inéquation est simple, sinon avec une boucle « tant que » (vue en 1\textsuperscript{re}).
+
+\begin{methodebox}[Méthode 2 --- Résoudre un problème de seuil]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=4n-3$. Déterminer le
+        plus petit entier $n$ tel que $u_{n}\geq 10\,000$.
+  \item Soit la suite $(v_{n})$ définie par $v_{0}=1$ et, pour tout $n\in\N$,
+        $v_{n+1}=2v_{n}+1$ ; on admet qu'elle est croissante et tend vers $+\infty$.
+        Compléter la fonction \texttt{seuil} pour qu'elle renvoie le plus petit entier $n$
+        tel que $v_{n}\geq A$, puis donner la valeur renvoyée par \texttt{seuil(1000)}.
+\end{questions}
+\begin{python}
+def seuil(A):
+    n = 0
+    v = 1
+    while .......... :
+        n = n + 1
+        v = ..........
+    return n
+\end{python}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+4n-3 &\geq 10\,000 &\qquad& \rem{l'inéquation à résoudre}\\
+4n &\geq 10\,003 &\qquad& \rem{on ajoute $3$}\\
+n &\geq 2\,500{,}75 &\qquad& \rem{on divise par $4>0$}
+\end{calculs}
+\explique{$n$ est un entier : le plus petit qui convient est \res{$n=2\,501$}.}{$2\,500$
+ne convient pas}
+\cas{b)}\par\nopagebreak
+\begin{minipage}[t]{0.42\linewidth}\vspace{0pt}
+\begin{python}
+def seuil(A):
+    n = 0
+    v = 1
+    while v < A :
+        n = n + 1
+        v = 2*v + 1
+    return n
+\end{python}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.54\linewidth}\vspace{0pt}\raggedright
+{\small\itshape\color{black!60}tant que le seuil n'est pas atteint ($v<A$), on passe au
+rang suivant et on calcule le terme suivant ; la boucle s'arrête au premier rang où
+$v_{n}\geq A$}
+\end{minipage}
+\begin{calculs}
+v_{8} &= 511 &\qquad& \rem{$1$ ; $3$ ; $7$ ; $15$ ; $31$ ; $63$ ; $127$ ; $255$ ; $511$}\\
+v_{9} &= 2\times 511+1 = 1\,023 &\qquad& \rem{premier terme au-delà de $1\,000$}
+\end{calculs}
+\explique{\texttt{seuil(1000)} renvoie \res{$9$}.}{$v_{8}<1\,000\leq v_{9}$}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Soit la suite $(a_{n})$ définie pour tout $n\in\N$ par $a_{n}=3n+7$. Déterminer le
+        plus petit entier $n$ tel que $a_{n}\geq 5\,000$.
+  \item Soit la suite $(b_{n})$ définie par $b_{0}=2$ et, pour tout $n\in\N$,
+        $b_{n+1}=3b_{n}-1$ ; on admet qu'elle est croissante et tend vers $+\infty$.
+        Écrire une fonction \texttt{seuil} qui renvoie le plus petit entier $n$ tel que
+        $b_{n}\geq A$, puis donner la valeur renvoyée par \texttt{seuil(1000)}.
+\end{questions}
+\reponse{a) $n=1\,665$.\; b)~\texttt{while b < A}, \texttt{b = 3*b - 1} ; \texttt{seuil(1000)}
+renvoie $6$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Limites usuelles et opérations sur les limites}
+
+\begin{proprietebox}[Propriété 1 --- Limites usuelles]
+Pour tout entier $k\geq 1$ :
+\begin{center}
+$\lim\limits_{n\to+\infty}n^{k}=+\infty$ \qquad
+$\lim\limits_{n\to+\infty}\sqrt{n}=+\infty$ \qquad
+$\lim\limits_{n\to+\infty}\dfrac{1}{n^{k}}=0$ \qquad
+$\lim\limits_{n\to+\infty}\dfrac{1}{\sqrt{n}}=0$
+\end{center}
+En particulier, $n$ et $n^{2}$ tendent vers $+\infty$ ; $\frac{1}{n}$ et $\frac{1}{n^{2}}$
+tendent vers $0$. Une suite constante égale à $c$ converge vers $c$.
+\end{proprietebox}
+
+Pour une suite construite à partir de ces suites usuelles (somme, produit, quotient), on
+lit sa limite dans les tableaux ci-dessous ; $\ell$ et $\ell'$ sont des nombres réels,
+« $\infty$ » désigne $+\infty$ ou $-\infty$, et le signe du résultat suit la règle des
+signes. Les cases « F.I. » sont des \textbf{formes indéterminées} : les tableaux ne
+permettent pas de conclure (partie~IV).
+
+\begin{proprietebox}[Propriété 2 --- Opérations sur les limites]
+\textbf{Somme}
+
+\smallskip
+\begin{center}
+{\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{7pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$\lim u_{n}$ & $\ell$ & $\ell$ & $\ell$ & $+\infty$ & $-\infty$ & $+\infty$\\ \hline
+$\lim v_{n}$ & $\ell'$ & $+\infty$ & $-\infty$ & $+\infty$ & $-\infty$ & $-\infty$\\ \hline
+$\lim (u_{n}+v_{n})$ & $\ell+\ell'$ & $+\infty$ & $-\infty$ & $+\infty$ & $-\infty$ &
+\textbf{F.I.}\\ \hline
+\end{tabular}}
+\end{center}
+
+\textbf{Produit}
+
+\smallskip
+\begin{center}
+{\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{7pt}%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$\lim u_{n}$ & $\ell$ & $\ell\neq 0$ & $\infty$ & $0$\\ \hline
+$\lim v_{n}$ & $\ell'$ & $\infty$ & $\infty$ & $\infty$\\ \hline
+$\lim (u_{n}\times v_{n})$ & $\ell\times\ell'$ & $\infty$ & $\infty$ & \textbf{F.I.}\\ \hline
+\end{tabular}}
+\end{center}
+
+\textbf{Quotient}
+
+\smallskip
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{6pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$\lim u_{n}$ & $\ell$ & $\ell$ & $\ell\neq 0$ ou $\infty$ & $\infty$ & $\infty$ & $0$\\ \hline
+$\lim v_{n}$ & $\ell'\neq 0$ & $\infty$ & $0$, $v_{n}$ de signe constant & $\ell'$ & $\infty$ & $0$\\ \hline
+$\lim \dfrac{u_{n}}{v_{n}}$ & $\dfrac{\ell}{\ell'}$ & $0$ & $\infty$ & $\infty$ &
+\textbf{F.I.} & \textbf{F.I.}\\ \hline
+\end{tabular}}
+\end{center}
+
+\textbf{En mots :} un nombre divisé par « très grand » devient « très petit » ; un nombre
+non nul divisé par « très proche de zéro » devient « très grand ».
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer une limite par opérations]
+\etapeexemples
+Déterminer la limite de chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ définies pour
+tout $n\in\Ns$ par :
+\begin{center}
+a)~$u_{n}=n^{2}+3\sqrt{n}-1$ \qquad
+b)~$v_{n}=\left(2+\dfrac{1}{n}\right)\left(5-n^{2}\right)$ \qquad
+c)~$w_{n}=\dfrac{-3}{n^{2}+1}$
+\end{center}
+\begin{correction}
+\cas{a)}
+\explique{$\lim\limits_{n\to+\infty}\sqrt{n}=+\infty$, donc
+$\lim\limits_{n\to+\infty}3\sqrt{n}=+\infty$.}{produit par $3>0$}
+\explique{$\lim\limits_{n\to+\infty}n^{2}=+\infty$, donc par somme,
+\res{$\lim\limits_{n\to+\infty}u_{n}=+\infty$}.}{$+\infty+\infty-1$}
+\cas{b)}
+\explique{$\lim\limits_{n\to+\infty}\frac{1}{n}=0$, donc par somme,
+$\lim\limits_{n\to+\infty}\left(2+\frac{1}{n}\right)=2$.}{}
+\explique{$\lim\limits_{n\to+\infty}n^{2}=+\infty$, donc par somme,
+$\lim\limits_{n\to+\infty}\left(5-n^{2}\right)=-\infty$.}{}
+\explique{Par produit, \res{$\lim\limits_{n\to+\infty}v_{n}=-\infty$}.}{$2\times(-\infty)$ :
+règle des signes}
+\cas{c)}
+\explique{$\lim\limits_{n\to+\infty}n^{2}=+\infty$, donc par somme,
+$\lim\limits_{n\to+\infty}\left(n^{2}+1\right)=+\infty$.}{}
+\explique{Par quotient, \res{$\lim\limits_{n\to+\infty}w_{n}=0$}.}{$-3$ divisé par
+« très grand »}
+\end{correction}
+
+\etape{À vous de jouer}
+Déterminer la limite de chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ définies pour
+tout $n\geq 3$ par :
+\begin{center}
+a)~$a_{n}=2n+\sqrt{n}-4$ \qquad
+b)~$b_{n}=\left(3-\dfrac{1}{n^{2}}\right)\left(n+4\right)$ \qquad
+c)~$c_{n}=\dfrac{5}{2-n}$
+\end{center}
+\reponse{a) $+\infty$.\; b)~$+\infty$.\; c)~$0$.}
+\end{methodebox}
+
+\afaire{exercices 9 à 12}
+
+\partiecours{Lever une indétermination}
+
+Les quatre formes indéterminées sont « $\infty-\infty$ », « $0\times\infty$ »,
+« $\frac{\infty}{\infty}$ » et « $\frac{0}{0}$ ». Une forme indéterminée ne veut pas dire
+qu'il n'y a pas de limite : il faut transformer l'écriture de $u_{n}$ pour sortir de
+l'impasse, puis appliquer les opérations. Pour une somme de puissances de $n$, on
+\textbf{factorise par le terme de plus haut degré}, celui qui « grandit le plus vite »
+($n^{2}$ dans $2n^{2}-7n+3$).
+
+\begin{methodebox}[Méthode 4 --- Factoriser par le terme de plus haut degré]
+\etapeexemples
+Déterminer la limite de chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ définies pour
+tout $n\in\Ns$ par :
+\begin{center}
+a)~$u_{n}=2n^{2}-7n+3$ \qquad
+b)~$v_{n}=\dfrac{6n^{2}+1}{3n^{2}+2n}$ \qquad
+c)~$w_{n}=n-4\sqrt{n}$
+\end{center}
+\begin{correction}
+\cas{a)}
+\explique{$\lim\limits_{n\to+\infty}2n^{2}=+\infty$ et
+$\lim\limits_{n\to+\infty}(-7n+3)=-\infty$ : c'est une forme indéterminée
+« $\infty-\infty$ ».}{on le signale d'abord}
+\explique{Pour tout $n\in\Ns$, on a $n\neq 0$ :}{on peut factoriser par $n^{2}$}
+\begin{calculs}
+u_{n} &= n^{2}\left(2-\frac{7n}{n^{2}}+\frac{3}{n^{2}}\right) &\qquad& \rem{on factorise
+par $n^{2}$, terme de plus haut degré}\\
+u_{n} &= n^{2}\left(2-\frac{7}{n}+\frac{3}{n^{2}}\right) &\qquad& \rem{on simplifie
+$\frac{7n}{n^{2}}$}
+\end{calculs}
+\explique{$\lim\limits_{n\to+\infty}\frac{7}{n}=0$ et $\lim\limits_{n\to+\infty}\frac{3}{n^{2}}=0$,
+donc par somme, $\lim\limits_{n\to+\infty}\left(2-\frac{7}{n}+\frac{3}{n^{2}}\right)=2$.}{}
+\explique{$\lim\limits_{n\to+\infty}n^{2}=+\infty$, donc par produit,
+\res{$\lim\limits_{n\to+\infty}u_{n}=+\infty$}.}{$(+\infty)\times 2$}
+\cas{b)}
+\explique{Le numérateur et le dénominateur tendent vers $+\infty$ : c'est une forme
+indéterminée « $\frac{\infty}{\infty}$ ».}{}
+\explique{Pour tout $n\in\Ns$, on a $n\neq 0$ :}{on peut factoriser et simplifier par $n^{2}$}
+\begin{calculs}
+v_{n} &= \frac{n^{2}\left(6+\frac{1}{n^{2}}\right)}{n^{2}\left(3+\frac{2}{n}\right)} &\qquad&
+\rem{on factorise en haut et en bas par $n^{2}$}\\
+v_{n} &= \frac{6+\frac{1}{n^{2}}}{3+\frac{2}{n}} &\qquad& \rem{on simplifie par
+$n^{2}\neq 0$}
+\end{calculs}
+\explique{Par somme, le numérateur tend vers $6$ et le dénominateur vers $3$ ; par
+quotient, \res{$\lim\limits_{n\to+\infty}v_{n}=2$}.}{$\frac{6}{3}=2$}
+\cas{c)}
+\explique{$\lim\limits_{n\to+\infty}n=+\infty$ et
+$\lim\limits_{n\to+\infty}4\sqrt{n}=+\infty$ : forme indéterminée
+« $\infty-\infty$ ».}{}
+\explique{Pour tout $n\in\Ns$, on a $n\neq 0$ :}{on peut factoriser par $n$}
+\begin{calculs}
+w_{n} &= n\left(1-\frac{4\sqrt{n}}{n}\right) &\qquad& \rem{on factorise par $n$}\\
+w_{n} &= n\left(1-\frac{4}{\sqrt{n}}\right) &\qquad& \rem{$n=\sqrt{n}\times\sqrt{n}$}
+\end{calculs}
+\explique{$\lim\limits_{n\to+\infty}\frac{4}{\sqrt{n}}=0$, donc par somme, la parenthèse tend
+vers $1$ ; par produit, \res{$\lim\limits_{n\to+\infty}w_{n}=+\infty$}.}{$(+\infty)\times 1$}
+\end{correction}
+
+\etape{À vous de jouer}
+Déterminer la limite de chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ définies pour
+tout $n\in\Ns$ par :
+\begin{center}
+a)~$a_{n}=-3n^{2}+4n+7$ \qquad
+b)~$b_{n}=\dfrac{5n^{2}-1}{2n^{2}+n}$ \qquad
+c)~$c_{n}=2n-3\sqrt{n}$
+\end{center}
+\reponse{a) $-\infty$.\; b)~$\frac{5}{2}$.\; c)~$+\infty$.}
+\end{methodebox}
+
+\begin{remarquebox}[Quotient de degrés différents]
+La même factorisation conclut : pour tout $n\in\Ns$ ($n\neq 0$), on a
+$\frac{n^{2}+4}{2n+1}=n\times\frac{1+\frac{4}{n^{2}}}{2+\frac{1}{n}}$, qui tend vers
+$+\infty$ par produit ; et $\frac{3n+1}{n^{2}+2}=\frac{1}{n}\times\frac{3+\frac{1}{n}}{1+\frac{2}{n^{2}}}$,
+qui tend vers $0$. Le terme de plus haut degré du numérateur et celui du dénominateur décident.
+\end{remarquebox}
+
+Avec des racines carrées, la forme « $\infty-\infty$ » de $\sqrt{n+5}-\sqrt{n}$ ne se lève
+pas en factorisant. On utilise l'identité remarquable $(a-b)(a+b)=a^{2}-b^{2}$, qui fait
+disparaître les racines : $\left(\sqrt{n+5}-\sqrt{n}\right)\left(\sqrt{n+5}+\sqrt{n}\right)=(n+5)-n$.
+L'expression $\sqrt{n+5}+\sqrt{n}$ est la \textbf{quantité conjuguée} de
+$\sqrt{n+5}-\sqrt{n}$.
+
+\begin{methodebox}[Méthode 5 --- Multiplier par la quantité conjuguée]
+\etapeexemples
+Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=\sqrt{n+5}-\sqrt{n}$.
+Déterminer sa limite.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\explique{$\lim\limits_{n\to+\infty}\sqrt{n+5}=+\infty$ et
+$\lim\limits_{n\to+\infty}\sqrt{n}=+\infty$ : forme indéterminée « $\infty-\infty$ ».}{}
+\begin{calculs}
+u_{n} &= \frac{\left(\sqrt{n+5}-\sqrt{n}\right)\left(\sqrt{n+5}+\sqrt{n}\right)}{\sqrt{n+5}+\sqrt{n}}
+&\qquad& \rem{on multiplie et on divise par la quantité conjuguée}\\
+u_{n} &= \frac{(n+5)-n}{\sqrt{n+5}+\sqrt{n}} &\qquad& \rem{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+u_{n} &= \frac{5}{\sqrt{n+5}+\sqrt{n}} &&
+\end{calculs}
+\explique{Par somme, $\lim\limits_{n\to+\infty}\left(\sqrt{n+5}+\sqrt{n}\right)=+\infty$ ;
+par quotient, \res{$\lim\limits_{n\to+\infty}u_{n}=0$}.}{$5$ divisé par « très grand »}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=\sqrt{n+3}-\sqrt{n+1}$.
+Déterminer sa limite.
+\reponse{$v_{n}=\frac{2}{\sqrt{n+3}+\sqrt{n+1}}$ ; limite $0$.}
+\end{methodebox}
+
+\afaire{exercices 13 à 17}
+
+\partiecours{Limites et comparaison}
+
+Les termes d'une suite comme $n^{2}-3\cos(n)$ ne se calculent pas avec les tableaux :
+$\cos(n)$ n'a pas de limite. Mais $\cos(n)$ reste entre $-1$ et $1$ : on compare la
+suite à une suite plus simple.
+
+\begin{proprietebox}[Théorème 1 --- Théorèmes de comparaison]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $(u_{n})$ et $(v_{n})$ deux suites telles que, à partir d'un certain rang,
+$u_{n}\leq v_{n}$.
+\begin{itemize}
+  \item Si $\lim\limits_{n\to+\infty}u_{n}=+\infty$, alors
+        $\lim\limits_{n\to+\infty}v_{n}=+\infty$ : $(u_{n})$ « pousse » $(v_{n})$ vers
+        le haut.
+  \item Si $\lim\limits_{n\to+\infty}v_{n}=-\infty$, alors
+        $\lim\limits_{n\to+\infty}u_{n}=-\infty$ : $(v_{n})$ « pousse » $(u_{n})$ vers
+        le bas.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.45cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(12,0) node[below left]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,7.5);
+  \foreach \n in {0,...,11} {%
+    \pgfmathsetmacro\yy{0.5*\n}
+    \pgfmathsetmacro\zz{0.5*\n+1+0.6*cos(180*\n)}
+    \path[coulCourbe] (\n,\yy) node[croix]{};
+    \path[coulCourbeB] (\n,\zz) node[croixdroite]{};}
+  \node[coulCourbe,font=\footnotesize] at (10,3.8) {$u_{n}$};
+  \node[coulCourbeB,font=\footnotesize] at (8.2,6.9) {$v_{n}$};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible) du premier point.
+Soit $A$ un nombre réel. Comme $\lim\limits_{n\to+\infty}u_{n}=+\infty$, il existe un rang
+$n_{1}$ à partir duquel $u_{n}\geq A$. Par hypothèse, il existe un rang $n_{2}$ à partir
+duquel $u_{n}\leq v_{n}$. Pour $n$ supérieur au plus grand des deux rangs $n_{1}$ et
+$n_{2}$, les deux inégalités sont vraies :
+\begin{calculs}
+v_{n} &\geq u_{n}\geq A &\qquad& \rem{à partir de ce rang}
+\end{calculs}
+L'intervalle $\intfo{A}{+\infty}$ contient donc tous les termes $v_{n}$ à partir d'un
+certain rang, et cela pour tout nombre réel $A$ : $\lim\limits_{n\to+\infty}v_{n}=+\infty$.
+
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Démontrer une limite infinie par comparaison]
+\etapeexemples
+Déterminer la limite de chacune des suites $(u_{n})$ et $(v_{n})$ définies pour tout
+$n\in\N$ par :
+\begin{center}
+a)~$u_{n}=n^{2}-3\cos(n)$ \qquad b)~$v_{n}=-n+\sin(n)$
+\end{center}
+\begin{correction}
+\cas{a)}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+\cos(n) &\leq 1 &\qquad& \rem{un cosinus est entre $-1$ et $1$}\\
+-3\cos(n) &\geq -3 &\qquad& \rem{on multiplie par $-3<0$ : l'ordre change}\\
+n^{2}-3\cos(n) &\geq n^{2}-3 &\qquad& \rem{on ajoute $n^{2}$}\\
+u_{n} &\geq n^{2}-3 &\qquad& \rem{on reconnaît $u_{n}$}
+\end{calculs}
+\explique{$\lim\limits_{n\to+\infty}\left(n^{2}-3\right)=+\infty$, donc par comparaison,
+\res{$\lim\limits_{n\to+\infty}u_{n}=+\infty$}.}{$(u_{n})$ est au-dessus d'une suite qui
+tend vers $+\infty$}
+\cas{b)}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+\sin(n) &\leq 1 &\qquad& \rem{un sinus est entre $-1$ et $1$}\\
+-n+\sin(n) &\leq -n+1 &\qquad& \rem{on ajoute $-n$}\\
+v_{n} &\leq -n+1 &\qquad& \rem{on reconnaît $v_{n}$}
+\end{calculs}
+\explique{$\lim\limits_{n\to+\infty}(-n+1)=-\infty$, donc par comparaison,
+\res{$\lim\limits_{n\to+\infty}v_{n}=-\infty$}.}{$(v_{n})$ est en dessous d'une suite
+qui tend vers $-\infty$}
+\end{correction}
+
+\etape{À vous de jouer}
+Déterminer la limite de chacune des suites $(a_{n})$ et $(b_{n})$ définies pour tout
+$n\in\N$ par :
+\begin{center}
+a)~$a_{n}=3n+2\sin(n)$ \qquad b)~$b_{n}=5-n^{2}+(-1)^{n}$
+\end{center}
+\reponse{a) $a_{n}\geq 3n-2$ : $+\infty$.\; b)~$b_{n}\leq 6-n^{2}$ : $-\infty$.}
+\end{methodebox}
+
+Pour une limite finie, une seule suite ne suffit pas : il faut « coincer » la suite entre
+deux suites qui ont la même limite.
+
+\begin{proprietebox}[Théorème 2 --- Théorème des gendarmes (admis)]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $(u_{n})$, $(v_{n})$ et $(w_{n})$ trois suites telles que, à partir d'un certain rang,
+$u_{n}\leq v_{n}\leq w_{n}$. Si $(u_{n})$ et $(w_{n})$ convergent vers le même nombre réel
+$\ell$, alors $(v_{n})$ converge aussi vers $\ell$.
+
+\smallskip
+Les deux « gendarmes » $(u_{n})$ et $(w_{n})$ se resserrent autour de $\ell$ et emmènent
+$(v_{n})$ avec eux.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.42cm,y=0.85cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(12,0) node[below left]{$n$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,4.6);
+  \draw[dashed,black!60] (0,2)--(11.5,2) node[right,font=\footnotesize]{$\ell$};
+  \foreach \n in {0,...,11} {%
+    \pgfmathsetmacro\aa{2-2/(\n+1)}
+    \pgfmathsetmacro\bb{2+2/(\n+1)}
+    \pgfmathsetmacro\cc{2+1.5*cos(180*\n)/(\n+1)}
+    \path[coulCourbeB] (\n,\aa) node[croixdroite]{} (\n,\bb) node[croixdroite]{};
+    \path[coulCourbe] (\n,\cc) node[croix]{};}
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Démontrer une limite finie par encadrement]
+\etapeexemples
+Soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par $u_{n}=3+\dfrac{2\cos(n)}{n}$.
+Déterminer sa limite.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\explique{Soit $n\in\Ns$.}{}
+\begin{calculs}
+-1 &\leq \cos(n)\leq 1 &\qquad& \rem{on part de l'encadrement du cosinus}\\
+-2 &\leq 2\cos(n)\leq 2 &\qquad& \rem{on multiplie par $2>0$}\\
+-\frac{2}{n} &\leq \frac{2\cos(n)}{n}\leq \frac{2}{n} &\qquad& \rem{on divise par $n>0$}\\
+3-\frac{2}{n} &\leq 3+\frac{2\cos(n)}{n}\leq 3+\frac{2}{n} &\qquad& \rem{on ajoute $3$}\\
+3-\frac{2}{n} &\leq u_{n}\leq 3+\frac{2}{n} &\qquad& \rem{on reconnaît $u_{n}$}
+\end{calculs}
+\explique{$\lim\limits_{n\to+\infty}\frac{2}{n}=0$, donc par somme, les suites
+$\left(3-\frac{2}{n}\right)$ et $\left(3+\frac{2}{n}\right)$ convergent vers $3$.}{les deux
+gendarmes ont la même limite}
+\explique{D'après le théorème des gendarmes, \res{$\lim\limits_{n\to+\infty}u_{n}=3$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(v_{n})$ définie pour tout $n\in\Ns$ par $v_{n}=1-\dfrac{\sin(n)}{n^{2}}$.
+Déterminer sa limite.
+\reponse{$1-\frac{1}{n^{2}}\leq v_{n}\leq 1+\frac{1}{n^{2}}$ ; limite $1$.}
+\end{methodebox}
+
+\begin{proprietebox}[Propriété 3 --- Passage à la limite dans une inégalité (admis)]
+Soit $(u_{n})$ et $(v_{n})$ deux suites convergentes, de limites $\ell$ et $\ell'$. Si, à
+partir d'un certain rang, $u_{n}\leq v_{n}$, alors $\ell\leq\ell'$. En particulier, si
+pour tout $n\in\N$, $u_{n}\leq M$, alors $\ell\leq M$.
+
+\smallskip
+Attention : une inégalité stricte devient large. Pour tout $n\in\Ns$, $\frac{1}{n}>0$,
+mais la limite vaut $0$.
+\end{proprietebox}
+
+\afaire{exercices 18 à 22}
+
+\partiecours{Convergence des suites monotones}
+
+Au chapitre~1, on a vu comment démontrer par récurrence qu'une suite est croissante et
+majorée (définition~4 : $(u_{n})$ est majorée par $M$ si, pour tout $n\in\N$,
+$u_{n}\leq M$). Ici, on ajoute : une suite qui monte sans jamais dépasser un plafond
+finit par se stabiliser ; elle converge.
+
+\begin{proprietebox}[Théorème 3 --- Théorème de convergence monotone (admis)]
+\begin{itemize}
+  \item Toute suite croissante et majorée converge.
+  \item Toute suite décroissante et minorée converge.
+\end{itemize}
+Le théorème dit que la suite converge, sans donner sa limite : une suite croissante
+majorée par $3$ converge vers un nombre $\ell\leq 3$ (propriété~3), mais pas
+forcément vers $3$.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 4 --- Suite croissante non majorée]
+Toute suite croissante et non majorée tend vers $+\infty$. (De même, toute suite
+décroissante et non minorée tend vers $-\infty$.)
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible).
+Soit $(u_{n})$ une suite croissante non majorée, et $A$ un nombre réel. Comme $A$ n'est
+pas un majorant de la suite, il existe un rang $p$ tel que $u_{p}>A$. La suite est
+croissante, donc pour tout $n\geq p$ :
+\begin{calculs}
+u_{n} &\geq u_{p}>A &\qquad& \rem{$(u_{n})$ croissante}
+\end{calculs}
+L'intervalle $\intfo{A}{+\infty}$ contient tous les termes à partir du rang $p$, et cela
+pour tout nombre réel $A$ : $\lim\limits_{n\to+\infty}u_{n}=+\infty$.
+
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Démontrer qu'une suite converge]
+\etapeexemples
+Soit la suite $(u_{n})$ définie par $u_{0}=0$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}8\,u_{n}+4$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $u_{n}\leq u_{n+1}\leq 20$.
+  \item En déduire que la suite $(u_{n})$ converge, et donner une majoration de sa
+        limite $\ell$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$u_{n}\leq u_{n+1}\leq 20$~».}{}
+\explique{\textbf{Initialisation.} $u_{0}=0$ et $u_{1}=0{,}8\times 0+4=4$ ;
+$0\leq 4\leq 20$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$u_{n+1}\leq u_{n+2}\leq 20$.}{}
+\begin{calculs}
+u_{n} &\leq u_{n+1}\leq 20 &\qquad& \rem{hypothèse de récurrence}\\
+0{,}8\,u_{n} &\leq 0{,}8\,u_{n+1}\leq 16 &\qquad& \rem{on multiplie par $0{,}8>0$}\\
+0{,}8\,u_{n}+4 &\leq 0{,}8\,u_{n+1}+4\leq 20 &\qquad& \rem{on ajoute $4$}\\
+u_{n+1} &\leq u_{n+2}\leq 20 &\qquad& \rem{relation de récurrence}
+\end{calculs}
+\explique{Donc $P_{n+1}$ est vraie : la propriété est héréditaire.}{}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a
+$u_{n}\leq u_{n+1}\leq 20$}.}{}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on a $u_{n}\leq u_{n+1}$ : la suite $(u_{n})$ est
+croissante ; et $u_{n}\leq 20$ : elle est majorée par $20$.}{on lit les deux informations}
+\explique{D'après le théorème de convergence monotone, \res{$(u_{n})$ converge} vers un
+nombre réel $\ell$, et \res{$\ell\leq 20$}.}{propriété~3 ; la valeur de $\ell$ : partie~X}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la suite $(v_{n})$ définie par $v_{0}=1$ et, pour tout $n\in\N$,
+$v_{n+1}=0{,}5\,v_{n}+3$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a $v_{n}\leq v_{n+1}\leq 6$.
+  \item En déduire que la suite $(v_{n})$ converge, et donner une majoration de sa
+        limite $\ell$.
+\end{questions}
+\reponse{a) $v_{1}=3{,}5$ ; hérédité : $\times 0{,}5$ puis $+3$.\; b)~Croissante et majorée
+par $6$ : elle converge, et $\ell\leq 6$.}
+\end{methodebox}
+
+\afaire{exercices 23 à 26}
+
+\partiecours{Limite d'une suite géométrique}
+
+Rappel de 1\textsuperscript{re} : une suite géométrique de raison $q$ et de premier terme
+$u_{0}$ a pour terme général $u_{n}=u_{0}\times q^{n}$. Sa limite dépend donc de celle de
+$q^{n}$ : multiplier sans fin par $2$ fait « exploser » les termes, multiplier sans fin
+par $0{,}5$ les « écrase » vers $0$.
+
+\begin{proprietebox}[Propriété 5 --- Limite de $q^{n}$]
+Soit $q$ un nombre réel.
+\begin{center}
+{\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{8pt}%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$q$ & $q\leq -1$ & $-1<q<1$ & $q=1$ & $q>1$\\ \hline
+$\lim\limits_{n\to+\infty}q^{n}$ & pas de limite & $0$ & $1$ & $+\infty$\\ \hline
+\end{tabular}}
+\end{center}
+Exemples : $\lim\limits_{n\to+\infty}3^{n}=+\infty$ ; $\lim\limits_{n\to+\infty}0{,}9^{n}=0$ ;
+$\lim\limits_{n\to+\infty}(-0{,}5)^{n}=0$ ; la suite $\left((-2)^{n}\right)$ prend des
+valeurs alternativement positives et négatives de plus en plus grandes : elle n'a pas de
+limite.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible) pour $q>1$.
+On pose $a=q-1$, de sorte que $a>0$ et $q=1+a$. D'après l'inégalité de Bernoulli
+(chapitre~1), pour tout $n\in\N$ :
+\begin{calculs}
+q^{n} &= (1+a)^{n}\geq 1+na &\qquad& \rem{inégalité de Bernoulli, $a>0$}
+\end{calculs}
+Or $\lim\limits_{n\to+\infty}(1+na)=+\infty$ car $a>0$. Par comparaison,
+$\lim\limits_{n\to+\infty}q^{n}=+\infty$.
+
+\smallskip
+Pour $0<q<1$ : $\frac{1}{q}>1$, donc $\left(\frac{1}{q}\right)^{n}$ tend vers $+\infty$, et
+$q^{n}=\dfrac{1}{\left(\frac{1}{q}\right)^{n}}$ tend vers $0$ par quotient.
+
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Déterminer la limite d'une suite géométrique]
+\etapeexemples
+Déterminer la limite de chacune des suites $(u_{n})$, $(v_{n})$, $(w_{n})$ définies pour
+tout $n\in\N$ par :
+\begin{center}
+a)~$u_{n}=5\times 1{,}2^{n}-3$ \qquad
+b)~$v_{n}=4-2\times 0{,}6^{n}$ \qquad
+c)~$w_{n}=2+(-0{,}5)^{n}$
+\end{center}
+\begin{correction}
+\cas{a)}
+\explique{$1{,}2>1$, donc $\lim\limits_{n\to+\infty}1{,}2^{n}=+\infty$.}{propriété~5}
+\explique{Par produit par $5>0$, puis par somme, \res{$\lim\limits_{n\to+\infty}u_{n}=+\infty$}.}{}
+\cas{b)}
+\explique{$-1<0{,}6<1$, donc $\lim\limits_{n\to+\infty}0{,}6^{n}=0$.}{}
+\explique{Par produit, $\lim\limits_{n\to+\infty}\left(-2\times 0{,}6^{n}\right)=0$ ; par
+somme, \res{$\lim\limits_{n\to+\infty}v_{n}=4$}.}{$4-0$}
+\cas{c)}
+\explique{$-1<-0{,}5<1$, donc $\lim\limits_{n\to+\infty}(-0{,}5)^{n}=0$ ; par somme,
+\res{$\lim\limits_{n\to+\infty}w_{n}=2$}.}{une raison négative entre $-1$ et $1$ donne
+aussi $0$}
+\end{correction}
+
+\etape{À vous de jouer}
+Déterminer la limite de chacune des suites $(a_{n})$, $(b_{n})$, $(c_{n})$ définies pour
+tout $n\in\N$ par :
+\begin{center}
+a)~$a_{n}=3\times 1{,}5^{n}+1$ \qquad
+b)~$b_{n}=7-5\times 0{,}8^{n}$ \qquad
+c)~$c_{n}=1-(-0{,}4)^{n}$
+\end{center}
+\reponse{a) $+\infty$.\; b)~$7$.\; c)~$1$.}
+\end{methodebox}
+
+\afaire{exercices 27 à 29}
+
+\partiecours{Sommes de termes (rappels de 1\textsuperscript{re}) et limite}
+
+\begin{proprietebox}[Rappel 1 --- Sommes de termes consécutifs]
+\begin{itemize}
+  \item Pour tout $n\in\Ns$, on a $1+2+\dots+n=\dfrac{n(n+1)}{2}$. Pour une suite
+        arithmétique, la somme de termes consécutifs vaut
+        $\text{(nombre de termes)}\times\dfrac{\text{premier terme}+\text{dernier terme}}{2}$.
+  \item Pour tout nombre réel $q\neq 1$ et tout $n\in\N$, on a
+        $1+q+q^{2}+\dots+q^{n}=\dfrac{1-q^{n+1}}{1-q}$.
+  \item Pour une suite géométrique $(u_{n})$ de raison $q\neq 1$ :
+        $u_{0}+u_{1}+\dots+u_{n}=u_{0}\times\dfrac{1-q^{n+1}}{1-q}$ ; la somme compte
+        $n+1$ termes, d'où l'exposant $n+1$.
+\end{itemize}
+Exemple : $1+2+\dots+100=\frac{100\times 101}{2}$, soit $5\,050$ ; et
+$1+3+3^{2}+3^{3}=\frac{1-3^{4}}{1-3}$, soit $40$.
+\end{proprietebox}
+
+Quand $-1<q<1$, le terme $q^{n+1}$ tend vers $0$ : la somme d'une infinité de termes de
+plus en plus petits peut rester finie.
+
+\begin{methodebox}[Méthode 10 --- Déterminer la limite d'une somme de termes géométriques]
+\etapeexemples
+Soit $(u_{n})$ la suite géométrique de raison $0{,}5$ et de premier terme $u_{0}=6$. Pour
+tout $n\in\N$, on note $S_{n}=u_{0}+u_{1}+\dots+u_{n}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $S_{3}$.
+  \item Exprimer $S_{n}$ en fonction de $n$.
+  \item Déterminer la limite de la suite $(S_{n})$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+S_{3} &= 6+3+1{,}5+0{,}75 &\qquad& \rem{chaque terme est la moitié du précédent}\\
+S_{3} &= \res{11{,}25} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+S_{n} &= u_{0}\times\frac{1-q^{n+1}}{1-q} &\qquad& \rem{rappel~1}\\
+S_{n} &= 6\times\frac{1-0{,}5^{n+1}}{0{,}5} &\qquad& \rem{$1-0{,}5=0{,}5$}\\
+S_{n} &= \res{12\left(1-0{,}5^{n+1}\right)} &\qquad& \rem{diviser par $0{,}5$, c'est
+multiplier par $2$}
+\end{calculs}
+\explique{Contrôle : $S_{3}=12\times(1-0{,}0625)$, soit $11{,}25$.}{on vérifie avec a)}
+\cas{c)}
+\explique{$-1<0{,}5<1$, donc $\lim\limits_{n\to+\infty}0{,}5^{n+1}=0$.}{$0{,}5^{n+1}=0{,}5\times 0{,}5^{n}$}
+\explique{Par somme puis par produit, \res{$\lim\limits_{n\to+\infty}S_{n}=12$}.}{$12\times(1-0)$}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $(v_{n})$ la suite géométrique de raison $0{,}2$ et de premier terme $v_{0}=4$. Pour
+tout $n\in\N$, on note $T_{n}=v_{0}+v_{1}+\dots+v_{n}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $T_{2}$.
+  \item Exprimer $T_{n}$ en fonction de $n$.
+  \item Déterminer la limite de la suite $(T_{n})$.
+\end{questions}
+\reponse{a) $4{,}96$.\; b)~$T_{n}=5\left(1-0{,}2^{n+1}\right)$.\; c)~$5$.}
+\end{methodebox}
+
+\afaire{exercices 30 à 33}
+
+\partiecours{Suites arithmético-géométriques}
+
+\begin{definitionbox}[Définition 4 --- Suite arithmético-géométrique]
+Une suite $(u_{n})$ est \textbf{arithmético-géométrique} s'il existe deux nombres réels
+$a$ et $b$ tels que, pour tout $n\in\N$, $u_{n+1}=a\,u_{n}+b$.
+
+\smallskip
+Elle modélise une évolution « en pourcentage, plus une quantité fixe » : un parc qui perd
+$10\,\%$ de ses vélos et en reçoit $120$ chaque mois vérifie $u_{n+1}=0{,}9\,u_{n}+120$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Suite auxiliaire géométrique]
+Soit $(u_{n})$ une suite telle que, pour tout $n\in\N$, $u_{n+1}=a\,u_{n}+b$, avec
+$a\neq 1$. Soit $c$ le nombre réel tel que $c=a\,c+b$, c'est-à-dire
+$c=\dfrac{b}{1-a}$. Alors la suite $(v_{n})$ définie pour tout $n\in\N$ par
+$v_{n}=u_{n}-c$ est géométrique de raison $a$, et :
+\begin{center}
+$u_{n}=(u_{0}-c)\times a^{n}+c$.
+\end{center}
+Si $-1<a<1$, la suite $(u_{n})$ converge vers $c$.
+
+\smallskip
+En effet, $v_{n+1}=a\,u_{n}+b-c$ ; or $b-c=-a\,c$, donc $v_{n+1}=a\,(u_{n}-c)$, soit
+$a\,v_{n}$. Au bac, l'énoncé donne la suite $(v_{n})$ : on refait ce calcul (chapitre~1,
+méthode~3).
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 11 --- Étudier une suite arithmético-géométrique]
+\etapeexemples
+Une ville met $800$ vélos en libre-service en janvier. Chaque mois, $10\,\%$ des vélos
+partent en révision et ne reviennent pas, et la ville en ajoute $120$ neufs. On note
+$u_{n}$ le nombre de vélos $n$ mois après janvier : $u_{0}=800$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}9\,u_{n}+120$. Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par
+$v_{n}=u_{n}-1\,200$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que la suite $(v_{n})$ est géométrique ; préciser sa raison et son
+        premier terme.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Déterminer la limite de la suite $(u_{n})$ et l'interpréter.
+  \item À l'aide de la calculatrice, déterminer à partir de combien de mois le parc compte
+        plus de $1\,100$ vélos.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Soit $n\in\N$.}{}
+\begin{calculs}
+v_{n+1} &= u_{n+1}-1\,200 &\qquad& \rem{on remplace $n$ par $n+1$}\\
+v_{n+1} &= 0{,}9\,u_{n}+120-1\,200 &\qquad& \rem{relation de récurrence}\\
+v_{n+1} &= 0{,}9\,u_{n}-1\,080 &&\\
+v_{n+1} &= 0{,}9\left(u_{n}-1\,200\right) &\qquad& \rem{$0{,}9\times 1\,200=1\,080$}\\
+v_{n+1} &= 0{,}9\,v_{n} &&
+\end{calculs}
+\begin{calculs}
+v_{0} &= 800-1\,200 = -400 &&
+\end{calculs}
+\explique{La suite $(v_{n})$ est géométrique de raison $\res{0{,}9}$ et de premier terme
+$v_{0}=\res{-400}$.}{}
+\cas{b)}
+\begin{calculs}
+v_{n} &= -400\times 0{,}9^{n} &\qquad& \rem{$v_{n}=v_{0}\times q^{n}$}\\
+u_{n} &= v_{n}+1\,200 &\qquad& \rem{car $v_{n}=u_{n}-1\,200$}\\
+u_{n} &= \res{1\,200-400\times 0{,}9^{n}} &&
+\end{calculs}
+\cas{c)}
+\explique{$-1<0{,}9<1$, donc $\lim\limits_{n\to+\infty}0{,}9^{n}=0$ ; par produit puis par
+somme, \res{$\lim\limits_{n\to+\infty}u_{n}=1\,200$}.}{}
+\explique{À long terme, le parc se stabilise autour de $1\,200$ vélos.}{on revient au
+contexte}
+\cas{d)}
+\begin{calculs}
+u_{n} &> 1\,100 &&\\
+1\,200-400\times 0{,}9^{n} &> 1\,100 &\qquad& \rem{on remplace $u_{n}$}\\
+-400\times 0{,}9^{n} &> -100 &\qquad& \rem{on retire $1\,200$}\\
+0{,}9^{n} &< 0{,}25 &\qquad& \rem{on divise par $-400<0$ : l'ordre change}
+\end{calculs}
+\explique{À la calculatrice, $0{,}9^{13}\approx 0{,}254$ et $0{,}9^{14}\approx 0{,}229$ ; la
+suite $\left(0{,}9^{n}\right)$ est décroissante, donc l'inégalité est vraie pour tout
+$n\geq 14$.}{tableau de valeurs}
+\explique{Le parc compte plus de $1\,100$ vélos \res{à partir de $14$ mois}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Un club d'astronomie compte $150$ membres en septembre. Chaque année, $20\,\%$ des membres
+ne renouvellent pas leur adhésion, et $60$ nouveaux membres s'inscrivent. On note $u_{n}$ le
+nombre de membres $n$ années après : $u_{0}=150$ et, pour tout $n\in\N$,
+$u_{n+1}=0{,}8\,u_{n}+60$. Soit la suite $(w_{n})$ définie pour tout $n\in\N$ par
+$w_{n}=u_{n}-300$.
+\begin{questions}[label=\alph*)]
+  \item Démontrer que la suite $(w_{n})$ est géométrique ; préciser sa raison et son
+        premier terme.
+  \item Exprimer $u_{n}$ en fonction de $n$.
+  \item Déterminer la limite de la suite $(u_{n})$ et l'interpréter.
+  \item À l'aide de la calculatrice, déterminer à partir de combien d'années le club
+        compte plus de $280$ membres.
+\end{questions}
+\reponse{a) Raison $0{,}8$ et $w_{0}=-150$.\; b)~$u_{n}=300-150\times 0{,}8^{n}$.\;
+c)~$300$.\; d)~$0{,}8^{n}<\frac{2}{15}$ : à partir de $10$ ans.}
+\end{methodebox}
+
+\afaire{exercices 34 à 37}
+
+\partiecours{Théorème du point fixe}
+
+Pour une suite $u_{n+1}=f(u_{n})$ qui converge, la limite est l'abscisse d'un point
+d'intersection de la courbe de $f$ et de la droite d'équation $y=x$ (chapitre~1,
+méthode~5). Le théorème qui le dit utilise la \textbf{continuité} de $f$, étudiée au
+chapitre~6 ; pour l'instant, on en retient deux choses :
+\begin{itemize}
+  \item une fonction est continue sur un intervalle si sa courbe s'y trace « sans lever le
+        crayon » ;
+  \item une fonction dérivable sur un intervalle est continue sur cet intervalle : les
+        polynômes, la fonction racine carrée sur $\intfo{0}{+\infty}$, les quotients sur
+        un intervalle où le dénominateur ne s'annule pas sont continus.
+\end{itemize}
+
+\begin{proprietebox}[Théorème 4 --- Théorème du point fixe (admis)]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $f$ une fonction continue sur un intervalle $I$, et $(u_{n})$ une suite telle que,
+pour tout $n\in\N$, $u_{n}\in I$ et $u_{n+1}=f(u_{n})$. Si $(u_{n})$ converge vers un
+nombre réel $\ell$ de $I$, alors $f(\ell)=\ell$.
+
+\smallskip
+Ce théorème ne prouve pas la convergence : on la démontre d'abord (partie~VI). Il donne
+seulement les valeurs possibles de $\ell$, solutions de l'équation $f(x)=x$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{0}{0}{5}{5}
+  \draw[black!70,line width=0.8pt] (0,0)--(5,5) node[above left,font=\footnotesize]{$y=x$};
+  \draw[coulCourbe,line width=1.1pt] (0,2)--(5,4.5);
+  \node[coulCourbe,font=\footnotesize] at (1,3) {$\Cf$};
+  \draw[coulCourbeB,line width=0.7pt] (0,0)--(0,2)--(2,2)--(2,3)--(3,3)--(3,3.5)--(3.5,3.5);
+  \draw[dashed,black!60] (4,4)--(4,0);
+  \path[coulCourbeB] (0,0) node[croix]{} (2,0) node[croix]{} (3,0) node[croix]{}
+    (3.5,0) node[croix]{};
+  \path (4,4) node[croix]{};
+  \node[font=\footnotesize,below,inner sep=2pt] at (4.1,0) {$\ell$};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{remarquebox}[Pourquoi ?]
+Si $(u_{n})$ converge vers $\ell$, la suite $(u_{n+1})$, qui a les mêmes termes décalés
+d'un rang, converge aussi vers $\ell$. Comme $f$ est continue, quand $u_{n}$ se
+rapproche de $\ell$, $f(u_{n})$ se rapproche de $f(\ell)$. L'égalité $u_{n+1}=f(u_{n})$
+devient, à la limite, $\ell=f(\ell)$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 12 --- Déterminer la limite d'une suite $u_{n+1}=f(u_{n})$]
+\etapeexemples
+Soit $f$ la fonction définie sur $\intfo{0}{+\infty}$ par $f(x)=\dfrac{4x+3}{x+2}$ et la
+suite $(w_{n})$ définie par $w_{0}=1$ et, pour tout $n\in\N$, $w_{n+1}=f(w_{n})$.
+\begin{questions}[label=\alph*)]
+  \item Étudier le sens de variation de $f$ sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $1\leq w_{n}\leq w_{n+1}\leq 3$.
+  \item En déduire que la suite $(w_{n})$ converge.
+  \item Déterminer la limite de $(w_{n})$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$f$ est un quotient dont le dénominateur $x+2$ ne s'annule pas sur
+$\intfo{0}{+\infty}$ : elle y est dérivable. Soit $x\geq 0$.}{$u(x)=4x+3$ et $v(x)=x+2$}
+\begin{calculs}
+f'(x) &= \frac{4(x+2)-(4x+3)\times 1}{(x+2)^{2}} &\qquad& \rem{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+f'(x) &= \frac{4x+8-4x-3}{(x+2)^{2}} &\qquad& \rem{on développe}\\
+f'(x) &= \frac{5}{(x+2)^{2}} &&
+\end{calculs}
+\explique{Pour tout $x\geq 0$, on a $f'(x)>0$ : \res{$f$ est strictement croissante sur
+$\intfo{0}{+\infty}$}.}{un carré non nul est strictement positif}
+\cas{b)}
+\explique{Pour tout $n\in\N$, on note $P_{n}$ la propriété :
+«~$1\leq w_{n}\leq w_{n+1}\leq 3$~».}{}
+\explique{\textbf{Initialisation.} $w_{0}=1$ et $w_{1}=f(1)=\frac{7}{3}$ ;
+$1\leq 1\leq\frac{7}{3}\leq 3$, donc $P_{0}$ est vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+$1\leq w_{n+1}\leq w_{n+2}\leq 3$.}{}
+\begin{calculs}
+1 &\leq w_{n}\leq w_{n+1}\leq 3 &\qquad& \rem{hypothèse de récurrence}\\
+f(1) &\leq f(w_{n})\leq f(w_{n+1})\leq f(3) &\qquad& \rem{$f$ croissante : l'ordre est
+conservé}\\
+\frac{7}{3} &\leq w_{n+1}\leq w_{n+2}\leq 3 &\qquad& \rem{$f(3)=\frac{15}{5}$, soit $3$}
+\end{calculs}
+\explique{Comme $1\leq\frac{7}{3}$, on a $1\leq w_{n+1}\leq w_{n+2}\leq 3$ : $P_{n+1}$ est
+vraie.}{on obtient mieux que le but}
+\explique{\textbf{Conclusion.} $P_{0}$ est vraie et la propriété est héréditaire ;
+d'après le principe de récurrence, \res{pour tout $n\in\N$, on a
+$1\leq w_{n}\leq w_{n+1}\leq 3$}.}{}
+\cas{c)}
+\explique{Pour tout $n\in\N$, on a $w_{n}\leq w_{n+1}$ : $(w_{n})$ est croissante ; et
+$w_{n}\leq 3$ : elle est majorée par $3$.}{}
+\explique{D'après le théorème de convergence monotone, \res{$(w_{n})$ converge} vers un
+nombre réel $\ell$. Comme $1\leq w_{n}\leq 3$ pour tout $n\in\N$, on a
+$1\leq\ell\leq 3$.}{propriété~3}
+\cas{d)}
+\explique{$f$ est dérivable, donc continue, sur $\intfo{0}{+\infty}$ (question a) ; pour
+tout $n\in\N$, $w_{n}\in\intfo{0}{+\infty}$, et $\ell\in\intfo{0}{+\infty}$. D'après le
+théorème du point fixe, $f(\ell)=\ell$.}{on vérifie les hypothèses une à une}
+\begin{calculs}
+\frac{4\ell+3}{\ell+2} &= \ell &\qquad& \rem{équation du point fixe}\\
+4\ell+3 &= \ell(\ell+2) &\qquad& \rem{on multiplie par $\ell+2\neq 0$}\\
+\ell^{2}-2\ell-3 &= 0 &\qquad& \rem{une équation du second degré}
+\end{calculs}
+\begin{calculs}
+\Delta &= (-2)^{2}-4\times 1\times(-3) &&\\
+\Delta &= 16 &\qquad& \rem{$\Delta>0$ : deux solutions}\\
+x_{1} &= \frac{2-4}{2} = -1 &&\\
+x_{2} &= \frac{2+4}{2} = 3 &&
+\end{calculs}
+\explique{Or $1\leq\ell\leq 3$, donc $\ell\neq -1$ : \res{$(w_{n})$ converge vers
+$3$}.}{l'encadrement élimine une solution}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit $g$ la fonction définie sur $\intfo{0}{+\infty}$ par $g(x)=\dfrac{6x+4}{x+3}$ et la
+suite $(t_{n})$ définie par $t_{0}=0$ et, pour tout $n\in\N$, $t_{n+1}=g(t_{n})$.
+\begin{questions}[label=\alph*)]
+  \item Étudier le sens de variation de $g$ sur $\intfo{0}{+\infty}$.
+  \item Démontrer par récurrence que, pour tout $n\in\N$, on a
+        $0\leq t_{n}\leq t_{n+1}\leq 4$.
+  \item En déduire que la suite $(t_{n})$ converge.
+  \item Déterminer la limite de $(t_{n})$.
+\end{questions}
+\reponse{a) $g'(x)=\frac{14}{(x+3)^{2}}>0$ : $g$ croissante.\; b)~$t_{1}=\frac{4}{3}$ ;
+$g(0)=\frac{4}{3}$ et $g(4)=4$.\; c)~Croissante et majorée par $4$.\; d)~$\ell^{2}-3\ell-4=0$,
+solutions $-1$ et $4$ ; limite $4$.}
+\end{methodebox}
+
+\begin{remarquebox}[Attention]
+Sans la convergence, l'équation $f(x)=x$ ne prouve rien. La suite $(z_{n})$ définie par
+$z_{0}=2$ et, pour tout $n\in\N$, $z_{n+1}=2z_{n}-1$ vaut $2$ ; $3$ ; $5$ ; $9$… et tend vers $+\infty$, alors
+que l'équation $x=2x-1$ a pour solution $1$.
+\end{remarquebox}
+
+\afaire{exercices 38 à 41, puis les exercices type bac 42 à 44}
+
+\end{document}
