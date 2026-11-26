@@ -1,7 +1,7 @@
 % Luc Destombe --- licence CC BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
 % Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
-\def\lyceeversion{1.0}
+\def\lyceeversion{1.1}
 \documentclass[11pt,a4paper]{article}
 \makeatletter
 \newif\ifeleve
@@ -1131,45 +1131,36 @@ f=\frac{\text{nombre de }1}{n}.
 \]
 \end{definitionbox}
 
+\besoinplace{14\baselineskip}
 \begin{remarquebox}[En Python]
 \begin{minipage}[t]{0.46\linewidth}\vspace{0pt}
 \begin{python}
 from random import random
 
-def bernoulli(p):
-    if random() < p:
-        return 1
-    else:
-        return 0
-
 def frequence(n, p):
     nb = 0
     for i in range(n):
-        nb = nb + bernoulli(p)
+        if random() < p:
+            nb = nb + 1
     return nb / n
 
-def simulation(N, n, p):
-    L = []
-    for j in range(N):
-        L.append(frequence(n, p))
-    return L
+for j in range(5):
+    print(frequence(100, 0.2))
 \end{python}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.50\linewidth}\vspace{0pt}\raggedright
 \texttt{random()} donne un nombre au hasard entre $0$ et $1$ ; le test
-\texttt{random() < p} est vrai avec la probabilité $p$ (seconde).
-
-\smallskip
-\texttt{bernoulli(p)} simule une épreuve : elle renvoie $1$ (succès) ou $0$ (échec).
+\texttt{random() < p} est vrai avec la probabilité $p$ (seconde) : c'est une épreuve
+de Bernoulli.
 
 \smallskip
 \texttt{frequence(n, p)} simule un échantillon de taille $n$ : \texttt{nb} compte les
 succès, et la fonction renvoie la fréquence observée des $1$.
 
 \smallskip
-\texttt{simulation(N, n, p)} simule $N$ échantillons et renvoie la liste \texttt{L} de
-leurs $N$ fréquences (\texttt{L.append} ajoute une valeur à la liste). On les représente
-ensuite par un nuage de points ou un histogramme (partie VII).
+La boucle finale simule $5$ échantillons de taille $100$ et affiche leurs $5$ fréquences.
+Avec $N$ à la place de $5$, on obtient $N$ fréquences, qu'on représente par un nuage de
+points ou un histogramme (partie VII).
 \end{minipage}
 \end{remarquebox}
 
@@ -1178,48 +1169,36 @@ ensuite par un nuage de points ou un histogramme (partie VII).
 Une imprimante 3D réussit une pièce avec la probabilité $0{,}9$, indépendamment des
 autres pièces.
 \begin{questions}[label=\alph*)]
-  \item Compléter la fonction \texttt{piece()}, qui renvoie $1$ si la pièce est réussie
-        et $0$ sinon.
   \item Compléter la fonction \texttt{frequence(n)}, qui renvoie la fréquence des pièces
         réussies dans un échantillon de $n$ pièces.
-  \item Compléter la fonction \texttt{simulation(N, n)}, qui renvoie la liste des
-        fréquences de $N$ échantillons de $n$ pièces.
-  \item \texttt{simulation(5, 50)} a renvoyé \texttt{[0.88, 0.92, 0.9, 0.86, 0.94]}.
-        Combien de pièces réussies compte le premier échantillon ? Pourquoi les cinq
-        fréquences sont-elles différentes ?
+  \item Compléter la dernière boucle, pour afficher les fréquences de $5$ échantillons de
+        $50$ pièces.
+  \item Le programme a affiché \texttt{0.88}, \texttt{0.92}, \texttt{0.9}, \texttt{0.86} et
+        \texttt{0.94}. Combien de pièces réussies compte le premier échantillon ? Pourquoi
+        les cinq fréquences sont-elles différentes ?
 \end{questions}
 \begin{python}
 from random import random
 
-def piece():
-    if random() < .....:
-        return 1
-    else:
-        return .....
-
 def frequence(n):
     nb = 0
     for i in range(n):
-        nb = nb + piece()
+        if random() < .....:
+            nb = nb + 1
     return .....
 
-def simulation(N, n):
-    L = []
-    for j in range(N):
-        L.append(.....)
-    return L
+for j in range(.....):
+    print(frequence(.....))
 \end{python}
 \begin{correction}
 \cas{a)}
-\explique{\texttt{if random() < \res{0.9}:} puis \texttt{return \res{0}}.}{vrai avec la
-probabilité $0{,}9$ : pièce réussie ; sinon, échec}
+\explique{\texttt{if random() < \res{0.9}:} puis \texttt{return \res{nb / n}}.}{vrai avec la
+probabilité $0{,}9$ : pièce réussie ; \texttt{nb} compte les pièces réussies, on divise
+par $n$}
 \cas{b)}
-\explique{\texttt{return \res{nb / n}}.}{\texttt{nb} compte les pièces réussies ; on
-divise par $n$}
+\explique{\texttt{for j in range(\res{5}):} puis \texttt{print(frequence(\res{50}))}.}{chaque
+tour de boucle simule un échantillon de $50$ pièces}
 \cas{c)}
-\explique{\texttt{L.append(\res{frequence(n)})}.}{chaque tour de boucle simule un
-échantillon de $n$ pièces}
-\cas{d)}
 \begin{calculs}
 \text{nombre de pièces réussies} &= 0{,}88\times 50 &\qquad& \rem{fréquence $\times$
 taille de l'échantillon}\\
@@ -1233,40 +1212,30 @@ taille de l'échantillon}\\
 Un archer atteint la cible avec la probabilité $0{,}7$, indépendamment d'un tir à
 l'autre.
 \begin{questions}[label=\alph*)]
-  \item Compléter la fonction \texttt{tir()}, qui renvoie $1$ si la flèche atteint la
-        cible et $0$ sinon.
   \item Compléter la fonction \texttt{frequence(n)}, qui renvoie la fréquence des flèches
         dans la cible sur un échantillon de $n$ tirs.
-  \item Compléter la fonction \texttt{simulation(N, n)}, qui renvoie la liste des
-        fréquences de $N$ échantillons de $n$ tirs.
-  \item \texttt{simulation(4, 20)} a renvoyé \texttt{[0.65, 0.75, 0.7, 0.8]}. Combien de
-        flèches dans la cible compte le premier échantillon ? Pourquoi les quatre
-        fréquences sont-elles différentes ?
+  \item Compléter la dernière boucle, pour afficher les fréquences de $4$ échantillons de
+        $20$ tirs.
+  \item Le programme a affiché \texttt{0.65}, \texttt{0.75}, \texttt{0.7} et \texttt{0.8}.
+        Combien de flèches dans la cible compte le premier échantillon ? Pourquoi les
+        quatre fréquences sont-elles différentes ?
 \end{questions}
 \begin{python}
 from random import random
 
-def tir():
-    if random() < .....:
-        return 1
-    else:
-        return .....
-
 def frequence(n):
     nb = 0
     for i in range(n):
-        nb = nb + tir()
+        if random() < .....:
+            nb = nb + 1
     return .....
 
-def simulation(N, n):
-    L = []
-    for j in range(N):
-        L.append(.....)
-    return L
+for j in range(.....):
+    print(frequence(.....))
 \end{python}
-\reponse{a) \texttt{0.7} et \texttt{0} ;\; b)~\texttt{nb / n} ;\;
-c)~\texttt{frequence(n)} ;\; d)~$13$ flèches ; chaque échantillon est tiré au hasard, la
-fréquence change d'un échantillon à l'autre.}
+\reponse{a) \texttt{0.7} et \texttt{nb / n} ;\; b)~\texttt{4} et \texttt{20} ;\; c)~$13$
+flèches ; chaque échantillon est tiré au hasard, la fréquence change d'un échantillon à
+l'autre.}
 \end{methodebox}
 
 \afaire{exercices 22 à 25}

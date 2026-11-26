@@ -1,0 +1,829 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+
+\newtcblisting{python}{%
+  listing only,enhanced,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\newcommand{\qcm}[4]{\par\hspace*{0.6em}\makebox[0.48\linewidth][l]{a) #1}b) #2
+  \par\hspace*{0.6em}\makebox[0.48\linewidth][l]{c) #3}d) #4}
+\newcommand{\qcmligne}[4]{\par\hspace*{0.6em}\makebox[0.24\linewidth][l]{a) #1}%
+  \makebox[0.24\linewidth][l]{b) #2}\makebox[0.24\linewidth][l]{c) #3}d) #4}
+
+\begin{document}
+
+\titrefiche{1\textsuperscript{re} STMG --- Variables aléatoires, loi de Bernoulli}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Variable aléatoire}
+
+\exo[Calculer des probabilités avec une variable aléatoire]
+Au stand du club photo, on lance un dé équilibré à six faces : on gagne $3$~€ avec un $5$
+ou un $6$, rien avec un $4$, et on perd $2$~€ sinon. On note $X$ le gain en euros.
+\begin{enumerate}[label=\arabic*)]
+  \item Donner la valeur de $X$ pour chaque issue, puis les valeurs prises par $X$.
+  \item Calculer $P(X=3)$ et $P(X=-2)$.
+  \item Traduire par une phrase l'événement $\{X\ge 0\}$, puis calculer sa probabilité.
+  \item Calculer $P(X\le 0)$.
+\end{enumerate}
+
+\exo[En phrase complète]
+Un commercial rencontre $10$ clients dans la journée. On note $X$ le nombre de clients
+qui passent une commande.
+\begin{enumerate}[label=\arabic*)]
+  \item Écrire avec $X$ chacun des événements suivants.
+        \begin{enumerate}[label=\alph*)]
+          \item Exactement $7$ clients passent une commande.
+          \item Au plus $3$ clients passent une commande.
+          \item Au moins $8$ clients passent une commande.
+          \item Moins de $2$ clients passent une commande.
+          \item Plus de $6$ clients passent une commande.
+          \item Tous les clients passent une commande.
+        \end{enumerate}
+  \item Traduire par une phrase les événements $\{X=0\}$, $\{X\le 9\}$ et $\{X\ge 1\}$.
+  \item Écrire la probabilité de l'événement \og entre $4$ et $6$ clients passent une commande,
+        bornes comprises\fg{} comme une somme de probabilités $P(X=\dots)$.
+\end{enumerate}
+
+\exo[Des journées promotion]
+Pour chacun des $3$ prochains jours, une boutique en ligne tire au sort si le jour sera
+une journée promotion ($P$) ou non ($N$), avec la même probabilité. Les $8$ issues
+($PPP$ ; $PPN$ ; \dots) ont la même probabilité. On note $X$ le nombre de journées
+promotion.
+\begin{enumerate}[label=\arabic*)]
+  \item Écrire les $8$ issues dans un tableau, avec la valeur de $X$ pour chacune.
+  \item Quelles valeurs $X$ peut-il prendre ?
+  \item Calculer $P(X=2)$ et $P(X=0)$.
+  \item Traduire par une phrase l'événement $\{X\ge 1\}$, puis calculer sa probabilité.
+\end{enumerate}
+
+\exo[À l'ouverture d'une boutique]
+Une urne contient $10$ boules numérotées de $1$ à $10$. Une partie coûte $1$~€ : on tire
+une boule au hasard ; on reçoit $5$~€ si son numéro est un multiple de $5$, $1$~€ si c'est
+un multiple de $3$, et rien sinon. On note $X$ le gain en euros, prix de la partie déduit.
+\begin{enumerate}[label=\arabic*)]
+  \item Donner la valeur de $X$ pour chaque numéro, puis les valeurs prises par $X$.
+  \item Calculer $P(X=4)$ et $P(X=-1)$.
+  \item Traduire par une phrase l'événement $\{X\ge 0\}$, puis calculer sa probabilité.
+  \item Calculer $P(X<4)$ à l'aide de l'événement contraire.
+\end{enumerate}
+
+\partiefiche{Loi de probabilité d'une variable aléatoire}
+
+\exo[Déterminer et utiliser une loi]
+\begin{enumerate}[label=\alph*)]
+  \item Pour financer son festival, une association vend $200$ tickets de tombola, à
+        $3$~€ chacun. $2$ tickets font gagner un lot de $50$~€, $10$ tickets un lot de $10$~€, les
+        autres ne font rien gagner. On achète un ticket au hasard ; on note $X$ le gain en
+        euros, prix du ticket déduit. Déterminer la loi de probabilité de $X$.
+  \item On lance deux dés équilibrés à quatre faces, numérotées de $1$ à $4$. On note $Y$
+        le plus petit des deux nombres obtenus (s'ils sont égaux, ce nombre). Déterminer la
+        loi de probabilité de $Y$.
+  \item Dans une boulangerie, on note $Z$ le nombre de clients qui attendent devant la
+        caisse, à un instant pris au hasard. Sa loi de probabilité
+        est la suivante. Calculer $a$, puis $P(Z\le 1)$ et la probabilité qu'au moins $2$
+        clients attendent.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        $z_i$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+        \hline
+        $P(Z=z_i)$ & $0{,}35$ & $0{,}30$ & $a$ & $0{,}10$ & $0{,}05$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{enumerate}
+
+\exo[Des réclamations]
+Un service après-vente reçoit chaque jour entre $0$ et $5$ réclamations. On note $X$ le
+nombre de réclamations un jour pris au hasard ; sa loi de probabilité est la
+suivante.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x_i$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$P(X=x_i)$ & $0{,}05$ & $0{,}15$ & $0{,}30$ & $a$ & $0{,}15$ & $0{,}10$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $a$.
+  \item Traduire par une phrase les événements $\{X\le 2\}$ et $\{X\ge 4\}$, puis
+        calculer leurs probabilités.
+  \item Calculer la probabilité que le service reçoive plus de $2$ réclamations.
+  \item Pour un autre service, un stagiaire écrit le tableau ci-dessous. Expliquer
+        pourquoi ce ne peut pas être une loi de probabilité.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        $y_i$ & $0$ & $1$ & $2$ & $3$\\
+        \hline
+        $P(Y=y_i)$ & $0{,}2$ & $0{,}3$ & $0{,}3$ & $0{,}3$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{enumerate}
+
+\exo[Un dé publicitaire]
+Un dé publicitaire à six faces, numérotées de $1$ à $6$, n'est pas équilibré :
+chaque face paire a deux fois plus de chances de sortir que chaque face impaire. On note
+$p$ la probabilité d'obtenir $1$, qui est aussi celle d'obtenir $3$ et celle d'obtenir
+$5$, et $X$ le numéro obtenu.
+\begin{enumerate}[label=\arabic*)]
+  \item Exprimer en fonction de $p$ la probabilité d'obtenir $2$.
+  \item Montrer que $9p=1$, puis calculer $p$.
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $P(X\ge 4)$, puis la probabilité d'obtenir un nombre pair.
+\end{enumerate}
+
+\partiefiche{Espérance}
+
+\exo[Calculer et interpréter une espérance]
+\begin{enumerate}[label=\alph*)]
+  \item Un drone livre des colis dans une zone rurale. On note $X$ le nombre de colis
+        livrés en une heure prise au hasard ; sa loi est la suivante. Calculer $E(X)$ et
+        interpréter le résultat.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        $x_i$ & $0$ & $1$ & $2$ & $3$\\
+        \hline
+        $P(X=x_i)$ & $0{,}10$ & $0{,}30$ & $0{,}40$ & $0{,}20$\\
+        \hline
+        \end{tabular}
+        \end{center}
+  \item À une tombola, on note $Y$ le gain en euros d'un visiteur, prix du ticket
+        déduit ; sa loi est la suivante. Calculer $E(Y)$ et interpréter le résultat, pour
+        le visiteur puis pour l'association qui organise la tombola.
+        \begin{center}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{tabular}{|c|c|c|c|}
+        \hline
+        $y_i$ & $-2$ & $3$ & $18$\\
+        \hline
+        $P(Y=y_i)$ & $0{,}85$ & $0{,}10$ & $0{,}05$\\
+        \hline
+        \end{tabular}
+        \end{center}
+\end{enumerate}
+
+\exo[Deux stands]
+À la fête du lycée, deux stands proposent un jeu. On note $X$ le gain en euros au stand A
+et $Y$ le gain en euros au stand B ; leurs lois sont les suivantes.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_i$ & $-1$ & $2$ & $5$\\
+\hline
+$P(X=x_i)$ & $0{,}75$ & $0{,}20$ & $0{,}05$\\
+\hline
+\end{tabular}
+\qquad
+\begin{tabular}{|c|c|c|c|}
+\hline
+$y_i$ & $-2$ & $4$ & $20$\\
+\hline
+$P(Y=y_i)$ & $0{,}85$ & $0{,}10$ & $0{,}05$\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $E(X)$ et $E(Y)$.
+  \item Pour quelqu'un qui joue souvent, quel stand est le moins défavorable ? Justifier.
+  \item Calculer $P(X>0)$ et $P(Y>0)$.
+  \item Un ami affirme : \og Au stand B, on peut gagner $20$~€ : c'est le meilleur.\fg{}
+        Qu'en penser ? Répondre par une phrase.
+\end{enumerate}
+
+\exo[Au magasin de cycles]
+Dans un magasin de cycles, $20\,\%$ des clients achètent un vélo électrique, à
+$1\,200$~€. Parmi eux, $60\,\%$ achètent aussi un casque, à $50$~€ ; parmi les autres
+clients, $10\,\%$ achètent un casque seul. On choisit un client au hasard ; on note $V$
+\og le client achète un vélo\fg{}, $C$ \og le client achète un casque\fg{} et $X$ la somme
+qu'il dépense, en euros, pour les vélos et les casques.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre pondéré de la situation.
+  \item Quelles valeurs $X$ peut-il prendre ?
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $E(X)$ et interpréter le résultat.
+  \item Le magasin reçoit environ $400$ clients par mois. Quel chiffre d'affaires mensuel
+        peut-il prévoir pour les vélos et les casques ?
+\end{enumerate}
+
+\exo[Le coût d'une trottinette]
+Une entreprise fabrique des trottinettes électriques ; chacune lui coûte $200$~€. Un
+contrôle repère un défaut de frein (réparation : $20$~€), un défaut de batterie
+(réparation : $30$~€) ou les deux (réparation : $50$~€). Sur l'ensemble de la production,
+$92\,\%$ des trottinettes n'ont aucun défaut, $4\,\%$ ont seulement le défaut de frein,
+$3\,\%$ seulement le défaut de batterie et $1\,\%$ les deux. On choisit une trottinette
+au hasard et on note $X$ son coût total en euros, réparation comprise.
+\begin{enumerate}[label=\arabic*)]
+  \item Quelles valeurs $X$ peut-il prendre ?
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $E(X)$ et interpréter le résultat pour l'entreprise.
+  \item Si l'entreprise vend chaque trottinette $200$~€, gagne-t-elle de l'argent en
+        moyenne ?
+  \item À quel prix doit-elle la vendre pour gagner en moyenne $50$~€ par trottinette ?
+\end{enumerate}
+
+\partiefiche{Loi de Bernoulli}
+
+\exo[Reconnaître une loi de Bernoulli]
+Pour chaque variable aléatoire $X$, $Y$ et $Z$, dire si elle suit une loi de Bernoulli.
+Si oui, donner son paramètre, sa loi et son espérance.
+\begin{enumerate}[label=\alph*)]
+  \item Un bus électrique arrive à l'heure à son arrêt avec la probabilité $0{,}85$. On
+        observe un de ses passages ; $X$ vaut $1$ s'il arrive à l'heure, $0$ sinon.
+  \item On lance un dé équilibré à douze faces, numérotées de $1$ à $12$ ; $Y$ vaut $1$ si
+        on obtient un multiple de $3$, $0$ sinon.
+  \item On lance le même dé ; $Z$ est le numéro obtenu.
+\end{enumerate}
+
+\exo[Épreuve de Bernoulli ou non ?]
+Pour chaque expérience, dire par une phrase s'il s'agit d'une épreuve de Bernoulli. Si
+oui, préciser le succès choisi et, quand on peut la calculer, sa probabilité.
+\begin{enumerate}[label=\alph*)]
+  \item Un magasin vend des vélos de taille S, M ou L ; on choisit au hasard un vélo
+        vendu et on note sa taille.
+  \item On lance une pièce équilibrée et on regarde si elle tombe sur Pile.
+  \item On choisit au hasard un jour de l'année et on note son mois.
+  \item On choisit au hasard un colis expédié par une boutique en ligne et on regarde
+        s'il arrive en bon état.
+  \item On tire une carte au hasard dans un jeu de $32$ cartes et on regarde si c'est un
+        as.
+\end{enumerate}
+
+\exo[Le défi du dodécaèdre]
+Pour une partie, on paie $2$~€ et on lance un dé équilibré à douze faces, numérotées de
+$1$ à $12$. Si le numéro est un multiple de $4$, on reçoit $7$~€ ; sinon, rien. On note
+$S$ l'événement \og le numéro est un multiple de $4$\fg{}.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $P(S)$.
+  \item On note $X$ la variable aléatoire qui vaut $1$ si $S$ est réalisé, $0$ sinon.
+        Donner la loi de probabilité de $X$ et son espérance.
+  \item On note $G$ le gain du joueur en euros, prix de la partie déduit. Déterminer la
+        loi de probabilité de $G$. La variable $G$ suit-elle une loi de Bernoulli ?
+  \item Calculer $E(G)$ et interpréter le résultat.
+\end{enumerate}
+
+\partiefiche{Répétition d'épreuves de Bernoulli}
+
+\exo[Calculer une probabilité avec un arbre]
+\begin{enumerate}[label=\alph*)]
+  \item Sur une plateforme de vente, une commande est livrée à l'heure avec la
+        probabilité $0{,}8$, indépendamment des autres. On suit $2$ commandes ; on note
+        $X$ le nombre de commandes livrées à l'heure. Construire l'arbre, puis calculer $P(X=2)$ et $P(X=1)$.
+  \item Un livreur remet un colis du premier coup avec la probabilité $0{,}9$,
+        indépendamment des autres colis. Il livre $3$ colis ; on note $Y$ le nombre de
+        colis remis du premier coup. Construire l'arbre, puis calculer $P(Y=3)$, $P(Y=2)$ et
+        $P(Y\ge 1)$.
+\end{enumerate}
+
+\exo[Trois lancers d'une pièce]
+On lance trois fois une pièce équilibrée ; on note $X$ le nombre de Pile obtenus.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre de l'expérience, avec les probabilités sur les branches.
+  \item Calculer $P(X=3)$ et $P(X=2)$.
+  \item Écrire avec $X$ l'événement \og on obtient au moins une fois Face\fg{}, puis
+        calculer sa probabilité.
+  \item Déterminer la loi de probabilité de $X$, puis son espérance.
+\end{enumerate}
+
+\exo[Une agence de location]
+Dans une agence de location, chaque voiture est en entretien avec la probabilité
+$0{,}2$, indépendamment des autres. Un jour pris au hasard, on observe $3$ voitures ; on
+note $X$ le nombre de voitures en entretien.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre de l'expérience.
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $E(X)$, puis comparer avec $3\times 0{,}2$.
+  \item Calculer la probabilité qu'au plus une voiture soit en entretien.
+\end{enumerate}
+
+\exo[Fléchettes électroniques]
+À chaque lancer, une fléchette atteint la zone rouge avec la probabilité $0{,}6$,
+indépendamment des autres lancers : elle rapporte alors $2$ points ; sinon, elle en fait
+perdre $1$. Un joueur lance $2$ fléchettes ; on note $X$ son score.
+\begin{enumerate}[label=\arabic*)]
+  \item Construire l'arbre de l'expérience.
+  \item Quelles valeurs $X$ peut-il prendre ?
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $P(X>0)$ et interpréter le résultat.
+  \item Calculer $E(X)$ et interpréter le résultat.
+\end{enumerate}
+
+\partiefiche{Simulation d'échantillons}
+
+\exo[Simuler à la main et à l'ordinateur]
+Un jour pris au hasard, une boutique en ligne réalise plus de $50$ ventes avec la
+probabilité $0{,}8$, indépendamment des autres jours.
+\begin{enumerate}[label=\arabic*)]
+  \item Compléter la fonction \texttt{jour()}, qui renvoie $1$ si la boutique réalise plus
+        de $50$ ventes et $0$ sinon.
+\begin{python}
+from random import random
+
+def jour():
+    if random() < .....:
+        return 1
+    else:
+        return .....
+\end{python}
+  \item Avec les chiffres au hasard ci-dessous (de $0$ à $7$ pour plus de $50$ ventes,
+        $8$ ou $9$ sinon), simuler deux échantillons de $10$ jours, puis donner la
+        fréquence des jours à plus de $50$ ventes dans chacun.
+        \par\smallskip
+        Échantillon 1 : \texttt{3 8 0 6 9 1 5 2 7 4} \qquad Échantillon 2 :
+        \texttt{9 1 8 4 0 9 6 3 2 5}
+  \item L'ordinateur a simulé $10$ échantillons de $20$ jours. Nombres de jours à plus de
+        $50$ ventes : $16$ ; $15$ ; $17$ ; $16$ ; $14$ ; $18$ ; $16$ ; $15$ ; $17$ ; $16$.
+        Donner la fréquence du premier échantillon. Pourquoi les fréquences sont-elles
+        différentes ?
+  \item Calculer la moyenne des $10$ fréquences, et la comparer à $0{,}8$.
+\end{enumerate}
+
+\exo[Lire un programme]
+Dans une imprimerie, $5\,\%$ des livres présentent un défaut d'impression. On choisit un
+livre au hasard ; on note $D$ l'événement \og le livre présente un défaut\fg{}.
+\begin{python}
+from random import random
+
+def livre():
+    if random() < 0.05:
+        return 1
+    else:
+        return 0
+\end{python}
+\begin{enumerate}[label=\arabic*)]
+  \item Donner $P(D)$.
+  \item Expliquer ce que renvoie la fonction \texttt{livre()}, et avec quelle probabilité
+        elle renvoie $1$.
+  \item L'ordinateur a appelé $10\,000$ fois la fonction \texttt{livre()} : $493$ livres
+        simulés ont un défaut. Calculer la fréquence observée des livres avec un défaut.
+  \item Ce résultat est-il étonnant ? Expliquer.
+\end{enumerate}
+
+\exo[La moyenne des fréquences]
+Dans une agence de voyages, un client choisit l'option \og bagage en soute\fg{} avec la
+probabilité $0{,}3$. L'ordinateur a simulé $5$ échantillons de $100$ clients ; voici la
+fréquence des clients qui choisissent l'option dans chacun :
+\[
+0{,}28 \qquad 0{,}33 \qquad 0{,}31 \qquad 0{,}27 \qquad 0{,}31
+\]
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer la moyenne de ces $5$ fréquences.
+  \item On choisit un client au hasard ; $X$ vaut $1$ s'il choisit l'option, $0$ sinon.
+        Quelle loi $X$ suit-elle ? Donner $E(X)$, puis comparer avec la question 1.
+  \item Sur $500$ échantillons simulés, la moyenne des fréquences vaut $0{,}2997$.
+        Interpréter ce résultat.
+\end{enumerate}
+
+\partiefiche{Fluctuation d'échantillonnage}
+
+\exo[Fréquente ou rare ?]
+Une pièce équilibrée tombe sur Pile avec la probabilité $p=0{,}5$. Sur $200$ échantillons
+simulés de $100$ lancers, l'écart-type des fréquences de Pile vaut $s\approx 0{,}05$.
+\begin{enumerate}[label=\arabic*)]
+  \item Calculer $p-2s$ et $p+2s$.
+  \item Léo lance $100$ fois sa pièce et obtient $57$ Pile. Est-ce une situation fréquente
+        ou rare dans le modèle ?
+  \item Une autre pièce donne $68$ Pile sur $100$ lancers. Même question ; que
+        peut-on en penser ?
+  \item Avec des échantillons de $400$ lancers, quelle valeur de $s$ peut-on prévoir ?
+\end{enumerate}
+
+\exo[Un générateur de chiffres]
+Un générateur de chiffres $0$ ou $1$ doit produire des $1$ avec la probabilité $p=0{,}5$. On a
+simulé $200$ paquets de $25$ chiffres ; l'histogramme donne le nombre de paquets pour chaque
+nombre de chiffres égaux à $1$. Sur cette simulation, l'écart-type des fréquences des $1$ vaut
+$s\approx 0{,}1$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.075cm]
+  \foreach \k/\n in {6/1,7/1,8/11,9/8,10/16,11/35,12/29,13/33,14/23,15/18,16/14,
+                     17/3,18/6,19/2}{
+    \draw[fill=coulCourbe!30] (\k-0.4,0) rectangle (\k+0.4,\n);
+    \node[above,font=\scriptsize,inner sep=1pt] at (\k,\n) {$\n$};
+    \node[below,font=\scriptsize,inner sep=2pt] at (\k,0) {$\k$};}
+  \draw[-{Stealth[length=2mm]},thick] (5,0) -- (20.4,0);
+  \draw[-{Stealth[length=2mm]},thick] (5,0) -- (5,41);
+  \node[below left,font=\footnotesize] at (20.4,-4.5) {nombre de $1$ dans le paquet};
+  \node[right,font=\footnotesize] at (5,40) {nombre de paquets};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Combien de paquets contiennent $12$ chiffres égaux à $1$ ? Quelle est la fréquence des
+        $1$ dans ces paquets ?
+  \item Calculer $p-2s$ et $p+2s$. Pour quels nombres de $1$ la fréquence d'un paquet
+        est-elle dans $[p-2s\,;p+2s]$ ?
+  \item Combien de paquets ont une fréquence hors de cet intervalle ? Quel pourcentage des
+        $200$ paquets cela représente-t-il ? Est-ce conforme au cours ?
+  \item Un paquet produit par le générateur contient $21$ chiffres égaux à $1$. Est-ce une
+        situation fréquente ou rare dans le modèle ?
+\end{enumerate}
+
+\exo[La taille de l'échantillon]
+Pour estimer la part des usagers satisfaits d'un réseau de tramway, un institut interroge
+des usagers au hasard. On a simulé des échantillons de taille $n$ d'une loi de Bernoulli
+de paramètre $p=0{,}5$ ; le tableau donne l'écart-type $s$ des fréquences observées.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Taille $n$ & $25$ & $100$ & $400$ & $2\,500$\\
+\hline
+Écart-type $s$ & $0{,}10$ & $0{,}05$ & \dots & \dots\\
+\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\arabic*)]
+  \item Comment évolue $s$ quand $n$ est multiplié par $4$ ? Compléter la case de
+        $n=400$.
+  \item De $n=25$ à $n=2\,500$, par combien la taille est-elle multipliée ? Compléter la
+        dernière case.
+  \item Expliquer par une phrase pourquoi une enquête auprès de $2\,500$ usagers est plus
+        précise qu'une enquête auprès de $100$ usagers.
+\end{enumerate}
+
+\exo[Des batteries longue durée]
+Un fabricant annonce que $90\,\%$ de ses batteries de vélo supportent plus de $1\,000$
+recharges. Sur $200$ échantillons simulés de $100$ batteries, avec $p=0{,}9$,
+l'écart-type des fréquences vaut $s\approx 0{,}03$.
+\begin{enumerate}[label=\arabic*)]
+  \item On choisit une batterie au hasard ; $X$ vaut $1$ si elle supporte plus de
+        $1\,000$ recharges, $0$ sinon. Quelle loi $X$ suit-elle ? Donner $E(X)$.
+  \item Calculer $p-2s$ et $p+2s$.
+  \item Le laboratoire A teste $100$ batteries : $87$ supportent plus de $1\,000$
+        recharges. Est-ce une situation fréquente ou rare dans le modèle ?
+  \item Le laboratoire B teste $100$ batteries d'un autre lot : $78$ seulement supportent
+        plus de $1\,000$ recharges. Même question ; que peut-on penser de ce lot ?
+  \item Le laboratoire B peut-il être certain que ce lot ne respecte pas l'annonce ?
+        Répondre par une phrase.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type épreuve anticipée}
+
+\exo[QCM]
+Pour chaque question, une seule réponse est exacte.
+\begin{enumerate}[label=\arabic*.]
+  \item Une variable aléatoire $X$ prend les valeurs $0$ ; $1$ et $2$, avec
+        $P(X=0)=0{,}2$ et $P(X=1)=0{,}5$. Alors $P(X=2)$ vaut :
+        \qcmligne{$0{,}7$}{$0{,}3$}{$0{,}5$}{$1$}
+  \item Un dé est truqué : la face $5$ sort avec la probabilité $0{,}2$ et la face $6$ avec
+        la probabilité $0{,}35$. On note $X$ le numéro obtenu. Alors $P(X\ge 5)$ vaut :
+        \qcmligne{$\dfrac{2}{6}$}{$0{,}35$}{$0{,}55$}{$0{,}07$}
+  \item La loi d'une variable aléatoire $X$ est : $P(X=0)=0{,}5$ ; $P(X=2)=0{,}3$ ;
+        $P(X=10)=0{,}2$. L'espérance de $X$ vaut :
+        \qcmligne{$2{,}6$}{$4$}{$12$}{$0{,}6$}
+  \item Une variable aléatoire $X$ suit la loi de Bernoulli de paramètre $0{,}3$. Alors
+        $E(X)$ vaut :
+        \qcmligne{$0{,}7$}{$1$}{$0{,}3$}{$0{,}5$}
+  \item Dans un magasin, $80\,\%$ des clients paient par carte. On choisit au hasard
+        deux clients, de façon indépendante. La probabilité que les deux paient par carte
+        est :
+        \qcmligne{$1{,}6$}{$0{,}64$}{$0{,}8$}{$0{,}16$}
+  \item Pour un modèle de paramètre $p=0{,}5$, l'écart-type des fréquences vaut
+        $s\approx 0{,}05$. Une fréquence observée de $0{,}62$ est :
+        \par\hspace*{0.6em}a) une situation fréquente dans le modèle
+        \par\hspace*{0.6em}b) une situation rare dans le modèle
+        \par\hspace*{0.6em}c) égale à $p$
+        \par\hspace*{0.6em}d) impossible dans le modèle
+\end{enumerate}
+
+\exo[Vrai ou faux ?]
+Dans une boutique de souvenirs, on note $X$ le nombre d'articles achetés par un client
+pris au hasard. Sa loi de probabilité est la suivante.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$P(X=x_i)$ & $0{,}4$ & $0{,}3$ & $0{,}2$ & $0{,}1$\\
+\hline
+\end{tabular}
+\end{center}
+Pour chacune des quatre affirmations, dire si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\arabic*.]
+  \item \emph{$P(X\ge 2)=0{,}3$.}
+  \item \emph{En moyenne, un client achète $2$ articles.}
+  \item \emph{Plus de la moitié des clients achètent au plus $2$ articles.}
+  \item \emph{On choisit au hasard deux clients, de façon indépendante. La probabilité
+        que chacun achète un seul article est égale à $0{,}16$.}
+\end{enumerate}
+
+\exo[Les nuits d'un hôtel]
+Dans un hôtel, $30\,\%$ des clients restent $1$ nuit, $35\,\%$ restent $2$ nuits,
+$20\,\%$ restent $3$ nuits, $10\,\%$ restent $4$ nuits et $5\,\%$ restent $5$ nuits. On
+choisit un client au hasard et on note $X$ le nombre de nuits qu'il passe à l'hôtel.
+\begin{enumerate}[label=\arabic*.]
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $P(X\ge 2)$. Interpréter ce résultat dans le contexte de l'exercice.
+  \item Montrer que $E(X)=2{,}25$. Interpréter ce résultat.
+  \item Une nuit est facturée $80$~€. Quelle recette moyenne l'hôtel peut-il attendre par
+        client ?
+  \item On choisit au hasard deux clients, de façon indépendante. Quelle est la
+        probabilité que les deux ne restent qu'une nuit ? On pourra s'aider d'un arbre.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

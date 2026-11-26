@@ -1,0 +1,1455 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\entete{Chapitre 11 --- Variables aléatoires, loi de Bernoulli --- corrigé}{1\textsuperscript{re} STI2D}
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+\let\partieligne\partie
+\renewcommand{\partie}[1]{\besoinplace{16\baselineskip}\partieligne{#1}}
+\BeforeBeginEnvironment{exo}{\besoinplace{10\baselineskip}}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{5pt}
+
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt}}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\arbredeux}[3]{%
+  \node (O) at (0,0) {};
+  \node[evt] (S) at (2.2,1.2) {$#1$};
+  \node[evt] (E) at (2.2,-1.2) {$\overline{#1}$};
+  \node[evt] (SS) at (4.4,1.8) {$#1$};
+  \node[evt] (SE) at (4.4,0.6) {$\overline{#1}$};
+  \node[evt] (ES) at (4.4,-0.6) {$#1$};
+  \node[evt] (EE) at (4.4,-1.8) {$\overline{#1}$};
+  \draw (O.center) -- node[proba]{$#2$} (S);
+  \draw (O.center) -- node[proba]{$#3$} (E);
+  \draw (S) -- node[proba]{$#2$} (SS);
+  \draw (S) -- node[proba]{$#3$} (SE);
+  \draw (E) -- node[proba]{$#2$} (ES);
+  \draw (E) -- node[proba]{$#3$} (EE);}
+\newcommand{\arbretrois}[3]{%
+  \node (O) at (0,0) {};
+  \node[evt] (S) at (1.9,2) {$#1$};
+  \node[evt] (E) at (1.9,-2) {$\overline{#1}$};
+  \foreach \a/\y in {S/2,E/-2}{%
+    \node[evt] (\a S) at (3.8,\y+1) {$#1$};
+    \node[evt] (\a E) at (3.8,\y-1) {$\overline{#1}$};
+    \draw (\a) -- node[proba]{$#2$} (\a S);
+    \draw (\a) -- node[proba]{$#3$} (\a E);}
+  \foreach \a/\y in {SS/3,SE/1,ES/-1,EE/-3}{%
+    \node[evt] (\a S) at (5.7,\y+0.5) {$#1$};
+    \node[evt] (\a E) at (5.7,\y-0.5) {$\overline{#1}$};
+    \draw (\a) -- node[proba,pos=0.62]{$#2$} (\a S);
+    \draw (\a) -- node[proba,pos=0.62]{$#3$} (\a E);}
+  \draw (O.center) -- node[proba]{$#2$} (S);
+  \draw (O.center) -- node[proba]{$#3$} (E);}
+\newcommand{\arbre}[8]{%
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (2.6,1.4) {$#1$};
+  \node[evt] (nA) at (2.6,-1.4) {$\overline{#1}$};
+  \node[evt] (AB) at (5.2,2.1) {$#2$};
+  \node[evt] (AnB) at (5.2,0.7) {$\overline{#2}$};
+  \node[evt] (nAB) at (5.2,-0.7) {$#2$};
+  \node[evt] (nAnB) at (5.2,-2.1) {$\overline{#2}$};
+  \draw (O.center) -- node[proba]{$#3$} (A);
+  \draw (O.center) -- node[proba]{$#4$} (nA);
+  \draw (A) -- node[proba]{$#5$} (AB);
+  \draw (A) -- node[proba]{$#6$} (AnB);
+  \draw (nA) -- node[proba]{$#7$} (nAB);
+  \draw (nA) -- node[proba]{$#8$} (nAnB);}
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+
+\entetefiche{Chapitre 11 --- Variables aléatoires, loi de Bernoulli}{Première STI2D}
+
+\partie{Variable aléatoire}
+
+\begin{exo}[Calculer des probabilités avec une variable aléatoire]
+\cas{1)}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Issue & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+Valeur de $X$ & $-2$ & $-2$ & $-2$ & $0$ & $3$ & $3$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$X$ prend les valeurs \res{$-2$ ; $0$ et $3$}.}{perte de $2$~€, rien, ou gain de
+$3$~€}
+\cas{2)}
+\explique{Le dé est équilibré : les $6$ issues ont la même probabilité.}{équiprobabilité}
+\begin{calculs}
+P(X=3) &= \dfrac{2}{6} &&\justif{issues $5$ et $6$, soit $2$ issues sur $6$}\\
+P(X=3) &= \dfrac{\barre{2}\times 1}{\barre{2}\times 3} &&\justif{on simplifie par $2$}\\
+P(X=3) &= \res{\dfrac{1}{3}} &&
+\end{calculs}
+\begin{calculs}
+P(X=-2) &= \dfrac{3}{6} &&\justif{issues $1$ ; $2$ ; $3$}\\
+P(X=-2) &= \dfrac{\barre{3}\times 1}{\barre{3}\times 2} &&\justif{on simplifie par $3$}\\
+P(X=-2) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{3)}
+\explique{$\{X\ge 0\}$ : \res{\og on ne perd pas d'argent\fg{}}, c'est-à-dire \og on obtient
+un $4$, un $5$ ou un $6$\fg{}.}{$X$ vaut $0$ ou $3$}
+\begin{calculs}
+P(X\ge 0) &= P(X=0)+P(X=3) &&\justif{les valeurs $0$ et $3$}\\
+P(X\ge 0) &= \dfrac{1}{6}+\dfrac{2}{6} &&\justif{issue $4$, puis issues $5$ et $6$}\\
+P(X\ge 0) &= \dfrac{3}{6} &&\\
+P(X\ge 0) &= \res{\dfrac{1}{2}} &&\justif{on simplifie par $3$}
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(X\le 0) &= 1-P(X=3) &&\justif{contraire de $\{X=3\}$ : on n'obtient ni $5$ ni $6$}\\
+P(X\le 0) &= 1-\dfrac{1}{3} &&\justif{résultat de la question 2}\\
+P(X\le 0) &= \res{\dfrac{2}{3}} &&
+\end{calculs}
+\rem{On peut aussi compter les issues $1$ ; $2$ ; $3$ ; $4$, soit $\frac{4}{6}$, qui se simplifie
+en $\frac{2}{3}$.}
+\end{exo}
+
+\begin{exo}[En phrase complète]
+\cas{1)}
+\explique{a) \res{$\{X=7\}$}}{exactement : une seule valeur}
+\explique{b) \res{$\{X\le 3\}$}}{au plus $3$, c'est $3$ ou moins}
+\explique{c) \res{$\{X\ge 8\}$}}{au moins $8$, c'est $8$ ou plus}
+\explique{d) \res{$\{X<2\}$}}{moins de $2$, c'est $0$ ou $1$, sans $2$}
+\explique{e) \res{$\{X>6\}$}}{plus de $6$, c'est $7$ ou plus, sans $6$}
+\explique{f) \res{$\{X=10\}$}}{les $10$ panneaux du toit}
+\rem{\og Au plus\fg{} et \og au moins\fg{} comprennent le nombre ; \og moins de\fg{} et
+\og plus de\fg{} l'excluent.}
+\cas{2)}
+\explique{$\{X=0\}$ : \og \res{aucun panneau ne fonctionne normalement}\fg{}.}{$X$ vaut $0$}
+\explique{$\{X\le 9\}$ : \og \res{au plus $9$ panneaux fonctionnent}\fg{}, c'est-à-dire
+\og au moins un panneau ne fonctionne pas normalement\fg{}.}{toutes les valeurs sauf $10$}
+\explique{$\{X\ge 1\}$ : \og \res{au moins un panneau fonctionne}\fg{}.}{toutes les valeurs
+sauf $0$}
+\cas{3)}
+\explique{\og Entre $4$ et $6$, bornes comprises\fg{} : $X$ vaut $4$, $5$ ou $6$, donc la
+probabilité vaut \res{$P(X=4)+P(X=5)+P(X=6)$}.}%
+{on ajoute les probabilités des valeurs qui réalisent l'événement}
+\end{exo}
+
+\begin{exo}[Un code de trois chiffres]
+\cas{1)}%
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+Code & $000$ & $001$ & $010$ & $011$ & $100$ & $101$ & $110$ & $111$\\
+\hline
+Valeur de $X$ & $0$ & $1$ & $1$ & $2$ & $1$ & $2$ & $2$ & $3$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{On écrit les codes dans l'ordre, comme on compte : rien n'est oublié.}{$2$ choix
+pour chaque chiffre : $2\times 2\times 2=8$ codes}
+\cas{2)}
+\explique{$X$ prend les valeurs \res{$0$ ; $1$ ; $2$ et $3$}.}{de aucun $1$ à trois $1$}
+\cas{3)}
+\begin{calculs}
+P(X=2) &= \res{\dfrac{3}{8}} &&\justif{codes $011$ ; $101$ ; $110$, soit $3$ codes sur $8$}
+\end{calculs}
+\begin{calculs}
+P(X=0) &= \res{\dfrac{1}{8}} &&\justif{le seul code $000$}
+\end{calculs}
+\cas{4)}
+\explique{$\{X\ge 1\}$ : \og \res{le code contient au moins un chiffre égal à $1$}\fg{}.}{son
+contraire est $\{X=0\}$ : le code $000$}
+\begin{calculs}
+P(X\ge 1) &= 1-P(X=0) &&\justif{événement contraire}\\
+P(X\ge 1) &= 1-\dfrac{1}{8} &&\\
+P(X\ge 1) &= \res{\dfrac{7}{8}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[À la fête de la science]
+\cas{1)}
+\explique{Multiple de $5$ ($5$ et $10$) : gain $5-1=4$ ; multiple de $3$ ($3$ ; $6$ ; $9$) :
+gain $1-1=0$ ; sinon : gain $-1$.}{on déduit le prix de la partie}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Numéro & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ & $7$ & $8$ & $9$ & $10$\\
+\hline
+Valeur de $X$ & $-1$ & $-1$ & $0$ & $-1$ & $4$ & $0$ & $-1$ & $-1$ & $0$ & $4$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$X$ prend les valeurs \res{$-1$ ; $0$ et $4$}.}{aucun numéro n'est à la fois
+multiple de $5$ et de $3$ (il faudrait $15$)}
+\cas{2)}
+\explique{Les $10$ boules ont la même probabilité d'être tirées.}{tirage au hasard}
+\begin{calculs}
+P(X=4) &= \dfrac{2}{10} &&\justif{numéros $5$ et $10$}\\
+P(X=4) &= \res{\dfrac{1}{5}} &&\justif{on simplifie par $2$ (soit $0{,}2$)}
+\end{calculs}
+\begin{calculs}
+P(X=-1) &= \dfrac{5}{10} &&\justif{numéros $1$ ; $2$ ; $4$ ; $7$ ; $8$}\\
+P(X=-1) &= \res{\dfrac{1}{2}} &&\justif{on simplifie par $5$}
+\end{calculs}
+\cas{3)}
+\explique{$\{X\ge 0\}$ : \og \res{on ne perd pas d'argent}\fg{}, c'est-à-dire \og le numéro est
+un multiple de $3$ ou de $5$\fg{}.}{$X$ vaut $0$ ou $4$}
+\begin{calculs}
+P(X\ge 0) &= P(X=0)+P(X=4) &&\justif{les valeurs $0$ et $4$}\\
+P(X\ge 0) &= \dfrac{3}{10}+\dfrac{2}{10} &&\justif{numéros $3$ ; $6$ ; $9$, puis $5$ ; $10$}\\
+P(X\ge 0) &= \dfrac{5}{10} &&\\
+P(X\ge 0) &= \res{\dfrac{1}{2}} &&
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+P(X<4) &= 1-P(X=4) &&\justif{contraire de $\{X<4\}$ : $\{X\ge 4\}$, soit $\{X=4\}$}\\
+P(X<4) &= 1-\dfrac{1}{5} &&\justif{question 2}\\
+P(X<4) &= \res{\dfrac{4}{5}} &&\justif{soit $0{,}8$}
+\end{calculs}
+\end{exo}
+
+\partie{Loi de probabilité d'une variable aléatoire}
+
+\begin{exo}[Déterminer et utiliser une loi]
+\cas{a)}
+\explique{Avec un lot de $50$~€, le gain vaut $50-3=47$ ; avec un lot de $10$~€, $10-3=7$ ;
+sans lot, $-3$. Donc $X$ prend les valeurs $-3$ ; $7$ et $47$.}{on déduit le prix du
+ticket}
+\begin{calculs}
+P(X=47) &= \dfrac{2}{200} = \res{0{,}01} &&\justif{$2$ tickets sur $200$}\\
+P(X=7) &= \dfrac{10}{200} = \res{0{,}05} &&\justif{$10$ tickets sur $200$}\\
+P(X=-3) &= \dfrac{188}{200} = \res{0{,}94} &&\justif{$200-2-10=188$ tickets sans lot}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_i$ & $-3$ & $7$ & $47$\\
+\hline
+$P(X=x_i)$ & $0{,}94$ & $0{,}05$ & $0{,}01$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}94+0{,}05+0{,}01=1$.}{propriété 1}
+\cas{b)}%
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Le tableau donne le plus petit des deux nombres pour chacune des $4\times 4=16$ issues, qui
+ont la même probabilité $\frac{1}{16}$. $Y$ prend les valeurs $1$ ; $2$ ; $3$ et $4$ ; on
+compte les cases de chaque valeur (par exemple, $Y=1$ dans $7$ cases : la première ligne et
+la première colonne).
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$1$ & $1$ & $1$ & $1$ & $1$\\
+\hline
+$2$ & $1$ & $2$ & $2$ & $2$\\
+\hline
+$3$ & $1$ & $2$ & $3$ & $3$\\
+\hline
+$4$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+\end{tabular}
+\end{minipage}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$y_i$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$P(Y=y_i)$ & $\dfrac{7}{16}$ & $\dfrac{5}{16}$ & $\dfrac{3}{16}$ & $\dfrac{1}{16}$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $7+5+3+1=16$, donc la somme des probabilités vaut
+$\frac{16}{16}=1$.}{on garde le dénominateur $16$ pour vérifier}
+\cas{c)}
+\begin{calculs}
+0{,}35+0{,}30+a+0{,}10+0{,}05 &= 1 &&\justif{la somme des probabilités vaut $1$}\\
+0{,}80+a &= 1 &&\\
+a &= 1-0{,}80 &&\\
+a &= \res{0{,}20} &&
+\end{calculs}
+\begin{calculs}
+P(Z\le 1) &= P(Z=0)+P(Z=1) &&\justif{les valeurs $0$ et $1$}\\
+P(Z\le 1) &= 0{,}35+0{,}30 &&\\
+P(Z\le 1) &= \res{0{,}65} &&
+\end{calculs}
+\explique{\og Au moins $2$ voitures attendent\fg{} s'écrit $\{Z\ge 2\}$.}{$Z$ vaut $2$ ; $3$
+ou $4$ : c'est le contraire de $\{Z\le 1\}$}
+\begin{calculs}
+P(Z\ge 2) &= 1-P(Z\le 1) &&\justif{événement contraire}\\
+P(Z\ge 2) &= 1-0{,}65 &&\\
+P(Z\ge 2) &= \res{0{,}35} &&\justif{on vérifie : $0{,}20+0{,}10+0{,}05=0{,}35$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[L'écart entre deux dés]
+\cas{1)}%
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$1$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$2$ & $1$ & $0$ & $1$ & $2$ & $3$ & $4$\\
+\hline
+$3$ & $2$ & $1$ & $0$ & $1$ & $2$ & $3$\\
+\hline
+$4$ & $3$ & $2$ & $1$ & $0$ & $1$ & $2$\\
+\hline
+$5$ & $4$ & $3$ & $2$ & $1$ & $0$ & $1$\\
+\hline
+$6$ & $5$ & $4$ & $3$ & $2$ & $1$ & $0$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{En ligne le premier dé, en colonne le second ; dans chaque case, le plus grand
+moins le plus petit.}{la diagonale vaut $0$ : les deux nombres sont égaux}
+\cas{2)}%
+\explique{Les $36$ issues ont la même probabilité $\frac{1}{36}$ ; on compte les cases de
+chaque valeur : $6$ cases valent $0$, $10$ valent $1$, $8$ valent $2$\dots}{les cases d'une
+même valeur forment des diagonales}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x_i$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\
+\hline
+$P(X=x_i)$ & $\dfrac{6}{36}$ & $\dfrac{10}{36}$ & $\dfrac{8}{36}$ & $\dfrac{6}{36}$
+  & $\dfrac{4}{36}$ & $\dfrac{2}{36}$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $6+10+8+6+4+2=36$, donc la somme des probabilités vaut
+$\frac{36}{36}=1$.}{propriété 1}
+\cas{3)}
+\begin{calculs}
+P(X\ge 3) &= P(X=3)+P(X=4)+P(X=5) &&\justif{les valeurs $3$ ; $4$ ; $5$}\\
+P(X\ge 3) &= \dfrac{6}{36}+\dfrac{4}{36}+\dfrac{2}{36} &&\\
+P(X\ge 3) &= \dfrac{12}{36} &&\\
+P(X\ge 3) &= \dfrac{\barre{12}\times 1}{\barre{12}\times 3} &&\justif{on simplifie par $12$}\\
+P(X\ge 3) &= \res{\dfrac{1}{3}} &&
+\end{calculs}
+\explique{$\{X\ge 3\}$ : \og \res{les deux nombres obtenus diffèrent d'au moins $3$}\fg{}.}{par
+exemple $2$ et $6$, ou $1$ et $4$}
+\end{exo}
+
+\begin{exo}[Des demandes d'intervention]
+\cas{1)}
+\begin{calculs}
+0{,}05+0{,}15+0{,}30+a+0{,}15+0{,}10 &= 1 &&\justif{la somme des probabilités vaut $1$}\\
+0{,}75+a &= 1 &&\\
+a &= 1-0{,}75 &&\\
+a &= \res{0{,}25} &&
+\end{calculs}
+\cas{2)}
+\explique{$\{X\le 2\}$ : \og \res{l'atelier reçoit au plus $2$ demandes}\fg{}.}{$X$ vaut $0$ ;
+$1$ ou $2$}
+\begin{calculs}
+P(X\le 2) &= 0{,}05+0{,}15+0{,}30 &&\justif{les valeurs $0$ ; $1$ ; $2$}\\
+P(X\le 2) &= \res{0{,}50} &&
+\end{calculs}
+\explique{$\{X\ge 4\}$ : \og \res{l'atelier reçoit au moins $4$ demandes}\fg{}.}{$X$ vaut $4$
+ou $5$}
+\begin{calculs}
+P(X\ge 4) &= 0{,}15+0{,}10 &&\justif{les valeurs $4$ et $5$}\\
+P(X\ge 4) &= \res{0{,}25} &&
+\end{calculs}
+\cas{3)}
+\explique{\og Plus de $2$ demandes\fg{} s'écrit $\{X>2\}$, c'est-à-dire $\{X\ge 3\}$ : c'est
+le contraire de $\{X\le 2\}$.}{$2$ exclu}
+\begin{calculs}
+P(X>2) &= 1-P(X\le 2) &&\justif{événement contraire}\\
+P(X>2) &= 1-0{,}50 &&\justif{question 2}\\
+P(X>2) &= \res{0{,}50} &&\justif{on vérifie : $0{,}25+0{,}15+0{,}10=0{,}50$}
+\end{calculs}
+\cas{4)}
+\begin{calculs}
+0{,}2+0{,}3+0{,}3+0{,}3 &= 1{,}1 &&\justif{somme des probabilités du tableau}
+\end{calculs}
+\explique{La somme vaut $1{,}1$ et non $1$ : \res{ce tableau ne peut pas être une loi de
+probabilité}.}{propriété 1 : la somme des probabilités d'une loi vaut toujours $1$}
+\end{exo}
+
+\begin{exo}[Un dé imprimé en 3D]
+\cas{1)}
+\explique{Chaque face paire a deux fois plus de chances de sortir qu'une face impaire :
+la probabilité d'obtenir $2$ vaut \res{$2p$}.}{de même pour $4$ et pour $6$}
+\cas{2)}
+\begin{calculs}
+p+2p+p+2p+p+2p &= 1 &&\justif{faces $1$ à $6$ : la somme des probabilités vaut $1$}\\
+9p &= 1 &&\justif{$3$ fois $p$ et $3$ fois $2p$}\\
+p &= \res{\dfrac{1}{9}} &&\justif{on divise par $9$}
+\end{calculs}
+\cas{3)}%
+\explique{Faces impaires : $p=\frac{1}{9}$ ; faces paires : $2p=\frac{2}{9}$.}{question 1}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x_i$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\
+\hline
+$P(X=x_i)$ & $\dfrac{1}{9}$ & $\dfrac{2}{9}$ & $\dfrac{1}{9}$ & $\dfrac{2}{9}$
+  & $\dfrac{1}{9}$ & $\dfrac{2}{9}$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $1+2+1+2+1+2=9$, donc la somme vaut $\frac{9}{9}=1$.}{propriété 1}
+\cas{4)}
+\begin{calculs}
+P(X\ge 4) &= P(X=4)+P(X=5)+P(X=6) &&\justif{les valeurs $4$ ; $5$ ; $6$}\\
+P(X\ge 4) &= \dfrac{2}{9}+\dfrac{1}{9}+\dfrac{2}{9} &&\\
+P(X\ge 4) &= \res{\dfrac{5}{9}} &&
+\end{calculs}
+\begin{calculs}
+P(\text{pair}) &= P(X=2)+P(X=4)+P(X=6) &&\justif{les faces $2$ ; $4$ ; $6$}\\
+P(\text{pair}) &= \dfrac{2}{9}+\dfrac{2}{9}+\dfrac{2}{9} &&\\
+P(\text{pair}) &= \dfrac{6}{9} &&\\
+P(\text{pair}) &= \dfrac{\barre{3}\times 2}{\barre{3}\times 3} &&\justif{on simplifie par $3$}\\
+P(\text{pair}) &= \res{\dfrac{2}{3}} &&
+\end{calculs}
+\rem{Le dé n'est pas équilibré : on ne peut pas compter les faces favorables et diviser
+par $6$ ; on additionne les probabilités de la loi.}
+\end{exo}
+
+\partie{Espérance}
+
+\begin{exo}[Calculer et interpréter une espérance]
+\cas{a)}
+\begin{calculs}
+E(X) &= 0\times 0{,}10+1\times 0{,}30+2\times 0{,}40+3\times 0{,}20 &&\justif{valeur
+$\times$ probabilité}\\
+E(X) &= 0+0{,}30+0{,}80+0{,}60 &&\\
+E(X) &= \res{1{,}7} &&
+\end{calculs}
+\explique{Sur un grand nombre d'heures, le drone \res{livre en moyenne $1{,}7$ colis par
+heure}.}{propriété 2 : une moyenne n'est pas forcément entière}
+\cas{b)}
+\begin{calculs}
+E(Y) &= (-2)\times 0{,}85+3\times 0{,}10+18\times 0{,}05 &&\justif{valeur $\times$
+probabilité}\\
+E(Y) &= -1{,}70+0{,}30+0{,}90 &&\\
+E(Y) &= \res{-0{,}5} &&
+\end{calculs}
+\explique{Sur un grand nombre de tickets, un visiteur \res{perd en moyenne $0{,}50$~€ par
+ticket} ; l'association \res{gagne en moyenne $0{,}50$~€ par ticket vendu}.}{$E(Y)<0$ :
+perte pour le joueur, gain pour l'organisateur}
+\end{exo}
+
+\begin{exo}[Deux stands]
+\cas{1)}
+\begin{calculs}
+E(X) &= (-1)\times 0{,}75+2\times 0{,}20+5\times 0{,}05 &&\justif{valeur $\times$
+probabilité}\\
+E(X) &= -0{,}75+0{,}40+0{,}25 &&\\
+E(X) &= \res{-0{,}10} &&
+\end{calculs}
+\begin{calculs}
+E(Y) &= (-2)\times 0{,}85+4\times 0{,}10+20\times 0{,}05 &&\justif{valeur $\times$
+probabilité}\\
+E(Y) &= -1{,}70+0{,}40+1{,}00 &&\\
+E(Y) &= \res{-0{,}30} &&
+\end{calculs}
+\cas{2)}
+\explique{Sur un grand nombre de parties, on perd en moyenne $0{,}10$~€ par partie au stand A
+et $0{,}30$~€ au stand B : \res{le stand A est le moins défavorable}.}{$-0{,}10>-0{,}30$}
+\cas{3)}
+\begin{calculs}
+P(X>0) &= P(X=2)+P(X=5) &&\justif{les gains positifs}\\
+P(X>0) &= 0{,}20+0{,}05 &&\\
+P(X>0) &= \res{0{,}25} &&
+\end{calculs}
+\begin{calculs}
+P(Y>0) &= P(Y=4)+P(Y=20) &&\justif{les gains positifs}\\
+P(Y>0) &= 0{,}10+0{,}05 &&\\
+P(Y>0) &= \res{0{,}15} &&
+\end{calculs}
+\cas{4)}
+\explique{\res{L'ami a tort} : au stand B, on ne gagne $20$~€ qu'avec la probabilité
+$0{,}05$, on gagne moins souvent qu'au stand A ($0{,}15$ contre $0{,}25$) et on perd en
+moyenne davantage ($0{,}30$~€ contre $0{,}10$~€ par partie).}{un gros lot rare ne fait pas
+un bon jeu : on regarde l'espérance}
+\end{exo}
+
+\begin{exo}[Au magasin de cycles]
+\cas{1)}%
+\begin{minipage}[c]{0.50\linewidth}\raggedright
+$P(V)=0{,}2$, donc $P(\overline{V})=0{,}8$ ; $P_V(C)=0{,}6$, donc
+$P_V(\overline{C})=0{,}4$ ; $P_{\overline{V}}(C)=0{,}1$, donc
+$P_{\overline{V}}(\overline{C})=0{,}9$.
+
+\smallskip
+Au bout de chaque chemin : la somme dépensée.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}
+  \arbre{V}{C}{0{,}2}{0{,}8}{0{,}6}{0{,}4}{0{,}1}{0{,}9}
+  \feuille{AB}{$X=1\,250$}
+  \feuille{AnB}{$X=1\,200$}
+  \feuille{nAB}{$X=50$}
+  \feuille{nAnB}{$X=0$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{$X$ prend les valeurs \res{$0$ ; $50$ ; $1\,200$ et $1\,250$}.}{rien ; un casque
+seul ; un vélo seul ; un vélo et un casque ($1\,200+50$)}
+\cas{3)}
+\begin{calculs}
+P(X=1\,250) &= 0{,}2\times 0{,}6 = \res{0{,}12} &&\justif{chemin $V$ puis $C$}\\
+P(X=1\,200) &= 0{,}2\times 0{,}4 = \res{0{,}08} &&\justif{chemin $V$ puis $\overline{C}$}\\
+P(X=50) &= 0{,}8\times 0{,}1 = \res{0{,}08} &&\justif{chemin $\overline{V}$ puis $C$}\\
+P(X=0) &= 0{,}8\times 0{,}9 = \res{0{,}72} &&\justif{chemin $\overline{V}$ puis
+$\overline{C}$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & $0$ & $50$ & $1\,200$ & $1\,250$\\
+\hline
+$P(X=x_i)$ & $0{,}72$ & $0{,}08$ & $0{,}08$ & $0{,}12$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}72+0{,}08+0{,}08+0{,}12=1$.}{propriété 1}
+\cas{4)}
+\begin{calculs}
+E(X) &= 0\times 0{,}72+50\times 0{,}08+1\,200\times 0{,}08+1\,250\times 0{,}12
+  &&\justif{valeur $\times$ probabilité}\\
+E(X) &= 0+4+96+150 &&\\
+E(X) &= \res{250} &&
+\end{calculs}
+\explique{Sur un grand nombre de clients, un client \res{dépense en moyenne $250$~€} en vélos
+et en casques.}{la plupart ne dépensent rien, quelques-uns plus de $1\,000$~€}
+\cas{5)}
+\begin{calculs}
+\text{chiffre d'affaires} &= 400\times 250 &&\justif{nombre de clients $\times$ dépense
+moyenne}\\
+\text{chiffre d'affaires} &= \res{100\,000} &&
+\end{calculs}
+\explique{Le magasin peut prévoir \res{environ $100\,000$~€ par mois} pour les vélos et les
+casques.}{une prévision : le chiffre effectif fluctue d'un mois à l'autre}
+\end{exo}
+
+\begin{exo}[Le coût d'une trottinette]
+\cas{1)}
+\explique{$X$ prend les valeurs \res{$200$ ; $220$ ; $230$ et $250$}.}{$200$ sans défaut,
+$200+20$, $200+30$, $200+50$}
+\cas{2)}%
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & $200$ & $220$ & $230$ & $250$\\
+\hline
+$P(X=x_i)$ & $0{,}92$ & $0{,}04$ & $0{,}03$ & $0{,}01$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}92+0{,}04+0{,}03+0{,}01=1$.}{les pourcentages de l'énoncé,
+écrits en décimal}
+\cas{3)}
+\begin{calculs}
+E(X) &= 200\times 0{,}92+220\times 0{,}04+230\times 0{,}03+250\times 0{,}01
+  &&\justif{valeur $\times$ probabilité}\\
+E(X) &= 184+8{,}8+6{,}9+2{,}5 &&\\
+E(X) &= \res{202{,}2} &&
+\end{calculs}
+\explique{Sur un grand nombre de trottinettes, une trottinette \res{coûte en moyenne
+$202{,}20$~€} à l'entreprise, réparation comprise.}{propriété 2}
+\cas{4)}
+\explique{Elle dépense en moyenne $202{,}20$~€ et reçoit $200$~€ : \res{elle perd en moyenne
+$2{,}20$~€ par trottinette}, donc elle ne gagne pas d'argent.}{$200-202{,}2=-2{,}2$}
+\cas{5)}
+\begin{calculs}
+\text{prix} &= 202{,}2+50 &&\justif{coût moyen + gain moyen voulu}\\
+\text{prix} &= \res{252{,}2} &&
+\end{calculs}
+\explique{Elle doit vendre chaque trottinette \res{$252{,}20$~€}.}{elle gagne alors en moyenne
+$252{,}2-202{,}2=50$~€}
+\end{exo}
+
+\partie{Loi de Bernoulli}
+
+\begin{exo}[Reconnaître une loi de Bernoulli]
+\cas{a)}
+\explique{Le passage a deux issues ; le succès est \og le bus arrive à l'heure\fg{}, de
+probabilité $0{,}85$. Donc \res{$X$ suit la loi de Bernoulli de paramètre
+$p=0{,}85$}.}{$X$ vaut $1$ (succès) ou $0$ (échec)}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$x_i$ & $1$ & $0$\\
+\hline
+$P(X=x_i)$ & $0{,}85$ & $0{,}15$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$E(X)=p$, soit \res{$E(X)=0{,}85$}.}{propriété 3}
+\cas{b)}
+\explique{Le succès est \og obtenir un multiple de $3$\fg{}, c'est-à-dire $3$ ; $6$ ; $9$ ou
+$12$, soit $4$ faces sur $12$, qui ont la même probabilité.}{équiprobabilité}
+\begin{calculs}
+p &= \dfrac{4}{12} &&\justif{$4$ faces favorables sur $12$}\\
+p &= \dfrac{\barre{4}\times 1}{\barre{4}\times 3} &&\justif{on simplifie par $4$}\\
+p &= \dfrac{1}{3} &&
+\end{calculs}
+\explique{Donc \res{$Y$ suit la loi de Bernoulli de paramètre $p=\dfrac{1}{3}$}.}{$Y$ vaut
+$1$ (succès) ou $0$ (échec)}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$y_i$ & $1$ & $0$\\
+\hline
+$P(Y=y_i)$ & $\dfrac{1}{3}$ & $\dfrac{2}{3}$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$E(Y)=p$, soit \res{$E(Y)=\dfrac{1}{3}$}.}{propriété 3}
+\cas{c)}
+\explique{$Z$ prend douze valeurs, de $1$ à $12$ : \res{$Z$ ne suit pas une loi de
+Bernoulli}.}{une loi de Bernoulli n'a que les valeurs $1$ et $0$}
+\end{exo}
+
+\begin{exo}[Épreuve de Bernoulli ou non ?]
+\cas{a)}
+\explique{On note la tension : trois issues ($12$~V, $24$~V, $48$~V), donc \res{ce n'est pas
+une épreuve de Bernoulli}.}{une épreuve de Bernoulli a exactement deux issues}
+\cas{b)}
+\explique{Deux issues : \res{c'est une épreuve de Bernoulli}, de succès \og la pièce tombe sur
+Pile\fg{}, de probabilité \res{$\dfrac{1}{2}$}.}{pièce équilibrée}
+\cas{c)}
+\explique{On note le mois : douze issues, donc \res{ce n'est pas une épreuve de
+Bernoulli}.}{plus de deux issues}
+\cas{d)}
+\explique{Deux issues (le panneau passe le contrôle ou non) : \res{c'est une épreuve de
+Bernoulli}, de succès \og le panneau passe le contrôle\fg{} ; \res{sa probabilité n'est pas
+connue}.}{l'énoncé ne donne pas la part des panneaux qui passent le contrôle}
+\cas{e)}
+\explique{Deux issues (as ou non) : \res{c'est une épreuve de Bernoulli}, de succès \og la
+carte est un as\fg{}.}{un jeu de $32$ cartes compte $4$ as}
+\begin{calculs}
+p &= \dfrac{4}{32} &&\justif{$4$ as sur $32$ cartes}\\
+p &= \dfrac{\barre{4}\times 1}{\barre{4}\times 8} &&\justif{on simplifie par $4$}\\
+p &= \res{\dfrac{1}{8}} &&
+\end{calculs}
+\rem{Dans a) et c), on obtiendrait une épreuve de Bernoulli en ne regardant qu'une
+question à deux réponses (\og le moteur est-il de $12$~V ?\fg{}) : c'est le choix de ce
+qu'on observe qui compte.}
+\end{exo}
+
+\begin{exo}[Retrouver le paramètre]
+\cas{1)}
+\explique{$E(X)=p$, donc $p=0{,}35$ ; $P(X=1)=\res{0{,}35}$ et $P(X=0)=1-0{,}35$, soit
+\res{$0{,}65$}.}{propriété 3}
+\cas{2)}
+\explique{$P(Y=1)=p$ et $P(Y=0)=1-p$.}{définition de la loi de Bernoulli}
+\begin{calculs}
+1-p &= 3p &&\justif{on traduit $P(Y=0)=3\times P(Y=1)$}\\
+1 &= 4p &&\justif{on ajoute $p$ aux deux membres}\\
+p &= \res{\dfrac{1}{4}} &&\justif{on divise par $4$, soit $0{,}25$}
+\end{calculs}
+\explique{On vérifie : $P(Y=0)=\frac{3}{4}$, qui vaut bien $3\times\frac{1}{4}$.}{}
+\cas{3)}
+\begin{calculs}
+p &= 1-p &&\justif{on traduit $P(Z=1)=P(Z=0)$}\\
+2p &= 1 &&\justif{on ajoute $p$ aux deux membres}\\
+p &= \dfrac{1}{2} &&\justif{on divise par $2$}
+\end{calculs}
+\explique{$E(Z)=p$, soit \res{$E(Z)=0{,}5$}.}{propriété 3}
+\cas{4)}
+\explique{\res{Non} : l'espérance vaut $p$, qui est une probabilité, donc comprise entre $0$
+et $1$ ; $1{,}2$ est plus grand que $1$.}{$E(X)=p$ et $0\le p\le 1$}
+\end{exo}
+
+\begin{exo}[Le défi du dodécaèdre]
+\cas{1)}
+\explique{Les multiples de $4$ jusqu'à $12$ sont $4$ ; $8$ ; $12$, soit $3$ faces sur $12$, qui
+ont la même probabilité.}{dé équilibré}
+\begin{calculs}
+P(S) &= \dfrac{3}{12} &&\justif{$3$ faces favorables sur $12$}\\
+P(S) &= \dfrac{\barre{3}\times 1}{\barre{3}\times 4} &&\justif{on simplifie par $3$}\\
+P(S) &= \res{\dfrac{1}{4}} &&\justif{soit $0{,}25$}
+\end{calculs}
+\cas{2)}
+\explique{$X$ suit la loi de Bernoulli de paramètre $p=0{,}25$.}{deux issues : $S$ (succès)
+ou non}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$x_i$ & $1$ & $0$\\
+\hline
+$P(X=x_i)$ & $0{,}25$ & $0{,}75$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{$E(X)=p$, soit \res{$E(X)=0{,}25$}.}{propriété 3}
+\cas{3)}
+\explique{Si $S$ est réalisé, $G=7-2=5$ ; sinon, $G=-2$.}{on déduit le prix de la partie}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|}
+\hline
+$g_i$ & $-2$ & $5$\\
+\hline
+$P(G=g_i)$ & $0{,}75$ & $0{,}25$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{\res{$G$ ne suit pas une loi de Bernoulli} : elle a deux valeurs, mais ce sont $-2$
+et $5$, pas $0$ et $1$.}{une loi de Bernoulli prend les valeurs $1$ et $0$}
+\cas{4)}
+\begin{calculs}
+E(G) &= (-2)\times 0{,}75+5\times 0{,}25 &&\justif{valeur $\times$ probabilité}\\
+E(G) &= -1{,}50+1{,}25 &&\\
+E(G) &= \res{-0{,}25} &&
+\end{calculs}
+\explique{Sur un grand nombre de parties, le joueur \res{perd en moyenne $0{,}25$~€ par
+partie}.}{$E(G)<0$ : le jeu est défavorable au joueur}
+\end{exo}
+
+\partie{Répétition d'épreuves de Bernoulli}
+
+\begin{exo}[Calculer une probabilité avec un arbre]
+\cas{a)}
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+On note $R$ \og le lancement réussit\fg{} : $P(R)=0{,}8$ et $P(\overline{R})=1-0{,}8$,
+soit \res{$P(\overline{R})=0{,}2$}. Au bout de chaque chemin, la valeur de $X$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.44\linewidth}\centering
+\begin{tikzpicture}
+  \arbredeux{R}{0{,}8}{0{,}2}
+  \feuille{SS}{$X=2$}
+  \feuille{SE}{$X=1$}
+  \feuille{ES}{$X=1$}
+  \feuille{EE}{$X=0$}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+P(X=2) &= 0{,}8\times 0{,}8 &&\justif{un seul chemin : $(R\,;R)$}\\
+P(X=2) &= \res{0{,}64} &&
+\end{calculs}
+\begin{calculs}
+P(X=1) &= 0{,}8\times 0{,}2+0{,}2\times 0{,}8 &&\justif{deux chemins :
+$(R\,;\overline{R})$ et $(\overline{R}\,;R)$}\\
+P(X=1) &= 0{,}16+0{,}16 &&\\
+P(X=1) &= \res{0{,}32} &&
+\end{calculs}
+\cas{b)}
+\begin{minipage}[c]{0.46\linewidth}\raggedright
+On note $B$ \og le colis est bien rangé\fg{} : $P(B)=0{,}9$ et $P(\overline{B})=1-0{,}9$,
+soit \res{$P(\overline{B})=0{,}1$}. Au bout de chaque chemin, la valeur de $Y$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.50\linewidth}\centering
+\begin{tikzpicture}[y=0.75cm]
+  \arbretrois{B}{0{,}9}{0{,}1}
+  \feuille{SSS}{$Y=3$} \feuille{SSE}{$Y=2$} \feuille{SES}{$Y=2$}
+  \feuille{SEE}{$Y=1$} \feuille{ESS}{$Y=2$} \feuille{ESE}{$Y=1$}
+  \feuille{EES}{$Y=1$} \feuille{EEE}{$Y=0$}
+\end{tikzpicture}
+\end{minipage}
+\begin{calculs}
+P(Y=3) &= 0{,}9\times 0{,}9\times 0{,}9 &&\justif{un seul chemin : $(B\,;B\,;B)$}\\
+P(Y=3) &= \res{0{,}729} &&
+\end{calculs}
+\begin{calculs}
+P(Y=2) &= 0{,}081+0{,}081+0{,}081 &&\justif{trois chemins, chacun
+$0{,}9\times 0{,}9\times 0{,}1$}\\
+P(Y=2) &= \res{0{,}243} &&
+\end{calculs}
+\begin{calculs}
+P(Y\ge 1) &= 1-P(Y=0) &&\justif{contraire : aucun colis bien rangé}\\
+P(Y\ge 1) &= 1-0{,}1\times 0{,}1\times 0{,}1 &&\justif{le chemin
+$(\overline{B}\,;\overline{B}\,;\overline{B})$}\\
+P(Y\ge 1) &= 1-0{,}001 &&\\
+P(Y\ge 1) &= \res{0{,}999} &&
+\end{calculs}
+\rem{Pour \og au moins un\fg{}, l'événement contraire n'utilise qu'un chemin, au lieu de
+sept.}
+\end{exo}
+
+\begin{exo}[Trois lancers d'une pièce]
+\cas{1)}%
+\begin{minipage}[c]{0.46\linewidth}\raggedright
+On note $P$ \og la pièce tombe sur Pile\fg{} ; $\overline{P}$ est \og Face\fg{}. La pièce
+est équilibrée : chaque branche a la probabilité $0{,}5$. Au bout de chaque chemin, la
+valeur de $X$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.50\linewidth}\centering
+\begin{tikzpicture}[y=0.75cm]
+  \arbretrois{P}{0{,}5}{0{,}5}
+  \feuille{SSS}{$X=3$} \feuille{SSE}{$X=2$} \feuille{SES}{$X=2$}
+  \feuille{SEE}{$X=1$} \feuille{ESS}{$X=2$} \feuille{ESE}{$X=1$}
+  \feuille{EES}{$X=1$} \feuille{EEE}{$X=0$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{Chaque chemin a la probabilité $0{,}5\times 0{,}5\times 0{,}5=0{,}125$.}{les $8$
+chemins ont la même probabilité}
+\begin{calculs}
+P(X=3) &= \res{0{,}125} &&\justif{un seul chemin : $(P\,;P\,;P)$}
+\end{calculs}
+\begin{calculs}
+P(X=2) &= 3\times 0{,}125 &&\justif{trois chemins avec deux Pile}\\
+P(X=2) &= \res{0{,}375} &&
+\end{calculs}
+\cas{3)}
+\explique{\og Au moins une fois Face\fg{}, c'est \og pas trois Pile\fg{} : \res{$\{X\le
+2\}$}.}{contraire de $\{X=3\}$}
+\begin{calculs}
+P(X\le 2) &= 1-P(X=3) &&\justif{événement contraire}\\
+P(X\le 2) &= 1-0{,}125 &&\\
+P(X\le 2) &= \res{0{,}875} &&
+\end{calculs}
+\cas{4)}
+\explique{$P(X=0)=0{,}125$ (un chemin) et $P(X=1)=3\times 0{,}125=0{,}375$ (trois
+chemins).}{comme à la question 2}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & $0$ & $1$ & $2$ & $3$\\
+\hline
+$P(X=x_i)$ & $0{,}125$ & $0{,}375$ & $0{,}375$ & $0{,}125$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}125+0{,}375+0{,}375+0{,}125=1$.}{propriété 1}
+\begin{calculs}
+E(X) &= 0\times 0{,}125+1\times 0{,}375+2\times 0{,}375+3\times 0{,}125 &&\justif{valeur
+$\times$ probabilité}\\
+E(X) &= 0+0{,}375+0{,}75+0{,}375 &&\\
+E(X) &= \res{1{,}5} &&
+\end{calculs}
+\explique{Sur un grand nombre de séries de trois lancers, on obtient en moyenne $1{,}5$
+Pile.}{la moitié de $3$ lancers : la pièce est équilibrée}
+\end{exo}
+
+\begin{exo}[Un parc éolien]
+\cas{1)}%
+\begin{minipage}[c]{0.46\linewidth}\raggedright
+On note $A$ \og l'éolienne est à l'arrêt\fg{} : $P(A)=0{,}2$ et $P(\overline{A})=0{,}8$.
+Les éoliennes sont indépendantes : les mêmes probabilités à chaque niveau. Au bout de
+chaque chemin, la valeur de $X$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.50\linewidth}\centering
+\begin{tikzpicture}[y=0.75cm]
+  \arbretrois{A}{0{,}2}{0{,}8}
+  \feuille{SSS}{$X=3$} \feuille{SSE}{$X=2$} \feuille{SES}{$X=2$}
+  \feuille{SEE}{$X=1$} \feuille{ESS}{$X=2$} \feuille{ESE}{$X=1$}
+  \feuille{EES}{$X=1$} \feuille{EEE}{$X=0$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+P(X=3) &= 0{,}2\times 0{,}2\times 0{,}2 = \res{0{,}008} &&\justif{un chemin :
+$(A\,;A\,;A)$}\\
+P(X=2) &= 3\times 0{,}2\times 0{,}2\times 0{,}8 = \res{0{,}096} &&\justif{trois chemins,
+chacun $0{,}032$}\\
+P(X=1) &= 3\times 0{,}2\times 0{,}8\times 0{,}8 = \res{0{,}384} &&\justif{trois chemins,
+chacun $0{,}128$}\\
+P(X=0) &= 0{,}8\times 0{,}8\times 0{,}8 = \res{0{,}512} &&\justif{un chemin :
+$(\overline{A}\,;\overline{A}\,;\overline{A})$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & $0$ & $1$ & $2$ & $3$\\
+\hline
+$P(X=x_i)$ & $0{,}512$ & $0{,}384$ & $0{,}096$ & $0{,}008$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}512+0{,}384+0{,}096+0{,}008=1$.}{propriété 1}
+\cas{3)}
+\begin{calculs}
+E(X) &= 0\times 0{,}512+1\times 0{,}384+2\times 0{,}096+3\times 0{,}008 &&\justif{valeur
+$\times$ probabilité}\\
+E(X) &= 0+0{,}384+0{,}192+0{,}024 &&\\
+E(X) &= \res{0{,}6} &&
+\end{calculs}
+\explique{$3\times 0{,}2=0{,}6$ : \res{on trouve la même valeur}. Sur $3$ éoliennes, il y en
+a en moyenne $0{,}6$ à l'arrêt.}{chaque éolienne compte en moyenne pour $0{,}2$ :
+l'espérance d'une loi de Bernoulli de paramètre $0{,}2$}
+\cas{4)}
+\begin{calculs}
+P(X\le 1) &= P(X=0)+P(X=1) &&\justif{au plus une : $0$ ou $1$}\\
+P(X\le 1) &= 0{,}512+0{,}384 &&\\
+P(X\le 1) &= \res{0{,}896} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Les panneaux d'un satellite]
+\cas{1)}
+\explique{Un niveau par panneau : \res{$4$ niveaux}. Chaque nœud a deux branches :
+$2\times 2\times 2\times 2=\res{16}$ chemins.}{trop pour tracer l'arbre : on écrit
+seulement les chemins utiles}
+\cas{2)}
+\explique{On note $D$ \og le panneau se déploie\fg{} : $P(D)=0{,}9$ et
+$P(\overline{D})=0{,}1$.}{épreuves indépendantes}
+\begin{calculs}
+P(X=4) &= 0{,}9\times 0{,}9\times 0{,}9\times 0{,}9 &&\justif{un seul chemin :
+$(D\,;D\,;D\,;D)$}\\
+P(X=4) &= \res{0{,}6561} &&
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+P(X=0) &= 0{,}1\times 0{,}1\times 0{,}1\times 0{,}1 &&\justif{un seul chemin : aucun panneau
+déployé}\\
+P(X=0) &= \res{0{,}0001} &&
+\end{calculs}
+\begin{calculs}
+P(X\ge 1) &= 1-P(X=0) &&\justif{contraire : aucun panneau ne se déploie}\\
+P(X\ge 1) &= 1-0{,}0001 &&\\
+P(X\ge 1) &= \res{0{,}9999} &&
+\end{calculs}
+\cas{4)}
+\explique{Un seul panneau ne se déploie pas, le premier, le deuxième, le troisième ou le
+quatrième : \res{$(\overline{D}\,;D\,;D\,;D)$, $(D\,;\overline{D}\,;D\,;D)$,
+$(D\,;D\,;\overline{D}\,;D)$ et $(D\,;D\,;D\,;\overline{D})$}.}{$4$ chemins}
+\begin{calculs}
+P(X=3) &= 4\times 0{,}9\times 0{,}9\times 0{,}9\times 0{,}1 &&\justif{$4$ chemins de même
+probabilité}\\
+P(X=3) &= 4\times 0{,}0729 &&\\
+P(X=3) &= \res{0{,}2916} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Fléchettes électroniques]
+\cas{1)}%
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+On note $R$ \og la fléchette atteint la zone rouge\fg{} : $P(R)=0{,}6$ et
+$P(\overline{R})=0{,}4$. Au bout de chaque chemin, le score : $2+2=4$, $2-1=1$, $-1+2=1$,
+$-1-1=-2$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.44\linewidth}\centering
+\begin{tikzpicture}
+  \arbredeux{R}{0{,}6}{0{,}4}
+  \feuille{SS}{$X=4$}
+  \feuille{SE}{$X=1$}
+  \feuille{ES}{$X=1$}
+  \feuille{EE}{$X=-2$}
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{$X$ prend les valeurs \res{$-2$ ; $1$ et $4$}.}{deux échecs, un succès, deux succès}
+\cas{3)}
+\begin{calculs}
+P(X=4) &= 0{,}6\times 0{,}6 = \res{0{,}36} &&\justif{chemin $(R\,;R)$}\\
+P(X=1) &= 2\times 0{,}6\times 0{,}4 = \res{0{,}48} &&\justif{chemins $(R\,;\overline{R})$ et
+$(\overline{R}\,;R)$}\\
+P(X=-2) &= 0{,}4\times 0{,}4 = \res{0{,}16} &&\justif{chemin
+$(\overline{R}\,;\overline{R})$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_i$ & $-2$ & $1$ & $4$\\
+\hline
+$P(X=x_i)$ & $0{,}16$ & $0{,}48$ & $0{,}36$\\
+\hline
+\end{tabular}
+\end{center}
+\explique{Vérification : $0{,}16+0{,}48+0{,}36=1$.}{propriété 1}
+\cas{4)}
+\begin{calculs}
+P(X>0) &= P(X=1)+P(X=4) &&\justif{les scores positifs}\\
+P(X>0) &= 0{,}48+0{,}36 &&\\
+P(X>0) &= \res{0{,}84} &&
+\end{calculs}
+\explique{Le joueur \res{termine avec un score positif dans $84\,\%$ des cas}, sur un grand
+nombre de séries de deux lancers.}{il suffit qu'une fléchette sur deux atteigne la zone
+rouge}
+\cas{5)}
+\begin{calculs}
+E(X) &= (-2)\times 0{,}16+1\times 0{,}48+4\times 0{,}36 &&\justif{valeur $\times$
+probabilité}\\
+E(X) &= -0{,}32+0{,}48+1{,}44 &&\\
+E(X) &= \res{1{,}6} &&
+\end{calculs}
+\explique{Sur un grand nombre de séries de deux lancers, le joueur \res{marque en moyenne
+$1{,}6$ point}.}{propriété 2}
+\end{exo}
+
+\partie{Simulation d'échantillons}
+
+\begin{exo}[Compléter et utiliser un programme]
+\cas{1)}
+\explique{\texttt{if random() < \res{0.75}:} puis \texttt{return \res{nb / n}}.}{\texttt{random()}
+est inférieur à $0{,}75$ avec la probabilité $0{,}75$ : jour à plus de $2$~kWh ; \texttt{nb}
+compte ces jours, on divise par $n$}
+\cas{2)}
+\explique{\texttt{for j in range(\res{4}):} puis \texttt{print(frequence(\res{40}))}.}{chaque
+tour de boucle simule un échantillon de $40$ jours}
+\cas{3)}
+\begin{calculs}
+\text{nombre de jours} &= 0{,}725\times 40 &&\justif{fréquence $\times$ taille de
+l'échantillon}\\
+\text{nombre de jours} &= \res{29} &&
+\end{calculs}
+\explique{Chaque échantillon est tiré au hasard : \res{la fréquence change d'un échantillon
+à l'autre}, autour de $0{,}75$.}{fluctuation d'échantillonnage (partie VII)}
+\end{exo}
+
+\begin{exo}[Lire un programme]
+\cas{1)}
+\explique{$5\,\%$ des livres ont un défaut : \res{$P(D)=0{,}05$}.}{un pourcentage écrit en
+décimal}
+\cas{2)}
+\explique{\texttt{livre()} \res{renvoie $1$ si le livre simulé a un défaut, $0$ sinon} ; elle
+renvoie $1$ quand \texttt{x < 0.05}, donc \res{avec la probabilité $0{,}05$}.}{elle simule
+la loi de Bernoulli de paramètre $0{,}05$}
+\cas{3)}
+\explique{\texttt{nb = \res{0}}, \texttt{for i in range(\res{n}):}, \texttt{nb = nb +
+\res{livre()}}, \texttt{return \res{nb / n}}.}{on part de $0$, on ajoute $1$ à chaque livre
+avec un défaut, sur $n$ livres, puis on divise par $n$}
+\begin{python}
+def frequence(n):
+    nb = 0
+    for i in range(n):
+        nb = nb + livre()
+    return nb / n
+\end{python}
+\cas{4)}
+\explique{\res{Ce n'est pas étonnant} : sur un grand échantillon ($10\,000$ livres), la
+fréquence observée $0{,}0493$ est très proche de $p=0{,}05$.}{plus l'échantillon est
+grand, moins la fréquence fluctue (partie VII)}
+\end{exo}
+
+\begin{exo}[Pile ou face]
+\cas{1)}
+\explique{\texttt{if \res{random() < 0.5}:} puis \texttt{return \res{"Face"}}.}{pièce
+équilibrée : Pile avec la probabilité $0{,}5$}
+\cas{2)}
+\explique{\texttt{if lancer() == \res{"Pile"}:} puis \texttt{nb = \res{nb + 1}}.}{on compte
+les Pile ; les guillemets sont nécessaires : on compare des textes}
+\begin{python}
+def lancer():
+    if random() < 0.5:
+        return "Pile"
+    else:
+        return "Face"
+
+def frequence(n):
+    nb = 0
+    for i in range(n):
+        if lancer() == "Pile":
+            nb = nb + 1
+    return nb / n
+\end{python}
+\cas{3)}
+\explique{\texttt{frequence(100000)} sera \res{proche de $0{,}5$} : sur un très grand nombre
+de lancers, la fréquence des Pile est proche de la probabilité de Pile.}{$100\,000$
+lancers : la fluctuation est très faible}
+\end{exo}
+
+\begin{exo}[La moyenne des fréquences]
+\cas{1)}
+\explique{\texttt{s = \res{0}} puis \texttt{s = s + \res{frequence(100, 0.3)}}.}{\texttt{s}
+part de $0$ et additionne les $500$ fréquences ; on divise ensuite par $500$}
+\cas{2)}
+\explique{La moyenne des fréquences de $500$ échantillons de $100$ épreuves vaut
+$0{,}2997$ : \res{les fréquences fluctuent autour de $0{,}3$}, et leur moyenne en est très
+proche.}{certaines fréquences sont au-dessus de $0{,}3$, d'autres en dessous}
+\cas{3)}
+\explique{$E(X)=p$, soit \res{$E(X)=0{,}3$} : \res{la moyenne des fréquences, $0{,}2997$, est
+très proche de l'espérance}.}{propriété 3 ; la fréquence d'un échantillon est une moyenne
+des valeurs $1$ et $0$}
+\end{exo}
+
+\partie{Fluctuation d'échantillonnage}
+
+\begin{exo}[Fréquente ou rare ?]
+\cas{1)}
+\begin{calculs}
+p-2s &= 0{,}5-2\times 0{,}05 = \res{0{,}40} &&\justif{$2s=0{,}10$}\\
+p+2s &= 0{,}5+2\times 0{,}05 = \res{0{,}60} &&\\
+p-3s &= 0{,}5-3\times 0{,}05 = \res{0{,}35} &&\justif{$3s=0{,}15$}\\
+p+3s &= 0{,}5+3\times 0{,}05 = \res{0{,}65} &&
+\end{calculs}
+\cas{2)}
+\explique{$f=\dfrac{57}{100}=0{,}57$, qui est dans $[0{,}40\,;0{,}60]$ : c'est une
+\res{situation fréquente}. Rien d'étonnant pour une pièce équilibrée.}{distance à $p$ :
+$0{,}07$, inférieure à $2s=0{,}10$}
+\cas{3)}
+\explique{$f=\dfrac{68}{100}=0{,}68$, qui est hors de $[0{,}35\,;0{,}65]$ : c'est une
+\res{situation très rare} dans le modèle. On peut penser que \res{la pièce imprimée en 3D
+n'est pas équilibrée} : elle tombe plus souvent sur Pile.}{distance à $p$ : $0{,}18$,
+supérieure à $3s=0{,}15$}
+\cas{4)}
+\explique{$400=4\times 100$ : la taille est multipliée par $4$, donc $s$ est divisé par $2$ :
+\res{$s\approx 0{,}025$}.}{propriété 5}
+\end{exo}
+
+\begin{exo}[Un générateur de chiffres]
+\cas{1)}
+\explique{On lit la barre au-dessus de $12$ : \res{$29$ paquets}.}{hauteur de la barre}
+\begin{calculs}
+f &= \dfrac{12}{25} &&\justif{$12$ chiffres égaux à $1$ sur $25$}\\
+f &= \res{0{,}48} &&\justif{$\frac{12\times 4}{25\times 4}=\frac{48}{100}$}
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+p-2s &= 0{,}5-2\times 0{,}1 = \res{0{,}3} &&\justif{$2s=0{,}2$}\\
+p+2s &= 0{,}5+2\times 0{,}1 = \res{0{,}7} &&
+\end{calculs}
+\explique{En nombre de $1$ sur $25$, on a $0{,}3\times 25=7{,}5$ et $0{,}7\times 25=17{,}5$. La
+fréquence est dans $[0{,}3\,;0{,}7]$ pour \res{$8$ à $17$ chiffres égaux à $1$}.}{$7$ donne
+$0{,}28$, trop petit ; $18$ donne $0{,}72$, trop grand}
+\cas{3)}
+\begin{calculs}
+\text{paquets hors de l'intervalle} &= 1+1+6+2 &&\justif{barres de $6$ ; $7$ ; $18$ ;
+$19$}\\
+\text{paquets hors de l'intervalle} &= \res{10} &&
+\end{calculs}
+\begin{calculs}
+\text{pourcentage} &= \dfrac{10}{200}\times 100 &&\justif{part des $200$ paquets}\\
+\text{pourcentage} &= \res{5} &&
+\end{calculs}
+\explique{$5\,\%$ des paquets sont hors de $[p-2s\,;p+2s]$, donc $95\,\%$ dedans :
+\res{c'est conforme au cours}.}{propriété 5 : environ $95\,\%$ des fréquences dans
+$[p-2s\,;p+2s]$}
+\cas{4)}
+\begin{calculs}
+f &= \dfrac{21}{25} &&\justif{$21$ chiffres égaux à $1$ sur $25$}\\
+f &= 0{,}84 &&\justif{$\frac{21\times 4}{25\times 4}=\frac{84}{100}$}
+\end{calculs}
+\explique{$p+3s=0{,}5+0{,}3=0{,}8$ : $0{,}84$ est hors de $[0{,}2\,;0{,}8]$, c'est une
+\res{situation très rare} dans le modèle ; on peut douter du générateur.}{distance à $p$ :
+$0{,}34$, supérieure à $3s=0{,}3$ ; aucun des $200$ paquets simulés n'en avait autant}
+\end{exo}
+
+\begin{exo}[La taille de l'échantillon]
+\cas{1)}
+\explique{De $n=25$ à $n=100$, $n$ est multiplié par $4$ et $s$ passe de $0{,}10$ à $0{,}05$ :
+\res{$s$ est divisé par $2$}. Pour $n=400=4\times 100$ : \res{$s\approx 0{,}025$}.}{propriété
+5}
+\cas{2)}
+\begin{calculs}
+\dfrac{2\,500}{25} &= \res{100} &&\justif{la taille est multipliée par $100$}
+\end{calculs}
+\explique{Quand $n$ est multiplié par $100$, $s$ est divisé par $10$, donc $\frac{0{,}10}{10}$,
+soit \res{$s\approx 0{,}01$}.}{propriété 5}
+\cas{3)}
+\explique{De $s\approx 0{,}05$ à $s\approx 0{,}005$, $s$ est divisé par $10$, donc $n$ est
+multiplié par $100$, donc $100\times 100$, soit \res{$n=10\,000$}.}{en partant de
+$n=100$}
+\rem{On peut aussi partir de $n=2\,500$ ($s\approx 0{,}01$) : diviser $s$ par $2$, c'est
+multiplier $n$ par $4$, et $4\times 2\,500=10\,000$.}
+\cas{4)}
+\explique{Avec $2\,500$ usagers, $s\approx 0{,}01$ au lieu de $0{,}05$ : \res{la fréquence
+observée fluctue beaucoup moins, elle est plus proche de la vraie part des usagers
+satisfaits}.}{l'écart-type est divisé par $5$}
+\end{exo}
+
+\begin{exo}[Des batteries longue durée]
+\cas{1)}
+\explique{Deux issues ; le succès est \og la batterie supporte plus de $1\,000$
+recharges\fg{}, de probabilité $0{,}9$ : \res{$X$ suit la loi de Bernoulli de paramètre
+$0{,}9$}, et \res{$E(X)=0{,}9$}.}{propriété 3 : $E(X)=p$}
+\cas{2)}
+\begin{calculs}
+p-2s &= 0{,}9-2\times 0{,}03 = \res{0{,}84} &&\justif{$2s=0{,}06$}\\
+p+2s &= 0{,}9+2\times 0{,}03 = \res{0{,}96} &&\\
+p-3s &= 0{,}9-3\times 0{,}03 = \res{0{,}81} &&\justif{$3s=0{,}09$}\\
+p+3s &= 0{,}9+3\times 0{,}03 = \res{0{,}99} &&
+\end{calculs}
+\cas{3)}
+\explique{$f=\dfrac{87}{100}=0{,}87$, qui est dans $[0{,}84\,;0{,}96]$ : c'est une
+\res{situation fréquente}, conforme à l'annonce.}{distance à $p$ : $0{,}03$, inférieure à
+$2s=0{,}06$}
+\cas{4)}
+\explique{$f=\dfrac{78}{100}=0{,}78$, qui est hors de $[0{,}81\,;0{,}99]$ : c'est une
+\res{situation très rare} dans le modèle. On peut penser que \res{ce lot compte moins de
+$90\,\%$ de batteries longue durée}.}{distance à $p$ : $0{,}12$, supérieure à $3s=0{,}09$}
+\cas{5)}
+\explique{\res{Non} : une situation très rare reste possible par hasard ; le laboratoire a
+de bonnes raisons de douter du lot, mais pas de certitude.}{le hasard peut produire un
+échantillon éloigné de $p$, même si c'est peu probable}
+\end{exo}
+
+\end{document}
