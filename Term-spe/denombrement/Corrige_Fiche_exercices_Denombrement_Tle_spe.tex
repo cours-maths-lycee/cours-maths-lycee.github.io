@@ -1,0 +1,1007 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 3 --- Dénombrement --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\providecommand{\Card}{\operatorname{Card}}
+
+\newcommand{\venndeux}[6]{%
+\begin{tikzpicture}[scale=0.7,font=\small]
+  \draw (-2.3,-1.6) rectangle (3.5,1.7);
+  \draw[coulCourbe,thick] (0,0) circle (1.25);
+  \draw[coulExo,thick] (1.2,0) circle (1.25);
+  \node at (-0.6,0) {$#3$}; \node at (0.6,0) {$#4$}; \node at (1.8,0) {$#5$};
+  \node at (3.0,-1.25) {$#6$};
+  \node[coulCourbe] at (-1.15,1.3) {$#1$}; \node[coulExo] at (2.35,1.3) {$#2$};
+\end{tikzpicture}}
+
+\begin{document}
+
+\entetefiche{Chapitre 3 --- Dénombrement}{Terminale spécialité mathématiques}
+
+\partie{Ensembles finis et principe additif}
+
+\begin{exo}[Une flotte de vélos]
+\explique{Soit $F$ l'ensemble des vélos qui ont un défaut de freins et $L$ celui des vélos
+qui ont un défaut d'éclairage. $F$ et $L$ ne sont pas disjoints : on découpe en parties
+disjointes.}{méthode 1 du cours}
+\cas{1)}
+\begin{calculs}
+\Card(F\cap\overline{L}) &= 52-36 = 16 &&\justif{freins seulement}\\
+\Card(\overline{F}\cap L) &= 120-36 = 84 &&\justif{éclairage seulement}
+\end{calculs}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+La partie « aucun défaut » se calcule à la question 2 : $264$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\venndeux{F}{L}{16}{36}{84}{264}
+\end{minipage}
+\cas{2)}
+\begin{calculs}
+\Card(F\cup L) &= 16+36+84 = 136 &&\justif{principe additif}\\
+\Card(\overline{F\cup L}) &= 400-136 = 264 &&\justif{complémentaire}
+\end{calculs}
+\explique{\res{$264$ vélos} ne présentent aucun des deux défauts.}{}
+\cas{3)}
+\explique{$16+84=100$ : \res{$100$ vélos} présentent exactement un défaut.}{deux parties
+disjointes}
+\end{exo}
+
+\begin{exo}[Course à pied et vélo]
+\explique{Soit $C$ l'ensemble des adhérents qui courent et $V$ celui des adhérents qui font
+du vélo.}{}
+\cas{1)}
+\begin{calculs}
+\Card(C\cup V) &= 90-17 = 73 &&\justif{on retire ceux qui ne pratiquent aucun sport}
+\end{calculs}
+\explique{\res{$73$ adhérents} pratiquent au moins un des deux sports.}{}
+\cas{2)}
+\begin{calculs}
+\Card(C\cap V) &= \Card(C)+\Card(V)-\Card(C\cup V) &&\justif{$\Card(C\cup V)=\Card(C)+\Card(V)-\Card(C\cap V)$}\\
+\Card(C\cap V) &= 58+41-73 = 26 &&
+\end{calculs}
+\explique{\res{$26$ adhérents} pratiquent les deux sports.}{}
+\cas{3)}
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+Course seule : $58-26=32$ ; vélo seul : $41-26=15$ ; aucun : $17$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\venndeux{C}{V}{32}{26}{15}{17}
+\end{minipage}
+\cas{4)}
+\explique{$32+15=47$ : \res{$47$ adhérents} pratiquent exactement un sport.}{}
+\end{exo}
+
+\begin{exo}[Multiples de 2 et de 3]
+\cas{1)}
+\explique{Les multiples de $2$ de $E$ sont $2\times 1$, \dots, $2\times 50$ : \res{$\Card(A)=50$}.
+Ceux de $3$ sont $3\times 1$, \dots, $3\times 33$ ($3\times 33=99$) :
+\res{$\Card(B)=33$}.}{}
+\cas{2)}
+\explique{$A\cap B$ contient les multiples de $2$ et de $3$, c'est-à-dire les multiples de
+$6$, soit $6\times 1$, \dots, $6\times 16$ ($6\times 16=96$). Donc \res{$\Card(A\cap B)=16$}.}{}
+\cas{3)}
+\begin{calculs}
+\Card(A\cup B) &= \Card(A)+\Card(B)-\Card(A\cap B) &&\justif{$A\cap B$ compté deux fois sinon}\\
+\Card(A\cup B) &= 50+33-16 = \res{67} &&
+\end{calculs}
+\cas{4)}
+\explique{Ces entiers forment le complémentaire de $A\cup B$ dans $E$ : $100-67=33$, soit
+\res{$33$ entiers}.}{}
+\end{exo}
+
+\begin{exo}[Trois ateliers]
+\cas{1)}
+\explique{On part du centre ($10$ visiteurs dans les trois), puis on remplit les parties
+« deux ateliers seulement », puis « un seul ».}{on retire ce qui est déjà placé}
+\begin{calculs}
+\text{astronomie et robotique seulement} &= 40-10 = 30 &&\\
+\text{astronomie et photo seulement} &= 30-10 = 20 &&\\
+\text{robotique et photo seulement} &= 25-10 = 15 &&\\
+\text{astronomie seulement} &= 120-30-20-10 = 60 &&\\
+\text{robotique seulement} &= 100-30-15-10 = 45 &&\\
+\text{photo seulement} &= 70-20-15-10 = 25 &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.8,font=\small]
+  \draw (-2.6,-2.9) rectangle (4.0,2.2);
+  \draw[coulCourbe,thick] (0,0) circle (1.4);
+  \draw[coulExo,thick] (1.5,0) circle (1.4);
+  \draw[coulMeth,thick] (0.75,-1.25) circle (1.4);
+  \node at (-0.7,0.4) {$60$}; \node at (2.2,0.4) {$45$}; \node at (0.75,-2.1) {$25$};
+  \node at (0.75,0.6) {$30$}; \node at (-0.05,-0.9) {$20$}; \node at (1.55,-0.9) {$15$};
+  \node at (0.75,-0.35) {$10$}; \node at (3.5,-2.5) {$15$};
+  \node[coulCourbe] at (-1.3,1.5) {Astro.}; \node[coulExo] at (2.8,1.5) {Robot.};
+  \node[coulMeth] at (-1.0,-2.3) {Photo};
+\end{tikzpicture}
+\end{center}
+\cas{2)}
+\begin{calculs}
+N &= 60+45+25+30+20+15+10+15 &&\justif{principe additif : huit parties disjointes}\\
+N &= 220 &&
+\end{calculs}
+\explique{\res{$220$ visiteurs} ont été interrogés.}{}
+\cas{3)}
+\explique{Exactement un atelier : $60+45+25=130$, soit \res{$130$ visiteurs} ; exactement
+deux : $30+20+15=65$, soit \res{$65$ visiteurs}.}{}
+\end{exo}
+
+\partie{Produit cartésien et principe multiplicatif}
+
+\begin{exo}[Écrire un produit cartésien]
+\cas{1)}
+\explique{$E\times F=\{(a\,;1)\,;(a\,;2)\,;(b\,;1)\,;(b\,;2)\,;(c\,;1)\,;(c\,;2)\}$ :
+\res{$6$ couples}.}{$3\times 2=6$}
+\cas{2)}
+\explique{$F\times E=\{(1\,;a)\,;(1\,;b)\,;(1\,;c)\,;(2\,;a)\,;(2\,;b)\,;(2\,;c)\}$.
+\res{$E\times F\neq F\times E$} : par exemple $(a\,;1)\neq(1\,;a)$.}{l'ordre compte dans un
+couple}
+\cas{3)}
+\explique{\res{$\Card(E\times E)=3\times 3=9$} et
+\res{$\Card(E\times F\times F)=3\times 2\times 2=12$}.}{principe multiplicatif}
+\end{exo}
+
+\begin{exo}[Plaques d'immatriculation]
+\cas{1)}
+\explique{$26-3=23$ : on peut utiliser \res{$23$ lettres}.}{}
+\cas{2)}
+\explique{Une plaque est un $7$-uplet : deux lettres, trois chiffres, deux lettres, avec
+répétitions.}{principe multiplicatif}
+\begin{calculs}
+N &= 23\times 23\times 10\times 10\times 10\times 23\times 23 &&\\
+N &= 23^{4}\times 10^{3} &&\\
+N &= \res{279\,841\,000} &&\justif{$23^{4}=279\,841$}
+\end{calculs}
+\cas{3)}
+\explique{Les deux premières lettres sont imposées : $N_{1}=10^{3}\times 23^{2}$, soit
+\res{$529\,000$ plaques}.}{}
+\end{exo}
+
+\begin{exo}[Des routes entre quatre villes]
+\explique{Le schéma des routes : un trajet de $A$ à $D$ passe par $B$ et $C$, ou va
+directement de $A$ à $C$, puis de $C$ à $D$.}{}
+\begin{center}
+\begin{tikzpicture}[x=1.6cm,y=1.2cm,font=\small,
+    ville/.style={circle,draw,thick,inner sep=2pt,fill=white}]
+  \coordinate (A) at (0,0); \coordinate (B) at (1.5,1.2);
+  \coordinate (C) at (3,0); \coordinate (D) at (5,0);
+  \foreach \b in {-14,0,14} \draw[coulExo,thick] (A) to[bend left=\b] (B);
+  \foreach \b in {-10,10} \draw[coulExo,thick] (B) to[bend left=\b] (C);
+  \foreach \b in {-24,-8,8,24} \draw[coulCourbe,thick] (C) to[bend left=\b] (D);
+  \foreach \b in {-22,-38} \draw[coulMeth,thick] (A) to[bend left=\b] (C);
+  \node[ville] at (A) {$A$}; \node[ville] at (B) {$B$};
+  \node[ville] at (C) {$C$}; \node[ville] at (D) {$D$};
+  \node[coulExo,above left] at (0.75,0.65) {$3$ routes};
+  \node[coulExo,above right] at (2.25,0.65) {$2$ routes};
+  \node[coulCourbe,above] at (4,0.35) {$4$ routes};
+  \node[coulMeth,below] at (1.5,-0.62) {$2$ routes};
+\end{tikzpicture}
+\end{center}
+\cas{1)}
+\explique{De $A$ à $B$ ($3$ routes), puis de $B$ à $C$ ($2$), puis de $C$ à $D$ ($4$) :
+$3\times 2\times 4=24$, soit \res{$24$ trajets}.}{principe multiplicatif}
+\cas{2)}
+\explique{Les autres trajets vont directement de $A$ à $C$ : $2\times 4=8$. Les deux sortes
+de trajets sont disjointes : $24+8=32$, soit \res{$32$ trajets}.}{principe additif}
+\cas{3)}
+\explique{Le retour, toujours vers $A$, est l'un des $32$ trajets, parcouru dans l'autre
+sens.}{même schéma}
+\explique{Un aller-retour est un couple (aller ; retour) : $32\times 32=1\,024$, soit
+\res{$1\,024$ allers-retours}.}{}
+\explique{Si le retour diffère de l'aller : $32$ choix pour l'aller, puis $31$ pour le retour,
+soit \res{$992$ allers-retours}.}{}
+\end{exo}
+
+\begin{exo}[Le menu de la cantine]
+\cas{1)}
+\explique{Un menu est un triplet (entrée ; plat ; dessert) : $4\times 5\times 3=60$, soit
+\res{$60$ menus}.}{principe multiplicatif}
+\cas{2)}
+\explique{$4\times 2\times 3=24$ : \res{$24$ menus} ont un plat végétarien.}{}
+\cas{3)}
+\explique{« Entrée et plat » : $4\times 5=20$ ; « plat et dessert » : $5\times 3=15$ ; ces
+formules sont différentes, donc $20+15=35$, soit \res{$35$ formules}.}{principe additif}
+\cas{4)}
+\explique{$60+35=95$ : \res{$95$ repas} différents.}{}
+\end{exo}
+
+\partie{Les $k$-uplets d'un ensemble}
+
+\begin{exo}[Les $k$-uplets d'un petit ensemble]
+\cas{1)}
+\explique{Par exemple \res{$(J\,;U\,;D)$ et $(O\,;O\,;J)$}.}{l'ordre compte, les lettres
+peuvent se répéter}
+\cas{2)}
+\explique{$\Card(E^{3})=4^{3}$, soit \res{$64$ triplets}.}{$n^{k}$}
+\cas{3)}
+\explique{\res{$\Card(E^{6})=4^{6}=4\,096$}.}{}
+\cas{4)}
+\explique{La première lettre est imposée ; les $5$ autres forment un $5$-uplet de $E$ :
+$4^{5}=1\,024$, soit \res{$1\,024$ $6$-uplets}.}{}
+\end{exo}
+
+\begin{exo}[Coder des caractères]
+\cas{1)}
+\explique{Il y a $2^{8}=256$ octets, soit \res{$256$ octets}. Un seul ne comporte aucun $1$
+(huit $0$) : \res{$255$ octets} comportent au moins un $1$.}{complémentaire}
+\cas{2)}
+\explique{Il y a $2^{7}=128$ $7$-uplets de $\{0\,;1\}$, et $128\geq 95$ : \res{oui, la
+norme ASCII suffit}.}{}
+\cas{3)}
+\explique{$2^{7}=128<191$ et $2^{8}=256\geq 191$ : le plus petit entier est
+\res{$k=8$}.}{}
+\end{exo}
+
+\begin{exo}[Le code génétique]
+\cas{1)}
+\explique{Un codon est un triplet de $\{A\,;C\,;G\,;T\}$ : $4^{3}=64$, soit \res{$64$
+codons}. Il faut $21$ codes ($20$ acides aminés et la fin) : \res{il y en a
+assez}.}{}
+\cas{2)}
+\explique{$4^{2}=16<21$ : \res{non}.}{}
+\cas{3)}
+\explique{Sans G : triplets de $\{A\,;C\,;T\}$, $3^{3}=27$, soit \res{$27$ codons}.}{}
+\cas{4)}
+\explique{Complémentaire : $64-27=37$, soit \res{$37$ codons} avec au moins un G.}{}
+\end{exo}
+
+\begin{exo}[Codes de cinq chiffres]
+\cas{1)}
+\explique{Un code est un $5$-uplet des $10$ chiffres : \res{$10^{5}=100\,000$ codes}.}{}
+\cas{2)}
+\explique{$4$ premiers chiffres quelconques, dernier chiffre $0$ ou $5$ :
+$10^{4}\times 2$, soit \res{$20\,000$ codes}.}{principe multiplicatif}
+\cas{3)}
+\explique{$5$-uplets de $9$ chiffres : $9^{5}$, soit \res{$59\,049$ codes}.}{}
+\cas{4)}
+\explique{$100\,000-59\,049=40\,951$ : \res{$40\,951$ codes} comportent au moins un $7$.}{complémentaire}
+\end{exo}
+
+\begin{exo}[Colorier un quadrillage]
+\cas{1)}
+\explique{Un coloriage est un $16$-uplet de $\{R\,;J\,;N\}$ : $3^{16}$, soit
+\res{$43\,046\,721$ coloriages}.}{}
+\cas{2)}
+\explique{$2^{16}=65\,536$ : \res{$65\,536$ coloriages}.}{}
+\cas{3)}
+\explique{$3^{16}-2^{16}=42\,981\,185$ : \res{$42\,981\,185$ coloriages}.}{complémentaire}
+\cas{4)}
+\explique{On choisit la case noire ($16$ choix), puis la couleur des $15$ autres (rouge ou
+jaune) : $16\times 2^{15}$, soit \res{$524\,288$ coloriages}.}{deux étapes}
+\end{exo}
+
+\begin{exo}[La force d'un mot de passe]
+\cas{1)}
+\explique{Un mot de passe est un $4$-uplet d'un ensemble à $36$ caractères :
+$36^{4}$, soit \res{$1\,679\,616$ mots de passe}.}{}
+\cas{2)}
+\explique{Seulement des lettres : $26^{4}$, soit \res{$456\,976$} ; au moins un chiffre :
+$1\,679\,616-456\,976$, soit \res{$1\,222\,640$}.}{complémentaire}
+\cas{3)}
+\explique{$1\,679\,616\div 1\,000\approx 1\,680$~s, et $1\,680\div 60=28$ : \res{environ
+$28$ minutes}.}{}
+\cas{4)}
+\explique{$62^{8}\approx 2{,}18\times 10^{14}$ ; à $10^{9}$ essais par seconde, il faut
+environ $2{,}18\times 10^{5}$~s, et $2{,}18\times 10^{5}\div 86\,400\approx 2{,}5$ : \res{environ
+$2{,}5$ jours}.}{une journée compte $86\,400$~s}
+\rem{Chaque caractère ajouté multiplie le nombre de mots de passe : la longueur compte plus
+que la complexité.}
+\end{exo}
+
+\partie{Les $k$-uplets d'éléments distincts, factorielle}
+
+\begin{exo}[Calculer avec des factorielles]
+\cas{1)}
+\explique{\res{$6!=720$} et \res{$8!=40\,320$}.}{$8!=8\times 7\times 6!$}
+\cas{2)}
+\begin{calculs}
+A &= \frac{10!}{8!} = 10\times 9 = \res{90} &&\justif{les facteurs de $1$ à $8$ se simplifient}\\
+B &= \frac{12!}{9!} = 12\times 11\times 10 = \res{1\,320} &&\\
+C &= \frac{7!}{3!\times 4!} = \frac{7\times 6\times 5}{3\times 2\times 1} = \res{35} &&\justif{on simplifie par $4!$}
+\end{calculs}
+\cas{3)}
+\begin{calculs}
+D &= \frac{(n+1)!}{n!} = \frac{(n+1)\times n!}{n!} = \res{n+1} &&\justif{$(n+1)!=(n+1)\times n!$}\\
+F &= \frac{n!}{(n-2)!} = \frac{n(n-1)\times(n-2)!}{(n-2)!} = \res{n(n-1)} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Triplets d'éléments distincts]
+\cas{1)}
+\explique{Par exemple \res{$(a\,;b\,;c)$, $(e\,;d\,;a)$, $(b\,;a\,;c)$}.}{lettres toutes
+différentes, ordre compté}
+\cas{2)}
+\explique{$5\times 4\times 3=60$ : \res{$60$ triplets}.}{$3$ facteurs en partant de $5$}
+\cas{3)}
+\explique{Le premier élément est $a$ ; on choisit les deux suivants parmi les $4$ autres :
+$4\times 3$, soit \res{$12$ triplets}.}{}
+\cas{4)}
+\explique{$5\times 4=20$ : \res{$20$ couples}.}{}
+\end{exo}
+
+\begin{exo}[Bac 2025, Amérique du Sud]
+\cas{1)}
+\explique{Un podium est un triplet de sportifs distincts : $7\times 6\times 5$, soit
+\res{$210$ podiums}.}{}
+\cas{2)}
+\explique{Si Jacques finit premier, il y a $6$ possibilités pour le deuxième et $5$ pour le
+troisième : $30$ podiums ; de même s'il finit deuxième ou troisième.}{trois cas disjoints}
+\explique{Il y a $3\times 30=90$ podiums dont Jacques fait partie : \res{l'affirmation est
+vraie}.}{}
+\end{exo}
+
+\begin{exo}[Bac 2025, Métropole]
+\explique{Un code est un quadruplet de chiffres distincts. Le premier chiffre : $9$ choix
+(tout sauf $0$) ; le deuxième : $9$ choix (tout sauf le premier) ; puis $8$, puis $7$.}{l'ordre
+compte, pas de répétition}
+\explique{$9\times 9\times 8\times 7=4\,536$ codes, et $4\,536\neq 5\,040$ : \res{l'affirmation
+est fausse}.}{principe multiplicatif}
+\rem{$5\,040=10\times 9\times 8\times 7$ oublie la contrainte sur le premier chiffre.}
+\end{exo}
+
+\begin{exo}[La soirée théâtre]
+\cas{1)}
+\explique{Une première partie est un $5$-uplet de saynètes distinctes :
+$8\times 7\times 6\times 5\times 4$, soit \res{$6\,720$ premières parties}.}{}
+\cas{2)}
+\explique{La première est imposée ; on choisit les $4$ suivantes parmi les $7$ autres :
+$7\times 6\times 5\times 4$, soit \res{$840$}.}{}
+\cas{3)}
+\explique{On range les $5$ saynètes d'avant l'entracte ($5!$ façons), puis les $3$ d'après
+($3!$ façons) : $120\times 6$, soit \res{$720$ soirées}.}{deux permutations}
+\end{exo}
+
+\begin{exo}[Codes de trois lettres]
+\cas{1)}
+\explique{$26^{3}$, soit \res{$17\,576$ codes}.}{$3$-uplets}
+\cas{2)}
+\explique{$26\times 25\times 24$, soit \res{$15\,600$ codes}.}{lettres distinctes}
+\cas{3)}
+\explique{$17\,576-15\,600=1\,976$ : \res{$1\,976$ codes}.}{le contraire de « toutes
+différentes »}
+\end{exo}
+
+\partie{Les permutations}
+
+\begin{exo}[Anagrammes]
+\cas{1)}
+\explique{Les lettres de JUDO sont différentes : $4!$, soit \res{$24$ anagrammes} ; celles de
+BRAVO aussi : $5!$, soit \res{$120$ anagrammes}.}{permutations}
+\cas{2)}
+\explique{On choisit la voyelle de tête (A ou O : $2$ choix), puis on range les $4$ autres
+lettres ($4!$) : $2\times 24$, soit \res{$48$ anagrammes}.}{}
+\cas{3)}
+\explique{EULER compte deux E : échanger les deux E donne le même mot, donc chaque anagramme
+est comptée deux fois parmi les $5!$ rangements.}{}
+\explique{$\frac{120}{2}=60$ anagrammes : \res{l'affirmation est fausse}.}{}
+\end{exo}
+
+\begin{exo}[Des lettres qui se répètent]
+\cas{1)}
+\explique{Si on distingue les deux K et les deux A, il y a $5!=120$ rangements. Échanger les
+deux K ($2!$ façons) ou les deux A ($2!$ façons) ne change pas le mot : chaque anagramme
+apparaît $2!\times 2!=4$ fois.}{}
+\explique{$\frac{120}{4}=30$ : \res{$30$ anagrammes}.}{}
+\cas{2)}
+\explique{BANANE : $6$ lettres, deux A et deux N : $\frac{6!}{2!\times 2!}=\frac{720}{4}$,
+soit \res{$180$ anagrammes}.}{}
+\cas{3)}
+\explique{On choisit les $2$ places des A parmi $6$ ($\binom{6}{2}=15$), puis on range B, C,
+D, E dans les $4$ places restantes ($4!=24$).}{}
+\explique{$N=15\times 24=360$ et $360\neq 120$ : \res{l'affirmation est fausse}.}{}
+\end{exo}
+
+\begin{exo}[La photo de famille]
+\cas{1)}
+\explique{$6!$, soit \res{$720$ alignements}.}{permutation des $6$ personnes}
+\cas{2)}
+\explique{Les parents aux extrémités : $2$ façons ; les enfants au milieu : $4!$ façons.
+$2\times 24$, soit \res{$48$ alignements}.}{}
+\cas{3)}
+\explique{On colle les parents en un bloc : on range $5$ objets ($5!$), puis les parents dans
+le bloc ($2!$) : $120\times 2$, soit \res{$240$ alignements}.}{méthode 5}
+\cas{4)}
+\explique{$720-240=480$ : \res{$480$ alignements}.}{complémentaire}
+\end{exo}
+
+\begin{exo}[Factorielle en Python]
+\cas{1)}
+\explique{\texttt{f} prend successivement les valeurs $1$, $1$, $2$, $6$, $24$, $120$ : la
+fonction renvoie $120$, \res{l'affirmation est vraie}.}{on suit la boucle pour $k$ de $1$
+à $5$}
+\cas{2)}
+\explique{\texttt{mystere(n)} renvoie $1\times 2\times\dots\times n$, soit \res{$n!$}.}{}
+\end{exo}
+
+\partie{Les combinaisons}
+
+\begin{exo}[Calculer et écrire des combinaisons]
+\cas{1)}
+\begin{calculs}
+\binom{5}{2} &= \frac{5\times 4}{2} = \res{10} &&\justif{$\binom{n}{2}=\frac{n(n-1)}{2}$}\\
+\binom{7}{3} &= \frac{7\times 6\times 5}{3\times 2\times 1} = \res{35} &&\\
+\binom{10}{1} &= \res{10} &&\justif{$\binom{n}{1}=n$}\\
+\binom{12}{0} &= \res{1} &&\justif{la partie vide}\\
+\binom{20}{3} &= \frac{20\times 19\times 18}{6} = \res{1\,140} &&
+\end{calculs}
+\cas{2)}
+\explique{$\{a\,;b\}$, $\{a\,;c\}$, $\{a\,;d\}$, $\{a\,;e\}$, $\{b\,;c\}$, $\{b\,;d\}$,
+$\{b\,;e\}$, $\{c\,;d\}$, $\{c\,;e\}$, $\{d\,;e\}$ : \res{$10$ parties}, soit
+$\binom{5}{2}$.}{on les range par premier élément}
+\cas{3)}
+\explique{$\binom{5}{3}=\binom{5}{2}=10$ : \res{$10$ parties}.}{choisir $3$ éléments, c'est
+en laisser $2$}
+\end{exo}
+
+\begin{exo}[Bac 2025, Amérique du Sud]
+\cas{1)}
+\explique{Chaque joueur de l'équipe de $22$ serre $25$ mains : $22\times 25=550$ poignées
+de mains. \res{L'affirmation 1 est fausse}.}{principe multiplicatif}
+\cas{2)}
+\explique{Les trois prix sont identiques : on choisit une partie à $3$ éléments parmi $18$,
+$\binom{18}{3}=816$. \res{L'affirmation 2 est fausse}.}{$4\,896=18\times 17\times 16$ compte
+l'ordre}
+\cas{3)}
+\explique{Une poignée de mains correspond à une paire de personnes :
+$\binom{12}{2}=\frac{12\times 11}{2}=66$. \res{L'affirmation 3 est vraie}.}{}
+\end{exo}
+
+\begin{exo}[Bac 2025 et 2026, former des équipes]
+\cas{1)}
+\explique{$\binom{18}{3}\times\binom{14}{3}=816\times 364=297\,024$ : \res{l'affirmation 1 est
+vraie}.}{$3$ filles parmi $18$, puis $3$ garçons parmi $14$}
+\cas{2)}
+\explique{Une équipe ne tient pas compte de l'ordre : $\binom{4}{2}\times\binom{6}{3}=6\times 20=120$.
+\res{L'affirmation 2 est vraie}.}{$2$ musiciens parmi $4$, $3$ autres parmi $6$}
+\end{exo}
+
+\begin{exo}[Bac 2026, Asie]
+\cas{1)}
+\explique{Un tirage est une partie à $5$ éléments de l'ensemble des $32$ jetons :
+$\binom{32}{5}$, soit \res{$201\,376$ tirages}.}{}
+\cas{2)}
+\explique{Les multiples de $8$ sont $8$, $16$, $24$, $32$. Tirages sans multiple de $8$ :
+$\binom{28}{5}=98\,280$.}{complémentaire}
+\explique{$201\,376-98\,280=103\,096$ : \res{l'affirmation est vraie}.}{}
+\end{exo}
+
+\begin{exo}[Le club de robotique]
+\cas{1)}
+\explique{$\binom{16}{5}$, soit \res{$4\,368$ délégations}.}{combinaison}
+\cas{2)}
+\explique{$\binom{9}{3}\times\binom{7}{2}=84\times 21$, soit \res{$1\,764$
+délégations}.}{principe multiplicatif}
+\cas{3)}
+\explique{Aucun élève de terminale : $\binom{9}{5}=126$ ; donc $4\,368-126$, soit
+\res{$4\,242$ délégations}.}{complémentaire}
+\cas{4)}
+\explique{On répartit $5$ rôles entre $5$ personnes : $5!$, soit \res{$120$
+attributions}.}{permutation}
+\cas{5)}
+\explique{Une délégation avec rôles est un $5$-uplet de membres distincts :
+$16\times 15\times 14\times 13\times 12=524\,160$. Et $4\,368\times 120=524\,160$ :
+\res{les deux calculs concordent}.}{choisir le groupe, puis les rôles}
+\end{exo}
+
+\begin{exo}[Bac 2026, Polynésie]
+\explique{Groupe 1 : $\binom{24}{8}$ choix ; groupe 2 : $\binom{16}{8}$ parmi les $16$ restants ;
+groupe 3 : $\binom{8}{8}=1$.}{principe multiplicatif}
+\begin{calculs}
+N &= \binom{24}{8}\times\binom{16}{8}\times 1 &&\\
+N &= \frac{24!}{8!\times 16!}\times\frac{16!}{8!\times 8!} &&\justif{$\binom{n}{k}=\frac{n!}{k!(n-k)!}$}\\
+N &= \frac{24!}{(8!)^{3}} &&\justif{on simplifie par $16!$}
+\end{calculs}
+\explique{\res{L'affirmation est vraie}.}{}
+\end{exo}
+
+\partie{Symétrie, relation et triangle de Pascal}
+
+\begin{exo}[Prolonger le triangle de Pascal]
+\cas{1)}
+\explique{Chaque nombre est la somme de celui du dessus et de son voisin de gauche. Lignes
+$7$ et $8$ :}{relation de Pascal}
+\begin{center}
+$1$ ; $7$ ; $21$ ; $35$ ; $35$ ; $21$ ; $7$ ; $1$\\
+$1$ ; $8$ ; $28$ ; $56$ ; $70$ ; $56$ ; $28$ ; $8$ ; $1$
+\end{center}
+\cas{2)}
+\explique{\res{$\binom{8}{3}=56$} et \res{$\binom{8}{4}=70$}.}{}
+\cas{3)}
+\explique{La somme vaut $256$, soit \res{$2^{8}$} : le nombre de parties d'un ensemble à $8$
+éléments.}{propriété 9 du cours}
+\end{exo}
+
+\begin{exo}[Symétrie]
+\cas{1)}
+\begin{calculs}
+\binom{50}{49} &= \binom{50}{1} = \res{50} &&\justif{symétrie}\\
+\binom{100}{98} &= \binom{100}{2} = \frac{100\times 99}{2} = \res{4\,950} &&\\
+\binom{15}{13} &= \binom{15}{2} = \frac{15\times 14}{2} = \res{105} &&
+\end{calculs}
+\cas{2)}
+\begin{calculs}
+\binom{n}{2} &= 45 &&\\
+\frac{n(n-1)}{2} &= 45 &&\\
+n^{2}-n-90 &= 0 &&\justif{on multiplie par $2$}
+\end{calculs}
+\explique{$\Delta=1+360$, soit $\Delta=361$, et $361=19^{2}$ ; les racines sont $\frac{1+19}{2}=10$ et
+$\frac{1-19}{2}=-9$. Comme $n\geq 2$, \res{$n=10$}.}{}
+\end{exo}
+
+\begin{exo}[Démontrer des égalités]
+\cas{1)}
+\begin{calculs}
+n\times\binom{n-1}{k-1} &= n\times\frac{(n-1)!}{(k-1)!\,(n-k)!} = \frac{n!}{(k-1)!\,(n-k)!} &&\justif{$n\times(n-1)!=n!$}\\
+k\times\binom{n}{k} &= k\times\frac{n!}{k!\,(n-k)!} = \frac{n!}{(k-1)!\,(n-k)!} &&\justif{$\frac{k}{k!}=\frac{1}{(k-1)!}$}
+\end{calculs}
+\explique{Les deux membres sont égaux : \res{l'affirmation est vraie}.}{}
+\cas{2)a)}
+\explique{Pour $n=3$, $\binom{3}{2}+\binom{4}{2}=3+6$, soit $9$, et $3^{2}=9$ ; pour $n=4$,
+$\binom{4}{2}+\binom{5}{2}=6+10$, soit $16$, et $4^{2}=16$ :
+\res{vérifié}.}{}
+\cas{2)b)}
+\begin{calculs}
+\binom{n}{2}+\binom{n+1}{2} &= \frac{n(n-1)}{2}+\frac{(n+1)n}{2} &&\justif{$\binom{m}{2}=\frac{m(m-1)}{2}$}\\
+\binom{n}{2}+\binom{n+1}{2} &= \frac{n\,(n-1+n+1)}{2} &&\justif{on factorise par $n$}\\
+\binom{n}{2}+\binom{n+1}{2} &= \res{n^{2}} &&
+\end{calculs}
+\end{exo}
+
+\partie{Nombre de parties d'un ensemble, mots et chemins}
+
+\begin{exo}[Toutes les parties]
+\cas{1)}
+\explique{\res{$2^{4}=16$ parties}.}{}
+\cas{2)}
+\explique{Aucun élément : $\varnothing$ ; un élément : $\{a\}$, $\{b\}$, $\{c\}$, $\{d\}$ ; deux éléments :
+$\{a\,;b\}$, $\{a\,;c\}$, $\{a\,;d\}$, $\{b\,;c\}$, $\{b\,;d\}$, $\{c\,;d\}$ ; trois éléments :
+$\{a\,;b\,;c\}$, $\{a\,;b\,;d\}$, $\{a\,;c\,;d\}$, $\{b\,;c\,;d\}$ ; quatre éléments : $E$.}{}
+\cas{3)}
+\explique{$1+4+6+4+1=16=2^{4}$ : \res{vérifié}.}{}
+\end{exo}
+
+\begin{exo}[Parties et $n$-uplets de $\{0\,;1\}$]
+\cas{1)}
+\explique{\res{$2^{6}=64$ parties}.}{}
+\cas{2)}
+\explique{\res{$(1\,;0\,;1\,;0\,;0\,;1)$} pour $\{1\,;3\,;6\}$ et
+\res{$(0\,;0\,;0\,;0\,;0\,;0)$} pour $\varnothing$.}{$1$ aux places $1$, $3$ et $6$}
+\cas{3)}
+\explique{\res{$\{2\,;3\,;4\}$}.}{les places des chiffres $1$}
+\cas{4)}
+\explique{On choisit les $2$ places des chiffres $1$ : \res{$\binom{6}{2}=15$}.}{parties à $2$
+éléments}
+\end{exo}
+
+\begin{exo}[L'écriture braille]
+\cas{1)}
+\explique{Une grille est un $6$-uplet de $\{\text{relief}\,;\text{plat}\}$ : $2^{6}=64$ grilles,
+moins l'espace : \res{$63$ caractères}.}{}
+\cas{2)}
+\explique{On choisit les $3$ points en relief : \res{$\binom{6}{3}=20$ caractères}.}{}
+\cas{3)}
+\explique{On retire les grilles à un seul point en relief ($6$) : $63-6$, soit
+\res{$57$ caractères}.}{complémentaire}
+\end{exo}
+
+\begin{exo}[Lancers d'une pièce]
+\cas{1)}
+\explique{\res{$2^{6}=64$ suites}, et l'arbre compte \res{$64$ chemins} (un par suite).}{}
+\cas{2)}
+\explique{On choisit les $2$ lancers « pile » parmi $6$ : \res{$\binom{6}{2}=15$}.}{}
+\cas{3)}
+\explique{Une seule suite n'a aucun pile (FFFFFF) : \res{$63$ suites}.}{complémentaire}
+\cas{4)}
+\explique{$3$ piles et $3$ faces : \res{$\binom{6}{3}=20$ suites}.}{}
+\end{exo}
+
+\begin{exo}[Les chemins d'un robot]
+\cas{1)}
+\explique{Pour aller de $O(0\,;0)$ à $B(5\,;3)$, le robot fait $5$ pas vers la droite et $3$
+vers le haut, dans un ordre quelconque : \res{un mot de $8$ lettres avec $5$ D et $3$ H}.}{}
+\cas{2)}
+\explique{On choisit les places des $3$ H parmi les $8$ : \res{$\binom{8}{3}=56$ chemins}.}{}
+\cas{3)}
+\explique{De $O$ à $C(2\,;1)$ : $3$ pas dont $1$ H, $\binom{3}{1}=3$ chemins ; de $C$ à $B$ :
+$5$ pas dont $2$ H, $\binom{5}{2}=10$ chemins. $3\times 10$, soit \res{$30$ chemins}.}{principe
+multiplicatif}
+\cas{4)}
+\explique{Équiprobabilité : $\frac{30}{56}$, soit \res{$\frac{15}{28}$}.}{}
+\end{exo}
+
+\partie{Choisir le bon modèle}
+
+\begin{exo}[Quel objet compter ?]
+\cas{a)}
+\explique{Ordre, sans répétition : triplet d'éléments distincts,
+$20\times 19\times 18=\res{6\,840}$.}{}
+\cas{b)}
+\explique{Pas d'ordre : combinaison, $\binom{12}{5}=\res{792}$.}{}
+\cas{c)}
+\explique{Ordre, répétition : $4$-uplet, $26^{4}=\res{456\,976}$.}{}
+\cas{d)}
+\explique{Permutation des $8$ élèves : $8!=\res{40\,320}$.}{}
+\cas{e)}
+\explique{Chaque prix va à un élève, qui peut en avoir plusieurs : $3$-uplet,
+$10^{3}=\res{1\,000}$.}{}
+\cas{f)}
+\explique{Combinaison : $\binom{30}{3}=\res{4\,060}$.}{}
+\end{exo}
+
+\begin{exo}[QCM]
+\cas{1)}
+\explique{Une équipe est une partie à $10$ éléments : \res{réponse a)}.}{}
+\cas{2)}
+\explique{Quatre lettres différentes : $4!=24$, \res{réponse b)}.}{}
+\cas{3)}
+\explique{$2^{5}=32$ : \res{réponse c)}.}{}
+\cas{4)}
+\explique{On attribue une chaise à chaque personne, sans répétition :
+$6\times 5\times 4\times 3=360$, \res{réponse d)}.}{$4$-uplet de chaises distinctes}
+\end{exo}
+
+\begin{exo}[Trois dés]
+\cas{1)}
+\explique{\res{$6^{3}=216$ issues}, équiprobables.}{}
+\cas{2)}
+\explique{$6\times 5\times 4=120$ issues favorables : $\frac{120}{216}$, soit
+\res{$\frac{5}{9}$}.}{on simplifie par $24$}
+\cas{3)}
+\explique{Issues sans aucun six, soit $5^{3}=125$ issues. $P=1-\frac{125}{216}$, soit \res{$\frac{91}{216}$}.}{complémentaire}
+\cas{4)}
+\explique{La somme vaut $4$ pour $(1\,;1\,;2)$, $(1\,;2\,;1)$, $(2\,;1\,;1)$. $\frac{3}{216}$, soit
+\res{$\frac{1}{72}$}.}{}
+\end{exo}
+
+\begin{exo}[Une poignée de jetons]
+\cas{1)}
+\explique{\res{$\binom{12}{4}=495$ tirages}, équiprobables.}{}
+\cas{2)}
+\explique{Quatre rouges : $\binom{5}{4}=5$ ; quatre bleus : $1$ ; quatre verts : impossible.
+$\frac{6}{495}$, soit \res{$\frac{2}{165}$}.}{}
+\cas{3)}
+\explique{$\binom{5}{2}\times\binom{7}{2}=10\times 21=210$ : $\frac{210}{495}$, soit
+\res{$\frac{14}{33}$}.}{$2$ rouges, $2$ jetons parmi les $7$ autres}
+\cas{4)}
+\explique{Aucun vert : $\binom{9}{4}=126$. $1-\frac{126}{495}=\frac{369}{495}$, soit
+\res{$\frac{41}{55}$}.}{complémentaire}
+\end{exo}
+
+\partiesansnum{Exercices type bac}
+
+\begin{exo}[Bac 2026, Nouvelle-Calédonie]
+\textbf{Partie A}
+\cas{1)}
+\explique{L'ordre ne compte pas : \res{$\binom{15}{3}=455$ manières}.}{}
+\cas{2)}
+\explique{$1$ homme parmi $5$, puis $2$ femmes parmi $10$, soit $5\times\binom{10}{2}=5\times 45$,
+soit \res{$225$ manières}.}{}
+\textbf{Partie B}
+\cas{1)}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+$P(V)=0{,}2$, $P(\overline{V})=0{,}8$, $P_{V}(B)=0{,}75$ et $P_{V}(\overline{B})=0{,}25$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.45\linewidth}\centering
+\begin{tikzpicture}[x=1.6cm,y=0.55cm,font=\small]
+  \draw (0,0) -- node[above left]{$0{,}2$} (1,1.5) node[right]{$V$};
+  \draw (0,0) -- node[below left]{$0{,}8$} (1,-1.5) node[right]{$\overline{V}$};
+  \draw (1.35,1.5) -- node[above]{$0{,}75$} (2.4,2.4) node[right]{$B$};
+  \draw (1.35,1.5) -- node[below]{$0{,}25$} (2.4,0.6) node[right]{$\overline{B}$};
+  \draw (1.35,-1.5) -- (2.4,-0.6) node[right]{$B$};
+  \draw (1.35,-1.5) -- (2.4,-2.4) node[right]{$\overline{B}$};
+\end{tikzpicture}
+\end{minipage}
+\cas{2)}
+\explique{$P(V\cap B)=0{,}2\times 0{,}75=\res{0{,}15}$.}{}
+\cas{3)}
+\explique{Formule des probabilités totales : $P(B)=P(V\cap B)+P(\overline{V}\cap B)$, donc
+$P(\overline{V}\cap B)=0{,}5-0{,}15=0{,}35$.}{}
+\explique{$P_{\overline{V}}(B)=\frac{0{,}35}{0{,}8}=\frac{35}{80}$, soit
+\res{$\frac{7}{16}$}.}{}
+\end{exo}
+
+\begin{exo}[Bac 2026, Amérique du Sud]
+\cas{1)}
+\explique{Un nombre est un couple de deux numéros distincts (tirage sans remise) :
+\res{$10\times 9=90$ nombres}.}{}
+\cas{2)a)}
+\explique{Les deux chiffres sont pris parmi $0$, $1$, \dots, $5$ (six boules), sans remise :
+\res{$6\times 5=30$ nombres gagnants}.}{}
+\cas{2)b)}
+\explique{Équiprobabilité : $P(S)=\frac{30}{90}=\res{\frac{1}{3}}$.}{}
+\cas{3)}
+\explique{Contraire : les deux chiffres sont inférieurs ou égaux à $7$ (huit boules) :
+$8\times 7=56$. Donc $90-56$, soit \res{$34$ nombres}.}{complémentaire}
+\end{exo}
+
+\begin{exo}[Bac 2025, Centres étrangers]
+\cas{1)}
+\explique{$64^{4}$, soit \res{$16\,777\,216$ séquences}.}{$4$-uplets}
+\cas{2)}
+\explique{$64\times 63\times 62\times 61$, soit \res{$15\,249\,024$ séquences}.}{caractères distincts}
+\cas{3)a)}
+\explique{$63^{4}$, soit \res{$15\,752\,961$ séquences}.}{}
+\cas{3)b)}
+\explique{$64^{4}-63^{4}$, soit \res{$1\,024\,255$ séquences}.}{complémentaire}
+\cas{3)c)}
+\explique{La place du A : $4$ choix ; les $3$ autres caractères ne sont pas des A :
+$4\times 63^{3}$, soit \res{$1\,000\,188$ séquences}.}{}
+\cas{3)d)}
+\explique{Les places des deux A : $\binom{4}{2}=6$ ; les $2$ autres : $63^{2}$.
+$6\times 3\,969$, soit \res{$23\,814$ séquences}.}{}
+\end{exo}
+
+\end{document}

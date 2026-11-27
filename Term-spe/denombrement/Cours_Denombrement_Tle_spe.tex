@@ -1,0 +1,1262 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.1}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{3}{Dénombrement}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{DÉNOMBREMENT}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\providecommand{\Card}{\operatorname{Card}}
+
+\begin{remarquebox}[Durée du chapitre]
+À titre indicatif, ce chapitre est prévu pour un volume de $8$~h d'enseignement
+($4$ séances de $2$~h). Une partie importante des exercices est à faire en autonomie.
+\end{remarquebox}
+
+\partiecours{Ensembles finis et principe additif}
+
+\begin{definitionbox}[Définition 1 --- Ensemble fini, cardinal]
+Un ensemble $E$ est \textbf{fini} s'il a un nombre fini d'éléments. Ce nombre d'éléments
+est le \textbf{cardinal} de $E$, noté $\Card(E)$.
+
+\textbf{Dénombrer} un ensemble fini, c'est calculer son cardinal.
+
+\smallskip
+Exemples : l'ensemble $E=\{J\,;U\,;D\,;O\}$ des lettres du mot JUDO est fini, et
+$\Card(E)=4$. L'ensemble vide $\varnothing$ n'a aucun élément : $\Card(\varnothing)=0$.
+L'ensemble $\N$ n'est pas fini.
+\end{definitionbox}
+
+\begin{definitionbox}[Rappel 1 --- Réunion, intersection, complémentaire]
+Soit $A$ et $B$ deux parties d'un ensemble $E$ (vus en probabilités).
+\begin{itemize}
+  \item $A\cup B$ (\og $A$ union $B$\fg) contient les éléments qui sont dans $A$
+        \textbf{ou} dans $B$ (ou dans les deux).
+  \item $A\cap B$ (\og $A$ inter $B$\fg) contient les éléments qui sont dans $A$
+        \textbf{et} dans $B$. Si $A\cap B=\varnothing$, on dit que $A$ et $B$ sont
+        \textbf{disjoints} : ils n'ont aucun élément commun.
+  \item $\overline{A}$, le \textbf{complémentaire} de $A$ dans $E$, contient les éléments
+        de $E$ qui ne sont pas dans $A$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Principe additif]
+Si $E_{1}$, $E_{2}$, \dots, $E_{p}$ sont des ensembles finis \textbf{deux à deux
+disjoints}, alors
+\[
+\Card(E_{1}\cup E_{2}\cup\dots\cup E_{p})=\Card(E_{1})+\Card(E_{2})+\dots+\Card(E_{p}).
+\]
+Conséquences, pour deux parties $A$ et $B$ d'un ensemble fini $E$ :
+\begin{itemize}
+  \item $\Card(\overline{A})=\Card(E)-\Card(A)$, car $A$ et $\overline{A}$ sont disjoints
+        et leur réunion est $E$ ;
+  \item $\Card(A\cup B)=\Card(A)+\Card(B)-\Card(A\cap B)$ : les éléments de $A\cap B$
+        sont comptés deux fois dans $\Card(A)+\Card(B)$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Dénombrer à l'aide d'un diagramme]
+\etapeexemples
+Dans un groupe de l'association sportive du lycée, $23$ élèves font du badminton, $17$
+font du tennis de table, $6$ pratiquent les deux activités et $9$ n'en pratiquent
+aucune des deux.
+\begin{questions}[label=\alph*)]
+  \item Combien d'élèves compte ce groupe ?
+  \item Combien d'élèves pratiquent exactement une des deux activités ?
+\end{questions}
+\begin{correction}
+\explique{Soit $B$ l'ensemble des élèves du groupe qui font du badminton et $T$ celui
+des élèves qui font du tennis de table.}{on nomme les ensembles}
+\explique{$B$ et $T$ ne sont pas disjoints : on découpe le groupe en quatre parties
+disjointes, sur un diagramme.}{principe additif : parties disjointes}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{calculs}
+\Card(B\cap\overline{T}) &= 23-6 = 17 &\qquad& \rem{badminton seul}\\
+\Card(\overline{B}\cap T) &= 17-6 = 11 &\qquad& \rem{tennis de table seul}
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[scale=0.75]
+  \draw (-2.3,-1.6) rectangle (3.3,1.7);
+  \draw[coulCourbe,thick] (0,0) circle (1.25);
+  \draw[coulExo,thick] (1.2,0) circle (1.25);
+  \node at (-0.6,0) {$17$};
+  \node at (0.6,0) {$6$};
+  \node at (1.8,0) {$11$};
+  \node at (2.85,-1.25) {$9$};
+  \node[coulCourbe] at (-1.15,1.25) {$B$};
+  \node[coulExo] at (2.35,1.25) {$T$};
+\end{tikzpicture}
+\end{minipage}
+\cas{a)}
+\explique{Soit $N$ le nombre d'élèves du groupe. Les quatre parties du diagramme sont
+disjointes :}{}
+\begin{calculs}
+N &= 17+6+11+9 &\qquad& \rem{principe additif}\\
+N &= 43 &&
+\end{calculs}
+\explique{Le groupe compte \res{$43$ élèves}.}{}
+\cas{b)}
+\begin{calculs}
+\Card(B\cap\overline{T})+\Card(\overline{B}\cap T) &= 17+11 &\qquad& \rem{deux parties disjointes}\\
+\Card(B\cap\overline{T})+\Card(\overline{B}\cap T) &= 28 &&
+\end{calculs}
+\explique{\res{$28$ élèves} pratiquent exactement une des deux activités.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un groupe d'élèves, $31$ chantent dans la chorale, $19$ font du théâtre, $7$ font
+les deux et $12$ ne font ni l'un ni l'autre.
+\begin{questions}[label=\alph*)]
+  \item Combien d'élèves compte ce groupe ?
+  \item Combien d'élèves font exactement une des deux activités ?
+\end{questions}
+\reponse{a)~$55$ élèves.\; b)~$36$ élèves.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Produit cartésien et principe multiplicatif}
+
+\begin{definitionbox}[Définition 2 --- Couple, $k$-uplet, produit cartésien]
+Soit $E$ et $F$ deux ensembles.
+\begin{itemize}
+  \item Un \textbf{couple} $(a\,;b)$ est formé d'un élément $a$ de $E$, puis d'un élément
+        $b$ de $F$. L'\textbf{ordre compte} : si $a\neq b$, $(a\,;b)\neq(b\,;a)$.
+  \item Le \textbf{produit cartésien} $E\times F$ est l'ensemble de ces couples.
+  \item De même, avec $k$ ensembles $E_{1}$, \dots, $E_{k}$ ($k\in\Ns$), un
+        \textbf{$k$-uplet} (ou $k$-liste) $(a_{1}\,;a_{2}\,;\dots\,;a_{k})$ est formé
+        d'un élément de chaque ensemble, dans l'ordre ; ils forment le produit cartésien
+        $E_{1}\times E_{2}\times\dots\times E_{k}$. Pour $k=3$, on parle de
+        \textbf{triplet}.
+\end{itemize}
+\end{definitionbox}
+
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Exemple : avec $E=\{a\,;b\}$ et $F=\{1\,;2\,;3\}$,
+\[
+E\times F=\{(a\,;1)\,;(a\,;2)\,;(a\,;3)\,;(b\,;1)\,;(b\,;2)\,;(b\,;3)\}.
+\]
+L'arbre ci-contre les construit : $2$ branches, puis $3$ au bout de chacune, soit
+$2\times 3=6$ couples.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=1cm,y=0.5cm,font=\footnotesize]
+  \draw (0,0) -- (1.3,1.5) node[right]{$a$};
+  \draw (0,0) -- (1.3,-1.5) node[right]{$b$};
+  \foreach \y/\n in {2.5/1,1.5/2,0.5/3}{\draw (1.6,1.5) -- (2.8,\y) node[right]{$\n$};}
+  \foreach \y/\n in {-0.5/1,-1.5/2,-2.5/3}{\draw (1.6,-1.5) -- (2.8,\y) node[right]{$\n$};}
+\end{tikzpicture}
+\end{minipage}
+
+\begin{proprietebox}[Propriété 2 --- Principe multiplicatif]
+Si $E_{1}$, \dots, $E_{k}$ sont des ensembles finis, alors
+\[
+\Card(E_{1}\times E_{2}\times\dots\times E_{k})=\Card(E_{1})\times\Card(E_{2})\times\dots\times\Card(E_{k}).
+\]
+Concrètement : un choix qui se fait en $k$ étapes, avec $n_{1}$ possibilités pour la
+première, puis $n_{2}$ pour la deuxième (quel que soit le premier choix), etc., peut se
+faire de $n_{1}\times n_{2}\times\dots\times n_{k}$ façons.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 2 --- Dénombrer avec le principe multiplicatif]
+\etapeexemples
+Un vélo électrique se commande en ligne : on choisit une taille de cadre (S, M ou L),
+une couleur (blanc, noir, vert ou bleu) et une batterie (petite ou grande).
+\begin{questions}[label=\alph*)]
+  \item Combien de configurations différentes peut-on commander ?
+  \item En fait, le noir n'existe qu'avec la petite batterie. Combien de configurations
+        peut-on alors commander ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Soit $T$ l'ensemble des tailles, $C$ celui des couleurs et $B$ celui des
+batteries. Une configuration est un triplet (taille ; couleur ; batterie), élément de
+$T\times C\times B$.}{on reconnaît un produit cartésien}
+\explique{Soit $N$ le nombre de configurations.}{}
+\begin{calculs}
+N &= \Card(T)\times\Card(C)\times\Card(B) &\qquad& \rem{principe multiplicatif}\\
+N &= 3\times 4\times 2 = 24 &&
+\end{calculs}
+\explique{On peut commander \res{$24$ configurations}.}{}
+\cas{b)}
+\explique{On sépare les configurations noires des autres : ce sont deux ensembles
+disjoints. Soit $N_{1}$ et $N_{2}$ leurs cardinaux.}{on découpe, puis on additionne}
+\begin{calculs}
+N_{1} &= 3\times 1 = 3 &\qquad& \rem{noir : $3$ tailles, une seule batterie}\\
+N_{2} &= 3\times 3\times 2 = 18 &\qquad& \rem{$3$ autres couleurs}\\
+N_{1}+N_{2} &= 3+18 = 21 &\qquad& \rem{principe additif}
+\end{calculs}
+\explique{On peut alors commander \res{$21$ configurations}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Une pizzeria propose $3$ bases (tomate, crème ou pesto), $5$ garnitures et $2$ tailles
+(moyenne ou grande) ; une pizza a une base, une garniture et une taille.
+\begin{questions}[label=\alph*)]
+  \item Combien de pizzas différentes peut-on commander ?
+  \item En fait, la base pesto n'existe qu'en taille moyenne. Combien de pizzas
+        peut-on alors commander ?
+\end{questions}
+\reponse{a)~$30$ pizzas.\; b)~$25$ pizzas.}
+\end{methodebox}
+
+\afaire{exercices 5 à 8}
+
+\partiecours{Les $k$-uplets d'un ensemble}
+
+\begin{proprietebox}[Propriété 3 --- Nombre de $k$-uplets]
+Soit $E$ un ensemble à $n$ éléments et $k\in\Ns$. On note $E^{k}=E\times E\times\dots\times
+E$ ($k$ facteurs) : un \textbf{$k$-uplet de $E$} est une liste ordonnée de $k$ éléments
+de $E$, \textbf{qui peuvent se répéter}. On a
+\[
+\Card(E^{k})=n^{k}.
+\]
+C'est le principe multiplicatif : $n$ choix pour chacune des $k$ places.
+
+\smallskip
+Exemple : avec $E=\{0\,;1\}$, il y a $2^{3}=8$ triplets : $(0\,;0\,;0)$, $(0\,;0\,;1)$,
+$(0\,;1\,;0)$, $(0\,;1\,;1)$, $(1\,;0\,;0)$, $(1\,;0\,;1)$, $(1\,;1\,;0)$, $(1\,;1\,;1)$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Dénombrer des $k$-uplets]
+\etapeexemples
+Un brin d'ADN est une suite de nucléotides, notés A, C, G et T. On s'intéresse aux
+séquences de $5$ nucléotides, comme ACGTT ; l'ordre compte : ACGTT et TTGCA sont deux
+séquences différentes.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de séquences possibles ?
+  \item Combien de séquences ne comportent aucun T ?
+  \item En déduire le nombre de séquences qui comportent au moins un T.
+  \item Combien de séquences comportent exactement un T ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Soit $\Omega$ l'ensemble des séquences. Une séquence est un $5$-uplet de
+l'ensemble $\{A\,;C\,;G\,;T\}$, qui a $4$ éléments.}{l'ordre compte, les lettres
+se répètent}
+\begin{calculs}
+\Card(\Omega) &= 4^{5} = 1\,024 &\qquad& \rem{nombre de $k$-uplets, $n^{k}$}
+\end{calculs}
+\explique{Il y a \res{$1\,024$ séquences}.}{}
+\cas{b)}
+\explique{Soit $S$ l'ensemble des séquences sans T : ce sont les $5$-uplets de
+$\{A\,;C\,;G\}$.}{plus que $3$ choix par place}
+\begin{calculs}
+\Card(S) &= 3^{5} = 243 &&
+\end{calculs}
+\explique{\res{$243$ séquences} ne comportent aucun T.}{}
+\cas{c)}
+\explique{Les séquences qui comportent au moins un T forment $\overline{S}$, le
+complémentaire de $S$ dans $\Omega$.}{\og au moins un\fg{} : le contraire de
+\og aucun\fg}
+\begin{calculs}
+\Card(\overline{S}) &= \Card(\Omega)-\Card(S) &\qquad& \rem{principe additif}\\
+\Card(\overline{S}) &= 1\,024-243 = 781 &&
+\end{calculs}
+\explique{\res{$781$ séquences} comportent au moins un T.}{}
+\cas{d)}
+\explique{On choisit la place du T ($5$ possibilités), puis les $4$ autres
+nucléotides, parmi A, C et G : un $4$-uplet de $\{A\,;C\,;G\}$.}{deux étapes}
+\begin{calculs}
+N &= 5\times 3^{4} &\qquad& \rem{principe multiplicatif}\\
+N &= 5\times 81 = 405 &&
+\end{calculs}
+\explique{\res{$405$ séquences} comportent exactement un T.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Un casier se ferme par un code de $4$ chiffres, de $0$ à $9$, comme $0\,7\,7\,2$ ; l'ordre
+compte.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de codes possibles ?
+  \item Combien de codes ne comportent aucun chiffre $0$ ?
+  \item En déduire le nombre de codes qui comportent au moins un chiffre $0$.
+  \item Combien de codes comportent exactement un chiffre $0$ ?
+\end{questions}
+\reponse{a)~$10\,000$.\; b)~$6\,561$.\; c)~$3\,439$.\; d)~$2\,916$.}
+\end{methodebox}
+
+\afaire{exercices 9 à 14}
+
+\partiecours{Les $k$-uplets d'éléments distincts, factorielle}
+
+\begin{definitionbox}[Définition 3 --- $k$-uplet d'éléments distincts]
+Soit $E$ un ensemble à $n$ éléments et $k\in\Ns$ tel que $k\leq n$. Un \textbf{$k$-uplet
+d'éléments distincts} de $E$ est un $k$-uplet de $E$ dont les éléments sont deux à deux
+différents : l'ordre compte, \textbf{sans répétition}. On dit aussi un
+\textbf{arrangement} de $k$ éléments parmi $n$.
+
+\smallskip
+Exemple : avec $E=\{a\,;b\,;c\,;d\}$, $(b\,;d\,;a)$ est un triplet d'éléments distincts ;
+$(b\,;d\,;b)$ n'en est pas un.
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 4 --- Factorielle]
+Pour tout $n\in\Ns$, la \textbf{factorielle} de $n$ est le produit des entiers de $1$
+à $n$ :
+\[
+n!=1\times 2\times 3\times\dots\times n.
+\]
+Par convention, $0!=1$. Exemples : $3!=6$, $4!=24$, $5!=120$ ; pour tout $n\in\Ns$, on a
+$n!=n\times(n-1)!$. À la calculatrice : touche \og $!$\fg.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 4 --- Nombre de $k$-uplets d'éléments distincts]
+Le nombre de $k$-uplets d'éléments distincts d'un ensemble à $n$ éléments est
+\[
+n\times(n-1)\times(n-2)\times\dots\times(n-k+1)=\frac{n!}{(n-k)!}\qquad\text{($k$ facteurs).}
+\]
+C'est le principe multiplicatif : $n$ choix pour le premier élément, puis $n-1$ pour le
+deuxième (il ne peut pas reprendre le premier), et ainsi de suite.
+\end{proprietebox}
+
+Dans l'écriture $\dfrac{n!}{(n-k)!}$, les facteurs de $1$ à $n-k$ se simplifient.
+Par exemple, avec $n=6$ et $k=3$, le nombre de triplets d'éléments distincts d'un
+ensemble à $6$ éléments est :
+\begin{calculs}
+N &= \frac{6!}{(6-3)!} = \frac{6!}{3!} &\qquad& \rem{propriété 4}\\
+N &= \frac{6\times 5\times 4\times\barre{3}\times\barre{2}\times\barre{1}}{\barre{3}\times\barre{2}\times\barre{1}} &\qquad& \rem{on simplifie par $3!$}\\
+N &= 6\times 5\times 4 &\qquad& \rem{$3$ facteurs, en partant de $6$}\\
+N &= 120 &&
+\end{calculs}
+
+\begin{methodebox}[Méthode 4 --- Dénombrer des $k$-uplets d'éléments distincts]
+\etapeexemples
+À un concours de robotique, $12$ équipes sont en lice, dont celle du lycée. Les trois
+premières montent sur le podium (or, argent, bronze) ; il n'y a pas d'ex æquo.
+\begin{questions}[label=\alph*)]
+  \item Combien de podiums différents sont possibles ?
+  \item Combien de ces podiums ont l'équipe du lycée à la première place ?
+  \item Combien de ces podiums comptent l'équipe du lycée ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Un podium est un triplet (or ; argent ; bronze) d'équipes : l'ordre compte,
+et une équipe n'occupe qu'une place. C'est un triplet d'éléments distincts d'un ensemble
+à $12$ éléments.}{ordre, sans répétition}
+\explique{Soit $N$ le nombre de podiums.}{}
+\begin{calculs}
+N &= 12\times 11\times 10 &\qquad& \rem{$3$ facteurs, en partant de $12$}\\
+N &= 1\,320 &&
+\end{calculs}
+\explique{\res{$1\,320$ podiums} sont possibles.}{on a aussi $N=\frac{12!}{9!}$}
+\cas{b)}
+\explique{L'or est fixé : on choisit l'argent, puis le bronze, parmi les $11$ autres
+équipes, soit un couple d'éléments distincts d'un ensemble à $11$ éléments.}{}
+\begin{calculs}
+N_{1} &= 11\times 10 = 110 &&
+\end{calculs}
+\explique{\res{$110$ podiums} ont l'équipe du lycée à la première place.}{}
+\cas{c)}
+\explique{On choisit la place de l'équipe du lycée ($3$ possibilités), puis les deux
+autres places, comme en b).}{deux étapes}
+\begin{calculs}
+N_{2} &= 3\times 110 = 330 &\qquad& \rem{principe multiplicatif}
+\end{calculs}
+\explique{\res{$330$ podiums} comptent l'équipe du lycée.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Une association de $15$ membres, dont Inès, élit son bureau : un président, un trésorier
+et un secrétaire, trois personnes différentes.
+\begin{questions}[label=\alph*)]
+  \item Combien de bureaux différents sont possibles ?
+  \item Combien de ces bureaux ont Inès pour présidente ?
+  \item Combien de ces bureaux comptent Inès ?
+\end{questions}
+\reponse{a)~$2\,730$.\; b)~$182$.\; c)~$546$.}
+\end{methodebox}
+
+\afaire{exercices 15 à 20}
+
+\partiecours{Les permutations}
+
+\begin{proprietebox}[Définition 5 et propriété 5 --- Permutations]
+Soit $E$ un ensemble à $n$ éléments ($n\in\Ns$). Une \textbf{permutation} de $E$ est un
+$n$-uplet d'éléments distincts de $E$ : une façon de ranger \textbf{tous} les éléments
+de $E$ dans un ordre. Il y en a
+\[
+n\times(n-1)\times\dots\times 2\times 1=n!.
+\]
+\end{proprietebox}
+
+\textbf{Exemple à $3$ lettres.} Les mots de $3$ lettres (qu'ils aient un sens ou non)
+écrits avec les lettres A, M, I, chacune une fois, sont les permutations de
+$\{A\,;M\,;I\}$. On les range selon la première lettre :
+\begin{center}
+AMI \quad AIM \qquad\qquad MAI \quad MIA \qquad\qquad IAM \quad IMA
+\end{center}
+$3$ choix pour la première lettre, puis $2$ pour la deuxième, puis $1$ pour la
+dernière : il y en a $3\times 2\times 1=3!$, soit $6$.
+
+\smallskip
+De même, les mots de $4$ lettres (qu'ils aient un sens ou non) écrits avec les lettres
+L, U, N, E, chacune une fois, sont les permutations de $\{L\,;U\,;N\,;E\}$ : il y en a
+$4!=24$.
+
+\begin{methodebox}[Méthode 5 --- Dénombrer des permutations, avec des contraintes de place]
+\etapeexemples
+On range sur une étagère $6$ livres différents : $3$ de mathématiques, $2$ de physique
+et $1$ d'astronomie.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de rangements possibles ?
+  \item Combien de rangements placent les $3$ livres de mathématiques côte à côte ?
+  \item Combien de rangements regroupent les livres par discipline ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Un rangement est une permutation de l'ensemble des $6$ livres.}{on range
+tous les livres}
+\begin{calculs}
+N &= 6! = 720 &&
+\end{calculs}
+\explique{Il y a \res{$720$ rangements}.}{}
+\cas{b)}
+\explique{On colle les $3$ livres de mathématiques en un bloc. On range $4$ objets (le
+bloc et les $3$ autres livres) : $4!$ façons ; puis les $3$ livres dans le bloc :
+$3!$ façons.}{deux étapes}
+\begin{calculs}
+N_{1} &= 4!\times 3! &\qquad& \rem{principe multiplicatif}\\
+N_{1} &= 24\times 6 = 144 &&
+\end{calculs}
+\explique{\res{$144$ rangements} placent les livres de mathématiques côte à côte.}{}
+\cas{c)}
+\explique{On range les $3$ blocs (mathématiques, physique, astronomie) : $3!$ façons ;
+puis les livres dans chaque bloc : $3!$, $2!$ et $1!$ façons.}{}
+\begin{calculs}
+N_{2} &= 3!\times 3!\times 2!\times 1! &\qquad& \rem{principe multiplicatif}\\
+N_{2} &= 6\times 6\times 2\times 1 = 72 &&
+\end{calculs}
+\explique{\res{$72$ rangements} regroupent les livres par discipline.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour la photo de l'orchestre du lycée, $7$ musiciens s'alignent : $3$ guitaristes,
+$2$ violonistes et $2$ pianistes.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il d'alignements possibles ?
+  \item Combien d'alignements placent les $3$ guitaristes côte à côte ?
+  \item Combien d'alignements regroupent les musiciens par instrument ?
+\end{questions}
+\reponse{a)~$5\,040$.\; b)~$720$.\; c)~$144$.}
+\end{methodebox}
+
+\afaire{exercices 21 à 24}
+
+\partiecours{Les combinaisons}
+
+\begin{definitionbox}[Définition 6 --- Combinaison]
+Soit $E$ un ensemble à $n$ éléments et $k\in\N$ tel que $0\leq k\leq n$. Une
+\textbf{combinaison de $k$ éléments} de $E$ est une \textbf{partie} de $E$ à $k$
+éléments : l'\textbf{ordre ne compte pas}, \textbf{sans répétition}. On note
+$\dbinom{n}{k}$ (\og $k$ parmi $n$\fg) le nombre de ces combinaisons.
+
+\smallskip
+Une partie de $E$ est un \textbf{ensemble} : elle se note entre accolades. Elle ne se
+confond pas avec un $k$-uplet, noté entre parenthèses :
+\begin{itemize}
+  \item $\{a\,;b\}$ est une partie, et l'ordre ne compte pas : $\{a\,;b\}=\{b\,;a\}$ ;
+  \item $(a\,;b)$ est un $2$-uplet (un couple), et l'ordre compte :
+        $(a\,;b)\neq(b\,;a)$.
+\end{itemize}
+
+\smallskip
+Exemple : avec $E=\{a\,;b\,;c\,;d\}$, les combinaisons de $2$ éléments sont $\{a\,;b\}$,
+$\{a\,;c\}$, $\{a\,;d\}$, $\{b\,;c\}$, $\{b\,;d\}$ et $\{c\,;d\}$ ; donc
+$\dbinom{4}{2}=6$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Nombre de combinaisons]
+Pour tout $n\in\N$ et tout $k\in\N$ tel que $0\leq k\leq n$,
+\[
+\binom{n}{k}=\frac{n\times(n-1)\times\dots\times(n-k+1)}{k!}=\frac{n!}{k!\,(n-k)!}.
+\]
+En effet, en rangeant de toutes les façons ($k!$) les éléments de chaque combinaison, on
+obtient chaque $k$-uplet d'éléments distincts une fois et une seule : donc
+$\binom{n}{k}\times k!=n\times(n-1)\times\dots\times(n-k+1)$.
+
+\smallskip
+Cas particuliers : $\dbinom{n}{0}=1$ (la partie vide), $\dbinom{n}{n}=1$,
+$\dbinom{n}{1}=n$ et $\dbinom{n}{2}=\dfrac{n(n-1)}{2}$.
+À la calculatrice : \og nCr\fg{} ou \og Combinaison\fg.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Dénombrer des combinaisons]
+\etapeexemples
+Le club d'astronomie du lycée compte $15$ membres : $6$ élèves de terminale et $9$ de
+première. Trois membres seront choisis pour une nuit d'observation au Pic du Midi.
+\begin{questions}[label=\alph*)]
+  \item Combien de groupes de $3$ membres peut-on former ?
+  \item Combien de ces groupes comptent exactement un élève de terminale ?
+  \item Combien de ces groupes comptent au moins un élève de terminale ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Un groupe est une partie à $3$ éléments de l'ensemble des $15$ membres :
+l'ordre ne compte pas, sans répétition. C'est une combinaison de $3$ éléments parmi
+$15$.}{pas d'ordre, sans répétition}
+\explique{Soit $N$ le nombre de groupes.}{}
+\begin{calculs}
+N &= \binom{15}{3} &&\\
+N &= \frac{15\times 14\times 13}{3\times 2\times 1} &\qquad& \rem{formule, ou calculatrice}\\
+N &= 455 &&
+\end{calculs}
+\explique{On peut former \res{$455$ groupes}.}{}
+\cas{b)}
+\explique{On choisit l'élève de terminale parmi $6$, puis les $2$ élèves de première
+parmi $9$.}{deux étapes}
+\begin{calculs}
+N_{1} &= \binom{6}{1}\times\binom{9}{2} &\qquad& \rem{principe multiplicatif}\\
+N_{1} &= 6\times 36 = 216 &\qquad& \rem{$\binom{9}{2}=\frac{9\times 8}{2}$}
+\end{calculs}
+\explique{\res{$216$ groupes} comptent exactement un élève de terminale.}{}
+\cas{c)}
+\explique{Le contraire de \og au moins un élève de terminale\fg{} est \og aucun\fg{} :
+les $3$ membres sont choisis parmi les $9$ de première.}{on passe au complémentaire}
+\begin{calculs}
+N_{2} &= \binom{15}{3}-\binom{9}{3} &\qquad& \rem{principe additif}\\
+N_{2} &= 455-84 = 371 &\qquad& \rem{$\binom{9}{3}=\frac{9\times 8\times 7}{6}$}
+\end{calculs}
+\explique{\res{$371$ groupes} comptent au moins un élève de terminale.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Le comité des fêtes du lycée compte $12$ volontaires : $5$ élèves de seconde et $7$ de
+terminale. Quatre d'entre eux tiendront le stand des crêpes.
+\begin{questions}[label=\alph*)]
+  \item Combien d'équipes de $4$ volontaires peut-on former ?
+  \item Combien de ces équipes comptent exactement deux élèves de seconde ?
+  \item Combien de ces équipes comptent au moins un élève de seconde ?
+\end{questions}
+\reponse{a)~$495$.\; b)~$210$.\; c)~$460$.}
+\end{methodebox}
+
+\afaire{exercices 25 à 30}
+
+\partiecours{Symétrie, relation et triangle de Pascal}
+
+\begin{proprietebox}[Propriété 7 --- Symétrie]
+Pour tout $n\in\N$ et tout $k\in\N$ tel que $0\leq k\leq n$,
+$\dbinom{n}{n-k}=\dbinom{n}{k}$.
+
+\smallskip
+Choisir les $k$ éléments qu'on prend, c'est choisir les $n-k$ qu'on laisse.
+Exemple : $\dbinom{9}{7}=\dbinom{9}{2}$, et $\dbinom{9}{2}=36$.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 8 --- Relation de Pascal]
+Pour tout $n\in\Ns$ et tout $k\in\N$ tel que $0\leq k\leq n-1$,
+\[
+\binom{n}{k}+\binom{n}{k+1}=\binom{n+1}{k+1}.
+\]
+\end{proprietebox}
+
+\textbf{\color{coulMeth}Démonstration par le calcul} (exigible).
+Soit $S=\dbinom{n}{k}+\dbinom{n}{k+1}$. On réduit au même dénominateur
+$(k+1)!\,(n-k)!$, en utilisant $(k+1)!=k!\times(k+1)$ et $(n-k)!=(n-k-1)!\times(n-k)$ :
+\begin{calculs}
+S &= \frac{n!}{k!\,(n-k)!}+\frac{n!}{(k+1)!\,(n-k-1)!} &\qquad& \rem{formule de la propriété 6}\\
+S &= \frac{n!\fois{(k+1)}}{k!\fois{(k+1)}\,(n-k)!}+\frac{n!\fois{(n-k)}}{(k+1)!\,(n-k-1)!\fois{(n-k)}} &&\\
+S &= \frac{n!\,\big((k+1)+(n-k)\big)}{(k+1)!\,(n-k)!} &\qquad& \rem{on factorise $n!$}\\
+S &= \frac{n!\times(n+1)}{(k+1)!\,(n-k)!} &&\\
+S &= \frac{(n+1)!}{(k+1)!\,\big((n+1)-(k+1)\big)!} &\qquad& \rem{$n-k=(n+1)-(k+1)$}\\
+S &= \binom{n+1}{k+1} &&
+\end{calculs}
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration par dénombrement} (exigible).
+Soit $E$ un ensemble à $n+1$ éléments et $a$ l'un d'eux. Il y a $\dbinom{n+1}{k+1}$
+parties de $E$ à $k+1$ éléments ; on les sépare en deux ensembles disjoints :
+\begin{itemize}
+  \item celles qui contiennent $a$ : il reste à choisir $k$ éléments parmi les $n$
+        autres, soit $\dbinom{n}{k}$ parties ;
+  \item celles qui ne contiennent pas $a$ : on choisit leurs $k+1$ éléments parmi les
+        $n$ autres, soit $\dbinom{n}{k+1}$ parties.
+\end{itemize}
+D'après le principe additif, $\dbinom{n+1}{k+1}=\dbinom{n}{k}+\dbinom{n}{k+1}$.
+
+\medskip
+\besoinplace{11cm}
+\textbf{Le triangle de Pascal.} On range les $\dbinom{n}{k}$ dans un tableau : la ligne
+$n$, la colonne $k$. Chaque ligne commence et finit par $1$ ; chaque autre nombre est la
+somme du nombre au-dessus et de son voisin de gauche (relation de Pascal). Les flèches
+montrent quatre de ces additions : $1+2=3$, $2+1=3$, $1+3=4$ et $3+3=6$.
+
+\begin{center}
+\begin{tikzpicture}[x=1.3cm,y=1.05cm,font=\large]
+  \node at (0,0) {$n \backslash k$};
+  \foreach \k in {0,...,6} \node at (\k+1,0) {$\k$};
+  \foreach \n in {0,...,6} \node at (0,-\n-1) {$\n$};
+  \draw (-0.6,-0.5) -- (7.6,-0.5);
+  \draw (0.5,0.5) -- (0.5,-7.5);
+  \foreach \n/\ligne in {0/{1},1/{1,1},2/{1,2,1},3/{1,3,3,1},4/{1,4,6,4,1},
+      5/{1,5,10,10,5,1},6/{1,6,15,20,15,6,1}}{
+    \foreach \v [count=\c from 0] in \ligne
+      \node[inner sep=3pt] (p\n-\c) at (\c+1,-\n-1) {$\v$};
+  }
+  \foreach \n/\c in {2/0,2/1,3/0,3/1}{
+    \pgfmathtruncatemacro{\m}{\n+1}\pgfmathtruncatemacro{\d}{\c+1}
+    \draw[->,thick,coulExo,shorten <=1pt,shorten >=1pt] (p\n-\c) -- (p\m-\d);
+    \draw[->,thick,coulExo,shorten <=1pt,shorten >=1pt] (p\n-\d) -- (p\m-\d);
+  }
+\end{tikzpicture}
+\end{center}
+
+\begin{methodebox}[Méthode 7 --- Calculer des coefficients $\binom{n}{k}$ sans calculatrice]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Calculer $\dbinom{20}{18}$.
+  \item La ligne $n=5$ du triangle de Pascal est $1$ ; $5$ ; $10$ ; $10$ ; $5$ ; $1$.
+        En déduire la ligne $n=6$.
+  \item Calculer $\dbinom{7}{3}$ à l'aide de la relation de Pascal.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\binom{20}{18} &= \binom{20}{2} &\qquad& \rem{symétrie : $20-18=2$}\\
+\binom{20}{18} &= \frac{20\times 19}{2} = \res{190} &\qquad& \rem{$\binom{n}{2}=\frac{n(n-1)}{2}$}
+\end{calculs}
+\cas{b)}
+\explique{La ligne commence et finit par $1$ ; les autres nombres, par la relation de
+Pascal :}{}
+\begin{calculs}
+\binom{6}{1} &= \binom{5}{0}+\binom{5}{1} = 1+5 = 6 &&\\
+\binom{6}{2} &= \binom{5}{1}+\binom{5}{2} = 5+10 = 15 &&\\
+\binom{6}{3} &= \binom{5}{2}+\binom{5}{3} = 10+10 = 20 &&
+\end{calculs}
+\explique{Par symétrie, $\dbinom{6}{4}=15$ et $\dbinom{6}{5}=6$. La ligne $n=6$ est
+\res{$1$ ; $6$ ; $15$ ; $20$ ; $15$ ; $6$ ; $1$}.}{}
+\cas{c)}
+\begin{calculs}
+\binom{7}{3} &= \binom{6}{2}+\binom{6}{3} &\qquad& \rem{relation de Pascal, $n=6$ et $k=2$}\\
+\binom{7}{3} &= 15+20 = \res{35} &\qquad& \rem{ligne $n=6$}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Calculer $\dbinom{30}{28}$.
+  \item La ligne $n=6$ du triangle de Pascal est $1$ ; $6$ ; $15$ ; $20$ ; $15$ ; $6$ ;
+        $1$. En déduire la ligne $n=7$.
+  \item Calculer $\dbinom{8}{4}$ à l'aide de la relation de Pascal.
+\end{questions}
+\reponse{a)~$435$.\; b)~$1$ ; $7$ ; $21$ ; $35$ ; $35$ ; $21$ ; $7$ ; $1$.\; c)~$70$.}
+\end{methodebox}
+
+\afaire{exercices 31 à 33}
+
+\partiecours{Nombre de parties d'un ensemble, mots et chemins}
+
+\begin{proprietebox}[Propriété 9 --- Nombre de parties]
+Un ensemble $E$ à $n$ éléments ($n\in\N$) a $2^{n}$ parties (la partie vide et $E$
+comprises). En les comptant selon leur nombre d'éléments :
+\[
+\sum_{k=0}^{n}\binom{n}{k}=2^{n},
+\]
+c'est-à-dire $\dbinom{n}{0}+\dbinom{n}{1}+\dots+\dbinom{n}{n}=2^{n}$.
+\end{proprietebox}
+
+\textbf{Une même situation, plusieurs habits.}
+
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+Soit $E=\{a\,;b\,;c\}$. À une partie de $E$, on associe un triplet de $\{0\,;1\}$ : on
+écrit $1$ si l'élément est dans la partie, $0$ sinon, dans l'ordre $a$, $b$, $c$.
+La partie $\{a\,;c\}$ correspond à $(1\,;0\,;1)$, et la partie vide à $(0\,;0\,;0)$.
+
+\smallskip
+Compter les parties de $E$, c'est donc compter :
+\begin{itemize}
+  \item des triplets de $\{0\,;1\}$ ;
+  \item des chemins d'un arbre à $3$ niveaux de deux branches (ci-contre).
+\end{itemize}
+Il y en a $2\times 2\times 2=2^{3}$, soit $8$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[grow=right,level distance=1.1cm,font=\small,
+    level 1/.style={sibling distance=2.4cm},
+    level 2/.style={sibling distance=1.2cm},
+    level 3/.style={sibling distance=0.6cm},
+    feuille/.style={label={[font=\footnotesize]right:#1}}]
+  \node {}
+    child {node {$0$}
+      child {node {$0$}
+        child {node[feuille={$(0\,;0\,;0)$ \quad $\varnothing$}] {$0$}}
+        child {node[feuille={$(0\,;0\,;1)$ \quad $\{c\}$}] {$1$}}}
+      child {node {$1$}
+        child {node[feuille={$(0\,;1\,;0)$ \quad $\{b\}$}] {$0$}}
+        child {node[feuille={$(0\,;1\,;1)$ \quad $\{b\,;c\}$}] {$1$}}}}
+    child {node {$1$}
+      child {node {$0$}
+        child {node[feuille={$(1\,;0\,;0)$ \quad $\{a\}$}] {$0$}}
+        child {node[feuille={$(1\,;0\,;1)$ \quad $\{a\,;c\}$}] {$1$}}}
+      child {node {$1$}
+        child {node[feuille={$(1\,;1\,;0)$ \quad $\{a\,;b\}$}] {$0$}}
+        child {node[feuille={$(1\,;1\,;1)$ \quad $\{a\,;b\,;c\}$}] {$1$}}}};
+  \node[font=\footnotesize] at (1.1,2.7) {$a$ ?};
+  \node[font=\footnotesize] at (2.2,2.7) {$b$ ?};
+  \node[font=\footnotesize] at (3.3,2.7) {$c$ ?};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\textbf{Pour un ensemble $E$ à $n$ éléments}, de même : chaque partie de $E$ correspond
+à un $n$-uplet de $\{0\,;1\}$ (un \textbf{mot} de longueur $n$ écrit avec $0$ et $1$),
+et à un \textbf{chemin} d'un arbre à $n$ niveaux de deux branches. Les parties à $k$
+éléments correspondent aux mots qui comptent exactement $k$ chiffres $1$, et aux chemins
+qui passent exactement $k$ fois par une branche $1$ : il y en a $\binom{n}{k}$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible), par dénombrement.
+On compte de deux façons les parties de $E$.
+\begin{itemize}
+  \item Par leur nombre d'éléments : il y a $\dbinom{n}{k}$ parties à $k$ éléments, pour
+        $k$ de $0$ à $n$ ; ces ensembles sont disjoints, donc, d'après le principe
+        additif, $E$ a $\sum_{k=0}^{n}\dbinom{n}{k}$ parties.
+  \item Par leurs $n$-uplets : chaque partie correspond à un $n$-uplet de $\{0\,;1\}$, et
+        un seul ; il y en a $2^{n}$ (propriété 3).
+\end{itemize}
+Donc $\sum_{k=0}^{n}\dbinom{n}{k}=2^{n}$.
+
+\begin{methodebox}[Méthode 8 --- Dénombrer des mots ou des chemins]
+\etapeexemples
+Un questionnaire compte $8$ questions, auxquelles on répond par vrai ou faux.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de façons de remplir le questionnaire ?
+  \item Combien de façons de le remplir donnent exactement $3$ réponses justes ?
+  \item Combien de façons de le remplir donnent au moins $6$ réponses justes ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Une façon de remplir le questionnaire est un mot de $8$ lettres écrit avec V
+et F, soit un $8$-uplet de $\{V\,;F\}$.}{}
+\begin{calculs}
+N &= 2^{8} = 256 &\qquad& \rem{$2$ choix par question}
+\end{calculs}
+\explique{Il y a \res{$256$ façons} de remplir le questionnaire.}{}
+\cas{b)}
+\explique{Pour chaque question, une seule réponse est juste. Il suffit de choisir les
+$3$ questions justes parmi les $8$ : une partie à $3$ éléments de l'ensemble des
+questions.}{l'ordre du choix ne compte pas}
+\begin{calculs}
+N_{1} &= \binom{8}{3} &&\\
+N_{1} &= \frac{8\times 7\times 6}{3\times 2\times 1} = 56 &&
+\end{calculs}
+\explique{\res{$56$ façons} donnent exactement $3$ réponses justes.}{}
+\cas{c)}
+\explique{\og Au moins $6$\fg{}, c'est $6$, $7$ ou $8$ réponses justes : trois cas
+disjoints.}{on découpe, puis on additionne}
+\begin{calculs}
+N_{2} &= \binom{8}{6}+\binom{8}{7}+\binom{8}{8} &\qquad& \rem{principe additif}\\
+N_{2} &= 28+8+1 = 37 &\qquad& \rem{$\binom{8}{6}=\binom{8}{2}=28$}
+\end{calculs}
+\explique{\res{$37$ façons} donnent au moins $6$ réponses justes.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Une archère tire $10$ flèches ; chaque tir est réussi (R) ou manqué (M).
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de suites de résultats possibles ?
+  \item Combien de suites de résultats comptent exactement $4$ tirs réussis ?
+  \item Combien de suites de résultats comptent au moins $8$ tirs réussis ?
+\end{questions}
+\reponse{a)~$1\,024$.\; b)~$210$.\; c)~$56$.}
+\end{methodebox}
+
+\afaire{exercices 34 à 38}
+
+\partiecours{Choisir le bon modèle}
+
+\begin{proprietebox}[Bilan --- Quel objet compter ?]
+On choisit $k$ éléments dans un ensemble $E$ à $n$ éléments. Deux questions décident :
+l'ordre compte-t-il ? un élément peut-il revenir ?
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{6pt}
+\begin{tabular}{|l|c|c|l|c|}
+\hline
+\textbf{Situations types} & \textbf{Ordre} & \textbf{Répétition} & \textbf{Objet} & \textbf{Calcul}\\
+\hline
+codes, mots, tirages successifs avec remise & oui & oui & $k$-uplet de $E$ & $n^{k}$\\
+\hline
+podium, tirages successifs sans remise & oui & non & $k$-uplet d'éléments distincts & $\dfrac{n!}{(n-k)!}$\\
+\hline
+ranger tous les éléments & oui & non & permutation ($k=n$) & $n!$\\
+\hline
+groupe, tirage simultané & non & non & combinaison & $\dbinom{n}{k}$\\
+\hline
+\end{tabular}}
+\end{center}
+\end{proprietebox}
+
+\begin{definitionbox}[Rappel 2 --- Probabilité et équiprobabilité (1\textsuperscript{re})]
+Quand toutes les issues d'une expérience aléatoire ont la même probabilité
+(équiprobabilité), la probabilité d'un événement $A$ est
+$P(A)=\dfrac{\Card(A)}{\Card(\Omega)}$, où $\Omega$ est l'ensemble des issues : le
+dénombrement donne les deux cardinaux.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 9 --- Reconnaître l'objet à dénombrer, puis calculer une probabilité]
+\etapeexemples
+Une urne contient $10$ jetons numérotés de $1$ à $10$. On tire $3$ jetons au hasard.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de tirages possibles si on tire les jetons un par un, en
+        remettant chaque jeton dans l'urne et en notant les numéros dans l'ordre ?
+  \item Même question sans remettre les jetons dans l'urne.
+  \item Combien y a-t-il de tirages possibles si on tire les $3$ jetons en même temps ?
+  \item Dans le cas c), calculer la probabilité que les trois numéros tirés soient pairs.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{L'ordre compte et un jeton peut revenir : un tirage est un triplet de
+l'ensemble des $10$ jetons.}{ordre, répétition}
+\begin{calculs}
+N_{1} &= 10^{3} = 1\,000 &&
+\end{calculs}
+\explique{Il y a \res{$1\,000$ tirages}.}{}
+\cas{b)}
+\explique{L'ordre compte, sans répétition : un tirage est un triplet d'éléments
+distincts.}{ordre, sans répétition}
+\begin{calculs}
+N_{2} &= 10\times 9\times 8 = 720 &&
+\end{calculs}
+\explique{Il y a \res{$720$ tirages}.}{}
+\cas{c)}
+\explique{L'ordre ne compte pas, sans répétition : un tirage est une combinaison de $3$
+jetons parmi $10$. Soit $\Omega$ l'ensemble des tirages.}{pas d'ordre, sans
+répétition}
+\begin{calculs}
+\Card(\Omega) &= \binom{10}{3} &&\\
+\Card(\Omega) &= \frac{10\times 9\times 8}{3\times 2\times 1} = 120 &&
+\end{calculs}
+\explique{Il y a \res{$120$ tirages}.}{}
+\cas{d)}
+\explique{Les jetons sont tirés au hasard : il y a équiprobabilité. Soit $A$
+l'événement \og les trois numéros sont pairs\fg{} : on choisit $3$ jetons parmi les $5$
+pairs, donc $\Card(A)=\dbinom{5}{3}=10$.}{$2$, $4$, $6$, $8$ et $10$}
+\begin{calculs}
+P(A) &= \frac{\Card(A)}{\Card(\Omega)} &\qquad& \rem{équiprobabilité}\\
+P(A) &= \frac{10}{120} &&\\
+P(A) &= \frac{1\times\barre{10}}{12\times\barre{10}} = \res{\frac{1}{12}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Une boîte contient $12$ cartes numérotées de $1$ à $12$. On tire $3$ cartes au hasard.
+\begin{questions}[label=\alph*)]
+  \item Combien y a-t-il de tirages possibles si on tire les cartes une par une, en
+        remettant chaque carte dans la boîte et en notant les numéros dans l'ordre ?
+  \item Même question sans remettre les cartes dans la boîte.
+  \item Combien y a-t-il de tirages possibles si on tire les $3$ cartes en même temps ?
+  \item Dans le cas c), calculer la probabilité que les trois numéros tirés soient pairs.
+\end{questions}
+\reponse{a)~$1\,728$.\; b)~$1\,320$.\; c)~$220$.\; d)~$\frac{1}{11}$.}
+\end{methodebox}
+
+\afaire{exercices 39 à 42, puis les exercices type bac 43 à 45}
+
+\end{document}

@@ -1,0 +1,910 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+\providecommand{\Card}{\operatorname{Card}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Dénombrement}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Ensembles finis et principe additif}
+
+\exo[Une flotte de vélos]
+Une entreprise de location contrôle ses $400$ vélos électriques : $52$ ont un défaut
+de freins, $120$ un défaut d'éclairage et $36$ présentent les deux défauts.
+\begin{enumerate}
+  \item Représenter la situation par un diagramme.
+  \item Combien de vélos ne présentent aucun des deux défauts ?
+  \item Combien de vélos présentent exactement un des deux défauts ?
+\end{enumerate}
+
+\exo[Course à pied et vélo]
+Un club compte $90$ adhérents : $58$ pratiquent la course à pied, $41$ le vélo, et
+$17$ ne pratiquent aucun des deux.
+\begin{enumerate}
+  \item Combien d'adhérents pratiquent au moins un des deux sports ?
+  \item En déduire le nombre d'adhérents qui pratiquent les deux sports.
+  \item Représenter la situation par un diagramme.
+  \item Combien d'adhérents pratiquent exactement un des deux sports ?
+\end{enumerate}
+
+\exo[Multiples de 2 et de 3]
+On note $E=\{1\,;2\,;\dots\,;100\}$, $A$ l'ensemble des multiples de $2$ de $E$ et
+$B$ l'ensemble des multiples de $3$ de $E$.
+\begin{enumerate}
+  \item Calculer $\Card(A)$ et $\Card(B)$.
+  \item Décrire l'ensemble $A\cap B$, puis calculer son cardinal.
+  \item En déduire $\Card(A\cup B)$.
+  \item Combien d'entiers de $E$ ne sont ni pairs ni multiples de $3$ ?
+\end{enumerate}
+
+\exo[Trois ateliers]
+À la fête de la science, chaque visiteur interrogé a suivi des ateliers
+d'astronomie, de robotique ou de photographie. On sait que :
+\begin{itemize}
+  \item $120$ ont suivi l'atelier d'astronomie, $100$ celui de robotique et $70$ celui
+        de photographie ;
+  \item $40$ ont suivi l'astronomie et la robotique, $30$ l'astronomie et la
+        photographie, $25$ la robotique et la photographie ;
+  \item $10$ ont suivi les trois ateliers et $15$ n'en ont suivi aucun.
+\end{itemize}
+\begin{enumerate}
+  \item Représenter la situation par un diagramme à trois ensembles, en partant du
+        centre.
+  \item Combien de visiteurs ont été interrogés ?
+  \item Combien ont suivi exactement un atelier ? exactement deux ?
+\end{enumerate}
+
+\partiefiche{Produit cartésien et principe multiplicatif}
+
+\exo[Écrire un produit cartésien]
+On note $E=\{a\,;b\,;c\}$ et $F=\{1\,;2\}$.
+\begin{enumerate}
+  \item Écrire tous les éléments de $E\times F$. Combien y en a-t-il ?
+  \item Écrire tous les éléments de $F\times E$. A-t-on $E\times F=F\times E$ ?
+  \item Calculer $\Card(E\times E)$ et $\Card(E\times F\times F)$.
+\end{enumerate}
+
+\exo[Plaques d'immatriculation]
+Une plaque d'immatriculation comporte deux lettres, puis trois chiffres de $0$ à $9$,
+puis deux lettres. Les lettres I, O et U sont exclues (confusion avec 1, 0 et V) ;
+lettres et chiffres peuvent se répéter.
+\begin{enumerate}
+  \item Combien de lettres peut-on utiliser ?
+  \item Combien de plaques différentes peut-on former ?
+  \item Combien de ces plaques commencent par AB ?
+\end{enumerate}
+
+\exo[Des routes entre quatre villes]
+Entre quatre villes $A$, $B$, $C$ et $D$, il y a $3$ routes de $A$ à $B$, $2$ routes de
+$B$ à $C$, $4$ routes de $C$ à $D$ et $2$ routes directes de $A$ à $C$. On va toujours
+vers $D$, sans revenir en arrière.
+\begin{enumerate}
+  \item Combien y a-t-il de trajets de $A$ à $D$ qui passent par $B$ ?
+  \item Combien y a-t-il de trajets de $A$ à $D$ en tout ?
+  \item Au retour, on va toujours vers $A$, sans revenir en arrière. Combien y a-t-il
+        d'allers-retours de $A$ à $D$ ? et d'allers-retours dont le retour ne reprend
+        pas exactement le trajet de l'aller ?
+\end{enumerate}
+
+\exo[Le menu de la cantine]
+La cantine propose $4$ entrées, $5$ plats, dont $2$ végétariens, et $3$ desserts.
+\begin{enumerate}
+  \item Combien de menus complets (entrée, plat, dessert) peut-on composer ?
+  \item Combien de ces menus ont un plat végétarien ?
+  \item Une formule à deux est \og entrée et plat\fg{} ou \og plat et dessert\fg.
+        Combien de formules à deux peut-on composer ?
+  \item Combien de repas différents (menu complet ou formule à deux) la cantine
+        propose-t-elle ?
+\end{enumerate}
+
+\partiefiche{Les $k$-uplets d'un ensemble}
+
+\exo[Les $k$-uplets d'un petit ensemble]
+On note $E=\{J\,;U\,;D\,;O\}$.
+\begin{enumerate}
+  \item Écrire deux triplets différents de $E$, dont l'un a une lettre répétée.
+  \item Combien y a-t-il de triplets de $E$ ?
+  \item Calculer $\Card(E^{6})$.
+  \item Combien de $6$-uplets de $E$ commencent par $J$ ?
+\end{enumerate}
+
+\exo[Coder des caractères]
+En informatique, un octet est un $8$-uplet de $\{0\,;1\}$, comme $(0\,;1\,;1\,;0\,;0\,;
+1\,;0\,;1)$.
+\begin{enumerate}
+  \item Combien y a-t-il d'octets ? Combien d'octets comportent au moins un chiffre $1$ ?
+  \item La norme ASCII code chaque caractère par un $7$-uplet de $\{0\,;1\}$.
+        Peut-elle coder les $95$ caractères de l'anglais ?
+  \item Les langues européennes demandent $191$ caractères. Quel est le plus petit
+        entier $k$ tel que des $k$-uplets de $\{0\,;1\}$ suffisent ?
+\end{enumerate}
+
+\exo[Le code génétique]
+Un codon est une suite de trois nucléotides, chacun choisi parmi A, C, G et T ; l'ordre
+compte. Chaque codon code l'un des $20$ acides aminés, ou la fin d'une protéine.
+\begin{enumerate}
+  \item Combien y a-t-il de codons ? Y en a-t-il assez pour les $20$ acides aminés ?
+  \item Des suites de deux nucléotides auraient-elles suffi ?
+  \item Combien de codons ne comportent pas de G ?
+  \item En déduire le nombre de codons qui comportent au moins un G.
+\end{enumerate}
+
+\exo[Codes de cinq chiffres]
+Un code est formé de $5$ chiffres de $0$ à $9$, distincts ou non (par exemple $0\,4\,4\,7\,0$).
+\begin{enumerate}
+  \item Combien y a-t-il de codes ?
+  \item Combien de codes se terminent par $0$ ou par $5$ ?
+  \item Combien de codes ne comportent aucun chiffre $7$ ?
+  \item En déduire le nombre de codes qui comportent au moins un $7$.
+\end{enumerate}
+
+\exo[Colorier un quadrillage]
+On colorie en rouge, jaune ou noir chacune des $16$ cases d'un quadrillage.
+\begin{enumerate}
+  \item Combien y a-t-il de coloriages ?
+  \item Combien de coloriages n'utilisent pas le noir ?
+  \item Combien de coloriages comportent au moins une case noire ?
+  \item Combien de coloriages comportent exactement une case noire ?
+\end{enumerate}
+
+\exo[La force d'un mot de passe]
+Un mot de passe est formé de $4$ caractères, chacun choisi parmi les $26$ lettres
+minuscules et les $10$ chiffres.
+\begin{enumerate}
+  \item Combien y a-t-il de mots de passe ?
+  \item Combien de mots de passe ne comportent que des lettres ? au moins un chiffre ?
+  \item Un logiciel essaie $1\,000$ mots de passe par seconde. Combien de temps lui
+        faut-il, au plus, pour les essayer tous ?
+  \item On passe à $8$ caractères, choisis parmi $62$ (minuscules, majuscules,
+        chiffres). Combien de jours faut-il, au plus, à un logiciel qui essaie un
+        milliard de mots de passe par seconde ?
+\end{enumerate}
+
+\partiefiche{Les $k$-uplets d'éléments distincts, factorielle}
+
+\exo[Calculer avec des factorielles]
+\begin{enumerate}
+  \item Calculer $6!$ et $8!$.
+  \item Calculer sans calculatrice :
+        \begin{center}
+        $A=\dfrac{10!}{8!}$ \qquad $B=\dfrac{12!}{9!}$ \qquad $C=\dfrac{7!}{3!\times 4!}$
+        \end{center}
+  \item Soit $n\in\N$ tel que $n\geq 2$. Simplifier :
+        \begin{center}
+        $D=\dfrac{(n+1)!}{n!}$ \qquad $F=\dfrac{n!}{(n-2)!}$
+        \end{center}
+\end{enumerate}
+
+\exo[Triplets d'éléments distincts]
+On note $E=\{a\,;b\,;c\,;d\,;e\}$.
+\begin{enumerate}
+  \item Écrire trois triplets d'éléments distincts de $E$.
+  \item Combien y a-t-il de triplets d'éléments distincts de $E$ ?
+  \item Combien de ces triplets commencent par $a$ ?
+  \item Combien y a-t-il de couples d'éléments distincts de $E$ ?
+\end{enumerate}
+
+\exo[Bac 2025, Amérique du Sud]
+Une association organise une compétition de course de haies qui permettra d'établir
+un podium (le podium est constitué des trois meilleurs sportifs classés dans leur
+ordre d'arrivée). Sept sportifs participent au tournoi. Jacques est l'un d'entre eux.
+\begin{enumerate}
+  \item Combien de podiums différents sont possibles ?
+  \item \textbf{Affirmation :} il y a $90$ podiums différents dont Jacques fait
+        partie. Dire si l'affirmation est vraie ou fausse, en justifiant.
+\end{enumerate}
+
+\exo[Bac 2025, Métropole]
+Lorsqu'une personne achète son billet de musée en ligne, un code de validation lui est
+envoyé par SMS afin qu'elle confirme son achat. Ce code est généré de façon aléatoire
+et est constitué de $4$ chiffres deux à deux distincts, le premier chiffre étant
+différent de $0$.
+
+\textbf{Affirmation :} le nombre de codes différents pouvant être générés est
+$5\,040$. Dire si l'affirmation est vraie ou fausse, en justifiant.
+
+\exo[La soirée théâtre]
+La soirée théâtre du lycée propose $8$ saynètes différentes ; $5$ sont jouées avant
+l'entracte, les $3$ autres après.
+\begin{enumerate}
+  \item On tire au sort les $5$ saynètes d'avant l'entracte et leur ordre. Combien de
+        premières parties sont possibles ?
+  \item Combien de ces premières parties commencent par la saynète de la classe de
+        terminale ?
+  \item Finalement, on sait quelles saynètes sont jouées avant l'entracte, mais pas
+        encore dans quel ordre, ni l'ordre de celles d'après. Combien de soirées
+        sont encore possibles ?
+\end{enumerate}
+
+\exo[Codes de trois lettres]
+Un code est formé de $3$ lettres de l'alphabet ($26$ lettres).
+\begin{enumerate}
+  \item Combien y a-t-il de codes ?
+  \item Combien de codes ont leurs $3$ lettres différentes ?
+  \item En déduire le nombre de codes qui ont au moins deux lettres identiques.
+\end{enumerate}
+
+\partiefiche{Les permutations}
+
+\exo[Anagrammes]
+Une anagramme d'un mot est un mot (qui a un sens ou non) écrit avec les mêmes lettres,
+chacune autant de fois.
+\begin{enumerate}
+  \item Combien le mot JUDO a-t-il d'anagrammes ? et le mot BRAVO ?
+  \item Combien d'anagrammes de BRAVO commencent par une voyelle ?
+  \item \textbf{Affirmation (bac 2025, Nouvelle-Calédonie) :} le mot EULER possède
+        $120$ anagrammes. Dire si l'affirmation est vraie ou fausse, en justifiant.
+\end{enumerate}
+
+\exo[Des lettres qui se répètent]
+\begin{enumerate}
+  \item On écrit les $5$ lettres de KAYAK dans tous les ordres possibles. Expliquer
+        pourquoi chaque anagramme est obtenue $2!\times 2!$ fois, puis compter les
+        anagrammes de KAYAK.
+  \item Compter de même les anagrammes de BANANE.
+  \item \textbf{Bac 2026, Nouvelle-Calédonie.} On s'intéresse au nombre $N$ de mots
+        de six lettres (ayant un sens ou non) que l'on peut écrire avec les lettres A,
+        B, C, D, E, en utilisant exactement deux fois la lettre A, et exactement une
+        fois chacune des autres lettres. Exemples : AABCDE ; BACADE ; CDBAEA.
+
+        \textbf{Affirmation :} $N=120$. Dire si l'affirmation est vraie ou fausse, en
+        justifiant.
+\end{enumerate}
+
+\exo[La photo de famille]
+Une famille de six personnes, deux parents et quatre enfants, s'aligne pour une photo.
+\begin{enumerate}
+  \item Combien y a-t-il d'alignements possibles ?
+  \item Combien d'alignements placent les parents aux deux extrémités ?
+  \item Combien d'alignements placent les parents côte à côte ?
+  \item En déduire le nombre d'alignements où les parents ne sont pas côte à côte.
+\end{enumerate}
+
+\exo[Factorielle en Python]
+On considère la fonction \texttt{mystere} définie ci-dessous en Python :
+\begin{python}
+def mystere(n):
+    f = 1
+    for k in range(1, n+1):
+        f = f * k
+    return f
+\end{python}
+\begin{enumerate}
+  \item \textbf{Affirmation (bac 2026, Polynésie) :} le nombre renvoyé lors de
+        l'exécution de \texttt{mystere(5)} est $120$. Vrai ou faux ? Justifier.
+  \item Que renvoie \texttt{mystere(n)} pour $n\in\Ns$ ?
+\end{enumerate}
+
+\partiefiche{Les combinaisons}
+
+\exo[Calculer et écrire des combinaisons]
+\begin{enumerate}
+  \item Calculer sans calculatrice :
+        \begin{center}
+        $\dbinom{5}{2}$ \qquad $\dbinom{7}{3}$ \qquad $\dbinom{10}{1}$ \qquad
+        $\dbinom{12}{0}$ \qquad $\dbinom{20}{3}$
+        \end{center}
+  \item On note $E=\{a\,;b\,;c\,;d\,;e\}$. Écrire toutes les parties de $E$ à $2$
+        éléments, et vérifier qu'il y en a $\dbinom{5}{2}$.
+  \item Combien $E$ a-t-il de parties à $3$ éléments ?
+\end{enumerate}
+
+\exo[Bac 2025, Amérique du Sud]
+Dire si chaque affirmation est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item Deux équipes de footballeurs de $22$ et $25$ joueurs échangent une poignée de
+        main à la fin d'un match. Chaque joueur d'une équipe serre une seule fois la
+        main de chaque joueur de l'autre équipe.
+
+        \textbf{Affirmation 1 :} $47$ poignées de mains ont été échangées.
+  \item Une course oppose $18$ concurrents. On récompense indistinctement les trois
+        premiers en offrant le même prix à chacun.
+
+        \textbf{Affirmation 2 :} il y a $4\,896$ possibilités de distribuer ces prix.
+  \item Dans un groupe de $12$ personnes, chacune serre une fois la main de chacune des
+        autres.
+
+        \textbf{Affirmation 3 :} $66$ poignées de mains ont été échangées.
+\end{enumerate}
+
+\exo[Bac 2025 et 2026, former des équipes]
+Dire si chaque affirmation est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item \emph{(Polynésie 2025)} Dans une classe de terminale, il y a $18$ filles et
+        $14$ garçons. On constitue une équipe de volley-ball en choisissant au hasard
+        $3$ filles et $3$ garçons.
+
+        \textbf{Affirmation 1 :} il y a $297\,024$ possibilités pour former une telle
+        équipe.
+  \item \emph{(Métropole 2026)} Un jeu sur le thème de la culture de la Pop est proposé
+        à $10$ personnes dont $4$ sont des musiciens professionnels. Deux équipes de $5$
+        joueurs s'affrontent. Elles sont chacune constituées de $2$ musiciens
+        professionnels et de $3$ personnes qui ne le sont pas.
+
+        \textbf{Affirmation 2 :} on peut former ainsi $120$ équipes différentes.
+\end{enumerate}
+
+\exo[Bac 2026, Asie]
+Une urne contient $32$ jetons numérotés de $1$ à $32$ indiscernables au toucher. On
+tire simultanément $5$ jetons de cette urne. On appelle tirage la liste non ordonnée
+des numéros des cinq jetons tirés.
+\begin{enumerate}
+  \item Combien y a-t-il de tirages possibles ?
+  \item \textbf{Affirmation :} le nombre de tirages possibles contenant au moins un
+        multiple de $8$ est égal à $103\,096$. Vrai ou faux ? Justifier.
+\end{enumerate}
+
+\exo[Le club de robotique]
+Le club de robotique compte $16$ membres : $9$ élèves de première et $7$ de terminale.
+Il envoie une délégation de $5$ membres à une compétition.
+\begin{enumerate}
+  \item Combien de délégations peut-on former ?
+  \item Combien de délégations comptent $3$ élèves de première et $2$ de terminale ?
+  \item Combien de délégations comptent au moins un élève de terminale ?
+  \item La délégation choisie, on attribue à ses $5$ membres $5$ rôles différents
+        (pilote, codeur\dots). Combien d'attributions sont possibles ?
+  \item Combien y a-t-il de délégations avec leurs rôles ? Retrouver ce nombre à l'aide
+        des questions 1 et 4.
+\end{enumerate}
+
+\exo[Bac 2026, Polynésie]
+Un refuge spécialisé accueille $24$ rapaces numérotés de $1$ à $24$. Le refuge
+travaille avec trois vétérinaires. Afin d'administrer un soin à tous les oiseaux, le
+directeur veut donc former trois groupes, numérotés de $1$ à $3$, constitués chacun
+de $8$ rapaces.
+
+\textbf{Affirmation :} le nombre de façons de répartir les rapaces dans les groupes
+$1$ à $3$ est $\dfrac{24!}{(8!)^{3}}$. Dire si l'affirmation est vraie ou fausse, en
+justifiant.
+
+\partiefiche{Symétrie, relation et triangle de Pascal}
+
+\exo[Prolonger le triangle de Pascal]
+\begin{enumerate}
+  \item Écrire le triangle de Pascal jusqu'à la ligne $n=8$.
+  \item Y lire $\dbinom{8}{3}$ et $\dbinom{8}{4}$.
+  \item Calculer la somme des nombres de la ligne $n=8$. Quel nombre reconnaît-on ?
+\end{enumerate}
+
+\exo[Symétrie]
+\begin{enumerate}
+  \item Calculer sans calculatrice :
+        \begin{center}
+        $\dbinom{50}{49}$ \qquad $\dbinom{100}{98}$ \qquad $\dbinom{15}{13}$
+        \end{center}
+  \item Déterminer l'entier $n\geq 2$ tel que $\dbinom{n}{2}=45$.
+\end{enumerate}
+
+\exo[Démontrer des égalités]
+\begin{enumerate}
+  \item \textbf{Bac 2025, Polynésie.} Soient $n$ et $k$ deux entiers naturels non nuls
+        tels que $k\leq n$.
+
+        \textbf{Affirmation :} $n\times\dbinom{n-1}{k-1}=k\times\dbinom{n}{k}$. Vrai ou
+        faux ? Justifier.
+  \item Soit $n\in\N$ tel que $n\geq 2$.
+        \begin{enumerate}[label=\alph*)]
+          \item Vérifier que $\dbinom{n}{2}+\dbinom{n+1}{2}=n^{2}$ pour $n=3$ et $n=4$.
+          \item Le démontrer pour tout $n\geq 2$.
+        \end{enumerate}
+\end{enumerate}
+
+\partiefiche{Nombre de parties d'un ensemble, mots et chemins}
+
+\exo[Toutes les parties]
+On note $E=\{a\,;b\,;c\,;d\}$.
+\begin{enumerate}
+  \item Combien $E$ a-t-il de parties ?
+  \item Écrire toutes ces parties, rangées selon leur nombre d'éléments.
+  \item Vérifier que $\dbinom{4}{0}+\dbinom{4}{1}+\dbinom{4}{2}+\dbinom{4}{3}+
+        \dbinom{4}{4}=2^{4}$.
+\end{enumerate}
+
+\exo[Parties et $n$-uplets de $\{0\,;1\}$]
+On note $E=\{1\,;2\,;3\,;4\,;5\,;6\}$. À chaque partie de $E$, on associe le $6$-uplet
+de $\{0\,;1\}$ dont le chiffre numéro $i$ vaut $1$ si $i$ est dans la partie, et $0$
+sinon.
+\begin{enumerate}
+  \item Combien $E$ a-t-il de parties ?
+  \item Quel $6$-uplet correspond à la partie $\{1\,;3\,;6\}$ ? et à $\varnothing$ ?
+  \item Quelle partie correspond au $6$-uplet $(0\,;1\,;1\,;1\,;0\,;0)$ ?
+  \item Combien de $6$-uplets de $\{0\,;1\}$ comportent exactement deux chiffres $1$ ?
+\end{enumerate}
+
+\exo[L'écriture braille]
+Un caractère braille est une grille de $6$ points, chacun en relief ou non. La grille
+sans aucun point en relief représente un espace, pas un caractère.
+\begin{enumerate}
+  \item Combien de caractères braille peut-on former ?
+  \item Combien de caractères comportent exactement $3$ points en relief ?
+  \item Combien de caractères comportent au moins $2$ points en relief ?
+\end{enumerate}
+
+\exo[Lancers d'une pièce]
+On lance $6$ fois une pièce et on note la suite des résultats, P (pile) ou F (face).
+\begin{enumerate}
+  \item Combien y a-t-il de suites de résultats ? Combien de chemins compte l'arbre
+        qui les représente ?
+  \item Combien de suites comportent exactement $2$ fois pile ?
+  \item Combien de suites comportent au moins une fois pile ?
+  \item Combien de suites comportent autant de piles que de faces ?
+\end{enumerate}
+
+\exo[Les chemins d'un robot]
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+Un robot part du point $O$ et rejoint le point $B$ en suivant les lignes du
+quadrillage, à chaque pas d'une case vers la droite (D) ou vers le haut (H).
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{-2pt}
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \draw[grille] (0,0) grid[step=1] (5,3);
+  \path (0,0) node[croix]{} node[below left,font=\footnotesize]{$O$}
+        (5,3) node[croix]{} node[above right,font=\footnotesize]{$B$}
+        (2,1) node[croix]{} node[above left,font=\footnotesize]{$C$};
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}
+  \item Expliquer pourquoi un chemin de $O$ à $B$ est un mot de $8$ lettres qui
+        comporte $5$ fois D et $3$ fois H.
+  \item Combien y a-t-il de chemins de $O$ à $B$ ?
+  \item Combien de ces chemins passent par le point $C$ ?
+  \item Le robot choisit un chemin au hasard. Quelle est la probabilité qu'il passe
+        par $C$ ?
+\end{enumerate}
+
+\partiefiche{Choisir le bon modèle}
+
+\exo[Quel objet compter ?]
+Pour chaque situation, dire quel objet on compte ($k$-uplet, $k$-uplet d'éléments
+distincts, permutation, combinaison), puis faire le calcul.
+\begin{enumerate}[label=\alph*)]
+  \item Le classement des trois premiers d'une course de $20$ cyclistes.
+  \item Le choix de $5$ livres parmi $12$ pour partir en vacances.
+  \item Un code de $4$ lettres de l'alphabet.
+  \item L'ordre de passage de $8$ élèves à l'oral.
+  \item L'attribution de $3$ prix différents à $10$ élèves, un élève pouvant
+        recevoir plusieurs prix.
+  \item Un groupe de $3$ élèves choisis parmi $30$.
+\end{enumerate}
+
+\exo[QCM]
+Pour chaque question, une seule réponse est exacte ; la donner en justifiant.
+\begin{enumerate}
+  \item \emph{(Bac 2026, Amérique du Sud)} Une école de rugby compte $20$ joueurs. Les
+        matchs auxquels peut participer cette école se jouent à $10$. Combien d'équipes
+        différentes cette école peut-elle former ?
+
+        a)~$\dbinom{20}{10}$ \quad b)~$20^{10}$ \quad
+        c)~$20\times 19\times 18\times\dots\times 11$ \quad d)~$10^{20}$
+  \item Le nombre d'anagrammes du mot NOTE est :
+
+        a)~$4^{4}$ \quad b)~$24$ \quad c)~$4$ \quad d)~$\dbinom{4}{4}$
+  \item Le nombre de parties d'un ensemble à $5$ éléments est :
+
+        a)~$25$ \quad b)~$10$ \quad c)~$32$ \quad d)~$120$
+  \item Le nombre de façons d'asseoir $4$ personnes sur $6$ chaises alignées est :
+
+        a)~$\dbinom{6}{4}$ \quad b)~$6^{4}$ \quad c)~$4!$ \quad d)~$360$
+\end{enumerate}
+
+\exo[Trois dés]
+On lance trois dés équilibrés à six faces, de couleurs différentes (rouge, vert, bleu),
+et on note le triplet des résultats.
+\begin{enumerate}
+  \item Combien y a-t-il d'issues ?
+  \item Calculer la probabilité que les trois numéros soient différents.
+  \item Calculer la probabilité d'obtenir au moins un $6$.
+  \item Calculer la probabilité que la somme des trois numéros soit égale à $4$.
+\end{enumerate}
+
+\exo[Une poignée de jetons]
+Un sac contient $12$ jetons : $5$ rouges, $4$ bleus et $3$ verts. On en tire $4$
+simultanément, au hasard.
+\begin{enumerate}
+  \item Combien y a-t-il de tirages ?
+  \item Calculer la probabilité que les $4$ jetons soient de la même couleur.
+  \item Calculer la probabilité d'obtenir exactement $2$ jetons rouges.
+  \item Calculer la probabilité d'obtenir au moins un jeton vert.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[Bac 2026, Nouvelle-Calédonie]
+Un village organise une fête.
+
+\textbf{Partie A}
+
+Les organisateurs de la fête recherchent $3$ personnes pour tenir la buvette. $15$
+villageois se portent volontaires pour cette mission.
+\begin{enumerate}
+  \item Combien existe-t-il de manières de choisir les $3$ personnes qui tiendront la
+        buvette parmi les $15$ villageois volontaires ?
+  \item Parmi les $15$ villageois volontaires, il y a $5$ hommes et $10$ femmes. Les
+        organisateurs souhaitent à présent que parmi les $3$ personnes qui tiendront la
+        buvette, il y ait $1$ homme et $2$ femmes. En respectant le souhait des
+        organisateurs, combien existe-t-il de manières de choisir les $3$ personnes qui
+        tiendront la buvette parmi les $15$ villageois volontaires ?
+\end{enumerate}
+
+\textbf{Partie B}
+
+Les participants à la fête peuvent habiter le village ou non, consommer une boisson ou
+non. On dispose des informations suivantes :
+\begin{itemize}
+  \item $20\,\%$ des participants à la fête habitent le village. Parmi eux, les trois
+        quarts ont consommé une boisson ;
+  \item la moitié des participants ont consommé une boisson.
+\end{itemize}
+On choisit au hasard un participant à la fête et on note les événements suivants :
+$V$ : \og le participant habite le village\fg{} ; $B$ : \og le participant consomme
+une boisson\fg.
+\begin{enumerate}
+  \item L'arbre pondéré ci-dessous représente la situation. Recopier cet arbre et
+        compléter les pointillés.
+        \begin{center}
+        \begin{tikzpicture}[x=1.6cm,y=0.55cm,font=\small]
+          \draw (0,0) -- node[above left]{$\dots$} (1,1.5) node[right]{$V$};
+          \draw (0,0) -- node[below left]{$\dots$} (1,-1.5) node[right]{$\overline{V}$};
+          \draw (1.35,1.5) -- node[above]{$\dots$} (2.4,2.4) node[right]{$B$};
+          \draw (1.35,1.5) -- node[below]{$\dots$} (2.4,0.6) node[right]{$\overline{B}$};
+          \draw (1.35,-1.5) -- (2.4,-0.6) node[right]{$B$};
+          \draw (1.35,-1.5) -- (2.4,-2.4) node[right]{$\overline{B}$};
+        \end{tikzpicture}
+        \end{center}
+  \item Déterminer la probabilité que le participant habite le village et consomme une
+        boisson.
+  \item On note $P_{\overline{V}}(B)$ la probabilité que le participant consomme une
+        boisson sachant qu'il n'habite pas le village. Montrer que
+        $P_{\overline{V}}(B)=\dfrac{7}{16}$.
+\end{enumerate}
+
+\exo[Bac 2026, Amérique du Sud]
+Un sac opaque contient dix boules indiscernables au toucher et numérotées de $0$ à $9$.
+Une partie d'un jeu consiste à tirer deux boules dans ce sac, successivement et sans
+remise, pour former un nombre à deux chiffres dont le premier chiffre est le numéro
+de la première boule tirée et le deuxième chiffre est le numéro de la deuxième boule
+tirée. Par exemple si l'on tire successivement la boule $6$ puis la boule $2$ le nombre
+formé est $62$.
+\begin{enumerate}
+  \item Justifier que l'on peut former $90$ nombres différents à l'aide de ce processus.
+  \item Pour gagner à ce jeu il faut réaliser l'événement $S$ : \og le nombre à deux
+        chiffres ainsi formé contient deux chiffres tous deux inférieurs ou égaux à
+        $5$\fg.
+        \begin{enumerate}[label=\alph*)]
+          \item Combien de nombres gagnants sont possibles à l'issue de ce jeu ?
+                Justifier.
+          \item On note $P(S)$ la probabilité de l'événement $S$. Montrer que
+                $P(S)=\dfrac{1}{3}$.
+        \end{enumerate}
+  \item Parmi tous les nombres à deux chiffres que l'on peut former en jouant à ce jeu,
+        combien ont au moins un des deux chiffres le composant qui soit supérieur ou
+        égal à $8$ ?
+\end{enumerate}
+
+\exo[Bac 2025, Centres étrangers]
+Le codage \og base64\fg, utilisé en informatique, permet de représenter et de
+transmettre des messages et d'autres données telles que des images, en utilisant $64$
+caractères : les $26$ lettres majuscules, les $26$ lettres minuscules, les chiffres de
+$0$ à $9$ et deux autres caractères spéciaux.
+
+On s'intéresse aux séquences de $4$ caractères en base64. Par exemple, \og gP3g\fg{}
+est une telle séquence. Dans une séquence, l'ordre est à prendre en compte : les
+séquences \og m5C2\fg{} et \og 5C2m\fg{} ne sont pas identiques.
+\begin{enumerate}
+  \item Déterminer le nombre de séquences possibles.
+  \item Déterminer le nombre de séquences si l'on impose que les $4$ caractères sont
+        différents deux à deux.
+  \item
+        \begin{enumerate}[label=\alph*)]
+          \item Déterminer le nombre de séquences ne comportant pas de lettre A
+                majuscule.
+          \item En déduire le nombre de séquences comportant au moins une lettre A
+                majuscule.
+          \item Déterminer le nombre de séquences comportant exactement une fois la
+                lettre A majuscule.
+          \item Déterminer le nombre de séquences comportant exactement deux fois la
+                lettre A majuscule.
+        \end{enumerate}
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
