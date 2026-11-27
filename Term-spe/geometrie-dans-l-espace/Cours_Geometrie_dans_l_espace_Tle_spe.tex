@@ -1,0 +1,1473 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.2}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{4}{Géométrie dans l'espace}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{GÉOMÉTRIE DANS L'ESPACE}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\newcommand{\paveespace}[3]{%
+  \coordinate (A) at (0,0); \coordinate (B) at (#1,0);
+  \coordinate (D) at ({0.45*#2},{0.35*#2}); \coordinate (C) at ({#1+0.45*#2},{0.35*#2});
+  \coordinate (E) at (0,#3); \coordinate (F) at (#1,#3);
+  \coordinate (H) at ({0.45*#2},{#3+0.35*#2}); \coordinate (G) at ({#1+0.45*#2},{#3+0.35*#2});
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[above left]{$D$} (E) node[left]{$E$}
+    (F) node[below right]{$F$} (G) node[above right]{$G$} (H) node[above left]{$H$};}
+\newcommand{\cubeespace}[1]{\paveespace{#1}{#1}{#1}}
+\newcommand{\accol}[1]{\left\{\renewcommand{\arraystretch}{1.3}\begin{array}{rcl}#1\end{array}\right.}
+
+\begin{remarquebox}[Durée du chapitre]
+À titre indicatif, ce chapitre est prévu pour un volume de $16$~h d'enseignement
+($8$ séances de $2$~h). Une partie importante des exercices est à faire en autonomie.
+\end{remarquebox}
+
+\partiecours{Vecteurs de l'espace}
+
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\textbf{Points, droites et plans.} Dans l'espace, on travaille d'abord sans
+coordonnées, avec des points et des vecteurs. Par deux points distincts passe une
+seule droite ; par trois points non alignés passe un seul plan, noté $(ABC)$ ou
+$\mathcal{P}$.
+
+\smallskip
+\textbf{Représenter l'espace.} On dessine un solide en \textbf{perspective cavalière} :
+la face de devant est en vraie grandeur, les arêtes cachées sont en pointillés. Deux
+droites parallèles sont dessinées parallèles, et le milieu d'un segment est dessiné au
+milieu ; en revanche, les longueurs et les angles des faces fuyantes sont déformés.
+
+\smallskip
+Ci-contre, le cube $ABCDEFGH$ : la face $ABCD$ est en bas, $E$ est au-dessus de $A$,
+$F$ au-dessus de $B$, etc.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}
+  \cubeespace{2.2}
+\end{tikzpicture}
+\end{minipage}
+
+\begin{definitionbox}[Définition 1 --- Vecteurs de l'espace]
+Comme dans le plan, la \textbf{translation} qui transforme $A$ en $B$ est la translation
+de vecteur $\vect{AB}$ : ce vecteur a la direction de la droite $(AB)$, le sens de $A$
+vers $B$ et pour norme la longueur $AB$.
+\begin{itemize}
+  \item $\vect{AB}=\vect{CD}$ si et seulement si $ABDC$ est un parallélogramme
+        (éventuellement aplati). Dans le cube $ABCDEFGH$ :
+        les vecteurs $\vect{AB}$, $\vect{DC}$, $\vect{EF}$ et $\vect{HG}$ sont égaux.
+  \item $\vect{AA}=\vect{0}$ est le vecteur nul.
+\end{itemize}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Calcul vectoriel (comme dans le plan)]
+\begin{itemize}
+  \item \textbf{Relation de Chasles} : $\vect{AB}+\vect{BC}=\vect{AC}$.
+  \item \textbf{Règle du parallélogramme} : $\vect{AB}+\vect{AD}=\vect{AC}$ si $ABCD$
+        est un parallélogramme.\par
+        \begin{tikzpicture}[font=\footnotesize]
+          \coordinate (A) at (0,0); \coordinate (B) at (3,0);
+          \coordinate (D) at (1,1.2); \coordinate (C) at (4,1.2);
+          \draw[gray] (B)--(C)--(D);
+          \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below]{$\vect{AB}$};
+          \draw[-{Stealth},coulExo,thick] (A)--(D) node[midway,left]{$\vect{AD}$};
+          \draw[-{Stealth},coulCourbe,thick] (A)--(C) node[midway,above,sloped]{$\vect{AB}+\vect{AD}=\vect{AC}$};
+          \path (A) node[below left]{$A$} (B) node[below right]{$B$}
+                (C) node[right]{$C$} (D) node[above left]{$D$};
+        \end{tikzpicture}
+  \item Produit par un nombre réel $k$ : $k\vect{u}$ a la direction de $\vect{u}$, le
+        même sens si $k>0$, le sens contraire si $k<0$, et une norme multipliée par
+        $|k|$. Si $I$ est le milieu de $[AB]$, alors $\vect{AI}=\frac{1}{2}\vect{AB}$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{definitionbox}[Définition 2 --- Combinaison linéaire]
+Un vecteur $\vect{w}$ est une \textbf{combinaison linéaire} des vecteurs $\vect{u}$,
+$\vect{v}$, $\vect{t}$ s'il existe des nombres réels $x$, $y$, $z$ tels que
+$\vect{w}=x\vect{u}+y\vect{v}+z\vect{t}$.
+
+Exemple : dans le cube $ABCDEFGH$, $\vect{AG}=\vect{AB}+\vect{BC}+\vect{CG}$, soit
+$\vect{AG}=\vect{AB}+\vect{AD}+\vect{AE}$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 1 --- Représenter une combinaison linéaire]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Construire les points $M$ et $N$ définis par :
+\begin{questions}[label=\alph*)]
+  \item $\vect{AM}=\vect{AB}+\vect{CG}+\vect{FH}$ ;
+  \item $\vect{AN}=\vect{AB}+\frac{1}{2}\vect{BC}+\vect{DH}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\explique{On met les vecteurs bout à bout en partant de $A$ : chaque vecteur est remplacé
+par un représentant dont l'origine est l'extrémité du précédent.}{relation de Chasles}
+\cas{a)}
+\explique{De $A$, $\vect{AB}$ mène en $B$ ; $\vect{CG}=\vect{BF}$ mène de $B$ en $F$ ;
+puis $\vect{FH}$ mène de $F$ en $H$.}{}
+\begin{calculs}
+\vect{AM} &= \vect{AB}+\vect{BF}+\vect{FH} &\qquad& \rem{$\vect{CG}=\vect{BF}$}\\
+\vect{AM} &= \vect{AH} &\qquad& \rem{relation de Chasles}
+\end{calculs}
+\explique{Donc \res{$M=H$}.}{}
+\cas{b)}
+\explique{De $A$, $\vect{AB}$ mène en $B$ ; $\frac{1}{2}\vect{BC}$ mène au milieu $K$ de
+$[BC]$ ; $\vect{DH}=\vect{CG}$ mène de $K$ au milieu de $[FG]$.}{on monte d'une arête}
+\explique{Donc \res{$N$ est le milieu de $[FG]$}.}{}
+\begin{center}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below,font=\footnotesize]{$\vect{AB}$};
+  \draw[-{Stealth},coulExo,thick] (B)--(F) node[midway,left,font=\footnotesize]{$\vect{CG}$};
+  \draw[-{Stealth},coulExo,thick] (F)--(H) node[midway,below,font=\footnotesize]{$\vect{FH}$};
+  \node[font=\footnotesize] at (1.6,-0.8) {a) $M=H$};
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \coordinate (K) at ($(B)!0.5!(C)$);
+  \coordinate (N) at ($(F)!0.5!(G)$);
+  \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below,font=\footnotesize]{$\vect{AB}$};
+  \draw[-{Stealth},coulExo,thick] (B)--(K) node[midway,right,font=\footnotesize]{$\frac{1}{2}\vect{BC}$};
+  \draw[-{Stealth},coulExo,thick] (K)--(N) node[midway,left,font=\footnotesize]{$\vect{DH}$};
+  \path (N) node[croix]{} node[above,font=\footnotesize]{$N$};
+  \node[font=\footnotesize] at (1.6,-0.8) {b) $N$ milieu de $[FG]$};
+\end{tikzpicture}
+\end{center}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Construire les points $M$ et $N$ définis par :
+\begin{questions}[label=\alph*)]
+  \item $\vect{AM}=\vect{AE}+\vect{DC}+\vect{BC}$ ;
+  \item $\vect{AN}=\vect{AD}+\frac{1}{2}\vect{DC}+\vect{BF}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a)~$M=G$.\; b)~$N$ est le milieu de $[HG]$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 2 --- Exprimer un vecteur comme combinaison linéaire]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube et $I$ est le milieu de $[BC]$. Exprimer chaque vecteur comme
+combinaison linéaire de $\vect{AB}$, $\vect{AD}$ et $\vect{AE}$.
+\begin{questions}[label=\alph*)]
+  \item $\vect{EC}$
+  \item $\vect{HI}$
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \coordinate (I) at ($(B)!0.5!(C)$);
+  \path (I) node[croix]{} node[below right,font=\footnotesize]{$I$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\explique{On va de l'origine à l'extrémité du vecteur en suivant des arêtes, dirigées
+par $\vect{AB}$, $\vect{AD}$ ou $\vect{AE}$.}{un chemin, puis Chasles}
+\cas{a)}
+\begin{calculs}
+\vect{EC} &= \vect{EA}+\vect{AB}+\vect{BC} &\qquad& \rem{chemin $E\to A\to B\to C$}\\
+\vect{EC} &= -\vect{AE}+\vect{AB}+\vect{AD} &\qquad& \rem{$\vect{BC}=\vect{AD}$}\\
+\vect{EC} &= \res{\vect{AB}+\vect{AD}-\vect{AE}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{HI} &= \vect{HE}+\vect{EA}+\vect{AB}+\vect{BI} &\qquad& \rem{chemin $H\to E\to A\to B\to I$}\\
+\vect{HI} &= -\vect{AD}-\vect{AE}+\vect{AB}+\frac{1}{2}\vect{AD} &\qquad& \rem{$\vect{BI}=\frac{1}{2}\vect{BC}=\frac{1}{2}\vect{AD}$}\\
+\vect{HI} &= \res{\vect{AB}-\frac{1}{2}\vect{AD}-\vect{AE}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube et $J$ est le milieu de $[EH]$. Exprimer chaque vecteur comme
+combinaison linéaire de $\vect{AB}$, $\vect{AD}$ et $\vect{AE}$.
+\begin{questions}[label=\alph*)]
+  \item $\vect{BH}$
+  \item $\vect{CJ}$
+\end{questions}
+\reponse{a)~$\vect{BH}=-\vect{AB}+\vect{AD}+\vect{AE}$.\;
+b)~$\vect{CJ}=-\vect{AB}-\frac{1}{2}\vect{AD}+\vect{AE}$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 6}
+
+\partiecours{Droites de l'espace, colinéarité}
+
+\begin{definitionbox}[Définition 3 --- Vecteurs colinéaires, vecteur directeur]
+\begin{itemize}
+  \item Deux vecteurs $\vect{u}$ et $\vect{v}$, avec $\vect{u}\neq\vect{0}$, sont
+        \textbf{colinéaires} s'il existe un nombre réel $k$ tel que
+        $\vect{v}=k\vect{u}$. Le vecteur nul est colinéaire à tout vecteur.
+  \item Un \textbf{vecteur directeur} d'une droite $(d)$ est un vecteur $\vect{AB}$ non
+        nul, où $A$ et $B$ sont deux points de $(d)$.
+\end{itemize}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Droite, alignement, parallélisme]
+\begin{itemize}
+  \item La droite $(d)$ passant par $A$ et de vecteur directeur $\vect{u}$ est
+        l'ensemble des points $M$ tels que $\vect{AM}=t\vect{u}$, avec $t$ nombre réel.
+  \item Trois points $A$, $B$, $C$ sont \textbf{alignés} si et seulement si
+        $\vect{AB}$ et $\vect{AC}$ sont colinéaires.
+  \item Deux droites $(AB)$ et $(CD)$ sont \textbf{parallèles} si et seulement si
+        $\vect{AB}$ et $\vect{CD}$ sont colinéaires.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Démontrer que trois points sont alignés]
+\etapeexemples
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+$ABCD$ est un tétraèdre. $I$ est le milieu de $[BD]$, $G$ est le point tel que
+$\vect{AG}=\frac{2}{3}\vect{AD}$ et $E$ est le symétrique de $A$ par rapport à $B$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{GE}$ et $\vect{GI}$ en fonction de $\vect{AB}$ et $\vect{AD}$.
+  \item En déduire que les points $G$, $I$ et $E$ sont alignés.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[font=\footnotesize]
+  \coordinate (A) at (0,0); \coordinate (B) at (2.2,-0.4);
+  \coordinate (C) at (3.2,0.7); \coordinate (D) at (1.3,2.6);
+  \coordinate (E) at ($(A)!2!(B)$); \coordinate (I) at ($(B)!0.5!(D)$);
+  \coordinate (G) at ($(A)!0.6667!(D)$);
+  \draw (A)--(B)--(D)--cycle (B)--(C)--(D);
+  \draw[dashed] (A)--(C);
+  \draw (B)--(E);
+  \draw[coulExo,thick] (G)--(E);
+  \path (A) node[left]{$A$} (B) node[below]{$B$} (C) node[right]{$C$}
+        (D) node[above]{$D$} (E) node[croix]{} node[below]{$E$}
+        (I) node[croix]{} node[above right]{$I$} (G) node[croix]{} node[left]{$G$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{$E$ est le symétrique de $A$ par rapport à $B$, donc $\vect{AE}=2\vect{AB}$.}{$B$
+milieu de $[AE]$}
+\begin{calculs}
+\vect{GE} &= \vect{GA}+\vect{AE} &\qquad& \rem{relation de Chasles}\\
+\vect{GE} &= \res{-\frac{2}{3}\vect{AD}+2\vect{AB}} &&
+\end{calculs}
+\explique{$I$ est le milieu de $[BD]$, donc $\vect{AI}=\vect{AB}+\frac{1}{2}\vect{BD}$,
+soit $\vect{AI}=\frac{1}{2}\vect{AB}+\frac{1}{2}\vect{AD}$.}{$\vect{BD}=\vect{AD}-\vect{AB}$}
+\begin{calculs}
+\vect{GI} &= \vect{GA}+\vect{AI} &\qquad& \rem{relation de Chasles}\\
+\vect{GI} &= -\frac{2}{3}\vect{AD}+\frac{1}{2}\vect{AB}+\frac{1}{2}\vect{AD} &&\\
+\vect{GI} &= \res{\frac{1}{2}\vect{AB}-\frac{1}{6}\vect{AD}} &\qquad& \rem{$-\frac{4}{6}+\frac{3}{6}=-\frac{1}{6}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+4\vect{GI} &= 2\vect{AB}-\frac{4}{6}\vect{AD} &\qquad& \rem{on cherche un multiple de $\vect{GI}$}\\
+4\vect{GI} &= \vect{GE} &\qquad& \rem{$\frac{4}{6}=\frac{2}{3}$}
+\end{calculs}
+\explique{Les vecteurs $\vect{GE}$ et $\vect{GI}$ sont colinéaires, donc \res{les points
+$G$, $I$ et $E$ sont alignés}.}{propriété 2}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCD$ est un tétraèdre. $I$ est le milieu de $[BC]$, $G$ est le point tel que
+$\vect{AG}=\frac{3}{5}\vect{AC}$ et $E$ est le point tel que $\vect{AE}=3\vect{AB}$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{GE}$ et $\vect{GI}$ en fonction de $\vect{AB}$ et $\vect{AC}$.
+  \item En déduire que les points $G$, $I$ et $E$ sont alignés.
+\end{questions}
+\reponse{a)~$\vect{GE}=3\vect{AB}-\frac{3}{5}\vect{AC}$ et
+$\vect{GI}=\frac{1}{2}\vect{AB}-\frac{1}{10}\vect{AC}$.\; b)~$\vect{GE}=6\vect{GI}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 4 --- Démontrer que deux droites sont parallèles]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube. $K$ est le milieu de $[EH]$, $I$ le centre de la face $BCGF$
+et $J$ le point tel que $\vect{BJ}=\frac{1}{4}\vect{BC}$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{AK}$ et $\vect{IJ}$ en fonction de $\vect{AB}$, $\vect{AD}$
+        et $\vect{AE}$.
+  \item En déduire que les droites $(AK)$ et $(IJ)$ sont parallèles.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2.2}
+  \coordinate (K) at ($(E)!0.5!(H)$); \coordinate (I) at ($(B)!0.5!(G)$);
+  \coordinate (J) at ($(B)!0.25!(C)$);
+  \draw[coulExo,thick] (A)--(K) (I)--(J);
+  \path (K) node[croix]{} node[above left]{$K$} (I) node[croix]{} node[right]{$I$}
+        (J) node[croix]{} node[right]{$J$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vect{AK} &= \vect{AE}+\vect{EK} &\qquad& \rem{relation de Chasles}\\
+\vect{AK} &= \res{\frac{1}{2}\vect{AD}+\vect{AE}} &\qquad& \rem{$\vect{EK}=\frac{1}{2}\vect{EH}=\frac{1}{2}\vect{AD}$}
+\end{calculs}
+\explique{$I$ est le milieu de la diagonale $[BG]$ :}{}
+\begin{calculs}
+\vect{IB} &= \frac{1}{2}\vect{GB} = \frac{1}{2}(\vect{GC}+\vect{CB}) &&\\
+\vect{IB} &= -\frac{1}{2}\vect{AE}-\frac{1}{2}\vect{AD} &\qquad& \rem{$\vect{GC}=-\vect{AE}$, $\vect{CB}=-\vect{AD}$}
+\end{calculs}
+\begin{calculs}
+\vect{IJ} &= \vect{IB}+\vect{BJ} &\qquad& \rem{relation de Chasles}\\
+\vect{IJ} &= -\frac{1}{2}\vect{AD}-\frac{1}{2}\vect{AE}+\frac{1}{4}\vect{AD} &\qquad& \rem{$\vect{BJ}=\frac{1}{4}\vect{AD}$}\\
+\vect{IJ} &= \res{-\frac{1}{4}\vect{AD}-\frac{1}{2}\vect{AE}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+-\frac{1}{2}\vect{AK} &= -\frac{1}{4}\vect{AD}-\frac{1}{2}\vect{AE} &\qquad& \rem{on cherche un multiple de $\vect{AK}$}\\
+-\frac{1}{2}\vect{AK} &= \vect{IJ} &&
+\end{calculs}
+\explique{$\vect{AK}$ et $\vect{IJ}$ sont colinéaires, donc \res{les droites $(AK)$ et
+$(IJ)$ sont parallèles}.}{propriété 2}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube. $K$ est le milieu de $[FG]$, $I$ le centre de la face $ADHE$
+et $J$ le point tel que $\vect{EJ}=\frac{1}{2}\vect{EF}+\frac{1}{4}\vect{EH}$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{DK}$ et $\vect{IJ}$ en fonction de $\vect{AB}$, $\vect{AD}$
+        et $\vect{AE}$.
+  \item En déduire que les droites $(DK)$ et $(IJ)$ sont parallèles.
+\end{questions}
+\reponse{a)~$\vect{DK}=\vect{AB}-\frac{1}{2}\vect{AD}+\vect{AE}$ et
+$\vect{IJ}=\frac{1}{2}\vect{AB}-\frac{1}{4}\vect{AD}+\frac{1}{2}\vect{AE}$.\;
+b)~$\vect{IJ}=\frac{1}{2}\vect{DK}$.}
+\end{methodebox}
+
+\afaire{exercices 7 à 12}
+
+\partiecours{Plans de l'espace, vecteurs coplanaires}
+
+\begin{proprietebox}[Propriété 3 --- Caractérisation d'un plan (admise)]
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Soit $A$ un point et $\vect{u}$, $\vect{v}$ deux vecteurs \textbf{non colinéaires}. Le
+plan $\mathcal{P}$ passant par $A$ et dirigé par $\vect{u}$ et $\vect{v}$ est
+l'ensemble des points $M$ tels que $\vect{AM}=x\vect{u}+y\vect{v}$, avec $x$ et $y$
+nombres réels. Le couple $(\vect{u},\vect{v})$ donne la \textbf{direction} du plan ;
+deux plans de même direction sont parallèles.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[coulExo,opacity=0.1] (0,0)--(4.4,0)--(5.4,1.9)--(1,1.9)--cycle;
+  \draw[gray] (0,0)--(4.4,0)--(5.4,1.9)--(1,1.9)--cycle;
+  \node at (4.9,0.25) {$\mathcal{P}$};
+  \coordinate (A) at (0.8,0.4);
+  \coordinate (U) at (2,0.4); \coordinate (V) at (1.25,1.2);
+  \coordinate (M) at (4.08,1.6);
+  \draw[-{Stealth},coulExo,thick] (A)--(U) node[midway,below]{$\vect{u}$};
+  \draw[-{Stealth},coulExo,thick] (A)--(V) node[midway,left]{$\vect{v}$};
+  \draw[dashed] (A)--(3.4,0.4) node[below]{$x\vect{u}$} --(M);
+  \draw[-{Stealth},coulCourbe,thick] (A)--(M);
+  \path (A) node[croix]{} node[below left]{$A$} (M) node[croix]{} node[above]{$M$};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{definitionbox}[Définition 4 --- Vecteurs coplanaires]
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+Trois vecteurs $\vect{u}$, $\vect{v}$, $\vect{w}$ sont \textbf{coplanaires} si, en les
+plaçant à partir d'un même point $O$ ($\vect{OA}=\vect{u}$, $\vect{OB}=\vect{v}$,
+$\vect{OC}=\vect{w}$), les points $O$, $A$, $B$, $C$ sont dans un même plan.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[coulExo,opacity=0.1] (0,0)--(4.4,0)--(5.4,1.9)--(1,1.9)--cycle;
+  \draw[gray] (0,0)--(4.4,0)--(5.4,1.9)--(1,1.9)--cycle;
+  \coordinate (O) at (1,0.5);
+  \coordinate (A) at (3.2,0.3); \coordinate (B) at (1.8,1.6); \coordinate (C) at (4.3,1.4);
+  \draw[-{Stealth},coulExo,thick] (O)--(A) node[midway,below]{$\vect{u}$};
+  \draw[-{Stealth},coulExo,thick] (O)--(B) node[midway,left]{$\vect{v}$};
+  \draw[-{Stealth},coulCourbe,thick] (O)--(C) node[midway,above]{$\vect{w}$};
+  \path (O) node[croix]{} node[below left]{$O$} (A) node[croix]{} node[right]{$A$}
+        (B) node[croix]{} node[above]{$B$} (C) node[croix]{} node[right]{$C$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 4 --- Coplanarité]
+Soit $\vect{u}$ et $\vect{v}$ deux vecteurs non colinéaires.
+\begin{itemize}
+  \item $\vect{u}$, $\vect{v}$, $\vect{w}$ sont coplanaires si et seulement s'il existe
+        deux nombres réels $x$ et $y$ tels que $\vect{w}=x\vect{u}+y\vect{v}$.
+  \item Quatre points $A$, $B$, $C$, $D$ sont coplanaires si et seulement si
+        $\vect{AB}$, $\vect{AC}$, $\vect{AD}$ sont coplanaires.
+  \item Une droite de vecteur directeur $\vect{w}$ est \textbf{parallèle} au plan dirigé
+        par $\vect{u}$ et $\vect{v}$ si et seulement si $\vect{u}$, $\vect{v}$,
+        $\vect{w}$ sont coplanaires.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[coulExo,opacity=0.1] (0,0)--(5,0)--(6,1.9)--(1,1.9)--cycle;
+  \draw[gray] (0,0)--(5,0)--(6,1.9)--(1,1.9)--cycle;
+  \node at (5.4,0.25) {$\mathcal{P}$};
+  \coordinate (O) at (1,0.5);
+  \draw[-{Stealth},coulExo,thick] (O)--(2.3,0.5) node[midway,below]{$\vect{u}$};
+  \draw[-{Stealth},coulExo,thick] (O)--(1.5,1.4) node[midway,left]{$\vect{v}$};
+  \draw[-{Stealth},coulCourbe,thick,dashed] (3,0.6)--(4.6,1.3) node[midway,below right]{$\vect{w}$};
+  \draw[thick] (1.6,2.6)--(6.2,4.6) node[right]{$(d)$};
+  \draw[-{Stealth},coulCourbe,line width=1.6pt] (3,3.21)--(4.6,3.91) node[midway,above=3pt,sloped]{$\vect{w}$};
+\end{tikzpicture}
+\end{center}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Démontrer que des vecteurs, ou des points, sont coplanaires]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube, $J$ est le milieu de $[BF]$ et $K$ celui de $[DH]$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{AJ}$, $\vect{AK}$ et $\vect{AG}$ en fonction de $\vect{AB}$,
+        $\vect{AD}$ et $\vect{AE}$.
+  \item En déduire que les points $A$, $J$, $G$, $K$ sont coplanaires.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2.2}
+  \coordinate (J) at ($(B)!0.5!(F)$); \coordinate (K) at ($(D)!0.5!(H)$);
+  \fill[coulExo,opacity=0.15] (A)--(J)--(G)--(K)--cycle;
+  \draw[coulExo] (A)--(J)--(G); \draw[coulExo,dashed] (G)--(K)--(A);
+  \path (J) node[croix]{} node[right]{$J$} (K) node[croix]{} node[left]{$K$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vect{AJ} &= \vect{AB}+\vect{BJ} &&\\
+\vect{AJ} &= \res{\vect{AB}+\frac{1}{2}\vect{AE}} &\qquad& \rem{$\vect{BJ}=\frac{1}{2}\vect{BF}=\frac{1}{2}\vect{AE}$}\\[2pt]
+\vect{AK} &= \vect{AD}+\vect{DK} &&\\
+\vect{AK} &= \res{\vect{AD}+\frac{1}{2}\vect{AE}} &\qquad& \rem{$\vect{DK}=\frac{1}{2}\vect{DH}=\frac{1}{2}\vect{AE}$}\\[2pt]
+\vect{AG} &= \res{\vect{AB}+\vect{AD}+\vect{AE}} &\qquad& \rem{chemin $A\to B\to C\to G$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{AJ}+\vect{AK} &= \vect{AB}+\vect{AD}+\vect{AE} &\qquad& \rem{on additionne}\\
+\vect{AJ}+\vect{AK} &= \vect{AG} &&
+\end{calculs}
+\explique{$\vect{AJ}$ et $\vect{AK}$ ne sont pas colinéaires, et
+$\vect{AG}=\vect{AJ}+\vect{AK}$ : les vecteurs sont coplanaires.}{propriété 4}
+\explique{Donc \res{$A$, $J$, $G$, $K$ sont coplanaires} ($AJGK$ est même un
+parallélogramme).}{}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube, $I$ est le milieu de $[AE]$ et $J$ celui de $[CG]$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{BI}$, $\vect{BJ}$ et $\vect{BH}$ en fonction de $\vect{AB}$,
+        $\vect{AD}$ et $\vect{AE}$.
+  \item En déduire que les points $B$, $I$, $H$, $J$ sont coplanaires.
+\end{questions}
+\reponse{a)~$\vect{BI}=-\vect{AB}+\frac{1}{2}\vect{AE}$,
+$\vect{BJ}=\vect{AD}+\frac{1}{2}\vect{AE}$ et $\vect{BH}=-\vect{AB}+\vect{AD}+\vect{AE}$.\;
+b)~$\vect{BH}=\vect{BI}+\vect{BJ}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 6 --- Démontrer qu'une droite est parallèle à un plan]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube. $I$, $J$ et $K$ sont les milieux respectifs de $[AD]$, $[BC]$
+et $[EH]$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{BK}$, $\vect{IJ}$ et $\vect{JG}$ en fonction de $\vect{AB}$,
+        $\vect{AD}$ et $\vect{AE}$.
+  \item En déduire que la droite $(BK)$ est parallèle au plan $(IJG)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2.2}
+  \coordinate (I) at ($(A)!0.5!(D)$); \coordinate (J) at ($(B)!0.5!(C)$);
+  \coordinate (K) at ($(E)!0.5!(H)$);
+  \fill[coulExo,opacity=0.15] (I)--(J)--(G)--cycle;
+  \draw[coulExo] (J)--(G); \draw[coulExo,dashed] (I)--(J) (I)--(G);
+  \draw[coulCourbe,thick] (B)--(K);
+  \path (I) node[croix]{} node[left]{$I$} (J) node[croix]{} node[right]{$J$}
+        (K) node[croix]{} node[above left]{$K$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vect{BK} &= \vect{BA}+\vect{AE}+\vect{EK} &\qquad& \rem{chemin $B\to A\to E\to K$}\\
+\vect{BK} &= \res{-\vect{AB}+\frac{1}{2}\vect{AD}+\vect{AE}} &&\\[2pt]
+\vect{IJ} &= \res{\vect{AB}} &\qquad& \rem{$ABJI$ est un rectangle}\\[2pt]
+\vect{JG} &= \vect{JC}+\vect{CG} &&\\
+\vect{JG} &= \res{\frac{1}{2}\vect{AD}+\vect{AE}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{JG}-\vect{IJ} &= \frac{1}{2}\vect{AD}+\vect{AE}-\vect{AB} &&\\
+\vect{JG}-\vect{IJ} &= \vect{BK} &&
+\end{calculs}
+\explique{$\vect{IJ}$ et $\vect{JG}$ sont deux vecteurs non colinéaires du plan $(IJG)$,
+et $\vect{BK}=-\vect{IJ}+\vect{JG}$ : $\vect{IJ}$, $\vect{JG}$, $\vect{BK}$ sont
+coplanaires.}{propriété 4}
+\explique{Donc \res{la droite $(BK)$ est parallèle au plan $(IJG)$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube. $I$, $J$ et $K$ sont les milieux respectifs de $[AB]$, $[DC]$
+et $[EF]$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer $\vect{DK}$, $\vect{IJ}$ et $\vect{JG}$ en fonction de $\vect{AB}$,
+        $\vect{AD}$ et $\vect{AE}$.
+  \item En déduire que la droite $(DK)$ est parallèle au plan $(IJG)$.
+\end{questions}
+\reponse{a)~$\vect{DK}=\frac{1}{2}\vect{AB}-\vect{AD}+\vect{AE}$, $\vect{IJ}=\vect{AD}$
+et $\vect{JG}=\frac{1}{2}\vect{AB}+\vect{AE}$.\; b)~$\vect{DK}=\vect{JG}-\vect{IJ}$.}
+\end{methodebox}
+
+\afaire{exercices 13 à 17}
+
+\besoinplace{11cm}
+\partiecours{Positions relatives de droites et de plans}
+
+\begin{proprietebox}[Propriété 5 --- Positions relatives]
+\begin{itemize}
+  \item \textbf{Deux droites} sont soit \textbf{coplanaires} (dans un même plan) :
+        sécantes en un point, ou parallèles (strictement ou confondues) ; soit
+        \textbf{non coplanaires} : elles n'ont aucun point commun et ne sont pas
+        parallèles.
+  \item \textbf{Une droite et un plan} sont soit \textbf{sécants} en un point, soit
+        \textbf{parallèles} : la droite est incluse dans le plan, ou n'a aucun point
+        commun avec lui.
+  \item \textbf{Deux plans} sont soit \textbf{sécants} suivant une droite, soit
+        \textbf{parallèles} (strictement ou confondus).
+\end{itemize}
+\begin{center}
+\tikzset{plan/.style={fill=coulExo!10,draw=gray}}
+\begin{tabular}{ccc}
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \draw[coulCourbe,thick] (0.3,0.2)--(2.8,1.0) (0.9,1.1)--(2.3,0.1);
+  \path (1.585,0.611) node[croix]{};
+\end{tikzpicture}
+&
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \draw[coulCourbe,thick] (0.3,0.2)--(2.6,0.5) (0.6,0.8)--(2.9,1.1);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \draw[coulCourbe,thick] (0.5,0.3)--(1.6,1.0);
+  \draw[coulCourbe,thick] (2.3,0.5)--(2.3,1.6); \draw[coulCourbe,thick,dashed] (2.3,0.5)--(2.3,0);
+  \draw[coulCourbe,thick] (2.3,0)--(2.3,-0.5);
+\end{tikzpicture}
+\\
+droites sécantes & droites parallèles & droites non coplanaires
+\end{tabular}
+
+\medskip
+\begin{tabular}{cccc}
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \draw[coulCourbe,thick] (1.6,0.6)--(1.9,1.8); \draw[coulCourbe,thick,dashed] (1.6,0.6)--(1.5,0.2);
+  \draw[coulCourbe,thick] (1.5,0.2)--(1.375,-0.3);
+  \path (1.6,0.6) node[croix]{};
+\end{tikzpicture}
+&
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \draw[coulCourbe,thick] (0.3,1.7)--(2.9,1.7);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \path[plan,fill=coulCourbe!10] (0.3,0.6)--(2.9,0.6)--(2.9,1.9)--(0.3,1.9)--cycle;
+  \draw[coulCourbe,thick] (0.3,0.6)--(2.9,0.6);
+\end{tikzpicture}
+&
+\begin{tikzpicture}[font=\footnotesize]
+  \path[plan] (0,0)--(2.6,0)--(3.2,1.2)--(0.6,1.2)--cycle;
+  \path[plan,fill=coulCourbe!10] (0,1)--(2.6,1)--(3.2,2.2)--(0.6,2.2)--cycle;
+\end{tikzpicture}
+\\
+droite et plan sécants & droite parallèle au plan & plans sécants & plans parallèles
+\end{tabular}
+\end{center}
+Si deux plans sont parallèles, tout plan qui coupe l'un coupe l'autre, et les deux
+droites d'intersection sont parallèles.
+\end{proprietebox}
+
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Exemples dans le cube $ABCDEFGH$ ci-contre :
+\begin{itemize}
+  \item $(EG)$ et $(FG)$ sont sécantes en $G$ ; $(AD)$ et $(FG)$ sont parallèles
+        ($\vect{AD}=\vect{FG}$) ;
+  \item $(AD)$ et $(CG)$ sont non coplanaires ;
+  \item $(EG)$ est parallèle au plan $(ABC)$ ; $(AG)$ coupe le plan $(EFG)$ en $G$ ;
+  \item les plans $(ABC)$ et $(EFG)$ sont parallèles ; $(ABC)$ et $(BCG)$ sont sécants
+        suivant $(BC)$.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2.2}
+  \draw[coulExo,thick] (E)--(G); \draw[coulCourbe,thick,dashed] (A)--(D);
+\end{tikzpicture}
+\end{minipage}
+
+\begin{methodebox}[Méthode 7 --- Étudier la position relative de droites et de plans]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Donner, en justifiant, la position relative :
+\begin{questions}[label=\alph*)]
+  \item des droites $(AH)$ et $(BG)$ ;
+  \item des droites $(AB)$ et $(CG)$ ;
+  \item de la droite $(EG)$ et du plan $(ABC)$ ;
+  \item des plans $(ABF)$ et $(DCG)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{$ABGH$ est un rectangle ($\vect{AB}=\vect{HG}$), donc $\vect{AH}=\vect{BG}$ :
+les vecteurs directeurs sont colinéaires.}{propriété 2}
+\explique{\res{$(AH)$ et $(BG)$ sont parallèles} (strictement, car $B\notin(AH)$).}{}
+\cas{b)}
+\explique{Supposons $(AB)$ et $(CG)$ dans un même plan : ce plan contiendrait $A$, $B$
+et $C$, donc serait le plan $(ABC)$ ; or $G$ n'est pas dans le plan $(ABC)$.}{raisonnement
+par l'absurde}
+\explique{Donc \res{$(AB)$ et $(CG)$ sont non coplanaires}.}{}
+\cas{c)}
+\explique{$\vect{EG}=\vect{AC}$, vecteur du plan $(ABC)$ : $(EG)$ est parallèle à ce
+plan ; $E\notin(ABC)$, donc \res{$(EG)$ est strictement parallèle au plan
+$(ABC)$}.}{propriété 4}
+\cas{d)}
+\explique{Le plan $(ABF)$ est dirigé par $\vect{AB}$ et $\vect{AE}$, le plan $(DCG)$
+par $\vect{DC}=\vect{AB}$ et $\vect{DH}=\vect{AE}$ : même direction.}{faces opposées}
+\explique{$D\notin(ABF)$, donc \res{les plans $(ABF)$ et $(DCG)$ sont strictement
+parallèles}.}{propriété 3}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Donner, en justifiant, la position relative :
+\begin{questions}[label=\alph*)]
+  \item des droites $(BE)$ et $(CH)$ ;
+  \item des droites $(AD)$ et $(BF)$ ;
+  \item de la droite $(FH)$ et du plan $(ABC)$ ;
+  \item des plans $(ADH)$ et $(BCG)$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+\end{tikzpicture}
+\end{minipage}
+\reponse{a)~Parallèles.\; b)~Non coplanaires.\; c)~Strictement parallèles.\;
+d)~Strictement parallèles.}
+\end{methodebox}
+
+\afaire{exercices 18 à 20}
+
+\partiecours{Bases et repères de l'espace}
+
+\begin{definitionbox}[Définition 5 --- Base, repère, coordonnées]
+\begin{itemize}
+  \item Trois vecteurs $\vect{i}$, $\vect{j}$, $\vect{k}$ \textbf{non coplanaires}
+        forment une \textbf{base} $(\vect{i},\vect{j},\vect{k})$ de l'espace. Tout
+        vecteur $\vect{u}$ s'écrit alors de façon \textbf{unique}
+        $\vect{u}=x\vect{i}+y\vect{j}+z\vect{k}$ (admis) : $(x\,;y\,;z)$ sont les
+        \textbf{coordonnées} de $\vect{u}$ dans cette base.
+  \item Un \textbf{repère} $(O\,;\vect{i},\vect{j},\vect{k})$ est formé d'un point $O$
+        et d'une base. Les coordonnées d'un point $M$ sont celles du vecteur
+        $\vect{OM}$ : $M(x\,;y\,;z)$ signifie $\vect{OM}=x\vect{i}+y\vect{j}+z\vect{k}$.
+\end{itemize}
+\begin{minipage}[c]{0.6\linewidth}\raggedright
+\textbf{Dans un pavé droit} $ABCDEFGH$, on utilise souvent le repère
+$(A\,;\vect{AB},\vect{AD},\vect{AE})$ : pour aller de $A$ à $M$, on avance de $x$
+fois $\vect{AB}$, puis de $y$ fois $\vect{AD}$, puis de $z$ fois $\vect{AE}$. Les
+nombres $x$, $y$, $z$ sont l'\textbf{abscisse}, l'\textbf{ordonnée} et la
+\textbf{cote} de $M$.
+
+\smallskip
+Exemples : $A(0\,;0\,;0)$, $B(1\,;0\,;0)$, $D(0\,;1\,;0)$, $E(0\,;0\,;1)$, et
+$G(1\,;1\,;1)$ car $\vect{AG}=\vect{AB}+\vect{AD}+\vect{AE}$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}\centering
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below,font=\footnotesize]{$\vect{AB}$};
+  \draw[-{Stealth},coulExo,thick] (A)--(D) node[pos=0.55,right=2pt,font=\footnotesize]{$\vect{AD}$};
+  \draw[-{Stealth},coulExo,thick] (A)--(E) node[midway,left,font=\footnotesize]{$\vect{AE}$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 6 --- Calculs sur les coordonnées]
+Dans un repère, avec $A(x_{A}\,;y_{A}\,;z_{A})$, $B(x_{B}\,;y_{B}\,;z_{B})$,
+$\vect{u}\begin{pmatrix}x\\y\\z\end{pmatrix}$ et $\vect{v}\begin{pmatrix}x'\\y'\\z'\end{pmatrix}$ :
+\begin{itemize}
+  \item $\vect{AB}\begin{pmatrix}x_{B}-x_{A}\\y_{B}-y_{A}\\z_{B}-z_{A}\end{pmatrix}$ ;
+  \item comme dans le plan, le milieu $I$ de $[AB]$ a pour coordonnées les moyennes
+        des coordonnées de $A$ et de $B$ :
+        $I\left(\dfrac{x_{A}+x_{B}}{2}\,;\dfrac{y_{A}+y_{B}}{2}\,;\dfrac{z_{A}+z_{B}}{2}\right)$ ;
+  \item $\vect{u}+\vect{v}$ a pour coordonnées $\begin{pmatrix}x+x'\\y+y'\\z+z'\end{pmatrix}$
+        et $k\vect{u}$ a pour coordonnées $\begin{pmatrix}kx\\ky\\kz\end{pmatrix}$ pour tout
+        nombre réel $k$ ;
+  \item $\vect{u}$ et $\vect{v}$ sont colinéaires si et seulement si leurs coordonnées
+        sont proportionnelles.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Lire des coordonnées dans un pavé]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube ; on se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$. On note $I$ le milieu de $[FG]$ et $J$ le centre de la face $ABCD$.
+\begin{questions}[label=\alph*)]
+  \item Donner les coordonnées de $C$, $F$ et $H$.
+  \item Calculer les coordonnées de $I$ et de $J$.
+  \item Sur quelle arête est le point $L(1\,;0\,;\frac{1}{2})$ ? Préciser sa
+        position.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \path ($(F)!0.5!(G)$) node[croix]{} node[above,font=\footnotesize]{$I$}
+        ($(A)!0.5!(C)$) node[croix]{} node[below,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{AC}=\vect{AB}+\vect{AD}$, soit $\vect{AC}=1\vect{AB}+1\vect{AD}+0\vect{AE}$,
+donc \res{$C(1\,;1\,;0)$}.}{règle du parallélogramme}
+\explique{De même, \res{$F(1\,;0\,;1)$} et \res{$H(0\,;1\,;1)$}.}{$F$ au-dessus de
+$B$, $H$ au-dessus de $D$}
+\cas{b)}
+\explique{$I$ est le milieu de $[FG]$, avec $F(1\,;0\,;1)$ et $G(1\,;1\,;1)$ :}{}
+\begin{calculs}
+x_{I} &= \frac{1+1}{2} = 1 &\qquad& \rem{moyenne des abscisses}\\
+y_{I} &= \frac{0+1}{2} = \frac{1}{2} &&\\
+z_{I} &= \frac{1+1}{2} = 1 &&
+\end{calculs}
+\explique{Donc \res{$I\left(1\,;\frac{1}{2}\,;1\right)$}.}{}
+\explique{$J$ est le centre du carré $ABCD$, donc le milieu de la diagonale $[AC]$, avec
+$A(0\,;0\,;0)$ et $C(1\,;1\,;0)$ : \res{$J\left(\frac{1}{2}\,;\frac{1}{2}\,;0\right)$}.}{les
+diagonales se coupent en leur milieu}
+\cas{c)}
+\explique{$L$ a pour abscisse $1$ et pour ordonnée $0$, comme $B$ et $F$ : il est sur
+l'arête $[BF]$, à mi-hauteur. \res{$L$ est le milieu de $[BF]$}.}{$B(1\,;0\,;0)$ et
+$F(1\,;0\,;1)$}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube ; on se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$. On note $I$ le milieu de $[EH]$ et $J$ le centre de la face $BCGF$.
+\begin{questions}[label=\alph*)]
+  \item Donner les coordonnées de $D$, $G$ et $F$.
+  \item Calculer les coordonnées de $I$ et de $J$.
+  \item Sur quelle arête est le point $L(\frac{1}{2}\,;1\,;0)$ ? Préciser sa position.
+\end{questions}
+\reponse{a)~$D(0\,;1\,;0)$, $G(1\,;1\,;1)$ et $F(1\,;0\,;1)$.\; b)~$I(0\,;\frac{1}{2}\,;1)$
+et $J(1\,;\frac{1}{2}\,;\frac{1}{2})$.\; c)~Le milieu de $[DC]$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 9 --- Justifier une base et décomposer un vecteur]
+\etapeexemples
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+$ABCDEFGH$ est un pavé droit. $I$ est le milieu de $[EF]$ et $J$ le point tel que
+$\vect{DJ}=\frac{1}{3}\vect{DC}$.
+\begin{questions}[label=\alph*)]
+  \item Justifier que $(\vect{AB},\vect{AD},\vect{AE})$ est une base de l'espace.
+  \item Décomposer $\vect{IJ}$ dans cette base.
+  \item En déduire les coordonnées de $\vect{IJ}$, puis les vérifier avec celles de
+        $I$ et $J$ dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[font=\footnotesize]
+  \paveespace{3}{2}{1.6}
+  \coordinate (I) at ($(E)!0.5!(F)$); \coordinate (J) at ($(D)!0.3333!(C)$);
+  \draw[coulExo,thick,dashed] (I)--(J);
+  \path (I) node[croix]{} node[above]{$I$} (J) node[croix]{} node[below]{$J$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{$E$ n'est pas dans le plan $(ABD)$ : $\vect{AB}$, $\vect{AD}$, $\vect{AE}$ ne
+sont pas coplanaires, donc \res{$(\vect{AB},\vect{AD},\vect{AE})$ est une base}.}{définition 5}
+\cas{b)}
+\begin{calculs}
+\vect{IJ} &= \vect{IE}+\vect{EA}+\vect{AD}+\vect{DJ} &\qquad& \rem{chemin $I\to E\to A\to D\to J$}\\
+\vect{IJ} &= -\frac{1}{2}\vect{AB}-\vect{AE}+\vect{AD}+\frac{1}{3}\vect{AB} &\qquad& \rem{$\vect{IE}=\frac{1}{2}\vect{FE}$, $\vect{DC}=\vect{AB}$}\\
+\vect{IJ} &= \res{-\frac{1}{6}\vect{AB}+\vect{AD}-\vect{AE}} &\qquad& \rem{$-\frac{3}{6}+\frac{2}{6}=-\frac{1}{6}$}
+\end{calculs}
+\cas{c)}
+\explique{Donc \res{$\vect{IJ}\begin{pmatrix}-\frac{1}{6}\\1\\-1\end{pmatrix}$}.}{les coefficients de la
+décomposition}
+\explique{Vérification : $I\left(\frac{1}{2}\,;0\,;1\right)$ et
+$J\left(\frac{1}{3}\,;1\,;0\right)$, donc
+$\vect{IJ}\begin{pmatrix}\frac{1}{3}-\frac{1}{2}\\1-0\\0-1\end{pmatrix}$, soit
+$\left(-\frac{1}{6}\,;1\,;-1\right)$.}{propriété 6}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube. $I$ est le milieu de $[BC]$ et $J$ le point tel que
+$\vect{EJ}=\frac{1}{4}\vect{EH}$.
+\begin{questions}[label=\alph*)]
+  \item Justifier que $(\vect{AB},\vect{AD},\vect{AE})$ est une base de l'espace.
+  \item Décomposer $\vect{IJ}$ dans cette base.
+  \item En déduire les coordonnées de $\vect{IJ}$, puis les vérifier avec celles de
+        $I$ et $J$ dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\end{questions}
+\reponse{b)~$\vect{IJ}=-\vect{AB}-\frac{1}{4}\vect{AD}+\vect{AE}$.\;
+c)~$\vect{IJ}\begin{pmatrix}-1\\-\frac{1}{4}\\1\end{pmatrix}$, avec $I(1\,;\frac{1}{2}\,;0)$ et $J(0\,;\frac{1}{4}\,;1)$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 10 --- Calculer avec des coordonnées : milieu, alignement, parallélisme]
+\etapeexemples
+Dans un repère de l'espace, on donne $A(1\,;2\,;-1)$, $B(3\,;1\,;2)$, $C(-3\,;4\,;-7)$,
+$D(0\,;5\,;1)$ et $E(4\,;3\,;7)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées de $\vect{AB}$ et du milieu $I$ de $[AB]$.
+  \item Les points $A$, $B$, $C$ sont-ils alignés ?
+  \item Les droites $(AB)$ et $(DE)$ sont-elles parallèles ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{\res{$\vect{AB}\begin{pmatrix}2\\-1\\3\end{pmatrix}$} ($3-1=2$, $1-2=-1$, $2-(-1)=3$), et
+\res{$I\left(2\,;\frac{3}{2}\,;\frac{1}{2}\right)$}.}{propriété 5}
+\cas{b)}
+\explique{$\vect{AC}\begin{pmatrix}-4\\2\\-6\end{pmatrix}$ : chaque coordonnée est celle de $\vect{AB}$
+multipliée par $-2$, donc $\vect{AC}=-2\vect{AB}$.}{coordonnées proportionnelles}
+\explique{$\vect{AB}$ et $\vect{AC}$ sont colinéaires : \res{$A$, $B$, $C$ sont
+alignés}.}{propriété 2}
+\cas{c)}
+\explique{$\vect{DE}\begin{pmatrix}4\\-2\\6\end{pmatrix}$, donc $\vect{DE}=2\vect{AB}$ : \res{$(AB)$ et $(DE)$
+sont parallèles}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère de l'espace, on donne $A(2\,;-1\,;0)$, $B(5\,;1\,;-2)$, $C(-4\,;-5\,;4)$,
+$D(1\,;1\,;1)$ et $E(7\,;5\,;-3)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les coordonnées de $\vect{AB}$ et du milieu $I$ de $[AB]$.
+  \item Les points $A$, $B$, $C$ sont-ils alignés ?
+  \item Les droites $(AB)$ et $(DE)$ sont-elles parallèles ?
+\end{questions}
+\reponse{a)~$\vect{AB}\begin{pmatrix}3\\2\\-2\end{pmatrix}$ et $I(\frac{7}{2}\,;0\,;-1)$.\; b)~Oui,
+$\vect{AC}=-2\vect{AB}$.\; c)~Oui, $\vect{DE}=2\vect{AB}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 11 --- Étudier la coplanarité de trois vecteurs par leurs coordonnées]
+\etapeexemples
+Dans une base de l'espace, on donne $\vect{u}\begin{pmatrix}1\\0\\2\end{pmatrix}$, $\vect{v}\begin{pmatrix}0\\1\\-1\end{pmatrix}$,
+$\vect{w}\begin{pmatrix}2\\3\\1\end{pmatrix}$ et $\vect{t}\begin{pmatrix}1\\1\\2\end{pmatrix}$.
+\begin{questions}[label=\alph*)]
+  \item Montrer que $\vect{u}$, $\vect{v}$, $\vect{w}$ sont coplanaires.
+  \item Montrer que $\vect{u}$, $\vect{v}$, $\vect{t}$ ne sont pas coplanaires. Que
+        peut-on en déduire ?
+\end{questions}
+\begin{correction}
+\explique{$\vect{u}$ et $\vect{v}$ ne sont pas colinéaires (la première coordonnée de
+$\vect{v}$ est nulle, pas celle de $\vect{u}$).}{condition de la propriété 4}
+\cas{a)}
+\explique{On cherche deux nombres réels $x$ et $y$ tels que $\vect{w}=x\vect{u}+y\vect{v}$ ;
+$x\vect{u}+y\vect{v}$ a pour coordonnées $\begin{pmatrix}x\\y\\2x-y\end{pmatrix}$. On égale
+les coordonnées une à une et on résout le système :}{propriété 6}
+\begin{calculs}
+& \accol{2 &=& x\\ 3 &=& y\\ 1 &=& 2x-y} &\qquad& \rem{abscisses, ordonnées, cotes}\\
+\iff & \accol{x &=& 2\\ y &=& 3\\ 1 &=& 2\times 2-3} && \rem{on remplace $x$ et $y$}\\
+\iff & \accol{x &=& 2\\ y &=& 3\\ 1 &=& 1} && \rem{la dernière ligne est vraie}
+\end{calculs}
+\explique{Le système a une solution : $\vect{w}=2\vect{u}+3\vect{v}$, donc \res{$\vect{u}$,
+$\vect{v}$, $\vect{w}$ sont coplanaires}.}{propriété 4}
+\cas{b)}
+\explique{On cherche $x$ et $y$ tels que $\vect{t}=x\vect{u}+y\vect{v}$ :}{même système}
+\begin{calculs}
+& \accol{1 &=& x\\ 1 &=& y\\ 2 &=& 2x-y} &\qquad& \\
+\iff & \accol{x &=& 1\\ y &=& 1\\ 2 &=& 1} && \rem{la dernière ligne est fausse}
+\end{calculs}
+\explique{Le système n'a pas de solution : \res{$\vect{u}$, $\vect{v}$, $\vect{t}$ ne sont
+pas coplanaires}, ils forment donc une base de l'espace.}{définition 5}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans une base de l'espace, on donne $\vect{u}\begin{pmatrix}1\\2\\0\end{pmatrix}$, $\vect{v}\begin{pmatrix}0\\1\\3\end{pmatrix}$,
+$\vect{w}\begin{pmatrix}2\\1\\-9\end{pmatrix}$ et $\vect{t}\begin{pmatrix}1\\3\\2\end{pmatrix}$.
+\begin{questions}[label=\alph*)]
+  \item Montrer que $\vect{u}$, $\vect{v}$, $\vect{w}$ sont coplanaires.
+  \item Montrer que $\vect{u}$, $\vect{v}$, $\vect{t}$ ne sont pas coplanaires. Que
+        peut-on en déduire ?
+\end{questions}
+\reponse{a)~$\vect{w}=2\vect{u}-3\vect{v}$.\; b)~Système sans solution : base de
+l'espace.}
+\end{methodebox}
+
+\afaire{exercices 21 à 33}
+
+\partiecours{Représentation paramétrique d'une droite}
+
+\begin{proprietebox}[Propriété 7 --- Représentation paramétrique]
+Dans un repère, soit $(d)$ la droite passant par $A(x_{A}\,;y_{A}\,;z_{A})$ et de
+vecteur directeur $\vect{u}\begin{pmatrix}a\\b\\c\end{pmatrix}$. Un point $M(x\,;y\,;z)$ appartient à $(d)$ si
+et seulement s'il existe un nombre réel $t$ tel que
+\[
+\left\{\begin{array}{l}
+x=x_{A}+a\,t\\
+y=y_{A}+b\,t\\
+z=z_{A}+c\,t
+\end{array}\right.
+\]
+Ce système est une \textbf{représentation paramétrique} de $(d)$, de paramètre $t$.
+Chaque valeur de $t$ donne un point de $(d)$ ; $t=0$ donne $A$.
+
+\end{proprietebox}
+
+\textbf{D'où vient ce système ?} D'après la propriété 2, $M\in(d)$ si et seulement s'il
+existe un nombre réel $t$ tel que $\vect{AM}=t\vect{u}$. On écrit les coordonnées des
+deux membres :
+\[
+\vect{AM}\begin{pmatrix}x-x_{A}\\y-y_{A}\\z-z_{A}\end{pmatrix}
+\qquad\text{et}\qquad
+t\vect{u}\begin{pmatrix}a\,t\\b\,t\\c\,t\end{pmatrix}.
+\]
+Deux vecteurs sont égaux quand leurs coordonnées sont égales une à une :
+\begin{calculs}
+x-x_{A} &= a\,t &\qquad& \rem{abscisses}\\
+y-y_{A} &= b\,t &\qquad& \rem{ordonnées}\\
+z-z_{A} &= c\,t &\qquad& \rem{cotes}
+\end{calculs}
+En ajoutant $x_{A}$ (puis $y_{A}$, $z_{A}$) aux deux membres, on obtient
+$x=x_{A}+a\,t$, $y=y_{A}+b\,t$ et $z=z_{A}+c\,t$ : c'est le système de la propriété 7.
+
+\begin{methodebox}[Méthode 12 --- Écrire et utiliser une représentation paramétrique]
+\etapeexemples
+Dans un repère de l'espace, on donne $A(1\,;-2\,;3)$ et $B(3\,;0\,;-1)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer une représentation paramétrique de la droite $(AB)$.
+  \item Les points $C(7\,;4\,;-9)$ et $D(5\,;1\,;-5)$ appartiennent-ils à $(AB)$ ?
+  \item La droite $(d)$ a pour représentation paramétrique
+        $\left\{\begin{array}{l} x=4-t\\ y=2t\\ z=-1+3t\end{array}\right.$ ($t\in\R$).
+        Donner un point et un vecteur directeur de $(d)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{AB}\begin{pmatrix}2\\2\\-4\end{pmatrix}$ est un vecteur directeur de $(AB)$, qui passe par $A$.
+Une représentation paramétrique de $(AB)$ est :}{propriété 7}
+\[
+\res{\left\{\begin{array}{l} x=1+2t\\ y=-2+2t\\ z=3-4t\end{array}\right.\quad(t\in\R)}
+\]
+\cas{b)}
+\explique{$C\in(AB)$ s'il existe $t$ tel que $7=1+2t$, $4=-2+2t$ et $-9=3-4t$. La
+première équation donne $t=3$ ; alors $-2+2\times 3=4$ et $3-4\times 3=-9$ : les trois
+sont vérifiées.}{une seule valeur de $t$ pour les trois}
+\explique{Donc \res{$C$ appartient à $(AB)$} (pour $t=3$).}{}
+\explique{Pour $D$ : $5=1+2t$ donne $t=2$ ; alors $-2+2\times 2=2$ et $2\neq 1$.}{la
+deuxième équation échoue}
+\explique{Donc \res{$D$ n'appartient pas à $(AB)$}.}{}
+\cas{c)}
+\explique{Pour $t=0$, on obtient le point \res{$(4\,;0\,;-1)$} ; les coefficients de $t$
+donnent le vecteur directeur \res{$\vect{u}\begin{pmatrix}-1\\2\\3\end{pmatrix}$}.}{$x=4+(-1)t$}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère de l'espace, on donne $A(2\,;1\,;-1)$ et $B(1\,;4\,;1)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer une représentation paramétrique de la droite $(AB)$.
+  \item Les points $C(0\,;7\,;3)$ et $D(4\,;-5\,;-4)$ appartiennent-ils à $(AB)$ ?
+  \item La droite $(d)$ a pour représentation paramétrique
+        $\left\{\begin{array}{l} x=-3+2t\\ y=5\\ z=4t\end{array}\right.$ ($t\in\R$).
+        Donner un point et un vecteur directeur de $(d)$.
+\end{questions}
+\reponse{a)~$x=2-t$, $y=1+3t$, $z=-1+2t$ ($t\in\R$).\; b)~$C$ oui ($t=2$), $D$ non.\;
+c)~$(-3\,;5\,;0)$ et $\vect{u}\begin{pmatrix}2\\0\\4\end{pmatrix}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 13 --- Étudier l'intersection de deux droites, ou d'une droite et d'un plan de coordonnées]
+\etapeexemples
+Dans un repère $(O\,;\vect{i},\vect{j},\vect{k})$, on considère les droites
+\[
+(d)\colon\left\{\begin{array}{l} x=1+t\\ y=2-t\\ z=3t\end{array}\right.
+\qquad
+(d')\colon\left\{\begin{array}{l} x=3+s\\ y=3+2s\\ z=2-s\end{array}\right.
+\qquad
+(d'')\colon\left\{\begin{array}{l} x=s\\ y=1+s\\ z=2s\end{array}\right.
+\qquad (t\in\R,\ s\in\R).
+\]
+\begin{questions}[label=\alph*)]
+  \item Montrer que $(d)$ et $(d')$ sont sécantes et donner leur point d'intersection.
+  \item Montrer que $(d)$ et $(d'')$ sont non coplanaires.
+  \item Déterminer le point d'intersection de $(d)$ avec le plan
+        $(O\,;\vect{i},\vect{j})$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Les droites sont sécantes s'il existe un point dont les coordonnées vérifient
+les représentations paramétriques des deux droites, donc s'il existe deux nombres réels
+$t$ et $s$ donnant les mêmes coordonnées :}{paramètres de noms différents}
+\begin{calculs}
+& \accol{1+t &=& 3+s\\ 2-t &=& 3+2s\\ 3t &=& 2-s} &\qquad& \rem{$x$, $y$, $z$}\\
+\iff & \accol{t &=& 2+s\\ 2-(2+s) &=& 3+2s\\ 3(2+s) &=& 2-s} && \rem{on isole $t$, on le remplace}\\
+\iff & \accol{t &=& 2+s\\ -3s &=& 3\\ 4s &=& -4} &&\\
+\iff & \accol{t &=& 1\\ s &=& -1\\ s &=& -1} && \rem{les deux valeurs de $s$ concordent}
+\end{calculs}
+\explique{Ces équations sont compatibles : pour $t=1$ et $s=-1$, les deux représentations
+donnent le même point. On remplace $t$ par $1$ dans celle de $(d)$ : $x=1+1=2$,
+$y=2-1=1$ et $z=3\times 1=3$.}{contrôle : $(d')$ pour $s=-1$}
+\explique{\res{$(d)$ et $(d')$ sont sécantes en $M(2\,;1\,;3)$}.}{}
+\cas{b)}
+\explique{Vecteurs directeurs : $\vect{u}\begin{pmatrix}1\\-1\\3\end{pmatrix}$ et $\vect{u''}\begin{pmatrix}1\\1\\2\end{pmatrix}$, non
+colinéaires (premières coordonnées égales, deuxièmes non) : les droites ne sont pas
+parallèles.}{}
+\explique{Un point commun correspondrait à un couple $(t\,;s)$ solution de :}{}
+\begin{calculs}
+& \accol{1+t &=& s\\ 2-t &=& 1+s\\ 3t &=& 2s} &\qquad& \\
+\iff & \accol{s &=& 1+t\\ 2-t &=& 2+t\\ 3t &=& 2+2t} && \rem{on remplace $s$ par $1+t$}\\
+\iff & \accol{s &=& 1+t\\ t &=& 0\\ t &=& 2} && \rem{deux valeurs de $t$ différentes}
+\end{calculs}
+\explique{Ces équations sont incompatibles : les droites n'ont aucun point commun.}{}
+\explique{Ni parallèles, ni sécantes : \res{$(d)$ et $(d'')$ sont non coplanaires}.}{propriété 5}
+\cas{c)}
+\explique{Le plan $(O\,;\vect{i},\vect{j})$ est formé des points de cote nulle : on
+cherche $t$ tel que $z=0$, soit $3t=0$, donc $t=0$.}{$z=0$}
+\explique{On remplace $t$ par $0$ dans la représentation paramétrique de $(d)$ :
+$x=1+0=1$, $y=2-0=2$ et $z=3\times 0=0$.}{le point de paramètre $0$}
+\explique{Le point d'intersection est \res{$(1\,;2\,;0)$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère $(O\,;\vect{i},\vect{j},\vect{k})$, on considère les droites
+\[
+(d)\colon\left\{\begin{array}{l} x=2-t\\ y=1+2t\\ z=t\end{array}\right.
+\qquad
+(d')\colon\left\{\begin{array}{l} x=-1+2s\\ y=2+s\\ z=2-s\end{array}\right.
+\qquad
+(d'')\colon\left\{\begin{array}{l} x=3s\\ y=1\\ z=1+s\end{array}\right.
+\qquad (t\in\R,\ s\in\R).
+\]
+\begin{questions}[label=\alph*)]
+  \item Montrer que $(d)$ et $(d')$ sont sécantes et donner leur point d'intersection.
+  \item Montrer que $(d)$ et $(d'')$ sont non coplanaires.
+  \item Déterminer le point d'intersection de $(d)$ avec le plan
+        $(O\,;\vect{i},\vect{j})$.
+\end{questions}
+\reponse{a)~Sécantes en $(1\,;3\,;1)$ ($t=1$, $s=1$).\; b)~Directions non colinéaires,
+système sans solution.\; c)~$(2\,;1\,;0)$.}
+\end{methodebox}
+
+\afaire{exercices 34 à 40, puis les exercices type bac 41 à 43}
+
+\end{document}

@@ -1,0 +1,1108 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 4 --- Géométrie dans l'espace --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\paveespace}[3]{%
+  \coordinate (A) at (0,0); \coordinate (B) at (#1,0);
+  \coordinate (D) at ({0.45*#2},{0.35*#2}); \coordinate (C) at ({#1+0.45*#2},{0.35*#2});
+  \coordinate (E) at (0,#3); \coordinate (F) at (#1,#3);
+  \coordinate (H) at ({0.45*#2},{#3+0.35*#2}); \coordinate (G) at ({#1+0.45*#2},{#3+0.35*#2});
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[above left]{$D$} (E) node[left]{$E$}
+    (F) node[below right]{$F$} (G) node[above right]{$G$} (H) node[above left]{$H$};}
+\newcommand{\cubeespace}[1]{\paveespace{#1}{#1}{#1}}
+\newcommand{\pyramide}{%
+  \coordinate (A) at (0,0); \coordinate (B) at (2.2,0);
+  \coordinate (C) at (3.0,0.8); \coordinate (D) at (0.8,0.8); \coordinate (S) at (1.5,2.6);
+  \draw (A)--(B)--(C)--(S)--cycle (S)--(B); \draw[dashed] (A)--(D)--(C) (S)--(D);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[below right=-1pt]{$D$} (S) node[above]{$S$};}
+\newcommand{\accol}[1]{\left\{\renewcommand{\arraystretch}{1.3}\begin{array}{rcl}#1\end{array}\right.}
+\newcommand{\tetraedre}{%
+  \coordinate (A) at (0,0); \coordinate (B) at (2.2,-0.4);
+  \coordinate (C) at (3.0,0.7); \coordinate (D) at (1.3,2.4);
+  \draw (A)--(B)--(D)--cycle (B)--(C)--(D); \draw[dashed] (A)--(C);
+  \path[font=\footnotesize] (A) node[left]{$A$} (B) node[below]{$B$}
+    (C) node[above right]{$C$} (D) node[above]{$D$};}
+
+\begin{document}
+
+\entetefiche{Chapitre 4 --- Géométrie dans l'espace}{Terminale spécialité mathématiques}
+
+\partie{Vecteurs de l'espace}
+
+\begin{exo}[Construire des points]
+\explique{On met les vecteurs bout à bout, en partant du point de départ : chaque vecteur
+est remplacé par un représentant dont l'origine est l'extrémité du précédent.}{relation de Chasles}
+\cas{a)}
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+\explique{De $A$, $\vect{AD}$ mène en $D$ ; puis $\frac{1}{2}\vect{BF}=\frac{1}{2}\vect{DH}$
+mène au milieu de $[DH]$.}{$\vect{BF}=\vect{DH}$}
+\explique{\res{$M$ est le milieu de $[DH]$}.}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}\centering\vspace{-6pt}
+\begin{tikzpicture}[scale=0.95,font=\footnotesize]
+  \cubeespace{2.2}
+\draw[-{Stealth},coulExo,thick] (A)--(D) node[midway,below right]{$\vect{AD}$};
+  \draw[-{Stealth},coulExo,thick] (D)--($(D)!0.5!(H)$) node[midway,right]{$\frac{1}{2}\vect{BF}$};
+  \path ($(D)!0.5!(H)$) node[croix]{} node[above right]{$M$};
+\end{tikzpicture}
+\end{minipage}
+
+\cas{b)}
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+\explique{De $B$, $\vect{CG}=\vect{BF}$ mène en $F$ ; $\vect{AD}=\vect{FG}$ mène en $G$ ;
+$\frac{1}{2}\vect{HE}=\frac{1}{2}\vect{GF}$ ramène au milieu de $[FG]$.}{}
+\explique{\res{$N$ est le milieu de $[FG]$}.}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}\centering\vspace{-6pt}
+\begin{tikzpicture}[scale=0.95,font=\footnotesize]
+  \cubeespace{2.2}
+\draw[-{Stealth},coulExo,thick] (B)--(F) node[midway,right]{$\vect{CG}$};
+  \draw[-{Stealth},coulExo,thick] (F)--(G) node[pos=0.3,below right]{$\vect{AD}$};
+  \draw[-{Stealth},coulCourbe,thick] ($(G)+(0,0.12)$)--($(F)!0.5!(G)+(0,0.12)$) node[midway,above]{$\frac{1}{2}\vect{HE}$};
+  \path ($(F)!0.5!(G)$) node[croix]{} node[left]{$N$};
+\end{tikzpicture}
+\end{minipage}
+
+\cas{c)}
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+\explique{De $E$, $\vect{AC}=\vect{EG}$ mène en $G$ ; puis $-\vect{DH}=\vect{GC}$ mène
+en $C$.}{}
+\explique{\res{$R=C$}.}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}\centering\vspace{-6pt}
+\begin{tikzpicture}[scale=0.95,font=\footnotesize]
+  \cubeespace{2.2}
+\draw[-{Stealth},coulExo,thick] (E)--(G) node[midway,below]{$\vect{AC}$};
+  \draw[-{Stealth},coulExo,thick] (G)--(C) node[midway,right]{$-\vect{DH}$};
+\end{tikzpicture}
+\end{minipage}
+
+\cas{d)}
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+\explique{De $C$, $\frac{1}{2}\vect{CA}$ mène au centre de la face $ABCD$ ; puis
+$\vect{AE}$ monte au centre de la face $EFGH$.}{}
+\explique{\res{$S$ est le centre de la face $EFGH$}.}{}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}\centering\vspace{-6pt}
+\begin{tikzpicture}[scale=0.95,font=\footnotesize]
+  \cubeespace{2.2}
+\coordinate (O1) at ($(A)!0.5!(C)$); \coordinate (S) at ($(E)!0.5!(G)$);
+  \draw[-{Stealth},coulExo,thick] (C)--(O1) node[midway,above]{$\frac{1}{2}\vect{CA}$};
+  \draw[-{Stealth},coulExo,thick] (O1)--(S) node[midway,left]{$\vect{AE}$};
+  \path (S) node[croix]{} node[above]{$S$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{a)}
+\explique{$\vect{DH}=\vect{AE}$, et $\vect{AB}+\vect{AE}=\vect{AF}$ ($ABFE$ est un
+rectangle) : \res{vraie}.}{règle du parallélogramme}
+\cas{b)}
+\explique{$\vect{CD}=-\vect{AB}$, donc $\vect{AB}+\vect{CD}=\vect{0}$, alors que
+$\vect{EG}\neq\vect{0}$ : \res{fausse}.}{}
+\cas{c)}
+\explique{$\vect{EI}=\frac{1}{2}\vect{EH}$ et $\vect{EH}=\vect{BC}$ : \res{vraie}.}{}
+\cas{d)}
+\explique{$\vect{JB}=\frac{1}{2}\vect{CB}$, donc $-2\vect{JB}=\vect{BC}$, de direction
+$(BC)$, alors que $\vect{HG}=\vect{AB}$ : \res{fausse}.}{directions différentes}
+\end{exo}
+
+\begin{exo}[Démontrer des égalités]
+\cas{a)}
+\begin{calculs}
+\vect{EA}+\vect{EF}+\vect{CH} &= \vect{EB}+\vect{CH} &&\justif{$ABFE$ rectangle : règle du parallélogramme}\\
+\vect{EA}+\vect{EF}+\vect{CH} &= \vect{EB}+\vect{BE} &&\justif{$BCHE$ rectangle : $\vect{CH}=\vect{BE}$}\\
+\vect{EA}+\vect{EF}+\vect{CH} &= \res{\vect{0}} &&
+\end{calculs}
+\cas{b)}
+\explique{$EFCD$ est un rectangle ($\vect{EF}=\vect{DC}$), donc $\vect{FC}=\vect{ED}$ et
+$\vect{DE}+\vect{FC}=\vect{DE}+\vect{ED}$, soit \res{$\vect{0}$}.}{}
+\cas{c)}
+\begin{calculs}
+\vect{AG}-\vect{AH} &= \vect{HA}+\vect{AG} &&\justif{$-\vect{AH}=\vect{HA}$}\\
+\vect{AG}-\vect{AH} &= \vect{HG} = \res{\vect{EF}} &&\justif{Chasles, puis face $EFGH$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Les milieux d'un tétraèdre]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\tetraedre
+  \path ($(A)!0.5!(B)$) node[croix]{} node[below,font=\footnotesize]{$I$};
+  \path ($(B)!0.5!(C)$) node[croix]{} node[below right,font=\footnotesize]{$J$};
+  \path ($(C)!0.5!(D)$) node[croix]{} node[right,font=\footnotesize]{$K$};
+  \path ($(D)!0.5!(A)$) node[croix]{} node[left,font=\footnotesize]{$L$};
+\end{tikzpicture}
+\par}
+\cas{2)}
+\begin{calculs}
+\vect{IJ} &= \vect{IB}+\vect{BJ} = \frac{1}{2}\vect{AB}+\frac{1}{2}\vect{BC} &&\justif{milieux}\\
+\vect{IJ} &= \res{\frac{1}{2}\vect{AC}} &&\justif{Chasles}\\
+\vect{LK} &= \vect{LD}+\vect{DK} = \frac{1}{2}\vect{AD}+\frac{1}{2}\vect{DC} &&\\
+\vect{LK} &= \res{\frac{1}{2}\vect{AC}} &&
+\end{calculs}
+\cas{3)}
+\explique{$\vect{IJ}=\vect{LK}$ : \res{$IJKL$ est un parallélogramme}.}{définition 1 du cours}
+\end{exo}
+
+\begin{exo}[Une pyramide]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\pyramide
+  \path ($(A)!0.5!(C)$) node[croix]{} node[below,font=\footnotesize]{$O$};
+  \path ($(S)!0.5!(C)$) node[croix]{} node[right,font=\footnotesize]{$K$};
+\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{$K$ est le milieu de $[SC]$, donc $\vect{AK}=\frac{1}{2}(\vect{AS}+\vect{AC})$ ; et
+$\vect{AC}=\vect{AB}+\vect{AD}$ ($ABCD$ parallélogramme).}{}
+\explique{\res{$\vect{AK}=\frac{1}{2}\vect{AB}+\frac{1}{2}\vect{AD}+\frac{1}{2}\vect{AS}$}.}{}
+\cas{3)}
+\begin{calculs}
+\vect{OK} &= \vect{OA}+\vect{AK} &&\\
+\vect{OK} &= -\frac{1}{2}\vect{AB}-\frac{1}{2}\vect{AD}+\frac{1}{2}\vect{AB}+\frac{1}{2}\vect{AD}+\frac{1}{2}\vect{AS} &&\justif{$\vect{AO}=\frac{1}{2}\vect{AC}$}\\
+\vect{OK} &= \res{\frac{1}{2}\vect{AS}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Changer de point de départ]
+\explique{La figure :}{}
+{\centering
+\begin{tikzpicture}[scale=0.9]\paveespace{2.3}{1.4}{1.9}
+  \path ($(F)!0.3333!(B)$) node[croix]{} node[left,font=\footnotesize]{$I$};
+  \path ($(C)!0.5!(D)$) node[croix]{} node[below,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\par}
+\explique{Dans le pavé, $\vect{AB}=\vect{DC}$, $\vect{BF}=\vect{DH}$ et $\vect{BC}=\vect{AD}=-\vect{DA}$.
+$I$ est sur $[BF]$ avec $\vect{BI}=\frac{2}{3}\vect{BF}$.}{$\vect{FI}=\frac{1}{3}\vect{FB}$}
+\cas{a)}
+\begin{calculs}
+\vect{AI} &= \vect{AB}+\vect{BI} &&\\
+\vect{AI} &= \res{\vect{DC}+\frac{2}{3}\vect{DH}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{HJ} &= \vect{HD}+\vect{DJ} &&\\
+\vect{HJ} &= \res{\frac{1}{2}\vect{DC}-\vect{DH}} &&\justif{$J$ milieu de $[DC]$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vect{IJ} &= \vect{IB}+\vect{BC}+\vect{CJ} &&\justif{chemin $I\to B\to C\to J$}\\
+\vect{IJ} &= -\frac{2}{3}\vect{DH}-\vect{DA}-\frac{1}{2}\vect{DC} &&\justif{$\vect{CJ}=\frac{1}{2}\vect{CD}$}\\
+\vect{IJ} &= \res{-\vect{DA}-\frac{1}{2}\vect{DC}-\frac{2}{3}\vect{DH}} &&
+\end{calculs}
+\end{exo}
+
+\partie{Droites de l'espace, colinéarité}
+
+\begin{exo}[Alignés ?]
+\cas{a)}
+\explique{\res{$\vect{AC}=\frac{1}{4}\vect{AB}$}.}{on divise par $4$}
+\cas{b)}
+\explique{$2\vect{AC}=3\vect{AB}$, donc \res{$\vect{AC}=\frac{3}{2}\vect{AB}$}.}{}
+\cas{c)}
+\explique{$\vect{AC}=\vect{AB}+\vect{BC}=\vect{AB}-3\vect{AB}$, donc \res{$\vect{AC}=-2\vect{AB}$}.}{Chasles}
+\cas{d)}
+\explique{$\vect{BC}=-\frac{1}{2}\vect{AB}$, donc $\vect{AC}=\vect{AB}+\vect{BC}$, soit
+\res{$\vect{AC}=\frac{1}{2}\vect{AB}$}.}{}
+\explique{Dans les quatre cas, $\vect{AC}$ et $\vect{AB}$ sont colinéaires : \res{$A$, $B$, $C$
+sont alignés}.}{propriété 2}
+\end{exo}
+
+\begin{exo}[Droites dans un cube]
+\explique{La figure :}{}
+{\centering
+\begin{tikzpicture}[scale=0.9]\cubeespace{2}\end{tikzpicture}
+\par}
+\cas{1)}
+\explique{$EBCH$ est un rectangle ($\vect{EH}=\vect{BC}$), donc $\vect{EB}=\vect{HC}$ :
+\res{vraie}.}{}
+\cas{2)}
+\explique{Un plan contenant $(AD)$ et $(EG)$ contiendrait $A$, $D$, $E$, donc serait
+$(ADE)$, qui ne contient pas $G$ : les droites sont non coplanaires, \res{fausse}.}{par
+l'absurde}
+\cas{3)}
+\explique{$\vect{BD}=\vect{FH}$ : les droites sont parallèles, donc coplanaires,
+\res{vraie}.}{}
+\cas{4)}
+\explique{Un plan contenant $(AE)$ et $(CD)$ contiendrait $A$, $E$, $C$, donc serait
+$(ACE)$, qui ne contient pas $D$ : \res{fausse}.}{}
+\end{exo}
+
+\begin{exo}[Trois points alignés]
+\cas{1)}
+\begin{center}
+\begin{tikzpicture}[scale=0.9,font=\footnotesize]
+  \tetraedre
+  \coordinate (F) at ($(A)!1.3333!(B)$); \coordinate (G) at ($(A)!1.3333!(C)$);
+  \coordinate (I) at ($(B)!0.5!(C)$); \coordinate (E) at ($(A)!1.3333!(I)$);
+  \draw (B)--(F); \draw[dashed] (C)--(G); \draw[dashed] (A)--(E);
+  \draw[coulExo,thick] (F)--(G);
+  \path (F) node[croix]{} node[below]{$F$} (G) node[croix]{} node[right]{$G$}
+        (E) node[croix]{} node[below right]{$E$} (I) node[croix]{} node[below]{$I$};
+\end{tikzpicture}
+\end{center}
+\cas{2)}
+\explique{$\vect{AI}=\frac{1}{2}\vect{AB}+\frac{1}{2}\vect{AC}$, donc
+$\vect{AE}=\frac{2}{3}\vect{AB}+\frac{2}{3}\vect{AC}$ ; $\vect{AF}=\frac{4}{3}\vect{AB}$ et
+$\vect{AG}=\frac{4}{3}\vect{AC}$.}{}
+\begin{calculs}
+\vect{FE} &= \vect{FA}+\vect{AE} &&\\
+\vect{FE} &= \res{-\frac{2}{3}\vect{AB}+\frac{2}{3}\vect{AC}} &&\justif{$-\frac{4}{3}+\frac{2}{3}=-\frac{2}{3}$}\\
+\vect{FG} &= \vect{FA}+\vect{AG} &&\\
+\vect{FG} &= \res{-\frac{4}{3}\vect{AB}+\frac{4}{3}\vect{AC}} &&
+\end{calculs}
+\cas{3)}
+\explique{$\vect{FG}=2\vect{FE}$ : \res{$E$, $F$, $G$ sont alignés}, et \res{$E$ est le milieu de
+$[FG]$}.}{}
+\end{exo}
+
+\begin{exo}[Un parallélogramme dans le cube]
+\cas{1)}
+\begin{calculs}
+\vect{EK} &= \vect{EF}+\vect{FK} = \res{\vect{AB}-\frac{1}{2}\vect{AE}} &&\justif{$\vect{FK}=\frac{1}{2}\vect{FB}$}\\
+\vect{LC} &= \vect{LD}+\vect{DC} = \res{-\frac{1}{2}\vect{AE}+\vect{AB}} &&\justif{$\vect{LD}=\frac{1}{2}\vect{HD}$}
+\end{calculs}
+\cas{2)}
+\explique{$\vect{EK}=\vect{LC}$ : \res{$(EK)$ et $(LC)$ sont parallèles}, et \res{$EKCL$ est un
+parallélogramme}.}{}
+\cas{3)}
+\begin{calculs}
+\vect{KL} &= \vect{KB}+\vect{BA}+\vect{AD}+\vect{DL} &&\justif{chemin}\\
+\vect{KL} &= -\frac{1}{2}\vect{AE}-\vect{AB}+\vect{AD}+\frac{1}{2}\vect{AE} &&\\
+\vect{KL} &= -\vect{AB}+\vect{AD} = \vect{BD} &&
+\end{calculs}
+\explique{\res{Oui, $(KL)$ et $(BD)$ sont parallèles}.}{}
+\end{exo}
+
+\begin{exo}[Sécantes ou parallèles ?]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\tetraedre
+  \path ($(A)!0.6667!(C)$) node[croix]{} node[right,font=\footnotesize]{$E$};
+  \draw[dashed] ($(A)!1.15!(D)$)--($(A)!1.5!(D)$);
+  \path ($(A)!1.5!(D)$) node[croix]{} node[right,font=\footnotesize]{$F$};
+\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{$E$ est sur $(AC)$ et $F$ sur $(AD)$ : $D$, $E$, $C$, $F$ sont dans le plan
+$(ACD)$, donc \res{$(DE)$ et $(CF)$ sont coplanaires}.}{}
+\cas{3)}
+\begin{calculs}
+\vect{DE} &= \vect{DA}+\vect{AE} = \res{\frac{2}{3}\vect{AC}-\vect{AD}} &&\\
+\vect{CF} &= \vect{CA}+\vect{AF} = \res{-\vect{AC}+\frac{3}{2}\vect{AD}} &&\justif{$\vect{AF}=\vect{AD}+\frac{1}{2}\vect{AD}$}
+\end{calculs}
+\cas{4)}
+\explique{$-\frac{3}{2}\vect{DE}=-\vect{AC}+\frac{3}{2}\vect{AD}=\vect{CF}$ : les vecteurs sont
+colinéaires, \res{$(DE)$ et $(CF)$ sont parallèles}.}{deux droites coplanaires sont
+sécantes ou parallèles}
+\end{exo}
+
+\begin{exo}[Une diagonale du cube]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\paveespace{2}{1.1}{2}
+  \path ($(D)!0.5!(G)$) node[croix]{} node[below left,font=\footnotesize]{$I$};
+\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{$I$ est le milieu de $[DG]$ :
+$\vect{AI}=\frac{1}{2}(\vect{AD}+\vect{AG})$, avec $\vect{AG}=\vect{AB}+\vect{AD}+\vect{AE}$.}{}
+\explique{\res{$\vect{AI}=\frac{1}{2}\vect{AB}+\vect{AD}+\frac{1}{2}\vect{AE}$} et
+\res{$\vect{AM}=\frac{1}{3}\vect{AB}+\frac{2}{3}\vect{AD}+\frac{1}{3}\vect{AE}$}.}{$\vect{AM}=\frac{2}{3}\vect{AI}$}
+\cas{3)}
+\begin{calculs}
+\vect{FM} &= \vect{FA}+\vect{AM} &&\justif{$\vect{AF}=\vect{AB}+\vect{AE}$}\\
+\vect{FM} &= \res{-\frac{2}{3}\vect{AB}+\frac{2}{3}\vect{AD}-\frac{2}{3}\vect{AE}} &&\\
+\vect{FD} &= \vect{FA}+\vect{AD} = \res{-\vect{AB}+\vect{AD}-\vect{AE}} &&
+\end{calculs}
+\cas{4)}
+\explique{$\vect{FM}=\frac{2}{3}\vect{FD}$ : \res{$F$, $M$, $D$ sont alignés}, et \res{$M$ est sur
+$[FD]$, aux deux tiers à partir de $F$}.}{}
+\end{exo}
+
+\partie{Plans de l'espace, vecteurs coplanaires}
+
+\begin{exo}[Dans le cube]
+\cas{1)}
+\explique{$\vect{AK}=\vect{AE}+\vect{EK}=\frac{1}{2}\vect{AD}+\vect{AE}$ : \res{$a=\frac{1}{2}$ et
+$b=1$}. \res{$K$ appartient au plan $(ADE)$}.}{propriété 3}
+\cas{2)}
+\explique{$\vect{BJ}=\vect{BC}+\vect{CJ}=\vect{AD}+\frac{1}{2}\vect{AE}$, soit
+\res{$\vect{BJ}=-\vect{DA}+\frac{1}{2}\vect{DH}$} : \res{ils sont coplanaires}.}{$\vect{DA}$, $\vect{DH}$ non colinéaires}
+\end{exo}
+
+\begin{exo}[Un point dans une face]
+\cas{1)}
+\begin{calculs}
+\vect{BM} &= \vect{BA}+\vect{AM} = \vect{AB}+2\vect{AC}-3\vect{AD} &&\justif{$-1+2=1$}\\
+2\vect{BC}-3\vect{BD} &= 2\vect{AC}-2\vect{AB}-3\vect{AD}+3\vect{AB} &&\justif{on essaie une combinaison}\\
+2\vect{BC}-3\vect{BD} &= \vect{AB}+2\vect{AC}-3\vect{AD} &&
+\end{calculs}
+\explique{Donc \res{$\vect{BM}=2\vect{BC}-3\vect{BD}$}.}{}
+\cas{2)}
+\explique{\res{$M$ appartient au plan $(BCD)$}.}{plan passant par $B$, dirigé par
+$\vect{BC}$ et $\vect{BD}$}
+\end{exo}
+
+\begin{exo}[Une droite parallèle à une face]
+\cas{1)}
+\begin{calculs}
+\vect{IJ} &= \vect{ID}+\vect{DJ} &&\\
+\vect{IJ} &= \frac{2}{3}\vect{AD}+\frac{1}{2}\vect{DH} &&\justif{$\vect{ID}=\frac{2}{3}\vect{AD}$}\\
+\vect{IJ} &= \frac{2}{3}\vect{BC}+\frac{1}{2}\vect{BF} &&\justif{faces du pavé}
+\end{calculs}
+\explique{\res{$\vect{IJ}$, $\vect{BC}$, $\vect{BF}$ sont coplanaires}.}{propriété 4}
+\cas{2)}
+\explique{$\vect{BC}$ et $\vect{BF}$ dirigent le plan $(BCG)$ : \res{$(IJ)$ est parallèle au plan
+$(BCG)$}, strictement car $I$ est dans la face opposée $ADHE$.}{}
+\end{exo}
+
+\begin{exo}[Deux plans parallèles]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=1.4]\tetraedre
+  \path ($(A)!0.25!(B)$) node[croix]{} node[below,font=\footnotesize]{$I$};
+  \path ($(A)!0.25!(C)$) node[croix]{} node[above,font=\footnotesize]{$J$};
+  \path ($(A)!0.25!(D)$) node[croix]{} node[left,font=\footnotesize]{$K$};
+\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{$\vect{IJ}=\vect{IA}+\vect{AJ}=\frac{1}{4}(\vect{AC}-\vect{AB})$, soit
+\res{$\vect{IJ}=\frac{1}{4}\vect{BC}$} ; de même \res{$\vect{IK}=\frac{1}{4}\vect{BD}$}.}{}
+\cas{3)}
+\explique{Le plan $(IJK)$ est dirigé par $\vect{IJ}$ et $\vect{IK}$, donc par $\vect{BC}$ et
+$\vect{BD}$ : même direction que $(BCD)$. \res{Les plans $(IJK)$ et $(BCD)$ sont
+parallèles}.}{propriété 3}
+\end{exo}
+
+\begin{exo}[Quatre points coplanaires]
+\cas{1)}
+\begin{center}
+\begin{tikzpicture}[scale=0.9,font=\footnotesize]
+  \tetraedre
+  \coordinate (M) at ($(A)!0.5!(B)$); \coordinate (N) at ($(A)!0.6667!(C)$);
+  \coordinate (Q) at ($(A)!0.5!(D)$); \coordinate (P) at ($(D)!2!(C)$);
+  \draw (C)--(P);
+  \draw[coulExo] (M)--(Q); \draw[coulExo,dashed] (M)--(N)--(P); \draw[coulExo] (Q)--(P);
+  \path (M) node[croix]{} node[below]{$M$} (N) node[croix]{} node[above left]{$N$}
+        (Q) node[croix]{} node[left]{$Q$} (P) node[croix]{} node[below right]{$P$};
+\end{tikzpicture}
+\end{center}
+\cas{2)}
+\explique{$C$ est le milieu de $[DP]$ : $\vect{AC}=\frac{1}{2}(\vect{AD}+\vect{AP})$, donc
+\res{$\vect{AP}=2\vect{AC}-\vect{AD}$}.}{}
+\begin{calculs}
+\vect{MN} &= \vect{MA}+\vect{AN} = \res{-\frac{1}{2}\vect{AB}+\frac{2}{3}\vect{AC}} &&\\
+\vect{MQ} &= \vect{MA}+\vect{AQ} = \res{-\frac{1}{2}\vect{AB}+\frac{1}{2}\vect{AD}} &&\\
+\vect{MP} &= \vect{MA}+\vect{AP} = \res{-\frac{1}{2}\vect{AB}+2\vect{AC}-\vect{AD}} &&
+\end{calculs}
+\cas{3)}
+\explique{Le coefficient de $\vect{AC}$ impose $\frac{2}{3}x=2$, soit $x=3$ ; celui de
+$\vect{AD}$, $\frac{1}{2}y=-1$, soit $y=-2$.}{on identifie}
+\explique{Vérification pour $\vect{AB}$ : $-\frac{1}{2}\times 3-\frac{1}{2}\times(-2)=-\frac{1}{2}$.
+Donc \res{$\vect{MP}=3\vect{MN}-2\vect{MQ}$}.}{}
+\cas{4)}
+\explique{$\vect{MN}$ et $\vect{MQ}$ ne sont pas colinéaires : \res{$M$, $N$, $P$, $Q$ sont
+coplanaires}.}{propriété 4}
+\end{exo}
+
+\partie{Positions relatives de droites et de plans}
+
+\begin{exo}[Positions dans un cube]
+\cas{a)}
+\explique{$ACGE$ est un rectangle, dont $[AG]$ et $[CE]$ sont les diagonales :
+\res{sécantes} au centre du cube.}{}
+\cas{b)}
+\explique{$\vect{EF}=\vect{DC}$ : \res{parallèles} (strictement).}{}
+\cas{c)}
+\explique{Un plan contenant les deux droites contiendrait $B$, $F$, $D$, donc serait
+$(BDF)$, qui ne contient pas $C$ : \res{non coplanaires}.}{par l'absurde}
+\cas{d)}
+\explique{$\vect{AC}=\vect{EG}$, vecteur du plan $(EFG)$, et $A\notin(EFG)$ :
+\res{strictement parallèles}.}{}
+\cas{e)}
+\explique{$B$ est commun, et $H\notin(ABC)$ : la droite n'est pas incluse, \res{sécants en
+$B$}.}{}
+\cas{f)}
+\explique{Le centre $O_{1}$ de $ABCD$ est sur $(AC)$ et $(BD)$, le centre $O_{2}$ de $EFGH$ sur
+$(EG)$ et $(FH)$ : les deux plans, distincts, contiennent $O_{1}$ et $O_{2}$. \res{Ils sont
+sécants suivant $(O_{1}O_{2})$}.}{}
+\end{exo}
+
+\begin{exo}[Positions dans un tétraèdre]
+\explique{La figure :}{}
+{\centering
+\begin{tikzpicture}[scale=0.9]\tetraedre
+  \path ($(A)!0.5!(B)$) node[croix]{} node[below,font=\footnotesize]{$I$};
+  \path ($(A)!0.5!(C)$) node[croix]{} node[above left,font=\footnotesize]{$J$};
+  \path ($(B)!0.5!(D)$) node[croix]{} node[right,font=\footnotesize]{$K$};
+\end{tikzpicture}
+\par}
+\cas{a)}
+\explique{Dans le triangle $ABC$, $\vect{IJ}=\frac{1}{2}\vect{BC}$ : \res{parallèles}.}{droite
+des milieux}
+\cas{b)}
+\explique{$(IJ)$ est parallèle à $(BC)$, incluse dans $(BCD)$, et $I\notin(BCD)$ :
+\res{strictement parallèles}.}{}
+\cas{c)}
+\explique{Dans le triangle $ABD$, $\vect{IK}=\frac{1}{2}\vect{AD}$ : \res{parallèles}.}{}
+\cas{d)}
+\explique{Un plan contenant $(JK)$ et $(CD)$ contiendrait $C$ et $J$, donc $A$ ($J$ est sur
+$(AC)$) : ce serait $(ACD)$. Il contiendrait aussi $K$ et $D$, donc $B$ : impossible, $ABCD$
+est un tétraèdre. \res{Non coplanaires}.}{par l'absurde}
+\end{exo}
+
+\begin{exo}[Positions dans une pyramide]
+\cas{a)}
+\explique{Dans le triangle $SAC$, $\vect{IJ}=\frac{1}{2}\vect{AC}$ : \res{parallèles}.}{}
+\cas{b)}
+\explique{$(IJ)$ est parallèle à $(AC)$, incluse dans $(ABC)$, et $I\notin(ABC)$ :
+\res{strictement parallèles}.}{}
+\cas{c)}
+\explique{Les deux plans contiennent $S$ et $O$ ($O$ est sur $(AC)$ et sur $(BD)$) :
+\res{sécants suivant $(SO)$}.}{}
+\cas{d)}
+\explique{Un plan contenant $(SB)$ et $(AC)$ contiendrait $A$, $B$, $C$, donc serait
+$(ABC)$, qui ne contient pas $S$ : \res{non coplanaires}.}{}
+\end{exo}
+
+\partie{Bases et repères de l'espace}
+
+\begin{exo}[Les coordonnées d'un cube]
+\cas{1)}
+\explique{\res{$A(0\,;0\,;0)$, $B(1\,;0\,;0)$, $C(1\,;1\,;0)$, $D(0\,;1\,;0)$, $E(0\,;0\,;1)$,
+$F(1\,;0\,;1)$, $G(1\,;1\,;1)$, $H(0\,;1\,;1)$}.}{une unité sur chaque axe utilisé}
+\cas{2)}
+\explique{$K$ est le milieu de la diagonale $[EG]$ : \res{$K\left(\frac{1}{2}\,;\frac{1}{2}\,;1\right)$} ;
+$L$ milieu de $[CG]$ : \res{$L\left(1\,;1\,;\frac{1}{2}\right)$} ; $O$ milieu de $[AG]$ :
+\res{$O\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$}.}{moyennes des coordonnées}
+\end{exo}
+
+\begin{exo}[Quel est ce point ?]
+\explique{\res{$M_{1}=H$}, \res{$M_{2}=F$}, \res{$M_{3}$ est le milieu de $[EF]$},
+\res{$M_{4}$ est le milieu de $[CG]$} et \res{$M_{5}$ est le centre de la face
+$DCGH$}.}{$M_{5}$ : milieu de $[DG]$, avec $D(0\,;1\,;0)$ et $G(1\,;1\,;1)$}
+\end{exo}
+
+\begin{exo}[Milieux dans un pavé]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\paveespace{2.3}{1.4}{1.9}
+  \path ($(A)!0.5!(B)$) node[croix]{} node[below,font=\footnotesize]{$I$};
+  \path ($(G)!0.5!(H)$) node[croix]{} node[above,font=\footnotesize]{$J$};
+  \path ($(B)!0.5!(G)$) node[croix]{} node[below right,font=\footnotesize]{$K$};
+\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{\res{$I\left(\frac{1}{2}\,;0\,;0\right)$} ; $J$ milieu de $[GH]$, avec $G(1\,;1\,;1)$ et
+$H(0\,;1\,;1)$ : \res{$J\left(\frac{1}{2}\,;1\,;1\right)$} ; $K$ milieu de $[BG]$ :
+\res{$K\left(1\,;\frac{1}{2}\,;\frac{1}{2}\right)$}.}{}
+\cas{3)}
+\explique{Le milieu de $[IJ]$ a pour coordonnées $\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$ :
+\res{c'est le centre du pavé} (milieu de $[AG]$).}{}
+\cas{4)}
+\explique{\res{Le milieu de $[BC]$}.}{abscisse $1$, cote $0$}
+\end{exo}
+
+\begin{exo}[Symétriques]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\cubeespace{2}\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{Avec $B(1\,;0\,;0)$ et $H(0\,;1\,;1)$, les deux milieux ont pour coordonnées
+$\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$ : \res{les diagonales $[AG]$ et $[BH]$
+se coupent en leur milieu}, le centre du cube.}{}
+\cas{3)}
+\explique{$G$ est le milieu de $[AS]$ : $x_{S}=2x_{G}-x_{A}$, et de même pour $y$ et $z$.
+Donc \res{$S(2\,;2\,;2)$}.}{$\frac{0+x_{S}}{2}=1$}
+\cas{4)}
+\explique{$C$ est le milieu de $[ET]$ : $T(2\times 1-0\,;2\times 1-0\,;2\times 0-1)$, soit
+\res{$T(2\,;2\,;-1)$}.}{}
+\end{exo}
+
+\begin{exo}[Un drone dans le gymnase]
+\cas{1)}
+{\centering
+\begin{tikzpicture}[scale=0.9]\paveespace{2.3}{1.4}{1.3}\end{tikzpicture}
+\par}
+\cas{2)}
+\explique{Le centre du plafond est le milieu de $[EG]$ : \res{$\left(\frac{1}{2}\,;\frac{1}{2}\,;1\right)$}.}{}
+\cas{3)}
+\explique{La cote de $M$ vaut $\frac{3}{4}$ et l'unité de hauteur est $AE=8$~m :
+$\frac{3}{4}\times 8=6$, donc \res{$6$~m de haut}.}{}
+\explique{L'abscisse vaut $\frac{1}{4}$, avec $AB=40$~m : $\frac{1}{4}\times 40=10$, donc
+\res{$10$~m du mur $ADHE$}.}{ce mur est formé des points d'abscisse $0$}
+\cas{4)}
+\explique{$O\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$ est le milieu de $[MN]$ :
+$N\left(1-\frac{1}{4}\,;1-\frac{1}{2}\,;1-\frac{3}{4}\right)$, soit
+\res{$N\left(\frac{3}{4}\,;\frac{1}{2}\,;\frac{1}{4}\right)$}, à $\frac{1}{4}\times 8$, soit
+\res{$2$~m de haut}.}{$x_{N}=2x_{O}-x_{M}$}
+\end{exo}
+
+\begin{exo}[Est-ce une base ?]
+\explique{La figure :}{}
+{\centering
+\begin{tikzpicture}[scale=0.9]\pyramide
+  \path ($(A)!0.4!(B)$) node[croix]{} node[below,font=\footnotesize]{$I$};
+\end{tikzpicture}
+\par}
+\cas{a)}
+\explique{$S\notin(ABD)$ : \res{base}.}{vecteurs non coplanaires}
+\cas{b)}
+\explique{$I$ est sur $(AB)$, donc $S$, $A$, $B$, $I$ sont dans le plan $(SAB)$ :
+\res{pas une base}.}{}
+\cas{c)}
+\explique{$A$, $B$, $C$, $D$ sont dans le plan de la base : \res{pas une base}.}{}
+\cas{d)}
+\explique{$A$, $C$, $D$ définissent le plan de la base, qui ne contient pas $S$ :
+\res{base}.}{}
+\end{exo}
+
+\begin{exo}[Décomposer dans une base]
+\cas{a)}
+\explique{$\vect{AC}=\vect{AB}+\vect{AD}$, \res{$\vect{AC}\begin{pmatrix}1\\1\\0\end{pmatrix}$}.}{}
+\cas{b)}
+\explique{$\vect{GB}=\vect{GC}+\vect{CB}=-\vect{AE}-\vect{AD}$,
+\res{$\vect{GB}\begin{pmatrix}0\\-1\\-1\end{pmatrix}$}.}{}
+\cas{c)}
+\explique{$\vect{DF}=\vect{DA}+\vect{AB}+\vect{BF}=\vect{AB}-\vect{AD}+\vect{AE}$,
+\res{$\vect{DF}\begin{pmatrix}1\\-1\\1\end{pmatrix}$}.}{}
+\cas{d)}
+\explique{$\vect{HB}=\vect{HE}+\vect{EA}+\vect{AB}=\vect{AB}-\vect{AD}-\vect{AE}$,
+\res{$\vect{HB}\begin{pmatrix}1\\-1\\-1\end{pmatrix}$}.}{}
+\end{exo}
+
+\begin{exo}[Un autre repère]
+\explique{\res{$C(0\,;0\,;0)$, $B(1\,;0\,;0)$, $D(0\,;1\,;0)$, $G(0\,;0\,;1)$, $A(1\,;1\,;0)$,
+$F(1\,;0\,;1)$, $H(0\,;1\,;1)$, $E(1\,;1\,;1)$}.}{par exemple $\vect{CA}=\vect{CB}+\vect{CD}$}
+\end{exo}
+
+\begin{exo}[Vecteur, milieu, parallélogramme]
+\cas{1)}
+\explique{\res{$\vect{AB}\begin{pmatrix}6\\-6\\-2\end{pmatrix}$} et
+\res{$I(1\,;1\,;4)$}.}{$4-(-2)=6$ ; $\frac{-2+4}{2}=1$}
+\cas{2)}
+\explique{$ABCD$ est un parallélogramme si et seulement si $\vect{AB}=\vect{DC}$, soit
+$1-x_{D}=6$, $0-y_{D}=-6$, $-1-z_{D}=-2$. Donc \res{$D(-5\,;6\,;1)$}.}{}
+\end{exo}
+
+\begin{exo}[Trouver des coordonnées]
+\cas{1)}
+\explique{$\vect{u}=k\vect{v}$ : la première coordonnée donne $2=-k$, soit $k=-2$ ; puis
+$x=-2\times 3$ et $-4=-2y$. \res{$x=-6$ et $y=2$}.}{}
+\cas{2)}
+\explique{$\vect{AB}\begin{pmatrix}2\\-1\\2\end{pmatrix}$ et
+$\vect{AM}\begin{pmatrix}x-2\\y-1\\6\end{pmatrix}$ ; $\vect{AM}=k\vect{AB}$ : la cote donne
+$6=2k$, soit $k=3$. Donc $x-2=6$ et $y-1=-3$ : \res{$x=8$ et $y=-2$}.}{}
+\end{exo}
+
+\begin{exo}[Une combinaison nulle]
+\cas{1)}
+\explique{$2\vect{u}-\vect{v}+\vect{w}$ a pour coordonnées
+$\begin{pmatrix}2-2+0\\-4-1+5\\0-3+3\end{pmatrix}$, soit
+\res{$\begin{pmatrix}0\\0\\0\end{pmatrix}$}.}{}
+\cas{2)}
+\explique{$\vect{w}=\vect{v}-2\vect{u}$, et $\vect{u}$, $\vect{v}$ ne sont pas colinéaires :
+\res{$\vect{u}$, $\vect{v}$, $\vect{w}$ sont coplanaires}.}{}
+\end{exo}
+
+\begin{exo}[Un point dans un plan]
+\cas{1)}
+\explique{$B\in\mathcal{P}$ s'il existe deux nombres réels $x$ et $y$ tels que
+$\vect{AB}=x\vect{u}+y\vect{v}$, avec $\vect{AB}\begin{pmatrix}2\\-3\\1\end{pmatrix}$ et
+$x\vect{u}+y\vect{v}\begin{pmatrix}x\\y\\2x+y\end{pmatrix}$ :}{propriété 3}
+\begin{calculs}
+& \accol{2 &=& x\\ -3 &=& y\\ 1 &=& 2x+y} \\
+\iff & \accol{x &=& 2\\ y &=& -3\\ 1 &=& 1} &&\justif{$2\times 2-3=1$ : vraie}
+\end{calculs}
+\explique{$\vect{AB}=2\vect{u}-3\vect{v}$ : \res{$B\in\mathcal{P}$}.}{}
+\cas{2)}
+\explique{Avec $\vect{AC}\begin{pmatrix}-1\\2\\3\end{pmatrix}$ :}{même système}
+\begin{calculs}
+& \accol{-1 &=& x\\ 2 &=& y\\ 3 &=& 2x+y} \\
+\iff & \accol{x &=& -1\\ y &=& 2\\ 3 &=& 0} &&\justif{la dernière ligne est fausse}
+\end{calculs}
+\explique{Pas de solution : \res{$C\notin\mathcal{P}$}.}{}
+\end{exo}
+
+\begin{exo}[Quatre points de l'espace]
+\cas{1)}
+\explique{$\vect{AB}\begin{pmatrix}2\\1\\-2\end{pmatrix}$ et
+$\vect{AC}\begin{pmatrix}-1\\2\\-1\end{pmatrix}$ : $\frac{-1}{2}\neq\frac{2}{1}$,
+\res{non colinéaires}.}{coordonnées non proportionnelles}
+\cas{2)}
+\explique{On cherche $x$ et $y$ tels que
+$\vect{AD}\begin{pmatrix}3\\-1\\3\end{pmatrix}=x\vect{AB}+y\vect{AC}$ :}{propriété 4}
+\begin{calculs}
+& \accol{3 &=& 2x-y\\ -1 &=& x+2y\\ 3 &=& -2x-y} \\
+\iff & \accol{3 &=& 2(-1-2y)-y\\ x &=& -1-2y\\ 3 &=& -2(-1-2y)-y} &&\justif{on isole $x$, on le remplace}\\
+\iff & \accol{5 &=& -5y\\ x &=& -1-2y\\ 1 &=& 3y} \\
+\iff & \accol{y &=& -1\\ x &=& 1\\ y &=& \dfrac{1}{3}} &&\justif{deux valeurs de $y$ différentes}
+\end{calculs}
+\explique{Le système n'a pas de solution : \res{non coplanaires}.}{}
+\cas{3)}
+\explique{\res{$A$, $B$, $C$, $D$ ne sont pas coplanaires} ; $(\vect{AB},\vect{AC},\vect{AD})$
+est une \res{base de l'espace}.}{}
+\end{exo}
+
+\partie{Représentation paramétrique d'une droite}
+
+\begin{exo}[Une droite par deux points]
+\cas{1)}
+\explique{$\vect{AB}\begin{pmatrix}3\\2\\-4\end{pmatrix}$ dirige $(AB)$, qui passe par $A$ :
+\res{$x=-2+3t$, $y=3+2t$, $z=1-4t$ ($t\in\R$)}.}{}
+\cas{2)}
+\explique{$-2+3t=7$ donne $t=3$, d'où \res{$C(7\,;9\,;-11)$}.}{}
+\cas{3)}
+\explique{$-2+3t=4$ donne $t=2$ ; alors $y=7$, mais $z=-7\neq -8$ : \res{$D\notin(AB)$}.}{}
+\end{exo}
+
+\begin{exo}[Vrai ou faux]
+\cas{1)}
+\explique{$1+2t=5$ donne $t=2$ ; $y=-1$ et $z=-2$ : \res{vraie}.}{}
+\cas{2)}
+\explique{$\vect{u}=-2\begin{pmatrix}2\\1\\-3\end{pmatrix}$, colinéaire au vecteur directeur :
+\res{vraie}.}{}
+\cas{3)}
+\explique{$z=0$ donne $t=\frac{4}{3}$, d'où le point
+$\left(\frac{11}{3}\,;-\frac{5}{3}\,;0\right)$, qui n'est pas $B$ : \res{fausse}.}{}
+\cas{4)}
+\explique{$t=3$ donne $(7\,;0\,;-5)$ : \res{vraie}.}{}
+\end{exo}
+
+\begin{exo}[Deux droites parallèles]
+\cas{1)}
+\explique{\res{$\vect{u}\begin{pmatrix}-2\\4\\6\end{pmatrix}$ et
+$\vect{u'}\begin{pmatrix}1\\-2\\-3\end{pmatrix}$}.}{}
+\cas{2)}
+\explique{$\vect{u}=-2\vect{u'}$ : \res{$(d)$ et $(d')$ sont parallèles}.}{}
+\cas{3)}
+\explique{Le point $(1\,;3\,;2)$ de $(d)$ est-il sur $(d')$ ? $5+k=1$ donne $k=-4$, puis
+$y=8\neq 3$. \res{Non, elles sont strictement parallèles}.}{}
+\end{exo}
+
+\begin{exo}[Deux droites sécantes]
+\explique{Les droites sont sécantes s'il existe deux nombres réels $t$ et $k$ donnant les
+mêmes coordonnées :}{paramètres différents}
+\begin{calculs}
+& \accol{2+t &=& 6-2k\\ -1+2t &=& 2+k\\ 3-t &=& -2+3k} \\
+\iff & \accol{t &=& 4-2k\\ -1+2(4-2k) &=& 2+k\\ 3-(4-2k) &=& -2+3k} &&\justif{on isole $t$, on le remplace}\\
+\iff & \accol{t &=& 4-2k\\ 5 &=& 5k\\ 1 &=& k} \\
+\iff & \accol{t &=& 2\\ k &=& 1\\ k &=& 1} &&\justif{compatibles}
+\end{calculs}
+\explique{Pour $t=2$, $(d)$ donne $x=4$, $y=3$, $z=1$ : \res{$(d)$ et $(d')$ sont sécantes
+en $(4\,;3\,;1)$}.}{}
+\end{exo}
+
+\begin{exo}[Deux droites non coplanaires]
+\cas{1)}
+\explique{$\vect{u}\begin{pmatrix}1\\1\\-1\end{pmatrix}$ et
+$\vect{u'}\begin{pmatrix}1\\-1\\2\end{pmatrix}$ ne sont pas colinéaires : \res{non
+parallèles}.}{}
+\cas{2)}
+\explique{Un point commun correspondrait à deux nombres réels $t$ et $k$ tels que :}{}
+\begin{calculs}
+& \accol{t &=& 2+k\\ 1+t &=& -k\\ -t &=& 1+2k} \\
+\iff & \accol{t &=& 2+k\\ 3+k &=& -k\\ -2-k &=& 1+2k} &&\justif{on remplace $t$ par $2+k$}\\
+\iff & \accol{t &=& 2+k\\ k &=& -\dfrac{3}{2}\\ k &=& -1} &&\justif{deux valeurs de $k$ différentes}
+\end{calculs}
+\explique{Le système n'a pas de solution : aucun point commun.}{}
+\explique{Ni parallèles, ni sécantes : \res{$(d)$ et $(d')$ sont non coplanaires}.}{}
+\end{exo}
+
+\begin{exo}[Traverser les plans du repère]
+\cas{1)}
+\explique{$\vect{AB}\begin{pmatrix}2\\4\\-4\end{pmatrix}$ : \res{$x=1+2t$, $y=-2+4t$,
+$z=3-4t$ ($t\in\R$)}.}{}
+\cas{2)}
+\explique{$(O\,;\vect{i},\vect{j})$ : $z=0$, $t=\frac{3}{4}$, point
+\res{$\left(\frac{5}{2}\,;1\,;0\right)$} ; $(O\,;\vect{j},\vect{k})$ : $x=0$, $t=-\frac{1}{2}$,
+point \res{$(0\,;-4\,;5)$} ; $(O\,;\vect{i},\vect{k})$ : $y=0$, $t=\frac{1}{2}$, point
+\res{$(2\,;0\,;1)$}.}{}
+\end{exo}
+
+\begin{exo}[Un spectacle de drones]
+\cas{1)}
+\explique{Pour $t=0$ : \res{$\mathcal{D}_{1}$ part de $(1\,;0\,;2)$ et $\mathcal{D}_{2}$ de
+$(5\,;-1\,;7)$}.}{}
+\cas{2)}
+\explique{On cherche un temps $t$ pour $\mathcal{D}_{1}$ et un temps $s$ pour $\mathcal{D}_{2}$
+donnant la même position :}{deux paramètres différents}
+\begin{calculs}
+& \accol{1+2t &=& 5-s\\ 3t &=& -1+2s\\ 2+t &=& 7-2s}
+\end{calculs}
+\begin{calculs}
+\iff & \accol{s &=& 4-2t\\ 3t &=& -1+2(4-2t)\\ 2+t &=& 7-2(4-2t)} &&\justif{on isole $s$, on le remplace}\\
+\iff & \accol{s &=& 4-2t\\ 7t &=& 7\\ 3 &=& 3t} \\
+\iff & \accol{s &=& 2\\ t &=& 1\\ t &=& 1} &&\justif{compatibles}
+\end{calculs}
+\explique{Pour $t=1$ : \res{les trajectoires se coupent en $M(3\,;3\,;3)$}.}{}
+\cas{3)}
+\explique{$\mathcal{D}_{1}$ passe en $M$ à $t=1$~s et $\mathcal{D}_{2}$ à $2$~s : \res{ils ne se
+heurtent pas}.}{même point, pas au même instant}
+\end{exo}
+
+\partiesansnum{Exercices type bac}
+
+\begin{exo}[Bac 2026, Nouvelle-Calédonie]
+\cas{1)}
+\explique{Pour $t=1$ : $x=1$, $y=0$, $z=2$ : \res{$C\in\Delta$}.}{}
+\cas{2)}
+\explique{$4t-3=3$ donne $t=\frac{3}{2}$, d'où \res{$F\left(3\,;\frac{5}{2}\,;\frac{5}{2}\right)$}.}{}
+\cas{3)}
+\explique{$\vect{AB}\begin{pmatrix}1\\2\\2\end{pmatrix}$ et
+$\vect{DE}\begin{pmatrix}2\\1\\-2\end{pmatrix}$ ne sont pas colinéaires. Représentations :
+$(AB)$ : $x=1+a$, $y=2a$, $z=1+2a$ ; $(DE)$ : $x=1+2b$, $y=1+b$, $z=3-2b$.}{}
+\begin{calculs}
+& \accol{1+a &=& 1+2b\\ 2a &=& 1+b\\ 1+2a &=& 3-2b} \\
+\iff & \accol{a &=& 2b\\ 4b &=& 1+b\\ 1+4b &=& 3-2b} &&\justif{on remplace $a$ par $2b$}\\
+\iff & \accol{a &=& \dfrac{2}{3}\\ b &=& \dfrac{1}{3}\\ b &=& \dfrac{1}{3}} &&\justif{compatibles}
+\end{calculs}
+\explique{Pour $a=\frac{2}{3}$ : \res{oui, sécantes en
+$\left(\frac{5}{3}\,;\frac{4}{3}\,;\frac{7}{3}\right)$}.}{}
+\end{exo}
+
+\begin{exo}[Bac 2025, vrai ou faux]
+\cas{1)}
+\explique{$t=0$ donne $(3\,;2\,;-1)$, soit $B$ ; le vecteur
+$\begin{pmatrix}-2\\-1\\3\end{pmatrix}$ vaut $-\frac{1}{2}\vect{AB}$, avec
+$\vect{AB}\begin{pmatrix}4\\2\\-6\end{pmatrix}$ : \res{vraie}.}{}
+\cas{2)}
+\begin{calculs}
+& \accol{15+k &=& 1+4s\\ 8-k &=& 2+4s\\ -6+2k &=& 1-6s} \\
+\iff & \accol{k &=& -14+4s\\ 22-4s &=& 2+4s\\ -34+8s &=& 1-6s} &&\justif{on isole $k$, on le remplace}\\
+\iff & \accol{k &=& -4\\ s &=& \dfrac{5}{2}\\ s &=& \dfrac{5}{2}} &&\justif{compatibles}
+\end{calculs}
+\explique{Les droites sont sécantes en $(11\,;12\,;-14)$, donc coplanaires :
+\res{fausse}.}{}
+\cas{3)}
+\explique{$I\left(\frac{1}{2}\,;0\,;0\right)$, $J\left(1\,;0\,;\frac{1}{2}\right)$,
+$M\left(0\,;1\,;\frac{1}{2}\right)$. $2\vect{BI}+\vect{DM}-\vect{CB}$ a pour coordonnées
+$\begin{pmatrix}-1\\0+0+1\\0+\frac{1}{2}+0\end{pmatrix}$, comme
+$\vect{JH}\begin{pmatrix}-1\\1\\\frac{1}{2}\end{pmatrix}$ : \res{vraie}.}{}
+\cas{4)}
+\explique{$\vect{AG}=\vect{AB}+\vect{AH}$ : les trois vecteurs sont coplanaires,
+\res{fausse}.}{}
+\cas{5)}
+\explique{Les points de $(AB)$ ont pour ordonnée $0$, ceux de $(d)$ pour ordonnée $6$ : aucun
+point commun ; $\begin{pmatrix}2\\0\\-5\end{pmatrix}$ et $\vect{AB}$ ne sont pas colinéaires.
+\res{Vraie}.}{}
+\cas{6)}
+\explique{$(HF)$ : $(a\,;1-a\,;1)$ ; $(DI')$, avec $I'\left(1\,;0\,;\frac{2}{3}\right)$ :
+$\left(b\,;1-b\,;\frac{2}{3}b\right)$.}{}
+\begin{calculs}
+& \accol{a &=& b\\ 1-a &=& 1-b\\ 1 &=& \dfrac{2}{3}b} \\
+\iff & \accol{a &=& \dfrac{3}{2}\\ b &=& \dfrac{3}{2}} &&\justif{la deuxième ligne redit la première}
+\end{calculs}
+\explique{Point commun $\left(\frac{3}{2}\,;-\frac{1}{2}\,;1\right)$ : \res{vraie}.}{}
+\end{exo}
+
+\begin{exo}[Bac 2026, Asie]
+\cas{1)}
+\explique{$\vect{BC}\begin{pmatrix}2\\1\\-2\end{pmatrix}$ et
+$\vect{BE}\begin{pmatrix}1\\-4\\-1\end{pmatrix}$ ne sont pas colinéaires : \res{$B$, $C$, $E$
+ne sont pas alignés}.}{}
+\cas{2)a)}
+\explique{On cherche $x$ et $y$ tels que $\vect{AG}\begin{pmatrix}5\\1\\1\end{pmatrix}=x\vect{BE}+y\vect{BC}$ :}{}
+\begin{calculs}
+& \accol{5 &=& x+2y\\ 1 &=& -4x+y\\ 1 &=& -x-2y} \\
+\iff & \accol{5 &=& x+2y\\ 1 &=& -4x+y\\ 6 &=& 0} &&\justif{on ajoute la première à la troisième}
+\end{calculs}
+\explique{La dernière ligne est fausse, le système n'a pas de solution : \res{non
+coplanaires}.}{}
+\cas{2)b)}
+\explique{Si $(AG)$ était parallèle au plan $(BCE)$, $\vect{AG}$, $\vect{BE}$, $\vect{BC}$
+seraient coplanaires : \res{$(AG)$ et $(BCE)$ sont sécants}.}{propriété 4 du cours}
+\cas{3)a)}
+\explique{$A$ est obtenu pour $t=0$ et $G$ pour $t=1$ : \res{c'est une représentation de
+$(AG)$}, de vecteur directeur $\vect{AG}$.}{}
+\cas{3)b)}
+\explique{$5t+(1+t)-4=0$ donne $t=\frac{1}{2}$, d'où
+\res{$P\left(\frac{5}{2}\,;\frac{1}{2}\,;\frac{3}{2}\right)$}.}{}
+\cas{3)c)}
+\explique{Le milieu de $[EC]$ a pour coordonnées
+$\left(\frac{2+3}{2}\,;\frac{-2+3}{2}\,;\frac{2+1}{2}\right)$ : \res{c'est $P$}.}{}
+\end{exo}
+
+\end{document}

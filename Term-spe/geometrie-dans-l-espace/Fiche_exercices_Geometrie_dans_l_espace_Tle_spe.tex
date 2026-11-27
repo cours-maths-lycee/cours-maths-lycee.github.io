@@ -1,0 +1,885 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.3}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}\tikz[baseline=0pt]\draw[dash pattern=on 2pt off 2pt,
+  line width=0.5pt] (0,\lycee@eqh) -- (0,-\lycee@eqd);\hspace{1.2em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newcommand{\paveespace}[3]{%
+  \coordinate (A) at (0,0); \coordinate (B) at (#1,0);
+  \coordinate (D) at ({0.45*#2},{0.35*#2}); \coordinate (C) at ({#1+0.45*#2},{0.35*#2});
+  \coordinate (E) at (0,#3); \coordinate (F) at (#1,#3);
+  \coordinate (H) at ({0.45*#2},{#3+0.35*#2}); \coordinate (G) at ({#1+0.45*#2},{#3+0.35*#2});
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[above left]{$D$} (E) node[left]{$E$}
+    (F) node[below right]{$F$} (G) node[above right]{$G$} (H) node[above left]{$H$};}
+\newcommand{\cubeespace}[1]{\paveespace{#1}{#1}{#1}}
+\newcommand{\tetraedre}{%
+  \coordinate (A) at (0,0); \coordinate (B) at (2.2,-0.4);
+  \coordinate (C) at (3.0,0.7); \coordinate (D) at (1.3,2.4);
+  \draw (A)--(B)--(D)--cycle (B)--(C)--(D); \draw[dashed] (A)--(C);
+  \path[font=\footnotesize] (A) node[left]{$A$} (B) node[below]{$B$}
+    (C) node[right]{$C$} (D) node[above]{$D$};}
+\newcommand{\pyramide}{%
+  \coordinate (A) at (0,0); \coordinate (B) at (2.2,0);
+  \coordinate (C) at (3.0,0.8); \coordinate (D) at (0.8,0.8); \coordinate (S) at (1.5,2.6);
+  \draw (A)--(B)--(C)--(S)--cycle (S)--(B); \draw[dashed] (A)--(D)--(C) (S)--(D);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[below right=-1pt]{$D$} (S) node[above]{$S$};}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Géométrie dans l'espace}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Vecteurs de l'espace}
+
+\exo[Construire des points]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Reproduire la figure, puis construire les points $M$, $N$, $R$
+et $S$ définis ci-dessous ; dire de quel point de la figure il s'agit.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AM}=\vect{AD}+\frac{1}{2}\vect{BF}$
+  \item $\vect{BN}=\vect{CG}+\vect{AD}+\frac{1}{2}\vect{HE}$
+  \item $\vect{ER}=\vect{AC}-\vect{DH}$
+  \item $\vect{CS}=\frac{1}{2}\vect{CA}+\vect{AE}$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}\end{tikzpicture}
+\end{minipage}
+
+\exo[Vrai ou faux]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un pavé droit, $I$ est le milieu de $[EH]$ et $J$ celui de $[BC]$. Dire
+si chaque égalité est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AF}=\vect{AB}+\vect{DH}$
+  \item $\vect{EG}=\vect{AB}+\vect{CD}$
+  \item $\vect{EI}=\frac{1}{2}\vect{BC}$
+  \item $\vect{HG}=-2\vect{JB}$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\paveespace{2.3}{1.4}{1.3}
+  \path ($(E)!0.5!(H)$) node[croix]{} node[left,font=\footnotesize]{$I$};
+  \path ($(B)!0.5!(C)$) node[croix]{} node[right,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Démontrer des égalités]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Démontrer chaque égalité.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{EA}+\vect{EF}+\vect{CH}=\vect{0}$
+  \item $\vect{DE}+\vect{FC}=\vect{0}$
+  \item $\vect{AG}-\vect{AH}=\vect{EF}$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.6]\cubeespace{2}\end{tikzpicture}
+\end{minipage}
+
+\exo[Les milieux d'un tétraèdre]
+$ABCD$ est un tétraèdre ; $I$, $J$, $K$ et $L$ sont les milieux respectifs de $[AB]$,
+$[BC]$, $[CD]$ et $[DA]$.
+\begin{enumerate}
+  \item Faire une figure et y placer les points $I$, $J$, $K$ et $L$.
+  \item Démontrer que $\vect{IJ}=\frac{1}{2}\vect{AC}$ et $\vect{LK}=\frac{1}{2}\vect{AC}$.
+  \item En déduire la nature du quadrilatère $IJKL$.
+\end{enumerate}
+
+\exo[Une pyramide]
+$SABCD$ est une pyramide dont la base $ABCD$ est un parallélogramme de centre $O$ ;
+$K$ est le milieu de $[SC]$.
+\begin{enumerate}
+  \item Faire une figure et y placer les points $O$ et $K$.
+  \item Exprimer $\vect{AK}$ comme combinaison linéaire de $\vect{AB}$, $\vect{AD}$ et
+        $\vect{AS}$.
+  \item Démontrer que $\vect{OK}=\frac{1}{2}\vect{AS}$.
+\end{enumerate}
+
+\exo[Changer de point de départ]
+$ABCDEFGH$ est un pavé droit ; $I$ est le point de $[BF]$ tel que
+$\vect{FI}=\frac{1}{3}\vect{FB}$ et $J$ est le milieu de $[CD]$. Faire une figure et y placer $I$ et $J$, puis exprimer chaque vecteur
+comme combinaison linéaire de $\vect{DA}$, $\vect{DC}$ et $\vect{DH}$.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AI}$
+  \item $\vect{HJ}$
+  \item $\vect{IJ}$
+\end{enumerate}
+
+\partiefiche{Droites de l'espace, colinéarité}
+
+\exo[Alignés ?]
+Dans chaque cas, écrire $\vect{AC}$ sous la forme $k\vect{AB}$, puis conclure.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AB}=4\vect{AC}$
+  \item $3\vect{AB}-2\vect{AC}=\vect{0}$
+  \item $\vect{BC}=-3\vect{AB}$
+  \item $\vect{AB}+2\vect{BC}=\vect{0}$
+\end{enumerate}
+
+\exo[Droites dans un cube]
+$ABCDEFGH$ est un cube. Faire une figure, puis dire si chaque affirmation est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item Les droites $(EB)$ et $(HC)$ sont parallèles.
+  \item Les droites $(AD)$ et $(EG)$ sont sécantes.
+  \item Les droites $(BD)$ et $(FH)$ sont coplanaires.
+  \item Les droites $(AE)$ et $(CD)$ sont coplanaires.
+\end{enumerate}
+
+\exo[Trois points alignés]
+$ABCD$ est un tétraèdre, $I$ est le milieu de $[BC]$ ; $E$, $F$ et $G$ sont les points
+tels que $\vect{AE}=\frac{4}{3}\vect{AI}$, $\vect{BF}=\frac{1}{3}\vect{AB}$ et
+$\vect{CG}=\frac{1}{3}\vect{AC}$.
+\begin{enumerate}
+  \item Faire une figure.
+  \item Exprimer $\vect{FE}$ et $\vect{FG}$ en fonction de $\vect{AB}$ et $\vect{AC}$.
+  \item En déduire que $E$, $F$ et $G$ sont alignés. Préciser la position de $E$.
+\end{enumerate}
+
+\exo[Un parallélogramme dans le cube]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube ; $K$ est le milieu de $[BF]$ et $L$ celui de $[DH]$.
+\begin{enumerate}
+  \item Exprimer $\vect{EK}$ et $\vect{LC}$ en fonction de $\vect{AB}$, $\vect{AD}$ et
+        $\vect{AE}$.
+  \item En déduire que $(EK)$ et $(LC)$ sont parallèles, et la nature de $EKCL$.
+  \item Les droites $(KL)$ et $(BD)$ sont-elles parallèles ? Justifier.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}
+  \path ($(B)!0.5!(F)$) node[croix]{} node[left,font=\footnotesize]{$K$};
+  \path ($(D)!0.5!(H)$) node[croix]{} node[right,font=\footnotesize]{$L$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Sécantes ou parallèles ?]
+$ABCD$ est un tétraèdre ; $E$ et $F$ sont les points tels que
+$\vect{AE}=\frac{2}{3}\vect{AC}$ et $\vect{DF}=\frac{1}{2}\vect{AD}$.
+\begin{enumerate}
+  \item Faire une figure et y placer les points $E$ et $F$.
+  \item Justifier que les droites $(DE)$ et $(CF)$ sont coplanaires.
+  \item Exprimer $\vect{DE}$ et $\vect{CF}$ en fonction de $\vect{AC}$ et $\vect{AD}$.
+  \item Les droites $(DE)$ et $(CF)$ sont-elles sécantes ou parallèles ?
+\end{enumerate}
+
+\exo[Une diagonale du cube]
+$ABCDEFGH$ est un cube, $I$ est le centre de la face $DCGH$ et $M$ est le point tel que
+$3\vect{AM}=2\vect{AI}$.
+\begin{enumerate}
+  \item Faire une figure et y placer le point $I$.
+  \item Exprimer $\vect{AI}$, puis $\vect{AM}$, en fonction de $\vect{AB}$, $\vect{AD}$
+        et $\vect{AE}$.
+  \item Exprimer $\vect{FM}$ et $\vect{FD}$ de même.
+  \item En déduire que les points $F$, $M$ et $D$ sont alignés, et préciser la position
+        de $M$ sur $[FD]$.
+\end{enumerate}
+
+\partiefiche{Plans de l'espace, vecteurs coplanaires}
+
+\exo[Dans le cube]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube ; $J$ est le milieu de $[CG]$ et $K$ celui de $[EH]$.
+\begin{enumerate}
+  \item Trouver deux nombres réels $a$ et $b$ tels que $\vect{AK}=a\vect{AD}+b\vect{AE}$.
+        Que peut-on dire du point $K$ et du plan $(ADE)$ ?
+  \item Exprimer $\vect{BJ}$ en fonction de $\vect{DA}$ et $\vect{DH}$. Les vecteurs
+        $\vect{DA}$, $\vect{DH}$, $\vect{BJ}$ sont-ils coplanaires ?
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}
+  \path ($(C)!0.5!(G)$) node[croix]{} node[right,font=\footnotesize]{$J$};
+  \path ($(E)!0.5!(H)$) node[croix]{} node[above left,font=\footnotesize]{$K$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Un point dans une face]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCD$ est un tétraèdre et $M$ est le point tel que
+$\vect{AM}=2\vect{AB}+2\vect{AC}-3\vect{AD}$.
+\begin{enumerate}
+  \item Exprimer $\vect{BM}$ en fonction de $\vect{BC}$ et $\vect{BD}$.
+  \item À quel plan contenant une face du tétraèdre le point $M$ appartient-il ?
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.8]\tetraedre\end{tikzpicture}
+\end{minipage}
+
+\exo[Une droite parallèle à une face]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un pavé droit ; $I$ et $J$ sont les points tels que
+$\vect{AI}=\frac{1}{3}\vect{AD}$ et $\vect{DJ}=\frac{1}{2}\vect{DH}$.
+\begin{enumerate}
+  \item Démontrer que $\vect{IJ}$, $\vect{BC}$ et $\vect{BF}$ sont coplanaires.
+  \item En déduire la position relative de la droite $(IJ)$ et du plan $(BCG)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\paveespace{2.3}{1.4}{1.3}
+  \path ($(A)!0.3333!(D)$) node[croix]{} node[right,font=\footnotesize]{$I$};
+  \path ($(D)!0.5!(H)$) node[croix]{} node[right,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Deux plans parallèles]
+$ABCD$ est un tétraèdre ; $I$, $J$, $K$ sont les points tels que
+$\vect{AI}=\frac{1}{4}\vect{AB}$, $\vect{AJ}=\frac{1}{4}\vect{AC}$ et
+$\vect{AK}=\frac{1}{4}\vect{AD}$.
+\begin{enumerate}
+  \item Faire une figure et y placer les points $I$, $J$ et $K$.
+  \item Exprimer $\vect{IJ}$ en fonction de $\vect{BC}$, et $\vect{IK}$ en fonction de
+        $\vect{BD}$.
+  \item En déduire que les plans $(IJK)$ et $(BCD)$ sont parallèles.
+\end{enumerate}
+
+\exo[Quatre points coplanaires]
+$ABCD$ est un tétraèdre ; $M$, $N$ et $Q$ sont les points tels que
+$\vect{AM}=\frac{1}{2}\vect{AB}$, $\vect{AN}=\frac{2}{3}\vect{AC}$,
+$\vect{AQ}=\frac{1}{2}\vect{AD}$, et $P$ est le symétrique de $D$ par rapport à $C$.
+\begin{enumerate}
+  \item Faire une figure et placer les points $M$, $N$, $P$ et $Q$.
+  \item Exprimer $\vect{AP}$, puis $\vect{MN}$, $\vect{MQ}$ et $\vect{MP}$, en fonction de
+        $\vect{AB}$, $\vect{AC}$ et $\vect{AD}$.
+  \item Trouver deux nombres réels $x$ et $y$ tels que $\vect{MP}=x\vect{MN}+y\vect{MQ}$.
+  \item Conclure : les points $M$, $N$, $P$, $Q$ sont-ils coplanaires ?
+\end{enumerate}
+
+\partiefiche{Positions relatives de droites et de plans}
+
+\exo[Positions dans un cube]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Donner, en justifiant, la position relative :
+\begin{enumerate}[label=\alph*)]
+  \item des droites $(AG)$ et $(CE)$ ;
+  \item des droites $(EF)$ et $(DC)$ ;
+  \item des droites $(BF)$ et $(DC)$ ;
+  \item de la droite $(AC)$ et du plan $(EFG)$ ;
+  \item de la droite $(BH)$ et du plan $(ABC)$ ;
+  \item des plans $(ACG)$ et $(BDH)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}\end{tikzpicture}
+\end{minipage}
+
+\exo[Positions dans un tétraèdre]
+$ABCD$ est un tétraèdre ; $I$, $J$ et $K$ sont les milieux respectifs de $[AB]$, $[AC]$
+et $[BD]$. Faire une figure et y placer $I$, $J$ et $K$, puis donner, en justifiant, la position relative :
+\begin{enumerate}[label=\alph*)]
+  \item des droites $(IJ)$ et $(BC)$ ;
+  \item de la droite $(IJ)$ et du plan $(BCD)$ ;
+  \item des droites $(IK)$ et $(AD)$ ;
+  \item des droites $(JK)$ et $(CD)$.
+\end{enumerate}
+
+\exo[Positions dans une pyramide]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$SABCD$ est une pyramide à base carrée de centre $O$ ; $I$ est le milieu de $[SA]$ et
+$J$ celui de $[SC]$. Donner, en justifiant, la position relative :
+\begin{enumerate}[label=\alph*)]
+  \item des droites $(IJ)$ et $(AC)$ ;
+  \item de la droite $(IJ)$ et du plan $(ABC)$ ;
+  \item des plans $(SAC)$ et $(SBD)$ ;
+  \item des droites $(SB)$ et $(AC)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.8]\pyramide
+  \path ($(A)!0.5!(C)$) node[croix]{} node[below,font=\footnotesize]{$O$};
+  \path ($(S)!0.5!(A)$) node[croix]{} node[left,font=\footnotesize]{$I$};
+  \path ($(S)!0.5!(C)$) node[croix]{} node[right,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+
+\partiefiche{Bases et repères de l'espace}
+
+\exo[Les coordonnées d'un cube]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube ; on se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\begin{enumerate}
+  \item Donner les coordonnées des huit sommets.
+  \item Calculer les coordonnées du centre $K$ de la face $EFGH$, du milieu $L$ de
+        $[CG]$ et du centre $O$ du cube (milieu de $[AG]$).
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}
+  \path ($(E)!0.5!(G)$) node[croix]{} node[right,font=\footnotesize]{$K$};
+  \path ($(C)!0.5!(G)$) node[croix]{} node[right,font=\footnotesize]{$L$};
+  \path ($(A)!0.5!(G)$) node[croix]{} node[right,font=\footnotesize]{$O$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Quel est ce point ?]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube ; on se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$. Pour chaque point, dire de quel point de la figure il s'agit (sommet,
+milieu d'une arête, centre d'une face).
+\par\smallskip
+$M_{1}(0\,;1\,;1)$ \qquad $M_{2}(1\,;0\,;1)$\\
+$M_{3}(\frac{1}{2}\,;0\,;1)$ \qquad $M_{4}(1\,;1\,;\frac{1}{2})$\\
+$M_{5}(\frac{1}{2}\,;1\,;\frac{1}{2})$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}\end{tikzpicture}
+\end{minipage}
+
+\exo[Milieux dans un pavé]
+$ABCDEFGH$ est un pavé droit ; on se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$. $I$ est le milieu de $[AB]$, $J$ celui de $[GH]$, et $K$ le
+centre de la face $BCGF$.
+\begin{enumerate}
+  \item Faire une figure et y placer les points $I$, $J$ et $K$.
+  \item Calculer les coordonnées de $I$, $J$ et $K$.
+  \item Calculer les coordonnées du milieu de $[IJ]$. Que remarque-t-on ?
+  \item Quel point a pour coordonnées $(1\,;\frac{1}{2}\,;0)$ ?
+\end{enumerate}
+
+\exo[Symétriques]
+$ABCDEFGH$ est un cube ; on se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\begin{enumerate}
+  \item Faire une figure.
+  \item Calculer les coordonnées des milieux de $[AG]$ et de $[BH]$. Que peut-on en
+        déduire ?
+  \item Déterminer les coordonnées du symétrique $S$ de $A$ par rapport à $G$.
+  \item Déterminer les coordonnées du symétrique $T$ de $E$ par rapport à $C$.
+\end{enumerate}
+
+\exo[Un drone dans le gymnase]
+Une salle du gymnase est un pavé droit $ABCDEFGH$ avec $AB=40$~m, $AD=20$~m et $AE=8$~m ;
+le sol est $ABCD$. On se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\begin{enumerate}
+  \item Faire une figure de la salle.
+  \item Une lampe est au centre du plafond. Donner ses coordonnées.
+  \item Un drone est au point $M(\frac{1}{4}\,;\frac{1}{2}\,;\frac{3}{4})$. À quelle
+        hauteur vole-t-il ? À quelle distance du mur $ADHE$ ?
+  \item Le drone se déplace jusqu'au symétrique $N$ de $M$ par rapport au centre $O$ de
+        la salle. Donner les coordonnées de $N$, puis sa hauteur.
+\end{enumerate}
+
+\exo[Est-ce une base ?]
+$SABCD$ est une pyramide à base carrée et $I$ est un point de $[AB]$, distinct de $A$ et
+de $B$. Faire une figure et y placer $I$, puis dire si chaque triplet est une base de l'espace, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item $(\vect{AB},\vect{AD},\vect{AS})$
+  \item $(\vect{SA},\vect{SB},\vect{SI})$
+  \item $(\vect{AB},\vect{AC},\vect{AD})$
+  \item $(\vect{SA},\vect{SC},\vect{SD})$
+\end{enumerate}
+
+\exo[Décomposer dans une base]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Décomposer chaque vecteur dans la base
+$(\vect{AB},\vect{AD},\vect{AE})$, puis donner ses coordonnées.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AC}$
+  \item $\vect{GB}$
+  \item $\vect{DF}$
+  \item $\vect{HB}$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.75]\cubeespace{2}\end{tikzpicture}
+\end{minipage}
+
+\exo[Un autre repère]
+\begin{minipage}[t]{0.62\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Donner les coordonnées des huit sommets dans le repère
+$(C\,;\vect{CB},\vect{CD},\vect{CG})$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.35\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=0.6]\cubeespace{2}\end{tikzpicture}
+\end{minipage}
+
+\exo[Vecteur, milieu, parallélogramme]
+Dans un repère de l'espace, on donne $A(-2\,;4\,;5)$, $B(4\,;-2\,;3)$ et $C(1\,;0\,;-1)$.
+\begin{enumerate}
+  \item Calculer les coordonnées de $\vect{AB}$ et du milieu $I$ de $[AB]$.
+  \item Déterminer les coordonnées du point $D$ tel que $ABCD$ soit un parallélogramme.
+\end{enumerate}
+
+\exo[Trouver des coordonnées]
+\begin{enumerate}
+  \item Dans une base, on donne $\vect{u}\begin{pmatrix}2\\x\\-4\end{pmatrix}$ et
+        $\vect{v}\begin{pmatrix}-1\\3\\y\end{pmatrix}$. Trouver $x$ et $y$ pour que
+        $\vect{u}$ et $\vect{v}$ soient colinéaires.
+  \item Dans un repère, on donne $A(2\,;1\,;-1)$, $B(4\,;0\,;1)$ et $M(x\,;y\,;5)$.
+        Trouver $x$ et $y$ pour que $A$, $B$, $M$ soient alignés.
+\end{enumerate}
+
+\exo[Une combinaison nulle]
+Dans une base, on donne $\vect{u}\begin{pmatrix}1\\-2\\0\end{pmatrix}$,
+$\vect{v}\begin{pmatrix}2\\1\\3\end{pmatrix}$ et $\vect{w}\begin{pmatrix}0\\5\\3\end{pmatrix}$.
+\begin{enumerate}
+  \item Calculer les coordonnées de $2\vect{u}-\vect{v}+\vect{w}$.
+  \item En déduire que $\vect{u}$, $\vect{v}$, $\vect{w}$ sont coplanaires.
+\end{enumerate}
+
+\exo[Un point dans un plan]
+Dans un repère, on donne $A(1\,;2\,;-1)$, $\vect{u}\begin{pmatrix}1\\0\\2\end{pmatrix}$
+et $\vect{v}\begin{pmatrix}0\\1\\1\end{pmatrix}$ ; $\mathcal{P}$ est le plan passant par
+$A$ et dirigé par $\vect{u}$ et $\vect{v}$.
+\begin{enumerate}
+  \item Démontrer que le point $B(3\,;-1\,;0)$ appartient à $\mathcal{P}$.
+  \item Le point $C(0\,;4\,;2)$ appartient-il à $\mathcal{P}$ ?
+\end{enumerate}
+
+\exo[Quatre points de l'espace]
+Dans un repère, on donne $A(1\,;0\,;2)$, $B(3\,;1\,;0)$, $C(0\,;2\,;1)$ et $D(4\,;-1\,;5)$.
+\begin{enumerate}
+  \item Les vecteurs $\vect{AB}$ et $\vect{AC}$ sont-ils colinéaires ?
+  \item Les vecteurs $\vect{AB}$, $\vect{AC}$, $\vect{AD}$ sont-ils coplanaires ?
+  \item Les points $A$, $B$, $C$, $D$ sont-ils coplanaires ? Que forment les vecteurs
+        $\vect{AB}$, $\vect{AC}$, $\vect{AD}$ ?
+\end{enumerate}
+
+\partiefiche{Représentation paramétrique d'une droite}
+
+\exo[Une droite par deux points]
+Dans un repère, on donne $A(-2\,;3\,;1)$ et $B(1\,;5\,;-3)$.
+\begin{enumerate}
+  \item Déterminer une représentation paramétrique de $(AB)$.
+  \item Déterminer les coordonnées du point $C$ de $(AB)$ d'abscisse $7$.
+  \item Le point $D(4\,;7\,;-8)$ appartient-il à $(AB)$ ?
+\end{enumerate}
+
+\exo[Vrai ou faux]
+Dans un repère $(O\,;\vect{i},\vect{j},\vect{k})$, la droite $(d)$ a pour représentation
+paramétrique $\left\{\begin{array}{l} x=1+2t\\ y=-3+t\\ z=4-3t\end{array}\right.$
+($t\in\R$). Dire si chaque affirmation est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item $(d)$ passe par le point $A(5\,;-1\,;-2)$.
+  \item $\vect{u}\begin{pmatrix}-4\\-2\\6\end{pmatrix}$ est un vecteur directeur de $(d)$.
+  \item $(d)$ coupe le plan $(O\,;\vect{i},\vect{j})$ au point $B(3\,;-2\,;0)$.
+  \item Le point $C(7\,;0\,;-5)$ appartient à $(d)$.
+\end{enumerate}
+
+\exo[Deux droites parallèles]
+Dans un repère, on considère les droites
+$(d)\colon\left\{\begin{array}{l} x=1-2t\\ y=3+4t\\ z=2+6t\end{array}\right.$ ($t\in\R$)
+et $(d')\colon\left\{\begin{array}{l} x=5+k\\ y=-2k\\ z=-1-3k\end{array}\right.$
+($k\in\R$).
+\begin{enumerate}
+  \item Donner un vecteur directeur de chaque droite.
+  \item Démontrer que $(d)$ et $(d')$ sont parallèles.
+  \item Sont-elles confondues ?
+\end{enumerate}
+
+\exo[Deux droites sécantes]
+Dans un repère, on considère les droites
+$(d)\colon\left\{\begin{array}{l} x=2+t\\ y=-1+2t\\ z=3-t\end{array}\right.$ ($t\in\R$)
+et $(d')\colon\left\{\begin{array}{l} x=6-2k\\ y=2+k\\ z=-2+3k\end{array}\right.$
+($k\in\R$). Démontrer que $(d)$ et $(d')$ sont sécantes en un point dont on donnera les
+coordonnées.
+
+\exo[Deux droites non coplanaires]
+Dans un repère, on considère les droites
+$(d)\colon\left\{\begin{array}{l} x=t\\ y=1+t\\ z=-t\end{array}\right.$ ($t\in\R$) et
+$(d')\colon\left\{\begin{array}{l} x=2+k\\ y=-k\\ z=1+2k\end{array}\right.$ ($k\in\R$).
+\begin{enumerate}
+  \item Les droites sont-elles parallèles ?
+  \item Démontrer qu'elles n'ont aucun point commun. Conclure.
+\end{enumerate}
+
+\exo[Traverser les plans du repère]
+Dans un repère $(O\,;\vect{i},\vect{j},\vect{k})$, on donne $A(1\,;-2\,;3)$ et
+$B(3\,;2\,;-1)$.
+\begin{enumerate}
+  \item Déterminer une représentation paramétrique de $(AB)$.
+  \item Déterminer les points d'intersection de $(AB)$ avec chacun des plans
+        $(O\,;\vect{i},\vect{j})$, $(O\,;\vect{j},\vect{k})$ et
+        $(O\,;\vect{i},\vect{k})$.
+\end{enumerate}
+
+\exo[Un spectacle de drones]
+Pour un spectacle de lumière, deux drones partent au même instant. Dans un repère (unité :
+$10$~m), la position du drone $\mathcal{D}_{1}$ au bout de $t$ secondes est
+$(1+2t\,;3t\,;2+t)$, celle du drone $\mathcal{D}_{2}$ est $(5-t\,;-1+2t\,;7-2t)$.
+\begin{enumerate}
+  \item Donner les positions de départ des deux drones.
+  \item Démontrer que les trajectoires (rectilignes) des deux drones se coupent en un point
+        $M$ dont on donnera les coordonnées.
+  \item Les drones risquent-ils de se heurter en $M$ ?
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[Bac 2026, Nouvelle-Calédonie]
+Dans l'espace muni d'un repère orthonormé on considère les points $A(1\,;0\,;1)$,
+$B(2\,;2\,;3)$, $C(1\,;0\,;2)$, $D(1\,;1\,;3)$ et $E(3\,;2\,;1)$, et la droite $\Delta$ de
+représentation paramétrique
+$\left\{\begin{array}{l} x=4t-3\\ y=5t-5\\ z=t+1\end{array}\right.$ ($t\in\R$).
+\begin{enumerate}
+  \item Vérifier que le point $C$ appartient à la droite $\Delta$.
+  \item On considère le plan $P$ formé des points d'abscisse $3$ (il a pour équation
+        $x-3=0$). Montrer que la droite $\Delta$ coupe le plan $P$ en un point $F$ dont
+        on déterminera les coordonnées.
+  \item Les droites $(AB)$ et $(DE)$ sont-elles sécantes ?
+\end{enumerate}
+
+\exo[Bac 2025, vrai ou faux]
+Pour chaque affirmation, dire si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item \emph{(Métropole)} On considère les points $A(-1\,;0\,;5)$ et $B(3\,;2\,;-1)$.
+
+        \textbf{Affirmation 1 :} une représentation paramétrique de la droite $(AB)$ est
+        $\left\{\begin{array}{l} x=3-2t\\ y=2-t\\ z=-1+3t\end{array}\right.$ avec
+        $t\in\R$.
+  \item \emph{(Métropole)} On considère la droite $d$ de représentation paramétrique
+        $\left\{\begin{array}{l} x=15+k\\ y=8-k\\ z=-6+2k\end{array}\right.$ avec
+        $k\in\R$ et la droite $d'$ de représentation paramétrique
+        $\left\{\begin{array}{l} x=1+4s\\ y=2+4s\\ z=1-6s\end{array}\right.$ avec
+        $s\in\R$.
+
+        \textbf{Affirmation 2 :} les droites $d$ et $d'$ ne sont pas coplanaires.
+\end{enumerate}
+\begin{minipage}[t]{0.55\linewidth}\raggedright
+\emph{(Amérique du Nord)} $ABCDEFGH$ est un cube d'arête de longueur $1$. Les points
+$I$, $J$, $K$, $L$ et $M$ sont les milieux respectifs des arêtes $[AB]$, $[BF]$, $[AE]$,
+$[CD]$ et $[DH]$. On se place dans le repère $(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{-4pt}
+\begin{tikzpicture}[scale=1,font=\footnotesize]
+  \cubeespace{2}
+  \path ($(A)!0.5!(B)$) node[croix]{} node[below]{$I$}
+        ($(B)!0.5!(F)$) node[croix]{} node[right]{$J$}
+        ($(A)!0.5!(E)$) node[croix]{} node[left]{$K$}
+        ($(C)!0.5!(D)$) node[croix]{} node[below left]{$L$}
+        ($(D)!0.5!(H)$) node[croix]{} node[left]{$M$};
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}[resume]
+  \item \textbf{Affirmation 3 :} $\vect{JH}=2\vect{BI}+\vect{DM}-\vect{CB}$.
+  \item \textbf{Affirmation 4 :} le triplet de vecteurs $(\vect{AB},\vect{AH},\vect{AG})$
+        est une base de l'espace.
+  \item On note $(d)$ la droite de représentation paramétrique
+        $\left\{\begin{array}{l} x=-12+2k\\ y=6\\ z=3-5k\end{array}\right.$, où
+        $k\in\R$.
+
+        \textbf{Affirmation 5 :} les droites $(AB)$ et $(d)$ ne sont pas coplanaires.
+  \item \emph{(Nouvelle-Calédonie)} Dans le même cube, $I'$ est le point défini par
+        $\vect{FI'}=\frac{1}{3}\vect{FB}$.
+
+        \textbf{Affirmation 6 :} les droites $(HF)$ et $(DI')$ sont sécantes.
+\end{enumerate}
+
+\exo[Bac 2026, Asie]
+Dans l'espace muni d'un repère orthonormé $(O\,;\vect{i},\vect{j},\vect{k})$, on
+considère les points $A(0\,;0\,;1)$, $B(1\,;2\,;3)$, $C(3\,;3\,;1)$, $E(2\,;-2\,;2)$ et
+$G(5\,;1\,;2)$.
+\begin{enumerate}
+  \item Montrer que les points $B$, $C$ et $E$ ne sont pas alignés.
+  \item
+        \begin{enumerate}[label=\alph*)]
+          \item Montrer que les vecteurs $\vect{BE}$, $\vect{BC}$ et $\vect{AG}$ ne sont
+                pas coplanaires.
+          \item En déduire que la droite $(AG)$ et le plan $(BCE)$ sont sécants.
+        \end{enumerate}
+\end{enumerate}
+Pour la suite de l'exercice, on appellera $P$ le point d'intersection de la droite $(AG)$
+et du plan $(BCE)$.
+\begin{enumerate}[resume]
+  \item
+        \begin{enumerate}[label=\alph*)]
+          \item Montrer qu'une représentation paramétrique de la droite $(AG)$ est
+                $\left\{\begin{array}{l} x=5t\\ y=t\\ z=1+t\end{array}\right.$,
+                $t\in\R$.
+          \item On admet qu'un point $M(x\,;y\,;z)$ appartient au plan $(BCE)$ si et
+                seulement si $x+z-4=0$. En déduire les coordonnées du point $P$.
+          \item Montrer que le point $P$ est le milieu du segment $[EC]$.
+        \end{enumerate}
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
