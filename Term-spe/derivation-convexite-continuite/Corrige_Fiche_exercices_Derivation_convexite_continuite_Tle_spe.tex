@@ -1,0 +1,1697 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 6 --- Dérivation, convexité, continuité --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\limx}[1]{\lim\limits_{x\to #1}}
+
+\begin{document}
+
+\entetefiche{Chapitre 6 --- Dérivation, convexité, continuité}{Terminale spécialité mathématiques}
+
+\partie{Rappels sur la dérivation}
+
+\begin{exo}[Lire des nombres dérivés et des tangentes]
+\cas{1.}
+\explique{On lit les ordonnées des points de $\Cf$ : \res{$f(0)=1$}, \res{$f(1)=2$} et
+\res{$f(3)=0$}.}{$f(a)$ est l'ordonnée du point d'abscisse $a$}
+\cas{2.}
+\explique{$f'(a)$ est le coefficient directeur de la tangente au point d'abscisse $a$.
+La tangente en $0$ monte de $2$ quand on avance de $1$ : \res{$f'(0)=2$}. La tangente en
+$1$ est horizontale : \res{$f'(1)=0$}. La tangente en $3$ descend de $1$ quand on avance
+de $1$ : \res{$f'(3)=-1$}.}{on lit « avancer de $1$, monter de $f'(a)$ » sur le
+quadrillage}
+\cas{3.}
+\explique{Avec $y=f'(a)(x-a)+f(a)$ :}{propriété~2 du cours}
+\begin{calculs}
+y &= 2(x-0)+1 &&\justif{$(T_{0})$}\\
+y &= \res{2x+1} &&\\
+y &= 0\times(x-1)+2 &&\justif{$(T_{1})$}\\
+y &= \res{2} &&\\
+y &= -1\times(x-3)+0 &&\justif{$(T_{3})$}\\
+y &= \res{-x+3} &&
+\end{calculs}
+\rem{On vérifie sur la figure : $(T_{3})$ coupe l'axe des ordonnées en $3$.}
+\end{exo}
+
+\begin{exo}[Calculer des dérivées]
+\cas{a)}
+\explique{$f=uv$ avec $u(x)=x^{2}-3$ et $v(x)=\e^{x}$, dérivable sur $\R$.}{forme $uv$}
+\begin{calculs}
+f'(x) &= 2x\,\e^{x}+\left(x^{2}-3\right)\e^{x} &&\justif{$(uv)'=u'v+uv'$}\\
+f'(x) &= \left(x^{2}+2x-3\right)\e^{x} &&\justif{on factorise par $\e^{x}$}\\
+f'(x) &= \res{(x-1)(x+3)\,\e^{x}} &&\justif{racines $1$ et $-3$ du trinôme}
+\end{calculs}
+\cas{b)}
+\explique{$g=\frac{u}{v}$ avec $u(x)=4x-1$ et $v(x)=2x+3$, qui ne s'annule pas sur
+$\intoo{-\frac{3}{2}}{+\infty}$.}{forme $\frac{u}{v}$}
+\begin{calculs}
+g'(x) &= \frac{4(2x+3)-(4x-1)\times 2}{(2x+3)^{2}} &&\justif{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+g'(x) &= \frac{8x+12-8x+2}{(2x+3)^{2}} &&\\
+g'(x) &= \res{\frac{14}{(2x+3)^{2}}} &&
+\end{calculs}
+\cas{c)}
+\explique{$h=5\times\frac{1}{v}$ avec $v(x)=x^{2}+1$, $v'(x)=2x$.}{inutile de dériver un
+quotient : le numérateur est constant}
+\begin{calculs}
+h'(x) &= 5\times\left(-\frac{2x}{\left(x^{2}+1\right)^{2}}\right) &&\justif{$\left(\frac{1}{v}\right)'=-\frac{v'}{v^{2}}$}\\
+h'(x) &= \res{\frac{-10x}{\left(x^{2}+1\right)^{2}}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 1\times\e^{-3x}+x\times\left(-3\e^{-3x}\right) &&\justif{$\left(\e^{-3x}\right)'=-3\e^{-3x}$}\\
+k'(x) &= \res{(1-3x)\,\e^{-3x}} &&
+\end{calculs}
+\cas{e)}
+\explique{$m=\frac{u}{v}$ avec $u(x)=\e^{x}$ et $v(x)=x+1$, non nul sur
+$\intoo{-1}{+\infty}$.}{}
+\begin{calculs}
+m'(x) &= \frac{\e^{x}(x+1)-\e^{x}\times 1}{(x+1)^{2}} &&\\
+m'(x) &= \res{\frac{x\,\e^{x}}{(x+1)^{2}}} &&\justif{on factorise le numérateur par $\e^{x}$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Tangentes à une courbe]
+\cas{1.}
+\explique{$f=uv$ avec $u(x)=x+3$ et $v(x)=\e^{-x}$, $u'(x)=1$ et $v'(x)=-\e^{-x}$. Pour
+tout $x\in\R$ :}{}
+\begin{calculs}
+f'(x) &= 1\times\e^{-x}+(x+3)\times\left(-\e^{-x}\right) &&\justif{$u'v+uv'$}\\
+f'(x) &= (1-x-3)\,\e^{-x} &&\justif{on factorise par $\e^{-x}$}\\
+f'(x) &= (-x-2)\,\e^{-x} &&\justif{l'expression annoncée}
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+f(0) &= 3\,\e^{0} = 3 &&\\
+f'(0) &= -2\,\e^{0} = -2 &&\\
+y &= -2(x-0)+3 &&\justif{$y=f'(0)(x-0)+f(0)$}\\
+y &= \res{-2x+3} &&
+\end{calculs}
+\cas{3.}
+\explique{Pour $x=2$ : $-2\times 2+3=-1$, qui est l'ordonnée de $A$. Donc \res{$A$
+appartient à $(T_{0})$}.}{on remplace $x$ par l'abscisse de $A$}
+\cas{4.}
+\explique{La tangente est horizontale quand $f'(x)=0$. Comme $\e^{-x}>0$, cela équivaut à
+$-x-2=0$, soit $x=-2$.}{coefficient directeur nul}
+\begin{calculs}
+f(-2) &= (-2+3)\,\e^{2} = \e^{2} &&\justif{$-(-2)=2$}
+\end{calculs}
+\explique{La tangente est horizontale au point de coordonnées \res{$\left(-2\,;\e^{2}\right)$}.}{}
+\end{exo}
+
+\begin{exo}[Une étude de variations]
+\cas{1.}
+\explique{En $+\infty$ : $\limx{+\infty}(2x-5)=+\infty$ et $\limx{+\infty}\e^{x}=+\infty$,
+donc par produit, \res{$\limx{+\infty}f(x)=+\infty$}.}{}
+\explique{En $-\infty$ : forme « $\infty\times 0$ ». Pour tout $x\in\R$,
+$f(x)=2x\,\e^{x}-5\,\e^{x}$. Par croissances comparées, $\limx{-\infty}x\,\e^{x}=0$, et
+$\limx{-\infty}\e^{x}=0$ ; par produit et par somme, \res{$\limx{-\infty}f(x)=0$}.}{on
+développe pour faire apparaître $x\,\e^{x}$ (ch.~5)}
+\cas{2.}
+\begin{calculs}
+f'(x) &= 2\,\e^{x}+(2x-5)\,\e^{x} &&\justif{$u'v+uv'$}\\
+f'(x) &= \res{(2x-3)\,\e^{x}} &&
+\end{calculs}
+\cas{3.}
+\explique{$\e^{x}>0$, donc $f'(x)$ a le signe de $2x-3$, qui s'annule en $\frac{3}{2}$ :
+négatif avant, positif après.}{}
+\begin{calculs}
+f\left(\tfrac{3}{2}\right) &= \left(2\times\tfrac{3}{2}-5\right)\e^{\frac{3}{2}} = -2\,\e^{\frac{3}{2}} &&
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$x$/0.7,$f'(x)$/0.7,$f(x)$/1.6}{$-\infty$,$\frac{3}{2}$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$0$,-/$-2\e^{\frac{3}{2}}$,+/$+\infty$}
+\end{tikzpicture}
+\end{center}
+\explique{$f$ est \res{strictement décroissante sur $\intof{-\infty}{\frac{3}{2}}$, strictement
+croissante sur $\intfo{\frac{3}{2}}{+\infty}$}, de minimum $-2\,\e^{\frac{3}{2}}$.}{}
+\end{exo}
+
+\partie{Fonctions composées}
+
+\begin{exo}[Composer, décomposer]
+\cas{1. a)}
+\begin{calculs}
+v\circ u(x) &= v(x+2) = \res{(x+2)^{2}} &&\justif{d'abord $u$, puis $v$}\\
+u\circ v(x) &= u\left(x^{2}\right) = \res{x^{2}+2} &&\justif{d'abord $v$, puis $u$}
+\end{calculs}
+\cas{1. b)}
+\begin{calculs}
+v\circ u(x) &= v\left(x^{2}\right) = \res{\e^{x^{2}}} &&\\
+u\circ v(x) &= u\left(\e^{x}\right) = \res{\left(\e^{x}\right)^{2}} &&\justif{soit $\e^{2x}$}
+\end{calculs}
+\cas{2.}
+\explique{$v\circ u(x)=\sqrt{1-x}$ n'existe que si $1-x\geq 0$, soit $x\leq 1$ : $v\circ u$
+est définie sur \res{$\intof{-\infty}{1}$}, par \res{$v\circ u(x)=\sqrt{1-x}$}.}{$u(x)$
+doit être dans l'ensemble de définition de $v$}
+\cas{3.}
+\explique{a) \res{$u(x)=5x-2$ et $v(x)=x^{3}$} ;\; b)~\res{$u(x)=x^{2}+1$ et
+$v(x)=\sqrt{x}$} ;\; c)~\res{$u(x)=3x^{2}-x$ et $v(x)=\e^{x}$}.}{$u$ : ce qu'on calcule
+d'abord ; $v$ : ce qu'on lui applique ensuite}
+\end{exo}
+
+\begin{exo}[Dériver une exponentielle composée]
+\explique{Pour chaque fonction de la forme $\e^{u}$ : $\left(\e^{u}\right)'=u'\e^{u}$.}{on
+repère $u$, on la dérive}
+\cas{a)}
+\explique{$u(x)=4x-1$, $u'(x)=4$ : \res{$f'(x)=4\,\e^{4x-1}$}.}{}
+\cas{b)}
+\explique{$u(x)=x^{2}+1$, $u'(x)=2x$ : \res{$g'(x)=2x\,\e^{x^{2}+1}$}.}{}
+\cas{c)}
+\explique{$u(x)=-x^{2}$, $u'(x)=-2x$ : $h'(x)=3\times(-2x)\,\e^{-x^{2}}$, soit
+\res{$h'(x)=-6x\,\e^{-x^{2}}$}.}{le facteur $3$ se garde}
+\cas{d)}
+\explique{$u(x)=\frac{1}{x}$, $u'(x)=-\frac{1}{x^{2}}$ : \res{$k'(x)=-\dfrac{1}{x^{2}}\,\e^{\frac{1}{x}}$}.}{}
+\cas{e)}
+\explique{$m$ est un produit : $x$ par $\e^{x^{2}}$, de dérivée $2x\,\e^{x^{2}}$.}{produit,
+puis composée}
+\begin{calculs}
+m'(x) &= 1\times\e^{x^{2}}+x\times 2x\,\e^{x^{2}} &&\justif{$u'v+uv'$}\\
+m'(x) &= \res{\left(1+2x^{2}\right)\e^{x^{2}}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Puissances et racines]
+\cas{a)}
+\explique{$u(x)=2x+7$, $u'(x)=2$ : $f'(x)=4\times 2\times(2x+7)^{3}$, soit
+\res{$f'(x)=8(2x+7)^{3}$}.}{$\left(u^{n}\right)'=nu'u^{n-1}$}
+\cas{b)}
+\explique{$u(x)=x^{2}-x+3$, $u'(x)=2x-1$ : \res{$g'(x)=3(2x-1)\left(x^{2}-x+3\right)^{2}$}.}{}
+\cas{c)}
+\explique{$h=\frac{1}{v}$ avec $v(x)=(3x-1)^{2}$, de dérivée $v'(x)=2\times 3(3x-1)=6(3x-1)$.}{$v$
+est elle-même une puissance}
+\begin{calculs}
+h'(x) &= -\frac{6(3x-1)}{(3x-1)^{4}} &&\justif{$-\frac{v'}{v^{2}}$}\\
+h'(x) &= \res{-\frac{6}{(3x-1)^{3}}} &&\justif{on simplifie par $3x-1\neq 0$}
+\end{calculs}
+\cas{d)}
+\explique{$u(x)=6x+2>0$ sur $\intoo{-\frac{1}{3}}{+\infty}$, $u'(x)=6$ :
+$k'(x)=\frac{6}{2\sqrt{6x+2}}$, soit \res{$k'(x)=\dfrac{3}{\sqrt{6x+2}}$}.}{$\left(\sqrt{u}\right)'=\frac{u'}{2\sqrt{u}}$}
+\cas{e)}
+\explique{Pour tout $x\in\R$, $x^{2}+4x+5=(x+2)^{2}+1>0$. Avec $u'(x)=2x+4$ :
+$m'(x)=\frac{2x+4}{2\sqrt{x^{2}+4x+5}}$, soit
+\res{$m'(x)=\dfrac{x+2}{\sqrt{x^{2}+4x+5}}$}.}{forme canonique pour le signe}
+\cas{f)}
+\explique{$u(x)=1+2\,\e^{x}$, $u'(x)=2\,\e^{x}$ : $p'(x)=3\times 2\,\e^{x}\left(1+2\,\e^{x}\right)^{2}$,
+soit \res{$p'(x)=6\,\e^{x}\left(1+2\,\e^{x}\right)^{2}$}.}{}
+\end{exo}
+
+\begin{exo}[Tangentes à la courbe d'une racine]
+\cas{1.}
+\explique{$u(x)=2x+1>0$ pour $x>-\frac{1}{2}$, $u'(x)=2$ : $f'(x)=\frac{2}{2\sqrt{2x+1}}=\frac{1}{\sqrt{2x+1}}$.}{on
+simplifie par $2$}
+\cas{2.}
+\begin{calculs}
+f(0) &= 1 &&\\
+f'(0) &= 1 &&\\
+y &= \res{x+1} &&\justif{$(T_{0})$ : $y=1\times(x-0)+1$}\\
+f(4) &= \sqrt{9} = 3 &&\\
+f'(4) &= \frac{1}{3} &&\\
+y &= \frac{1}{3}(x-4)+3 &&\justif{$(T_{4})$}\\
+y &= \res{\frac{1}{3}x+\frac{5}{3}} &&\justif{$-\frac{4}{3}+\frac{9}{3}=\frac{5}{3}$}
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+\frac{1}{\sqrt{2x+1}} &= \frac{1}{5} &&\justif{on résout $f'(x)=\frac{1}{5}$}\\
+\sqrt{2x+1} &= 5 &&\justif{on passe aux inverses}\\
+2x+1 &= 25 &&\justif{on élève au carré (nombres positifs)}\\
+x &= 12 &&
+\end{calculs}
+\explique{$f(12)=\sqrt{25}=5$ : la tangente a pour coefficient directeur $\frac{1}{5}$ au
+point \res{$(12\,;5)$}.}{}
+\end{exo}
+
+\begin{exo}[Repérer les erreurs]
+\cas{a)}
+\explique{L'élève a oublié de multiplier par $u'(x)=2x$ :
+\res{$f'(x)=2x\,\e^{x^{2}}$}.}{$\left(\e^{u}\right)'=u'\e^{u}$, pas $\e^{u}$}
+\cas{b)}
+\explique{L'élève a oublié la dérivée de $3x+1$, qui vaut $3$ :
+$g'(x)=4\times 3(3x+1)^{3}$, soit \res{$g'(x)=12(3x+1)^{3}$}.}{erreur la plus fréquente}
+\cas{c)}
+\explique{L'élève a oublié $u'(x)=2x$ au numérateur : $h'(x)=\frac{2x}{2\sqrt{x^{2}+5}}$, soit
+\res{$h'(x)=\dfrac{x}{\sqrt{x^{2}+5}}$}.}{$\left(\sqrt{u}\right)'=\frac{u'}{2\sqrt{u}}$}
+\rem{Les trois erreurs sont la même : on dérive la fonction extérieure, puis on oublie de
+multiplier par la dérivée de l'intérieur.}
+\end{exo}
+
+\partie{Étude d'une fonction composée}
+
+\begin{exo}[Une exponentielle de trinôme]
+\cas{1.}
+\explique{Pour tout $x\in\R$, $-x^{2}+4x-3=x(4-x)-3$. En $+\infty$ : $\limx{+\infty}x=+\infty$
+et $\limx{+\infty}(4-x)=-\infty$, donc par produit puis par somme,
+$\limx{+\infty}\left(-x^{2}+4x-3\right)=-\infty$. En $-\infty$ : $\limx{-\infty}x=-\infty$ et
+$\limx{-\infty}(4-x)=+\infty$, d'où la même limite $-\infty$.}{forme indéterminée levée en
+factorisant par $x$}
+\explique{On pose $X=-x^{2}+4x-3$. Comme $\lim\limits_{X\to-\infty}\e^{X}=0$, par composition,
+\res{$\limx{-\infty}f(x)=0$ et $\limx{+\infty}f(x)=0$}. La droite d'équation \res{$y=0$} est
+asymptote à $\Cf$ en $-\infty$ et en $+\infty$.}{}
+\cas{2.}
+\explique{$u(x)=-x^{2}+4x-3$, $u'(x)=-2x+4$ : \res{$f'(x)=(-2x+4)\,\e^{-x^{2}+4x-3}$}.}{forme
+$\e^{u}$}
+\cas{3.}
+\explique{$\e^{-x^{2}+4x-3}>0$, donc $f'(x)$ a le signe de $-2x+4$ : positif pour $x<2$,
+négatif pour $x>2$. Et $f(2)=\e^{-4+8-3}=\e$.}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$x$/0.7,$f'(x)$/0.7,$f(x)$/1.6}{$-\infty$,$2$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$0$,+/$\e$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est strictement croissante sur $\intof{-\infty}{2}$ et strictement
+décroissante sur $\intfo{2}{+\infty}$}.}{}
+\cas{4.}
+\explique{$f(x)=1\iff \e^{-x^{2}+4x-3}=\e^{0}\iff -x^{2}+4x-3=0$.}{$\e^{a}=\e^{b}\iff a=b$
+(1re)}
+\begin{calculs}
+\Delta &= 4^{2}-4\times(-1)\times(-3) = 4 &&\justif{discriminant de $-x^{2}+4x-3$}\\
+x_{1} &= \frac{-4-2}{-2} = 3 &&\\
+x_{2} &= \frac{-4+2}{-2} = 1 &&
+\end{calculs}
+\explique{\res{$S=\ens{1\,;3}$}.}{les deux points de $\Cf$ d'ordonnée $1$}
+\end{exo}
+
+\begin{exo}[La racine d'un trinôme]
+\cas{1.}
+\begin{calculs}
+(x-3)^{2}+1 &= x^{2}-6x+9+1 &&\\
+(x-3)^{2}+1 &= x^{2}-6x+10 &&
+\end{calculs}
+\explique{Donc, pour tout $x\in\R$, $x^{2}-6x+10\geq 1>0$ : \res{$g$ est définie et dérivable
+sur $\R$}, comme racine d'une fonction dérivable strictement positive.}{$\sqrt{u}$ est
+dérivable là où $u>0$}
+\cas{2.}
+\explique{$\limx{-\infty}(x-3)^{2}=+\infty$ et $\limx{+\infty}(x-3)^{2}=+\infty$, donc
+$x^{2}-6x+10$ tend vers $+\infty$ en $-\infty$ et en $+\infty$. Comme
+$\lim\limits_{X\to+\infty}\sqrt{X}=+\infty$, par composition,
+\res{$\limx{-\infty}g(x)=+\infty$ et $\limx{+\infty}g(x)=+\infty$}.}{la forme canonique
+évite l'indétermination}
+\cas{3.}
+\explique{$u(x)=x^{2}-6x+10$, $u'(x)=2x-6$ : $g'(x)=\frac{2x-6}{2\sqrt{x^{2}-6x+10}}$, soit
+\res{$g'(x)=\dfrac{x-3}{\sqrt{x^{2}-6x+10}}$}.}{}
+\cas{4.}
+\explique{Le dénominateur est strictement positif : $g'(x)$ a le signe de $x-3$. Et
+$g(3)=\sqrt{1}=1$.}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$x$/0.7,$g'(x)$/0.7,$g(x)$/1.6}{$-\infty$,$3$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$+\infty$,-/$1$,+/$+\infty$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$g$ est strictement décroissante sur $\intof{-\infty}{3}$, strictement
+croissante sur $\intfo{3}{+\infty}$}, de minimum $1$.}{}
+\end{exo}
+
+\begin{exo}[La puissance d'une installation solaire]
+\cas{1.}
+\explique{$P=8\,\e^{u}$ avec $u(t)=-\frac{(t-13)^{2}}{8}$ : $u'(t)=-\frac{2(t-13)}{8}=-\frac{t-13}{4}$.}{dérivée
+de $(t-13)^{2}$ : $2(t-13)$}
+\begin{calculs}
+P'(t) &= 8\times\left(-\frac{t-13}{4}\right)\e^{-\frac{(t-13)^{2}}{8}} &&\justif{$\left(\e^{u}\right)'=u'\e^{u}$}\\
+P'(t) &= -2(t-13)\,\e^{-\frac{(t-13)^{2}}{8}} &&\justif{$\frac{8}{4}=2$}
+\end{calculs}
+\cas{2.}
+\explique{L'exponentielle est strictement positive : $P'(t)$ a le signe de $-2(t-13)$, positif
+pour $t<13$, négatif pour $t>13$. \res{$P$ est croissante sur $\intff{6}{13}$ et
+décroissante sur $\intff{13}{20}$}.}{}
+\cas{3.}
+\explique{Le maximum est atteint en $t=13$ : $P(13)=8\,\e^{0}=8$. La puissance est maximale
+\res{à $13$~h, et vaut $8$~kW}.}{}
+\cas{4.}
+\explique{Avec le tableau de valeurs de la calculatrice : $P(10{,}64)\approx 3{,}99$ et
+$P(10{,}65)\approx 4{,}01$. Comme $P$ est croissante sur $\intff{6}{13}$, la puissance
+dépasse $4$~kW à partir de $t\approx 10{,}65$, soit \res{vers $10$~h~$39$~min}.}{$0{,}65\times 60=39$}
+\rem{Par symétrie autour de $13$~h, elle redescend sous $4$~kW vers $15$~h~$21$~min.}
+\end{exo}
+
+\partie{Dérivée seconde}
+
+\begin{exo}[Calculer des dérivées secondes]
+\cas{a)}
+\begin{calculs}
+f'(x) &= 4x^{3}-6x^{2}+1 &&\\
+f''(x) &= \res{12x^{2}-12x} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= 3\,\e^{3x}+2x &&\\
+g''(x) &= \res{9\,\e^{3x}+2} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \e^{2x}+(x+1)\times 2\,\e^{2x} &&\justif{$u'v+uv'$}\\
+h'(x) &= (2x+3)\,\e^{2x} &&\\
+h''(x) &= 2\,\e^{2x}+(2x+3)\times 2\,\e^{2x} &&\\
+h''(x) &= \res{(4x+8)\,\e^{2x}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= -\frac{1}{x^{2}} &&\\
+k''(x) &= \res{\frac{2}{x^{3}}} &&\justif{$-\frac{1}{x^{2}}=-x^{-2}$ : on dérive $-\frac{1}{v}$ avec $v=x^{2}$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= \e^{-x}-x\,\e^{-x} = (1-x)\,\e^{-x} &&\\
+m''(x) &= -\e^{-x}-(1-x)\,\e^{-x} &&\\
+m''(x) &= \res{(x-2)\,\e^{-x}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Dérivée et dérivée seconde]
+\cas{1.}
+\begin{calculs}
+f'(x) &= 2x\,\e^{-x}+\left(x^{2}+1\right)\left(-\e^{-x}\right) &&\justif{$u'v+uv'$}\\
+f'(x) &= \left(-x^{2}+2x-1\right)\e^{-x} &&\\
+f'(x) &= -(x-1)^{2}\,\e^{-x} &&\justif{$x^{2}-2x+1=(x-1)^{2}$}
+\end{calculs}
+\cas{2.}
+\explique{Pour tout $x\in\R$, $f'(x)\leq 0$, et $f'(x)=0$ seulement pour $x=1$ : \res{$f$ est
+strictement décroissante sur $\R$}.}{propriété~2 : une annulation isolée ne gêne pas}
+\cas{3.}
+\explique{On dérive $f'=uv$ avec $u(x)=-(x-1)^{2}$, $u'(x)=-2(x-1)$, et $v(x)=\e^{-x}$.}{}
+\begin{calculs}
+f''(x) &= -2(x-1)\,\e^{-x}+(x-1)^{2}\,\e^{-x} &&\justif{$-(x-1)^{2}\times\left(-\e^{-x}\right)$}\\
+f''(x) &= (x-1)\bigl[-2+(x-1)\bigr]\e^{-x} &&\justif{on factorise par $(x-1)\,\e^{-x}$}\\
+f''(x) &= (x-1)(x-3)\,\e^{-x} &&
+\end{calculs}
+\cas{4.}
+\explique{$f''(x)$ a le signe de $(x-1)(x-3)$ : positif hors de $\intff{1}{3}$, négatif
+entre $1$ et $3$. Avec $f'(1)=0$ et $f'(3)=-4\,\e^{-3}$ :}{signe d'un trinôme}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.2]{$x$/0.7,$f''(x)$/0.7,$f'(x)$/1.6}{$-\infty$,$1$,$3$,$+\infty$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/{},+/$0$,-/$-4\e^{-3}$,+/{}}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f'$ est croissante sur $\intof{-\infty}{1}$, décroissante sur $\intff{1}{3}$,
+croissante sur $\intfo{3}{+\infty}$}.}{}
+\end{exo}
+
+\begin{exo}[Le démarrage d'un tramway]
+\cas{1.}
+\begin{calculs}
+v(t) &= \res{-0{,}6t^{2}+6t} &&\justif{$v=d'$}\\
+a(t) &= \res{-1{,}2t+6} &&\justif{$a=v'=d''$}
+\end{calculs}
+\cas{2.}
+\explique{$-1{,}2t+6=0\iff t=5$ : l'accélération est nulle \res{au bout de $5$~s}.}{}
+\cas{3.}
+\explique{$a(t)\geq 0$ sur $\intff{0}{5}$ et $a(t)\leq 0$ sur $\intff{5}{10}$ : $v$ est
+croissante puis décroissante, maximale en $t=5$.}{le signe de $v'=a$ donne les
+variations de $v$}
+\begin{calculs}
+v(5) &= -0{,}6\times 25+30 = 15 &&
+\end{calculs}
+\explique{La vitesse maximale est \res{$15$~m/s}, soit $54$~km/h.}{$15\times 3{,}6=54$}
+\end{exo}
+
+\partie{Fonctions convexes, fonctions concaves}
+
+\begin{exo}[Lire la convexité sur trois courbes]
+\cas{1.}
+\explique{Sur $\intff{0}{2}$, la courbe est tournée vers le haut (au-dessus de ses
+tangentes), puis vers le bas : \res{$f$ semble convexe sur $\intff{0}{2}$ et concave sur
+$\intff{2}{4}$}.}{lecture sur la courbe de $f$}
+\cas{2.}
+\explique{$g'$ est croissante sur $\intff{-2}{0}$ et décroissante sur $\intff{0}{3}$ :
+\res{$g$ est convexe sur $\intff{-2}{0}$ et concave sur $\intff{0}{3}$}.}{$g$ convexe
+$\iff$ $g'$ croissante}
+\cas{3.}
+\explique{On lit le \textbf{signe} de $h''$ : négatif sur $\intff{-3}{-2}$, positif sur
+$\intff{-2}{2}$, négatif sur $\intff{2}{3}$. \res{$h$ est concave sur $\intff{-3}{-2}$,
+convexe sur $\intff{-2}{2}$, concave sur $\intff{2}{3}$}.}{$h$ convexe $\iff$ $h''\geq 0$}
+\rem{Trois courbes, trois lectures : la forme de $\Cf$, le sens de variation de $g'$, le
+signe de $h''$.}
+\end{exo}
+
+\begin{exo}[Du tableau de signes à la courbe]
+\cas{1.}
+\explique{\res{$f$ est convexe sur $\intff{-3}{-1}$, concave sur $\intff{-1}{3}$, convexe
+sur $\intff{3}{5}$}. $f''$ s'annule en changeant de signe en $-1$ et en $3$ : les points
+d'inflexion ont pour abscisses \res{$-1$ et $3$}.}{propriété~4}
+\cas{2.}
+\explique{$f''$ est la dérivée de $f'$ : \res{$f'$ est croissante sur $\intff{-3}{-1}$,
+décroissante sur $\intff{-1}{3}$, croissante sur $\intff{3}{5}$}.}{}
+\cas{3.}
+\explique{$f'$ est croissante sur $\intff{-3}{-1}$, donc $f'(-1)\geq f'(-3)$ : $f'(-3)=2$
+et $f'(-1)=0$ est \res{impossible}.}{}
+\explique{$f'$ est décroissante sur $\intff{-1}{3}$, donc $f'(3)\leq f'(-1)$ : $f'(-1)=1$
+et $f'(3)=-2$ est \res{possible}.}{}
+\cas{4.}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+On place les points $(-1\,;2)$ et $(3\,;-2)$, avec des tangentes de coefficients
+directeurs $1$ et $-2$, puis on trace une courbe tournée vers le haut sur
+$\intff{-3}{-1}$, vers le bas sur $\intff{-1}{3}$, de nouveau vers le haut sur
+$\intff{3}{5}$. Une courbe possible :
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-4}{6}{4}
+  \gradx{-3,-2,-1,1,2,3,4,5} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbeB,dashed,line width=0.7pt] (-2.5,0.5)--(0.5,3.5) (2.2,-0.4)--(3.8,-3.6);
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,1) .. controls (-2.33,1) and (-1.67,1.33) .. (-1,2)
+           .. controls (0.33,3.33) and (1.67,0.67) .. (3,-2)
+           .. controls (3.67,-3.33) and (4.33,-2.67) .. (5,-2);
+  \path (-1,2) node[croix]{} (3,-2) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (4.6,-1.2) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\end{exo}
+
+\begin{exo}[Étudier la convexité]
+\cas{a)}
+\explique{$f'(x)=3x^{2}-12x+2$ et $f''(x)=6x-12$, positif pour $x\geq 2$ : \res{$f$ est
+concave sur $\intof{-\infty}{2}$ et convexe sur $\intfo{2}{+\infty}$}.}{}
+\cas{b)}
+\explique{$g'(x)=4x^{3}-12x$ et $g''(x)=12x^{2}-12=12(x-1)(x+1)$, positif à l'extérieur des
+racines $-1$ et $1$ : \res{$g$ est convexe sur $\intof{-\infty}{-1}$ et sur $\intfo{1}{+\infty}$,
+concave sur $\intff{-1}{1}$}.}{signe d'un trinôme}
+\cas{c)}
+\explique{$h'(x)=-2\,\e^{-2x}+3$ et $h''(x)=4\,\e^{-2x}>0$ : \res{$h$ est convexe sur
+$\R$}.}{}
+\cas{d)}
+\begin{calculs}
+k'(x) &= -\e^{x}+(2-x)\,\e^{x} = (1-x)\,\e^{x} &&\\
+k''(x) &= -\e^{x}+(1-x)\,\e^{x} = -x\,\e^{x} &&
+\end{calculs}
+\explique{$k''(x)$ a le signe de $-x$ : \res{$k$ est convexe sur $\intof{-\infty}{0}$ et
+concave sur $\intfo{0}{+\infty}$}.}{}
+\cas{e)}
+\explique{$m'(x)=1-\frac{4}{x^{2}}$ et $m''(x)=\frac{8}{x^{3}}>0$ pour $x>0$ : \res{$m$ est
+convexe sur $\intoo{0}{+\infty}$}.}{$\left(-\frac{4}{x^{2}}\right)'=\frac{8}{x^{3}}$}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{$u(x)=-\frac{1}{2}x+3$, $u'(x)=-\frac{1}{2}$ :
+$f'(x)=-\frac{5}{2}\left(-\frac{1}{2}x+3\right)^{4}$, puis
+$f''(x)=-\frac{5}{2}\times 4\times\left(-\frac{1}{2}\right)\left(-\frac{1}{2}x+3\right)^{3}=5\left(-\frac{1}{2}x+3\right)^{3}$.}{deux
+fois la formule $\left(u^{n}\right)'$}
+\explique{Pour $x=8$, $-\frac{1}{2}x+3=-1$, donc $f''(8)=-5<0$ : $f$ n'est pas convexe sur
+$\R$. \res{Affirmation 1 fausse}.}{un contre-exemple suffit}
+\cas{2.}
+\explique{$g'(x)=(x+1)\,\e^{x}$ et $g''(x)=(x+2)\,\e^{x}$. Pour $x\geq -2$, $g''(x)\geq 0$ :
+$g$ est convexe sur $\intfo{-2}{+\infty}$. \res{Affirmation 2 vraie}.}{}
+\cas{3.}
+\explique{$h$ est affine, donc $h''=0$ : $k''(x)=12x^{2}+2>0$ pour tout $x\in\R$. \res{Affirmation
+3 vraie}.}{la dérivée seconde d'une fonction affine est nulle}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Amérique du Sud : QCM]
+\explique{$f$ est convexe là où $f'$ est croissante, concave là où $f'$ est décroissante.
+Sur la courbe, $f'$ est croissante sur $\intff{-3}{-2}$, décroissante sur $\intff{-2}{0}$,
+croissante sur $\intff{0}{3}$, décroissante sur $\intff{3}{4}$.}{lecture du sens de
+variation de $f'$}
+\explique{a) faux ($f'$ décroît sur $\intff{-2}{-1}$) ; b) faux ($f'$ croît sur
+$\intff{0}{2}$) ; d) faux : $f$ change de convexité en $-2$, en $0$ et en $3$, soit trois
+points d'inflexion. La bonne réponse est \res{c)} : $f'$ est décroissante sur
+$\intff{-2}{0}$, donc $f$ y est concave.}{}
+\end{exo}
+
+\partie{Point d'inflexion}
+
+\begin{exo}[Chercher les points d'inflexion]
+\cas{a)}
+\explique{$f''(x)=6x-6$ s'annule en changeant de signe en $1$, et $f(1)=1-3+4=2$ : point
+d'inflexion \res{$(1\,;2)$}.}{propriété~4}
+\cas{b)}
+\explique{$g'(x)=-3x^{2}+12x-9$ et $g''(x)=-6x+12$, qui change de signe en $2$ ;
+$g(2)=-8+24-18+2=0$ : point d'inflexion \res{$(2\,;0)$}.}{}
+\cas{c)}
+\explique{$h'(x)=4x^{3}-12x^{2}$ et $h''(x)=12x^{2}-24x=12x(x-2)$, qui change de signe en $0$
+et en $2$ ; $h(0)=0$ et $h(2)=16-32=-16$ : deux points d'inflexion, \res{$(0\,;0)$ et
+$(2\,;-16)$}.}{}
+\cas{d)}
+\explique{$k''(x)=12x^{2}+4>0$ ne s'annule pas : \res{aucun point d'inflexion} ($k$ est
+convexe sur $\R$).}{}
+\end{exo}
+
+\begin{exo}[Une vidéo de vulgarisation]
+\cas{1.}
+\explique{$N=40\times\frac{1}{v}$ avec $v(t)=1+\e^{4-t}$, $v'(t)=-\e^{4-t}$.}{$\left(\e^{4-t}\right)'=-\e^{4-t}$}
+\begin{calculs}
+N'(t) &= 40\times\left(-\frac{-\e^{4-t}}{\left(1+\e^{4-t}\right)^{2}}\right) &&\justif{$\left(\frac{1}{v}\right)'=-\frac{v'}{v^{2}}$}\\
+N'(t) &= \frac{40\,\e^{4-t}}{\left(1+\e^{4-t}\right)^{2}} &&
+\end{calculs}
+\explique{$N'(t)>0$ : \res{$N$ est strictement croissante sur $\intff{0}{10}$}.}{quotient de
+nombres strictement positifs}
+\cas{2.}
+\explique{$40\,\e^{4-t}>0$ et $\left(1+\e^{4-t}\right)^{3}>0$ : $N''(t)$ a le signe de
+$\e^{4-t}-1$. Or $\e^{4-t}\geq 1=\e^{0}\iff 4-t\geq 0\iff t\leq 4$.}{la fonction
+exponentielle est croissante}
+\explique{\res{$N$ est convexe sur $\intff{0}{4}$ et concave sur $\intff{4}{10}$}.}{}
+\cas{3.}
+\explique{$N''$ s'annule en changeant de signe en $4$, et $N(4)=\frac{40}{1+1}=20$ : point
+d'inflexion \res{$(4\,;20)$}.}{}
+\cas{4.}
+\explique{\res{Jusqu'au 4\textsuperscript{e} jour, le nombre de vues augmente de plus en plus
+vite ; ensuite, il augmente de moins en moins vite.} Au 4\textsuperscript{e} jour, la vidéo
+a $20\,000$ vues et le rythme est le plus élevé : $N'(4)=10$, soit $10\,000$ vues par
+jour.}{$N'$ croît puis décroît : maximum en $4$}
+\end{exo}
+
+\begin{exo}[Deux points d'inflexion]
+\cas{1.}
+\begin{calculs}
+f'(x) &= 2x\,\e^{-x}-x^{2}\,\e^{-x} = \left(2x-x^{2}\right)\e^{-x} &&\justif{$u'v+uv'$}\\
+f''(x) &= (2-2x)\,\e^{-x}-\left(2x-x^{2}\right)\e^{-x} &&\justif{même formule pour $f'$}\\
+f''(x) &= \left(x^{2}-4x+2\right)\e^{-x} &&
+\end{calculs}
+\cas{2.}
+\explique{$f''(x)$ a le signe de $x^{2}-4x+2$ : $\Delta=16-8=8$, racines
+$x_{1}=\frac{4-2\sqrt{2}}{2}=2-\sqrt{2}$ et $x_{2}=2+\sqrt{2}$, positif à l'extérieur.}{$\sqrt{8}=2\sqrt{2}$}
+\explique{\res{$f$ est convexe sur $\intof{-\infty}{2-\sqrt{2}}$ et sur
+$\intfo{2+\sqrt{2}}{+\infty}$, concave sur $\intff{2-\sqrt{2}}{2+\sqrt{2}}$}.}{}
+\cas{3.}
+\explique{$f''$ s'annule en changeant de signe en $2-\sqrt{2}$ et en $2+\sqrt{2}$ : deux
+points d'inflexion, d'abscisses \res{$2-\sqrt{2}$ et $2+\sqrt{2}$}.}{}
+\end{exo}
+
+\partie{Convexité et inégalités}
+
+\begin{exo}[Tangente et corde de l'exponentielle]
+\cas{1.}
+\explique{$f''(x)=\e^{x}>0$ : \res{$f$ est convexe sur $\R$}.}{}
+\cas{2.}
+\begin{calculs}
+y &= \e(x-1)+\e &&\justif{$f(1)=f'(1)=\e$}\\
+y &= \res{\e x} &&
+\end{calculs}
+\explique{$f$ est convexe, donc sa courbe est au-dessus de toutes ses tangentes, en
+particulier de $(T_{1})$ : \res{pour tout $x\in\R$, $\e^{x}\geq\e x$}.}{}
+\cas{3.}
+\explique{$A(0\,;1)$ et $B(1\,;\e)$ : coefficient directeur $\frac{\e-1}{1-0}=\e-1$,
+ordonnée à l'origine $1$. $(AB)$ : \res{$y=(\e-1)x+1$}.}{}
+\cas{4.}
+\explique{$f$ est convexe : entre $A$ et $B$, sa courbe est en dessous de la corde $[AB]$.
+\res{Pour tout $x\in\intff{0}{1}$, $\e^{x}\leq(\e-1)x+1$}.}{définition de la convexité par
+les cordes}
+\cas{5.}
+\explique{Pour $x=\frac{1}{2}$ : $\e^{\frac{1}{2}}\leq\frac{\e-1}{2}+1=\frac{\e+1}{2}$, soit
+\res{$\sqrt{\e}\leq\dfrac{\e+1}{2}$}.}{$\e^{\frac{1}{2}}=\sqrt{\e}$}
+\end{exo}
+
+\begin{exo}[Au-dessus d'une tangente]
+\cas{1.}
+\begin{calculs}
+f'(x) &= \e^{x}+x\,\e^{x}+1 = \res{(x+1)\,\e^{x}+1} &&\\
+f''(x) &= \e^{x}+(x+1)\,\e^{x} = \res{(x+2)\,\e^{x}} &&
+\end{calculs}
+\cas{2.}
+\explique{$f''(x)$ a le signe de $x+2$ : \res{$f$ est concave sur $\intof{-\infty}{-2}$ et
+convexe sur $\intfo{-2}{+\infty}$}.}{}
+\cas{3.}
+\explique{$f(0)=1$ et $f'(0)=2$ : $(T_{0})$ a pour équation \res{$y=2x+1$}.}{}
+\cas{4.}
+\explique{$f$ est convexe sur $\intfo{-2}{+\infty}$, qui contient $0$ : sur cet intervalle,
+sa courbe est au-dessus de ses tangentes, en particulier de $(T_{0})$. Donc pour tout
+$x\geq -2$, $x\,\e^{x}+x+1\geq 2x+1$.}{la tangente doit être prise dans l'intervalle de
+convexité}
+\end{exo}
+
+\begin{exo}[Une approximation de racine carrée]
+\cas{1.}
+\explique{$f'(x)=\frac{1}{2\sqrt{1+x}}=\frac{1}{2}\times\frac{1}{v(x)}$ avec $v(x)=\sqrt{1+x}$,
+$v'(x)=\frac{1}{2\sqrt{1+x}}$.}{}
+\begin{calculs}
+f''(x) &= \frac{1}{2}\times\left(-\frac{\frac{1}{2\sqrt{1+x}}}{1+x}\right) &&\justif{$-\frac{v'}{v^{2}}$, avec $v^{2}=1+x$}\\
+f''(x) &= -\frac{1}{4(1+x)\sqrt{1+x}} &&
+\end{calculs}
+\cas{2.}
+\explique{Pour $x>-1$, $f''(x)<0$ : \res{$f$ est concave sur $\intoo{-1}{+\infty}$}.}{}
+\cas{3.}
+\explique{$f(0)=1$ et $f'(0)=\frac{1}{2}$ : \res{$(T_{0})\colon y=1+\frac{x}{2}$}.}{}
+\cas{4.}
+\explique{$f$ est concave : sa courbe est en dessous de ses tangentes, en particulier de
+$(T_{0})$. Pour tout $x>-1$, $\sqrt{1+x}\leq 1+\frac{x}{2}$.}{}
+\cas{5.}
+\explique{Avec $x=0{,}02$ : \res{$\sqrt{1{,}02}\leq 1{,}01$}. La calculatrice donne
+$\sqrt{1{,}02}\approx 1{,}009\,95$ : la tangente donne une très bonne
+approximation.}{près du point de contact, la courbe et la tangente sont proches}
+\end{exo}
+
+\partie{Continuité}
+
+\begin{exo}[Le tarif d'un parking]
+\cas{1.}
+\explique{\res{$P(0{,}5)=2$}, \res{$P(1)=2$} (une heure exactement : une heure commencée),
+\res{$P(1{,}5)=4$}, \res{$P(2)=4$}.}{}
+\cas{2.}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+$P$ est constante par intervalles : $2$ sur $\intof{0}{1}$, $4$ sur $\intof{1}{2}$, $6$
+sur $\intof{2}{3}$, $8$ sur $\intof{3}{4}$. Les croix marquent les valeurs prises aux
+bornes droites.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.46\linewidth}\centering
+\begin{tikzpicture}[x=0.9cm,y=0.3cm]
+  \draw[grille,step=1] (0,0) grid (4,9);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(4.4,0) node[below left]{$t$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,9.6) node[below left]{$P$};
+  \foreach \k in {1,2,3,4} \draw (\k,0.15)--(\k,-0.15) node[below,font=\scriptsize]{$\k$};
+  \foreach \k in {2,4,6,8} \draw (0.05,\k)--(-0.05,\k) node[left,font=\scriptsize]{$\k$};
+  \foreach \k in {1,2,3,4}{
+    \draw[coulCourbe,line width=1.2pt] ({\k-1},{2*\k})--(\k,{2*\k});
+    \path[coulCourbe] (\k,{2*\k}) node[croix]{};}
+\end{tikzpicture}
+\end{minipage}
+\cas{3.}
+\explique{Pour $t$ proche de $1$ et $t<1$, $P(t)=2$ ; pour $t>1$, $P(t)=4$ :
+\res{$\lim\limits_{t\to 1^{-}}P(t)=2$ et $\lim\limits_{t\to 1^{+}}P(t)=4$}.}{}
+\cas{4.}
+\explique{\res{La fonction $P$ n'est pas continue en $1$}, car la limite à droite en $1$
+vaut $4$, alors que $P(1)=2$ : la courbe fait un saut en $1$.}{une phrase complète,
+comme demandé}
+\cas{5.}
+\explique{$P$ est continue sur \res{$\intof{0}{1}$, $\intof{1}{2}$, $\intof{2}{3}$ et
+$\intof{3}{4}$}, où elle est constante.}{elle saute en $1$, $2$ et $3$}
+\end{exo}
+
+\begin{exo}[Choisir un paramètre]
+\cas{1.}
+\explique{$\limx{2^{-}}f(x)=2^{2}+1=5$ et $\limx{2^{+}}f(x)=f(2)=2a-3$. $f$ est continue en $2$
+si et seulement si $2a-3=5$, soit \res{$a=4$}.}{les deux morceaux doivent se raccorder}
+\cas{2.}
+\explique{Sur $\intoo{-\infty}{0}$ et sur $\intoo{0}{+\infty}$, $g$ est continue. En $0$ :
+$g(0)=\e^{0}=1$ et $\limx{0^{+}}g(x)=b$. $g$ est continue sur $\R$ si et seulement si
+\res{$b=1$}.}{}
+\end{exo}
+
+\begin{exo}[La fonction valeur absolue]
+\cas{1.}
+\begin{minipage}[c]{0.5\linewidth}\raggedright
+La courbe est formée de deux demi-droites : $y=-x$ pour $x<0$ et $y=x$ pour $x\geq 0$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-3}{-1}{3}{3}
+  \gradx{-2,-1,1,2} \grady{1,2}
+  \draw[coulCourbe,line width=1.1pt] (-3,3)--(0,0)--(3,3);
+  \node[coulCourbe,font=\footnotesize] at (2.2,3.4) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\cas{2.}
+\explique{$\limx{0^{-}}(-x)=0$ et $\limx{0^{+}}x=0$, et $f(0)=0$ : \res{$f$ est continue en
+$0$}.}{}
+\cas{3.}
+\explique{Pour $h>0$ : $\frac{|h|-0}{h}=\frac{h}{h}=1$. Pour $h<0$ : $\frac{-h}{h}=-1$. Le
+taux de variation n'a pas de limite en $0$ ($1$ à droite, $-1$ à gauche) : \res{$f$ n'est
+pas dérivable en $0$}.}{la courbe a un « coin » en $0$}
+\cas{4.}
+\explique{\res{Une fonction peut être continue en un point sans y être dérivable} : la
+réciproque de « dérivable $\Rightarrow$ continue » est fausse.}{}
+\end{exo}
+
+\begin{exo}[Image d'une suite convergente]
+\cas{1.}
+\explique{$\lim\limits_{n\to+\infty}\frac{1}{n}=0$, donc par somme,
+\res{$\lim\limits_{n\to+\infty}u_{n}=3$}.}{}
+\cas{2.}
+\explique{La fonction exponentielle est continue en $3$ : \res{$(v_{n})$ converge vers
+$\e^{3}$}. La fonction $x\mapsto\sqrt{x+1}$ est continue en $3$ : \res{$(w_{n})$ converge
+vers $\sqrt{4}=2$}. La fonction $x\mapsto x^{2}-2x$ est continue en $3$ : \res{$(t_{n})$
+converge vers $9-6=3$}.}{propriété~6 : si $u_{n}\to\ell$ et $f$ continue en $\ell$, alors
+$f(u_{n})\to f(\ell)$}
+\end{exo}
+
+\partie{Théorème des valeurs intermédiaires}
+
+\begin{exo}[Compter les solutions sur un tableau]
+\explique{Les flèches du tableau indiquent que $f$ est continue et strictement monotone
+sur chacun des intervalles $\intff{-3}{1}$, $\intff{1}{3}$, $\intff{3}{5}$ : sur chacun, le
+corollaire du théorème des valeurs intermédiaires donne une solution unique si $k$ est
+entre les valeurs aux bornes, aucune sinon.}{on raisonne flèche par flèche}
+\cas{a)}
+\explique{$0\notin\intff{2}{6}$ ; $0\in\intff{-2}{6}$ ; $0\in\intff{-2}{4}$ : \res{deux
+solutions}, une dans $\intff{1}{3}$ et une dans $\intff{3}{5}$.}{}
+\cas{b)}
+\explique{$5\in\intff{2}{6}$ ; $5\in\intff{-2}{6}$ ; $5\notin\intff{-2}{4}$ : \res{deux
+solutions}.}{}
+\cas{c)}
+\explique{$3$ est dans les trois intervalles d'images : \res{trois solutions}.}{}
+\cas{d)}
+\explique{Le minimum de $f$ est $-2>-3$ : \res{aucune solution}.}{}
+\end{exo}
+
+\begin{exo}[Une solution unique sur $\R$]
+\cas{1.}
+\explique{$f'(x)=3x^{2}+1>0$ : $f$ est strictement croissante sur $\R$. Pour $x\neq 0$,
+$f(x)=x^{3}\left(1+\frac{1}{x^{2}}-\frac{3}{x^{3}}\right)$ : par produit,
+\res{$\limx{-\infty}f(x)=-\infty$ et $\limx{+\infty}f(x)=+\infty$}.}{factorisation par le
+terme de plus haut degré}
+\cas{2.}
+\explique{$f$ est continue (car dérivable) et strictement croissante sur $\R$, et $0$ est
+compris entre $\limx{-\infty}f(x)=-\infty$ et $\limx{+\infty}f(x)=+\infty$. D'après le
+corollaire du théorème des valeurs intermédiaires, \res{l'équation $f(x)=0$ admet une
+unique solution $\alpha$ sur $\R$}.}{version avec les limites (théorème~4)}
+\cas{3.}
+\explique{$f(1)=-1$ et $f(2)=7$, puis $f(1{,}21)\approx -0{,}02$ et $f(1{,}22)\approx 0{,}04$ :
+\res{$1{,}21<\alpha<1{,}22$}.}{balayage à la calculatrice}
+\cas{4.}
+\explique{$f$ est strictement croissante et $f(\alpha)=0$ : \res{$f(x)<0$ pour $x<\alpha$,
+$f(x)>0$ pour $x>\alpha$}.}{}
+\end{exo}
+
+\begin{exo}[Avec une exponentielle]
+\cas{1.}
+\explique{$\limx{-\infty}\e^{x}=0$ et $\limx{-\infty}(x-2)=-\infty$ : par somme,
+\res{$\limx{-\infty}f(x)=-\infty$}. En $+\infty$, les deux termes tendent vers $+\infty$ :
+\res{$\limx{+\infty}f(x)=+\infty$}.}{}
+\cas{2.}
+\explique{$f'(x)=\e^{x}+1>0$ : \res{$f$ est strictement croissante sur $\R$}.}{}
+\cas{3.}
+\explique{$f$ est continue, strictement croissante sur $\R$, de $-\infty$ à $+\infty$ :
+d'après le corollaire du théorème des valeurs intermédiaires, l'équation $f(x)=0$ a une
+unique solution $\alpha$. De plus $f(0)=-1<0$ et $f(1)=\e-1>0$, donc $f(0)<f(\alpha)<f(1)$,
+et comme $f$ est croissante, \res{$0<\alpha<1$}.}{}
+\cas{4.}
+\explique{$f(0{,}44)\approx -0{,}007$ et $f(0{,}45)\approx 0{,}018$ :
+\res{$0{,}44<\alpha<0{,}45$}. \res{$f(x)<0$ pour $x<\alpha$ et $f(x)>0$ pour
+$x>\alpha$}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Amérique du Sud]
+\cas{1.}
+\explique{Par croissances comparées, $\lim\limits_{t\to+\infty}t\,\e^{-t}=0$ ; par produit,
+\res{$\lim\limits_{t\to+\infty}f(t)=0$}. À long terme, \res{le médicament est éliminé du
+sang}.}{}
+\cas{2.}
+\begin{calculs}
+f'(t) &= 5\,\e^{-t}+5t\times\left(-\e^{-t}\right) &&\justif{$u'v+uv'$}\\
+f'(t) &= 5(1-t)\,\e^{-t} &&
+\end{calculs}
+\explique{$f'(t)$ a le signe de $1-t$. $f(0)=0$ et $f(1)=\frac{5}{\e}\approx 1{,}84$.}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$t$/0.7,$f'(t)$/0.7,$f(t)$/1.6}{$0$,$1$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$0$,+/$\frac{5}{\e}$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est croissante sur $\intff{0}{1}$ et décroissante sur
+$\intfo{1}{+\infty}$}.}{}
+\cas{3.}
+\explique{Sur $\intff{0}{1}$, $f$ est continue et strictement croissante, et
+$1\in\intff{0}{\frac{5}{\e}}$ : d'après le corollaire du théorème des valeurs
+intermédiaires, l'équation $f(t)=1$ a une unique solution $t_{1}$ dans $\intff{0}{1}$.}{}
+\explique{Sur $\intfo{1}{+\infty}$, $f$ est continue, strictement décroissante, de
+$\frac{5}{\e}$ vers la limite $0$, et $1\in\intof{0}{\frac{5}{\e}}$ : une unique solution
+$t_{2}$ dans $\intfo{1}{+\infty}$.}{}
+\explique{$f(0{,}25)\approx 0{,}97$ et $f(0{,}26)\approx 1{,}002$ : \res{$t_{1}\approx 0{,}26$} ;
+$f(2{,}54)\approx 1{,}002$ et $f(2{,}55)\approx 0{,}996$ : \res{$t_{2}\approx 2{,}54$}.}{plus
+précisément, $t_{1}\approx 0{,}259$ et $t_{2}\approx 2{,}543$}
+\cas{4.}
+\explique{$f(t)\geq 1$ pour $t\in\intff{t_{1}}{t_{2}}$, soit pendant $t_{2}-t_{1}\approx 2{,}28$~h.
+Or $0{,}28\times 60\approx 17$ : le risque dure environ \res{$2$~h~$17$~min}.}{avec les
+valeurs plus précises, $2{,}284\times 60\approx 137$~min}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Métropole]
+\cas{1. a)}
+\begin{calculs}
+f'(t) &= 1\times\e^{-0{,}4t}+(t+1)\times\left(-0{,}4\,\e^{-0{,}4t}\right) &&\justif{$u'v+uv'$}\\
+f'(t) &= (1-0{,}4t-0{,}4)\,\e^{-0{,}4t} &&\\
+f'(t) &= (-0{,}4t+0{,}6)\,\e^{-0{,}4t} &&
+\end{calculs}
+\cas{1. b)}
+\explique{$f'(t)$ a le signe de $-0{,}4t+0{,}6$, positif pour $t<1{,}5$. $f(0)=1$,
+$f(1{,}5)=2{,}5\,\e^{-0{,}6}\approx 1{,}37$ et $f(6)=7\,\e^{-2{,}4}\approx 0{,}64$.}{$0{,}6\div 0{,}4=1{,}5$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$t$/0.7,$f'(t)$/0.7,$f(t)$/1.6}{$0$,$1{,}5$,$6$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$1$,+/$2{,}5\e^{-0{,}6}$,-/$7\e^{-2{,}4}$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est croissante sur $\intff{0}{1{,}5}$ et décroissante sur
+$\intff{1{,}5}{6}$}.}{}
+\cas{2. a)}
+\explique{Sur $\intff{0}{1{,}5}$, $f(t)\geq f(0)=1>0{,}7$ : pas de solution.}{}
+\explique{Sur $\intff{1{,}5}{6}$, $f$ est continue (car dérivable) et strictement
+décroissante, et $0{,}7$ est compris entre $f(6)\approx 0{,}64$ et $f(1{,}5)\approx 1{,}37$ :
+d'après le corollaire du théorème des valeurs intermédiaires, une unique solution.
+\res{L'équation $f(t)=0{,}7$ admet une unique solution $\alpha$ sur $\intff{0}{6}$}.}{}
+\cas{2. b)}
+\explique{$f(5{,}61)\approx 0{,}7009$ et $f(5{,}62)\approx 0{,}6991$ : $\alpha\approx 5{,}616$.
+Or $0{,}616\times 60\approx 37$ : la personne est en hypoglycémie \res{environ $5$~h~$37$~min}
+après son repas.}{précision à la minute : au centième d'heure au moins}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Asie : vrai ou faux ?]
+\cas{1.}
+\explique{$f'(x)=\e^{-2x}+x\times\left(-2\,\e^{-2x}\right)=(-2x+1)\,\e^{-2x}$. \res{Affirmation 1
+vraie}.}{}
+\cas{2.}
+\explique{$f''(x)=-2\,\e^{-2x}+(-2x+1)\left(-2\,\e^{-2x}\right)=(4x-4)\,\e^{-2x}$, négatif
+pour $x<1$ : par exemple $f''(0)=-4<0$, donc $f$ est concave sur $\intof{-\infty}{1}$.
+\res{Affirmation 2 fausse}.}{}
+\cas{3.}
+\explique{$f'(x)$ a le signe de $-2x+1$ : $f$ est strictement croissante sur
+$\intof{-\infty}{\frac{1}{2}}$, strictement décroissante ensuite.
+$\limx{-\infty}f(x)=-\infty$ (par produit, car $\limx{-\infty}\e^{-2x}=+\infty$) et
+$f\left(\frac{1}{2}\right)=\frac{1}{2}\e^{-1}>0$.}{}
+\explique{Sur $\intof{-\infty}{\frac{1}{2}}$, $f$ est continue, strictement croissante, et
+$-1\in\intof{-\infty}{\frac{1}{2}\e^{-1}}$ : une unique solution. Sur
+$\intfo{\frac{1}{2}}{+\infty}$, $f(x)=x\,\e^{-2x}>0$ : aucune solution. \res{Affirmation 3
+vraie}.}{}
+\end{exo}
+
+\partie{Méthode de dichotomie}
+
+\begin{exo}[Dichotomie avec une boucle « pour »]
+\cas{1.}
+\explique{La fonction exponentielle est continue et strictement croissante sur
+$\intff{1}{2}$, et $3$ est compris entre $\e^{1}\approx 2{,}72$ et $\e^{2}\approx 7{,}39$ :
+d'après le corollaire du théorème des valeurs intermédiaires, \res{l'équation $\e^{x}=3$
+admet une unique solution $\alpha$ dans $\intff{1}{2}$}.}{}
+\cas{2.}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{10pt}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+passage ($i$) & $m$ & $\e^{m}$ & $a$ & $b$\\ \hline
+$0$ & $1{,}5$ & $\approx 4{,}48>3$ & $1$ & $1{,}5$\\ \hline
+$1$ & $1{,}25$ & $\approx 3{,}49>3$ & $1$ & $1{,}25$\\ \hline
+$2$ & $1{,}125$ & $\approx 3{,}08>3$ & $1$ & $1{,}125$\\ \hline
+$3$ & $1{,}062\,5$ & $\approx 2{,}89<3$ & $1{,}062\,5$ & $1{,}125$\\ \hline
+\end{tabular}
+\end{center}
+\rem{Si $\e^{m}>3$, la solution est avant $m$ : on remplace $b$ par $m$.}
+\cas{3.}
+\explique{\texttt{dichotomie(4)} renvoie $1{,}062\,5$ et $1{,}125$ :
+\res{$1{,}062\,5\leq\alpha\leq 1{,}125$}.}{encadrement d'amplitude $\frac{1}{2^{4}}=0{,}062\,5$}
+\cas{4.}
+\explique{Après $n$ passages, l'amplitude vaut $\frac{1}{2^{n}}$. On veut $2^{n}\geq 1\,000$ :
+$2^{9}=512$ et $2^{10}=1\,024$, donc \res{$10$ passages}.}{}
+\end{exo}
+
+\begin{exo}[Compléter un programme]
+\cas{1.}
+\explique{Ligne du \texttt{while} : \res{\texttt{b - a > e}} ; puis \res{\texttt{b = m}} et
+\res{\texttt{a = m}}.}{on continue tant que l'encadrement est trop large}
+\cas{2.}
+\explique{$f(1)=-1<0$ ; $f(a)$ reste négatif, donc le test revient à $f(m)\geq 0$.}{}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{10pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$m$ & $f(m)$ & nouvel intervalle & $b-a$\\ \hline
+$1{,}5$ & $1{,}875>0$ & $\intff{1}{1{,}5}$ & $0{,}5$\\ \hline
+$1{,}25$ & $\approx 0{,}20>0$ & $\intff{1}{1{,}25}$ & $0{,}25$\\ \hline
+$1{,}125$ & $\approx -0{,}45<0$ & $\intff{1{,}125}{1{,}25}$ & $0{,}125$\\ \hline
+$1{,}187\,5$ & $\approx -0{,}14<0$ & $\intff{1{,}187\,5}{1{,}25}$ & $0{,}062\,5$\\ \hline
+\end{tabular}
+\end{center}
+\explique{$0{,}062\,5\leq 0{,}1$ : la fonction renvoie $1{,}187\,5$ et $1{,}25$, soit
+\res{$1{,}187\,5\leq\alpha\leq 1{,}25$}.}{cohérent avec l'exercice~32 :
+$1{,}21<\alpha<1{,}22$}
+\end{exo}
+
+\begin{exo}[Balayage ou dichotomie ?]
+\cas{1.}
+\explique{$g'(x)=3x^{2}+3>0$ : $g$ est continue et strictement croissante sur $\intff{0}{1}$ ;
+$g(0)=-1$ et $g(1)=3$, et $0$ est entre les deux : d'après le corollaire du théorème des
+valeurs intermédiaires, \res{l'équation $g(x)=0$ admet une unique solution $\alpha$ dans
+$\intff{0}{1}$}.}{}
+\cas{2.}
+\explique{$g(0{,}3)=-0{,}073$ et $g(0{,}4)=0{,}264$ : \res{$0{,}3<\alpha<0{,}4$}.}{}
+\cas{3.}
+\explique{Après $n$ passages, l'amplitude vaut $\frac{1}{2^{n}}$ ; on veut $2^{n}\geq 100$ :
+$2^{6}=64$ et $2^{7}=128$, donc \res{$7$ passages} suffisent, contre $100$ calculs pour le
+balayage.}{la dichotomie divise l'intervalle par $2$ à chaque passage}
+\end{exo}
+
+\partiesansnum{Exercices type bac}
+
+\begin{exo}[D'après bac 2026, Métropole]
+\cas{1.}
+\explique{$\limx{-\infty}(3x-1)=-\infty$ et $\limx{-\infty}\e^{-x}=+\infty$ : par produit puis
+par somme, \res{$\limx{-\infty}f(x)=-\infty$}.}{}
+\cas{2.}
+\explique{Forme indéterminée « $\infty\times 0$ ». Pour tout $x\in\R$,
+$f(x)=3x\,\e^{-x}-\e^{-x}+2$. Par croissances comparées, $\limx{+\infty}x\,\e^{-x}=0$, et
+$\limx{+\infty}\e^{-x}=0$ : par somme, \res{$\limx{+\infty}f(x)=2$}. La droite d'équation
+\res{$y=2$} est asymptote horizontale à $\Cf$ en $+\infty$.}{on développe}
+\cas{3. a)}
+\begin{calculs}
+f'(x) &= 3\,\e^{-x}+(3x-1)\left(-\e^{-x}\right) &&\justif{$u'v+uv'$ ; la constante $2$ a une dérivée nulle}\\
+f'(x) &= (3-3x+1)\,\e^{-x} &&\\
+f'(x) &= (4-3x)\,\e^{-x} &&
+\end{calculs}
+\cas{3. b)}
+\explique{$\e^{-x}>0$ : $f'(x)$ a le signe de $4-3x$, positif pour $x<\frac{4}{3}$.
+$f\left(\frac{4}{3}\right)=(4-1)\e^{-\frac{4}{3}}+2=3\,\e^{-\frac{4}{3}}+2$.}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.8]{$x$/0.7,$f'(x)$/0.7,$f(x)$/1.6}{$-\infty$,$\frac{4}{3}$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$-\infty$,+/$3\e^{-\frac{4}{3}}+2$,-/$2$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est croissante sur $\intof{-\infty}{\frac{4}{3}}$ et décroissante sur
+$\intfo{\frac{4}{3}}{+\infty}$}.}{}
+\cas{4. a)}
+\explique{Sur $\intfo{\frac{4}{3}}{+\infty}$, $f$ décroît vers $2$, donc $f(x)>2>0$ : pas de
+solution.}{}
+\explique{Sur $\intof{-\infty}{\frac{4}{3}}$, $f$ est continue (car dérivable) et
+strictement croissante, $\limx{-\infty}f(x)=-\infty$ et $f\left(\frac{4}{3}\right)>0$ :
+d'après le corollaire du théorème des valeurs intermédiaires, une unique solution.
+\res{L'équation $f(x)=0$ admet une unique solution $\alpha$ sur $\R$}.}{}
+\cas{4. b)}
+\explique{$f(-0{,}21)\approx -0{,}011$ et $f(-0{,}20)\approx 0{,}046$ :
+\res{$\alpha\approx -0{,}21$}.}{}
+\cas{4. c)}
+\explique{\res{$f(x)<0$ sur $\intoo{-\infty}{\alpha}$, $f(\alpha)=0$, $f(x)>0$ sur
+$\intoo{\alpha}{+\infty}$}.}{$f$ croissante jusqu'à $\frac{4}{3}$, puis au-dessus de $2$}
+\cas{5.}
+\explique{$f''(x)=-3\,\e^{-x}-(4-3x)\,\e^{-x}=(3x-7)\,\e^{-x}$, négatif sur
+$\intof{-\infty}{\frac{7}{3}}$ : $f$ y est concave, donc sa courbe est en dessous de ses
+tangentes, en particulier de celle en $0$. Pour $x\leq\frac{7}{3}$, $f(x)\leq 4x+1$.}{la
+convexité ne suffit pas pour tout $\R$}
+\explique{Pour $x\geq\frac{7}{3}$ : $f$ est décroissante, donc $f(x)\leq f\left(\frac{7}{3}\right)\leq
+4\times\frac{7}{3}+1\leq 4x+1$ (la deuxième inégalité vient du cas précédent, la
+troisième de la croissance de $x\mapsto 4x+1$). Donc, pour tout $x\in\R$,
+$(3x-1)\e^{-x}+2\leq 4x+1$.}{rédaction du corrigé APMEP}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Amérique du Nord]
+\cas{1.}
+\explique{En $-\infty$ : $f(x)=x\left(\e^{-x}+2\right)-1$ ; $\limx{-\infty}\e^{-x}=+\infty$
+(par composition), donc par somme puis par produit, \res{$\limx{-\infty}f(x)=-\infty$}.}{}
+\explique{En $+\infty$ : par croissances comparées, $\limx{+\infty}x\,\e^{-x}=0$, et
+$\limx{+\infty}(2x-1)=+\infty$ : par somme, \res{$\limx{+\infty}f(x)=+\infty$}.}{}
+\cas{2.}
+\explique{$f'(x)=\e^{-x}+x\left(-\e^{-x}\right)+2$, soit
+\res{$f'(x)=(1-x)\,\e^{-x}+2$}.}{}
+\cas{3.}
+\explique{$f''(x)=-\e^{-x}+(1-x)\left(-\e^{-x}\right)=(-1-1+x)\,\e^{-x}=(x-2)\,\e^{-x}$.}{}
+\cas{4.}
+\explique{$f''(x)$ a le signe de $x-2$ : \res{$f$ est concave sur $\intof{-\infty}{2}$ et
+convexe sur $\intfo{2}{+\infty}$}.}{}
+\cas{5.}
+\explique{$f'$ est décroissante sur $\intof{-\infty}{2}$, croissante sur $\intfo{2}{+\infty}$,
+de minimum \res{$f'(2)=-\e^{-2}+2$}.}{le signe de $f''$ donne les variations de $f'$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$x$/0.7,$f''(x)$/0.7,$f'(x)$/1.6}{$-\infty$,$2$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/{},-/$2-\e^{-2}$,+/{}}
+\end{tikzpicture}
+\end{center}
+\cas{6.}
+\explique{$\e^{-2}<\e^{0}=1$, donc $2-\e^{-2}>1>0$ : le minimum de $f'$ est strictement
+positif, donc $f'(x)>0$ pour tout $x$, et \res{$f$ est strictement croissante sur $\R$}.}{}
+\cas{7.}
+\explique{$f$ est continue (car dérivable) et strictement croissante sur $\R$, et $0$ est
+compris entre $-\infty$ et $+\infty$ : d'après le corollaire du théorème des valeurs
+intermédiaires, il existe un unique $\alpha$ tel que $f(\alpha)=0$. $f(0{,}37)\approx -0{,}004$
+et $f(0{,}38)\approx 0{,}020$ : \res{$0{,}37<\alpha<0{,}38$}.}{}
+\cas{8.}
+\explique{$f(x)-(2x-1)=x\,\e^{-x}$, du signe de $x$ : \res{$\Cf$ est en dessous de $\Delta$
+sur $\intof{-\infty}{0}$ et au-dessus sur $\intfo{0}{+\infty}$} ; elles se coupent au point
+d'abscisse $0$.}{on étudie le signe de la différence}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Asie]
+\cas{1. a)}
+\explique{$g=\e^{u}$ avec $u(x)=\sqrt{x}$, $u'(x)=\frac{1}{2\sqrt{x}}$ :
+$g'(x)=\frac{1}{2\sqrt{x}}\,\e^{\sqrt{x}}=f(x)$.}{}
+\cas{1. b)}
+\explique{$f=\frac{u}{v}$ avec $u(x)=\e^{\sqrt{x}}$, $u'(x)=\frac{\e^{\sqrt{x}}}{2\sqrt{x}}$,
+$v(x)=2\sqrt{x}$, $v'(x)=\frac{1}{\sqrt{x}}$.}{la question 1.a donne $u'$}
+\begin{calculs}
+f'(x) &= \frac{\frac{\e^{\sqrt{x}}}{2\sqrt{x}}\times 2\sqrt{x}-\e^{\sqrt{x}}\times\frac{1}{\sqrt{x}}}{4x} &&\justif{$\frac{u'v-uv'}{v^{2}}$}\\
+f'(x) &= \frac{\e^{\sqrt{x}}\left(1-\frac{1}{\sqrt{x}}\right)}{4x} &&\\
+f'(x) &= \frac{\e^{\sqrt{x}}\left(\sqrt{x}-1\right)}{4x\sqrt{x}} &&\justif{$1-\frac{1}{\sqrt{x}}=\frac{\sqrt{x}-1}{\sqrt{x}}$}
+\end{calculs}
+\cas{2. a)}
+\explique{$\limx{0}\e^{\sqrt{x}}=\e^{0}=1$ et $\limx{0}2\sqrt{x}=0$ avec $2\sqrt{x}>0$ : par
+quotient, \res{$\limx{0}f(x)=+\infty$}.}{}
+\cas{2. b)}
+\explique{La droite d'équation \res{$x=0$} est asymptote verticale à $\Cf$.}{}
+\cas{3. a)}
+\explique{On pose $X=\sqrt{x}$ : $f(x)=\frac{1}{2}\times\frac{\e^{X}}{X}$. Comme
+$\limx{+\infty}\sqrt{x}=+\infty$ et, par croissances comparées,
+$\lim\limits_{X\to+\infty}\frac{\e^{X}}{X}=+\infty$, par composition,
+\res{$\limx{+\infty}f(x)=+\infty$}.}{}
+\cas{3. b)}
+\explique{$\e^{\sqrt{x}}>0$ et $4x\sqrt{x}>0$ : $f'(x)$ a le signe de $\sqrt{x}-1$, positif
+pour $x>1$. $f(1)=\frac{\e}{2}$.}{$\sqrt{x}\geq 1\iff x\geq 1$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$x$/0.7,$f'(x)$/0.7,$f(x)$/1.6}{$0$,$1$,$+\infty$}
+  \tkzTabLine{d,-,z,+,}
+  \tkzTabVar{D+/$+\infty$,-/$\frac{\e}{2}$,+/$+\infty$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est décroissante sur $\intof{0}{1}$ et croissante sur
+$\intfo{1}{+\infty}$}.}{}
+\cas{3. c)}
+\explique{Sur $\intfo{1}{+\infty}$, $f$ est continue et strictement croissante, à valeurs
+dans $\intfo{\frac{\e}{2}}{+\infty}$, et $2$ y appartient ($\frac{\e}{2}\approx 1{,}36$) :
+d'après le corollaire du théorème des valeurs intermédiaires, une unique solution. À la
+calculatrice, \res{$\alpha\approx 4{,}6$}.}{$f(4{,}6)\approx 1{,}99$ et
+$f(4{,}65)\approx 2{,}003$}
+\cas{4. a)}
+\explique{$x-3\sqrt{x}+3=X^{2}-3X+3$, de discriminant $9-12=-3<0$ : du signe de $1>0$, donc
+$x-3\sqrt{x}+3>0$ pour tout $x>0$.}{$x=\left(\sqrt{x}\right)^{2}$}
+\cas{4. b)}
+\explique{Numérateur et dénominateur de $f''(x)$ sont strictement positifs : $f''(x)>0$,
+\res{$f$ est convexe sur $\intoo{0}{+\infty}$}.}{}
+\end{exo}
+
+\partiesansnum{Entraînement au calcul de dérivées}
+
+\begin{exo}[Polynômes, inverses, racines]
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{-6x+8} &&\justif{on dérive terme à terme}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= \frac{3x^{2}}{6}-2\times\frac{1}{2\sqrt{x}} &&\justif{$\left(\sqrt{x}\right)'=\frac{1}{2\sqrt{x}}$}\\
+g'(x) &= \res{\frac{x^{2}}{2}-\frac{1}{\sqrt{x}}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \frac{4x^{3}-12x+5}{2} &&\justif{le dénominateur $2$ est un facteur constant}\\
+h'(x) &= \res{2x^{3}-6x+\frac{5}{2}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= 2\times 4\times(4x-1) &&\justif{$\left(u^{2}\right)'=2u'u$}\\
+k'(x) &= \res{8(4x-1)} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= -3\times\left(-\frac{2x}{x^{4}}\right) &&\justif{$\left(\frac{1}{v}\right)'=-\frac{v'}{v^{2}}$ avec $v(x)=x^{2}$}\\
+m'(x) &= \res{\frac{6}{x^{3}}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 3\times\left(-\frac{\frac{1}{2\sqrt{x}}}{x}\right) &&\justif{$v(x)=\sqrt{x}$, $v^{2}=x$}\\
+p'(x) &= \res{-\frac{3}{2x\sqrt{x}}} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+r'(x) &= 5-\frac{-1}{(3-x)^{2}} &&\justif{$v(x)=3-x$, $v'(x)=-1$}\\
+r'(x) &= \res{5+\frac{1}{(3-x)^{2}}} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+s'(x) &= \res{-\frac{2}{x^{2}}-\frac{x}{2}} &&\justif{$\left(\frac{1}{x}\right)'=-\frac{1}{x^{2}}$ ; $\left(\frac{x^{2}}{4}\right)'=\frac{2x}{4}$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Quotients]
+\explique{Pour chaque quotient : $\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$ ; on développe
+le numérateur, on garde le dénominateur au carré.}{le dénominateur ne s'annule pas sur
+l'intervalle}
+\cas{a)}
+\begin{calculs}
+f'(x) &= \frac{-3(4x-5)-(2-3x)\times 4}{(4x-5)^{2}} &&\\
+f'(x) &= \frac{-12x+15-8+12x}{(4x-5)^{2}} &&\\
+f'(x) &= \res{\frac{7}{(4x-5)^{2}}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= \frac{4x^{3}-(4x-3)\times 3x^{2}}{x^{6}} &&\\
+g'(x) &= \frac{x^{2}(4x-12x+9)}{x^{6}} &&\justif{on factorise par $x^{2}$}\\
+g'(x) &= \res{\frac{-8x+9}{x^{4}}} &&\justif{on simplifie par $x^{2}\neq 0$}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \frac{(2x-5)(2x-3)-\left(x^{2}-5x+1\right)\times 2}{(2x-3)^{2}} &&\\
+h'(x) &= \frac{4x^{2}-16x+15-2x^{2}+10x-2}{(2x-3)^{2}} &&\\
+h'(x) &= \res{\frac{2x^{2}-6x+13}{(2x-3)^{2}}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= \frac{3(2+x)-3x\times 1}{(2+x)^{2}} &&\\
+k'(x) &= \res{\frac{6}{(x+2)^{2}}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= \frac{(2x+1)(x-2)-\left(x^{2}+x+4\right)}{(x-2)^{2}} &&\\
+m'(x) &= \frac{2x^{2}-3x-2-x^{2}-x-4}{(x-2)^{2}} &&\\
+m'(x) &= \res{\frac{x^{2}-4x-6}{(x-2)^{2}}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= \frac{4(x-3)-4x}{(x-3)^{2}} &&\justif{la constante $2$ a une dérivée nulle}\\
+p'(x) &= \res{\frac{-12}{(x-3)^{2}}} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+r'(x) &= \frac{2x\left(x^{2}+3\right)-\left(x^{2}+1\right)\times 2x}{\left(x^{2}+3\right)^{2}} &&\\
+r'(x) &= \frac{2x\left(x^{2}+3-x^{2}-1\right)}{\left(x^{2}+3\right)^{2}} &&\justif{on factorise par $2x$}\\
+r'(x) &= \res{\frac{4x}{\left(x^{2}+3\right)^{2}}} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+s'(x) &= \frac{(2x-1)\left(2x^{2}+1\right)-\left(x^{2}-x+2\right)\times 4x}{\left(2x^{2}+1\right)^{2}} &&\\
+s'(x) &= \frac{4x^{3}-2x^{2}+2x-1-4x^{3}+4x^{2}-8x}{\left(2x^{2}+1\right)^{2}} &&\\
+s'(x) &= \res{\frac{2x^{2}-6x-1}{\left(2x^{2}+1\right)^{2}}} &&
+\end{calculs}
+\cas{i)}
+\explique{Astuce : $-x^{2}+4x+1=-\left(x^{2}-4x-5\right)-4$, donc
+$w(x)=-1-\frac{4}{x^{2}-4x-5}$.}{on évite un long développement}
+\begin{calculs}
+w'(x) &= -4\times\left(-\frac{2x-4}{\left(x^{2}-4x-5\right)^{2}}\right) &&\justif{$\left(\frac{1}{v}\right)'=-\frac{v'}{v^{2}}$}\\
+w'(x) &= \res{\frac{8x-16}{\left(x^{2}-4x-5\right)^{2}}} &&
+\end{calculs}
+\rem{La formule du quotient donne le même résultat, avec plus de calculs.}
+\end{exo}
+
+\begin{exo}[Avec $\e^{x}$]
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{\e^{x}-4x} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= 1\times\e^{x}+(x+3)\,\e^{x} &&\justif{$u'v+uv'$}\\
+g'(x) &= \res{(x+4)\,\e^{x}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \res{4-3\,\e^{x}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= -2x\,\e^{x}+\left(1-x^{2}\right)\e^{x} &&\\
+k'(x) &= \res{\left(-x^{2}-2x+1\right)\e^{x}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= (2x-2)\,\e^{x}+\left(x^{2}-2x+3\right)\e^{x} &&\\
+m'(x) &= \res{\left(x^{2}+1\right)\e^{x}} &&\justif{la dérivée est strictement positive}
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 2x\,\e^{x}+x^{2}\,\e^{x} &&\\
+p'(x) &= \res{x(x+2)\,\e^{x}} &&\justif{factorisée : le signe se lit}
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+r'(x) &= \frac{\e^{x}(x+3)-\e^{x}\times 1}{(x+3)^{2}} &&\justif{$\frac{u'v-uv'}{v^{2}}$}\\
+r'(x) &= \res{\frac{(x+2)\,\e^{x}}{(x+3)^{2}}} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+s'(x) &= \frac{1\times\e^{x}-(x-1)\,\e^{x}}{\left(\e^{x}\right)^{2}} &&\\
+s'(x) &= \frac{(2-x)\,\e^{x}}{\e^{2x}} &&\\
+s'(x) &= \res{\frac{2-x}{\e^{x}}} &&\justif{on simplifie par $\e^{x}$}
+\end{calculs}
+\rem{Autre méthode : $s(x)=(x-1)\,\e^{-x}$, puis $u'v+uv'$.}
+\cas{i)}
+\begin{calculs}
+w'(x) &= \frac{\e^{x}\left(\e^{x}+2\right)-\e^{x}\times\e^{x}}{\left(\e^{x}+2\right)^{2}} &&\\
+w'(x) &= \res{\frac{2\,\e^{x}}{\left(\e^{x}+2\right)^{2}}} &&\justif{$\e^{2x}$ se simplifie}
+\end{calculs}
+\cas{j)}
+\explique{On simplifie d'abord : $z(x)=1+\frac{3}{\e^{x}}=1+3\,\e^{-x}$, donc
+\res{$z'(x)=-3\,\e^{-x}$}.}{simplifier avant de dériver}
+\end{exo}
+
+\begin{exo}[Avec $\e^{u}$]
+\explique{On repère $u$, on calcule $u'$, puis $\left(\e^{u}\right)'=u'\e^{u}$.}{}
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{2\,\e^{2x}} &&\justif{$u(x)=2x$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+g'(x) &= 8\times(-0{,}25)\,\e^{-0{,}25x} &&\\
+g'(x) &= \res{-2\,\e^{-0{,}25x}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \e^{-2x}+x\times\left(-2\,\e^{-2x}\right) &&\justif{produit}\\
+h'(x) &= \res{(1-2x)\,\e^{-2x}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= \res{(-2x+3)\,\e^{-x^{2}+3x}} &&\justif{$u(x)=-x^{2}+3x$}
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= 3\,\e^{-0{,}5x}+(3x+1)\times\left(-0{,}5\,\e^{-0{,}5x}\right) &&\\
+m'(x) &= (3-1{,}5x-0{,}5)\,\e^{-0{,}5x} &&\\
+m'(x) &= \res{(2{,}5-1{,}5x)\,\e^{-0{,}5x}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= -0{,}5\,\e^{2x}+(4-0{,}5x)\times 2\,\e^{2x} &&\\
+p'(x) &= (-0{,}5+8-x)\,\e^{2x} &&\\
+p'(x) &= \res{(7{,}5-x)\,\e^{2x}} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+r'(x) &= 2\,\e^{-x+3}+2x\times\left(-\e^{-x+3}\right) &&\\
+r'(x) &= \res{2(1-x)\,\e^{-x+3}} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+s'(x) &= 5\times(-2x)\,\e^{2-x^{2}} &&\\
+s'(x) &= \res{-10x\,\e^{2-x^{2}}} &&
+\end{calculs}
+\cas{i)}
+\begin{calculs}
+w'(x) &= \res{-\frac{1}{4}\,\e^{\frac{3-x}{4}}} &&\justif{$u(x)=\frac{3}{4}-\frac{x}{4}$, $u'(x)=-\frac{1}{4}$}
+\end{calculs}
+\cas{j)}
+\begin{calculs}
+u'(x) &= \frac{1\times(x-2)-(x+1)\times 1}{(x-2)^{2}} &&\justif{$u(x)=\frac{x+1}{x-2}$}\\
+u'(x) &= \frac{-3}{(x-2)^{2}} &&\\
+z'(x) &= \res{\frac{-3}{(x-2)^{2}}\,\e^{\frac{x+1}{x-2}}} &&
+\end{calculs}
+\cas{k)}
+\begin{calculs}
+\varphi'(x) &= \frac{1}{\sqrt{2\pi}}\times(-x)\,\e^{-\frac{x^{2}}{2}} &&\justif{$u(x)=-\frac{x^{2}}{2}$, $u'(x)=-x$}\\
+\varphi'(x) &= \res{-\frac{x}{\sqrt{2\pi}}\,\e^{-\frac{x^{2}}{2}}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Puissances et racines composées]
+\cas{a)}
+\begin{calculs}
+f'(x) &= \res{4(2x-3)\left(x^{2}-3x+5\right)^{3}} &&\justif{$\left(u^{n}\right)'=nu'u^{n-1}$}
+\end{calculs}
+\cas{b)}
+\explique{$g=\frac{1}{v}$ avec $v(x)=(3x+2)^{3}$, $v'(x)=3\times 3(3x+2)^{2}=9(3x+2)^{2}$.}{}
+\begin{calculs}
+g'(x) &= -\frac{9(3x+2)^{2}}{(3x+2)^{6}} &&\\
+g'(x) &= \res{-\frac{9}{(3x+2)^{4}}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= \res{\frac{5}{2\sqrt{5x-1}}} &&\justif{$\left(\sqrt{u}\right)'=\frac{u'}{2\sqrt{u}}$}
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= \frac{2x-4}{2\sqrt{x^{2}-4x+9}} &&\justif{$x^{2}-4x+9=(x-2)^{2}+5>0$}\\
+k'(x) &= \res{\frac{x-2}{\sqrt{x^{2}-4x+9}}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= 5\times(-1)\times(2-x)^{4} &&\justif{$u'(x)=-1$ : ne pas l'oublier}\\
+m'(x) &= \res{-5(2-x)^{4}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= \res{\frac{\e^{x}}{2\sqrt{\e^{x}+1}}} &&\justif{$u(x)=\e^{x}+1>0$}
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+r'(x) &= \res{2\left(\e^{x}-1\right)\left(\e^{x}-x\right)} &&\justif{$u(x)=\e^{x}-x$, $u'(x)=\e^{x}-1$}
+\end{calculs}
+\cas{h)}
+\explique{$s=4\times\frac{1}{v}$ avec $v(x)=\sqrt{2x+3}$, $v'(x)=\frac{2}{2\sqrt{2x+3}}=\frac{1}{\sqrt{2x+3}}$
+et $v^{2}=2x+3$.}{}
+\begin{calculs}
+s'(x) &= 4\times\left(-\frac{\frac{1}{\sqrt{2x+3}}}{2x+3}\right) &&\\
+s'(x) &= \res{-\frac{4}{(2x+3)\sqrt{2x+3}}} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Produits et quotients de composées]
+\cas{a)}
+\begin{calculs}
+f'(x) &= \sqrt{2x+1}+x\times\frac{2}{2\sqrt{2x+1}} &&\justif{$u'v+uv'$}\\
+f'(x) &= \frac{2x+1}{\sqrt{2x+1}}+\frac{x}{\sqrt{2x+1}} &&\justif{même dénominateur}\\
+f'(x) &= \res{\frac{3x+1}{\sqrt{2x+1}}} &&
+\end{calculs}
+\cas{b)}
+\explique{$u(x)=x\sqrt{x}$ a pour dérivée $\sqrt{x}+x\times\frac{1}{2\sqrt{x}}=\frac{3}{2}\sqrt{x}$ ;
+$v(x)=x+2$.}{$\frac{x}{\sqrt{x}}=\sqrt{x}$}
+\begin{calculs}
+g'(x) &= \frac{\frac{3}{2}\sqrt{x}(x+2)-x\sqrt{x}}{(x+2)^{2}} &&\\
+g'(x) &= \frac{\sqrt{x}\left(\frac{3}{2}x+3-x\right)}{(x+2)^{2}} &&\justif{on factorise par $\sqrt{x}$}\\
+g'(x) &= \res{\frac{\sqrt{x}\,(x+6)}{2(x+2)^{2}}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+h'(x) &= 2(x+1)\,\e^{-x}-(x+1)^{2}\,\e^{-x} &&\\
+h'(x) &= (x+1)(2-x-1)\,\e^{-x} &&\justif{on factorise par $(x+1)\,\e^{-x}$}\\
+h'(x) &= \res{(x+1)(1-x)\,\e^{-x}} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= \frac{2\,\e^{2x}\left(x^{2}+1\right)-\e^{2x}\times 2x}{\left(x^{2}+1\right)^{2}} &&\\
+k'(x) &= \res{\frac{2\left(x^{2}-x+1\right)\e^{2x}}{\left(x^{2}+1\right)^{2}}} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+m'(x) &= 3\times\left(-\frac{-2\,\e^{-x}}{\left(1+2\,\e^{-x}\right)^{2}}\right) &&\justif{$v(x)=1+2\,\e^{-x}$, $v'(x)=-2\,\e^{-x}$}\\
+m'(x) &= \res{\frac{6\,\e^{-x}}{\left(1+2\,\e^{-x}\right)^{2}}} &&
+\end{calculs}
+\cas{f)}
+\begin{calculs}
+p'(x) &= 3\times 2(2x-1)^{2}\,\e^{x}+(2x-1)^{3}\,\e^{x} &&\\
+p'(x) &= (2x-1)^{2}(6+2x-1)\,\e^{x} &&\justif{on factorise par $(2x-1)^{2}\,\e^{x}$}\\
+p'(x) &= \res{(2x-1)^{2}(2x+5)\,\e^{x}} &&
+\end{calculs}
+\cas{g)}
+\begin{calculs}
+r'(x) &= 2x\,\e^{-x^{2}}+x^{2}\times\left(-2x\,\e^{-x^{2}}\right) &&\\
+r'(x) &= \res{2x\left(1-x^{2}\right)\e^{-x^{2}}} &&
+\end{calculs}
+\cas{h)}
+\begin{calculs}
+s'(x) &= \frac{1}{2\sqrt{x}}\,\e^{-x}-\sqrt{x}\,\e^{-x} &&\\
+s'(x) &= \frac{1-2x}{2\sqrt{x}}\,\e^{-x} &&\justif{$\sqrt{x}=\frac{2x}{2\sqrt{x}}$}
+\end{calculs}
+\explique{\res{$s'(x)=\dfrac{(1-2x)\,\e^{-x}}{2\sqrt{x}}$}.}{}
+\end{exo}
+
+\begin{exo}[Dériver pour étudier les variations]
+\cas{a)}
+\explique{$f'(x)=-12\,\e^{-4x}<0$ : \res{$f$ est strictement décroissante sur $\R$}.}{}
+\cas{b)}
+\explique{$g'(x)=50\times(-0{,}2)\,\e^{-0{,}2x+1}=-10\,\e^{-0{,}2x+1}<0$ : \res{$g$ est
+strictement décroissante sur $\R$}.}{}
+\cas{c)}
+\explique{$h'(x)=0{,}1\,\e^{2x}+3>0$ : \res{$h$ est strictement croissante sur
+$\intff{0}{5}$}.}{somme de deux nombres positifs}
+\cas{d)}
+\begin{calculs}
+k'(x) &= -\e^{\frac{x}{3}}+(3-x)\times\frac{1}{3}\,\e^{\frac{x}{3}} &&\\
+k'(x) &= \left(-1+1-\frac{x}{3}\right)\e^{\frac{x}{3}} &&\\
+k'(x) &= -\frac{x}{3}\,\e^{\frac{x}{3}} &&
+\end{calculs}
+\explique{$k'(x)\leq 0$ sur $\intff{0}{3}$, nul seulement en $0$ : \res{$k$ est strictement
+décroissante sur $\intff{0}{3}$}.}{}
+\cas{e)}
+\explique{$m'(x)=20\times\left(-\frac{-0{,}5\,\e^{-0{,}5x}}{\left(1+\e^{-0{,}5x}\right)^{2}}\right)=\frac{10\,\e^{-0{,}5x}}{\left(1+\e^{-0{,}5x}\right)^{2}}>0$ :
+\res{$m$ est strictement croissante sur $\intff{-4}{8}$}.}{}
+\cas{f)}
+\begin{calculs}
+u'(x) &= \frac{2x(x+1)-x^{2}}{(x+1)^{2}} &&\justif{$u(x)=\frac{x^{2}}{x+1}$}\\
+u'(x) &= \frac{x(x+2)}{(x+1)^{2}} &&\\
+p'(x) &= \frac{x(x+2)}{(x+1)^{2}}\,\e^{\frac{x^{2}}{x+1}} &&
+\end{calculs}
+\explique{Sur $\intoo{-1}{+\infty}$, $x+2>0$ : $p'(x)$ a le signe de $x$. \res{$p$ est
+strictement décroissante sur $\intof{-1}{0}$, strictement croissante sur
+$\intfo{0}{+\infty}$}, de minimum $p(0)=1$.}{}
+\cas{g)}
+\begin{calculs}
+r'(x) &= 2x\,\e^{x}+\left(x^{2}-3\right)\e^{x} &&\\
+r'(x) &= \left(x^{2}+2x-3\right)\e^{x} &&\\
+r'(x) &= (x-1)(x+3)\,\e^{x} &&\justif{racines $1$ et $-3$}
+\end{calculs}
+\explique{$r'(x)$ a le signe de $(x-1)(x+3)$ : positif hors de $\intff{-3}{1}$. $r(-3)=6\,\e^{-3}$
+et $r(1)=-2\,\e$.}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.2]{$x$/0.7,$r'(x)$/0.7,$r(x)$/1.6}{$-\infty$,$-3$,$1$,$+\infty$}
+  \tkzTabLine{,+,z,-,z,+,}
+  \tkzTabVar{-/{},+/$6\e^{-3}$,-/$-2\e$,+/{}}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$r$ est croissante sur $\intof{-\infty}{-3}$, décroissante sur $\intff{-3}{1}$,
+croissante sur $\intfo{1}{+\infty}$}.}{}
+\end{exo}
+
+\end{document}

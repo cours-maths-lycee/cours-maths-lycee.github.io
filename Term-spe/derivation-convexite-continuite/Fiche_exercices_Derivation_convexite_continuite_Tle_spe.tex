@@ -1,0 +1,1083 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newcommand{\e}{\mathrm{e}}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Dérivation, convexité, continuité}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Rappels sur la dérivation}
+
+\exo[Lire des nombres dérivés et des tangentes]
+On donne la courbe $\Cf$ d'une fonction $f$ définie sur $\intff{-1}{4}$, et ses
+tangentes aux points d'abscisses $0$, $1$ et $3$ (en pointillés).
+\begin{center}
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-2}{-2}{5}{4}
+  \gradx{-1,1,2,3,4} \grady{-1,1,2,3}
+  \draw[coulCourbeB,dashed,line width=0.8pt] (-1.2,-1.4)--(1.2,3.4) (-0.5,2)--(2.5,2)
+    (1.2,1.8)--(4.6,-1.6);
+  \draw[coulCourbe,line width=1.1pt]
+    (-1,-1) .. controls (-0.67,-0.33) and (-0.33,0.33) .. (0,1)
+            .. controls (0.33,1.67) and (0.67,2) .. (1,2)
+            .. controls (1.67,2) and (2.33,0.67) .. (3,0)
+            .. controls (3.33,-0.33) and (3.67,-0.67) .. (4,-1);
+  \path (0,1) node[croix]{} (1,2) node[croix]{} (3,0) node[croix]{};
+  \node[coulCourbe,font=\footnotesize] at (-0.9,0.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Lire $f(0)$, $f(1)$ et $f(3)$.
+  \item Lire $f'(0)$, $f'(1)$ et $f'(3)$.
+  \item En déduire une équation de chacune des tangentes $(T_{0})$, $(T_{1})$ et $(T_{3})$.
+\end{enumerate}
+
+\exo[Calculer des dérivées]
+Calculer la dérivée de chaque fonction, et l'écrire sous forme factorisée quand c'est
+possible.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie sur $\R$ par $f(x)=\left(x^{2}-3\right)\e^{x}$.
+  \item $g$ définie sur $\intoo{-\frac{3}{2}}{+\infty}$ par $g(x)=\dfrac{4x-1}{2x+3}$.
+  \item $h$ définie sur $\R$ par $h(x)=\dfrac{5}{x^{2}+1}$.
+  \item $k$ définie sur $\R$ par $k(x)=x\e^{-3x}$.
+  \item $m$ définie sur $\intoo{-1}{+\infty}$ par $m(x)=\dfrac{\e^{x}}{x+1}$.
+\end{enumerate}
+
+\exo[Tangentes à une courbe]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=(x+3)\e^{-x}$, de courbe $\Cf$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x\in\R$, $f'(x)=(-x-2)\e^{-x}$.
+  \item Déterminer une équation de la tangente $(T_{0})$ à $\Cf$ au point d'abscisse $0$.
+  \item La tangente $(T_{0})$ passe-t-elle par le point $A(2\,;-1)$ ?
+  \item En quel point la courbe $\Cf$ admet-elle une tangente horizontale ? Donner ses
+        coordonnées exactes.
+\end{enumerate}
+
+\exo[Une étude de variations]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=(2x-5)\e^{x}$.
+\begin{enumerate}
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item Calculer $f'(x)$ pour tout $x\in\R$.
+  \item Dresser le tableau de variations de $f$, avec la valeur exacte de son minimum.
+\end{enumerate}
+
+\partiefiche{Fonctions composées}
+
+\exo[Composer, décomposer]
+\begin{enumerate}
+  \item Pour chaque couple de fonctions $u$ et $v$, exprimer $v\circ u(x)$ et
+        $u\circ v(x)$ en fonction de $x$.
+  \begin{enumerate}[label=\alph*)]
+    \item $u$ et $v$ définies sur $\R$ par $u(x)=x+2$ et $v(x)=x^{2}$.
+    \item $u$ et $v$ définies sur $\R$ par $u(x)=x^{2}$ et $v(x)=\e^{x}$.
+  \end{enumerate}
+  \item Soit les fonctions $u$ et $v$ définies par $u(x)=1-x$ sur $\R$ et $v(x)=\sqrt{x}$
+        sur $\intfo{0}{+\infty}$. Pour quels nombres réels $x$ la composée $v\circ u$
+        est-elle définie ? Exprimer $v\circ u(x)$.
+  \item Écrire chaque fonction, définie sur $\R$, comme la composée de deux fonctions
+        $u$ et $v$ à préciser.
+  \begin{enumerate}[label=\alph*)]
+    \item $f(x)=(5x-2)^{3}$
+    \item $g(x)=\sqrt{x^{2}+1}$
+    \item $h(x)=\e^{3x^{2}-x}$
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Dériver une exponentielle composée]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie sur $\R$ par $f(x)=\e^{4x-1}$.
+  \item $g$ définie sur $\R$ par $g(x)=\e^{x^{2}+1}$.
+  \item $h$ définie sur $\R$ par $h(x)=3\e^{-x^{2}}$.
+  \item $k$ définie sur $\intoo{0}{+\infty}$ par $k(x)=\e^{\frac{1}{x}}$.
+  \item $m$ définie sur $\R$ par $m(x)=x\e^{x^{2}}$.
+\end{enumerate}
+
+\exo[Puissances et racines]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie sur $\R$ par $f(x)=(2x+7)^{4}$.
+  \item $g$ définie sur $\R$ par $g(x)=\left(x^{2}-x+3\right)^{3}$.
+  \item $h$ définie sur $\intoo{\frac{1}{3}}{+\infty}$ par $h(x)=\dfrac{1}{(3x-1)^{2}}$.
+  \item $k$ définie sur $\intoo{-\frac{1}{3}}{+\infty}$ par $k(x)=\sqrt{6x+2}$.
+  \item $m$ définie sur $\R$ par $m(x)=\sqrt{x^{2}+4x+5}$ (vérifier d'abord que
+        $x^{2}+4x+5>0$).
+  \item $p$ définie sur $\R$ par $p(x)=\left(1+2\e^{x}\right)^{3}$.
+\end{enumerate}
+
+\exo[Tangentes à la courbe d'une racine]
+Soit la fonction $f$ définie sur $\intfo{-\frac{1}{2}}{+\infty}$ par $f(x)=\sqrt{2x+1}$,
+de courbe $\Cf$ ; on admet qu'elle est dérivable sur $\intoo{-\frac{1}{2}}{+\infty}$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x>-\frac{1}{2}$, $f'(x)=\dfrac{1}{\sqrt{2x+1}}$.
+  \item Déterminer une équation de la tangente $(T_{0})$ à $\Cf$ au point d'abscisse $0$,
+        puis de la tangente $(T_{4})$ au point d'abscisse $4$.
+  \item Existe-t-il un point de $\Cf$ où la tangente a pour coefficient directeur
+        $\frac{1}{5}$ ? Si oui, donner ses coordonnées.
+\end{enumerate}
+
+\exo[Repérer les erreurs]
+Un élève a écrit les dérivées suivantes, toutes fausses. Pour chacune, expliquer
+l'erreur en une phrase, puis écrire la bonne dérivée.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie sur $\R$ par $f(x)=\e^{x^{2}}$ : « $f'(x)=\e^{x^{2}}$ ».
+  \item $g$ définie sur $\R$ par $g(x)=(3x+1)^{4}$ : « $g'(x)=4(3x+1)^{3}$ ».
+  \item $h$ définie sur $\R$ par $h(x)=\sqrt{x^{2}+5}$ :
+        « $h'(x)=\dfrac{1}{2\sqrt{x^{2}+5}}$ ».
+\end{enumerate}
+
+\partiefiche{Étude d'une fonction composée}
+
+\exo[Une exponentielle de trinôme]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=\e^{-x^{2}+4x-3}$.
+\begin{enumerate}
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$. Interpréter
+        graphiquement.
+  \item Calculer $f'(x)$ pour tout $x\in\R$.
+  \item Dresser le tableau de variations de $f$.
+  \item Résoudre l'équation $f(x)=1$.
+\end{enumerate}
+
+\exo[La racine d'un trinôme]
+Soit la fonction $g$ définie par $g(x)=\sqrt{x^{2}-6x+10}$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x\in\R$, $x^{2}-6x+10=(x-3)^{2}+1$. En déduire que $g$
+        est définie et dérivable sur $\R$.
+  \item Déterminer les limites de $g$ en $-\infty$ et en $+\infty$.
+  \item Calculer $g'(x)$ pour tout $x\in\R$.
+  \item Dresser le tableau de variations de $g$.
+\end{enumerate}
+
+\exo[La puissance d'une installation solaire]
+Par une journée ensoleillée, la puissance produite par les panneaux solaires d'une
+école, en kilowatts (kW), est modélisée par la fonction $P$ définie sur $\intff{6}{20}$
+par
+\begin{center}
+$P(t)=8\e^{-\frac{(t-13)^{2}}{8}}$,
+\end{center}
+où $t$ est l'heure de la journée.
+\begin{enumerate}
+  \item Montrer que, pour tout $t\in\intff{6}{20}$,
+        $P'(t)=-2(t-13)\e^{-\frac{(t-13)^{2}}{8}}$.
+  \item Étudier les variations de $P$ sur $\intff{6}{20}$.
+  \item À quelle heure la puissance est-elle maximale ? Quelle est cette puissance ?
+  \item À l'aide de la calculatrice, déterminer à partir de quelle heure, à la minute
+        près, la puissance dépasse $4$~kW.
+\end{enumerate}
+
+\partiefiche{Dérivée seconde}
+
+\exo[Calculer des dérivées secondes]
+Calculer la dérivée seconde de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie sur $\R$ par $f(x)=x^{4}-2x^{3}+x-5$.
+  \item $g$ définie sur $\R$ par $g(x)=\e^{3x}+x^{2}$.
+  \item $h$ définie sur $\R$ par $h(x)=(x+1)\e^{2x}$.
+  \item $k$ définie sur $\intoo{0}{+\infty}$ par $k(x)=\dfrac{1}{x}$.
+  \item $m$ définie sur $\R$ par $m(x)=x\e^{-x}$.
+\end{enumerate}
+
+\exo[Dérivée et dérivée seconde]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=\left(x^{2}+1\right)\e^{-x}$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x\in\R$, $f'(x)=-(x-1)^{2}\e^{-x}$.
+  \item En déduire le sens de variation de $f$ sur $\R$.
+  \item Montrer que, pour tout $x\in\R$, $f''(x)=(x-1)(x-3)\e^{-x}$.
+  \item Étudier les variations de $f'$ sur $\R$.
+\end{enumerate}
+
+\exo[Le démarrage d'un tramway]
+Au démarrage, la distance parcourue par un tramway, en mètres, est modélisée par la
+fonction $d$ définie sur $\intff{0}{10}$ par $d(t)=-0{,}2t^{3}+3t^{2}$, où $t$ est le
+temps en secondes. Sa vitesse est $v(t)=d'(t)$, en m/s, et son accélération est
+$a(t)=d''(t)$, en m/s$^{2}$.
+\begin{enumerate}
+  \item Calculer $v(t)$ et $a(t)$.
+  \item À quel instant l'accélération est-elle nulle ?
+  \item Étudier les variations de $v$ sur $\intff{0}{10}$. Quelle est la vitesse
+        maximale du tramway ?
+\end{enumerate}
+
+\partiefiche{Fonctions convexes, fonctions concaves}
+
+\exo[Lire la convexité sur trois courbes]
+On donne la courbe $\Cf$ d'une fonction $f$, la courbe $\mathcal{C}_{g'}$ de la
+\textbf{dérivée} d'une fonction $g$ et la courbe $\mathcal{C}_{h''}$ de la
+\textbf{dérivée seconde} d'une fonction $h$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-1}{-1}{5}{5}
+  \gradx{1,2,3,4} \grady{1,2,3,4}
+  \draw[coulCourbe,line width=1.1pt]
+    (0,0) .. controls (1,0) and (1.33,1.33) .. (2,2)
+          .. controls (2.67,2.67) and (3,4) .. (4,4);
+  \node[coulCourbe,font=\footnotesize] at (4.4,3.2) {$\Cf$};
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-3}{-4}{4}{2}
+  \gradx{-2,-1,1,2,3} \grady{-3,-2,-1,1}
+  \draw[coulCourbe,line width=1.1pt]
+    (-2,-3) .. controls (-1.33,-1) and (-0.67,1) .. (0,1)
+            .. controls (0.67,1) and (1.33,-0.11) .. (2,-1)
+            .. controls (2.33,-1.44) and (2.67,-2.33) .. (3,-3);
+  \node[coulCourbe,font=\footnotesize] at (3.3,-1.2) {$\mathcal{C}_{g'}$};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-3}{4}{3}
+  \gradx{-3,-2,-1,1,2,3} \grady{-2,-1,1,2}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,-2) .. controls (-2.67,-1.17) and (-2.33,-0.44) .. (-2,0)
+            .. controls (-1.33,0.89) and (-0.67,2) .. (0,2)
+            .. controls (0.67,2) and (1.33,0.89) .. (2,0)
+            .. controls (2.33,-0.44) and (2.67,-1.17) .. (3,-2);
+  \node[coulCourbe,font=\footnotesize] at (1.6,2.6) {$\mathcal{C}_{h''}$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Sur quels intervalles $f$ semble-t-elle convexe ? concave ?
+  \item Sur quels intervalles $g$ est-elle convexe ? concave ? Justifier.
+  \item Sur quels intervalles $h$ est-elle convexe ? concave ? Justifier.
+\end{enumerate}
+
+\exo[Du tableau de signes à la courbe]
+Une fonction $f$, deux fois dérivable sur $\intff{-3}{5}$, a une dérivée seconde dont le
+signe est donné par le tableau suivant.
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.6,espcl=1.8]{$x$/0.8,$f''(x)$/0.8}{$-3$,$-1$,$3$,$5$}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Déterminer la convexité de $f$ et les abscisses des points d'inflexion de sa
+        courbe.
+  \item Donner les variations de $f'$ sur $\intff{-3}{5}$.
+  \item Est-il possible que $f'(-3)=2$ et $f'(-1)=0$ ? que $f'(-1)=1$ et $f'(3)=-2$ ?
+  \item Sachant que $f(-1)=2$, $f(3)=-2$, $f'(-1)=1$ et $f'(3)=-2$, tracer dans un
+        repère une courbe pouvant représenter $f$.
+\end{enumerate}
+
+\exo[Étudier la convexité]
+Étudier la convexité de chaque fonction sur son ensemble de définition.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie sur $\R$ par $f(x)=x^{3}-6x^{2}+2x-1$.
+  \item $g$ définie sur $\R$ par $g(x)=x^{4}-6x^{2}+1$.
+  \item $h$ définie sur $\R$ par $h(x)=\e^{-2x}+3x$.
+  \item $k$ définie sur $\R$ par $k(x)=(2-x)\e^{x}$.
+  \item $m$ définie sur $\intoo{0}{+\infty}$ par $m(x)=x+\dfrac{4}{x}$.
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item On considère la fonction $f$ définie sur $\R$ par
+        $f(x)=\left(-\dfrac{1}{2}x+3\right)^{5}$.
+
+        \textbf{Affirmation 1 :} la fonction $f$ est convexe sur $\R$.
+  \item On considère la fonction $g$ définie sur $\R$ par $g(x)=x\e^{x}$.
+
+        \textbf{Affirmation 2 :} la fonction $g$ est convexe sur l'intervalle
+        $\intfo{-2}{+\infty}$.
+  \item On considère une fonction affine $h$ définie sur $\R$. On note $k$ la fonction
+        définie sur $\R$ par $k(x)=x^{4}+x^{2}+h(x)$.
+
+        \textbf{Affirmation 3 :} la fonction $k$ est convexe sur $\R$.
+\end{enumerate}
+
+\exo[D'après bac 2026, Amérique du Sud : QCM]
+On donne ci-dessous la courbe représentative $\mathcal{C}_{f'}$ de la fonction dérivée
+$f'$ d'une fonction $f$ définie et dérivable sur l'intervalle $\intff{-3}{4}$.
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-4}{-5}{5}{4}
+  \gradx{-3,-2,-1,1,2,3,4} \grady{-4,-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt]
+    (-3,0) .. controls (-2.5,1.5) and (-2.25,3) .. (-2,3)
+           .. controls (-1.75,3) and (-1.5,1.5) .. (-1,0)
+           .. controls (-0.5,-1.5) and (-0.5,-4) .. (0,-4)
+           .. controls (0.5,-4) and (1.5,-0.5) .. (2,0)
+           .. controls (2.25,0.25) and (2.75,3) .. (3,3)
+           .. controls (3.25,3) and (3.5,2) .. (4,1);
+  \node[coulCourbe,font=\footnotesize] at (4.4,2.3) {$\mathcal{C}_{f'}$};
+\end{tikzpicture}
+\end{center}
+Par lecture graphique, déterminer l'affirmation correcte pour la fonction $f$
+(une seule est exacte), en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item La fonction $f$ est convexe sur l'intervalle $\intff{-2}{-1}$.
+  \item La fonction $f$ est concave sur l'intervalle $\intff{-1}{2}$.
+  \item La fonction $f$ est concave sur l'intervalle $\intff{-2}{0}$.
+  \item La fonction $f$ admet exactement deux points d'inflexion sur l'intervalle
+        $\intff{-3}{4}$.
+\end{enumerate}
+
+\partiefiche{Point d'inflexion}
+
+\exo[Chercher les points d'inflexion]
+Pour chaque fonction, définie sur $\R$, déterminer les coordonnées des éventuels points
+d'inflexion de sa courbe.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x^{3}-3x^{2}+4$
+  \item $g(x)=-x^{3}+6x^{2}-9x+2$
+  \item $h(x)=x^{4}-4x^{3}$
+  \item $k(x)=x^{4}+2x^{2}$
+\end{enumerate}
+
+\exo[Une vidéo de vulgarisation]
+Le nombre de vues d'une vidéo de vulgarisation scientifique, en milliers, est modélisé
+par la fonction $N$ définie sur $\intff{0}{10}$ par
+\begin{center}
+$N(t)=\dfrac{40}{1+\e^{4-t}}$,
+\end{center}
+où $t$ est le nombre de jours depuis sa mise en ligne.
+\begin{enumerate}
+  \item Montrer que, pour tout $t\in\intff{0}{10}$,
+        $N'(t)=\dfrac{40\e^{4-t}}{\left(1+\e^{4-t}\right)^{2}}$, et en déduire le sens
+        de variation de $N$.
+  \item On admet que, pour tout $t\in\intff{0}{10}$,
+        $N''(t)=\dfrac{40\e^{4-t}\left(\e^{4-t}-1\right)}{\left(1+\e^{4-t}\right)^{3}}$.
+        Étudier la convexité de $N$ sur $\intff{0}{10}$.
+  \item Montrer que la courbe de $N$ admet un point d'inflexion, dont on donnera les
+        coordonnées.
+  \item Interpréter ce résultat pour le nombre de vues de la vidéo.
+\end{enumerate}
+
+\exo[Deux points d'inflexion]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=x^{2}\e^{-x}$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x\in\R$, $f'(x)=\left(2x-x^{2}\right)\e^{-x}$, puis que
+        $f''(x)=\left(x^{2}-4x+2\right)\e^{-x}$.
+  \item Étudier la convexité de $f$ sur $\R$.
+  \item En déduire que la courbe de $f$ admet deux points d'inflexion, dont on donnera
+        les abscisses exactes.
+\end{enumerate}
+
+\partiefiche{Convexité et inégalités}
+
+\exo[Tangente et corde de l'exponentielle]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=\e^{x}$, de courbe $\Cf$.
+\begin{enumerate}
+  \item Justifier que $f$ est convexe sur $\R$.
+  \item Déterminer une équation de la tangente $(T_{1})$ à $\Cf$ au point d'abscisse $1$.
+        En déduire que, pour tout $x\in\R$, $\e^{x}\geq \e x$.
+  \item Soit $A$ et $B$ les points de $\Cf$ d'abscisses $0$ et $1$. Déterminer une
+        équation de la droite $(AB)$.
+  \item En utilisant la convexité de $f$, en déduire que, pour tout
+        $x\in\intff{0}{1}$, $\e^{x}\leq(\e-1)x+1$.
+  \item En déduire, sans calculatrice, que $\sqrt{\e}\leq\dfrac{\e+1}{2}$.
+\end{enumerate}
+
+\exo[Au-dessus d'une tangente]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=x\e^{x}+x+1$, de courbe $\Cf$.
+\begin{enumerate}
+  \item Calculer $f'(x)$ et $f''(x)$ pour tout $x\in\R$.
+  \item Étudier la convexité de $f$ sur $\R$.
+  \item Déterminer une équation de la tangente $(T_{0})$ à $\Cf$ au point d'abscisse $0$.
+  \item En déduire que, pour tout $x\geq -2$, $x\e^{x}+x+1\geq 2x+1$.
+\end{enumerate}
+
+\exo[Une approximation de racine carrée]
+Soit la fonction $f$ définie sur $\intfo{-1}{+\infty}$ par $f(x)=\sqrt{1+x}$ ; on admet
+qu'elle est deux fois dérivable sur $\intoo{-1}{+\infty}$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x>-1$, $f''(x)=-\dfrac{1}{4(1+x)\sqrt{1+x}}$.
+  \item En déduire la convexité de $f$ sur $\intoo{-1}{+\infty}$.
+  \item Déterminer une équation de la tangente $(T_{0})$ à la courbe de $f$ au point
+        d'abscisse $0$.
+  \item En déduire que, pour tout $x>-1$, $\sqrt{1+x}\leq 1+\dfrac{x}{2}$.
+  \item Sans calculatrice, en déduire un majorant de $\sqrt{1{,}02}$, puis le comparer à
+        l'affichage de la calculatrice.
+\end{enumerate}
+
+\partiefiche{Continuité}
+
+\exo[Le tarif d'un parking]
+Dans un parking, on paie $2$~€ par heure commencée : jusqu'à $1$~h, on paie $2$~€ ; de
+plus de $1$~h jusqu'à $2$~h, $4$~€, et ainsi de suite. On note $P(t)$ le prix payé, en
+euros, pour une durée de $t$ heures, avec $t\in\intof{0}{4}$.
+\begin{enumerate}
+  \item Donner $P(0{,}5)$, $P(1)$, $P(1{,}5)$ et $P(2)$.
+  \item Représenter la fonction $P$ dans un repère.
+  \item Déterminer $\lim\limits_{t\to 1^{-}}P(t)$ et $\lim\limits_{t\to 1^{+}}P(t)$.
+  \item La fonction $P$ est-elle continue en $1$ ? Justifier par une phrase complète.
+  \item Sur quels intervalles la fonction $P$ est-elle continue ?
+\end{enumerate}
+
+\exo[Choisir un paramètre]
+\begin{enumerate}
+  \item Soit $a$ un nombre réel et $f$ la fonction définie sur $\R$ par
+        $f(x)=x^{2}+1$ si $x<2$, et $f(x)=ax-3$ si $x\geq 2$. Déterminer $a$ pour que
+        $f$ soit continue en $2$.
+  \item Soit $b$ un nombre réel et $g$ la fonction définie sur $\R$ par
+        $g(x)=\e^{x}$ si $x\leq 0$, et $g(x)=x+b$ si $x>0$. Déterminer $b$ pour que $g$
+        soit continue sur $\R$.
+\end{enumerate}
+
+\exo[La fonction valeur absolue]
+On rappelle que, pour tout $x\in\R$, $|x|=x$ si $x\geq 0$ et $|x|=-x$ si $x<0$. Soit la
+fonction $f$ définie sur $\R$ par $f(x)=|x|$.
+\begin{enumerate}
+  \item Représenter la fonction $f$ dans un repère.
+  \item Déterminer $\lim\limits_{x\to 0^{-}}f(x)$ et $\lim\limits_{x\to 0^{+}}f(x)$. La
+        fonction $f$ est-elle continue en $0$ ?
+  \item Pour $h\neq 0$, calculer le taux de variation $\dfrac{f(0+h)-f(0)}{h}$ selon le
+        signe de $h$. La fonction $f$ est-elle dérivable en $0$ ?
+  \item Que montre cet exemple sur le lien entre continuité et dérivabilité ?
+\end{enumerate}
+
+\exo[Image d'une suite convergente]
+Soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par $u_{n}=3-\dfrac{1}{n}$.
+\begin{enumerate}
+  \item Déterminer la limite de la suite $(u_{n})$.
+  \item En justifiant par la continuité, en déduire la limite de chacune des suites
+        $(v_{n})$, $(w_{n})$ et $(t_{n})$ définies pour tout $n\in\Ns$ par
+        $v_{n}=\e^{u_{n}}$, $w_{n}=\sqrt{u_{n}+1}$ et $t_{n}=u_{n}^{2}-2u_{n}$.
+\end{enumerate}
+
+\partiefiche{Théorème des valeurs intermédiaires}
+
+\exo[Compter les solutions sur un tableau]
+Une fonction $f$, continue sur $\intff{-3}{5}$, a le tableau de variations suivant.
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \tkzTabInit[lgt=1.4,espcl=1.8]{$x$/0.8,$f(x)$/1.6}{$-3$,$1$,$3$,$5$}
+  \tkzTabVar{-/$2$,+/$6$,-/$-2$,+/$4$}
+\end{tikzpicture}
+\end{center}
+Déterminer, en justifiant, le nombre de solutions de chaque équation sur
+$\intff{-3}{5}$.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=0$
+  \item $f(x)=5$
+  \item $f(x)=3$
+  \item $f(x)=-3$
+\end{enumerate}
+
+\exo[Une solution unique sur $\R$]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=x^{3}+x-3$.
+\begin{enumerate}
+  \item Étudier les variations de $f$ et ses limites en $-\infty$ et en $+\infty$.
+  \item Montrer que l'équation $f(x)=0$ admet une unique solution $\alpha$ sur $\R$.
+  \item Donner un encadrement de $\alpha$ d'amplitude $10^{-2}$.
+  \item En déduire le signe de $f(x)$ selon les valeurs de $x$.
+\end{enumerate}
+
+\exo[Avec une exponentielle]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=\e^{x}+x-2$.
+\begin{enumerate}
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item Étudier le sens de variation de $f$ sur $\R$.
+  \item Montrer que l'équation $f(x)=0$ admet une unique solution $\alpha$, et que
+        $0<\alpha<1$.
+  \item Donner un encadrement de $\alpha$ d'amplitude $10^{-2}$, puis le signe de $f(x)$
+        selon les valeurs de $x$.
+\end{enumerate}
+
+\exo[D'après bac 2025, Amérique du Sud]
+On se propose d'étudier la concentration dans le sang d'un médicament ingéré par une
+personne pour la première fois. Soit $t$ le temps (en heures) écoulé depuis l'ingestion
+de ce médicament. On admet que la concentration de ce médicament dans le sang, en gramme
+par litre de sang, est modélisée par la fonction $f$ définie sur l'intervalle
+$\intfo{0}{+\infty}$ par $f(t)=5t\e^{-t}$.
+\begin{enumerate}
+  \item Déterminer la limite de $f$ en $+\infty$. Interpréter ce résultat dans le
+        contexte de l'exercice.
+  \item Étudier les variations de $f$ sur l'intervalle $\intfo{0}{+\infty}$ puis dresser
+        son tableau de variation complet.
+  \item Démontrer qu'il existe deux nombres réels $t_{1}$ et $t_{2}$ tels que
+        $f\left(t_{1}\right)=f\left(t_{2}\right)=1$. On donnera une valeur approchée à
+        $10^{-2}$ des nombres réels $t_{1}$ et $t_{2}$.
+  \item Pour une concentration du médicament supérieure ou égale à 1 gramme par litre de
+        sang, il y a un risque de somnolence. Quelle est la durée en heures et minutes du
+        risque de somnolence lors de la prise de ce médicament ?
+\end{enumerate}
+
+\exo[D'après bac 2025, Métropole]
+On s'intéresse à la glycémie chez une personne venant de prendre un repas. La glycémie
+en g.L$^{-1}$, en fonction du temps $t$, exprimé en heure, écoulé depuis la fin du
+repas, est modélisée par la fonction $f$ définie sur $\intff{0}{6}$ par
+$f(t)=(t+1)\e^{-0{,}4t}$.
+\begin{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout $t\in\intff{0}{6}$, $f'(t)=(-0{,}4t+0{,}6)\e^{-0{,}4t}$.
+    \item Étudier les variations de $f$ sur $\intff{0}{6}$ puis dresser son tableau de
+          variations sur cet intervalle.
+  \end{enumerate}
+  \item Une personne est en hypoglycémie lorsque sa glycémie est inférieure à
+        $0{,}7$~g.L$^{-1}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que sur l'intervalle $\intff{0}{6}$ l'équation $f(t)=0{,}7$ admet une
+          unique solution que l'on notera $\alpha$.
+    \item Au bout de combien de temps après avoir pris son repas cette personne est-elle
+          en hypoglycémie ? On exprimera ce temps à la minute près.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2025, Asie : vrai ou faux ?]
+Soit $f$ la fonction définie sur $\R$ par $f(x)=x\e^{-2x}$. On admet que $f$ est deux
+fois dérivable sur $\R$. Pour chacune des affirmations suivantes, préciser si elle est
+vraie ou fausse, puis justifier la réponse donnée.
+\begin{enumerate}
+  \item \textbf{Affirmation 1.} Pour tout nombre réel $x$, on a
+        $f'(x)=(-2x+1)\e^{-2x}$.
+  \item \textbf{Affirmation 2.} La fonction $f$ est convexe sur $\intof{-\infty}{1}$.
+  \item \textbf{Affirmation 3.} L'équation $f(x)=-1$ admet une unique solution sur $\R$.
+\end{enumerate}
+
+\partiefiche{Méthode de dichotomie}
+
+\exo[Dichotomie avec une boucle « pour »]
+On cherche la solution de l'équation $\e^{x}=3$.
+\begin{enumerate}
+  \item Justifier que cette équation admet une unique solution $\alpha$ dans
+        $\intff{1}{2}$.
+  \item On considère le programme suivant.
+\begin{python}
+from math import exp
+
+def dichotomie(n):
+    a = 1
+    b = 2
+    for i in range(n):
+        m = (a + b) / 2
+        if exp(m) > 3:
+            b = m
+        else:
+            a = m
+    return a, b
+\end{python}
+        Faire tourner l'appel \texttt{dichotomie(4)} à la main, en notant à chaque
+        passage les valeurs de $m$, $a$ et $b$.
+  \item Que renvoie \texttt{dichotomie(4)} ? Interpréter.
+  \item Combien de passages faut-il pour un encadrement de $\alpha$ d'amplitude au plus
+        $10^{-3}$ ?
+\end{enumerate}
+
+\exo[Compléter un programme]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=x^{3}+x-3$ ; on admet que l'équation
+$f(x)=0$ a une unique solution $\alpha$ dans $\intff{1}{2}$.
+\begin{enumerate}
+  \item Compléter le programme pour que \texttt{dichotomie(a, b, e)} renvoie un
+        encadrement de $\alpha$ d'amplitude au plus \texttt{e}.
+\begin{python}
+def f(x):
+    return x**3 + x - 3
+
+def dichotomie(a, b, e):
+    while .......... :
+        m = (a + b) / 2
+        if f(a) * f(m) <= 0:
+            b = ..........
+        else:
+            a = ..........
+    return a, b
+\end{python}
+  \item Que renvoie \texttt{dichotomie(1, 2, 0.1)} ? Détailler les étapes.
+\end{enumerate}
+
+\exo[Balayage ou dichotomie ?]
+Soit la fonction $g$ définie sur $\R$ par $g(x)=x^{3}+3x-1$.
+\begin{enumerate}
+  \item Montrer que l'équation $g(x)=0$ admet une unique solution $\alpha$ dans
+        $\intff{0}{1}$.
+  \item Par balayage au pas de $0{,}1$ (tableau de valeurs de la calculatrice), donner un
+        encadrement de $\alpha$ d'amplitude $0{,}1$.
+  \item Un balayage au pas de $0{,}01$ sur $\intff{0}{1}$ demande jusqu'à $100$ calculs
+        d'images. Combien de passages de la dichotomie, en partant de $\intff{0}{1}$,
+        suffisent pour une amplitude au plus $0{,}01$ ?
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2026, Métropole]
+Soit $f$ la fonction dérivable sur $\R$ définie par $f(x)=(3x-1)\e^{-x}+2$. On note $\Cf$
+sa courbe représentative dans un repère orthonormé.
+\begin{enumerate}
+  \item Déterminer la limite de la fonction $f$ en $-\infty$.
+  \item Déterminer la limite de la fonction $f$ en $+\infty$. Interpréter graphiquement
+        ce résultat.
+  \item On note $f'$ la fonction dérivée de $f$.
+  \begin{enumerate}[label=\alph*)]
+    \item Vérifier que, pour tout nombre réel $x$, $f'(x)=(4-3x)\e^{-x}$.
+    \item Étudier le signe de la dérivée et en déduire le tableau de variations de la
+          fonction $f$ sur $\R$.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que l'équation $f(x)=0$ admet une unique solution sur $\R$. On
+          notera $\alpha$ cette solution.
+    \item Donner une valeur approchée de $\alpha$ à $10^{-2}$ près.
+    \item En déduire le tableau de signes de la fonction $f$ sur $\R$.
+  \end{enumerate}
+  \item On admet que la droite d'équation $y=4x+1$ est la tangente à la courbe $\Cf$ au
+        point d'abscisse $0$. Vérifier que, pour tout nombre réel $x$,
+        $(3x-1)\e^{-x}+2\leq 4x+1$.
+\end{enumerate}
+
+\exo[D'après bac 2025, Amérique du Nord]
+On considère la fonction $f$ définie sur $\R$ par $f(x)=x\e^{-x}+2x-1$. On admet que la
+fonction $f$ est deux fois dérivable sur $\R$. On appelle $\Cf$ sa courbe représentative
+dans un repère orthogonal du plan.
+\begin{enumerate}
+  \item Déterminer les limites de la fonction $f$ en $-\infty$ et en $+\infty$.
+  \item Pour tout nombre réel $x$, calculer $f'(x)$.
+  \item Montrer que pour tout nombre réel $x$ : $f''(x)=(x-2)\e^{-x}$.
+  \item Étudier la convexité de la fonction $f$.
+  \item Étudier les variations de la fonction $f'$ sur $\R$, puis dresser son tableau de
+        variations en y faisant apparaître la valeur exacte de l'extremum. Les limites
+        de la fonction $f'$ aux bornes de l'intervalle de définition ne sont pas
+        attendues.
+  \item En déduire le signe de la fonction $f'$ sur $\R$, puis justifier que la fonction
+        $f$ est strictement croissante sur $\R$.
+  \item Justifier qu'il existe un unique nombre réel $\alpha$ tel que $f(\alpha)=0$.
+        Donner un encadrement de $\alpha$, au centième près.
+  \item On considère la droite $\Delta$ d'équation $y=2x-1$. Étudier la position
+        relative de la courbe $\Cf$ par rapport à la droite $\Delta$.
+\end{enumerate}
+
+\exo[D'après bac 2025, Asie]
+On considère la fonction $f$ définie sur l'intervalle $\intoo{0}{+\infty}$ par
+\begin{center}
+$f(x)=\dfrac{\e^{\sqrt{x}}}{2\sqrt{x}}$
+\end{center}
+et on appelle $\Cf$ sa courbe représentative dans un repère orthonormé.
+\begin{enumerate}
+  \item On définit la fonction $g$ sur l'intervalle $\intoo{0}{+\infty}$ par
+        $g(x)=\e^{\sqrt{x}}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que $g'(x)=f(x)$ pour tout $x$ de l'intervalle $\intoo{0}{+\infty}$.
+    \item Pour tout nombre réel $x$ de l'intervalle $\intoo{0}{+\infty}$, calculer $f'(x)$
+          et montrer que $f'(x)=\dfrac{\e^{\sqrt{x}}\left(\sqrt{x}-1\right)}{4x\sqrt{x}}$.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer la limite de la fonction $f$ en $0$.
+    \item Interpréter graphiquement ce résultat.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer la limite de la fonction $f$ en $+\infty$.
+    \item Étudier le sens de variation de la fonction $f$ sur $\intoo{0}{+\infty}$.
+          Dresser le tableau de variations de la fonction $f$ en y faisant figurer les
+          limites aux bornes de l'intervalle de définition.
+    \item Montrer que l'équation $f(x)=2$ admet une unique solution sur l'intervalle
+          $\intfo{1}{+\infty}$ et donner une valeur approchée à $10^{-1}$ près de cette
+          solution.
+  \end{enumerate}
+  \item On admet que la fonction $f$ est deux fois dérivable sur l'intervalle
+        $\intoo{0}{+\infty}$ et que
+        $f''(x)=\dfrac{\e^{\sqrt{x}}\left(x-3\sqrt{x}+3\right)}{8x^{2}\sqrt{x}}$.
+  \begin{enumerate}[label=\alph*)]
+    \item En posant $X=\sqrt{x}$, montrer que $x-3\sqrt{x}+3>0$ pour tout nombre réel $x$
+          de l'intervalle $\intoo{0}{+\infty}$.
+    \item Étudier la convexité de la fonction $f$ sur l'intervalle $\intoo{0}{+\infty}$.
+  \end{enumerate}
+\end{enumerate}
+
+\partiefichesansnum{Entraînement au calcul de dérivées}
+
+\textit{Dans ces exercices, chaque fonction est dérivable sur l'intervalle indiqué.
+Écrire la dérivée sous la forme la plus simple, factorisée quand c'est possible.}
+
+\exo[Polynômes, inverses, racines]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\R$ : $f(x)=-3x^{2}+8x-5$.
+  \item $g$ sur $\intoo{0}{+\infty}$ : $g(x)=\dfrac{x^{3}}{6}-2\sqrt{x}$.
+  \item $h$ sur $\R$ : $h(x)=\dfrac{x^{4}-6x^{2}+5x-1}{2}$.
+  \item $k$ sur $\R$ : $k(x)=(4x-1)^{2}$.
+  \item $m$ sur $\intoo{0}{+\infty}$ : $m(x)=-\dfrac{3}{x^{2}}$.
+  \item $p$ sur $\intoo{0}{+\infty}$ : $p(x)=\dfrac{3}{\sqrt{x}}$.
+  \item $r$ sur $\intoo{-\infty}{3}$ : $r(x)=5x-2+\dfrac{1}{3-x}$.
+  \item $s$ sur $\intoo{0}{+\infty}$ : $s(x)=\dfrac{2}{x}-\dfrac{x^{2}}{4}$.
+\end{enumerate}
+
+\exo[Quotients]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\intoo{\frac{5}{4}}{+\infty}$ : $f(x)=\dfrac{2-3x}{4x-5}$.
+  \item $g$ sur $\intoo{0}{+\infty}$ : $g(x)=\dfrac{4x-3}{x^{3}}$.
+  \item $h$ sur $\intoo{\frac{3}{2}}{+\infty}$ : $h(x)=\dfrac{x^{2}-5x+1}{2x-3}$.
+  \item $k$ sur $\intoo{-2}{+\infty}$ : $k(x)=\dfrac{3x}{2+x}$.
+  \item $m$ sur $\intoo{2}{+\infty}$ : $m(x)=\dfrac{x^{2}+x+4}{x-2}$.
+  \item $p$ sur $\intoo{3}{+\infty}$ : $p(x)=2+\dfrac{4x}{x-3}$.
+  \item $r$ sur $\R$ : $r(x)=\dfrac{x^{2}+1}{x^{2}+3}$.
+  \item $s$ sur $\R$ : $s(x)=\dfrac{x^{2}-x+2}{2x^{2}+1}$.
+  \item $w$ sur $\intoo{5}{+\infty}$ : $w(x)=\dfrac{-x^{2}+4x+1}{x^{2}-4x-5}$.
+\end{enumerate}
+
+\exo[Avec $\e^{x}$]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\R$ : $f(x)=\e^{x}-2x^{2}$.
+  \item $g$ sur $\R$ : $g(x)=(x+3)\,\e^{x}$.
+  \item $h$ sur $\R$ : $h(x)=4x-3\,\e^{x}$.
+  \item $k$ sur $\R$ : $k(x)=\left(1-x^{2}\right)\e^{x}$.
+  \item $m$ sur $\R$ : $m(x)=\left(x^{2}-2x+3\right)\e^{x}$.
+  \item $p$ sur $\R$ : $p(x)=x^{2}\,\e^{x}$.
+  \item $r$ sur $\intoo{-3}{+\infty}$ : $r(x)=\dfrac{\e^{x}}{x+3}$.
+  \item $s$ sur $\R$ : $s(x)=\dfrac{x-1}{\e^{x}}$.
+  \item $w$ sur $\R$ : $w(x)=\dfrac{\e^{x}}{\e^{x}+2}$.
+  \item $z$ sur $\R$ : $z(x)=\dfrac{\e^{x}+3}{\e^{x}}$.
+\end{enumerate}
+
+\exo[Avec $\e^{u}$]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\R$ : $f(x)=\e^{2x}-5$.
+  \item $g$ sur $\R$ : $g(x)=8\,\e^{-0{,}25x}$.
+  \item $h$ sur $\R$ : $h(x)=x\,\e^{-2x}$.
+  \item $k$ sur $\R$ : $k(x)=\e^{-x^{2}+3x}$.
+  \item $m$ sur $\R$ : $m(x)=(3x+1)\,\e^{-0{,}5x}$.
+  \item $p$ sur $\R$ : $p(x)=(4-0{,}5x)\,\e^{2x}$.
+  \item $r$ sur $\R$ : $r(x)=2x\,\e^{-x+3}$.
+  \item $s$ sur $\R$ : $s(x)=5\,\e^{2-x^{2}}$.
+  \item $w$ sur $\R$ : $w(x)=\e^{\frac{3-x}{4}}$.
+  \item $z$ sur $\intoo{2}{+\infty}$ : $z(x)=\e^{\frac{x+1}{x-2}}$.
+  \item $\varphi$ sur $\R$ : $\varphi(x)=\dfrac{1}{\sqrt{2\pi}}\,\e^{-\frac{x^{2}}{2}}$.
+\end{enumerate}
+
+\exo[Puissances et racines composées]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\R$ : $f(x)=\left(x^{2}-3x+5\right)^{4}$.
+  \item $g$ sur $\intoo{-\frac{2}{3}}{+\infty}$ : $g(x)=\dfrac{1}{(3x+2)^{3}}$.
+  \item $h$ sur $\intoo{\frac{1}{5}}{+\infty}$ : $h(x)=\sqrt{5x-1}$.
+  \item $k$ sur $\R$ : $k(x)=\sqrt{x^{2}-4x+9}$.
+  \item $m$ sur $\R$ : $m(x)=(2-x)^{5}$.
+  \item $p$ sur $\R$ : $p(x)=\sqrt{\e^{x}+1}$.
+  \item $r$ sur $\R$ : $r(x)=\left(\e^{x}-x\right)^{2}$.
+  \item $s$ sur $\intoo{-\frac{3}{2}}{+\infty}$ : $s(x)=\dfrac{4}{\sqrt{2x+3}}$.
+\end{enumerate}
+
+\exo[Produits et quotients de composées]
+Calculer la dérivée de chaque fonction.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\intoo{0}{+\infty}$ : $f(x)=x\sqrt{2x+1}$.
+  \item $g$ sur $\intoo{0}{+\infty}$ : $g(x)=\dfrac{x\sqrt{x}}{x+2}$.
+  \item $h$ sur $\R$ : $h(x)=(x+1)^{2}\,\e^{-x}$.
+  \item $k$ sur $\R$ : $k(x)=\dfrac{\e^{2x}}{x^{2}+1}$.
+  \item $m$ sur $\R$ : $m(x)=\dfrac{3}{1+2\,\e^{-x}}$.
+  \item $p$ sur $\R$ : $p(x)=(2x-1)^{3}\,\e^{x}$.
+  \item $r$ sur $\R$ : $r(x)=x^{2}\,\e^{-x^{2}}$.
+  \item $s$ sur $\intoo{0}{+\infty}$ : $s(x)=\sqrt{x}\,\e^{-x}$.
+\end{enumerate}
+
+\exo[Dériver pour étudier les variations]
+Étudier les variations de chaque fonction sur l'intervalle indiqué.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ sur $\R$ : $f(x)=3\,\e^{-4x}$.
+  \item $g$ sur $\R$ : $g(x)=50\,\e^{-0{,}2x+1}$.
+  \item $h$ sur $\intff{0}{5}$ : $h(x)=0{,}05\,\e^{2x}+3x$.
+  \item $k$ sur $\intff{0}{3}$ : $k(x)=(3-x)\,\e^{\frac{x}{3}}$.
+  \item $m$ sur $\intff{-4}{8}$ : $m(x)=\dfrac{20}{1+\e^{-0{,}5x}}$.
+  \item $p$ sur $\intoo{-1}{+\infty}$ : $p(x)=\e^{\frac{x^{2}}{x+1}}$.
+  \item $r$ sur $\R$ : $r(x)=\left(x^{2}-3\right)\e^{x}$.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
