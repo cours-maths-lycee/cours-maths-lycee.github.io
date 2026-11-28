@@ -1,0 +1,1183 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 8 --- Orthogonalité et distances --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\accol}[1]{\left\{\renewcommand{\arraystretch}{1.3}\begin{array}{rcl}#1\end{array}\right.}
+\newcommand{\cubeespace}[1]{%
+  \coordinate (A) at (0,0); \coordinate (B) at (#1,0);
+  \coordinate (D) at ({0.45*#1},{0.35*#1}); \coordinate (C) at ({#1+0.45*#1},{0.35*#1});
+  \coordinate (E) at (0,#1); \coordinate (F) at (#1,#1);
+  \coordinate (H) at ({0.45*#1},{#1+0.35*#1}); \coordinate (G) at ({#1+0.45*#1},{#1+0.35*#1});
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[above left]{$D$} (E) node[left]{$E$}
+    (F) node[below right]{$F$} (G) node[above right]{$G$} (H) node[above left]{$H$};}
+
+\begin{document}
+
+\entetefiche{Chapitre 8 --- Orthogonalité et distances}{Terminale spécialité mathématiques}
+
+\partie{Rappels de 1re : le produit scalaire dans le plan}
+
+\begin{exo}[Choisir la bonne expression]
+\cas{1.}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= AB\times AC\times\cos\widehat{BAC} &&\justif{on connaît l'angle}\\
+\vect{AB}\cdot\vect{AC} &= 6\times 4\times\frac{\sqrt{3}}{2} &&\justif{$\cos\left(\frac{\pi}{6}\right)=\frac{\sqrt{3}}{2}$}\\
+\vect{AB}\cdot\vect{AC} &= \res{12\sqrt{3}} &&
+\end{calculs}
+\cas{2. a)}
+\explique{Le projeté orthogonal de $C$ sur $(AB)$ est $B$, car $(BC)\perp(AB)$ :
+$\vect{AB}\cdot\vect{AC}=AB^{2}$, soit $\vect{AB}\cdot\vect{AC}=\res{25}$.}{projeté orthogonal}
+\cas{b)}
+\explique{$(AB)\perp(AD)$, donc $\vect{AB}\cdot\vect{AD}=\res{0}$.}{vecteurs orthogonaux}
+\cas{c)}
+\explique{$\vect{CB}=\vect{DA}=-\vect{AD}$, donc
+$\vect{AD}\cdot\vect{CB}=-AD^{2}=\res{-9}$.}{$ABCD$ est un rectangle}
+\end{exo}
+
+\begin{exo}[Avec des coordonnées]
+\cas{1.}
+\explique{$\vect{AB}\begin{pmatrix}3\\1\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}1\\3\end{pmatrix}$.}{coordonnées de l'extrémité moins celles de l'origine}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= 3\times 1+1\times 3 &&\justif{$xx'+yy'$, repère orthonormé}\\
+\vect{AB}\cdot\vect{AC} &= \res{6} &&
+\end{calculs}
+\explique{$AB=\sqrt{3^{2}+1^{2}}=\res{\sqrt{10}}$ et $AC=\sqrt{1^{2}+3^{2}}=\res{\sqrt{10}}$.}{}
+\cas{2.}
+\explique{$\vect{AB}\cdot\vect{AC}=AB\times AC\times\cos\widehat{BAC}$, donc
+$6=\sqrt{10}\times\sqrt{10}\times\cos\widehat{BAC}$ et $\cos\widehat{BAC}=\frac{6}{10}=0{,}6$.}{deux
+expressions du produit scalaire}
+\explique{À la calculatrice : $\widehat{BAC}\approx\res{53{,}1^{\circ}}$.}{touche $\cos^{-1}$, mode degré}
+\cas{3.}
+\explique{$\vect{AD}\begin{pmatrix}-1\\3\end{pmatrix}$ et
+$\vect{AB}\cdot\vect{AD}=3\times(-1)+1\times 3=0$.}{}
+\explique{Les vecteurs sont orthogonaux et les droites passent par $A$ : \res{$(AB)$ et
+$(AD)$ sont perpendiculaires}.}{orthogonales et sécantes}
+\end{exo}
+
+\begin{exo}[Normes et formules de polarisation]
+\cas{1.}
+\begin{calculs}
+\vect{u}\cdot\vect{v} &= \frac{1}{2}\left(\|\vect{u}+\vect{v}\|^{2}-\|\vect{u}\|^{2}-\|\vect{v}\|^{2}\right) &&\justif{polarisation}\\
+\vect{u}\cdot\vect{v} &= \frac{1}{2}(49-9-25) &&\\
+\vect{u}\cdot\vect{v} &= \res{\frac{15}{2}} &&
+\end{calculs}
+\begin{calculs}
+\|\vect{u}-\vect{v}\|^{2} &= \|\vect{u}\|^{2}-2\,\vect{u}\cdot\vect{v}+\|\vect{v}\|^{2} &&\justif{on développe}\\
+\|\vect{u}-\vect{v}\|^{2} &= 9-15+25 &&\\
+\|\vect{u}-\vect{v}\|^{2} &= 19 &&
+\end{calculs}
+\explique{Donc $\|\vect{u}-\vect{v}\|=\res{\sqrt{19}}$.}{une norme est positive}
+\cas{2.}
+\begin{calculs}
+\vect{u}\cdot\vect{v} &= \frac{1}{2}\left(\|\vect{u}\|^{2}+\|\vect{v}\|^{2}-\|\vect{u}-\vect{v}\|^{2}\right) &&\justif{polarisation, avec $\vect{u}-\vect{v}$}\\
+\vect{u}\cdot\vect{v} &= \frac{1}{2}(4+16-12) &&\justif{$(2\sqrt{3})^{2}=12$}\\
+\vect{u}\cdot\vect{v} &= \res{4} &&
+\end{calculs}
+\explique{$4=2\times 4\times\cos(\theta)$, donc $\cos(\theta)=\frac{1}{2}$ : l'angle mesure
+\res{$\frac{\pi}{3}$}, soit $60^{\circ}$.}{$\theta$ : l'angle entre $\vect{u}$ et $\vect{v}$}
+\end{exo}
+
+\begin{exo}[Un triangle connu par ses côtés]
+\cas{1.}
+\explique{D'après la relation de Chasles, $\vect{BC}=\vect{BA}+\vect{AC}$, soit $\vect{BC}=\vect{AC}-\vect{AB}$.}{$\vect{BA}=-\vect{AB}$}
+\cas{2.}
+\explique{On applique la formule avec $\vect{u}=\vect{AC}$ et $\vect{v}=\vect{AB}$ :
+$\|\vect{u}-\vect{v}\|=BC$.}{}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= \frac{1}{2}\left(AB^{2}+AC^{2}-BC^{2}\right) &&\justif{polarisation}\\
+\vect{AB}\cdot\vect{AC} &= \frac{1}{2}(25+49-64) &&\\
+\vect{AB}\cdot\vect{AC} &= \res{5} &&
+\end{calculs}
+\cas{3.}
+\explique{$5=5\times 7\times\cos\widehat{BAC}$, donc $\cos\widehat{BAC}=\res{\frac{1}{7}}$ et
+$\widehat{BAC}\approx\res{81{,}8^{\circ}}$.}{calculatrice}
+\rem{C'est le théorème d'Al-Kashi, retrouvé par le produit scalaire.}
+\end{exo}
+
+\partie{Produit scalaire dans l'espace}
+
+\begin{exo}[Dans un cube]
+\cas{a)}
+\explique{Dans le carré $ABCD$, le projeté orthogonal de $C$ sur $(AB)$ est $B$ :
+$\vect{AB}\cdot\vect{AC}=AB^{2}=\res{16}$.}{on travaille dans une face}
+\cas{b)}
+\explique{$\vect{EG}=\vect{AC}$ ($ACGE$ est un rectangle), donc
+$\vect{AB}\cdot\vect{EG}=\vect{AB}\cdot\vect{AC}=\res{16}$.}{vecteur égal qui part de $A$}
+\cas{c)}
+\explique{$\vect{EH}=\vect{AD}$ et $(AB)\perp(AD)$, donc
+$\vect{AB}\cdot\vect{EH}=\vect{AB}\cdot\vect{AD}=\res{0}$.}{}
+\cas{d)}
+\explique{$\vect{GH}=\vect{BA}=-\vect{AB}$, donc
+$\vect{AB}\cdot\vect{GH}=-AB^{2}=\res{-16}$.}{}
+\cas{e)}
+\explique{$\vect{EH}=\vect{BC}$ et $\vect{BJ}=\vect{BF}+\vect{FJ}$, avec
+$\vect{FJ}=\frac{1}{2}\vect{FG}=\frac{1}{2}\vect{BC}$.}{Chasles}
+\begin{calculs}
+\vect{BJ}\cdot\vect{EH} &= \vect{BF}\cdot\vect{BC}+\frac{1}{2}\vect{BC}\cdot\vect{BC} &&\justif{bilinéarité}\\
+\vect{BJ}\cdot\vect{EH} &= 0+\frac{1}{2}\times 16 &&\justif{$(BF)\perp(BC)$}\\
+\vect{BJ}\cdot\vect{EH} &= \res{8} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Dans un tétraèdre régulier]
+\cas{a)}
+\explique{Le triangle $ABC$ est équilatéral :
+$\vect{AB}\cdot\vect{AC}=4\times 4\times\cos\left(\frac{\pi}{3}\right)=\res{8}$.}{}
+\cas{b)}
+\explique{$\vect{AJ}=\frac{1}{2}\vect{AC}$, donc
+$\vect{AD}\cdot\vect{AJ}=\frac{1}{2}\vect{AD}\cdot\vect{AC}$, soit $\vect{AD}\cdot\vect{AJ}=\frac{1}{2}\times 8=\res{4}$.}{triangle
+$ACD$ équilatéral : $\vect{AD}\cdot\vect{AC}=8$}
+\cas{c)}
+\explique{Dans le triangle $ABC$, $I$ et $J$ sont les milieux de $[BC]$ et $[AC]$ :
+$\vect{IJ}=\frac{1}{2}\vect{BA}=-\frac{1}{2}\vect{AB}$.}{droite des milieux}
+\explique{Donc $\vect{AB}\cdot\vect{IJ}=-\frac{1}{2}AB^{2}=\res{-8}$.}{}
+\cas{d)}
+\explique{$I$ est le milieu de $[BC]$, donc $\vect{DI}=\frac{1}{2}\left(\vect{DB}+\vect{DC}\right)$.}{}
+\begin{calculs}
+\vect{DI}\cdot\vect{DC} &= \frac{1}{2}\left(\vect{DB}\cdot\vect{DC}+\vect{DC}\cdot\vect{DC}\right) &&\justif{bilinéarité}\\
+\vect{DI}\cdot\vect{DC} &= \frac{1}{2}(8+16) &&\justif{triangle $BCD$ équilatéral}\\
+\vect{DI}\cdot\vect{DC} &= \res{12} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Règles de calcul]
+\cas{a)}
+\explique{$(2\vect{u})\cdot\vect{v}=2\times 3=\res{6}$.}{bilinéarité}
+\cas{b)}
+\explique{$\vect{u}\cdot(-3\vect{v})=-3\times 3=\res{-9}$.}{}
+\cas{c)}
+\explique{$(\vect{u}+\vect{v})\cdot\vect{u}=\|\vect{u}\|^{2}+\vect{v}\cdot\vect{u}$, soit $4+3=\res{7}$.}{}
+\cas{d)}
+\begin{calculs}
+\|\vect{u}+\vect{v}\|^{2} &= \|\vect{u}\|^{2}+2\,\vect{u}\cdot\vect{v}+\|\vect{v}\|^{2} &&\\
+\|\vect{u}+\vect{v}\|^{2} &= 4+6+16 &&\\
+\|\vect{u}+\vect{v}\|^{2} &= \res{26} &&
+\end{calculs}
+\cas{e)}
+\begin{calculs}
+\|\vect{u}-2\vect{v}\|^{2} &= \|\vect{u}\|^{2}-2\,\vect{u}\cdot(2\vect{v})+\|2\vect{v}\|^{2} &&\justif{on développe}\\
+\|\vect{u}-2\vect{v}\|^{2} &= 4-4\times 3+4\times 16 &&\justif{$\|2\vect{v}\|^{2}=4\|\vect{v}\|^{2}$}\\
+\|\vect{u}-2\vect{v}\|^{2} &= \res{56} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Décomposer par la relation de Chasles]
+\cas{1.}
+\begin{center}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \path ($(A)!1/3!(E)$) coordinate (I) node[croix]{} node[left,font=\footnotesize]{$I$}
+        ($(F)!0.5!(G)$) coordinate (J) node[croix]{} node[below right,font=\footnotesize]{$J$};
+  \draw[coulExo,thick] (B)--(I) (B)--(J);
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\explique{$\vect{AI}=\frac{1}{3}\vect{AE}$ et $\vect{FJ}=\frac{1}{2}\vect{BC}$ ; les arêtes
+issues d'un même sommet sont perpendiculaires.}{}
+\begin{calculs}
+\vect{BI}\cdot\vect{BJ} &= \left(\vect{BA}+\vect{AI}\right)\cdot\left(\vect{BF}+\vect{FJ}\right) &&\\
+\vect{BI}\cdot\vect{BJ} &= \vect{BA}\cdot\vect{BF}+\vect{BA}\cdot\vect{FJ}+\vect{AI}\cdot\vect{BF}+\vect{AI}\cdot\vect{FJ} &&\justif{bilinéarité}\\
+\vect{BI}\cdot\vect{BJ} &= 0+0+\frac{1}{3}\vect{AE}\cdot\vect{AE}+0 &&\justif{$\vect{BF}=\vect{AE}$}\\
+\vect{BI}\cdot\vect{BJ} &= \frac{1}{3}\times 9 &&\\
+\vect{BI}\cdot\vect{BJ} &= \res{3} &&
+\end{calculs}
+\cas{3.}
+\explique{Le triangle $ABI$ est rectangle en $A$ avec $AB=3$ et $AI=1$ :
+$BI=\sqrt{9+1}=\res{\sqrt{10}}$.}{Pythagore}
+\explique{Le triangle $BFJ$ est rectangle en $F$ avec $BF=3$ et $FJ=\frac{3}{2}$ :
+$BJ=\sqrt{9+\frac{9}{4}}$, soit $BJ=\sqrt{\frac{45}{4}}=\res{\frac{3\sqrt{5}}{2}}$.}{}
+\cas{4.}
+\explique{$\cos\widehat{IBJ}=\dfrac{3}{\sqrt{10}\times\frac{3\sqrt{5}}{2}}=\dfrac{2}{\sqrt{50}}$,
+d'où $\widehat{IBJ}\approx\res{73{,}6^{\circ}}$.}{calculatrice}
+\end{exo}
+
+\begin{exo}[Vecteurs de même norme]
+\cas{1.}
+\begin{calculs}
+(\vect{u}+\vect{v})\cdot(\vect{u}-\vect{v}) &= \vect{u}\cdot\vect{u}-\vect{u}\cdot\vect{v}+\vect{v}\cdot\vect{u}-\vect{v}\cdot\vect{v} &&\justif{bilinéarité}\\
+(\vect{u}+\vect{v})\cdot(\vect{u}-\vect{v}) &= \|\vect{u}\|^{2}-\|\vect{v}\|^{2} &&\justif{symétrie : $\vect{v}\cdot\vect{u}=\vect{u}\cdot\vect{v}$}
+\end{calculs}
+\cas{2.}
+\explique{Si $\|\vect{u}\|=\|\vect{v}\|$, le produit scalaire vaut $0$ : \res{$\vect{u}+\vect{v}$
+et $\vect{u}-\vect{v}$ sont orthogonaux}.}{}
+\cas{3.}
+\explique{$\vect{AB}+\vect{AD}=\vect{AC}$ (règle du parallélogramme) et
+$\vect{AB}-\vect{AD}=\vect{DB}$.}{un losange est un parallélogramme}
+\explique{Les côtés d'un losange ont la même longueur : $\|\vect{AB}\|=\|\vect{AD}\|$.
+D'après 2., $\vect{AC}$ et $\vect{DB}$ sont orthogonaux : \res{les diagonales sont
+perpendiculaires} (elles se coupent en leur milieu).}{}
+\end{exo}
+
+\partie{Produit scalaire dans un repère orthonormé}
+
+\begin{exo}[Nature d'un triangle]
+\cas{1.}
+\explique{$\vect{AB}\begin{pmatrix}2\\2\\-1\end{pmatrix}$, $\vect{AC}\begin{pmatrix}1\\-2\\-2\end{pmatrix}$ et
+$\vect{BC}\begin{pmatrix}-1\\-4\\-1\end{pmatrix}$ ; le repère est orthonormé.}{}
+\explique{$AB=\sqrt{4+4+1}=\res{3}$, $AC=\sqrt{1+4+4}=\res{3}$ et
+$BC=\sqrt{18}=\res{3\sqrt{2}}$.}{}
+\cas{2.}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= 2\times 1+2\times(-2)+(-1)\times(-2) &&\\
+\vect{AB}\cdot\vect{AC} &= \res{0} &&
+\end{calculs}
+\cas{3.}
+\explique{$\vect{AB}$ et $\vect{AC}$ sont orthogonaux et $AB=AC$ : \res{le triangle $ABC$
+est rectangle et isocèle en $A$}.}{contrôle : $AB^{2}+AC^{2}=18=BC^{2}$}
+\end{exo}
+
+\begin{exo}[Calculer un angle]
+\cas{a)}
+\explique{$\vect{AB}\begin{pmatrix}2\\0\\1\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}0\\3\\4\end{pmatrix}$ :
+$\vect{AB}\cdot\vect{AC}=0+0+4=\res{4}$, $AB=\sqrt{5}$ et $AC=5$.}{}
+\explique{$\cos\widehat{BAC}=\dfrac{4}{5\sqrt{5}}$, d'où $\widehat{BAC}\approx\res{69{,}0^{\circ}}$.}{calculatrice}
+\cas{b)}
+\explique{$\vect{AB}\begin{pmatrix}2\\-2\\1\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}-3\\0\\4\end{pmatrix}$ :
+$\vect{AB}\cdot\vect{AC}=-6+0+4=\res{-2}$, $AB=3$ et $AC=5$.}{}
+\explique{$\cos\widehat{BAC}=-\dfrac{2}{15}$, d'où $\widehat{BAC}\approx\res{97{,}7^{\circ}}$.}{produit
+scalaire négatif : angle obtus}
+\end{exo}
+
+\begin{exo}[Les grandes diagonales d'un cube]
+\cas{1.}
+\explique{\res{$A(1\,;0\,;0)$}, \res{$B(1\,;1\,;0)$}, \res{$G(0\,;1\,;1)$} et
+\res{$H(0\,;0\,;1)$}.}{$\vect{DB}=\vect{DA}+\vect{DC}$, $\vect{DG}=\vect{DC}+\vect{DH}$}
+\cas{2.}
+\explique{\res{$\vect{AG}\begin{pmatrix}-1\\1\\1\end{pmatrix}$}, \res{$\vect{BH}\begin{pmatrix}-1\\-1\\1\end{pmatrix}$}
+et $AG=\sqrt{1+1+1}=\res{\sqrt{3}}$.}{}
+\cas{3.}
+\explique{$\vect{AG}\cdot\vect{BH}=1-1+1=\res{1}$.}{}
+\cas{4.}
+\explique{$BH=\sqrt{3}$, donc $\cos\left(\vect{AG},\vect{BH}\right)=\dfrac{1}{\sqrt{3}\times\sqrt{3}}=\dfrac{1}{3}$.}{}
+\explique{L'angle aigu formé par les droites mesure environ \res{$70{,}5^{\circ}$}.}{cosinus positif : angle aigu}
+\end{exo}
+
+\begin{exo}[Un studio photo]
+\cas{1.}
+\explique{\res{$A(0\,;0\,;0)$}, \res{$B(6\,;0\,;0)$} et \res{$O(3\,;2\,;3)$}.}{$O$ : milieu de $[EG]$, avec $E(0\,;0\,;3)$ et $G(6\,;4\,;3)$}
+\cas{2.}
+\explique{$\vect{OA}\begin{pmatrix}-3\\-2\\-3\end{pmatrix}$ et $\vect{OB}\begin{pmatrix}3\\-2\\-3\end{pmatrix}$ :
+$OA=\sqrt{9+4+9}=\res{\sqrt{22}}$\,m et $OB=\res{\sqrt{22}}$\,m.}{}
+\cas{3.}
+\explique{$\vect{OA}\cdot\vect{OB}=-9+4+9=4$, donc
+$\cos\widehat{AOB}=\dfrac{4}{22}=\dfrac{2}{11}$ et $\widehat{AOB}\approx\res{79{,}5^{\circ}}$.}{calculatrice}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{$\vect{CA}\begin{pmatrix}1{,}5\\3\\3\end{pmatrix}$ et $\vect{CB}\begin{pmatrix}0{,}5\\4\\-2\end{pmatrix}$ :
+$\vect{CA}\cdot\vect{CB}=0{,}75+12-6=6{,}75$.}{}
+\explique{$CA=\sqrt{2{,}25+9+9}=\sqrt{20{,}25}=4{,}5$ et $CB=\sqrt{0{,}25+16+4}=4{,}5$.}{}
+\explique{$\cos\widehat{ACB}=\dfrac{6{,}75}{4{,}5\times 4{,}5}=\dfrac{1}{3}$, d'où
+$\widehat{ACB}\approx 70{,}5^{\circ}$ : l'affirmation est \res{vraie}.}{}
+\cas{2.}
+\explique{$\vect{AO}\begin{pmatrix}-1\\-1\\0\end{pmatrix}$ et $\vect{AB}\begin{pmatrix}1\\0\\0\end{pmatrix}$ :
+$\vect{AO}\cdot\vect{AB}=-1$, $AO=\sqrt{2}$ et $AB=1$.}{}
+\explique{$\cos\widehat{OAB}=-\dfrac{1}{\sqrt{2}}=-\dfrac{\sqrt{2}}{2}$, donc
+$\widehat{OAB}=\frac{3\pi}{4}$, soit $135^{\circ}$ : l'affirmation est \res{vraie}.}{$\pi-\frac{\pi}{4}$}
+\end{exo}
+
+\partie{Droites orthogonales, droite orthogonale à un plan}
+
+\begin{exo}[Vecteurs orthogonaux]
+\cas{1. a)}
+\explique{$\vect{u}\cdot\vect{v}=6-4-2=0$ : \res{orthogonaux}.}{}
+\cas{b)}
+\explique{$\vect{u}\cdot\vect{v}=-2+0+2=0$ : \res{orthogonaux}.}{}
+\cas{c)}
+\explique{$\vect{u}\cdot\vect{v}=4-6-2=-4\neq 0$ : \res{non orthogonaux}.}{}
+\cas{2. a)}
+\begin{calculs}
+1\times m+m\times 2+3\times(-4) &= 0 &&\justif{$\vect{u}\cdot\vect{v}=0$}\\
+\iff 3m-12 &= 0 &&\\
+\iff m &= \res{4} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+m\times m+2\times(-3)+(-1)\times m &= 0 &&\\
+\iff m^{2}-m-6 &= 0 &&\\
+\iff (m-3)(m+2) &= 0 &&\justif{ou par le discriminant : $\Delta=25$}
+\end{calculs}
+\explique{C'est une équation produit : \res{$m=3$ ou $m=-2$}.}{}
+\end{exo}
+
+\begin{exo}[Orthogonales, mais perpendiculaires ?]
+\cas{1.}
+\explique{$\vect{AB}\begin{pmatrix}1\\2\\-1\end{pmatrix}$ et $\vect{CD}\begin{pmatrix}1\\-1\\-1\end{pmatrix}$ :
+$\vect{AB}\cdot\vect{CD}=1-2+1=0$.}{}
+\explique{Les vecteurs directeurs sont orthogonaux : \res{$(AB)$ et $(CD)$ sont
+orthogonales}.}{}
+\cas{2.}
+\explique{\res{$(AB)\colon\left\{\begin{array}{l} x=1+t\\ y=2t\\ z=2-t\end{array}\right.$ ($t\in\R$)} et
+\res{$(CD)\colon\left\{\begin{array}{l} x=4+s\\ y=-1-s\\ z=3-s\end{array}\right.$ ($s\in\R$)}.}{ch. 4}
+\cas{3.}
+\explique{Elles sont perpendiculaires si elles sont aussi sécantes. On cherche $t$ et
+$s$ donnant le même point :}{}
+\begin{calculs}
+& \accol{1+t &=& 4+s\\ 2t &=& -1-s\\ 2-t &=& 3-s} &&\\
+\iff & \accol{t &=& 3+s\\ 6+2s &=& -1-s\\ 2-3-s &=& 3-s} &&\justif{on remplace $t$ par $3+s$}\\
+\iff & \accol{t &=& 3+s\\ 3s &=& -7\\ -1 &=& 3} &&\justif{la dernière ligne est fausse}
+\end{calculs}
+\explique{Ces équations sont incompatibles : les droites n'ont aucun point commun.
+\res{Elles ne sont pas perpendiculaires} (elles sont non coplanaires).}{}
+\end{exo}
+
+\begin{exo}[Le vocabulaire de l'orthogonalité]
+\cas{a)}
+\explique{$(CG)$ est parallèle à $(BF)$, et $(AB)\perp(BF)$ dans la face $ABFE$ :
+\res{vrai}, les droites $(AB)$ et $(CG)$ sont orthogonales.}{même direction que $(BF)$}
+\cas{b)}
+\explique{\res{Faux} : les droites $(AB)$ et $(CG)$ ne sont pas sécantes (elles sont non
+coplanaires), donc elles ne sont pas perpendiculaires.}{perpendiculaires = orthogonales et sécantes}
+\cas{c)}
+\explique{\res{Vrai} : la droite $(FG)$ est perpendiculaire aux droites $(FB)$ et $(FE)$,
+qui sont sécantes et contenues dans le plan $(ABF)$.}{propriété 4 du cours}
+\cas{d)}
+\explique{\res{Faux} : une seule droite du plan ne suffit pas. D'ailleurs, $(FG)$ n'est pas
+orthogonale à $(FH)$, autre droite du plan $(HFB)$ (l'angle $\widehat{GFH}$ mesure
+$45^{\circ}$).}{il faut deux droites sécantes}
+\cas{e)}
+\explique{\res{Vrai} : $(EG)\perp(HF)$ (diagonales du carré $EFGH$) et $(EG)$ est orthogonale
+à $(FB)$, elle-même orthogonale à la face $EFGH$ ; $(HF)$ et $(FB)$ sont sécantes dans le
+plan $(HFB)$.}{propriété 4 du cours}
+\end{exo}
+
+\begin{exo}[Une arête orthogonale à l'arête opposée]
+\cas{1.}
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize]
+  \coordinate (B) at (0,0); \coordinate (C) at (3.2,0.1);
+  \coordinate (D) at (2.2,1.1); \coordinate (A) at (1.2,3);
+  \coordinate (I) at ($(B)!0.5!(C)$);
+  \draw (A)--(B)--(C)--cycle (A)--(D)--(C);
+  \draw[dashed] (B)--(D) (D)--(I);
+  \draw[coulExo] (A)--(I);
+  \path (A) node[above]{$A$} (B) node[left]{$B$} (C) node[right]{$C$}
+        (D) node[above right]{$D$} (I) node[croix]{} node[below]{$I$};
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\explique{Le triangle $ABC$ est isocèle en $A$ : sa médiane $(AI)$ est aussi sa hauteur,
+donc $(AI)\perp(BC)$.}{}
+\explique{De même, le triangle $DBC$ est isocèle en $D$ : $(DI)\perp(BC)$.}{}
+\cas{3.}
+\explique{La droite $(BC)$ est orthogonale aux droites $(AI)$ et $(DI)$, qui sont sécantes
+en $I$ et contenues dans le plan $(AID)$ : $(BC)$ est orthogonale au plan $(AID)$.}{propriété 4
+du cours}
+\cas{4.}
+\explique{Une droite orthogonale à un plan est orthogonale à toutes les droites de ce
+plan ; $(AD)$ est contenue dans $(AID)$, donc \res{$(BC)$ et $(AD)$ sont orthogonales}.}{définition 5}
+\end{exo}
+
+\partie{Vecteur normal à un plan}
+
+\begin{exo}[Une diagonale du cube]
+\cas{1.}
+\begin{center}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \fill[coulExo,opacity=0.12] (E)--(B)--(G)--cycle;
+  \draw[coulExo] (E)--(B)--(G)--cycle;
+  \draw[coulCourbe,thick,dashed] (D)--(F);
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\explique{\res{$B(1\,;0\,;0)$}, \res{$D(0\,;1\,;0)$}, \res{$E(0\,;0\,;1)$}, \res{$F(1\,;0\,;1)$} et
+\res{$G(1\,;1\,;1)$}.}{}
+\cas{3.}
+\explique{$\vect{DF}\begin{pmatrix}1\\-1\\1\end{pmatrix}$, $\vect{EB}\begin{pmatrix}1\\0\\-1\end{pmatrix}$ et
+$\vect{EG}\begin{pmatrix}1\\1\\0\end{pmatrix}$ ; $\vect{EB}$ et $\vect{EG}$ ne sont pas colinéaires (cote nulle pour l'un
+seulement).}{}
+\explique{$\vect{DF}\cdot\vect{EB}=1+0-1=0$ et $\vect{DF}\cdot\vect{EG}=1-1+0=0$.}{repère orthonormé}
+\explique{$\vect{DF}$ est orthogonal à deux vecteurs non colinéaires du plan $(EBG)$ : il
+est normal à ce plan.}{propriété 5}
+\cas{4.}
+\explique{La droite $(DF)$, dirigée par un vecteur normal, est \res{orthogonale au plan
+$(EBG)$}.}{définition 6}
+\end{exo}
+
+\begin{exo}[Orthogonale au plan ?]
+\explique{Dans chaque cas, $\vect{AB}$ et $\vect{AC}$ ne sont pas colinéaires (coordonnées non
+proportionnelles) ; on calcule $\vect{u}\cdot\vect{AB}$ et $\vect{u}\cdot\vect{AC}$.}{propriété 5}
+\cas{a)}
+\explique{$\vect{u}\cdot\vect{AB}=2+1-3=0$ et $\vect{u}\cdot\vect{AC}=6+0-6=0$ :
+\res{$(d)$ est orthogonale au plan $(ABC)$}.}{}
+\cas{b)}
+\explique{$\vect{u}\cdot\vect{AB}=2-2+0=0$, mais $\vect{u}\cdot\vect{AC}=0-6+0=-6\neq 0$ :
+\res{$(d)$ n'est pas orthogonale au plan $(ABC)$}.}{une seule condition ne suffit pas}
+\cas{c)}
+\explique{$\vect{u}\cdot\vect{AB}=1-1+0=0$ et $\vect{u}\cdot\vect{AC}=2+1-3=0$ :
+\res{$(d)$ est orthogonale au plan $(ABC)$}.}{}
+\end{exo}
+
+\begin{exo}[Trouver un vecteur normal]
+\cas{a)}
+\explique{$\vect{AB}\begin{pmatrix}1\\1\\0\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}-1\\2\\1\end{pmatrix}$ ne sont pas
+colinéaires ($\frac{1}{-1}\neq\frac{1}{2}$) : $A$, $B$, $C$ définissent un plan. On cherche
+$\vect{n}\begin{pmatrix}a\\b\\c\end{pmatrix}$ non nul orthogonal à $\vect{AB}$ et $\vect{AC}$ :}{}
+\begin{calculs}
+& \accol{a+b &=& 0\\ -a+2b+c &=& 0} &&\justif{$\vect{n}\cdot\vect{AB}=0$, $\vect{n}\cdot\vect{AC}=0$}\\
+\iff & \accol{b &=& -a\\ -a-2a+c &=& 0} &&\justif{on remplace $b$ par $-a$}\\
+\iff & \accol{b &=& -a\\ c &=& 3a} &&
+\end{calculs}
+\explique{Avec $a=1$ : \res{$\vect{n}\begin{pmatrix}1\\-1\\3\end{pmatrix}$} est normal au plan $(ABC)$.}{contrôle :
+$-1-2+3=0$}
+\cas{b)}
+\explique{$\vect{AB}\begin{pmatrix}2\\-1\\2\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}1\\2\\-1\end{pmatrix}$ ne sont pas
+colinéaires : $A$, $B$, $C$ définissent un plan.}{}
+\begin{calculs}
+& \accol{2a-b+2c &=& 0\\ a+2b-c &=& 0} &&\\
+\iff & \accol{2a-b+2(a+2b) &=& 0\\ c &=& a+2b} &&\justif{on isole $c$ dans la seconde}\\
+\iff & \accol{4a+3b &=& 0\\ c &=& a+2b} &&\\
+\iff & \accol{b &=& -\frac{4}{3}a\\ c &=& a+2b} &&
+\end{calculs}
+\explique{Avec $a=3$ : $b=-4$ et $c=3-8=-5$ ;
+\res{$\vect{n}\begin{pmatrix}3\\-4\\-5\end{pmatrix}$} est normal au plan $(ABC)$.}{contrôle : $6+4-10=0$ et $3-8+5=0$}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{$\vect{SA}\begin{pmatrix}3\\0\\3\end{pmatrix}$, $\vect{AB}\begin{pmatrix}-1\\0\\1\end{pmatrix}$ et
+$\vect{AC}\begin{pmatrix}0\\-\sqrt{2}\\0\end{pmatrix}$.}{}
+\explique{$\vect{SA}\cdot\vect{AB}=-3+0+3=0$ et $\vect{SA}\cdot\vect{AC}=0$ ; $\vect{AB}$ et
+$\vect{AC}$ ne sont pas colinéaires ($A$, $B$, $C$ non alignés).}{}
+\explique{L'affirmation est \res{vraie}.}{propriété 5}
+\cas{2.}
+\explique{$\vect{AB}\begin{pmatrix}1\\0\\0\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}\alpha-1\\2\\\alpha\end{pmatrix}$ ne sont jamais
+colinéaires (ordonnée nulle pour l'un, $2$ pour l'autre) : les points définissent bien un
+plan.}{}
+\explique{Mais $\vect{j}\cdot\vect{AC}=2\neq 0$ : $\vect{j}$ n'est pas normal au plan.
+L'affirmation est \res{fausse}.}{}
+\end{exo}
+
+\partie{Équation cartésienne d'un plan}
+
+\begin{exo}[Lire une équation cartésienne]
+\cas{1.}
+\explique{\res{$\vect{n}\begin{pmatrix}3\\-1\\2\end{pmatrix}$} et, par exemple,
+\res{$-\vect{n}\begin{pmatrix}-3\\1\\-2\end{pmatrix}$}.}{coefficients de $x$, $y$, $z$ ; tout vecteur colinéaire non nul}
+\cas{2.}
+\explique{$A$ : $3-1+2-4=0$, donc \res{$A\in\mathcal{P}$} ; $B$ : $6-0-2-4=0$, donc
+\res{$B\in\mathcal{P}$} ; $C$ : $3-2+6-4=3\neq 0$, donc \res{$C\notin\mathcal{P}$}.}{on remplace
+$x$, $y$, $z$}
+\cas{3.}
+\explique{Avec $x=0$ et $y=0$ : $2z-4=0$, donc $z=2$ ; c'est le point \res{$(0\,;0\,;2)$}.}{}
+\end{exo}
+
+\begin{exo}[Un point et un vecteur normal]
+\cas{a)}
+\explique{$2x-y+3z+d=0$ ; $A$ : $2-2-3+d=0$, donc $d=3$ :
+\res{$2x-y+3z+3=0$}.}{théorème 1}
+\cas{b)}
+\explique{$x+4y-2z+d=0$ ; $O$ : $d=0$ : \res{$x+4y-2z=0$}.}{}
+\cas{c)}
+\explique{$z+d=0$ ; $A$ : $5+d=0$, donc $d=-5$ : \res{$z-5=0$}.}{plan parallèle au plan $(O\,;\vect{i},\vect{j})$}
+\cas{d)}
+\explique{$3x+y+d=0$ ; $A$ : $-3+2+d=0$, donc $d=1$ : \res{$3x+y+1=0$}.}{pas de $z$ : le coefficient est nul}
+\end{exo}
+
+\begin{exo}[Le plan passant par trois points]
+\cas{1.}
+\explique{$\vect{AB}\begin{pmatrix}1\\1\\-1\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}-1\\2\\1\end{pmatrix}$ ne sont pas
+colinéaires ($\frac{1}{-1}\neq\frac{1}{2}$) : \res{$A$, $B$, $C$ définissent un plan}.}{}
+\cas{2.}
+\begin{calculs}
+& \accol{a+b-c &=& 0\\ -a+2b+c &=& 0} &&\justif{$\vect{n}\cdot\vect{AB}=0$, $\vect{n}\cdot\vect{AC}=0$}\\
+\iff & \accol{a+b-c &=& 0\\ 3b &=& 0} &&\justif{on ajoute les deux lignes}\\
+\iff & \accol{c &=& a\\ b &=& 0} &&
+\end{calculs}
+\explique{Avec $a=1$ : \res{$\vect{n}\begin{pmatrix}1\\0\\1\end{pmatrix}$}.}{}
+\cas{3.}
+\explique{$x+z+d=0$ ; $A$ : $1+1+d=0$, donc $d=-2$ : \res{$x+z-2=0$}.}{contrôle avec $B$ : $2+0-2=0$}
+\cas{4.}
+\explique{$D$ : $3-1-2=0$, donc \res{$D\in(ABC)$} ; $E$ : $1+2-2=1\neq 0$, donc
+\res{$E\notin(ABC)$}.}{}
+\end{exo}
+
+\begin{exo}[Plans définis par une condition]
+\cas{1.}
+\explique{$\mathcal{Q}$ est parallèle à $\mathcal{P}$ : $\vect{n}\begin{pmatrix}2\\-1\\1\end{pmatrix}$ est aussi normal à
+$\mathcal{Q}$, d'équation $2x-y+z+d=0$.}{propriété 7}
+\explique{$A$ : $2+1+2+d=0$, donc $d=-5$ : \res{$\mathcal{Q}\colon 2x-y+z-5=0$}.}{}
+\cas{2.}
+\explique{$\vect{CD}\begin{pmatrix}1\\2\\-2\end{pmatrix}$ est normal à $\mathcal{R}$ : $x+2y-2z+d=0$ ;
+$B$ : $3+0+2+d=0$, donc $d=-5$ : \res{$\mathcal{R}\colon x+2y-2z-5=0$}.}{}
+\cas{3.}
+\explique{Milieu $I(3\,;-1\,;1)$ de $[EF]$ ; $\vect{EF}\begin{pmatrix}2\\-4\\4\end{pmatrix}$, donc
+$\frac{1}{2}\vect{EF}\begin{pmatrix}1\\-2\\2\end{pmatrix}$ est normal à $\mathcal{M}$.}{}
+\explique{$x-2y+2z+d=0$ ; $I$ : $3+2+2+d=0$, donc $d=-7$ :
+\res{$\mathcal{M}\colon x-2y+2z-7=0$}.}{}
+\cas{4.}
+\explique{Des longueurs sont positives, donc $ME=MF$ équivaut à $ME^{2}=MF^{2}$.}{}
+\begin{calculs}
+ME^{2} &= (x-2)^{2}+(y-1)^{2}+(z+1)^{2} &&\\
+ME^{2} &= x^{2}+y^{2}+z^{2}-4x-2y+2z+6 &&
+\end{calculs}
+\begin{calculs}
+MF^{2} &= (x-4)^{2}+(y+3)^{2}+(z-3)^{2} &&\\
+MF^{2} &= x^{2}+y^{2}+z^{2}-8x+6y-6z+34 &&
+\end{calculs}
+\begin{calculs}
+ME^{2} &= MF^{2} &&\\
+\iff -4x-2y+2z+6 &= -8x+6y-6z+34 &&\justif{on retire $x^{2}+y^{2}+z^{2}$}\\
+\iff 4x-8y+8z-28 &= 0 &&\\
+\iff x-2y+2z-7 &= 0 &&\justif{on divise par $4$}
+\end{calculs}
+\explique{On retrouve l'équation de $\mathcal{M}$ : \res{le plan médiateur de $[EF]$ est
+l'ensemble des points équidistants de $E$ et $F$}.}{}
+\end{exo}
+
+\begin{exo}[Des plans dans un cube]
+\cas{1.}
+\begin{center}
+\begin{tikzpicture}
+  \cubeespace{2.2}
+  \fill[coulExo,opacity=0.12] (B)--(C)--(H)--(E)--cycle;
+  \draw[coulExo] (B)--(C) (E)--(B);
+  \draw[coulCourbe,thick,dashed] (D)--(F);
+  \path ($(D)!0.5!(F)$) node[croix]{};
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\explique{$(AB)$ est orthogonale à $(BC)$ et à $(BF)$, sécantes dans le plan $(BCF)$ :
+$\vect{AB}\begin{pmatrix}1\\0\\0\end{pmatrix}$ est normal à $(BCF)$.}{propriété 4}
+\explique{$x+d=0$ ; $B(1\,;0\,;0)$ : $d=-1$ : \res{$(BCF)\colon x-1=0$}.}{}
+\cas{3.}
+\explique{$\vect{BC}\begin{pmatrix}0\\1\\0\end{pmatrix}$ et $\vect{BE}\begin{pmatrix}-1\\0\\1\end{pmatrix}$, non colinéaires :}{}
+\begin{calculs}
+& \accol{b &=& 0\\ -a+c &=& 0} &&\justif{$\vect{n}\cdot\vect{BC}=0$, $\vect{n}\cdot\vect{BE}=0$}\\
+\iff & \accol{b &=& 0\\ c &=& a} &&
+\end{calculs}
+\explique{Avec $a=1$ : \res{$\vect{n}\begin{pmatrix}1\\0\\1\end{pmatrix}$} ; $x+z+d=0$ ; $B$ : $1+d=0$ :
+\res{$(BCE)\colon x+z-1=0$}.}{contrôle avec $E(0\,;0\,;1)$}
+\cas{4.}
+\explique{$\vect{DF}\begin{pmatrix}1\\-1\\1\end{pmatrix}$ : $\vect{DF}\cdot\vect{n}=1+0+1=2\neq 0$, donc la
+droite et le plan sont sécants.}{propriété 6}
+\explique{$(DF)\colon x=t$, $y=1-t$, $z=t$ ($t\in\R$). Dans l'équation du plan :}{}
+\begin{calculs}
+t+t-1 &= 0 &&\\
+\iff t &= \frac{1}{2} &&
+\end{calculs}
+\explique{Le point d'intersection est \res{$\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$} :
+c'est \res{le centre du cube} (milieu de ses grandes diagonales).}{}
+\end{exo}
+
+\begin{exo}[Droites et plan]
+\explique{$\vect{n}\begin{pmatrix}1\\2\\-1\end{pmatrix}$ est normal à $\mathcal{P}$.}{}
+\cas{a)}
+\explique{$\vect{u_{1}}\begin{pmatrix}1\\1\\3\end{pmatrix}$ : $\vect{u_{1}}\cdot\vect{n}=1+2-3=0$, $(d_{1})$ est
+parallèle à $\mathcal{P}$. Son point $(1\,;-1\,;2)$ : $1-2-2+3=0$, il est dans
+$\mathcal{P}$.}{propriété 6}
+\explique{\res{$(d_{1})$ est contenue dans $\mathcal{P}$}.}{}
+\cas{b)}
+\explique{$\vect{u_{2}}\begin{pmatrix}-1\\2\\3\end{pmatrix}$ : $-1+4-3=0$, parallèle ; son point
+$(2\,;1\,;0)$ : $2+2-0+3=7\neq 0$ : \res{$(d_{2})$ est strictement parallèle à
+$\mathcal{P}$}.}{}
+\cas{c)}
+\explique{$\vect{u_{3}}\begin{pmatrix}1\\1\\-2\end{pmatrix}$ : $1+2+2=5\neq 0$, sécants.}{}
+\begin{calculs}
+(3+t)+2t-(1-2t)+3 &= 0 &&\justif{on remplace $x$, $y$, $z$}\\
+\iff 5+5t &= 0 &&\\
+\iff t &= -1 &&
+\end{calculs}
+\explique{Point d'intersection : \res{$(2\,;-1\,;3)$}.}{contrôle : $2-2-3+3=0$}
+\cas{d)}
+\explique{$(d_{4})$ est dirigée par $\vect{n}$ : $x=1+t$, $y=2t$, $z=-t$ ($t\in\R$) ; elle est
+sécante à $\mathcal{P}$ ($\vect{n}\cdot\vect{n}\neq 0$).}{}
+\begin{calculs}
+(1+t)+4t+t+3 &= 0 &&\\
+\iff 6t+4 &= 0 &&\\
+\iff t &= -\frac{2}{3} &&
+\end{calculs}
+\explique{Point d'intersection :
+\res{$\left(\frac{1}{3}\,;-\frac{4}{3}\,;\frac{2}{3}\right)$}.}{c'est le projeté orthogonal de $A$ sur $\mathcal{P}$}
+\end{exo}
+
+\begin{exo}[Positions relatives de deux plans]
+\explique{Vecteurs normaux : $\vect{n_{1}}\begin{pmatrix}1\\-2\\1\end{pmatrix}$,
+$\vect{n_{2}}\begin{pmatrix}1\\1\\1\end{pmatrix}$, $\vect{n_{3}}\begin{pmatrix}-2\\4\\-2\end{pmatrix}$,
+$\vect{n_{4}}\begin{pmatrix}3\\-6\\3\end{pmatrix}$, $\vect{n_{5}}\begin{pmatrix}1\\1\\-1\end{pmatrix}$.}{propriété 7}
+\cas{$\mathcal{P}_{2}$}
+\explique{$\vect{n_{1}}\cdot\vect{n_{2}}=1-2+1=0$ : \res{$\mathcal{P}_{1}$ et $\mathcal{P}_{2}$ sont
+perpendiculaires} (donc sécants).}{}
+\cas{$\mathcal{P}_{3}$}
+\explique{$\vect{n_{3}}=-2\vect{n_{1}}$ : plans parallèles ; le point $(1\,;0\,;0)$ de
+$\mathcal{P}_{1}$ vérifie $-2+0-0+2=0$ : \res{$\mathcal{P}_{1}$ et $\mathcal{P}_{3}$ sont
+confondus}.}{l'équation de $\mathcal{P}_{3}$ est celle de $\mathcal{P}_{1}$ multipliée par $-2$}
+\cas{$\mathcal{P}_{4}$}
+\explique{$\vect{n_{4}}=3\vect{n_{1}}$ : parallèles ; $(1\,;0\,;0)$ donne $3+1=4\neq 0$ :
+\res{strictement parallèles}.}{}
+\cas{$\mathcal{P}_{5}$}
+\explique{$\vect{n_{5}}$ n'est pas colinéaire à $\vect{n_{1}}$ : plans sécants ;
+$\vect{n_{1}}\cdot\vect{n_{5}}=1-2-1=-2\neq 0$ : \res{sécants, non perpendiculaires}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Polynésie : deux avions]
+\cas{1.}
+\explique{Le sol a pour équation $z=0$ : $11-4t=0$, donc $t=\frac{11}{4}$.}{}
+\explique{$x=-11+5\times\frac{11}{4}=\frac{11}{4}$ et $y=-5+\frac{11}{4}=-\frac{9}{4}$ :
+\res{$S\left(\frac{11}{4}\,;-\frac{9}{4}\,;0\right)$}.}{}
+\cas{2. a)}
+\explique{\res{$d_{A}\colon\left\{\begin{array}{l} x=-7+2s\\ y=1-s\\ z=7-3s\end{array}\right.$ ($s\in\R$)}.}{passe par $A$, dirigée par $\vect{u}$}
+\cas{b)}
+\explique{Les avions peuvent entrer en collision si les droites sont sécantes :}{}
+\begin{calculs}
+& \accol{-11+5t &=& -7+2s\\ -5+t &=& 1-s\\ 11-4t &=& 7-3s} &&\\
+\iff & \accol{-11+5(6-s) &=& -7+2s\\ t &=& 6-s\\ 11-4(6-s) &=& 7-3s} &&\justif{on isole $t$}\\
+\iff & \accol{7s &=& 26\\ t &=& 6-s\\ 7s &=& 20} &&
+\end{calculs}
+\explique{Deux valeurs de $s$ différentes : ces équations sont incompatibles. \res{Les
+avions ne peuvent pas entrer en collision}.}{}
+\cas{3. a)}
+\explique{$-3=-7+2s$, $-1=1-s$ et $1=7-3s$ donnent toutes $s=2$ : \res{l'avion Alpha passe
+par $E$}.}{une seule valeur pour les trois}
+\cas{b)}
+\explique{$P_{E}$ est perpendiculaire à $d_{A}$ : $\vect{u}$ lui est normal, d'où
+$2x-y-3z+d=0$ ; $E$ : $-6+1-3+d=0$, donc $d=8$ : \res{$2x-y-3z+8=0$}.}{}
+\cas{c)}
+\begin{calculs}
+2(-11+5t)-(-5+t)-3(11-4t)+8 &= 0 &&\\
+\iff 21t-42 &= 0 &&\\
+\iff t &= 2 &&
+\end{calculs}
+\explique{Pour $t=2$ : $x=-1$, $y=-3$, $z=3$ : \res{c'est bien $F$}.}{}
+\cas{d)}
+\explique{$\vect{EF}\begin{pmatrix}2\\-2\\2\end{pmatrix}$, donc $EF=\sqrt{12}=\res{2\sqrt{3}}$\,km, soit
+environ \res{$3\,464$\,m}.}{$2\sqrt{3}\approx 3{,}4641$}
+\cas{4.}
+\explique{$3$ milles nautiques valent $3\times 1\,852=5\,556$\,m. Or $3\,464<5\,556$ :
+\res{la distance de sécurité n'est pas respectée}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{$\vect{AB}\begin{pmatrix}-1\\1\\-5\end{pmatrix}$ est le vecteur normal lu dans l'équation : le plan est
+orthogonal à $(AB)$.}{}
+\explique{Milieu de $[AB]$ : $(2{,}5\,;0{,}5\,;-0{,}5)$ ;
+$-2{,}5+0{,}5+2{,}5-0{,}5=0$. L'affirmation est \res{vraie}.}{}
+\cas{2.}
+\explique{$(d)$ est dirigée par $\begin{pmatrix}-2\\0\\-6\end{pmatrix}$, colinéaire à
+$\vect{n}\begin{pmatrix}1\\0\\3\end{pmatrix}$ ; le plan a une équation $x+3z+d=0$ et $A$ donne
+$3-6+d=0$, $d=3$.}{}
+\explique{L'affirmation est \res{vraie}.}{}
+\cas{3.}
+\explique{$\vect{u}\begin{pmatrix}-1\\\sqrt{2}\\-1\end{pmatrix}$ dirige $d$ et $\vect{n}\begin{pmatrix}1\\0\\-1\end{pmatrix}$ est
+normal à $P$ : $\vect{u}\cdot\vect{n}=-1+0+1=0$.}{propriété 6}
+\explique{L'affirmation est \res{vraie} ; le point $(2\,;0\,;-1)$ de $d$ donne
+$2+1+1=4\neq 0$ : $d$ est même strictement parallèle à $P$.}{}
+\end{exo}
+
+\partie{Projeté orthogonal et distances}
+
+\begin{exo}[Distance d'un point à un plan]
+\cas{a)}
+\explique{La droite passant par $M$ et orthogonale à $\mathcal{P}$ est dirigée par
+$\vect{n}\begin{pmatrix}2\\-1\\2\end{pmatrix}$ : $x=3+2t$, $y=-3-t$, $z=3+2t$ ($t\in\R$).}{méthode 9}
+\begin{calculs}
+2(3+2t)-(-3-t)+2(3+2t)+3 &= 0 &&\\
+\iff 9t+18 &= 0 &&\\
+\iff t &= -2 &&
+\end{calculs}
+\explique{\res{$H(-1\,;-1\,;-1)$} ; $\vect{MH}\begin{pmatrix}-4\\2\\-4\end{pmatrix}$, donc
+$MH=\sqrt{36}=\res{6}$.}{contrôle : $-2+1-2+3=0$}
+\cas{b)}
+\explique{Droite $x=1+t$, $y=2+t$, $z=-2-t$ ($t\in\R$).}{dirigée par $\vect{n}\begin{pmatrix}1\\1\\-1\end{pmatrix}$}
+\begin{calculs}
+(1+t)+(2+t)-(-2-t)-2 &= 0 &&\\
+\iff 3t+3 &= 0 &&\\
+\iff t &= -1 &&
+\end{calculs}
+\explique{\res{$H(0\,;1\,;-1)$} ; $\vect{MH}\begin{pmatrix}-1\\-1\\1\end{pmatrix}$, donc $MH=\res{\sqrt{3}}$.}{}
+\end{exo}
+
+\begin{exo}[Distance d'un point à une droite]
+\cas{1.}
+\explique{$(d)\colon x=2+t$, $y=1-t$, $z=2t$ ; $H(2+t\,;1-t\,;2t)$ et
+$\vect{MH}\begin{pmatrix}t\\2-t\\2t-2\end{pmatrix}$.}{méthode 10}
+\begin{calculs}
+t-(2-t)+2(2t-2) &= 0 &&\justif{$\vect{MH}\cdot\vect{u}=0$}\\
+\iff 6t-6 &= 0 &&\\
+\iff t &= 1 &&
+\end{calculs}
+\explique{\res{$H(3\,;0\,;2)$} ; $\vect{MH}\begin{pmatrix}1\\1\\0\end{pmatrix}$, donc $MH=\res{\sqrt{2}}$.}{}
+\cas{2.}
+\explique{$\vect{BC}\begin{pmatrix}2\\2\\-1\end{pmatrix}$ ; $(BC)\colon x=1+2t$, $y=2t$, $z=1-t$ ; $K(1+2t\,;2t\,;1-t)$ et
+$\vect{NK}\begin{pmatrix}3+2t\\2+2t\\1-t\end{pmatrix}$.}{}
+\begin{calculs}
+2(3+2t)+2(2+2t)-(1-t) &= 0 &&\justif{$\vect{NK}\cdot\vect{BC}=0$}\\
+\iff 9t+9 &= 0 &&\\
+\iff t &= -1 &&
+\end{calculs}
+\explique{\res{$K(-1\,;-2\,;2)$} ; $\vect{NK}\begin{pmatrix}1\\0\\2\end{pmatrix}$, donc $NK=\res{\sqrt{5}}$.}{}
+\end{exo}
+
+\begin{exo}[Distance et volume dans un cube]
+\cas{1.}
+\explique{$B(1\,;0\,;0)$, $D(0\,;1\,;0)$, $G(1\,;1\,;1)$ : $\vect{BD}\begin{pmatrix}-1\\1\\0\end{pmatrix}$ et
+$\vect{BG}\begin{pmatrix}0\\1\\1\end{pmatrix}$, non colinéaires.}{}
+\explique{$\vect{n}\cdot\vect{BD}=-1+1+0=0$ et $\vect{n}\cdot\vect{BG}=0+1-1=0$ :
+\res{$\vect{n}$ est normal au plan $(BDG)$}.}{propriété 5}
+\cas{2.}
+\explique{$x+y-z+d=0$ ; $B$ : $1+d=0$ : \res{$(BDG)\colon x+y-z-1=0$}.}{contrôle avec $G$ : $1+1-1-1=0$}
+\cas{3.}
+\explique{$C(1\,;1\,;0)$ ; droite $x=1+t$, $y=1+t$, $z=-t$ ($t\in\R$).}{}
+\begin{calculs}
+(1+t)+(1+t)-(-t)-1 &= 0 &&\\
+\iff 3t+1 &= 0 &&\\
+\iff t &= -\frac{1}{3} &&
+\end{calculs}
+\explique{\res{$K\left(\frac{2}{3}\,;\frac{2}{3}\,;\frac{1}{3}\right)$} ;
+$\vect{CK}\begin{pmatrix}-\frac{1}{3}\\-\frac{1}{3}\\\frac{1}{3}\end{pmatrix}$, donc
+$CK=\sqrt{\frac{3}{9}}=\res{\frac{\sqrt{3}}{3}}$.}{}
+\cas{4.}
+\explique{Le triangle $BDG$ est équilatéral de côté $\sqrt{2}$ (diagonales de faces) ; sa
+hauteur mesure $\frac{\sqrt{3}}{2}\times\sqrt{2}$, donc son aire est
+$\frac{1}{2}\times\sqrt{2}\times\frac{\sqrt{6}}{2}=\res{\frac{\sqrt{3}}{2}}$.}{}
+\begin{calculs}
+V &= \frac{1}{3}\times\frac{\sqrt{3}}{2}\times\frac{\sqrt{3}}{3} &&\justif{hauteur $CK$}\\
+V &= \res{\frac{1}{6}} &&
+\end{calculs}
+\cas{5.}
+\explique{Base $BCD$ : demi-face, d'aire $\frac{1}{2}$ ; hauteur $CG=1$, car $(CG)$ est
+orthogonale à la face $ABCD$.}{}
+\explique{$V=\frac{1}{3}\times\frac{1}{2}\times 1=\res{\frac{1}{6}}$ : on retrouve le même
+volume.}{}
+\end{exo}
+
+\begin{exo}[Le point le plus proche, par une fonction]
+\cas{1.}
+\explique{$M_{t}(1+t\,;2-t\,;2t)$, donc $\vect{AM_{t}}\begin{pmatrix}t-2\\2-t\\2t-1\end{pmatrix}$.}{}
+\begin{calculs}
+AM_{t}^{2} &= (t-2)^{2}+(2-t)^{2}+(2t-1)^{2} &&\\
+AM_{t}^{2} &= 2(t^{2}-4t+4)+4t^{2}-4t+1 &&\\
+AM_{t}^{2} &= 6t^{2}-12t+9 &&
+\end{calculs}
+\cas{2.}
+\explique{Le trinôme $6t^{2}-12t+9$ ($a=6>0$) est minimal en
+$t=-\frac{b}{2a}$, soit $t=\res{1}$ ; il vaut alors $6-12+9=3$.}{sommet de la parabole}
+\explique{La distance minimale est \res{$\sqrt{3}$} (la racine carrée est croissante).}{}
+\cas{3.}
+\explique{$H=M_{1}(2\,;1\,;2)$ et $\vect{AH}\begin{pmatrix}-1\\1\\1\end{pmatrix}$ ;
+$\vect{AH}\cdot\vect{u}=-1-1+2=0$ avec $\vect{u}\begin{pmatrix}1\\-1\\2\end{pmatrix}$.}{}
+\explique{\res{$H$ est bien le projeté orthogonal de $A$ sur $(d)$} : on retrouve la
+propriété 8.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{$H(1\,;2\,;2)$ n'est pas sur $(d)$ : $x=1$ donne $t=0$, puis $y=0\neq 2$.
+L'affirmation est \res{fausse}.}{un projeté sur $(d)$ est un point de $(d)$}
+\rem{Le projeté se calcule comme à la méthode 10 : $t=\frac{1}{3}$, d'où
+$\left(\frac{4}{3}\,;\frac{2}{3}\,;-\frac{1}{3}\right)$.}
+\cas{2.}
+\explique{Droite $x=5+t$, $y=-4$, $z=-1+3t$ ; $(5+t)+3(-1+3t)-7=0$ donne $10t-5=0$,
+$t=\frac{1}{2}$, d'où $H\left(\frac{11}{2}\,;-4\,;\frac{1}{2}\right)$.}{dirigée par $\vect{n}\begin{pmatrix}1\\0\\3\end{pmatrix}$}
+\explique{$\vect{BH}\begin{pmatrix}\frac{1}{2}\\0\\\frac{3}{2}\end{pmatrix}$, $BH=\sqrt{\frac{1}{4}+\frac{9}{4}}=\frac{\sqrt{10}}{2}$ :
+l'affirmation est \res{vraie}.}{}
+\cas{3.}
+\explique{$H(-3\,;\sqrt{2}\,;-2)$ : $-3+2+1=0$, donc $H\in P$ ;
+$\vect{SH}\begin{pmatrix}-2\\0\\2\end{pmatrix}=-2\vect{n}$ avec $\vect{n}\begin{pmatrix}1\\0\\-1\end{pmatrix}$ normal à $P$.}{}
+\explique{$(SH)$ est orthogonale à $P$ : l'affirmation est \res{vraie}.}{}
+\end{exo}
+
+\partie{Exercices type bac}
+
+\begin{exo}[D'après bac 2026, Nouvelle-Calédonie]
+\cas{1. a)}
+\explique{$I\left(\frac{-3+2}{2}\,;\frac{0+2}{2}\,;\frac{-1+0}{2}\right)$, soit
+\res{$I\left(-\frac{1}{2}\,;1\,;-\frac{1}{2}\right)$}.}{milieu}
+\cas{b)}
+\explique{$\mathcal{P}$ est orthogonal à $(AB)$ : $\vect{AB}\begin{pmatrix}5\\2\\1\end{pmatrix}$ lui est normal,
+d'où $5x+2y+z+d=0$.}{}
+\explique{$I\in\mathcal{P}$ : $-\frac{5}{2}+2-\frac{1}{2}+d=0$, donc $d=1$ :
+\res{$5x+2y+z+1=0$}.}{}
+\cas{c)}
+\explique{$C$ : $-5+1+3+1=0$, donc \res{$C\in\mathcal{P}$} ; $D$ : $-30+0-1+1=-30\neq 0$,
+donc \res{$D\notin\mathcal{P}$}.}{}
+\cas{2. a)}
+\explique{$\Delta$ est dirigée par $\vect{AB}$ et passe par $D$ :
+\res{$x=-6+5k$, $y=2k$, $z=-1+k$ ($k\in\R$)}.}{}
+\cas{b)}
+\begin{calculs}
+5(-6+5k)+2\times 2k+(-1+k)+1 &= 0 &&\\
+\iff 30k-30 &= 0 &&\\
+\iff k &= 1 &&
+\end{calculs}
+\explique{\res{$H(-1\,;2\,;0)$}.}{$H$ : intersection de $\Delta$ et $\mathcal{P}$}
+\cas{c)}
+\explique{$\vect{DH}\begin{pmatrix}5\\2\\1\end{pmatrix}$, donc $DH=\sqrt{25+4+1}=\res{\sqrt{30}}$.}{}
+\cas{3.}
+\explique{Vecteurs directeurs $\vect{u}\begin{pmatrix}1\\1\\-7\end{pmatrix}$ et $\vect{v}\begin{pmatrix}5\\-12\\-1\end{pmatrix}$ :
+$\vect{u}\cdot\vect{v}=5-12+7=0$ ; les droites sont orthogonales.}{}
+\begin{calculs}
+& \accol{-1+t &=& -1+5s\\ \frac{1}{2}+t &=& 2-12s\\ 3-7t &=& -s} &&\\
+\iff & \accol{t &=& 5s\\ 17s &=& \frac{3}{2}\\ -34s &=& -3} &&\justif{on remplace $t$ par $5s$}\\
+\iff & \accol{t &=& \frac{15}{34}\\ s &=& \frac{3}{34}\\ s &=& \frac{3}{34}} &&\justif{compatibles}
+\end{calculs}
+\explique{Les droites sont sécantes et orthogonales : \res{elles se coupent
+orthogonalement}, au point $\left(-\frac{19}{34}\,;\frac{16}{17}\,;-\frac{3}{34}\right)$.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Métropole]
+\cas{1.}
+\explique{$\vect{AB}\begin{pmatrix}1\\-3\\-1\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}-2\\-2\\0\end{pmatrix}$ ont des
+coordonnées non proportionnelles : \res{$A$, $B$, $C$ définissent un plan}.}{}
+\cas{2. a)}
+\explique{$\vect{n}\cdot\vect{AB}=1+3-4=0$ et $\vect{n}\cdot\vect{AC}=-2+2+0=0$ :
+\res{$\vect{n}$ est normal au plan $(ABC)$}.}{}
+\cas{b)}
+\explique{$x-y+4z+d=0$ ; $A$ : $2-1+4+d=0$, donc $d=-5$ : \res{$x-y+4z-5=0$}.}{}
+\cas{3.}
+\explique{$\Delta$ est dirigée par $\vect{n}$ et passe par $D(0\,;0\,;2)$ :
+\res{$x=t$, $y=-t$, $z=2+4t$}.}{}
+\cas{4.}
+\begin{calculs}
+t-(-t)+4(2+4t)-5 &= 0 &&\\
+\iff 18t+3 &= 0 &&\\
+\iff t &= -\frac{1}{6} &&
+\end{calculs}
+\explique{\res{$H\left(-\frac{1}{6}\,;\frac{1}{6}\,;\frac{4}{3}\right)$}.}{$2-\frac{4}{6}=\frac{4}{3}$}
+\cas{5. a)}
+\explique{$BA=\sqrt{1+9+1}=\sqrt{11}$ et $BC=\sqrt{9+1+1}=\sqrt{11}$ : \res{$ABC$ est isocèle
+en $B$}.}{}
+\cas{b)}
+\explique{La hauteur issue de $B$ est la médiane $[BI]$, $I(1\,;0\,;1)$ milieu de $[AC]$ ;
+$AC=\sqrt{8}=2\sqrt{2}$ et $BI=\sqrt{4+4+1}=3$.}{}
+\explique{Aire : $\frac{2\sqrt{2}\times 3}{2}=\res{3\sqrt{2}}$.}{}
+\cas{6. a)}
+\explique{La hauteur relative à la base $ABC$ est $DH$ :
+$DH=\sqrt{\frac{1}{36}+\frac{1}{36}+\frac{16}{36}}$, soit $DH=\sqrt{\frac{1}{2}}=\frac{\sqrt{2}}{2}$.}{}
+\explique{$V=\frac{1}{3}\times 3\sqrt{2}\times\frac{\sqrt{2}}{2}=\res{1}$.}{}
+\cas{b)}
+\explique{$1=\frac{1}{3}\times\mathcal{A}_{BCD}\times\sqrt{2}$, donc
+$\mathcal{A}_{BCD}=\frac{3}{\sqrt{2}}=\res{\frac{3\sqrt{2}}{2}}$.}{}
+\cas{7. a)}
+\explique{$D_{k}\in(ABC)$ équivaut à $4k-5=0$, soit \res{$k=\frac{5}{4}$} ; le point est
+alors dans le plan, \res{il est son propre projeté}.}{}
+\cas{b)}
+\explique{$\vect{AD_{k}}\begin{pmatrix}-2\\-1\\k-1\end{pmatrix}$ devrait être colinéaire à $\vect{n}$ : les
+ordonnées imposent un coefficient $1$, les abscisses $-2$.}{}
+\explique{C'est impossible : \res{aucune valeur de $k$ ne convient}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Asie : une droite d'Euler]
+\cas{1.}
+\explique{\res{$A(0\,;0\,;0)$}, \res{$B(1\,;0\,;0)$}, \res{$G(1\,;1\,;1)$},
+\res{$I\left(\frac{1}{2}\,;0\,;0\right)$} et \res{$J\left(1\,;\frac{1}{2}\,;\frac{1}{2}\right)$}.}{}
+\cas{2. a)}
+\explique{$\vect{AJ}\begin{pmatrix}1\\\frac{1}{2}\\\frac{1}{2}\end{pmatrix}$ :
+\res{$x=k$, $y=\frac{1}{2}k$, $z=\frac{1}{2}k$ ($k\in\R$)}.}{}
+\cas{b)}
+\explique{$\vect{IG}\begin{pmatrix}\frac{1}{2}\\1\\1\end{pmatrix}$ et $(IG)$ passe par $I$ : on obtient
+\res{la représentation donnée}.}{}
+\cas{c)}
+\begin{calculs}
+& \accol{k &=& \frac{1}{2}+\frac{1}{2}t\\ \frac{1}{2}k &=& t\\ \frac{1}{2}k &=& t} &&\\
+\iff & \accol{2t &=& \frac{1}{2}+\frac{1}{2}t\\ k &=& 2t} &&\\
+\iff & \accol{t &=& \frac{1}{3}\\ k &=& \frac{2}{3}} &&
+\end{calculs}
+\explique{Ces équations sont compatibles : les droites sont sécantes en
+\res{$S\left(\frac{2}{3}\,;\frac{1}{3}\,;\frac{1}{3}\right)$}.}{}
+\cas{3. a)}
+\explique{$\vect{AB}\begin{pmatrix}1\\0\\0\end{pmatrix}$ et $\vect{AG}\begin{pmatrix}1\\1\\1\end{pmatrix}$, non colinéaires ;
+$\vect{n}\cdot\vect{AB}=0$ et $\vect{n}\cdot\vect{AG}=0-1+1=0$ : \res{$\vect{n}$ est normal à
+$(ABG)$}.}{}
+\cas{b)}
+\explique{$-y+z+d=0$ ; $A$ : $d=0$ : \res{$-y+z=0$}.}{}
+\cas{c)}
+\explique{$-(-t)+(1+t)=0$ donne $t=-\frac{1}{2}$, d'où
+\res{$L\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$}.}{}
+\cas{d)}
+\explique{$LA^{2}$, $LB^{2}$ et $LG^{2}$ valent tous $\frac{1}{4}+\frac{1}{4}+\frac{1}{4}=\frac{3}{4}$ :
+les trois distances valent \res{$\frac{\sqrt{3}}{2}$}.}{}
+\cas{4.}
+\explique{$\vect{BA}\begin{pmatrix}-1\\0\\0\end{pmatrix}$ et $\vect{BG}\begin{pmatrix}0\\1\\1\end{pmatrix}$ :
+$\vect{BA}\cdot\vect{BG}=0$, \res{$ABG$ est rectangle en $B$}.}{}
+\cas{5. a)}
+\explique{Centre du cercle circonscrit : \res{$L$}, milieu de l'hypoténuse $[AG]$ ;
+centre de gravité : \res{$S$}, intersection des médianes $(AJ)$ et $(IG)$ ;
+orthocentre : \res{$B$}, sommet de l'angle droit.}{}
+\cas{b)}
+\explique{$\vect{BL}\begin{pmatrix}-\frac{1}{2}\\\frac{1}{2}\\\frac{1}{2}\end{pmatrix}$ et
+$\vect{BS}\begin{pmatrix}-\frac{1}{3}\\\frac{1}{3}\\\frac{1}{3}\end{pmatrix}=\frac{2}{3}\vect{BL}$ : colinéaires,
+\res{les trois points sont alignés}.}{}
+\end{exo}
+
+\end{document}

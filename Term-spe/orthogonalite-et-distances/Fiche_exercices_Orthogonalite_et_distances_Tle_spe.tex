@@ -1,0 +1,966 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newcommand{\cubeespace}[1]{%
+  \coordinate (A) at (0,0); \coordinate (B) at (#1,0);
+  \coordinate (D) at ({0.45*#1},{0.35*#1}); \coordinate (C) at ({#1+0.45*#1},{0.35*#1});
+  \coordinate (E) at (0,#1); \coordinate (F) at (#1,#1);
+  \coordinate (H) at ({0.45*#1},{#1+0.35*#1}); \coordinate (G) at ({#1+0.45*#1},{#1+0.35*#1});
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[above left]{$D$} (E) node[left]{$E$}
+    (F) node[below right]{$F$} (G) node[above right]{$G$} (H) node[above left]{$H$};}
+\newcommand{\tetraedre}{%
+  \coordinate (B) at (0,0); \coordinate (C) at (2.6,0.1);
+  \coordinate (D) at (1.6,0.8); \coordinate (A) at (1.3,2.4);
+  \draw (A)--(B)--(C)--cycle (A)--(D)--(C);
+  \draw[dashed] (B)--(D);
+  \path[font=\footnotesize] (A) node[above]{$A$} (B) node[left]{$B$}
+    (C) node[right]{$C$} (D) node[above right]{$D$};}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Orthogonalité et distances}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{Rappels de 1re : le produit scalaire dans le plan}
+
+\exo[Choisir la bonne expression]
+Calculer chaque produit scalaire.
+\begin{enumerate}
+  \item $\vect{AB}\cdot\vect{AC}$, où $ABC$ est un triangle tel que $AB=6$, $AC=4$ et
+        $\widehat{BAC}=\frac{\pi}{6}$.
+  \item $ABCD$ est un rectangle tel que $AB=5$ et $AD=3$.
+  \begin{enumerate}[label=\alph*)]
+    \item $\vect{AB}\cdot\vect{AC}$
+    \item $\vect{AB}\cdot\vect{AD}$
+    \item $\vect{AD}\cdot\vect{CB}$
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Avec des coordonnées]
+Dans un repère orthonormé du plan, on considère les points $A(1\,;2)$, $B(4\,;3)$,
+$C(2\,;5)$ et $D(0\,;5)$.
+\begin{enumerate}
+  \item Calculer $\vect{AB}\cdot\vect{AC}$, puis les longueurs $AB$ et $AC$.
+  \item En déduire une mesure de l'angle $\widehat{BAC}$, en degré, arrondie au dixième.
+  \item Démontrer que les droites $(AB)$ et $(AD)$ sont perpendiculaires.
+\end{enumerate}
+
+\exo[Normes et formules de polarisation]
+\begin{enumerate}
+  \item $\vect{u}$ et $\vect{v}$ sont deux vecteurs tels que $\|\vect{u}\|=3$,
+        $\|\vect{v}\|=5$ et $\|\vect{u}+\vect{v}\|=7$. Calculer $\vect{u}\cdot\vect{v}$,
+        puis $\|\vect{u}-\vect{v}\|$.
+  \item $\vect{u}$ et $\vect{v}$ sont deux vecteurs tels que $\|\vect{u}\|=2$,
+        $\|\vect{v}\|=4$ et $\|\vect{u}-\vect{v}\|=2\sqrt{3}$. Calculer
+        $\vect{u}\cdot\vect{v}$, puis une mesure de l'angle entre $\vect{u}$ et
+        $\vect{v}$.
+\end{enumerate}
+
+\exo[Un triangle connu par ses côtés]
+$ABC$ est un triangle tel que $AB=5$, $AC=7$ et $BC=8$.
+\begin{enumerate}
+  \item Justifier que $\vect{BC}=\vect{AC}-\vect{AB}$.
+  \item En déduire $\vect{AB}\cdot\vect{AC}$ à l'aide d'une formule de polarisation.
+  \item En déduire $\cos\widehat{BAC}$, puis une mesure de l'angle $\widehat{BAC}$, en
+        degré, arrondie au dixième.
+\end{enumerate}
+
+\partiefiche{Produit scalaire dans l'espace}
+
+\exo[Dans un cube]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+$ABCDEFGH$ est un cube d'arête $4$ et $J$ est le milieu de l'arête $[FG]$. Calculer
+chaque produit scalaire.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$
+  \item $\vect{AB}\cdot\vect{EG}$
+  \item $\vect{AB}\cdot\vect{EH}$
+  \item $\vect{AB}\cdot\vect{GH}$
+  \item $\vect{BJ}\cdot\vect{EH}$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \cubeespace{2}
+  \path ($(F)!0.5!(G)$) node[croix]{} node[below right,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Dans un tétraèdre régulier]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+$ABCD$ est un tétraèdre régulier d'arête $4$ : ses quatre faces sont des triangles
+équilatéraux. $I$ est le milieu de $[BC]$ et $J$ celui de $[AC]$. Calculer :
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$
+  \item $\vect{AD}\cdot\vect{AJ}$
+  \item $\vect{AB}\cdot\vect{IJ}$
+  \item $\vect{DI}\cdot\vect{DC}$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \tetraedre
+  \path ($(B)!0.5!(C)$) node[croix]{} node[below,font=\footnotesize]{$I$}
+        ($(A)!0.5!(C)$) node[croix]{} node[right,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Règles de calcul]
+$\vect{u}$ et $\vect{v}$ sont deux vecteurs de l'espace tels que
+$\vect{u}\cdot\vect{v}=3$, $\|\vect{u}\|=2$ et $\|\vect{v}\|=4$. Calculer :
+\begin{enumerate}[label=\alph*)]
+  \item $(2\vect{u})\cdot\vect{v}$
+  \item $\vect{u}\cdot(-3\vect{v})$
+  \item $(\vect{u}+\vect{v})\cdot\vect{u}$
+  \item $\|\vect{u}+\vect{v}\|^{2}$
+  \item $\|\vect{u}-2\vect{v}\|^{2}$
+\end{enumerate}
+
+\exo[Décomposer par la relation de Chasles]
+$ABCDEFGH$ est un cube d'arête $3$. $I$ est le point de l'arête $[AE]$ tel que
+$\vect{AI}=\frac{1}{3}\vect{AE}$ et $J$ est le milieu de l'arête $[FG]$.
+\begin{enumerate}
+  \item Faire une figure.
+  \item En écrivant $\vect{BI}=\vect{BA}+\vect{AI}$ et $\vect{BJ}=\vect{BF}+\vect{FJ}$,
+        calculer $\vect{BI}\cdot\vect{BJ}$.
+  \item Calculer les longueurs $BI$ et $BJ$.
+  \item En déduire une mesure de l'angle $\widehat{IBJ}$, en degré, arrondie au dixième.
+\end{enumerate}
+
+\exo[Vecteurs de même norme]
+\begin{enumerate}
+  \item Soit $\vect{u}$ et $\vect{v}$ deux vecteurs de l'espace. Démontrer que
+        $(\vect{u}+\vect{v})\cdot(\vect{u}-\vect{v})=\|\vect{u}\|^{2}-\|\vect{v}\|^{2}$.
+  \item En déduire que, si $\vect{u}$ et $\vect{v}$ ont la même norme, alors
+        $\vect{u}+\vect{v}$ et $\vect{u}-\vect{v}$ sont orthogonaux.
+  \item $ABCD$ est un losange. En choisissant $\vect{u}=\vect{AB}$ et
+        $\vect{v}=\vect{AD}$, démontrer que ses diagonales sont perpendiculaires.
+\end{enumerate}
+
+\partiefiche{Produit scalaire dans un repère orthonormé}
+
+\exo[Nature d'un triangle]
+Dans un repère orthonormé, on considère les points $A(2\,;-1\,;3)$, $B(4\,;1\,;2)$ et
+$C(3\,;-3\,;1)$.
+\begin{enumerate}
+  \item Calculer les longueurs $AB$, $AC$ et $BC$.
+  \item Calculer $\vect{AB}\cdot\vect{AC}$.
+  \item En déduire la nature du triangle $ABC$.
+\end{enumerate}
+
+\exo[Calculer un angle]
+Dans un repère orthonormé, pour chaque triplet de points, calculer
+$\vect{AB}\cdot\vect{AC}$, puis une mesure de l'angle $\widehat{BAC}$ en degré,
+arrondie au dixième.
+\begin{enumerate}[label=\alph*)]
+  \item $A(1\,;2\,;0)$, $B(3\,;2\,;1)$, $C(1\,;5\,;4)$
+  \item $A(0\,;1\,;-1)$, $B(2\,;-1\,;0)$, $C(-3\,;1\,;3)$
+\end{enumerate}
+
+\exo[Les grandes diagonales d'un cube]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+$ABCDEFGH$ est un cube d'arête $1$. On se place dans le repère orthonormé
+$(D\,;\vect{DA},\vect{DC},\vect{DH})$.
+\begin{enumerate}
+  \item Donner les coordonnées des points $A$, $B$, $G$ et $H$.
+  \item Calculer les coordonnées de $\vect{AG}$ et $\vect{BH}$, puis la longueur $AG$.
+  \item Calculer $\vect{AG}\cdot\vect{BH}$.
+  \item En déduire une mesure, arrondie au dixième de degré, de l'angle aigu formé par
+        les droites $(AG)$ et $(BH)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \cubeespace{2}
+  \draw[coulCourbe] (A)--(G);
+  \draw[coulCourbe,dashed] (B)--(H);
+\end{tikzpicture}
+\end{minipage}
+
+\exo[Un studio photo]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+Un studio photo a la forme d'un pavé droit $ABCDEFGH$ avec $AB=6$\,m, $AD=4$\,m et
+$AE=3$\,m. Un projecteur est fixé en $O$, centre du plafond $EFGH$. On se place dans le
+repère orthonormé $(A\,;\vect{i},\vect{j},\vect{k})$ où
+$\vect{i}=\frac{1}{6}\vect{AB}$, $\vect{j}=\frac{1}{4}\vect{AD}$ et
+$\vect{k}=\frac{1}{3}\vect{AE}$ (unité : le mètre).
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}[font=\footnotesize,scale=0.72]
+  \coordinate (A) at (0,0); \coordinate (B) at (3,0);
+  \coordinate (D) at (0.9,0.7); \coordinate (C) at (3.9,0.7);
+  \coordinate (E) at (0,1.5); \coordinate (F) at (3,1.5);
+  \coordinate (H) at (0.9,2.2); \coordinate (G) at (3.9,2.2);
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path (A) node[below left]{$A$} (B) node[below right]{$B$} (C) node[right]{$C$}
+    (D) node[above left]{$D$} (E) node[left]{$E$} (F) node[below right]{$F$}
+    (G) node[above right]{$G$} (H) node[above left]{$H$};
+  \path ($(E)!0.5!(G)$) coordinate (O) node[croix]{} node[above]{$O$};
+  \draw[coulCourbe] (O)--(A) (O)--(B);
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}
+  \item Donner les coordonnées des points $A$, $B$ et $O$.
+  \item Calculer les longueurs $OA$ et $OB$.
+  \item Calculer une mesure de l'angle $\widehat{AOB}$ formé par les rayons qui
+        éclairent les coins $A$ et $B$, en degré, arrondie au dixième.
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+L'espace est muni d'un repère orthonormé $(O\,;\vect{i},\vect{j},\vect{k})$.
+\begin{enumerate}
+  \item On considère les points $A(3\,;0\,;2)$, $B(2\,;1\,;-3)$ et $C(1{,}5\,;-3\,;-1)$.
+
+        \emph{Affirmation} : la mesure de l'angle $\widehat{ACB}$, arrondie à $10^{-1}$,
+        est égale à $70{,}5^{\circ}$.
+  \item On considère les points $A(1\,;1\,;0)$ et $B(2\,;1\,;0)$.
+
+        \emph{Affirmation} : une mesure de l'angle $\widehat{OAB}$ est $135^{\circ}$.
+\end{enumerate}
+
+\partiefiche{Droites orthogonales, droite orthogonale à un plan}
+
+\exo[Vecteurs orthogonaux]
+Dans un repère orthonormé :
+\begin{enumerate}
+  \item pour chaque couple, dire si les vecteurs sont orthogonaux.
+  \begin{enumerate}[label=\alph*)]
+    \item $\vect{u}\begin{pmatrix}3\\1\\-2\end{pmatrix}$ et $\vect{v}\begin{pmatrix}2\\-4\\1\end{pmatrix}$
+    \item $\vect{u}\begin{pmatrix}-2\\0\\1\end{pmatrix}$ et $\vect{v}\begin{pmatrix}1\\5\\2\end{pmatrix}$
+    \item $\vect{u}\begin{pmatrix}1\\-3\\2\end{pmatrix}$ et $\vect{v}\begin{pmatrix}4\\2\\-1\end{pmatrix}$
+  \end{enumerate}
+  \item déterminer les nombres réels $m$ tels que les vecteurs $\vect{u}$ et $\vect{v}$
+        sont orthogonaux.
+  \begin{enumerate}[label=\alph*)]
+    \item $\vect{u}\begin{pmatrix}1\\m\\3\end{pmatrix}$ et $\vect{v}\begin{pmatrix}m\\2\\-4\end{pmatrix}$
+    \item $\vect{u}\begin{pmatrix}m\\2\\-1\end{pmatrix}$ et $\vect{v}\begin{pmatrix}m\\-3\\m\end{pmatrix}$
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Orthogonales, mais perpendiculaires ?]
+Dans un repère orthonormé, on considère les points $A(1\,;0\,;2)$, $B(2\,;2\,;1)$,
+$C(4\,;-1\,;3)$ et $D(5\,;-2\,;2)$.
+\begin{enumerate}
+  \item Démontrer que les droites $(AB)$ et $(CD)$ sont orthogonales.
+  \item Déterminer une représentation paramétrique de chacune des droites $(AB)$ et
+        $(CD)$.
+  \item Les droites $(AB)$ et $(CD)$ sont-elles perpendiculaires ? Justifier.
+\end{enumerate}
+
+\exo[Le vocabulaire de l'orthogonalité]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+$ABCDEFGH$ est un cube. Pour chaque affirmation, dire si elle est vraie ou fausse, en
+justifiant par une phrase complète.
+\begin{enumerate}[label=\alph*)]
+  \item Les droites $(AB)$ et $(CG)$ sont orthogonales.
+  \item Les droites $(AB)$ et $(CG)$ sont perpendiculaires.
+  \item La droite $(FG)$ est orthogonale au plan $(ABF)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \cubeespace{1.8}
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}[label=\alph*)]\setcounter{enumi}{3}
+  \item Les droites $(FG)$ et $(FB)$ sont orthogonales, donc la droite $(FG)$ est
+        orthogonale au plan $(HFB)$.
+  \item La droite $(EG)$ est orthogonale au plan $(HFB)$.
+\end{enumerate}
+
+\exo[Une arête orthogonale à l'arête opposée]
+$ABCD$ est un tétraèdre tel que $AB=AC$ et $DB=DC$. On note $I$ le milieu de l'arête
+$[BC]$.
+\begin{enumerate}
+  \item Faire une figure.
+  \item Justifier que la droite $(BC)$ est orthogonale aux droites $(AI)$ et $(DI)$.
+  \item En déduire que la droite $(BC)$ est orthogonale au plan $(AID)$.
+  \item En déduire que les droites $(BC)$ et $(AD)$ sont orthogonales.
+\end{enumerate}
+
+\partiefiche{Vecteur normal à un plan}
+
+\exo[Une diagonale du cube]
+$ABCDEFGH$ est un cube. On se place dans le repère orthonormé
+$(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\begin{enumerate}
+  \item Faire une figure.
+  \item Donner les coordonnées des points $B$, $D$, $E$, $F$ et $G$.
+  \item Démontrer que le vecteur $\vect{DF}$ est normal au plan $(EBG)$.
+  \item Que peut-on en déduire pour la droite $(DF)$ et le plan $(EBG)$ ?
+\end{enumerate}
+
+\exo[Orthogonale au plan ?]
+Dans un repère orthonormé, pour chaque cas, dire si la droite $(d)$ de vecteur directeur
+$\vect{u}$ est orthogonale au plan $(ABC)$.
+\begin{enumerate}[label=\alph*)]
+  \item $\vect{u}\begin{pmatrix}2\\1\\3\end{pmatrix}$, $\vect{AB}\begin{pmatrix}1\\1\\-1\end{pmatrix}$, $\vect{AC}\begin{pmatrix}3\\0\\-2\end{pmatrix}$
+  \item $\vect{u}\begin{pmatrix}1\\-2\\0\end{pmatrix}$, $\vect{AB}\begin{pmatrix}2\\1\\4\end{pmatrix}$, $\vect{AC}\begin{pmatrix}0\\3\\1\end{pmatrix}$
+  \item $\vect{u}\begin{pmatrix}1\\1\\1\end{pmatrix}$, $\vect{AB}\begin{pmatrix}1\\-1\\0\end{pmatrix}$, $\vect{AC}\begin{pmatrix}2\\1\\-3\end{pmatrix}$
+\end{enumerate}
+
+\exo[Trouver un vecteur normal]
+Dans un repère orthonormé, pour chaque triplet de points :
+\begin{itemize}
+  \item justifier que les points $A$, $B$, $C$ définissent un plan ;
+  \item déterminer un vecteur normal au plan $(ABC)$.
+\end{itemize}
+\begin{enumerate}[label=\alph*)]
+  \item $A(1\,;0\,;2)$, $B(2\,;1\,;2)$, $C(0\,;2\,;3)$
+  \item $A(0\,;1\,;1)$, $B(2\,;0\,;3)$, $C(1\,;3\,;0)$
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+L'espace est muni d'un repère orthonormé $(O\,;\vect{i},\vect{j},\vect{k})$.
+\begin{enumerate}
+  \item On considère les points $S(-1\,;\sqrt{2}\,;-4)$, $A(2\,;\sqrt{2}\,;-1)$,
+        $B(1\,;\sqrt{2}\,;0)$ et $C(2\,;0\,;-1)$. On admet que les points $A$, $B$ et $C$
+        ne sont pas alignés.
+
+        \emph{Affirmation} : le vecteur $\vect{SA}$ est un vecteur normal au plan
+        $(ABC)$.
+  \item Soit $\alpha$ un nombre réel quelconque et les points $A(1\,;1\,;0)$,
+        $B(2\,;1\,;0)$ et $C(\alpha\,;3\,;\alpha)$.
+
+        \emph{Affirmation} : pour toutes les valeurs de $\alpha$, les points $A$, $B$ et
+        $C$ définissent un plan et un vecteur normal à ce plan est
+        $\vect{j}\begin{pmatrix}0\\1\\0\end{pmatrix}$.
+\end{enumerate}
+
+\partiefiche{Équation cartésienne d'un plan}
+
+\exo[Lire une équation cartésienne]
+Dans un repère orthonormé, on considère le plan $\mathcal{P}\colon 3x-y+2z-4=0$.
+\begin{enumerate}
+  \item Donner deux vecteurs normaux à $\mathcal{P}$.
+  \item Les points $A(1\,;1\,;1)$, $B(2\,;0\,;-1)$ et $C(1\,;2\,;3)$ appartiennent-ils
+        à $\mathcal{P}$ ?
+  \item Déterminer le point de $\mathcal{P}$ dont l'abscisse et l'ordonnée sont nulles.
+\end{enumerate}
+
+\exo[Un point et un vecteur normal]
+Dans un repère orthonormé, pour chaque cas, déterminer une équation cartésienne du plan
+passant par $A$ et de vecteur normal $\vect{n}$.
+\begin{enumerate}[label=\alph*)]
+  \item $A(1\,;2\,;-1)$ et $\vect{n}\begin{pmatrix}2\\-1\\3\end{pmatrix}$
+  \item $A(0\,;0\,;0)$ et $\vect{n}\begin{pmatrix}1\\4\\-2\end{pmatrix}$
+  \item $A(2\,;-3\,;5)$ et $\vect{n}\begin{pmatrix}0\\0\\1\end{pmatrix}$
+  \item $A(-1\,;2\,;4)$ et $\vect{n}\begin{pmatrix}3\\1\\0\end{pmatrix}$
+\end{enumerate}
+
+\exo[Le plan passant par trois points]
+Dans un repère orthonormé, on considère les points $A(1\,;0\,;1)$, $B(2\,;1\,;0)$ et
+$C(0\,;2\,;2)$.
+\begin{enumerate}
+  \item Démontrer que les points $A$, $B$ et $C$ définissent un plan.
+  \item Déterminer un vecteur normal au plan $(ABC)$.
+  \item En déduire une équation cartésienne du plan $(ABC)$.
+  \item Les points $D(3\,;5\,;-1)$ et $E(1\,;1\,;2)$ sont-ils dans le plan $(ABC)$ ?
+\end{enumerate}
+
+\exo[Plans définis par une condition]
+Dans un repère orthonormé, déterminer une équation cartésienne :
+\begin{enumerate}
+  \item du plan $\mathcal{Q}$ parallèle au plan $\mathcal{P}\colon 2x-y+z+5=0$ et
+        passant par $A(1\,;-1\,;2)$ ;
+  \item du plan $\mathcal{R}$ passant par $B(3\,;0\,;-1)$ et orthogonal à la droite
+        $(CD)$, avec $C(1\,;2\,;0)$ et $D(2\,;4\,;-2)$ ;
+  \item du plan médiateur $\mathcal{M}$ du segment $[EF]$, avec $E(2\,;1\,;-1)$ et
+        $F(4\,;-3\,;3)$.
+  \item Soit $M(x\,;y\,;z)$ un point de l'espace. Démontrer que $ME=MF$ si et seulement
+        si $x-2y+2z-7=0$. Que retrouve-t-on ?
+\end{enumerate}
+
+\exo[Des plans dans un cube]
+$ABCDEFGH$ est un cube. On se place dans le repère orthonormé
+$(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\begin{enumerate}
+  \item Faire une figure.
+  \item Justifier que $\vect{AB}$ est normal au plan $(BCF)$. En déduire une équation
+        cartésienne de ce plan.
+  \item Déterminer un vecteur normal au plan $(BCE)$, puis une équation cartésienne de
+        ce plan.
+  \item Démontrer que la droite $(DF)$ coupe le plan $(BCE)$, et déterminer les
+        coordonnées du point d'intersection. Que représente ce point pour le cube ?
+\end{enumerate}
+
+\exo[Droites et plan]
+Dans un repère orthonormé, on considère le plan $\mathcal{P}\colon x+2y-z+3=0$.
+Étudier la position relative de $\mathcal{P}$ et de chaque droite ; donner le point
+d'intersection s'ils sont sécants ($t\in\R$).
+\begin{enumerate}[label=\alph*)]
+  \item $(d_{1})\colon\left\{\begin{array}{l} x=1+t\\ y=-1+t\\ z=2+3t\end{array}\right.$
+  \item $(d_{2})\colon\left\{\begin{array}{l} x=2-t\\ y=1+2t\\ z=3t\end{array}\right.$
+  \item $(d_{3})\colon\left\{\begin{array}{l} x=3+t\\ y=t\\ z=1-2t\end{array}\right.$
+  \item $(d_{4})$ : la droite passant par $A(1\,;0\,;0)$ et orthogonale à $\mathcal{P}$.
+\end{enumerate}
+
+\exo[Positions relatives de deux plans]
+Dans un repère orthonormé, on considère les plans
+\begin{center}
+$\mathcal{P}_{1}\colon x-2y+z-1=0$ \qquad $\mathcal{P}_{2}\colon x+y+z+4=0$\\
+$\mathcal{P}_{3}\colon -2x+4y-2z+2=0$ \qquad $\mathcal{P}_{4}\colon 3x-6y+3z+1=0$\\
+$\mathcal{P}_{5}\colon x+y-z=0$
+\end{center}
+Pour chaque plan $\mathcal{P}_{2}$, $\mathcal{P}_{3}$, $\mathcal{P}_{4}$,
+$\mathcal{P}_{5}$, étudier sa position relative avec le plan $\mathcal{P}_{1}$ ; préciser
+si les plans sont perpendiculaires.
+
+\exo[D'après bac 2025, Polynésie : deux avions]
+Deux avions sont en approche d'un aéroport. On munit l'espace d'un repère orthonormé
+$(O\,;\vect{i},\vect{j},\vect{k})$ dont l'origine $O$ est le pied de la tour de
+contrôle, et le sol est le plan $P_{0}$ d'équation $z=0$. L'unité des axes correspond à
+$1$\,km. On modélise les avions par des points.
+
+L'avion Alpha transmet à la tour sa position en $A(-7\,;1\,;7)$ et sa trajectoire est
+dirigée par le vecteur $\vect{u}\begin{pmatrix}2\\-1\\-3\end{pmatrix}$. L'avion Bêta
+transmet une trajectoire définie par la droite $d_{B}$ dont une représentation
+paramétrique est
+$\left\{\begin{array}{l} x=-11+5t\\ y=-5+t\\ z=11-4t\end{array}\right.$ ($t\in\R$).
+\begin{enumerate}
+  \item S'il ne dévie pas de sa trajectoire, déterminer les coordonnées du point $S$ en
+        lequel l'avion Bêta touchera le sol.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer une représentation paramétrique de la droite $d_{A}$ caractérisant
+          la trajectoire de l'avion Alpha.
+    \item Les deux avions peuvent-ils entrer en collision ?
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que l'avion Alpha passe par la position $E(-3\,;-1\,;1)$.
+    \item Justifier qu'une équation cartésienne du plan $P_{E}$ passant par $E$ et
+          perpendiculaire à la droite $d_{A}$ est $2x-y-3z+8=0$.
+    \item Vérifier que le point $F(-1\,;-3\,;3)$ est le point d'intersection du plan
+          $P_{E}$ et de la droite $d_{B}$.
+    \item Calculer la valeur exacte de la distance $EF$, puis vérifier que cela
+          correspond à une distance de $3\,464$\,m, à $1$\,m près.
+  \end{enumerate}
+  \item La réglementation aérienne stipule que deux avions en approche doivent être à
+        tout instant à au moins $3$ milles nautiques l'un de l'autre ($1$ mille nautique
+        vaut $1\,852$\,m). Si les avions Alpha et Bêta sont respectivement en $E$ et $F$
+        au même instant, leur distance de sécurité est-elle respectée ?
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+L'espace est muni d'un repère orthonormé.
+\begin{enumerate}
+  \item On considère les points $A(3\,;0\,;2)$ et $B(2\,;1\,;-3)$, et le plan
+        $(\mathcal{P})$ d'équation $-x+y-5z-0{,}5=0$.
+
+        \emph{Affirmation} : le plan $(\mathcal{P})$ est orthogonal à la droite $(AB)$,
+        et passe par le milieu du segment $[AB]$.
+  \item On considère la droite $(d)\colon\left\{\begin{array}{l} x=3-2t\\ y=-1\\
+        z=2-6t\end{array}\right.$ ($t\in\R$) et le point $A(3\,;-3\,;-2)$.
+
+        \emph{Affirmation} : le plan passant par $A$ et orthogonal à la droite $(d)$ a
+        pour équation cartésienne $x+3z+3=0$.
+  \item On considère la droite $d\colon\left\{\begin{array}{l} x=2-k\\ y=\sqrt{2}\,k\\
+        z=-1-k\end{array}\right.$ ($k\in\R$) et le plan $P$ d'équation $x-z+1=0$.
+
+        \emph{Affirmation} : la droite $d$ est parallèle au plan $P$.
+\end{enumerate}
+
+\partiefiche{Projeté orthogonal et distances}
+
+\exo[Distance d'un point à un plan]
+Dans un repère orthonormé, pour chaque cas, déterminer les coordonnées du projeté
+orthogonal $H$ du point $M$ sur le plan, puis la distance de $M$ au plan.
+\begin{enumerate}[label=\alph*)]
+  \item $\mathcal{P}\colon 2x-y+2z+3=0$ et $M(3\,;-3\,;3)$
+  \item $\mathcal{Q}\colon x+y-z-2=0$ et $M(1\,;2\,;-2)$
+\end{enumerate}
+
+\exo[Distance d'un point à une droite]
+Dans un repère orthonormé :
+\begin{enumerate}
+  \item déterminer le projeté orthogonal $H$ du point $M(2\,;-1\,;2)$ sur la droite
+        $(d)$ passant par $A(2\,;1\,;0)$ et de vecteur directeur
+        $\vect{u}\begin{pmatrix}1\\-1\\2\end{pmatrix}$, puis la distance de $M$ à $(d)$ ;
+  \item déterminer le projeté orthogonal $K$ du point $N(-2\,;-2\,;0)$ sur la droite
+        $(BC)$, avec $B(1\,;0\,;1)$ et $C(3\,;2\,;0)$, puis la distance de $N$ à $(BC)$.
+\end{enumerate}
+
+\exo[Distance et volume dans un cube]
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+$ABCDEFGH$ est un cube d'arête $1$. On se place dans le repère orthonormé
+$(A\,;\vect{AB},\vect{AD},\vect{AE})$.
+\begin{enumerate}
+  \item Démontrer que le vecteur $\vect{n}\begin{pmatrix}1\\1\\-1\end{pmatrix}$ est
+        normal au plan $(BDG)$.
+  \item En déduire une équation cartésienne du plan $(BDG)$.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \cubeespace{1.8}
+  \fill[coulExo,opacity=0.15] (B)--(D)--(G)--cycle;
+  \draw[coulExo] (B)--(G)--(D);
+  \draw[coulExo,dashed] (B)--(D);
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}\setcounter{enumi}{2}
+  \item Déterminer les coordonnées du projeté orthogonal $K$ du point $C$ sur le plan
+        $(BDG)$, puis la distance du point $C$ au plan $(BDG)$.
+  \item Calculer l'aire du triangle $BDG$, puis le volume du tétraèdre $CBDG$.
+        \emph{On rappelle que le volume d'un tétraèdre est
+        $V=\frac{1}{3}\mathcal{B}h$, où $\mathcal{B}$ est l'aire d'une base et $h$ la
+        hauteur relative à cette base.}
+  \item Retrouver ce volume en prenant pour base le triangle $BCD$.
+\end{enumerate}
+
+\exo[Le point le plus proche, par une fonction]
+Dans un repère orthonormé, on considère le point $A(3\,;0\,;1)$ et la droite $(d)$ de
+représentation paramétrique
+$\left\{\begin{array}{l} x=1+t\\ y=2-t\\ z=2t\end{array}\right.$ ($t\in\R$). Pour tout
+$t\in\R$, on note $M_{t}$ le point de $(d)$ de paramètre $t$.
+\begin{enumerate}
+  \item Démontrer que, pour tout $t\in\R$, $AM_{t}^{2}=6t^{2}-12t+9$.
+  \item En déduire la valeur de $t$ pour laquelle la distance $AM_{t}$ est minimale, et
+        cette distance minimale.
+  \item On note $H$ le point de $(d)$ obtenu. Vérifier que $H$ est le projeté orthogonal
+        de $A$ sur $(d)$.
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+L'espace est muni d'un repère orthonormé.
+\begin{enumerate}
+  \item On considère le point $A(1\,;1\,;0)$ et la droite
+        $(d)\colon\left\{\begin{array}{l} x=1+t\\ y=2t\\ z=-t\end{array}\right.$
+        ($t\in\R$).
+
+        \emph{Affirmation} : le projeté orthogonal du point $A$ sur la droite $(d)$ est
+        le point $H(1\,;2\,;2)$.
+  \item On considère le point $B(5\,;-4\,;-1)$ et le point $H$, projeté orthogonal du
+        point $B$ sur le plan $\mathcal{P}$ d'équation $x+3z-7=0$.
+
+        \emph{Affirmation} : la distance $BH$ est égale à $\frac{\sqrt{10}}{2}$.
+  \item On considère le point $S(-1\,;\sqrt{2}\,;-4)$ et le plan $P$ d'équation
+        $x-z+1=0$.
+
+        \emph{Affirmation} : le projeté orthogonal de $S$ sur le plan $P$ est le point
+        $H$ de coordonnées $(-3\,;\sqrt{2}\,;-2)$.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2026, Nouvelle-Calédonie]
+Dans l'espace muni d'un repère orthonormé, on considère les points $A(-3\,;0\,;-1)$,
+$B(2\,;2\,;0)$, $C\left(-1\,;\frac{1}{2}\,;3\right)$ et $D(-6\,;0\,;-1)$. On note $I$
+le milieu du segment $[AB]$ et $\mathcal{P}$ le plan orthogonal à la droite $(AB)$
+passant par le point $I$.
+\begin{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que le point $I$ a pour coordonnées
+          $\left(-\frac{1}{2}\,;1\,;-\frac{1}{2}\right)$.
+    \item Montrer que le plan $\mathcal{P}$ admet pour équation $5x+2y+z+1=0$.
+    \item Les points $C$ et $D$ appartiennent-ils au plan $\mathcal{P}$ ? Justifier.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Donner une représentation paramétrique de la droite $\Delta$ passant par le
+          point $D$ et orthogonale au plan $\mathcal{P}$.
+    \item On note $H$ le projeté orthogonal du point $D$ sur le plan $\mathcal{P}$.
+          Déterminer les coordonnées du point $H$.
+    \item Calculer la distance du point $D$ au plan $\mathcal{P}$.
+  \end{enumerate}
+  \item On admet qu'une représentation paramétrique de la droite $(CI)$ est
+        $\left\{\begin{array}{l} x=-1+t\\ y=\frac{1}{2}+t\\ z=3-7t\end{array}\right.$
+        ($t\in\R$). On considère la droite $(d)$ dont une représentation paramétrique
+        est $\left\{\begin{array}{l} x=-1+5s\\ y=2-12s\\ z=-s\end{array}\right.$
+        ($s\in\R$). Montrer que les droites $(d)$ et $(CI)$ se coupent
+        orthogonalement.
+\end{enumerate}
+
+\exo[D'après bac 2026, Métropole]
+Dans un repère orthonormé $(O\,;\vect{i},\vect{j},\vect{k})$, on considère les points
+$A(2\,;1\,;1)$, $B(3\,;-2\,;0)$, $C(0\,;-1\,;1)$ et $D(0\,;0\,;2)$.
+\begin{enumerate}
+  \item Montrer que les points $A$, $B$ et $C$ définissent un plan.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que le vecteur $\vect{n}\begin{pmatrix}1\\-1\\4\end{pmatrix}$ est
+          normal au plan $(ABC)$.
+    \item En déduire qu'une équation cartésienne du plan $(ABC)$ est
+          $x-y+4z-5=0$.
+  \end{enumerate}
+  \item Vérifier qu'une représentation paramétrique de la droite $\Delta$ passant par
+        $D$ et orthogonale au plan $(ABC)$ est
+        $\left\{\begin{array}{l} x=t\\ y=-t\\ z=2+4t\end{array}\right.$ ($t\in\R$).
+  \item Montrer que le projeté orthogonal de $D$ sur le plan $(ABC)$ est le point
+        $H\left(-\frac{1}{6}\,;\frac{1}{6}\,;\frac{4}{3}\right)$.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que le triangle $ABC$ est isocèle en $B$.
+    \item Montrer que l'aire du triangle $ABC$ est $3\sqrt{2}$.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item En déduire que le volume du tétraèdre $ABCD$ est égal à $1$. \emph{On rappelle
+          que le volume d'un tétraèdre est $V=\frac{1}{3}\mathcal{B}h$, où $\mathcal{B}$
+          est l'aire d'une base et $h$ la hauteur relative à cette base.}
+    \item On admet que la distance du point $A$ au plan $(BCD)$ est égale à $\sqrt{2}$.
+          En déduire l'aire du triangle $BCD$.
+  \end{enumerate}
+  \item Dans cette question, on note $D_{k}$ le point de coordonnées $(0\,;0\,;k)$, où
+        $k$ est un nombre réel.
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer la valeur de $k$ pour laquelle les points $A$, $B$, $C$ et $D_{k}$
+          sont coplanaires. Quel est alors le projeté orthogonal du point $D_{k}$ sur
+          le plan $(ABC)$ ?
+    \item Peut-on trouver une valeur de $k$ telle que $A$ soit le projeté orthogonal de
+          $D_{k}$ sur le plan $(ABC)$ ?
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2025, Asie : une droite d'Euler]
+\og\emph{Dans un triangle non équilatéral, la droite d'Euler est la droite qui passe
+par trois points : le centre du cercle circonscrit à ce triangle (cercle passant par les
+trois sommets) ; le centre de gravité, à l'intersection des médianes ; l'orthocentre, à
+l'intersection des hauteurs.}\fg{} Le but de l'exercice est d'en étudier un exemple.
+
+\begin{minipage}[t]{0.56\linewidth}\raggedright
+On considère un cube $ABCDEFGH$ de côté une unité. L'espace est muni du repère
+orthonormé $(A\,;\vect{AB},\vect{AD},\vect{AE})$. On note $I$ le milieu du segment
+$[AB]$ et $J$ le milieu du segment $[BG]$.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \cubeespace{1.8}
+  \draw (A)--(G)--(B);
+  \path ($(A)!0.5!(B)$) node[croix]{} node[below,font=\footnotesize]{$I$}
+        ($(B)!0.5!(G)$) node[croix]{} node[right,font=\footnotesize]{$J$};
+\end{tikzpicture}
+\end{minipage}
+\begin{enumerate}
+  \item Donner sans justification les coordonnées des points $A$, $B$, $G$, $I$ et $J$.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer une représentation paramétrique de la droite $(AJ)$.
+    \item Montrer qu'une représentation paramétrique de la droite $(IG)$ est
+          $\left\{\begin{array}{l} x=\frac{1}{2}+\frac{1}{2}t\\ y=t\\ z=t\end{array}\right.$
+          ($t\in\R$).
+    \item Démontrer que les droites $(AJ)$ et $(IG)$ sont sécantes en un point $S$ de
+          coordonnées $\left(\frac{2}{3}\,;\frac{1}{3}\,;\frac{1}{3}\right)$.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que le vecteur $\vect{n}\begin{pmatrix}0\\-1\\1\end{pmatrix}$ est
+          normal au plan $(ABG)$.
+    \item En déduire une équation cartésienne du plan $(ABG)$.
+    \item On admet qu'une représentation paramétrique de la droite $(d)$ de vecteur
+          directeur $\vect{n}$ et passant par le point $K\left(\frac{1}{2}\,;0\,;1\right)$
+          est $\left\{\begin{array}{l} x=\frac{1}{2}\\ y=-t\\ z=1+t\end{array}\right.$
+          ($t\in\R$). Montrer que cette droite $(d)$ coupe le plan $(ABG)$ en un point
+          $L\left(\frac{1}{2}\,;\frac{1}{2}\,;\frac{1}{2}\right)$.
+    \item Montrer que le point $L$ est équidistant des points $A$, $B$ et $G$.
+  \end{enumerate}
+  \item Montrer que le triangle $ABG$ est rectangle en $B$.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Identifier le centre du cercle circonscrit, le centre de gravité et
+          l'orthocentre du triangle $ABG$ (aucune justification n'est attendue).
+    \item Vérifier par un calcul que ces trois points sont effectivement alignés.
+  \end{enumerate}
+\end{enumerate}
+
+\end{multicols}
+\end{document}

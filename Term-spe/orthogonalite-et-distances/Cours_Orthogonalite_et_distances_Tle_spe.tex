@@ -1,0 +1,1444 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{8}{Orthogonalité et distances}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{ORTHOGONALITÉ ET DISTANCES}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\newcommand{\cubeespace}[1]{%
+  \coordinate (A) at (0,0); \coordinate (B) at (#1,0);
+  \coordinate (D) at ({0.45*#1},{0.35*#1}); \coordinate (C) at ({#1+0.45*#1},{0.35*#1});
+  \coordinate (E) at (0,#1); \coordinate (F) at (#1,#1);
+  \coordinate (H) at ({0.45*#1},{#1+0.35*#1}); \coordinate (G) at ({#1+0.45*#1},{#1+0.35*#1});
+  \draw (A)--(B)--(F)--(E)--cycle (B)--(C)--(G)--(F) (E)--(H)--(G);
+  \draw[dashed] (A)--(D)--(C) (D)--(H);
+  \path[font=\footnotesize] (A) node[below left]{$A$} (B) node[below right]{$B$}
+    (C) node[right]{$C$} (D) node[above left]{$D$} (E) node[left]{$E$}
+    (F) node[below right]{$F$} (G) node[above right]{$G$} (H) node[above left]{$H$};}
+\newcommand{\accol}[1]{\left\{\renewcommand{\arraystretch}{1.3}\begin{array}{rcl}#1\end{array}\right.}
+
+\begin{remarquebox}[Durée du chapitre]
+À titre indicatif, ce chapitre est prévu pour un volume de $12$~h d'enseignement
+($6$ séances de $2$~h). Une partie importante des exercices est à faire en autonomie.
+\end{remarquebox}
+
+\partiecours{Rappels de 1re : le produit scalaire dans le plan}
+
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{definitionbox}[Définition 1 --- Produit scalaire dans le plan]
+Soit $\vect{u}=\vect{AB}$ et $\vect{v}=\vect{AC}$ deux vecteurs non nuls du plan. Le
+\textbf{produit scalaire} de $\vect{u}$ et $\vect{v}$ est le nombre réel
+\[
+\vect{u}\cdot\vect{v}=AB\times AC\times\cos\widehat{BAC}.
+\]
+Si l'un des deux vecteurs est nul, $\vect{u}\cdot\vect{v}=0$.
+\end{definitionbox}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \coordinate (A) at (0,0); \coordinate (B) at (3,0); \coordinate (C) at (2,1.6);
+  \coordinate (K) at (2,0);
+  \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below]{$\vect{u}$};
+  \draw[-{Stealth},coulCourbe,thick] (A)--(C) node[midway,above left]{$\vect{v}$};
+  \draw[dashed] (C)--(K);
+  \draw (K)++(-0.2,0)--++(0,0.2)--++(0.2,0);
+  \path (A) node[below left]{$A$} (B) node[below right]{$B$} (C) node[above]{$C$}
+        (K) node[below]{$K$};
+\end{tikzpicture}
+\end{minipage}
+
+\begin{proprietebox}[Propriété 1 --- Autres expressions, propriétés]
+\begin{itemize}
+  \item \textbf{Projeté orthogonal.} Si $K$ est le projeté orthogonal de $C$ sur la
+        droite $(AB)$ : $\vect{AB}\cdot\vect{AC}=\vect{AB}\cdot\vect{AK}$, qui vaut
+        $AB\times AK$ si $\vect{AB}$ et $\vect{AK}$ sont de même sens, $-AB\times AK$
+        sinon.
+  \item \textbf{Normes.} $\vect{u}\cdot\vect{u}=\|\vect{u}\|^{2}$ (carré scalaire) et,
+        en développant :
+        \begin{center}
+        $\|\vect{u}+\vect{v}\|^{2}=\|\vect{u}\|^{2}+2\,\vect{u}\cdot\vect{v}+\|\vect{v}\|^{2}$ \qquad
+        $\|\vect{u}-\vect{v}\|^{2}=\|\vect{u}\|^{2}-2\,\vect{u}\cdot\vect{v}+\|\vect{v}\|^{2}$
+        \end{center}
+  \item \textbf{Formules de polarisation} (on isole $\vect{u}\cdot\vect{v}$ dans les
+        égalités précédentes) :
+        \begin{center}
+        $\vect{u}\cdot\vect{v}=\frac{1}{2}\left(\|\vect{u}+\vect{v}\|^{2}-\|\vect{u}\|^{2}-\|\vect{v}\|^{2}\right)$ \qquad
+        $\vect{u}\cdot\vect{v}=\frac{1}{2}\left(\|\vect{u}\|^{2}+\|\vect{v}\|^{2}-\|\vect{u}-\vect{v}\|^{2}\right)$
+        \end{center}
+  \item \textbf{Coordonnées.} Dans un repère orthonormé du plan, si
+        $\vect{u}\begin{pmatrix}x\\y\end{pmatrix}$ et $\vect{v}\begin{pmatrix}x'\\y'\end{pmatrix}$, alors
+        $\vect{u}\cdot\vect{v}=xx'+yy'$.
+  \item \textbf{Calcul.} Pour tous vecteurs $\vect{u}$, $\vect{v}$, $\vect{w}$ et tout
+        nombre réel $k$ : $\vect{u}\cdot\vect{v}=\vect{v}\cdot\vect{u}$ (symétrie),
+        $\vect{u}\cdot(\vect{v}+\vect{w})=\vect{u}\cdot\vect{v}+\vect{u}\cdot\vect{w}$ et
+        $\vect{u}\cdot(k\vect{v})=k\,(\vect{u}\cdot\vect{v})$ (bilinéarité).
+  \item \textbf{Orthogonalité.} $\vect{u}$ et $\vect{v}$ sont orthogonaux si et
+        seulement si $\vect{u}\cdot\vect{v}=0$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Calculer un produit scalaire en choisissant la bonne expression]
+\etapeexemples
+Calculer chaque produit scalaire.
+\begin{questions}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$, dans un triangle $ABC$ où $AB=4$, $AC=5$ et
+        $\widehat{BAC}=\frac{\pi}{3}$.
+  \item $\vect{AB}\cdot\vect{AI}$, où $ABCD$ est un carré de côté $3$ et $I$ le milieu
+        de $[CD]$.
+  \item $\vect{u}\cdot\vect{v}$, avec $\vect{u}\begin{pmatrix}3\\-1\end{pmatrix}$ et
+        $\vect{v}\begin{pmatrix}2\\4\end{pmatrix}$ dans un repère orthonormé.
+  \item $\vect{u}\cdot\vect{v}$, sachant que $\|\vect{u}\|=3$, $\|\vect{v}\|=4$ et
+        $\|\vect{u}+\vect{v}\|=6$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= AB\times AC\times\cos\widehat{BAC} &\qquad& \rem{on connaît l'angle}\\
+\vect{AB}\cdot\vect{AC} &= 4\times 5\times\frac{1}{2} && \rem{$\cos\left(\frac{\pi}{3}\right)=\frac{1}{2}$}\\
+\vect{AB}\cdot\vect{AC} &= \res{10} &&
+\end{calculs}
+\cas{b)}
+\explique{Le projeté orthogonal de $I$ sur $(AB)$ est le milieu de $[AB]$ : il est à
+la distance $\frac{3}{2}$ de $A$, du côté de $B$.}{$(AB)$ et $(CD)$ parallèles}
+\begin{calculs}
+\vect{AB}\cdot\vect{AI} &= AB\times\frac{AB}{2} &\qquad& \rem{projeté, même sens}\\
+\vect{AB}\cdot\vect{AI} &= 3\times\frac{3}{2} &&\\
+\vect{AB}\cdot\vect{AI} &= \res{\frac{9}{2}} &&
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+\vect{u}\cdot\vect{v} &= 3\times 2+(-1)\times 4 &\qquad& \rem{$xx'+yy'$, repère orthonormé}\\
+\vect{u}\cdot\vect{v} &= \res{2} &&
+\end{calculs}
+\cas{d)}
+\begin{calculs}
+\vect{u}\cdot\vect{v} &= \frac{1}{2}\left(\|\vect{u}+\vect{v}\|^{2}-\|\vect{u}\|^{2}-\|\vect{v}\|^{2}\right) &\qquad& \rem{polarisation}\\
+\vect{u}\cdot\vect{v} &= \frac{1}{2}\left(36-9-16\right) &&\\
+\vect{u}\cdot\vect{v} &= \res{\frac{11}{2}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer chaque produit scalaire.
+\begin{questions}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AC}$, dans un triangle $ABC$ où $AB=6$, $AC=2$ et
+        $\widehat{BAC}=\frac{\pi}{4}$.
+  \item $\vect{AB}\cdot\vect{AJ}$, où $ABCD$ est un carré de côté $4$ et $J$ le milieu
+        de $[BC]$.
+  \item $\vect{u}\cdot\vect{v}$, avec $\vect{u}\begin{pmatrix}-2\\5\end{pmatrix}$ et
+        $\vect{v}\begin{pmatrix}4\\1\end{pmatrix}$ dans un repère orthonormé.
+  \item $\vect{u}\cdot\vect{v}$, sachant que $\|\vect{u}\|=2$, $\|\vect{v}\|=5$ et
+        $\|\vect{u}+\vect{v}\|=4$.
+\end{questions}
+\reponse{a)~$6\sqrt{2}$ ;\; b)~$16$ ;\; c)~$-3$ ;\; d)~$-\frac{13}{2}$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Produit scalaire dans l'espace}
+
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Deux vecteurs de l'espace, placés à partir d'un même point, $\vect{u}=\vect{AB}$ et
+$\vect{v}=\vect{AC}$, sont toujours dans un même plan : un plan qui contient $A$, $B$
+et $C$. On y calcule leur produit scalaire comme en 1re.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2.2}
+  \fill[coulExo,opacity=0.12] (A)--(F)--(H)--cycle;
+  \draw[-{Stealth},coulExo,thick] (A)--(F) node[midway,below right]{$\vect{u}$};
+  \draw[-{Stealth},coulCourbe,thick] (A)--(H) node[midway,above left]{$\vect{v}$};
+\end{tikzpicture}
+
+{\footnotesize Exemple dans un cube : $\vect{u}=\vect{AF}$ et $\vect{v}=\vect{AH}$ sont dans le plan $(AFH)$.}
+\end{minipage}
+
+\begin{definitionbox}[Définition 2 --- Produit scalaire dans l'espace]
+Soit $\vect{u}$ et $\vect{v}$ deux vecteurs de l'espace, et $A$, $B$, $C$ trois points
+tels que $\vect{u}=\vect{AB}$ et $\vect{v}=\vect{AC}$. Le \textbf{produit scalaire}
+$\vect{u}\cdot\vect{v}$ est le produit scalaire $\vect{AB}\cdot\vect{AC}$ calculé dans
+un plan contenant $A$, $B$ et $C$ :
+\[
+\vect{u}\cdot\vect{v}=AB\times AC\times\cos\widehat{BAC}\qquad(\text{et }0\text{ si l'un des vecteurs est nul}).
+\]
+$\vect{u}$ et $\vect{v}$ sont \textbf{orthogonaux} si l'un d'eux est nul, ou si les
+droites $(AB)$ et $(AC)$ sont perpendiculaires.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Les règles du plan restent vraies]
+Toutes les expressions et règles de la propriété 1 (sauf celle des coordonnées, qui
+vient en partie III) restent vraies dans l'espace : projeté orthogonal, normes et
+formules de polarisation, symétrie et bilinéarité. En particulier, $\vect{u}$ et
+$\vect{v}$ sont orthogonaux si et seulement si $\vect{u}\cdot\vect{v}=0$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 2 --- Calculer un produit scalaire dans un solide]
+\etapeexemples
+\begin{minipage}[t]{0.6\linewidth}\raggedright
+$ABCDEFGH$ est un cube d'arête $3$. Calculer :
+\begin{questions}[label=\alph*)]
+  \item $\vect{AB}\cdot\vect{AF}$ ;
+  \item $\vect{AB}\cdot\vect{GH}$ ;
+  \item $\vect{AF}\cdot\vect{AH}$ ;
+  \item $\vect{AE}\cdot\vect{BH}$.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}\centering\vspace{0pt}
+\begin{tikzpicture}
+  \cubeespace{2}
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}\par\nopagebreak
+\explique{Dans le carré $ABFE$, le projeté orthogonal de $F$ sur $(AB)$ est $B$.}{on
+travaille dans une face}
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{calculs}
+\vect{AB}\cdot\vect{AF} &= \vect{AB}\cdot\vect{AB} &\qquad& \rem{projeté orthogonal}\\
+\vect{AB}\cdot\vect{AF} &= AB^{2} &&\\
+\vect{AB}\cdot\vect{AF} &= \res{9} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2}
+  \fill[coulExo,opacity=0.12] (A)--(B)--(F)--(E)--cycle;
+  \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below]{$\vect{AB}$};
+  \draw[-{Stealth},coulCourbe,thick] (A)--(F) node[pos=0.6,below right]{$\vect{AF}$};
+  \draw ($(B)+(-0.2,0)$)--++(0,0.2)--++(0.2,0);
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}\par\nopagebreak
+\explique{$\vect{GH}=\vect{CD}=\vect{BA}$ : on remplace par un vecteur égal, de
+sens contraire à $\vect{AB}$.}{$ABCD$ et $CDHG$ sont des carrés}
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{calculs}
+\vect{AB}\cdot\vect{GH} &= \vect{AB}\cdot\vect{BA} &\qquad& \rem{$\vect{BA}=-\vect{AB}$}\\
+\vect{AB}\cdot\vect{GH} &= -AB^{2} &&\\
+\vect{AB}\cdot\vect{GH} &= \res{-9} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2}
+  \draw[-{Stealth},coulExo,thick] (A)--(B) node[midway,below]{$\vect{AB}$};
+  \draw[-{Stealth},coulCourbe,thick] (G)--(H) node[midway,above]{$\vect{GH}$};
+\end{tikzpicture}
+\end{minipage}
+\cas{c)}\par\nopagebreak
+\explique{$AF$, $AH$ et $FH$ sont des diagonales de faces, de même longueur
+$3\sqrt{2}$ : le triangle $AFH$ est équilatéral, donc
+$\widehat{FAH}=\frac{\pi}{3}$.}{diagonale d'un carré de côté $3$}
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{calculs}
+\vect{AF}\cdot\vect{AH} &= AF\times AH\times\cos\widehat{FAH} &\qquad& \rem{avec l'angle}\\
+\vect{AF}\cdot\vect{AH} &= 3\sqrt{2}\times 3\sqrt{2}\times\frac{1}{2} &&\\
+\vect{AF}\cdot\vect{AH} &= \res{9} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2}
+  \fill[coulExo,opacity=0.12] (A)--(F)--(H)--cycle;
+  \draw (F)--(H);
+  \draw[-{Stealth},coulExo,thick] (A)--(F) node[pos=0.6,below right]{$\vect{AF}$};
+  \draw[-{Stealth},coulCourbe,thick] (A)--(H) node[midway,above left]{$\vect{AH}$};
+\end{tikzpicture}
+\end{minipage}
+\cas{d)}\par\nopagebreak
+\explique{On décompose $\vect{BH}$ par la relation de Chasles en suivant des arêtes :
+$\vect{BH}=\vect{BA}+\vect{AE}+\vect{EH}$ (en pointillés sur la figure).}{des vecteurs
+simples à multiplier par $\vect{AE}$}
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{calculs}
+\vect{AE}\cdot\vect{BH} &= \vect{AE}\cdot\left(\vect{BA}+\vect{AE}+\vect{EH}\right) &\qquad& \rem{Chasles}\\
+\vect{AE}\cdot\vect{BH} &= \vect{AE}\cdot\vect{BA}+\vect{AE}\cdot\vect{AE}+\vect{AE}\cdot\vect{EH} && \rem{bilinéarité}\\
+\vect{AE}\cdot\vect{BH} &= 0+AE^{2}+0 && \rem{arêtes perpendiculaires}\\
+\vect{AE}\cdot\vect{BH} &= \res{9} &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2}
+  \draw[-{Stealth},coulCourbe,thick] (B)--(H) node[pos=0.7,right]{$\vect{BH}$};
+  \draw[-{Stealth},coulExo,thick] (A)--(E) node[midway,left]{$\vect{AE}$};
+  \draw[coulCourbe,thick,dash pattern=on 2pt off 1.5pt] (B)--(A) (E)--(H);
+\end{tikzpicture}
+\end{minipage}
+\end{correction}
+
+\etape{À vous de jouer}
+$ABCDEFGH$ est un cube d'arête $2$. Calculer :
+\begin{questions}[label=\alph*)]
+  \item $\vect{AD}\cdot\vect{AH}$ ;
+  \item $\vect{AD}\cdot\vect{GF}$ ;
+  \item $\vect{DE}\cdot\vect{DG}$ ;
+  \item $\vect{AB}\cdot\vect{DF}$.
+\end{questions}
+\reponse{a)~$4$ ;\; b)~$-4$ ;\; c)~$4$ ;\; d)~$4$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 9}
+
+\partiecours{Produit scalaire dans un repère orthonormé}
+
+\begin{definitionbox}[Définition 3 --- Base et repère orthonormés]
+Une base $(\vect{i},\vect{j},\vect{k})$ de l'espace est \textbf{orthonormée} si ses
+trois vecteurs sont orthogonaux deux à deux et de norme $1$. Un repère
+$(O\,;\vect{i},\vect{j},\vect{k})$ est \textbf{orthonormé} si sa base l'est.
+
+Exemple : si $ABCDEFGH$ est un cube d'arête $1$, le repère
+$(A\,;\vect{AB},\vect{AD},\vect{AE})$ est orthonormé.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 3 --- Calculs en repère orthonormé]
+Dans un repère orthonormé, soit $\vect{u}\begin{pmatrix}x\\y\\z\end{pmatrix}$ et
+$\vect{v}\begin{pmatrix}x'\\y'\\z'\end{pmatrix}$, et deux points $A(x_{A}\,;y_{A}\,;z_{A})$ et $B(x_{B}\,;y_{B}\,;z_{B})$.
+\[
+\vect{u}\cdot\vect{v}=xx'+yy'+zz'
+\qquad
+\|\vect{u}\|=\sqrt{x^{2}+y^{2}+z^{2}}
+\qquad
+AB=\sqrt{(x_{B}-x_{A})^{2}+(y_{B}-y_{A})^{2}+(z_{B}-z_{A})^{2}}
+\]
+\end{proprietebox}
+
+\textbf{D'où vient la première formule ?} On écrit $\vect{u}=x\vect{i}+y\vect{j}+z\vect{k}$
+et $\vect{v}=x'\vect{i}+y'\vect{j}+z'\vect{k}$, puis on développe par bilinéarité : les
+neuf produits se réduisent à trois, car $\vect{i}\cdot\vect{i}$, $\vect{j}\cdot\vect{j}$ et $\vect{k}\cdot\vect{k}$ valent $1$
+(norme $1$) et $\vect{i}\cdot\vect{j}$, $\vect{i}\cdot\vect{k}$ et $\vect{j}\cdot\vect{k}$ sont nuls (orthogonaux).
+La norme vient de $\|\vect{u}\|^{2}=\vect{u}\cdot\vect{u}=x^{2}+y^{2}+z^{2}$.
+
+\begin{methodebox}[Méthode 3 --- Calculer des longueurs, un produit scalaire et un angle avec des coordonnées]
+\etapeexemples
+Dans un repère orthonormé de l'espace, on considère les points $A(1\,;0\,;2)$,
+$B(3\,;1\,;0)$ et $C(1\,;3\,;-1)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les longueurs $AB$ et $AC$.
+  \item Calculer le produit scalaire $\vect{AB}\cdot\vect{AC}$.
+  \item En déduire une mesure de l'angle $\widehat{BAC}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On a $\vect{AB}\begin{pmatrix}3-1\\1-0\\0-2\end{pmatrix}$, soit $\vect{AB}\begin{pmatrix}2\\1\\-2\end{pmatrix}$, et
+$\vect{AC}\begin{pmatrix}0\\3\\-3\end{pmatrix}$.}{coordonnées de $B$ moins celles de $A$}
+\explique{Le repère est orthonormé, donc :}{condition pour utiliser les formules}
+\begin{calculs}
+AB &= \sqrt{2^{2}+1^{2}+(-2)^{2}} &\qquad& \\
+AB &= \sqrt{9} &&\\
+AB &= \res{3} &&
+\end{calculs}
+\begin{calculs}
+AC &= \sqrt{0^{2}+3^{2}+(-3)^{2}} &\qquad& \\
+AC &= \sqrt{18} &&\\
+AC &= \res{3\sqrt{2}} && \rem{$\sqrt{18}=\sqrt{9\times 2}$}
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\vect{AB}\cdot\vect{AC} &= 2\times 0+1\times 3+(-2)\times(-3) &\qquad& \rem{$xx'+yy'+zz'$}\\
+\vect{AB}\cdot\vect{AC} &= \res{9} &&
+\end{calculs}
+\cas{c)}
+\explique{On a aussi $\vect{AB}\cdot\vect{AC}=AB\times AC\times\cos\widehat{BAC}$, donc
+$9=3\times 3\sqrt{2}\times\cos\widehat{BAC}$ :}{les deux expressions du produit scalaire}
+\begin{calculs}
+\cos\widehat{BAC} &= \frac{9}{3\times 3\sqrt{2}} &\qquad& \\
+\cos\widehat{BAC} &= \frac{1}{\sqrt{2}} &&\\
+\cos\widehat{BAC} &= \frac{\sqrt{2}}{2} &&
+\end{calculs}
+\explique{Une mesure de l'angle $\widehat{BAC}$ est donc \res{$\frac{\pi}{4}$}
+radian, soit $45^{\circ}$.}{un angle géométrique est entre $0$ et $\pi$}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé de l'espace, on considère les points $A(2\,;-1\,;0)$,
+$B(3\,;0\,;0)$ et $C(2\,;0\,;1)$.
+\begin{questions}[label=\alph*)]
+  \item Calculer les longueurs $AB$ et $AC$.
+  \item Calculer le produit scalaire $\vect{AB}\cdot\vect{AC}$.
+  \item En déduire une mesure de l'angle $\widehat{BAC}$.
+\end{questions}
+\reponse{a)~$AB=AC=\sqrt{2}$ ;\; b)~$1$ ;\; c)~$\frac{\pi}{3}$ ($60^{\circ}$).}
+\end{methodebox}
+
+\afaire{exercices 10 à 14}
+
+\partiecours{Droites orthogonales, droite orthogonale à un plan}
+
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{definitionbox}[Définition 4 --- Droites orthogonales]
+Deux droites de l'espace sont \textbf{orthogonales} si leurs vecteurs directeurs sont
+orthogonaux.
+
+Deux droites orthogonales ne sont pas forcément sécantes. Deux droites orthogonales
+et sécantes sont dites \textbf{perpendiculaires}.
+
+Dans le cube : $(AB)$ et $(EH)$ sont orthogonales, sans être sécantes ; $(AB)$ et
+$(AE)$ sont perpendiculaires.
+\end{definitionbox}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}
+  \cubeespace{2}
+  \draw[coulExo,line width=1.2pt] (A)--(B);
+  \draw[coulCourbe,line width=1.2pt] (E)--(H);
+  \draw[coulCourbe,line width=1.2pt] (A)--(E);
+\end{tikzpicture}
+\end{minipage}
+
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{definitionbox}[Définition 5 --- Droite orthogonale à un plan]
+Une droite est \textbf{orthogonale à un plan} si elle est orthogonale à toutes les
+droites de ce plan.
+\end{definitionbox}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15] (0,0)--(3,0)--(3.8,1.1)--(0.8,1.1)--cycle;
+  \draw (0,0)--(3,0)--(3.8,1.1)--(0.8,1.1)--cycle;
+  \coordinate (O) at (1.9,0.55);
+  \draw[coulCourbe,thick] (0.7,0.15)--(1.5,0.95);
+  \draw[coulCourbe,thick] (2.3,0.15)--(3.5,0.75);
+  \draw[coulCourbe,thick] (2.4,0.97)--(3.6,0.97);
+  \draw[coulExo,thick] (O)--(1.9,2.1) node[right]{$(d)$};
+  \draw[coulExo,thick,dashed] (O)--(1.9,0);
+  \draw[coulExo,thick] (1.9,0)--(1.9,-0.4);
+  \path (O) node[croix]{};
+  \node at (0.35,0.12) {$\mathcal{P}$};
+\end{tikzpicture}
+
+{\footnotesize $(d)$ est orthogonale à toutes les droites de $\mathcal{P}$, même à
+celles qu'elle ne coupe pas (en couleur).}
+\end{minipage}
+
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{proprietebox}[Propriété 4 --- Caractérisation (admise)]
+Une droite est orthogonale à un plan si et seulement si elle est orthogonale à
+\textbf{deux droites sécantes} de ce plan.
+\end{proprietebox}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15] (0,0)--(3,0)--(3.8,1.1)--(0.8,1.1)--cycle;
+  \draw (0,0)--(3,0)--(3.8,1.1)--(0.8,1.1)--cycle;
+  \coordinate (O) at (1.9,0.55);
+  \draw[coulCourbe,thick] (0.5,0.3)--(3.3,0.8) node[right]{$(d_{1})$};
+  \draw[coulCourbe,thick] (1.1,0.95)--(2.8,0.1) node[below]{$(d_{2})$};
+  \draw[coulExo,thick] (O)--(1.9,2.1) node[right]{$(d)$};
+  \draw[coulExo,thick,dashed] (O)--(1.9,0);
+  \draw[coulExo,thick] (1.9,0)--(1.9,-0.4);
+  \draw ($(O)+(0,0.25)$)--++(0.25,0.045)--++(0,-0.25);
+  \draw ($(O)+(0,0.25)$)--++(-0.22,0.11)--++(0,-0.25);
+  \node at (0.4,0.15) {$\mathcal{P}$};
+\end{tikzpicture}
+
+{\footnotesize $(d)\perp(d_{1})$ et $(d)\perp(d_{2})$, sécantes dans $\mathcal{P}$.}
+\end{minipage}
+
+\begin{methodebox}[Méthode 4 --- Démontrer que deux droites sont orthogonales]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item \begin{minipage}[t]{0.66\linewidth}\raggedright
+        $ABCD$ est un tétraèdre régulier (ses quatre faces sont des triangles
+        équilatéraux) d'arête $4$. Démontrer que les droites $(AD)$ et $(BC)$ sont
+        orthogonales.
+        \end{minipage}\hfill
+        \begin{minipage}[t]{0.28\linewidth}\centering\vspace{0pt}
+        \begin{tikzpicture}[font=\footnotesize,scale=0.8]
+          \coordinate (B) at (0,0); \coordinate (C) at (2.6,0.1);
+          \coordinate (D) at (1.6,0.8); \coordinate (A) at (1.3,2.4);
+          \draw (A)--(B)--(C)--cycle (A)--(D)--(C);
+          \draw[dashed] (B)--(D);
+          \path (A) node[above]{$A$} (B) node[left]{$B$} (C) node[right]{$C$}
+                (D) node[above right]{$D$};
+        \end{tikzpicture}
+        \end{minipage}
+  \item $ABCDEFGH$ est un cube. Dans le repère orthonormé
+        $(A\,;\vect{AB},\vect{AD},\vect{AE})$, démontrer que les droites $(DF)$ et
+        $(EB)$ sont orthogonales.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On montre que $\vect{AD}\cdot\vect{BC}=0$. On décompose $\vect{BC}$ en passant
+par $A$, pour faire apparaître des angles des faces :}{relation de Chasles}
+\begin{calculs}
+\vect{AD}\cdot\vect{BC} &= \vect{AD}\cdot\left(\vect{BA}+\vect{AC}\right) &\qquad& \rem{Chasles}\\
+\vect{AD}\cdot\vect{BC} &= -\vect{AD}\cdot\vect{AB}+\vect{AD}\cdot\vect{AC} && \rem{bilinéarité, $\vect{BA}=-\vect{AB}$}
+\end{calculs}
+\explique{Le triangle $ABD$ est équilatéral, donc $\widehat{BAD}=\frac{\pi}{3}$ et
+$\vect{AD}\cdot\vect{AB}=4\times 4\times\cos\left(\frac{\pi}{3}\right)=8$.}{face du tétraèdre}
+\explique{De même, dans le triangle équilatéral $ACD$ : $\vect{AD}\cdot\vect{AC}=8$.}{}
+\explique{Donc $\vect{AD}\cdot\vect{BC}=-8+8=0$ : les vecteurs $\vect{AD}$ et $\vect{BC}$
+sont orthogonaux, et \res{les droites $(AD)$ et $(BC)$ sont orthogonales}.}{vecteurs
+directeurs orthogonaux}
+\cas{b)}\par\nopagebreak
+\explique{Dans ce repère : $D(0\,;1\,;0)$, $F(1\,;0\,;1)$, $E(0\,;0\,;1)$ et
+$B(1\,;0\,;0)$, d'où $\vect{DF}\begin{pmatrix}1\\-1\\1\end{pmatrix}$ et
+$\vect{EB}\begin{pmatrix}1\\0\\-1\end{pmatrix}$.}{on lit les coordonnées}
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{calculs}
+\vect{DF}\cdot\vect{EB} &= 1\times 1+(-1)\times 0+1\times(-1) &\qquad& \rem{repère orthonormé}\\
+\vect{DF}\cdot\vect{EB} &= 0 &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \cubeespace{2}
+  \draw[coulExo,thick] (D)--(F) node[pos=0.8,left]{$(DF)$};
+  \draw[coulCourbe,thick] (E)--(B) node[pos=0.8,below left]{$(EB)$};
+\end{tikzpicture}
+\end{minipage}
+\explique{Les vecteurs directeurs $\vect{DF}$ et $\vect{EB}$ sont orthogonaux, donc
+\res{les droites $(DF)$ et $(EB)$ sont orthogonales}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item $ABCD$ est un tétraèdre régulier d'arête $6$. Démontrer que les droites $(AB)$
+        et $(CD)$ sont orthogonales.
+  \item $ABCDEFGH$ est un cube. Dans le repère orthonormé
+        $(A\,;\vect{AB},\vect{AD},\vect{AE})$, démontrer que les droites $(HB)$ et
+        $(AC)$ sont orthogonales.
+\end{questions}
+\reponse{a)~$\vect{AB}\cdot\vect{CD}=-18+18=0$ ;\; b)~$\vect{HB}\cdot\vect{AC}=1-1+0=0$.}
+\end{methodebox}
+
+\afaire{exercices 15 à 18}
+
+\partiecours{Vecteur normal à un plan}
+
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{definitionbox}[Définition 6 --- Vecteur normal]
+Un vecteur non nul $\vect{n}$ est \textbf{normal} à un plan $\mathcal{P}$ s'il dirige
+une droite orthogonale à $\mathcal{P}$.
+\end{definitionbox}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15] (0,0)--(3,0)--(3.8,1)--(0.8,1)--cycle;
+  \draw (0,0)--(3,0)--(3.8,1)--(0.8,1)--cycle;
+  \coordinate (A) at (1.9,0.5);
+  \draw[-{Stealth},coulExo,thick] (A)--(1.9,2) node[midway,right]{$\vect{n}$};
+  \draw[-{Stealth},coulCourbe,thick] (A)--(2.9,0.5) node[midway,below]{$\vect{u}$};
+  \draw[-{Stealth},coulCourbe,thick] (A)--(1.5,0.9) node[midway,left]{$\vect{v}$};
+  \node at (0.5,0.2) {$\mathcal{P}$};
+\end{tikzpicture}
+\end{minipage}
+
+\begin{proprietebox}[Propriété 5 --- Vecteur normal et orthogonalité]
+\begin{itemize}
+  \item Un vecteur non nul $\vect{n}$ est normal à un plan $\mathcal{P}$ si et
+        seulement s'il est orthogonal à \textbf{deux vecteurs non colinéaires}
+        $\vect{u}$ et $\vect{v}$ de $\mathcal{P}$ (propriété 4).
+  \item Une droite est orthogonale à un plan si et seulement si un vecteur directeur
+        de la droite est colinéaire à un vecteur normal du plan.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 5 --- Montrer qu'un vecteur est normal à un plan, ou en déterminer un]
+\etapeexemples
+Dans un repère orthonormé de l'espace :
+\begin{questions}[label=\alph*)]
+  \item on considère les points $A(1\,;2\,;0)$, $B(3\,;1\,;1)$ et $C(0\,;4\,;1)$.
+        Montrer que $A$, $B$ et $C$ définissent un plan, puis que le vecteur
+        $\vect{n}\begin{pmatrix}1\\1\\-1\end{pmatrix}$ est normal au plan $(ABC)$ ;
+  \item on considère les points $D(1\,;0\,;1)$, $E(2\,;1\,;3)$ et $F(3\,;-1\,;1)$, qui
+        définissent un plan. Déterminer un vecteur normal au plan $(DEF)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{AB}\begin{pmatrix}2\\-1\\1\end{pmatrix}$ et $\vect{AC}\begin{pmatrix}-1\\2\\1\end{pmatrix}$ ont
+des coordonnées non proportionnelles ($\frac{2}{-1}\neq\frac{1}{1}$) : ils ne sont pas
+colinéaires.}{}
+\explique{Les points $A$, $B$ et $C$ ne sont pas alignés, donc ils définissent un
+plan.}{}
+\explique{Le repère est orthonormé :}{}
+\begin{calculs}
+\vect{n}\cdot\vect{AB} &= 1\times 2+1\times(-1)+(-1)\times 1 &\qquad& \\
+\vect{n}\cdot\vect{AB} &= 0 &&
+\end{calculs}
+\begin{calculs}
+\vect{n}\cdot\vect{AC} &= 1\times(-1)+1\times 2+(-1)\times 1 &\qquad& \\
+\vect{n}\cdot\vect{AC} &= 0 &&
+\end{calculs}
+\explique{$\vect{n}$ est orthogonal à deux vecteurs non colinéaires du plan $(ABC)$,
+donc \res{$\vect{n}$ est normal au plan $(ABC)$}.}{propriété 5}
+\cas{b)}
+\explique{On a $\vect{DE}\begin{pmatrix}1\\1\\2\end{pmatrix}$ et $\vect{DF}\begin{pmatrix}2\\-1\\0\end{pmatrix}$, non
+colinéaires. On cherche un vecteur non nul $\vect{n}\begin{pmatrix}a\\b\\c\end{pmatrix}$ orthogonal à $\vect{DE}$ et à
+$\vect{DF}$ :}{deux équations, trois inconnues}
+\begin{calculs}
+& \accol{\vect{n}\cdot\vect{DE} &=& 0\\ \vect{n}\cdot\vect{DF} &=& 0} &\qquad& \\
+\iff & \accol{a+b+2c &=& 0\\ 2a-b &=& 0} && \rem{repère orthonormé}\\
+\iff & \accol{a+2a+2c &=& 0\\ b &=& 2a} && \rem{on remplace $b$ par $2a$}\\
+\iff & \accol{c &=& -\frac{3}{2}a\\ b &=& 2a} &&
+\end{calculs}
+\explique{On choisit $a=2$ (pour éviter les fractions) : $b=4$ et $c=-3$.}{un choix
+parmi une infinité}
+\explique{Le vecteur \res{$\vect{n}\begin{pmatrix}2\\4\\-3\end{pmatrix}$} est normal au plan $(DEF)$.}{tout
+vecteur colinéaire non nul convient aussi}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé de l'espace :
+\begin{questions}[label=\alph*)]
+  \item on considère les points $A(2\,;0\,;1)$, $B(3\,;2\,;1)$ et $C(1\,;1\,;3)$.
+        Montrer que $A$, $B$ et $C$ définissent un plan, puis que le vecteur
+        $\vect{n}\begin{pmatrix}4\\-2\\3\end{pmatrix}$ est normal au plan $(ABC)$ ;
+  \item on considère les points $D(0\,;1\,;2)$, $E(1\,;0\,;3)$ et $F(0\,;3\,;3)$, qui
+        définissent un plan. Déterminer un vecteur normal au plan $(DEF)$.
+\end{questions}
+\reponse{a)~$\vect{n}\cdot\vect{AB}=\vect{n}\cdot\vect{AC}=0$ ;\; b)~par exemple
+$\vect{n}\begin{pmatrix}3\\1\\-2\end{pmatrix}$.}
+\end{methodebox}
+
+\afaire{exercices 19 à 22}
+
+\partiecours{Équation cartésienne d'un plan}
+
+\begin{proprietebox}[Théorème 1 --- Équation cartésienne d'un plan]
+L'espace est muni d'un repère orthonormé.
+\begin{itemize}
+  \item Le plan $\mathcal{P}$ passant par un point $A$ et de vecteur normal
+        $\vect{n}\begin{pmatrix}a\\b\\c\end{pmatrix}$ est l'ensemble des points $M$ tels que
+        $\vect{AM}\cdot\vect{n}=0$. Il a une équation de la forme
+        \[
+        ax+by+cz+d=0,\quad\text{où }d\text{ est un nombre réel.}
+        \]
+  \item Réciproquement, si $a$, $b$, $c$ ne sont pas tous nuls, l'ensemble des points
+        $M(x\,;y\,;z)$ tels que $ax+by+cz+d=0$ est un plan, de vecteur normal
+        $\vect{n}\begin{pmatrix}a\\b\\c\end{pmatrix}$.
+\end{itemize}
+\end{proprietebox}
+
+\textbf{\color{coulMeth}Démonstration} (exigible) du premier point.
+Soit $A(x_{A}\,;y_{A}\,;z_{A})$ et $M(x\,;y\,;z)$ un point de l'espace. Le point $M$
+est dans $\mathcal{P}$ si et seulement si $\vect{AM}$ est un vecteur de $\mathcal{P}$,
+c'est-à-dire orthogonal au vecteur normal $\vect{n}$ : $\vect{AM}\cdot\vect{n}=0$.
+
+\smallskip
+On calcule ce produit scalaire avec $\vect{AM}\begin{pmatrix}x-x_{A}\\y-y_{A}\\z-z_{A}\end{pmatrix}$ :
+\begin{calculs}
+\vect{AM}\cdot\vect{n} &= a(x-x_{A})+b(y-y_{A})+c(z-z_{A}) &\qquad& \rem{repère orthonormé}\\
+\vect{AM}\cdot\vect{n} &= ax+by+cz-(ax_{A}+by_{A}+cz_{A}) && \rem{on développe}
+\end{calculs}
+On pose $d=-(ax_{A}+by_{A}+cz_{A})$, qui ne dépend que de $A$ et de $\vect{n}$. Donc
+$M\in\mathcal{P}$ si et seulement si $ax+by+cz+d=0$.
+
+\begin{methodebox}[Méthode 6 --- Déterminer une équation cartésienne d'un plan]
+\etapeexemples
+Dans un repère orthonormé de l'espace, déterminer une équation cartésienne :
+\begin{questions}[label=\alph*)]
+  \item du plan $\mathcal{P}$ passant par $A(2\,;-1\,;3)$ et de vecteur normal
+        $\vect{n}\begin{pmatrix}1\\-2\\4\end{pmatrix}$ ;
+  \item du plan $(ABC)$, avec $A(1\,;2\,;0)$, $B(3\,;1\,;1)$, $C(0\,;4\,;1)$ (méthode 5 :
+        $\vect{n}\begin{pmatrix}1\\1\\-1\end{pmatrix}$ est normal à $(ABC)$) ;
+  \item du plan médiateur $\mathcal{Q}$ du segment $[EF]$, avec $E(1\,;3\,;-2)$ et
+        $F(3\,;-1\,;4)$ : c'est le plan qui passe par le milieu de $[EF]$ et qui est
+        orthogonal à $(EF)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{n}\begin{pmatrix}1\\-2\\4\end{pmatrix}$ est normal à $\mathcal{P}$, donc $\mathcal{P}$ a une équation
+de la forme $x-2y+4z+d=0$, où $d$ est un nombre réel.}{théorème 1}
+\explique{$A\in\mathcal{P}$, donc ses coordonnées vérifient l'équation :}{on trouve $d$}
+\begin{calculs}
+2-2\times(-1)+4\times 3+d &= 0 &\qquad& \\
+\iff 16+d &= 0 &&\\
+\iff d &= -16 &&
+\end{calculs}
+\explique{Une équation cartésienne de $\mathcal{P}$ est \res{$x-2y+4z-16=0$}.}{}
+\cas{b)}
+\explique{$(ABC)$ a une équation de la forme $x+y-z+d=0$. $A\in(ABC)$, donc
+$1+2-0+d=0$, d'où $d=-3$.}{même démarche}
+\explique{Une équation cartésienne de $(ABC)$ est \res{$x+y-z-3=0$}.}{contrôle avec $B$ :
+$3+1-1-3=0$}
+\cas{c)}
+\explique{Le milieu de $[EF]$ est $I\left(\frac{1+3}{2}\,;\frac{3-1}{2}\,;\frac{-2+4}{2}\right)$,
+soit $I(2\,;1\,;1)$.}{un point du plan}
+\explique{$\vect{EF}\begin{pmatrix}2\\-4\\6\end{pmatrix}$ dirige une droite orthogonale à $\mathcal{Q}$ : il est normal à
+$\mathcal{Q}$, comme $\frac{1}{2}\vect{EF}\begin{pmatrix}1\\-2\\3\end{pmatrix}$.}{un vecteur normal, simplifié}
+\explique{$\mathcal{Q}$ a une équation de la forme $x-2y+3z+d=0$ ; $I\in\mathcal{Q}$,
+donc $2-2+3+d=0$, d'où $d=-3$.}{}
+\explique{Une équation cartésienne de $\mathcal{Q}$ est \res{$x-2y+3z-3=0$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé de l'espace, déterminer une équation cartésienne :
+\begin{questions}[label=\alph*)]
+  \item du plan $\mathcal{P}$ passant par $A(-1\,;2\,;1)$ et de vecteur normal
+        $\vect{n}\begin{pmatrix}3\\-1\\2\end{pmatrix}$ ;
+  \item du plan $(ABC)$, avec $A(2\,;0\,;1)$, $B(3\,;2\,;1)$, $C(1\,;1\,;3)$ (« À vous de
+        jouer » de la méthode 5 : $\vect{n}\begin{pmatrix}4\\-2\\3\end{pmatrix}$ est normal à $(ABC)$) ;
+  \item du plan médiateur $\mathcal{Q}$ du segment $[EF]$, avec $E(0\,;2\,;1)$ et
+        $F(4\,;-2\,;3)$.
+\end{questions}
+\reponse{a)~$3x-y+2z+3=0$ ;\; b)~$4x-2y+3z-11=0$ ;\; c)~$2x-2y+z-6=0$.}
+\end{methodebox}
+
+\begin{proprietebox}[Propriété 6 --- Positions relatives d'une droite et d'un plan]
+Soit $(d)$ une droite passant par $A$, de vecteur directeur $\vect{u}$, et $\mathcal{P}$
+un plan de vecteur normal $\vect{n}$. Trois cas sont possibles.
+
+\smallskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15,shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,0)}] at (2.2,0.17) {$\mathcal{P}$};
+  \draw[-{Stealth},thick] (0.9,0.3)--(0.9,1.0) node[midway,left]{$\vect{n}$};
+  \draw[coulExo,thick] (1.9,0.45)--(2.4,1.9) node[right]{$(d)$};
+  \draw[coulExo,thick,dashed] (1.9,0.45)--(1.75,0);
+  \draw[coulExo,thick] (1.75,0)--(1.65,-0.3);
+  \path (1.9,0.45) node[croix]{};
+\end{tikzpicture}
+
+\textbf{Sécants} en un point\\
+$\vect{u}\cdot\vect{n}\neq 0$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15,shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,0)}] at (2.2,0.17) {$\mathcal{P}$};
+  \draw[-{Stealth},thick] (0.9,0.3)--(0.9,1.0) node[midway,left]{$\vect{n}$};
+  \draw[coulExo,thick] (0.6,1.5)--(3.2,1.7) node[above]{$(d)$};
+  \path (1.4,1.56) node[croix]{} node[above]{$A$};
+  \draw (1.5,-0.3) node{};
+\end{tikzpicture}
+
+\textbf{Strictement parallèles}\\
+$\vect{u}\cdot\vect{n}=0$ et $A\notin\mathcal{P}$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15,shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,0)}] at (2.2,0.17) {$\mathcal{P}$};
+  \draw[-{Stealth},thick] (0.9,0.3)--(0.9,1.0) node[midway,left]{$\vect{n}$};
+  \draw[coulExo,thick] (0.4,0.25)--(3.0,0.65) node[above left]{$(d)$};
+  \path (1.6,0.43) node[croix]{} node[below]{$A$};
+  \draw (1.5,-0.3) node{};
+\end{tikzpicture}
+
+\textbf{Droite contenue dans le plan}\\
+$\vect{u}\cdot\vect{n}=0$ et $A\in\mathcal{P}$
+\end{minipage}
+
+\smallskip
+En effet, $\vect{u}\cdot\vect{n}=0$ signifie que $\vect{u}$ est un vecteur de la
+direction de $\mathcal{P}$ : la droite est alors parallèle au plan.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 7 --- Positions relatives de deux plans]
+Soit $\mathcal{P}$ et $\mathcal{P}'$ deux plans de vecteurs normaux $\vect{n}$ et
+$\vect{n'}$, et $A$ un point de $\mathcal{P}$. Trois cas sont possibles.
+
+\smallskip
+\begin{minipage}[t]{0.32\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15,shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,0)}] at (2.2,0.17) {$\mathcal{P}$};
+  \fill[coulExo,opacity=0.15] (0.35,-0.5)--(2.95,-0.5)--(2.95,1.4)--(0.35,1.4)--cycle;
+  \draw[coulExo] (0.35,-0.5)--(2.95,-0.5)--(2.95,1.4)--(0.35,1.4)--cycle;
+  \draw[thick] (0.35,0.45)--(2.95,0.45);
+  \node[coulExo] at (2.6,1.15) {$\mathcal{P}'$};
+\end{tikzpicture}
+
+\textbf{Sécants} suivant une droite\\
+$\vect{n}$ et $\vect{n'}$ non colinéaires
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15,shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,0)}] at (2.2,0.17) {$\mathcal{P}$};
+  \fill[gray!15,shift={(0,1.1)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,1.1)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,1.1)}] at (2.2,0.17) {$\mathcal{P}'$};
+  \path (1.2,0.5) node[croix]{} node[below]{$A$};
+\end{tikzpicture}
+
+\textbf{Strictement parallèles}\\
+$\vect{n}$ et $\vect{n'}$ colinéaires et $A\notin\mathcal{P}'$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15,shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \draw[shift={(0,0)}] (0,0)--(2.6,0)--(3.3,0.9)--(0.7,0.9)--cycle;
+  \node[shift={(0,0)}] at (2.2,0.17) {$\mathcal{P}=\mathcal{P}'$};
+  \path (1.2,0.5) node[croix]{} node[below]{$A$};
+  \draw (1.5,1.6) node{};
+\end{tikzpicture}
+
+\textbf{Confondus}\\
+$\vect{n}$ et $\vect{n'}$ colinéaires et $A\in\mathcal{P}'$
+\end{minipage}
+
+\smallskip
+Deux plans sont dits \textbf{perpendiculaires} si $\vect{n}\cdot\vect{n'}=0$ ; ils
+sont alors sécants (premier cas).
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Étudier la position relative d'une droite et d'un plan]
+\etapeexemples
+Dans un repère orthonormé, on considère le plan $\mathcal{P}\colon 2x-y+z-3=0$ et les
+droites
+\[
+(d)\colon\left\{\begin{array}{l} x=1+t\\ y=-1+2t\\ z=2-t\end{array}\right.
+\qquad
+(d')\colon\left\{\begin{array}{l} x=2t\\ y=1+t\\ z=-3t\end{array}\right.
+\qquad (t\in\R).
+\]
+\begin{questions}[label=\alph*)]
+  \item Montrer que $(d)$ et $\mathcal{P}$ sont sécants et déterminer leur point
+        d'intersection.
+  \item Étudier la position relative de $(d')$ et de $\mathcal{P}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{n}\begin{pmatrix}2\\-1\\1\end{pmatrix}$ est normal à $\mathcal{P}$ et $\vect{u}\begin{pmatrix}1\\2\\-1\end{pmatrix}$ dirige
+$(d)$.}{on lit les coefficients}
+\explique{$\vect{u}\cdot\vect{n}=1\times 2+2\times(-1)+(-1)\times 1=-1$, donc
+$\vect{u}\cdot\vect{n}\neq 0$ : $(d)$ et $\mathcal{P}$ sont sécants.}{propriété 6}
+\explique{Le point d'intersection est sur $(d)$ : il existe $t\in\R$ tel que ses
+coordonnées sont $(1+t\,;-1+2t\,;2-t)$. Il est sur $\mathcal{P}$, donc elles vérifient
+l'équation de $\mathcal{P}$ :}{}
+\begin{calculs}
+2(1+t)-(-1+2t)+(2-t)-3 &= 0 &\qquad& \rem{on remplace $x$, $y$, $z$}\\
+\iff 2+2t+1-2t+2-t-3 &= 0 &&\\
+\iff 2-t &= 0 &&\\
+\iff t &= 2 &&
+\end{calculs}
+\explique{Pour $t=2$ : $x=1+2=3$, $y=-1+4=3$ et $z=2-2=0$.}{contrôle :
+$6-3+0-3=0$}
+\explique{$(d)$ et $\mathcal{P}$ sont sécants en \res{$K(3\,;3\,;0)$}.}{}
+\cas{b)}
+\explique{$\vect{u'}\begin{pmatrix}2\\1\\-3\end{pmatrix}$ dirige $(d')$ et
+$\vect{u'}\cdot\vect{n}=4-1-3=0$ : $(d')$ est parallèle à $\mathcal{P}$.}{propriété 6}
+\explique{Le point $(0\,;1\,;0)$ de $(d')$ (pour $t=0$) donne $2\times 0-1+0-3=-4\neq 0$ :
+il n'est pas dans $\mathcal{P}$.}{on teste un point}
+\explique{\res{$(d')$ est strictement parallèle à $\mathcal{P}$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé, on considère le plan $\mathcal{P}\colon x+2y-z+1=0$ et les
+droites
+\[
+(d)\colon\left\{\begin{array}{l} x=2-t\\ y=t\\ z=1+3t\end{array}\right.
+\qquad
+(d')\colon\left\{\begin{array}{l} x=1+t\\ y=t\\ z=2+3t\end{array}\right.
+\qquad (t\in\R).
+\]
+\begin{questions}[label=\alph*)]
+  \item Montrer que $(d)$ et $\mathcal{P}$ sont sécants et déterminer leur point
+        d'intersection.
+  \item Étudier la position relative de $(d')$ et de $\mathcal{P}$.
+\end{questions}
+\reponse{a)~Sécants en $(1\,;1\,;4)$ ;\; b)~$(d')$ est contenue dans $\mathcal{P}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 8 --- Étudier la position relative de deux plans]
+\etapeexemples
+Dans un repère orthonormé, on considère les plans
+\begin{center}
+$\mathcal{P}\colon 2x+y-2z+1=0$ \qquad $\mathcal{Q}\colon x-4y-z+3=0$ \qquad
+$\mathcal{R}\colon -4x-2y+4z+5=0$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Montrer que les plans $\mathcal{P}$ et $\mathcal{Q}$ sont perpendiculaires.
+  \item Montrer que les plans $\mathcal{P}$ et $\mathcal{R}$ sont strictement parallèles.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\vect{n}\begin{pmatrix}2\\1\\-2\end{pmatrix}$ est normal à $\mathcal{P}$ et $\vect{n'}\begin{pmatrix}1\\-4\\-1\end{pmatrix}$ est
+normal à $\mathcal{Q}$.}{coefficients de $x$, $y$, $z$}
+\begin{calculs}
+\vect{n}\cdot\vect{n'} &= 2\times 1+1\times(-4)+(-2)\times(-1) &\qquad& \\
+\vect{n}\cdot\vect{n'} &= 0 &&
+\end{calculs}
+\explique{Les vecteurs normaux sont orthogonaux, donc \res{$\mathcal{P}$ et
+$\mathcal{Q}$ sont perpendiculaires}.}{propriété 7}
+\cas{b)}
+\explique{$\vect{n''}\begin{pmatrix}-4\\-2\\4\end{pmatrix}$ est normal à $\mathcal{R}$ et $\vect{n''}=-2\vect{n}$ : les
+vecteurs normaux sont colinéaires, donc $\mathcal{P}$ et $\mathcal{R}$ sont
+parallèles.}{propriété 7}
+\explique{Le point $(0\,;-1\,;0)$ est dans $\mathcal{P}$ ($0-1-0+1=0$), mais pas dans
+$\mathcal{R}$ ($0+2+0+5=7\neq 0$).}{un point de l'un, testé dans l'autre}
+\explique{Les plans n'ont pas de point commun : \res{$\mathcal{P}$ et $\mathcal{R}$ sont
+strictement parallèles}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé, on considère les plans
+\begin{center}
+$\mathcal{P}\colon x-3y+2z-4=0$ \qquad $\mathcal{Q}\colon x+y+z+2=0$ \qquad
+$\mathcal{R}\colon 2x-6y+4z-8=0$
+\end{center}
+\begin{questions}[label=\alph*)]
+  \item Montrer que les plans $\mathcal{P}$ et $\mathcal{Q}$ sont perpendiculaires.
+  \item Étudier la position relative des plans $\mathcal{P}$ et $\mathcal{R}$.
+\end{questions}
+\reponse{a)~$\vect{n}\cdot\vect{n'}=1-3+2=0$ ;\; b)~$\mathcal{P}$ et $\mathcal{R}$ sont
+confondus.}
+\end{methodebox}
+
+\afaire{exercices 23 à 31}
+
+\partiecours{Projeté orthogonal et distances}
+
+\begin{minipage}[c]{0.62\linewidth}\raggedright
+\begin{definitionbox}[Définition 7 --- Projeté orthogonal]
+Soit $M$ un point de l'espace.
+\begin{itemize}
+  \item Le \textbf{projeté orthogonal} de $M$ sur une droite $(d)$ est le point $H$
+        de $(d)$ tel que $(MH)$ est perpendiculaire à $(d)$ ($H=M$ si $M\in(d)$).
+  \item Le \textbf{projeté orthogonal} de $M$ sur un plan $\mathcal{P}$ est le point
+        $H$ de $\mathcal{P}$ tel que $(MH)$ est orthogonale à $\mathcal{P}$
+        ($H=M$ si $M\in\mathcal{P}$).
+\end{itemize}
+\end{definitionbox}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.34\linewidth}\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \fill[gray!15] (0,0)--(3,0)--(3.8,1)--(0.8,1)--cycle;
+  \draw (0,0)--(3,0)--(3.8,1)--(0.8,1)--cycle;
+  \coordinate (H) at (1.6,0.5); \coordinate (M) at (1.6,2.1);
+  \coordinate (N) at (2.9,0.6);
+  \draw[thick] (M)--(H);
+  \draw[dashed] (M)--(N) (H)--(N);
+  \draw (H)++(0,0.2)--++(0.2,0)--++(0,-0.2);
+  \path (M) node[croix]{} node[above]{$M$} (H) node[croix]{} node[below left]{$H$}
+        (N) node[croix]{} node[below right]{$N$};
+  \node at (0.5,0.2) {$\mathcal{P}$};
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[font=\footnotesize]
+  \coordinate (H) at (1.6,0.4); \coordinate (M) at (1.9,1.6);
+  \draw[coulExo,thick] (0,0)--(3.6,0.9) node[above]{$(d)$};
+  \draw[thick] (M)--(H);
+  \draw ($(H)!0.2!(M)$)--($(H)!0.2!(M)+(0.194,0.0485)$)--($(H)+(0.194,0.0485)$);
+  \path (M) node[croix]{} node[above]{$M$} (H) node[croix]{} node[below right]{$H$};
+\end{tikzpicture}
+\end{minipage}
+
+\begin{proprietebox}[Propriété 8 --- Le point le plus proche]
+Le projeté orthogonal $H$ d'un point $M$ sur un plan $\mathcal{P}$ (ou sur une droite)
+est le point de $\mathcal{P}$ (de la droite) le plus proche de $M$. La distance $MH$
+est appelée \textbf{distance du point $M$ au plan $\mathcal{P}$} (à la droite).
+\end{proprietebox}
+
+\textbf{\color{coulMeth}Démonstration} (exigible), pour un plan.
+Soit $N$ un point de $\mathcal{P}$, distinct de $H$. Le vecteur $\vect{HN}$ est un
+vecteur du plan $\mathcal{P}$ et $(MH)$ est orthogonale à $\mathcal{P}$, donc
+$\vect{MH}\cdot\vect{HN}=0$.
+\begin{calculs}
+MN^{2} &= \|\vect{MH}+\vect{HN}\|^{2} &\qquad& \rem{Chasles}\\
+MN^{2} &= MH^{2}+2\,\vect{MH}\cdot\vect{HN}+HN^{2} && \rem{propriétés 1 et 2}\\
+MN^{2} &= MH^{2}+HN^{2} && \rem{$\vect{MH}\cdot\vect{HN}=0$}
+\end{calculs}
+Or $HN^{2}>0$, car $N\neq H$, donc $MN^{2}>MH^{2}$, puis $MN>MH$ (des longueurs
+positives). Tout point de $\mathcal{P}$ autre que $H$ est donc plus loin de $M$ que $H$.
+
+\begin{methodebox}[Méthode 9 --- Déterminer le projeté orthogonal d'un point sur un plan et la distance au plan]
+\etapeexemples
+Dans un repère orthonormé, on considère le plan $\mathcal{P}\colon x-2y+2z-1=0$ et le
+point $M(2\,;-1\,;3)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer une représentation paramétrique de la droite $\Delta$ passant par
+        $M$ et orthogonale à $\mathcal{P}$.
+  \item En déduire les coordonnées du projeté orthogonal $H$ de $M$ sur $\mathcal{P}$.
+  \item Calculer la distance du point $M$ au plan $\mathcal{P}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\Delta$ est orthogonale à $\mathcal{P}$, donc elle est dirigée par le
+vecteur normal $\vect{n}\begin{pmatrix}1\\-2\\2\end{pmatrix}$ de $\mathcal{P}$ ; elle passe par $M$.}{propriété 5}
+\explique{Une représentation paramétrique de $\Delta$ est
+\res{$\left\{\begin{array}{l} x=2+t\\ y=-1-2t\\ z=3+2t\end{array}\right.$} $(t\in\R)$.}{ch. 4}
+\cas{b)}
+\explique{$H$ est le point d'intersection de $\Delta$ et de $\mathcal{P}$. Il est sur
+$\Delta$ : il existe $t\in\R$ tel que ses coordonnées sont
+$(2+t\,;-1-2t\,;3+2t)$. Il est sur $\mathcal{P}$ :}{définition 7}
+\begin{calculs}
+(2+t)-2(-1-2t)+2(3+2t)-1 &= 0 &\qquad& \rem{on remplace $x$, $y$, $z$}\\
+\iff 2+t+2+4t+6+4t-1 &= 0 &&\\
+\iff 9t+9 &= 0 &&\\
+\iff t &= -1 &&
+\end{calculs}
+\explique{Pour $t=-1$ : $x=2-1=1$, $y=-1+2=1$ et $z=3-2=1$, donc
+\res{$H(1\,;1\,;1)$}.}{contrôle : $1-2+2-1=0$}
+\cas{c)}
+\explique{La distance de $M$ à $\mathcal{P}$ est $MH$, avec $\vect{MH}\begin{pmatrix}-1\\2\\-2\end{pmatrix}$ :}{propriété 8}
+\begin{calculs}
+MH &= \sqrt{(-1)^{2}+2^{2}+(-2)^{2}} &\qquad& \rem{repère orthonormé}\\
+MH &= \sqrt{9} &&\\
+MH &= \res{3} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé, on considère le plan $\mathcal{P}\colon 2x+y-2z+4=0$ et le
+point $M(5\,;2\,;-1)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer une représentation paramétrique de la droite $\Delta$ passant par
+        $M$ et orthogonale à $\mathcal{P}$.
+  \item En déduire les coordonnées du projeté orthogonal $H$ de $M$ sur $\mathcal{P}$.
+  \item Calculer la distance du point $M$ au plan $\mathcal{P}$.
+\end{questions}
+\reponse{a)~$x=5+2t$, $y=2+t$, $z=-1-2t$ ($t\in\R$) ;\; b)~$H(1\,;0\,;3)$ ;\;
+c)~$6$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 10 --- Déterminer le projeté orthogonal d'un point sur une droite et la distance à la droite]
+\etapeexemples
+Dans un repère orthonormé, on considère la droite $(d)$ passant par $A(1\,;0\,;2)$ et
+de vecteur directeur $\vect{u}\begin{pmatrix}2\\1\\-1\end{pmatrix}$, et le point $M(5\,;-1\,;-3)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer les coordonnées du projeté orthogonal $H$ de $M$ sur $(d)$.
+  \item Calculer la distance du point $M$ à la droite $(d)$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Une représentation paramétrique de $(d)$ est
+$\left\{\begin{array}{l} x=1+2t\\ y=t\\ z=2-t\end{array}\right.$ $(t\in\R)$.}{ch. 4}
+\explique{$H\in(d)$ : il existe $t\in\R$ tel que $H(1+2t\,;t\,;2-t)$, d'où
+$\vect{MH}\begin{pmatrix}-4+2t\\1+t\\5-t\end{pmatrix}$.}{coordonnées de $H$ moins celles de $M$}
+\explique{$(MH)$ est perpendiculaire à $(d)$, donc $\vect{MH}\cdot\vect{u}=0$ :}{définition 7}
+\begin{calculs}
+2(-4+2t)+1\times(1+t)+(-1)(5-t) &= 0 &\qquad& \rem{repère orthonormé}\\
+\iff -8+4t+1+t-5+t &= 0 &&\\
+\iff 6t-12 &= 0 &&\\
+\iff t &= 2 &&
+\end{calculs}
+\explique{Pour $t=2$ : $x=1+4=5$, $y=2$ et $z=2-2=0$, donc \res{$H(5\,;2\,;0)$}.}{}
+\cas{b)}
+\explique{$\vect{MH}\begin{pmatrix}0\\3\\3\end{pmatrix}$ (contrôle : $\vect{MH}\cdot\vect{u}=0+3-3=0$).}{propriété 8}
+\begin{calculs}
+MH &= \sqrt{0^{2}+3^{2}+3^{2}} &\qquad& \\
+MH &= \sqrt{18} &&\\
+MH &= \res{3\sqrt{2}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un repère orthonormé, on considère la droite $(d)$ passant par $A(0\,;1\,;-1)$ et
+de vecteur directeur $\vect{u}\begin{pmatrix}1\\-2\\2\end{pmatrix}$, et le point $M(0\,;-5\,;2)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer les coordonnées du projeté orthogonal $H$ de $M$ sur $(d)$.
+  \item Calculer la distance du point $M$ à la droite $(d)$.
+\end{questions}
+\reponse{a)~$H(2\,;-3\,;3)$ ;\; b)~$3$.}
+\end{methodebox}
+
+\afaire{exercices 32 à 36, puis les exercices type bac 37 à 39}
+
+\end{document}
