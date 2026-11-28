@@ -1,0 +1,1275 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{7}{Loi binomiale}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{LOI BINOMIALE}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt},
+  nom/.style={font=\footnotesize,inner sep=1.5pt,sloped}}
+\newcommand{\arbfeuilles}[4]{\def\arbfAB{#1}\def\arbfAnB{#2}\def\arbfnAB{#3}\def\arbfnAnB{#4}}
+\newcommand{\arbsansfeuilles}{\def\arbpasfeuilles{}}
+\newcommand{\arbvaleurs}{\def\arbseules{}\arbsansfeuilles}
+\newcommand{\arblab}[2]{\ifx\arbseules\undefined
+  $#1\if\relax\detokenize{#2}\relax\else=#2\fi$\else$#2$\fi}
+\newcommand{\arbfeuille}[2]{%
+  \node[right,font=\footnotesize] at (#1.east) {$#2\ifx\arbtmp\empty\else=\arbtmp\fi$};}
+\newcommand{\arbre}[8]{%
+  \def\arbNA{\overline{#1}}\def\arbNB{\overline{#2}}%
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (3.4,1.2) {$#1$};
+  \node[evt] (nA) at (3.4,-1.2) {$\arbNA$};
+  \node[evt] (AB) at (7.2,1.9) {$#2$};
+  \node[evt] (AnB) at (7.2,0.5) {$\arbNB$};
+  \node[evt] (nAB) at (7.2,-0.5) {$#2$};
+  \node[evt] (nAnB) at (7.2,-1.9) {$\arbNB$};
+  \draw (O.center) -- node[nom,above]{\arblab{P(#1)}{#3}} (A);
+  \draw (O.center) -- node[nom,below]{\arblab{P(\arbNA)}{#4}} (nA);
+  \draw (A) -- node[nom,above]{\arblab{P_{#1}(#2)}{#5}} (AB);
+  \draw (A) -- node[nom,below]{\arblab{P_{#1}(\arbNB)}{#6}} (AnB);
+  \draw (nA) -- node[nom,above]{\arblab{P_{\arbNA}(#2)}{#7}} (nAB);
+  \draw (nA) -- node[nom,below]{\arblab{P_{\arbNA}(\arbNB)}{#8}} (nAnB);
+  \ifx\arbpasfeuilles\undefined
+    \ifx\arbfAB\undefined\arbfeuilles{}{}{}{}\fi
+    \let\arbtmp\arbfAB\arbfeuille{AB}{P(#1\cap #2)}
+    \let\arbtmp\arbfAnB\arbfeuille{AnB}{P(#1\cap\arbNB)}
+    \let\arbtmp\arbfnAB\arbfeuille{nAB}{P(\arbNA\cap #2)}
+    \let\arbtmp\arbfnAnB\arbfeuille{nAnB}{P(\arbNA\cap\arbNB)}
+  \fi}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\arbval}[2]{\expandafter\def\csname arbv#1\endcsname{#2}}
+\newcommand{\arbapres}[2]{\expandafter\def\csname arba#1\endcsname{#2}}
+\newcommand{\arbretroisepreuves}[9]{%
+  \node (O) at (0,0) {};
+  \foreach \a/\ya/\na/\pa/\pos in {1/2.2/{#1}/{#4}/above,0/-2.2/{\overline{#1}}/{#5}/below}{%
+    \node[evt] (N\a) at (2.9,\ya) {$\na$};
+    \draw (O.center) -- node[nom,\pos]{$P(\na)=\pa$} (N\a);
+    \foreach \b/\db/\nb/\pb/\posb in {1/1.1/{#2}/{#6}/above,0/-1.1/{\overline{#2}}/{#7}/below}{%
+      \pgfmathsetmacro{\yb}{\ya+\db}
+      \node[evt] (N\a\b) at (5.8,\yb) {$\nb$};
+      \draw (N\a) -- node[nom,\posb]{$P(\nb)=\pb$} (N\a\b);
+      \foreach \c/\dc/\nc/\pc/\posc in {1/0.5/{#3}/{#8}/above,0/-0.5/{\overline{#3}}/{#9}/below}{%
+        \pgfmathsetmacro{\yc}{\yb+\dc}
+        \node[evt] (N\a\b\c) at (8.8,\yc) {$\nc$};
+        \draw (N\a\b) -- node[nom,\posc]{$P(\nc)=\pc$} (N\a\b\c);
+        \node[right,font=\footnotesize] at (N\a\b\c.east)
+          {$P\big((\na\,;\nb\,;\nc)\big)\ifcsname arbv\a\b\c\endcsname=\csname arbv\a\b\c\endcsname\fi
+          \ifcsname arba\a\b\c\endcsname\csname arba\a\b\c\endcsname\fi$};}}}}
+\newcommand{\arbretrois}[2]{\arbretroisepreuves{S}{S}{S}{#1}{#2}{#1}{#2}{#1}{#2}}
+
+\begin{remarquebox}[Durée du chapitre]
+À titre indicatif, ce chapitre est prévu pour un volume de $8$~h d'enseignement
+($4$ séances de $2$~h). Une partie importante des exercices est à faire en autonomie.
+\end{remarquebox}
+
+\partiecours{Rappels : probabilités conditionnelles}
+
+En première, on a appris à représenter une situation par un arbre pondéré et à
+calculer une probabilité conditionnelle. Ces outils reviennent dans presque tous les
+exercices de probabilités du bac : on les rassemble ici.
+
+\begin{proprietebox}[Propriété 1 --- Probabilités conditionnelles et arbres]
+Soit $A$ et $B$ deux événements, avec $P(A)\neq 0$.
+\begin{itemize}
+  \item La probabilité de $B$ \textbf{sachant} $A$ est
+        $P_{A}(B)=\dfrac{P(A\cap B)}{P(A)}$ ; donc $P(A\cap B)=P(A)\times P_{A}(B)$.
+  \item Dans un arbre pondéré, les branches issues d'un même nœud ont une somme
+        égale à $1$, et la probabilité d'un chemin est le \textbf{produit} des
+        probabilités de ses branches.
+  \item \textbf{Formule des probabilités totales} : $A$ et $\overline{A}$ forment une
+        partition de l'univers, donc $P(B)=P(A\cap B)+P(\overline{A}\cap B)$.
+  \item $A$ et $B$ sont \textbf{indépendants} lorsque $P(A\cap B)=P(A)\times P(B)$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Calculer avec un arbre et la formule des probabilités totales]
+\etapeexemples
+Une usine fabrique des panneaux solaires ; $4\,\%$ d'entre eux présentent un
+micro-défaut. Chaque panneau passe un test automatique : si le panneau a un défaut, le
+test est positif dans $95\,\%$ des cas ; s'il n'en a pas, le test est positif dans
+$2\,\%$ des cas. On choisit un panneau au hasard et on note $D$ : \og le panneau a un
+défaut\fg{} et $T$ : \og le test est positif\fg.
+\begin{questions}[label=\alph*)]
+  \item Représenter la situation par un arbre pondéré.
+  \item Calculer la probabilité que le test soit positif.
+  \item Le test d'un panneau est positif. Calculer la probabilité que ce panneau ait un
+        défaut, arrondie au millième.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{center}
+\begin{tikzpicture}
+  \arbfeuilles{0{,}038}{}{0{,}0192}{}
+  \arbre{D}{T}{0{,}04}{0{,}96}{0{,}95}{0{,}05}{0{,}02}{0{,}98}
+\end{tikzpicture}
+\end{center}
+\cas{b)}
+\explique{$D$ et $\overline{D}$ forment une partition de l'univers ; d'après la formule
+des probabilités totales :}{deux chemins mènent à $T$}
+\begin{calculs}
+P(T) &= P(D\cap T)+P(\overline{D}\cap T) &\qquad& \rem{probabilités totales}\\
+P(T) &= P(D)\times P_{D}(T)+P(\overline{D})\times P_{\overline{D}}(T) && \rem{règle du chemin}\\
+P(T) &= 0{,}04\times 0{,}95+0{,}96\times 0{,}02 &&\\
+P(T) &= 0{,}038+0{,}0192 &&\\
+P(T) &= \res{0{,}0572} &&
+\end{calculs}
+\explique{La probabilité que le test soit positif est égale à $0{,}0572$.}{on conclut
+par une phrase}
+\cas{c)}
+\explique{On cherche $P_{T}(D)$.}{\og sachant que le test est positif\fg}
+\begin{calculs}
+P_{T}(D) &= \frac{P(D\cap T)}{P(T)} &\qquad& \rem{définition}\\
+P_{T}(D) &= \frac{0{,}038}{0{,}0572} &&\\
+P_{T}(D) &\approx \res{0{,}664} &&
+\end{calculs}
+\explique{Sachant que son test est positif, la probabilité qu'un panneau ait un défaut
+est d'environ $0{,}664$.}{le test se trompe encore une fois sur trois}
+\end{correction}
+
+\etape{À vous de jouer}
+Une usine fabrique des batteries de vélo électrique ; $5\,\%$ d'entre elles présentent
+un défaut. Si la batterie a un défaut, le test de contrôle est positif dans $90\,\%$ des
+cas ; sinon, il est positif dans $3\,\%$ des cas. On choisit une batterie au hasard ;
+$D$ : \og la batterie a un défaut\fg{} et $T$ : \og le test est positif\fg.
+\begin{questions}[label=\alph*)]
+  \item Représenter la situation par un arbre pondéré.
+  \item Calculer la probabilité que le test soit positif.
+  \item Le test d'une batterie est positif. Calculer la probabilité que cette batterie
+        ait un défaut, arrondie au millième.
+\end{questions}
+\reponse{b) $P(T)=0{,}045+0{,}0285=0{,}0735$.\; c)~$P_{T}(D)=\frac{0{,}045}{0{,}0735}
+\approx 0{,}612$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Rappels : variable aléatoire, loi, espérance}
+
+\begin{definitionbox}[Définition 1 --- Variable aléatoire, loi, espérance]
+Une \textbf{variable aléatoire} $X$ associe un nombre réel à chaque issue d'une
+expérience aléatoire (un gain, un nombre de succès\dots). On note $\{X=a\}$ l'événement
+\og $X$ prend la valeur $a$\fg.
+
+\smallskip
+Si $X$ prend les valeurs $x_{1}$, $x_{2}$, \dots, $x_{n}$, sa \textbf{loi de probabilité}
+donne la probabilité $p_{i}=P(X=x_{i})$ de chaque valeur ; la somme des $p_{i}$ vaut $1$.
+\begin{itemize}
+  \item \textbf{Espérance} : $E(X)=p_{1}x_{1}+p_{2}x_{2}+\dots+p_{n}x_{n}$ ; c'est la
+        moyenne des valeurs de $X$ sur un grand nombre de répétitions.
+  \item \textbf{Variance} : $V(X)=p_{1}\big(x_{1}-E(X)\big)^{2}+\dots
+        +p_{n}\big(x_{n}-E(X)\big)^{2}$ ; \textbf{écart-type} : $\sigma(X)=\sqrt{V(X)}$,
+        qui mesure la dispersion des valeurs autour de $E(X)$.
+\end{itemize}
+Pour un gain, le jeu est \textbf{favorable} au joueur si $E(X)>0$, \textbf{équitable} si
+$E(X)=0$, \textbf{défavorable} si $E(X)<0$.
+\end{definitionbox}
+
+\begin{methodebox}[Méthode 2 --- Déterminer une loi et calculer une espérance]
+\etapeexemples
+À une fête de quartier, on mise $3$\,€ et on lance un dé équilibré à six faces : le
+$6$ fait gagner $10$\,€, le $4$ et le $5$ font gagner $2$\,€, les autres faces ne font
+rien gagner. On note $X$ le gain algébrique du joueur : ce qu'il reçoit, moins sa mise.
+\begin{questions}[label=\alph*)]
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $E(X)$ et interpréter le résultat.
+  \item Quelle mise rendrait le jeu équitable ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$X$ prend les valeurs $10-3=7$ (face $6$), $2-3=-1$ (faces $4$ et $5$) et
+$0-3=-3$ (faces $1$, $2$, $3$).}{le dé est équilibré : $\frac{1}{6}$ par face}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{10pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $-3$ & $-1$ & $7$\\\hline
+$P(X=x_{i})$ & $\dfrac{3}{6}$ & $\dfrac{2}{6}$ & $\dfrac{1}{6}$\\\hline
+\end{tabular}
+\end{center}
+\cas{b)}
+\begin{calculs}
+E(X) &= (-3)\times\frac{3}{6}+(-1)\times\frac{2}{6}+7\times\frac{1}{6} &\qquad& \rem{somme
+des $p_{i}x_{i}$}\\
+E(X) &= \frac{-9-2+7}{6} &&\\
+E(X) &= -\frac{2\times\barre{2}}{3\times\barre{2}} = \res{-\frac{2}{3}} && \rem{on
+simplifie par $2$}
+\end{calculs}
+\explique{$E(X)<0$ : le jeu est défavorable au joueur ; sur un grand nombre de parties,
+il perd en moyenne environ $0{,}67$\,€ par partie.}{interprétation}
+\cas{c)}
+\explique{Avec une mise de $m$ euros, le gain algébrique vaut $10-m$, $2-m$ ou $-m$, et
+son espérance est $\frac{1}{6}(10-m)+\frac{2}{6}(2-m)+\frac{3}{6}(-m)=\frac{14-6m}{6}$.
+Le jeu est équitable lorsque cette espérance est nulle :}{même loi, autres valeurs}
+\begin{calculs}
+\frac{14-6m}{6} &= 0 &\qquad& \rem{espérance nulle}\\
+\iff 14-6m &= 0 && \rem{on multiplie par $6$}\\
+\iff m &= \frac{14}{6} = \frac{7}{3} &&
+\end{calculs}
+\explique{Le jeu est équitable pour une mise de \res{$\frac{7}{3}$\,€}, environ
+$2{,}33$\,€.}{on conclut par une phrase}
+\end{correction}
+
+\etape{À vous de jouer}
+On mise $2$\,€ et on lance un dé équilibré à six faces : le $1$ fait gagner $6$\,€, le
+$2$ et le $3$ font gagner $2$\,€, les autres faces ne font rien gagner. On note $X$ le
+gain algébrique du joueur.
+\begin{questions}[label=\alph*)]
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $E(X)$ et interpréter le résultat.
+  \item Quelle mise rendrait le jeu équitable ?
+\end{questions}
+\reponse{a) $P(X=-2)=\frac{3}{6}$ ; $P(X=0)=\frac{2}{6}$ ; $P(X=4)=\frac{1}{6}$.\;
+b)~$E(X)=-\frac{1}{3}$ : jeu défavorable.\; c)~$m=\frac{5}{3}$\,€, environ $1{,}67$\,€.}
+\end{methodebox}
+
+\afaire{exercices 5 à 7}
+
+\partiecours{Succession d'épreuves indépendantes}
+
+\begin{definitionbox}[Définition 2 --- Épreuves indépendantes]
+Des épreuves qui se succèdent sont \textbf{indépendantes} lorsque l'issue de chacune ne
+dépend pas des issues des précédentes.
+
+\smallskip
+Si les épreuves ont pour univers $E_{1}$, $E_{2}$, \dots, $E_{n}$, l'univers de leur
+succession est le produit cartésien $E_{1}\times E_{2}\times\dots\times E_{n}$ (chapitre
+3) : une issue est un $n$-uplet $(x_{1}\,;x_{2}\,;\dots\,;x_{n})$, avec $x_{i}\in E_{i}$.
+
+\smallskip
+Exemple : on lance une pièce, puis un dé ; le résultat de la pièce n'influe pas sur
+celui du dé. L'univers est $\{P\,;F\}\times\{1\,;2\,;3\,;4\,;5\,;6\}$, qui a
+$2\times 6=12$ issues, comme $(F\,;4)$.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Probabilité d'une issue (admise)]
+Dans une succession d'épreuves indépendantes, la probabilité d'une issue
+$(x_{1}\,;x_{2}\,;\dots\,;x_{n})$ est le \textbf{produit} des probabilités de ses
+composantes :
+\[
+P\big((x_{1}\,;x_{2}\,;\dots\,;x_{n})\big)=P(x_{1})\times P(x_{2})\times\dots\times P(x_{n}).
+\]
+Sur l'arbre, chaque branche porte la probabilité de l'issue de son épreuve, la même à
+chaque niveau quel que soit le chemin suivi : c'est la règle du chemin.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer une probabilité dans une succession d'épreuves indépendantes]
+\etapeexemples
+Pour aller au lycée à vélo, Inès passe deux feux tricolores, puis un passage à niveau,
+qui fonctionnent indépendamment. Le premier feu est vert avec une probabilité de
+$0{,}6$, le second avec une probabilité de $0{,}5$, et la barrière est levée avec une
+probabilité de $0{,}9$. On note $V_{1}$ : \og le premier feu est vert\fg, $V_{2}$ :
+\og le second feu est vert\fg{} et $L$ : \og la barrière est levée\fg.
+\begin{questions}[label=\alph*)]
+  \item Représenter la situation par un arbre pondéré.
+  \item Calculer la probabilité qu'Inès passe sans s'arrêter.
+  \item Calculer la probabilité qu'elle s'arrête exactement une fois.
+  \item Calculer la probabilité qu'elle s'arrête au moins une fois.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Les trois épreuves sont indépendantes : chaque branche porte la probabilité
+de son épreuve, quel que soit le chemin ; on écrit $P(V_{2})$ plutôt que
+$P_{V_{1}}(V_{2})$.}{$P(\overline{V_{1}})=1-0{,}6=0{,}4$\dots}
+\begin{center}
+\begin{tikzpicture}
+  \arbval{111}{0{,}27}\arbval{011}{0{,}18}\arbval{101}{0{,}27}\arbval{110}{0{,}03}
+  \arbretroisepreuves{V_{1}}{V_{2}}{L}{0{,}6}{0{,}4}{0{,}5}{0{,}5}{0{,}9}{0{,}1}
+\end{tikzpicture}
+\end{center}
+\cas{b)}
+\explique{Inès passe sans s'arrêter pour l'issue $(V_{1}\,;V_{2}\,;L)$.}{un seul chemin}
+\begin{calculs}
+P\big((V_{1}\,;V_{2}\,;L)\big) &= 0{,}6\times 0{,}5\times 0{,}9 &\qquad&
+\rem{épreuves indépendantes : produit}\\
+P\big((V_{1}\,;V_{2}\,;L)\big) &= \res{0{,}27} &&
+\end{calculs}
+\cas{c)}
+\explique{Trois issues comptent exactement un arrêt : $(\overline{V_{1}}\,;V_{2}\,;L)$,
+$(V_{1}\,;\overline{V_{2}}\,;L)$ et $(V_{1}\,;V_{2}\,;\overline{L})$. On note $A$ cet
+événement.}{l'arrêt a lieu au 1\textsuperscript{er} feu, au 2\textsuperscript{e} ou à la
+barrière}
+\begin{calculs}
+P(A) &= 0{,}4\times 0{,}5\times 0{,}9+0{,}6\times 0{,}5\times 0{,}9+0{,}6\times 0{,}5
+\times 0{,}1 &\qquad& \rem{somme des issues}\\
+P(A) &= 0{,}18+0{,}27+0{,}03 &&\\
+P(A) &= \res{0{,}48} &&
+\end{calculs}
+\cas{d)}
+\explique{\og S'arrêter au moins une fois\fg{} est l'événement contraire de \og passer
+sans s'arrêter\fg, dont la probabilité vaut $0{,}27$ ; on note $M$ cet événement.}{plus
+court que d'additionner sept issues}
+\begin{calculs}
+P(M) &= 1-0{,}27 &\qquad& \rem{événement contraire}\\
+P(M) &= \res{0{,}73} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour aller au lycée à vélo, Malo passe deux feux tricolores, puis un passage à niveau,
+qui fonctionnent indépendamment. Le premier feu est vert avec une probabilité de
+$0{,}7$, le second avec une probabilité de $0{,}4$, et la barrière est levée avec une
+probabilité de $0{,}8$. On note $V_{1}$, $V_{2}$ et $L$ les mêmes événements.
+\begin{questions}[label=\alph*)]
+  \item Représenter la situation par un arbre pondéré.
+  \item Calculer la probabilité que Malo passe sans s'arrêter.
+  \item Calculer la probabilité qu'il s'arrête exactement une fois.
+  \item Calculer la probabilité qu'il s'arrête au moins une fois.
+\end{questions}
+\reponse{b) $0{,}7\times 0{,}4\times 0{,}8=0{,}224$.\; c)~$0{,}096+0{,}336+0{,}056=0{,}488$.\;
+d)~$1-0{,}224=0{,}776$.}
+\end{methodebox}
+
+\afaire{exercices 8 à 11}
+
+\partiecours{Épreuve, loi et schéma de Bernoulli}
+
+\begin{definitionbox}[Définition 3 --- Épreuve et loi de Bernoulli]
+Une \textbf{épreuve de Bernoulli} est une expérience aléatoire à deux issues : le
+\textbf{succès} $S$, de probabilité $p$, et l'\textbf{échec} $\overline{S}$, de
+probabilité $1-p$.
+
+\smallskip
+La variable aléatoire $X$ qui vaut $1$ en cas de succès et $0$ en cas d'échec suit la
+\textbf{loi de Bernoulli de paramètre $p$} : $P(X=1)=p$ et $P(X=0)=1-p$.
+
+\smallskip
+Exemple : on tire une boule d'une urne de $10$ boules, dont $3$ rouges ; le succès
+\og la boule est rouge\fg{} a pour probabilité $p=0{,}3$. Une expérience à plusieurs
+issues devient une épreuve de Bernoulli dès qu'on choisit le succès.
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 3 --- Espérance et variance d'une loi de Bernoulli]
+Si $X$ suit la loi de Bernoulli de paramètre $p$, alors $E(X)=p$ et $V(X)=p(1-p)$.
+\end{proprietebox}
+
+\textbf{\color{coulMeth}Démonstration.} $X$ prend les valeurs $0$ et $1$, avec les
+probabilités $1-p$ et $p$.
+\begin{calculs}
+E(X) &= (1-p)\times 0+p\times 1 = p &\qquad& \rem{somme des $p_{i}x_{i}$}\\[3pt]
+V(X) &= (1-p)\times(0-p)^{2}+p\times(1-p)^{2} && \rem{définition, avec $E(X)=p$}\\
+V(X) &= p(1-p)\times p+p(1-p)\times(1-p) && \rem{$(1-p)p^{2}=p(1-p)\times p$}\\
+V(X) &= p(1-p)\big(p+(1-p)\big) && \rem{on factorise par $p(1-p)$}\\
+V(X) &= p(1-p) &&
+\end{calculs}
+
+\begin{definitionbox}[Définition 4 --- Schéma de Bernoulli]
+Un \textbf{schéma de Bernoulli} de paramètres $n$ et $p$ est la répétition de $n$
+épreuves de Bernoulli \textbf{identiques} et \textbf{indépendantes}, de même probabilité
+de succès $p$. Son univers est $\{S\,;\overline{S}\}^{n}$ ; sur l'arbre, chaque branche
+$S$ porte $p$ et chaque branche $\overline{S}$ porte $1-p$.
+\end{definitionbox}
+
+\begin{remarquebox}[Tirage avec remise, tirage sans remise]
+Des tirages \textbf{avec remise} sont identiques et indépendants : ils forment un schéma
+de Bernoulli. Des tirages \textbf{sans remise} n'en forment pas un, car la composition
+de l'urne change à chaque tirage. Quand on prélève quelques objets dans un très grand
+stock (une production, une population), les énoncés de bac disent que \og ce choix est
+assimilé à un tirage avec remise\fg{} : on peut alors parler de schéma de Bernoulli.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 4 --- Justifier qu'une situation est un schéma de Bernoulli]
+\etapeexemples
+Le premier étage d'une fusée réutilisable revient se poser sur sa barge avec une
+probabilité de $0{,}9$. On étudie trois lancements ; les atterrissages sont supposés
+indépendants les uns des autres.
+\begin{questions}[label=\alph*)]
+  \item Décrire l'épreuve de Bernoulli associée à un lancement.
+  \item Justifier que la situation est un schéma de Bernoulli et donner ses paramètres.
+  \item Représenter ce schéma par un arbre pondéré.
+  \item Calculer la probabilité qu'au moins un atterrissage échoue.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Un lancement est une épreuve à deux issues : le succès $S$ \og le premier étage
+se pose sur sa barge\fg, de probabilité \res{$p=0{,}9$}, et l'échec $\overline{S}$, de
+probabilité $1-0{,}9=0{,}1$.}{on nomme le succès et on donne sa probabilité}
+\cas{b)}
+\explique{On répète trois fois cette épreuve de Bernoulli, de façon identique et
+indépendante : c'est un schéma de Bernoulli de paramètres \res{$n=3$ et
+$p=0{,}9$}.}{\og identique\fg{} : même $p$ ; \og indépendante\fg{} : l'énoncé le dit}
+\cas{c)}
+\begin{center}
+\begin{tikzpicture}
+  \arbval{111}{0{,}9^{3}}
+  \arbretrois{0{,}9}{0{,}1}
+\end{tikzpicture}
+\end{center}
+\cas{d)}
+\explique{\og Au moins un échec\fg{} est l'événement contraire de \og trois succès\fg,
+l'issue $(S\,;S\,;S)$ ; on note $E$ cet événement.}{un seul chemin à retirer}
+\begin{calculs}
+P(E) &= 1-0{,}9\times 0{,}9\times 0{,}9 &\qquad& \rem{événement contraire, règle du
+chemin}\\
+P(E) &= 1-0{,}729 &&\\
+P(E) &= \res{0{,}271} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Un panneau solaire est sans défaut avec une probabilité de $0{,}97$. On prélève trois
+panneaux dans un stock assez grand pour assimiler ce choix à un tirage avec remise.
+\begin{questions}[label=\alph*)]
+  \item Décrire l'épreuve de Bernoulli associée à un panneau.
+  \item Justifier que la situation est un schéma de Bernoulli et donner ses paramètres.
+  \item Représenter ce schéma par un arbre pondéré.
+  \item Calculer la probabilité qu'au moins un des trois panneaux ait un défaut.
+\end{questions}
+\reponse{a) $S$ : \og le panneau est sans défaut\fg, $p=0{,}97$.\; b)~$n=3$ et
+$p=0{,}97$.\; d)~$1-0{,}97^{3}\approx 0{,}087$.}
+\end{methodebox}
+
+\afaire{exercices 12 à 15}
+
+\partiecours{Loi binomiale}
+
+\textbf{Pour commencer.} Un sac contient $3$ jetons rouges et $7$ jetons jaunes. On tire
+un jeton, on note sa couleur, on le remet, et on recommence : trois tirages en tout. Le
+succès $S$ est \og le jeton est rouge\fg, de probabilité $0{,}3$. On note $X$ le nombre
+de jetons rouges obtenus.
+
+\begin{center}
+\begin{tikzpicture}
+  \arbval{111}{0{,}3^{3}}\arbapres{111}{\qquad X=3}
+  \arbval{110}{0{,}3^{2}\times 0{,}7}\arbapres{110}{\qquad X=2}
+  \arbval{101}{0{,}3^{2}\times 0{,}7}\arbapres{101}{\qquad X=2}
+  \arbval{100}{0{,}3\times 0{,}7^{2}}\arbapres{100}{\qquad X=1}
+  \arbval{011}{0{,}3^{2}\times 0{,}7}\arbapres{011}{\qquad X=2}
+  \arbval{010}{0{,}3\times 0{,}7^{2}}\arbapres{010}{\qquad X=1}
+  \arbval{001}{0{,}3\times 0{,}7^{2}}\arbapres{001}{\qquad X=1}
+  \arbval{000}{0{,}7^{3}}\arbapres{000}{\qquad X=0}
+  \arbretrois{0{,}3}{0{,}7}
+\end{tikzpicture}
+\end{center}
+Trois chemins mènent à $X=2$ ; chacun compte deux succès et un échec, donc a pour
+probabilité $0{,}3^{2}\times 0{,}7$.
+
+\smallskip
+${P(X=2)=3\times 0{,}3^{2}\times 0{,}7}$, soit ${P(X=2)=0{,}189}$.
+
+\smallskip
+De même, un seul chemin mène à $X=3$ : ${P(X=3)=0{,}3^{3}}$, soit $0{,}027$.
+
+\smallskip
+\begin{minipage}[c]{0.56\linewidth}\raggedright
+On obtient la loi de $X$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{8pt}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$k$ & $0$ & $1$ & $2$ & $3$\\\hline
+$P(X=k)$ & $0{,}343$ & $0{,}441$ & $0{,}189$ & $0{,}027$\\\hline
+\end{tabular}
+\end{center}
+Le nombre de chemins qui comptent $k$ succès parmi $3$ épreuves est $\binom{3}{k}$
+(chapitre 3, partie VIII) : $1$, $3$, $3$ et $1$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\centering
+\begin{tikzpicture}[x=0.9cm,y=5cm]
+  \draw[->] (-0.6,0) -- (3.7,0) node[right,font=\footnotesize]{$k$};
+  \draw[->] (-0.6,0) -- (-0.6,0.52);
+  \foreach \k/\v in {0/0.343,1/0.441,2/0.189,3/0.027}{
+    \fill[coulMeth!60] (\k-0.18,0) rectangle (\k+0.18,\v);
+    \node[below,font=\footnotesize] at (\k,0) {$\k$};}
+  \foreach \y/\t in {0.1/0{,}1,0.2/0{,}2,0.3/0{,}3,0.4/0{,}4}{
+    \draw (-0.65,\y) -- (-0.55,\y) node[left=2pt,font=\footnotesize]{$\t$};}
+\end{tikzpicture}
+\end{minipage}
+
+\begin{definitionbox}[Définition 5 --- Loi binomiale]
+On considère un schéma de Bernoulli de paramètres $n$ et $p$, et $X$ la variable
+aléatoire qui compte le \textbf{nombre de succès}. La loi de $X$ est la \textbf{loi
+binomiale} de paramètres $n$ et $p$, notée $\mathcal{B}(n\,;p)$.
+
+\smallskip
+$X$ prend les valeurs entières de $0$ (aucun succès) à $n$ (que des succès).
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 4 --- Probabilité de $k$ succès]
+Si $X$ suit la loi binomiale $\mathcal{B}(n\,;p)$, alors, pour tout entier $k$ tel que
+$0\leq k\leq n$ :
+\[
+P(X=k)=\binom{n}{k}\,p^{k}\,(1-p)^{n-k}.
+\]
+\end{proprietebox}
+
+\textbf{\color{coulMeth}Démonstration} (exigible).
+Soit $k$ un entier tel que $0\leq k\leq n$.
+\begin{itemize}
+  \item Un chemin de l'arbre qui réalise $k$ succès compte $k$ branches $S$, de
+        probabilité $p$, et $n-k$ branches $\overline{S}$, de probabilité $1-p$. Les
+        épreuves sont indépendantes, donc ce chemin a pour probabilité
+        $p^{k}(1-p)^{n-k}$.
+  \item Un tel chemin correspond au choix des $k$ épreuves réussies parmi les $n$ : il
+        y a $\binom{n}{k}$ chemins qui réalisent $k$ succès (chapitre 3).
+  \item Ces chemins sont des issues distinctes, donc on additionne leurs probabilités,
+        toutes égales.
+\end{itemize}
+Donc $P(X=k)=\dbinom{n}{k}\,p^{k}\,(1-p)^{n-k}$.
+
+\begin{methodebox}[Méthode 5 --- Reconnaître une loi binomiale et calculer la probabilité de $k$ succès]
+\etapeexemples
+Dans une ville, $35\,\%$ des habitants vont au travail à vélo. On interroge au hasard
+$12$ habitants ; la population est assez grande pour assimiler ce choix à un tirage avec
+remise. On note $X$ le nombre d'habitants interrogés qui vont au travail à vélo.
+\begin{questions}[label=\alph*)]
+  \item Justifier que $X$ suit une loi binomiale et préciser ses paramètres.
+  \item Calculer la probabilité qu'exactement $4$ des habitants interrogés aillent au
+        travail à vélo. Donner l'expression exacte, puis une valeur arrondie au millième.
+  \item Calculer la probabilité qu'aucun n'y aille à vélo, arrondie au millième.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Interroger un habitant est une épreuve de Bernoulli, de succès \og l'habitant va
+au travail à vélo\fg, de probabilité $p=0{,}35$.}{l'épreuve et son succès}
+\explique{Le choix étant assimilé à un tirage avec remise, on répète $12$ fois cette
+épreuve de façon identique et indépendante.}{le schéma de Bernoulli}
+\explique{$X$ compte le nombre de succès, donc $X$ suit la loi binomiale
+\res{$\mathcal{B}(12\,;0{,}35)$}.}{la conclusion, avec $n$ et $p$}
+\cas{b)}
+\begin{calculs}
+P(X=4) &= \binom{12}{4}\times 0{,}35^{4}\times(1-0{,}35)^{12-4} &\qquad& \rem{propriété 4,
+avec $k=4$}\\
+P(X=4) &= \res{495\times 0{,}35^{4}\times 0{,}65^{8}} && \rem{$\binom{12}{4}=495$, à la
+calculatrice}\\
+P(X=4) &\approx \res{0{,}237} &&
+\end{calculs}
+\explique{La probabilité qu'exactement $4$ des habitants interrogés aillent au travail à
+vélo est d'environ $0{,}237$.}{on conclut par une phrase}
+\cas{c)}
+\begin{calculs}
+P(X=0) &= \binom{12}{0}\times 0{,}35^{0}\times 0{,}65^{12} &\qquad& \rem{$k=0$}\\
+P(X=0) &= 0{,}65^{12} && \rem{$\binom{12}{0}=1$ et $0{,}35^{0}=1$}\\
+P(X=0) &\approx \res{0{,}006} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Dans un collège, $25\,\%$ des élèves jouent d'un instrument de musique. On interroge au
+hasard $10$ élèves, en assimilant ce choix à un tirage avec remise. On note $X$ le
+nombre d'élèves interrogés qui jouent d'un instrument.
+\begin{questions}[label=\alph*)]
+  \item Justifier que $X$ suit une loi binomiale et préciser ses paramètres.
+  \item Calculer la probabilité qu'exactement $3$ des élèves interrogés jouent d'un
+        instrument. Donner l'expression exacte, puis une valeur arrondie au millième.
+  \item Calculer la probabilité qu'aucun ne joue d'un instrument, arrondie au millième.
+\end{questions}
+\reponse{a) $\mathcal{B}(10\,;0{,}25)$.\; b)~$120\times 0{,}25^{3}\times 0{,}75^{7}\approx
+0{,}250$.\; c)~$0{,}75^{10}\approx 0{,}056$.}
+\end{methodebox}
+
+\afaire{exercices 16 à 20}
+
+\partiecours{Probabilités cumulées à la calculatrice}
+
+Les questions de bac portent souvent sur \og au plus\fg, \og au moins\fg{} ou \og entre
+\dots{} et \dots\fg{} : il faudrait additionner beaucoup de probabilités $P(X=k)$. La
+calculatrice donne directement $P(X\leq k)$, la somme $P(X=0)+P(X=1)+\dots+P(X=k)$.
+
+\begin{proprietebox}[Propriété 5 --- Traduire un énoncé]
+Soit $X$ une variable aléatoire à valeurs entières et $k$ un entier.
+\begin{center}
+\renewcommand{\arraystretch}{1.5}\setlength{\tabcolsep}{8pt}
+\begin{tabular}{|l|l|l|}
+\hline
+\og au plus $k$\fg{} & $X\leq k$ & $P(X\leq k)$, directement\\\hline
+\og moins de $k$\fg{} & $X<k$, soit $X\leq k-1$ & $P(X\leq k-1)$\\\hline
+\og au moins $k$\fg{} & $X\geq k$ & $1-P(X\leq k-1)$, par l'événement contraire\\\hline
+\og plus de $k$\fg{} & $X>k$ & $1-P(X\leq k)$\\\hline
+\og entre $a$ et $b$\fg{} (inclus) & $a\leq X\leq b$ & $P(X\leq b)-P(X\leq a-1)$\\\hline
+\end{tabular}
+\end{center}
+Le contraire de $\{X\geq k\}$ est $\{X\leq k-1\}$, pas $\{X\leq k\}$ : la valeur $k$
+appartient à $\{X\geq k\}$.
+\end{proprietebox}
+
+\begin{remarquebox}[Loi binomiale à la calculatrice]
+\begin{itemize}
+  \item \textbf{NumWorks} : application Probabilités, Binomiale, saisir $n$ et $p$, puis
+        choisir la forme $P(X\leq k)$, $P(X=k)$ ou $P(a\leq X\leq b)$.
+  \item \textbf{TI} : \texttt{2nde} \texttt{var} (distrib) ; \texttt{binomFdp(n,p,k)}
+        donne $P(X=k)$ et \texttt{binomFRép(n,p,k)} donne $P(X\leq k)$.
+  \item \textbf{Casio} : menu STAT, DIST, BINOMIAL ; \texttt{Bpd} donne $P(X=k)$ et
+        \texttt{Bcd} donne $P(a\leq X\leq b)$ (avec $a=0$ : $P(X\leq b)$).
+\end{itemize}
+Au bac, on écrit la probabilité cherchée, la traduction, puis \og à la calculatrice,
+$P(X\leq 25)\approx 0{,}683$\fg.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 6 --- Calculer une probabilité \og au plus\fg, \og au moins\fg, \og entre\fg]
+\etapeexemples
+Une société d'autopartage dispose de $40$ voitures électriques. Un jour donné, chaque
+voiture est réservée avec une probabilité de $0{,}6$, indépendamment des autres. On
+admet que le nombre $X$ de voitures réservées suit la loi binomiale
+$\mathcal{B}(40\,;0{,}6)$. Calculer, arrondie au millième, la probabilité que :
+\begin{questions}[label=\alph*)]
+  \item au plus $25$ voitures soient réservées ;
+  \item au moins $20$ voitures soient réservées ;
+  \item entre $20$ et $28$ voitures (incluses) soient réservées ;
+  \item plus de $30$ voitures soient réservées.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+P(X\leq 25) &\approx \res{0{,}683} &\qquad& \rem{à la calculatrice, directement}
+\end{calculs}
+\cas{b)}
+\explique{L'événement contraire de $\{X\geq 20\}$ est $\{X\leq 19\}$.}{$20$ appartient à
+$\{X\geq 20\}$}
+\begin{calculs}
+P(X\geq 20) &= 1-P(X\leq 19) &\qquad& \rem{événement contraire}\\
+P(X\geq 20) &\approx \res{0{,}926} && \rem{à la calculatrice}
+\end{calculs}
+\cas{c)}
+\begin{calculs}
+P(20\leq X\leq 28) &= P(X\leq 28)-P(X\leq 19) &\qquad& \rem{on retire les valeurs de $0$ à
+$19$}\\
+P(20\leq X\leq 28) &\approx \res{0{,}855} && \rem{à la calculatrice}
+\end{calculs}
+\cas{d)}
+\explique{\og Plus de $30$\fg{} se traduit par $X>30$, soit $X\geq 31$ ; son contraire est
+$\{X\leq 30\}$.}{$30$ n'est pas compris}
+\begin{calculs}
+P(X>30) &= 1-P(X\leq 30) &\qquad& \rem{événement contraire}\\
+P(X>30) &\approx \res{0{,}016} && \rem{à la calculatrice}
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Un club d'astronomie compte $30$ membres. Chaque membre vient à la soirée d'observation
+avec une probabilité de $0{,}45$, indépendamment des autres. On admet que le nombre $X$
+de membres présents suit la loi binomiale $\mathcal{B}(30\,;0{,}45)$. Calculer, arrondie
+au millième, la probabilité que :
+\begin{questions}[label=\alph*)]
+  \item au plus $15$ membres soient présents ;
+  \item au moins $11$ membres soient présents ;
+  \item entre $11$ et $18$ membres (inclus) soient présents ;
+  \item plus de $20$ membres soient présents.
+\end{questions}
+\reponse{a) $0{,}769$.\; b)~$1-P(X\leq 10)\approx 0{,}865$.\; c)~$P(X\leq 18)-P(X\leq 10)
+\approx 0{,}832$.\; d)~$1-P(X\leq 20)\approx 0{,}005$.}
+\end{methodebox}
+
+\afaire{exercices 21 à 25}
+
+\partiecours{Problèmes de seuil}
+
+Deux questions reviennent au bac : combien de répétitions faut-il pour être presque sûr
+d'obtenir au moins un succès ? Quel nombre $k$ ne sera dépassé qu'avec une faible
+probabilité ? Dans les deux cas, on cherche le \textbf{plus petit} entier qui convient.
+
+\begin{proprietebox}[Propriété 6 --- Au moins un succès]
+Si $X$ suit la loi binomiale $\mathcal{B}(n\,;p)$, alors $P(X=0)=(1-p)^{n}$ et, par
+l'événement contraire,
+\[
+P(X\geq 1)=1-(1-p)^{n}.
+\]
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Trouver le nombre de répétitions pour obtenir au moins un succès]
+\etapeexemples
+Dans une réserve naturelle, un piège photographique a, chaque nuit, une probabilité de
+$0{,}12$ de photographier un lynx, indépendamment des autres nuits. Soit $n\in\Ns$ ; on
+note $X_{n}$ le nombre de nuits, sur $n$ nuits, où un lynx est photographié. On admet
+que $X_{n}$ suit la loi binomiale $\mathcal{B}(n\,;0{,}12)$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer en fonction de $n$ la probabilité $p_{n}$ qu'un lynx soit photographié au
+        moins une fois en $n$ nuits.
+  \item Déterminer le plus petit nombre de nuits $n$ pour lequel $p_{n}\geq 0{,}95$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{L'événement \og au moins une photo\fg{} est le contraire de $\{X_{n}=0\}$, et
+$P(X_{n}=0)=\binom{n}{0}\times 0{,}12^{0}\times 0{,}88^{n}=0{,}88^{n}$.}{propriété 4,
+avec $k=0$}
+\begin{calculs}
+p_{n} &= P(X_{n}\geq 1) &\qquad& \rem{\og au moins une fois\fg}\\
+p_{n} &= 1-P(X_{n}=0) && \rem{événement contraire}\\
+p_{n} &= \res{1-0{,}88^{n}} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+p_{n} &\geq 0{,}95 &\qquad& \rem{la condition cherchée}\\
+1-0{,}88^{n} &\geq 0{,}95 && \rem{on remplace $p_{n}$}\\
+\iff -0{,}88^{n} &\geq -0{,}05 && \rem{on retire $1$}\\
+\iff 0{,}88^{n} &\leq 0{,}05 && \rem{on multiplie par $-1<0$ : l'ordre change}
+\end{calculs}
+\explique{À la calculatrice (table des valeurs de $0{,}88^{n}$) : $0{,}88^{23}\approx
+0{,}0529$ et $0{,}88^{24}\approx 0{,}0465$.}{$0{,}88^{23}>0{,}05\geq 0{,}88^{24}$}
+\explique{La suite $(0{,}88^{n})$ est géométrique de raison $0{,}88$, avec
+$0<0{,}88<1$ : elle est décroissante. Pour $n\leq 23$, $0{,}88^{n}\geq 0{,}88^{23}>0{,}05$ ;
+pour $n\geq 24$, $0{,}88^{n}\leq 0{,}88^{24}\leq 0{,}05$.}{une fois le seuil franchi, on
+ne revient pas en arrière}
+\explique{Le plus petit nombre de nuits est donc \res{$n=24$}.}{on conclut par une
+phrase}
+\end{correction}
+
+\begin{remarquebox}[Avec le logarithme]
+Au chapitre 9, la fonction logarithme permettra de résoudre $0{,}88^{n}\leq 0{,}05$ par
+le calcul, comme dans les corrigés de bac ; la méthode ci-dessus reste valable.
+\end{remarquebox}
+
+\etape{À vous de jouer}
+Chaque nuit, un astronome amateur a une probabilité de $0{,}15$ de photographier un
+météore brillant, indépendamment des autres nuits. Soit $n\in\Ns$ ; on note $X_{n}$ le
+nombre de nuits, sur $n$ nuits, où il en photographie un. On admet que $X_{n}$ suit la
+loi binomiale $\mathcal{B}(n\,;0{,}15)$.
+\begin{questions}[label=\alph*)]
+  \item Exprimer en fonction de $n$ la probabilité $p_{n}$ qu'il photographie un météore
+        brillant au moins une fois en $n$ nuits.
+  \item Déterminer le plus petit nombre de nuits $n$ pour lequel $p_{n}\geq 0{,}99$.
+\end{questions}
+\reponse{a) $p_{n}=1-0{,}85^{n}$.\; b)~$0{,}85^{n}\leq 0{,}01$ ; $0{,}85^{28}\approx 0{,}0106$
+et $0{,}85^{29}\approx 0{,}0090$ : $n=29$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 8 --- Trouver le plus petit entier $k$ tel que $P(X>k)\leq\alpha$]
+\etapeexemples
+Un musée propose une visite avec audioguide ; $200$ personnes ont réservé. Chacune vient
+avec une probabilité de $0{,}85$, indépendamment des autres. On admet que le nombre $X$
+de visiteurs présents suit la loi binomiale $\mathcal{B}(200\,;0{,}85)$. Le musée prépare
+$k$ audioguides. Déterminer le plus petit nombre $k$ d'audioguides pour que la
+probabilité d'en manquer soit inférieure ou égale à $0{,}05$.
+\begin{correction}
+\cas{Résolution}\par\nopagebreak
+\explique{On manque d'audioguides lorsque plus de $k$ visiteurs viennent, soit
+$X>k$.}{on traduit l'énoncé}
+\begin{calculs}
+P(X>k) &\leq 0{,}05 &\qquad& \rem{la condition cherchée}\\
+\iff 1-P(X\leq k) &\leq 0{,}05 && \rem{événement contraire}\\
+\iff -P(X\leq k) &\leq -0{,}95 && \rem{on retire $1$}\\
+\iff P(X\leq k) &\geq 0{,}95 && \rem{on multiplie par $-1<0$ : l'ordre change}
+\end{calculs}
+\explique{À la calculatrice (table des valeurs de $P(X\leq k)$) : $P(X\leq 177)\approx
+0{,}935$ et $P(X\leq 178)\approx 0{,}959$.}{$0{,}935<0{,}95\leq 0{,}959$}
+\explique{$P(X\leq k)$ augmente avec $k$ (on ajoute des probabilités positives) : la
+condition est fausse pour $k\leq 177$ et vraie pour $k\geq 178$. Le musée doit préparer
+au moins \res{$178$ audioguides}.}{on conclut par une phrase}
+\end{correction}
+
+\textbf{Avec Python} (programme de seuil). La fonction \texttt{comb(n, k)} du module
+\texttt{math} calcule $\binom{n}{k}$.
+
+\begin{minipage}[t]{0.56\linewidth}\vspace{0pt}
+\begin{python}
+from math import comb
+
+def seuil(n, p, alpha):
+    k = 0
+    P = (1 - p)**n
+    while P < 1 - alpha:
+        k = k + 1
+        q = comb(n, k) * p**k * (1 - p)**(n - k)
+        P = P + q
+    return k
+\end{python}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.4\linewidth}\vspace{0pt}\raggedright
+\texttt{P} vaut d'abord $P(X=0)=(1-p)^{n}$, puis on lui ajoute \texttt{q}, qui vaut $P(X=1)$, $P(X=2)$\dots :
+à chaque tour, \texttt{P} vaut $P(X\leq k)$.
+
+\smallskip
+La boucle s'arrête dès que $P(X\leq k)\geq 1-\alpha$ : \texttt{seuil(200, 0.85, 0.05)}
+renvoie $178$.
+\end{minipage}
+
+\etape{À vous de jouer}
+Une sortie d'observation des étoiles compte $150$ inscrits ; chacun vient avec une
+probabilité de $0{,}8$, indépendamment des autres. On admet que le nombre $X$ de
+présents suit la loi binomiale $\mathcal{B}(150\,;0{,}8)$. Les organisateurs prévoient
+$k$ paires de jumelles. Déterminer le plus petit nombre $k$ de paires de jumelles pour
+que la probabilité d'en manquer soit inférieure ou égale à $0{,}05$.
+\reponse{$P(X\leq k)\geq 0{,}95$ ; $P(X\leq 127)\approx 0{,}941$ et $P(X\leq 128)\approx
+0{,}963$ : $k=128$.}
+\end{methodebox}
+
+\afaire{exercices 26 à 29}
+
+\partiecours{Intervalle de probabilité donnée}
+
+Une variable binomiale prend ses valeurs \og autour\fg{} de sa valeur la plus probable.
+On cherche un intervalle $\intff{a}{b}$ qui contient $X$ avec une forte probabilité, par
+exemple $0{,}95$, en laissant au plus $0{,}025$ de chaque côté.
+
+\begin{proprietebox}[Propriété 7 --- Intervalle de probabilité au moins $0{,}95$]
+Soit $X$ une variable aléatoire qui suit une loi binomiale. On note :
+\begin{itemize}
+  \item $a$ le plus petit entier tel que $P(X\leq a)>0{,}025$ ;
+  \item $b$ le plus petit entier tel que $P(X\leq b)\geq 0{,}975$.
+\end{itemize}
+Alors $P(a\leq X\leq b)\geq 0{,}95$.
+\end{proprietebox}
+
+\textbf{\color{coulMeth}Démonstration.} Par définition de $a$, on a $P(X\leq a-1)\leq
+0{,}025$ ; et $P(X\leq b)\geq 0{,}975$.
+\begin{calculs}
+P(a\leq X\leq b) &= P(X\leq b)-P(X\leq a-1) &\qquad& \rem{propriété 5}\\
+P(a\leq X\leq b) &\geq 0{,}975-0{,}025 && \rem{on retire au plus $0{,}025$}\\
+P(a\leq X\leq b) &\geq 0{,}95 &&
+\end{calculs}
+
+\begin{methodebox}[Méthode 9 --- Déterminer un intervalle $I$ tel que $P(X\in I)\geq 0{,}95$]
+\etapeexemples
+Une enseigne affirme que $80\,\%$ de ses clients sont satisfaits. On interroge au hasard
+$100$ clients, en assimilant ce choix à un tirage avec remise, et on note $X$ le nombre
+de clients satisfaits. On suppose l'affirmation exacte : $X$ suit la loi binomiale
+$\mathcal{B}(100\,;0{,}8)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer deux entiers $a$ et $b$ tels que $P(a\leq X\leq b)\geq 0{,}95$, en
+        suivant la propriété 7.
+  \item Interpréter le résultat.
+  \item Sur $100$ clients interrogés, $70$ se disent satisfaits. Qu'en penser ?
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{À la calculatrice (table des valeurs de $P(X\leq k)$) : $P(X\leq 71)\approx
+0{,}020$ et $P(X\leq 72)\approx 0{,}034$, donc \res{$a=72$}.}{plus petit entier tel que
+$P(X\leq a)>0{,}025$}
+\explique{$P(X\leq 87)\approx 0{,}9747$ et $P(X\leq 88)\approx 0{,}9874$, donc
+\res{$b=88$}.}{plus petit entier tel que $P(X\leq b)\geq 0{,}975$}
+\explique{D'après la propriété 7, $P(72\leq X\leq 88)\geq 0{,}95$ ; à la calculatrice,
+$P(72\leq X\leq 88)\approx 0{,}967$.}{on vérifie}
+\cas{b)}
+\explique{Si l'affirmation est exacte, il y a au moins $95\,\%$ de chances que le nombre
+de clients satisfaits, sur $100$ interrogés, soit \res{compris entre $72$ et
+$88$}.}{interprétation dans le contexte}
+\cas{c)}
+\explique{$70$ n'appartient pas à $\intff{72}{88}$ : une telle observation avait moins de
+$5\,\%$ de chances de se produire si l'affirmation était exacte. \res{On peut mettre en
+doute l'affirmation} de l'enseigne.}{l'observation sort de l'intervalle}
+\end{correction}
+
+\etape{À vous de jouer}
+Un musée scientifique affirme que $40\,\%$ de ses visiteurs choisissent l'atelier de
+robotique. On interroge au hasard $150$ visiteurs, en assimilant ce choix à un tirage
+avec remise, et on note $X$ le nombre de visiteurs qui ont choisi cet atelier. On
+suppose l'affirmation exacte : $X$ suit la loi binomiale $\mathcal{B}(150\,;0{,}4)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer deux entiers $a$ et $b$ tels que $P(a\leq X\leq b)\geq 0{,}95$, en
+        suivant la propriété 7.
+  \item Interpréter le résultat.
+  \item Sur $150$ visiteurs interrogés, $55$ ont choisi l'atelier de robotique. Qu'en
+        penser ?
+\end{questions}
+\reponse{a) $a=48$ ($P(X\leq 47)\approx 0{,}018$, $P(X\leq 48)\approx 0{,}026$) et $b=72$
+($P(X\leq 71)\approx 0{,}972$, $P(X\leq 72)\approx 0{,}981$).\; c)~$55\in\intff{48}{72}$ :
+pas de raison de mettre en doute l'affirmation.}
+\end{methodebox}
+
+\afaire{exercices 30 à 32, puis les exercices type bac 33 à 35}
+
+\end{document}

@@ -1,0 +1,877 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Loi binomiale}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Rappels : probabilités conditionnelles}
+
+\exo[Compléter un arbre, sans calculatrice]
+Soit $A$ et $B$ deux événements tels que $P(A)=0{,}3$, $P_{A}(B)=0{,}6$ et
+$P_{\overline{A}}(B)=0{,}2$.
+\begin{enumerate}
+  \item Représenter la situation par un arbre pondéré complet.
+  \item Calculer $P(A\cap B)$, puis $P(B)$.
+  \item En déduire $P_{B}(A)$.
+  \item Les événements $A$ et $B$ sont-ils indépendants ?
+\end{enumerate}
+
+\exo[Les terrains d'une salle de badminton]
+Une salle de badminton classe ses heures d'ouverture en heures creuses et heures
+pleines ; $65\,\%$ des heures sont creuses. Pendant une heure creuse, $30\,\%$ des
+terrains sont occupés ; pendant une heure pleine, $80\,\%$ le sont. On choisit au hasard
+un terrain et une heure d'ouverture, et on note $C$ : \og l'heure est creuse\fg{} et $T$ :
+\og le terrain est occupé\fg.
+\begin{enumerate}
+  \item Traduire les trois pourcentages de l'énoncé par des probabilités.
+  \item Représenter la situation par un arbre pondéré.
+  \item Calculer la probabilité que l'heure soit creuse et le terrain occupé.
+  \item Calculer la probabilité que le terrain soit occupé.
+  \item Le terrain est occupé. Calculer la probabilité que l'heure soit pleine, arrondie
+        au millième.
+\end{enumerate}
+
+\exo[Deux capteurs indépendants]
+Un drone d'observation utilise deux capteurs d'altitude, qui tombent en panne
+indépendamment l'un de l'autre. On note $A$ : \og le capteur A est en panne\fg, de
+probabilité $0{,}01$, et $B$ : \og le capteur B est en panne\fg, de probabilité $0{,}03$.
+\begin{enumerate}
+  \item Calculer la probabilité que les deux capteurs soient en panne.
+  \item Calculer la probabilité qu'au moins un des deux capteurs soit en panne.
+  \item Le capteur A est en panne. Quelle est la probabilité que le capteur B le soit
+        aussi ?
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item $52\,\%$ des musiciens professionnels jouent de la Pop ; parmi eux, $32\,\%$ sont
+        des femmes ; $20\,\%$ des musiciens professionnels sont des femmes. On choisit
+        au hasard un musicien professionnel.
+
+        \emph{Affirmation} : si la personne choisie est une femme, la probabilité
+        qu'elle joue de la Pop est de $0{,}832$.
+  \item Dans un musée, la probabilité qu'un visiteur achète son billet en ligne est
+        $0{,}7$ ; la probabilité qu'il choisisse l'audioguide sachant qu'il a acheté son
+        billet en ligne est $0{,}8$ ; la probabilité qu'il visite sans audioguide est
+        $0{,}32$.
+
+        \emph{Affirmation} : la probabilité qu'un visiteur ne prenne pas l'audioguide
+        sachant qu'il a acheté son billet au guichet est supérieure à deux tiers.
+  \item Soit $A$ et $B$ deux événements tels que $P(A)=\frac{2}{5}$,
+        $P_{A}(B)=\frac{1}{4}$ et $P_{\overline{A}}(B)=\frac{3}{10}$.
+
+        \emph{Affirmation} : $P_{B}(\overline{A})=\dfrac{9}{50}$.
+\end{enumerate}
+
+\partiefiche{Rappels : variable aléatoire, loi, espérance}
+
+\exo[Une roue de loterie]
+À une kermesse, on mise $4$\,€ et on fait tourner une roue partagée en $8$ secteurs
+égaux : un secteur fait gagner $20$\,€, trois secteurs font gagner $5$\,€, les quatre
+autres ne font rien gagner. On note $X$ le gain algébrique du joueur.
+\begin{enumerate}
+  \item Déterminer la loi de probabilité de $X$.
+  \item Calculer $E(X)$. Le jeu est-il favorable au joueur ?
+  \item Calculer $V(X)$, puis $\sigma(X)$ arrondi au centième.
+  \item Les organisateurs veulent un jeu équitable. Quelle mise doivent-ils demander ?
+\end{enumerate}
+
+\exo[La recette d'une salle de badminton]
+Une salle de badminton loue ses terrains $10$\,€ l'heure pleine et $6$\,€ l'heure creuse.
+On note $X$ la recette, en euros, d'un terrain pendant une heure choisie au hasard. Une
+étude donne la loi de $X$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $0$ & $6$ & $10$\\\hline
+$P(X=x_{i})$ & $0{,}525$ & $0{,}195$ & $0{,}28$\\\hline
+\end{tabular}
+\end{center}
+\begin{enumerate}
+  \item Calculer $E(X)$ et interpréter le résultat.
+  \item La salle compte $10$ terrains et ouvre $70$ heures par semaine. Estimer sa
+        recette hebdomadaire moyenne.
+  \item Calculer $\sigma(X)$, arrondi au centième.
+  \item Une autre salle a une recette horaire d'espérance $3$\,€ et d'écart-type $4$\,€.
+        Laquelle rapporte le plus en moyenne ? Laquelle a les recettes les plus
+        régulières ?
+\end{enumerate}
+
+\exo[D'après bac 2025, Métropole : vrai ou faux ?]
+Dans un musée, un visiteur muni d'un audioguide choisit l'un de trois parcours, de
+durées $50$~min, $1$~h~$20$~min et $1$~h~$40$~min. La durée $X$ du parcours suit la loi
+ci-dessous.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $50$~min & $1$~h~$20$~min & $1$~h~$40$~min\\\hline
+$P(X=x_{i})$ & $0{,}1$ & $0{,}6$ & $0{,}3$\\\hline
+\end{tabular}
+\end{center}
+\emph{Affirmation} : l'espérance de $X$ est $77$ minutes. Vraie ou fausse ? Justifier.
+
+\partiefiche{Succession d'épreuves indépendantes}
+
+\exo[Un dé, puis une pièce]
+On lance un dé équilibré à quatre faces numérotées de $1$ à $4$, puis une pièce
+équilibrée dont les faces portent les numéros $1$ et $2$. Une issue est un couple, comme
+$(3\,;2)$.
+\begin{enumerate}
+  \item Combien cette expérience a-t-elle d'issues ? Représenter la situation par un
+        arbre pondéré.
+  \item Déterminer la loi de probabilité sur l'ensemble des issues.
+  \item Calculer la probabilité d'obtenir deux numéros pairs.
+  \item Calculer la probabilité que la somme des deux numéros soit égale à $4$.
+\end{enumerate}
+
+\exo[Trois urnes]
+On tire une boule dans chacune de trois urnes, l'une après l'autre :
+\begin{itemize}
+  \item l'urne 1 contient $2$ boules rouges et $3$ boules bleues ;
+  \item l'urne 2 contient $1$ boule rouge et $3$ boules vertes ;
+  \item l'urne 3 contient $1$ boule rouge et $4$ boules jaunes.
+\end{itemize}
+On note $R_{1}$, $R_{2}$, $R_{3}$ les événements \og la boule tirée dans l'urne 1 (2, 3)
+est rouge\fg. On gagne si l'on obtient au moins deux boules rouges.
+\begin{enumerate}
+  \item Représenter la situation par un arbre pondéré.
+  \item Calculer la probabilité d'obtenir trois boules rouges.
+  \item Calculer la probabilité de gagner.
+  \item Calculer la probabilité d'obtenir au moins une boule rouge.
+\end{enumerate}
+
+\exo[Le contrôle d'un vélo électrique]
+À la sortie d'une usine, un vélo électrique peut présenter un défaut de batterie (probabilité
+$0{,}03$), de moteur ($0{,}05$) ou de freinage ($0{,}1$). Ces défauts apparaissent
+indépendamment les uns des autres. On note $B$, $M$ et $F$ ces trois événements, et on
+choisit un vélo au hasard.
+\begin{enumerate}
+  \item Représenter la situation par un arbre pondéré à trois niveaux.
+  \item Calculer la probabilité que le vélo présente les trois défauts.
+  \item Calculer $P\big((\overline{B}\,;M\,;\overline{F})\big)$ et traduire cette issue par
+        une phrase.
+  \item Calculer la probabilité que le vélo ne présente aucun défaut, puis la probabilité
+        qu'il en présente au moins un. Arrondir au millième.
+\end{enumerate}
+
+\exo[Répondre au hasard]
+Un questionnaire comporte cinq questions ; pour chacune, deux réponses sont proposées,
+l'une juste, l'autre fausse. Un élève répond au hasard à chaque question, ses réponses étant
+indépendantes.
+\begin{enumerate}
+  \item Combien y a-t-il de façons de remplir ce questionnaire ? Que peut-on dire de la
+        loi de probabilité sur l'ensemble de ces réponses ?
+  \item Calculer, sous forme de fraction irréductible, la probabilité de chaque
+        événement :
+  \begin{enumerate}[label=\alph*)]
+    \item $A$ : \og l'élève donne cinq réponses justes\fg{} ;
+    \item $B$ : \og l'élève donne une seule réponse juste\fg{} ;
+    \item $C$ : \og l'élève donne au moins deux réponses justes\fg.
+  \end{enumerate}
+\end{enumerate}
+
+\partiefiche{Épreuve, loi et schéma de Bernoulli}
+
+\exo[Avec ou sans remise]
+Une urne contient $4$ boules vertes et $2$ boules rouges. On tire deux boules l'une après
+l'autre, et on note $V_{1}$ : \og la première boule est verte\fg{} et $V_{2}$ : \og la
+seconde boule est verte\fg.
+\begin{enumerate}
+  \item Les tirages se font \textbf{sans remise}.
+  \begin{enumerate}[label=\alph*)]
+    \item Représenter la situation par un arbre pondéré.
+    \item Calculer $P(V_{1}\cap V_{2})$, puis $P(V_{2})$.
+    \item Les événements $V_{1}$ et $V_{2}$ sont-ils indépendants ?
+  \end{enumerate}
+  \item Mêmes questions lorsque les tirages se font \textbf{avec remise}.
+  \item Dans lequel des deux cas la répétition du tirage d'une boule forme-t-elle un
+        schéma de Bernoulli ?
+\end{enumerate}
+
+\exo[Schéma de Bernoulli ou non ?]
+Pour chaque situation, dire si elle peut être modélisée par un schéma de Bernoulli et,
+si oui, en donner les paramètres $n$ et $p$.
+\begin{enumerate}[label=\alph*)]
+  \item On lance $10$ fois un dé équilibré à six faces ; le succès est \og obtenir un
+        $6$\fg.
+  \item On tire successivement et sans remise $3$ cartes d'un jeu de $32$ cartes ; le
+        succès est \og tirer un as\fg.
+  \item On tire $4$ fois, avec remise, une boule dans une urne contenant $3$ boules
+        rouges et $5$ boules noires ; le succès est \og la boule est rouge\fg.
+  \item On choisit au hasard $20$ personnes dans une grande ville, en assimilant ce choix
+        à un tirage avec remise ; $45\,\%$ des habitants ont un abonnement aux transports
+        en commun, et le succès est \og la personne a un abonnement\fg.
+\end{enumerate}
+
+\exo[Des briques de construction]
+Un bac contient $36$ briques de construction jaunes et $64$ vertes. Lina prend une brique
+au hasard, regarde sa couleur et la remet dans le bac ; elle recommence trois fois en
+tout.
+\begin{enumerate}
+  \item Décrire l'épreuve de Bernoulli associée à un tirage, en prenant pour succès
+        \og la brique est jaune\fg.
+  \item Justifier que la situation est un schéma de Bernoulli et donner ses paramètres.
+  \item Représenter ce schéma par un arbre pondéré.
+  \item Calculer la probabilité que Lina obtienne exactement deux briques jaunes.
+  \item Calculer la probabilité qu'elle n'obtienne aucune brique jaune.
+\end{enumerate}
+
+\exo[La variance d'une loi de Bernoulli]
+Soit $p$ un nombre réel de $\intff{0}{1}$ et $X$ une variable aléatoire qui suit la loi
+de Bernoulli de paramètre $p$.
+\begin{enumerate}
+  \item Pour $p=0{,}2$, calculer $E(X)$, $V(X)$ et $\sigma(X)$.
+  \item On rappelle que $V(X)=p(1-p)$. Pour quelle valeur de $p$ la variance de $X$
+        est-elle la plus grande ? Quelle est alors sa valeur ?
+  \item Pour quelles valeurs de $p$ la variance est-elle nulle ? Interpréter.
+\end{enumerate}
+
+\partiefiche{Loi binomiale}
+
+\exo[Calculer avec la formule]
+Soit $X$ une variable aléatoire qui suit la loi binomiale $\mathcal{B}(5\,;0{,}6)$.
+\begin{enumerate}
+  \item Calculer $P(X=0)$, $P(X=2)$ et $P(X=5)$, en écrivant d'abord la formule.
+  \item Compléter le tableau de la loi de $X$ (valeurs exactes), puis vérifier que la
+        somme des probabilités vaut $1$.
+  \begin{center}
+  \renewcommand{\arraystretch}{1.4}
+  \begin{tabular}{|c|c|c|c|c|c|c|}
+  \hline
+  $k$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\\hline
+  $P(X=k)$ & & & & & &\\\hline
+  \end{tabular}
+  \end{center}
+  \item Quelle est la valeur de $k$ la plus probable ?
+\end{enumerate}
+
+\exo[Des $6$ en quatre lancers]
+On lance quatre fois un dé équilibré à six faces et on note $X$ le nombre de $6$
+obtenus.
+\begin{enumerate}
+  \item Justifier que $X$ suit une loi binomiale et préciser ses paramètres.
+  \item Calculer $P(X=1)$, sous forme de fraction irréductible.
+  \item Calculer $P(1\leq X<3)$, sous forme de fraction irréductible.
+\end{enumerate}
+
+\exo[Retrouver un paramètre]
+Une variable aléatoire $X$ suit la loi binomiale $\mathcal{B}(3\,;p)$, et
+$P(X=0)=\dfrac{8}{125}$.
+\begin{enumerate}
+  \item Déterminer $p$.
+  \item Compléter le tableau de la loi de $X$, sous forme de fractions.
+\end{enumerate}
+
+\exo[Des guirlandes de couleur]
+Une terrasse est décorée de six guirlandes lumineuses. À l'allumage, chacune prend au
+hasard l'une des quatre couleurs rouge, bleu, vert, rose, indépendamment des autres. On
+note $X$ le nombre de guirlandes qui s'allument en vert.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ? Justifier.
+  \item Calculer la probabilité qu'au plus une guirlande s'allume en vert (valeur exacte,
+        puis arrondie au millième).
+  \item En déduire la probabilité qu'au moins deux guirlandes s'allument en vert.
+\end{enumerate}
+
+\exo[D'après bac 2025 et 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item Dans un musée, la probabilité qu'un visiteur visite sans audioguide est $0{,}32$.
+        On choisit au hasard $12$ visiteurs ; le choix de l'audioguide est indépendant
+        d'un visiteur à l'autre.
+
+        \emph{Affirmation} : la probabilité qu'exactement la moitié de ces visiteurs opte
+        pour l'audioguide est égale à $924\times 0{,}2176^{6}$.
+  \item Soit $p$ un nombre réel tel que $0<p<1$, et $X$ une variable aléatoire qui suit
+        la loi binomiale de paramètres $3$ et $p$.
+
+        \emph{Affirmation} : $P(X=1)=3p-6p^{2}+3p^{3}$.
+\end{enumerate}
+
+\partiefiche{Probabilités cumulées à la calculatrice}
+
+\exo[Traduire, puis calculer]
+Soit $X$ une variable aléatoire qui suit la loi binomiale $\mathcal{B}(20\,;0{,}3)$. Pour
+chaque probabilité, écrire la traduction avec $P(X\leq\dots)$, puis donner une valeur
+arrondie au millième.
+\begin{enumerate}[label=\alph*)]
+  \item $P(X\leq 5)$
+  \item $P(X<5)$
+  \item $P(X\geq 8)$
+  \item $P(X>8)$
+  \item $P(4\leq X\leq 9)$
+\end{enumerate}
+
+\exo[Des colis abîmés]
+Un service de livraison constate que $3\,\%$ des colis arrivent abîmés. Un livreur
+achemine $40$ colis ; on assimile ces colis à un tirage avec remise, et on note $X$ le
+nombre de colis abîmés parmi eux.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ? Justifier.
+  \item Calculer $P(X=0)$, puis la probabilité qu'au moins un colis soit abîmé.
+  \item Calculer la probabilité qu'au plus deux colis soient abîmés.
+  \item Calculer la probabilité que plus de trois colis soient abîmés.
+\end{enumerate}
+Arrondir les résultats au millième.
+
+\exo[Un QCM rempli au hasard]
+Un QCM comporte $20$ questions ; pour chacune, quatre réponses sont proposées, dont une
+seule est juste. Un candidat répond au hasard à chaque question, indépendamment. On note
+$X$ le nombre de réponses justes.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ? Justifier.
+  \item Calculer la probabilité qu'il ait exactement $5$ réponses justes.
+  \item Calculer la probabilité qu'il ait au plus $3$ réponses justes.
+  \item Calculer la probabilité qu'il ait au moins la moitié des réponses justes.
+        Commenter.
+\end{enumerate}
+Arrondir les résultats au millième.
+
+\exo[D'après bac 2025, Amérique du Sud : vrai ou faux ?]
+Un nageur parcourt le $50$ mètres nage libre en moins de $25$ secondes avec une probabilité
+de $0{,}85$. Il effectue, sur une journée, $20$ parcours chronométrés ; on note $X$ le
+nombre de fois où il nage cette distance en moins de $25$ secondes. On admet que $X$ suit
+la loi binomiale de paramètres $n=20$ et $p=0{,}85$.
+
+\emph{Affirmation} : sachant qu'il a atteint au moins $15$ fois son objectif, une valeur
+approchée à $10^{-3}$ de la probabilité qu'il l'ait atteint au moins $18$ fois est
+$0{,}434$. Vraie ou fausse ? Justifier.
+
+\exo[Des vélos en libre-service]
+Une station compte $50$ vélos en libre-service. À $8$~h, chaque vélo est disponible avec
+une probabilité de $0{,}7$, indépendamment des autres. On note $X$ le nombre de vélos
+disponibles à $8$~h.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ?
+  \item Calculer la probabilité qu'entre $30$ et $40$ vélos (inclus) soient disponibles.
+  \item Calculer la probabilité qu'au moins $40$ vélos soient disponibles.
+  \item Calculer la probabilité qu'au plus $30$ vélos soient disponibles.
+\end{enumerate}
+Arrondir les résultats au millième.
+
+\partiefiche{Problèmes de seuil}
+
+\exo[Des paniers à trois points]
+Une joueuse de basket réussit un tir à trois points avec une probabilité de $0{,}2$ ;
+ses tirs sont indépendants. Soit $n\in\Ns$ ; on note $X_{n}$ le nombre de tirs réussis sur
+$n$ tirs.
+\begin{enumerate}
+  \item Quelle est la loi de $X_{n}$ ?
+  \item Pour $n=5$, calculer la probabilité qu'elle réussisse au moins un tir, arrondie au
+        millième.
+  \item Exprimer en fonction de $n$ la probabilité $p_{n}$ qu'elle réussisse au moins un tir
+        sur $n$.
+  \item Déterminer le plus petit nombre de tirs $n$ pour lequel $p_{n}\geq 0{,}95$.
+\end{enumerate}
+
+\exo[Des fleurs blanches]
+Dans un sachet de semences, $3\,\%$ des graines donnent une fleur blanche. On sème $n$
+graines ($n\in\Ns$), en assimilant ce choix à un tirage avec remise.
+\begin{enumerate}
+  \item Exprimer en fonction de $n$ la probabilité $p_{n}$ d'obtenir au moins une fleur
+        blanche.
+  \item Combien de graines faut-il semer, au minimum, pour que $p_{n}\geq 0{,}9$ ?
+\end{enumerate}
+
+\exo[Des lots de roses remboursés]
+Une roseraie livre des fleuristes par lots de $120$ roses ; $5\,\%$ des roses livrées sont
+fanées. On choisit un lot au hasard, assimilé à un tirage avec remise, et on note $X$ le
+nombre de roses fanées du lot.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ?
+  \item La roseraie rembourse un lot lorsqu'il contient strictement plus de $8$ roses
+        fanées. Calculer la probabilité qu'un lot soit remboursé, arrondie au centième.
+  \item La roseraie veut rembourser un lot seulement s'il contient strictement plus de
+        $k$ roses fanées, avec $k$ choisi pour que la probabilité de remboursement soit
+        au plus $0{,}01$. Justifier que cela revient à chercher le plus petit entier $k$
+        tel que $P(X\leq k)\geq 0{,}99$.
+  \item Compléter la fonction ci-dessous pour qu'elle renvoie ce plus petit entier $k$,
+        puis donner ce nombre.
+\end{enumerate}
+\begin{python}
+from math import comb
+
+def seuil(s):
+    k = 0
+    P = 0.95**120
+    while ............:
+        k = k + 1
+        P = P + ............
+    return k
+\end{python}
+
+\exo[Prévoir les repas]
+Une association organise un repas solidaire ; $120$ personnes sont inscrites, et chacune
+vient avec une probabilité de $0{,}9$, indépendamment des autres. On note $X$ le nombre de
+personnes présentes, et on prépare $k$ repas.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ?
+  \item Traduire par une inégalité sur $P(X\leq k)$ la condition : \og la probabilité de
+        manquer de repas est au plus $0{,}02$\fg.
+  \item Déterminer le plus petit nombre de repas à préparer.
+\end{enumerate}
+
+\partiefiche{Intervalle de probabilité donnée}
+
+\exo[Un intervalle pour $\mathcal{B}(50\,;0{,}4)$]
+Soit $X$ une variable aléatoire qui suit la loi binomiale $\mathcal{B}(50\,;0{,}4)$.
+\begin{enumerate}
+  \item Déterminer le plus petit entier $a$ tel que $P(X\leq a)>0{,}025$.
+  \item Déterminer le plus petit entier $b$ tel que $P(X\leq b)\geq 0{,}975$.
+  \item En déduire un intervalle $I$ tel que $P(X\in I)\geq 0{,}95$, puis calculer
+        $P(X\in I)$, arrondie au millième.
+\end{enumerate}
+
+\exo[Le taux de germination annoncé]
+Un producteur de semences affirme que $85\,\%$ de ses graines germent. Un jardinier sème
+$200$ graines (choix assimilé à un tirage avec remise) ; $155$ germent. On note $X$ le
+nombre de graines qui germent sur $200$, et on suppose l'affirmation exacte.
+\begin{enumerate}
+  \item Quelle est la loi de $X$ ?
+  \item Déterminer deux entiers $a$ et $b$ tels que $P(a\leq X\leq b)\geq 0{,}95$, avec la
+        méthode du cours.
+  \item Interpréter cet intervalle.
+  \item Le jardinier doit-il mettre en doute l'affirmation du producteur ?
+\end{enumerate}
+
+\exo[Le sport en club]
+Une ligue sportive affirme que $30\,\%$ des habitants d'une ville pratiquent un sport en
+club. Un sondage interroge $400$ habitants, choisis au hasard (choix assimilé à un tirage
+avec remise) ; $125$ pratiquent un sport en club.
+\begin{enumerate}
+  \item On suppose l'affirmation exacte ; on note $X$ le nombre de pratiquants parmi les
+        $400$ habitants interrogés. Quelle est la loi de $X$ ?
+  \item Déterminer deux entiers $a$ et $b$ tels que $P(a\leq X\leq b)\geq 0{,}95$, avec la
+        méthode du cours.
+  \item Le sondage met-il en doute l'affirmation de la ligue ?
+  \item Traduire l'intervalle $\intff{a}{b}$ en fréquences.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2025, Amérique du Nord]
+\emph{Dans cet exercice, les réponses seront arrondies à $10^{-4}$ près.}
+
+Durant la saison hivernale, la circulation d'un virus a entraîné la contamination de
+$2\,\%$ de la population d'un pays. Dans ce pays, $90\,\%$ de la population a été
+vaccinée contre ce virus. On constate que $62\,\%$ des personnes contaminées avaient été
+vaccinées. On interroge au hasard une personne, et on note les événements $C$ : \og la
+personne a été contaminée\fg{} et $V$ : \og la personne a été vaccinée\fg.
+\begin{enumerate}
+  \item À partir de l'énoncé, donner, sans calcul, les probabilités $P(C)$, $P(V)$ et la
+        probabilité conditionnelle $P_{C}(V)$.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Calculer $P(C\cap V)$.
+    \item En déduire $P(\overline{C}\cap V)$.
+  \end{enumerate}
+  \item Construire un arbre de probabilités, de premier niveau $C$, $\overline{C}$ et de
+        second niveau $V$, $\overline{V}$, et le compléter.
+  \item Calculer $P_{V}(C)$ et interpréter le résultat dans le contexte de l'exercice.
+  \item Déterminer si les affirmations suivantes sont vraies ou fausses, en justifiant.
+  \begin{enumerate}[label=\alph*)]
+    \item \og Parmi les personnes non contaminées, il y a dix fois plus de personnes
+          vaccinées que de personnes non vaccinées.\fg
+    \item \og Plus de $98\,\%$ de la population vaccinée n'a pas été contaminée.\fg
+  \end{enumerate}
+  \item On s'intéresse à un échantillon de $20$ personnes choisies au hasard dans la
+        population, choix assimilé à des tirages successifs avec remise. On note $X$ la
+        variable aléatoire égale au nombre de personnes contaminées ; pour une personne
+        choisie au hasard, la probabilité d'être contaminée est $p=0{,}02$.
+  \begin{enumerate}[label=\alph*)]
+    \item Quelle est la loi suivie par $X$ ? Justifier et donner ses paramètres.
+    \item Calculer, en rappelant la formule, la probabilité que $4$ personnes exactement
+          soient contaminées dans ce groupe de $20$ personnes.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2026, Centres étrangers]
+Pour tester la conformité de l'acier d'une lame d'escrime, on la plie puis on la redresse
+toutes les secondes jusqu'à la rupture ; la lame est conforme si la rupture intervient
+après plus de cinq heures de test.
+
+Un équipementier se fournit auprès de trois fabricants : son stock est composé de
+$60\,\%$ de lames du fournisseur A, de $12\,\%$ du fournisseur B, le reste venant du
+fournisseur C. Une étude qualité a montré que $90\,\%$ des lames de A, $95\,\%$ des lames de
+B et $85\,\%$ des lames de C étaient conformes.
+
+\textbf{Partie A.} Un contrôle est déclenché sur une lame vendue par l'équipementier. On
+note $A$, $B$, $C$ les événements \og la lame provient du fournisseur A (B, C)\fg{} et
+$T$ : \og la lame est conforme\fg.
+\begin{enumerate}
+  \item Construire l'arbre de probabilité représentant la situation (premier niveau $A$,
+        $B$, $C$ ; second niveau $T$, $\overline{T}$).
+  \item Déterminer $P(A\cap\overline{T})$ et interpréter ce résultat.
+  \item Démontrer que la probabilité que la lame testée soit conforme est de $0{,}892$.
+  \item Sachant que la lame testée n'est pas conforme, déterminer la probabilité qu'elle
+        provienne du fournisseur B, arrondie au millième.
+\end{enumerate}
+
+\textbf{Partie B.} La probabilité qu'une lame ne soit pas conforme est égale à
+$0{,}108$. Lors d'une compétition, l'équipementier apporte un échantillon de $75$ lames de
+son stock, choix assimilé à un tirage avec remise. On note $X$ le nombre de lames non
+conformes dans cet échantillon.
+\begin{enumerate}
+  \item On admet que $X$ suit une loi binomiale. Préciser ses paramètres.
+  \item Calculer la probabilité que $6$ lames exactement soient non conformes, arrondie
+        au millième.
+  \item L'équipementier affirme que la probabilité qu'il y ait strictement plus de $8$
+        lames non conformes dans cet échantillon est inférieure à $50\,\%$. A-t-il
+        raison ?
+\end{enumerate}
+
+\exo[D'après bac 2025, Polynésie]
+\emph{Les probabilités seront, si nécessaire, arrondies à $10^{-3}$ près.}
+
+Une donnée binaire ne peut prendre que deux valeurs : $0$ ou $1$. Elle est transmise
+successivement d'une machine à une autre. Chaque machine transmet la donnée reçue soit de
+manière fidèle ($1$ reste $1$ et $0$ reste $0$), soit de façon contraire ($1$ devient $0$ et
+$0$ devient $1$). La transmission est fidèle dans $90\,\%$ des cas. La première machine
+reçoit toujours la valeur $1$.
+
+\textbf{Partie A.} Pour tout $n\in\Ns$, on note $V_{n}$ : \og la $n$-ième machine détient
+la valeur $1$\fg.
+\begin{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Construire l'arbre de probabilité partant de $V_{1}$, avec $V_{2}$ et
+          $\overline{V_{2}}$, puis $V_{3}$ et $\overline{V_{3}}$.
+    \item Démontrer que $P(V_{3})=0{,}82$ et interpréter ce résultat.
+    \item Sachant que la troisième machine a reçu la valeur $1$, calculer la probabilité
+          que la deuxième machine ait aussi reçu la valeur $1$.
+  \end{enumerate}
+  \item Pour tout $n\in\Ns$, on note $p_{n}=P(V_{n})$ ; ainsi $p_{1}=1$.
+  \begin{enumerate}[label=\alph*)]
+    \item Démontrer que, pour tout $n\in\Ns$, $p_{n+1}=0{,}8p_{n}+0{,}1$.
+    \item Démontrer par récurrence que, pour tout $n\in\Ns$,
+          $p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$.
+    \item Calculer la limite de $p_{n}$ quand $n$ tend vers $+\infty$. Interpréter.
+  \end{enumerate}
+\end{enumerate}
+
+\textbf{Partie B.} La fonction \texttt{simulation} prend en paramètre le nombre $n$ de
+transmissions et renvoie la liste des valeurs détenues par les machines successives ;
+l'instruction \texttt{rand()} renvoie un nombre aléatoire de $\intfo{0}{1}$.
+\begin{python}
+def simulation(n):
+    donnee = 1
+    liste = [donnee]
+    for k in range(n):
+        if rand() < 0.1:
+            donnee = 1 - donnee
+        liste.append(donnee)
+    return liste
+\end{python}
+Par exemple, \texttt{simulation(3)} peut renvoyer \texttt{[1, 0, 0, 1]}.
+\begin{enumerate}
+  \item Déterminer le rôle des instructions des lignes 5 et 6.
+  \item Calculer la probabilité que \texttt{simulation(4)} renvoie la liste
+        \texttt{[1, 1, 1, 1, 1]}, puis la probabilité que \texttt{simulation(6)} renvoie
+        la liste \texttt{[1, 0, 1, 0, 0, 1, 1]}.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

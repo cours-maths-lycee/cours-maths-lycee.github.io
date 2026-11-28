@@ -1,0 +1,1288 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 7 --- Loi binomiale --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\tikzset{evt/.style={inner sep=2pt},
+  proba/.style={font=\footnotesize,fill=white,inner sep=1pt},
+  nom/.style={font=\footnotesize,inner sep=1.5pt,sloped}}
+\newcommand{\arbfeuilles}[4]{\def\arbfAB{#1}\def\arbfAnB{#2}\def\arbfnAB{#3}\def\arbfnAnB{#4}}
+\newcommand{\arbfeuille}[2]{%
+  \node[right,font=\footnotesize] at (#1.east) {$#2\ifx\arbtmp\empty\else=\arbtmp\fi$};}
+\newcommand{\arbre}[8]{%
+  \def\arbNA{\overline{#1}}\def\arbNB{\overline{#2}}%
+  \node (O) at (0,0) {};
+  \node[evt] (A) at (3.4,1.2) {$#1$};
+  \node[evt] (nA) at (3.4,-1.2) {$\arbNA$};
+  \node[evt] (AB) at (7.2,1.9) {$#2$};
+  \node[evt] (AnB) at (7.2,0.5) {$\arbNB$};
+  \node[evt] (nAB) at (7.2,-0.5) {$#2$};
+  \node[evt] (nAnB) at (7.2,-1.9) {$\arbNB$};
+  \draw (O.center) -- node[nom,above]{$P(#1)=#3$} (A);
+  \draw (O.center) -- node[nom,below]{$P(\arbNA)=#4$} (nA);
+  \draw (A) -- node[nom,above]{$P_{#1}(#2)=#5$} (AB);
+  \draw (A) -- node[nom,below]{$P_{#1}(\arbNB)=#6$} (AnB);
+  \draw (nA) -- node[nom,above]{$P_{\arbNA}(#2)=#7$} (nAB);
+  \draw (nA) -- node[nom,below]{$P_{\arbNA}(\arbNB)=#8$} (nAnB);
+  \ifx\arbfAB\undefined\arbfeuilles{}{}{}{}\fi
+  \let\arbtmp\arbfAB\arbfeuille{AB}{P(#1\cap #2)}
+  \let\arbtmp\arbfAnB\arbfeuille{AnB}{P(#1\cap\arbNB)}
+  \let\arbtmp\arbfnAB\arbfeuille{nAB}{P(\arbNA\cap #2)}
+  \let\arbtmp\arbfnAnB\arbfeuille{nAnB}{P(\arbNA\cap\arbNB)}}
+\newcommand{\feuille}[2]{\node[right,font=\footnotesize] at (#1.east) {#2};}
+\newcommand{\arbval}[2]{\expandafter\def\csname arbv#1\endcsname{#2}}
+\newcommand{\arbretroisepreuves}[9]{%
+  \node (O) at (0,0) {};
+  \foreach \a/\ya/\na/\pa/\pos in {1/2.2/{#1}/{#4}/above,0/-2.2/{\overline{#1}}/{#5}/below}{%
+    \node[evt] (N\a) at (2.9,\ya) {$\na$};
+    \draw (O.center) -- node[nom,\pos]{$P(\na)=\pa$} (N\a);
+    \foreach \b/\db/\nb/\pb/\posb in {1/1.1/{#2}/{#6}/above,0/-1.1/{\overline{#2}}/{#7}/below}{%
+      \pgfmathsetmacro{\yb}{\ya+\db}
+      \node[evt] (N\a\b) at (5.8,\yb) {$\nb$};
+      \draw (N\a) -- node[nom,\posb]{$P(\nb)=\pb$} (N\a\b);
+      \foreach \c/\dc/\nc/\pc/\posc in {1/0.5/{#3}/{#8}/above,0/-0.5/{\overline{#3}}/{#9}/below}{%
+        \pgfmathsetmacro{\yc}{\yb+\dc}
+        \node[evt] (N\a\b\c) at (8.8,\yc) {$\nc$};
+        \draw (N\a\b) -- node[nom,\posc]{$P(\nc)=\pc$} (N\a\b\c);
+        \node[right,font=\footnotesize] at (N\a\b\c.east)
+          {$P\big((\na\,;\nb\,;\nc)\big)\ifcsname arbv\a\b\c\endcsname=\csname arbv\a\b\c\endcsname\fi$};}}}}
+\newcommand{\arbretrois}[2]{\arbretroisepreuves{S}{S}{S}{#1}{#2}{#1}{#2}{#1}{#2}}
+
+\begin{document}
+
+\entetefiche{Chapitre 7 --- Loi binomiale}{Terminale spécialité mathématiques}
+
+\partie{Rappels : probabilités conditionnelles}
+
+\begin{exo}[Compléter un arbre, sans calculatrice]
+\cas{1.}
+\explique{Règle du nœud : $P(\overline{A})=1-0{,}3=0{,}7$, $P_{A}(\overline{B})=0{,}4$ et
+$P_{\overline{A}}(\overline{B})=0{,}8$.}{somme $1$ à chaque nœud}
+\begin{center}
+\begin{tikzpicture}
+  \arbfeuilles{0{,}18}{}{0{,}14}{}
+  \arbre{A}{B}{0{,}3}{0{,}7}{0{,}6}{0{,}4}{0{,}2}{0{,}8}
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\begin{calculs}
+P(A\cap B) &= P(A)\times P_{A}(B) &&\justif{règle du chemin}\\
+P(A\cap B) &= 0{,}3\times 0{,}6 = \res{0{,}18} &&\\[3pt]
+P(B) &= P(A\cap B)+P(\overline{A}\cap B) &&\justif{probabilités totales : $A$ et $\overline{A}$ forment une partition}\\
+P(B) &= 0{,}18+0{,}7\times 0{,}2 &&\\
+P(B) &= 0{,}18+0{,}14 = \res{0{,}32} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P_{B}(A) &= \frac{P(A\cap B)}{P(B)} &&\justif{définition}\\
+P_{B}(A) &= \frac{0{,}18}{0{,}32} = \res{0{,}5625} &&
+\end{calculs}
+\cas{4.}
+\explique{$P(A)\times P(B)=0{,}3\times 0{,}32=0{,}096$, alors que $P(A\cap B)=0{,}18$ : les
+événements $A$ et $B$ \res{ne sont pas indépendants}.}{on compare $P(A\cap B)$ et
+$P(A)\times P(B)$ ; ou bien $P_{A}(B)=0{,}6\neq P(B)$}
+\end{exo}
+
+\begin{exo}[Les terrains d'une salle de badminton]
+\cas{1.}
+\explique{\res{$P(C)=0{,}65$}, \res{$P_{C}(T)=0{,}3$} et
+\res{$P_{\overline{C}}(T)=0{,}8$}.}{\og pendant une heure creuse\fg{} : sachant $C$}
+\cas{2.}
+\explique{On complète chaque nœud : $P(\overline{C})=0{,}35$, $P_{C}(\overline{T})=0{,}7$,
+$P_{\overline{C}}(\overline{T})=0{,}2$.}{règle du nœud}
+\begin{center}
+\begin{tikzpicture}
+  \arbfeuilles{0{,}195}{}{0{,}28}{}
+  \arbre{C}{T}{0{,}65}{0{,}35}{0{,}3}{0{,}7}{0{,}8}{0{,}2}
+\end{tikzpicture}
+\end{center}
+\cas{3.}
+\begin{calculs}
+P(C\cap T) &= P(C)\times P_{C}(T) &&\justif{règle du chemin}\\
+P(C\cap T) &= 0{,}65\times 0{,}3 = \res{0{,}195} &&
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+P(T) &= P(C\cap T)+P(\overline{C}\cap T) &&\justif{probabilités totales}\\
+P(T) &= 0{,}195+0{,}35\times 0{,}8 &&\\
+P(T) &= 0{,}195+0{,}28 = \res{0{,}475} &&
+\end{calculs}
+\cas{5.}
+\begin{calculs}
+P_{T}(\overline{C}) &= \frac{P(\overline{C}\cap T)}{P(T)} &&\justif{\og le terrain est occupé\fg{} : sachant $T$}\\
+P_{T}(\overline{C}) &= \frac{0{,}28}{0{,}475} &&\\
+P_{T}(\overline{C}) &\approx \res{0{,}589} &&
+\end{calculs}
+\explique{Sachant que le terrain est occupé, la probabilité que l'heure soit pleine est
+d'environ $0{,}589$.}{on conclut par une phrase}
+\end{exo}
+
+\begin{exo}[Deux capteurs indépendants]
+\cas{1.}
+\begin{calculs}
+P(A\cap B) &= P(A)\times P(B) &&\justif{$A$ et $B$ indépendants}\\
+P(A\cap B) &= 0{,}01\times 0{,}03 = \res{0{,}0003} &&
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+P(A\cup B) &= P(A)+P(B)-P(A\cap B) &&\justif{probabilité d'une réunion}\\
+P(A\cup B) &= 0{,}01+0{,}03-0{,}0003 = \res{0{,}0397} &&
+\end{calculs}
+\rem{Autre méthode : le contraire de \og au moins un en panne\fg{} est \og aucun en
+panne\fg, de probabilité $0{,}99\times 0{,}97=0{,}9603$ ; $1-0{,}9603=0{,}0397$.}
+\cas{3.}
+\explique{On cherche $P_{A}(B)$. Les événements sont indépendants, donc
+$P_{A}(B)=P(B)=\res{0{,}03}$.}{la panne de A ne change rien pour B}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{On note $O$ : \og la personne joue de la Pop\fg{} et $F$ : \og la personne est une
+femme\fg. On a $P(O)=0{,}52$, $P_{O}(F)=0{,}32$ et $P(F)=0{,}2$ ; on cherche
+$P_{F}(O)$.}{on traduit l'énoncé}
+\begin{calculs}
+P_{F}(O) &= \frac{P(O\cap F)}{P(F)} &&\justif{définition}\\
+P_{F}(O) &= \frac{0{,}52\times 0{,}32}{0{,}2} &&\justif{$P(O\cap F)=P(O)\times P_{O}(F)$}\\
+P_{F}(O) &= \frac{0{,}1664}{0{,}2} = 0{,}832 &&
+\end{calculs}
+\explique{L'affirmation est \res{vraie}.}{}
+\cas{2.}
+\explique{On note $L$ : \og billet acheté en ligne\fg{} et $A$ : \og le visiteur prend
+l'audioguide\fg. On a $P(L)=0{,}7$, $P_{L}(A)=0{,}8$, donc $P_{L}(\overline{A})=0{,}2$, et
+$P(\overline{A})=0{,}32$ ; on cherche $P_{\overline{L}}(\overline{A})$.}{\og au guichet\fg{} :
+sachant $\overline{L}$}
+\begin{calculs}
+P(L\cap\overline{A}) &= 0{,}7\times 0{,}2 = 0{,}14 &&\justif{règle du chemin}\\
+P(\overline{L}\cap\overline{A}) &= P(\overline{A})-P(L\cap\overline{A}) &&\justif{probabilités totales}\\
+P(\overline{L}\cap\overline{A}) &= 0{,}32-0{,}14 = 0{,}18 &&\\[3pt]
+P_{\overline{L}}(\overline{A}) &= \frac{P(\overline{L}\cap\overline{A})}{P(\overline{L})} &&\justif{définition}\\
+P_{\overline{L}}(\overline{A}) &= \frac{0{,}18}{0{,}3} = 0{,}6 &&
+\end{calculs}
+\explique{$0{,}6<\frac{2}{3}$ : l'affirmation est \res{fausse}.}{$\frac{2}{3}\approx 0{,}667$}
+\cas{3.}
+\begin{calculs}
+P(B) &= P(A\cap B)+P(\overline{A}\cap B) &&\justif{probabilités totales}\\
+P(B) &= \frac{2}{5}\times\frac{1}{4}+\frac{3}{5}\times\frac{3}{10} &&\justif{$P(\overline{A})=\frac{3}{5}$}\\
+P(B) &= \frac{1}{10}+\frac{9}{50} = \frac{14}{50} &&\justif{$\frac{1}{10}=\frac{5}{50}$}\\[3pt]
+P_{B}(\overline{A}) &= \frac{P(\overline{A}\cap B)}{P(B)} &&\justif{définition}\\
+P_{B}(\overline{A}) &= \frac{9}{50}\times\frac{50}{14} = \frac{9}{14} &&\justif{diviser, c'est multiplier par l'inverse}
+\end{calculs}
+\explique{$\frac{9}{14}\neq\frac{9}{50}$ : l'affirmation est \res{fausse}.}{l'erreur
+classique : confondre $P_{B}(\overline{A})$ et $P(\overline{A}\cap B)$}
+\end{exo}
+
+\partie{Rappels : variable aléatoire, loi, espérance}
+
+\begin{exo}[Une roue de loterie]
+\cas{1.}
+\explique{Le gain algébrique vaut $20-4=16$ (un secteur), $5-4=1$ (trois secteurs) ou
+$-4$ (quatre secteurs) ; les $8$ secteurs sont égaux.}{$\frac{1}{8}$ par secteur}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{10pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$x_{i}$ & $-4$ & $1$ & $16$\\\hline
+$P(X=x_{i})$ & $\dfrac{4}{8}$ & $\dfrac{3}{8}$ & $\dfrac{1}{8}$\\\hline
+\end{tabular}
+\end{center}
+\explique{La loi de $X$ est donnée par ce tableau : \res{$P(X=-4)=\frac{4}{8}$,
+$P(X=1)=\frac{3}{8}$, $P(X=16)=\frac{1}{8}$}.}{somme : $\frac{8}{8}=1$}
+\cas{2.}
+\begin{calculs}
+E(X) &= (-4)\times\frac{4}{8}+1\times\frac{3}{8}+16\times\frac{1}{8} &&\justif{somme des $p_{i}x_{i}$}\\
+E(X) &= \frac{-16+3+16}{8} = \res{\frac{3}{8}} &&
+\end{calculs}
+\explique{$E(X)=0{,}375>0$ : le jeu est \res{favorable au joueur}, qui gagne en moyenne
+environ $0{,}38$\,€ par partie.}{interprétation}
+\cas{3.}
+\begin{calculs}
+V(X) &= \frac{4}{8}\Big(-4-\frac{3}{8}\Big)^{2}+\frac{3}{8}\Big(1-\frac{3}{8}\Big)^{2}+\frac{1}{8}\Big(16-\frac{3}{8}\Big)^{2} &&\justif{définition}\\
+V(X) &= \frac{4}{8}\times\frac{1225}{64}+\frac{3}{8}\times\frac{25}{64}+\frac{1}{8}\times\frac{15\,625}{64} &&\justif{$-\frac{35}{8}$, $\frac{5}{8}$, $\frac{125}{8}$ au carré}\\
+V(X) &= \frac{4\,900+75+15\,625}{512} = \frac{20\,600}{512} = \res{\frac{2\,575}{64}} &&\justif{environ $40{,}23$}\\[3pt]
+\sigma(X) &= \sqrt{\frac{2\,575}{64}} \approx \res{6{,}34} &&
+\end{calculs}
+\rem{À la calculatrice : valeurs $-4$, $1$, $16$ et effectifs $4$, $3$, $1$ en statistiques ;
+l'écart-type affiché est $\sigma(X)$.}
+\cas{4.}
+\explique{Avec une mise de $m$ euros, l'espérance du gain vaut
+$\frac{1}{8}(20-m)+\frac{3}{8}(5-m)+\frac{4}{8}(-m)=\frac{35-8m}{8}$.}{même loi, autres
+valeurs}
+\begin{calculs}
+\frac{35-8m}{8} &= 0 &&\justif{jeu équitable : espérance nulle}\\
+\iff 35-8m &= 0 &&\justif{on multiplie par $8$}\\
+\iff m &= \frac{35}{8} &&
+\end{calculs}
+\explique{Il faut demander une mise de \res{$\frac{35}{8}=4{,}375$\,€}.}{plus que $4$\,€ :
+le jeu était favorable}
+\end{exo}
+
+\begin{exo}[La recette d'une salle de badminton]
+\cas{1.}
+\begin{calculs}
+E(X) &= 0\times 0{,}525+6\times 0{,}195+10\times 0{,}28 &&\justif{somme des $p_{i}x_{i}$}\\
+E(X) &= 1{,}17+2{,}8 = \res{3{,}97} &&
+\end{calculs}
+\explique{Sur un grand nombre d'heures, un terrain rapporte en moyenne $3{,}97$\,€ par
+heure.}{l'espérance est une moyenne}
+\cas{2.}
+\begin{calculs}
+R &= 10\times 70\times 3{,}97 &&\justif{$700$ heures-terrains par semaine}\\
+R &= \res{2\,779} &&
+\end{calculs}
+\explique{La recette hebdomadaire moyenne est d'environ $2\,779$\,€.}{}
+\cas{3.}
+\begin{calculs}
+V(X) &= 0{,}525\times(0-3{,}97)^{2}+0{,}195\times(6-3{,}97)^{2}+0{,}28\times(10-3{,}97)^{2} &&\justif{définition}\\
+V(X) &\approx 8{,}274+0{,}804+10{,}181 \approx 19{,}259 &&\\
+\sigma(X) &= \sqrt{V(X)} \approx \res{4{,}39} &&
+\end{calculs}
+\cas{4.}
+\explique{$3{,}97>3$ : la première salle \res{rapporte le plus en moyenne}. Mais son
+écart-type, $4{,}39$, dépasse celui de l'autre salle, $4$ : \res{l'autre salle a les
+recettes les plus régulières}.}{l'écart-type mesure la dispersion}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Métropole : vrai ou faux ?]
+\explique{On convertit en minutes : $1$~h~$20$~min $=80$~min et $1$~h~$40$~min
+$=100$~min.}{les valeurs doivent être des nombres}
+\begin{calculs}
+E(X) &= 0{,}1\times 50+0{,}6\times 80+0{,}3\times 100 &&\justif{somme des $p_{i}x_{i}$}\\
+E(X) &= 5+48+30 = 83 &&
+\end{calculs}
+\explique{L'espérance vaut $83$ minutes : l'affirmation est \res{fausse}.}{la durée moyenne
+d'une visite est $1$~h~$23$~min}
+\end{exo}
+
+\partie{Succession d'épreuves indépendantes}
+
+\begin{exo}[Un dé, puis une pièce]
+\cas{1.}
+\explique{L'univers est $\{1\,;2\,;3\,;4\}\times\{1\,;2\}$ : il a $4\times 2=\res{8}$
+issues.}{principe multiplicatif}
+\explique{Chaque branche du dé porte $\frac{1}{4}$, chaque branche de la pièce
+$\frac{1}{2}$.}{épreuves indépendantes}
+\cas{2.}
+\explique{Les épreuves sont indépendantes : chaque issue a pour probabilité
+$\frac{1}{4}\times\frac{1}{2}=\res{\frac{1}{8}}$. La loi est
+équirépartie.}{produit des probabilités}
+\begin{center}
+\begin{tikzpicture}
+  \node (O) at (0,0) {};
+  \foreach \d/\y in {1/3.3,2/1.1,3/-1.1,4/-3.3}{%
+    \node[evt] (D\d) at (4.2,\y) {$\d$};
+    \draw (O.center) -- node[nom,above,pos=0.68]{$P(\d)=\frac{1}{4}$} (D\d);
+    \foreach \q/\dy/\pos in {1/0.5/above,2/-0.5/below}{%
+      \node[evt] (D\d\q) at (7.2,\y+\dy) {$\q$};
+      \draw (D\d) -- node[nom,\pos]{$P(\q)=\frac{1}{2}$} (D\d\q);
+      \node[right,font=\footnotesize] at (D\d\q.east) {$P\big((\d\,;\q)\big)=\frac{1}{8}$};}}
+\end{tikzpicture}
+\end{center}
+\cas{3.}
+\explique{Deux issues ont deux numéros pairs : $(2\,;2)$ et $(4\,;2)$. La probabilité vaut
+$2\times\frac{1}{8}=\res{\frac{1}{4}}$.}{on additionne les issues}
+\cas{4.}
+\explique{La somme vaut $4$ pour $(3\,;1)$ et $(2\,;2)$ : la probabilité vaut
+$2\times\frac{1}{8}=\res{\frac{1}{4}}$.}{$4+0$ n'est pas possible}
+\end{exo}
+
+\begin{exo}[Trois urnes]
+\cas{1.}
+\explique{$P(R_{1})=\frac{2}{5}=0{,}4$, $P(R_{2})=\frac{1}{4}=0{,}25$,
+$P(R_{3})=\frac{1}{5}=0{,}2$ ; les tirages sont indépendants, donc la probabilité d'une
+branche ne dépend pas du chemin : on écrit $P(R_{2})$ plutôt que $P_{R_{1}}(R_{2})$.}{une
+urne par niveau}
+\begin{center}
+\begin{tikzpicture}
+  \arbval{111}{0{,}02}\arbval{110}{0{,}08}\arbval{101}{0{,}06}\arbval{011}{0{,}03}
+  \arbval{000}{0{,}36}
+  \arbretroisepreuves{R_{1}}{R_{2}}{R_{3}}{0{,}4}{0{,}6}{0{,}25}{0{,}75}{0{,}2}{0{,}8}
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\begin{calculs}
+P\big((R_{1}\,;R_{2}\,;R_{3})\big) &= 0{,}4\times 0{,}25\times 0{,}2 &&\justif{épreuves indépendantes : produit}\\
+P\big((R_{1}\,;R_{2}\,;R_{3})\big) &= \res{0{,}02} &&
+\end{calculs}
+\cas{3.}
+\explique{On gagne pour les issues avec deux ou trois boules rouges :
+$(R_{1}\,;R_{2}\,;R_{3})$, $(R_{1}\,;R_{2}\,;\overline{R_{3}})$,
+$(R_{1}\,;\overline{R_{2}}\,;R_{3})$ et $(\overline{R_{1}}\,;R_{2}\,;R_{3})$. On note $G$ cet
+événement.}{on liste les issues}
+\begin{calculs}
+P(G) &= 0{,}02+0{,}08+0{,}06+0{,}03 &&\justif{somme des issues}\\
+P(G) &= \res{0{,}19} &&
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+P(\text{au moins une rouge}) &= 1-P\big((\overline{R_{1}}\,;\overline{R_{2}}\,;\overline{R_{3}})\big) &&\justif{événement contraire}\\
+P(\text{au moins une rouge}) &= 1-0{,}36 = \res{0{,}64} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Le contrôle d'un vélo électrique]
+\cas{1.}
+\begin{center}
+\begin{tikzpicture}
+  \arbval{111}{0{,}000\,15}\arbval{010}{0{,}043\,65}\arbval{000}{0{,}829\,365}
+  \arbretroisepreuves{B}{M}{F}{0{,}03}{0{,}97}{0{,}05}{0{,}95}{0{,}1}{0{,}9}
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\begin{calculs}
+P\big((B\,;M\,;F)\big) &= 0{,}03\times 0{,}05\times 0{,}1 &&\justif{défauts indépendants : produit}\\
+P\big((B\,;M\,;F)\big) &= \res{0{,}000\,15} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P\big((\overline{B}\,;M\,;\overline{F})\big) &= 0{,}97\times 0{,}05\times 0{,}9 &&\\
+P\big((\overline{B}\,;M\,;\overline{F})\big) &= \res{0{,}043\,65} &&
+\end{calculs}
+\explique{C'est la probabilité que le vélo ait un défaut de moteur, mais ni défaut de
+batterie ni défaut de freinage.}{seul le moteur est défectueux}
+\cas{4.}
+\begin{calculs}
+P\big((\overline{B}\,;\overline{M}\,;\overline{F})\big) &= 0{,}97\times 0{,}95\times 0{,}9 &&\justif{aucun défaut}\\
+P\big((\overline{B}\,;\overline{M}\,;\overline{F})\big) &= 0{,}829\,365 \approx \res{0{,}829} &&\\[3pt]
+P(\text{au moins un défaut}) &= 1-0{,}829\,365 &&\justif{événement contraire}\\
+P(\text{au moins un défaut}) &\approx \res{0{,}171} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Répondre au hasard]
+\cas{1.}
+\explique{Chaque question a $2$ réponses possibles : il y a $2^{5}=\res{32}$ façons de
+remplir le questionnaire. Les réponses sont indépendantes et chacune a la probabilité
+$\frac{1}{2}$ : chaque façon a la probabilité $\big(\frac{1}{2}\big)^{5}=\frac{1}{32}$, la loi
+est \res{équirépartie}.}{$5$-uplets de $\{J\,;F\}$}
+\cas{2.}
+\explique{a) Une seule façon donne cinq réponses justes :
+\res{$P(A)=\frac{1}{32}$}.}{$(J\,;J\,;J\,;J\,;J)$}
+\explique{b) La réponse juste peut être à l'une des $5$ questions :
+\res{$P(B)=\frac{5}{32}$}.}{$\binom{5}{1}=5$ issues}
+\explique{c) Le contraire de $C$ est \og zéro ou une réponse juste\fg.}{zéro réponse juste :
+une seule issue, $(F\,;F\,;F\,;F\,;F)$}
+\begin{calculs}
+P(C) &= 1-\Big(\frac{1}{32}+\frac{5}{32}\Big) &&\justif{événement contraire}\\
+P(C) &= \frac{26}{32} = \res{\frac{13}{16}} &&
+\end{calculs}
+\end{exo}
+
+\partie{Épreuve, loi et schéma de Bernoulli}
+
+\begin{exo}[Avec ou sans remise]
+\cas{1.}
+\explique{a) Sans remise, la seconde urne contient $5$ boules : après une verte, il reste
+$3$ vertes et $2$ rouges ; après une rouge, $4$ vertes et $1$ rouge.}{la composition
+change}
+\begin{center}
+\begin{tikzpicture}
+  \arbfeuilles{\frac{2}{5}}{}{\frac{4}{15}}{}
+  \arbre{V_{1}}{V_{2}}{\frac{2}{3}}{\frac{1}{3}}{\frac{3}{5}}{\frac{2}{5}}{\frac{4}{5}}{\frac{1}{5}}
+\end{tikzpicture}
+\end{center}
+\explique{b)}{}
+\begin{calculs}
+P(V_{1}\cap V_{2}) &= \frac{2}{3}\times\frac{3}{5} = \res{\frac{2}{5}} &&\justif{règle du chemin}\\
+P(V_{2}) &= P(V_{1}\cap V_{2})+P(\overline{V_{1}}\cap V_{2}) &&\justif{probabilités totales}\\
+P(V_{2}) &= \frac{2}{5}+\frac{1}{3}\times\frac{4}{5} = \frac{6}{15}+\frac{4}{15} &&\\
+P(V_{2}) &= \frac{10}{15} = \res{\frac{2}{3}} &&
+\end{calculs}
+\explique{c) $P(V_{1})\times P(V_{2})=\frac{2}{3}\times\frac{2}{3}=\frac{4}{9}$, alors que
+$P(V_{1}\cap V_{2})=\frac{2}{5}$ : $V_{1}$ et $V_{2}$ \res{ne sont pas
+indépendants}.}{$\frac{4}{9}\neq\frac{2}{5}$}
+\cas{2.}
+\explique{Avec remise, chaque tirage se fait dans l'urne complète :
+$P(V_{1})$, $P_{V_{1}}(V_{2})$ et $P_{\overline{V_{1}}}(V_{2})$ valent $\frac{2}{3}$ (arbre : $\frac{2}{3}$ sur
+chaque branche verte, $\frac{1}{3}$ sur chaque rouge).}{la composition ne change pas}
+\begin{calculs}
+P(V_{1}\cap V_{2}) &= \frac{2}{3}\times\frac{2}{3} = \res{\frac{4}{9}} &&\\
+P(V_{2}) &= \frac{4}{9}+\frac{1}{3}\times\frac{2}{3} = \frac{6}{9} = \res{\frac{2}{3}} &&
+\end{calculs}
+\explique{$P(V_{1})\times P(V_{2})=\frac{4}{9}=P(V_{1}\cap V_{2})$ : $V_{1}$ et $V_{2}$
+\res{sont indépendants}.}{}
+\cas{3.}
+\explique{Seuls les tirages \res{avec remise} sont identiques et indépendants : ils forment
+un schéma de Bernoulli (de paramètres $n=2$ et $p=\frac{2}{3}$, en prenant pour succès
+\og la boule est verte\fg).}{sans remise, $p$ change d'un tirage à l'autre}
+\end{exo}
+
+\begin{exo}[Schéma de Bernoulli ou non ?]
+\explique{a) \res{Oui} : $10$ lancers identiques et indépendants, \res{$n=10$ et
+$p=\frac{1}{6}$}.}{}
+\explique{b) \res{Non} : sans remise, les tirages ne sont ni identiques ni indépendants (la
+probabilité de tirer un as change après chaque carte).}{$\frac{4}{32}$, puis $\frac{3}{31}$
+ou $\frac{4}{31}$}
+\explique{c) \res{Oui} : tirages avec remise, \res{$n=4$ et $p=\frac{3}{8}$}.}{$3$ rouges
+sur $8$ boules}
+\explique{d) \res{Oui} : choix assimilé à un tirage avec remise, \res{$n=20$ et
+$p=0{,}45$}.}{phrase de l'énoncé}
+\end{exo}
+
+\begin{exo}[Des briques de construction]
+\cas{1.}
+\explique{Tirer une brique est une épreuve à deux issues : le succès \og la brique est
+jaune\fg, de probabilité \res{$p=\frac{36}{100}=0{,}36$}, et l'échec, de probabilité
+$0{,}64$.}{on nomme le succès et sa probabilité}
+\cas{2.}
+\explique{Lina remet la brique : on répète trois fois cette épreuve de façon identique et
+indépendante. C'est un schéma de Bernoulli de paramètres \res{$n=3$ et
+$p=0{,}36$}.}{identique : même $p$ ; indépendante : remise}
+\cas{3.}
+\begin{center}
+\begin{tikzpicture}
+  \arbval{000}{0{,}64^{3}}
+  \arbretrois{0{,}36}{0{,}64}
+\end{tikzpicture}
+\end{center}
+\cas{4.}
+\explique{Trois chemins comptent deux succès et un échec, chacun de probabilité
+$0{,}36^{2}\times 0{,}64$.}{l'échec au 1\textsuperscript{er}, 2\textsuperscript{e} ou
+3\textsuperscript{e} tirage}
+\begin{calculs}
+P(\text{deux jaunes}) &= 3\times 0{,}36^{2}\times 0{,}64 &&\\
+P(\text{deux jaunes}) &= 0{,}248\,832 \approx \res{0{,}249} &&
+\end{calculs}
+\cas{5.}
+\begin{calculs}
+P(\text{aucune jaune}) &= 0{,}64^{3} &&\justif{un seul chemin}\\
+P(\text{aucune jaune}) &= 0{,}262\,144 \approx \res{0{,}262} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[La variance d'une loi de Bernoulli]
+\cas{1.}
+\begin{calculs}
+E(X) &= p = \res{0{,}2} &&\justif{propriété du cours}\\
+V(X) &= p(1-p) = 0{,}2\times 0{,}8 = \res{0{,}16} &&\\
+\sigma(X) &= \sqrt{0{,}16} = \res{0{,}4} &&
+\end{calculs}
+\cas{2.}
+\explique{On étudie $f(p)=p(1-p)=-p^{2}+p$ sur $\intff{0}{1}$ : c'est un polynôme du second
+degré, avec $a=-1<0$ ; il atteint son maximum en $p=-\frac{b}{2a}=\frac{1}{2}$.}{sommet de la
+parabole (1re) ; on peut aussi dériver : $f'(p)=1-2p$}
+\explique{La variance est maximale pour \res{$p=\frac{1}{2}$}, et vaut alors
+$\frac{1}{2}\times\frac{1}{2}=\res{\frac{1}{4}}$.}{succès et échec également probables : le
+résultat est le plus incertain}
+\cas{3.}
+\explique{$p(1-p)=0$ si et seulement si \res{$p=0$ ou $p=1$} : le résultat est alors
+certain (toujours un échec, ou toujours un succès), sans aucune dispersion.}{équation
+produit}
+\end{exo}
+
+\partie{Loi binomiale}
+
+\begin{exo}[Calculer avec la formule]
+\cas{1.}
+\begin{calculs}
+P(X=0) &= \binom{5}{0}\times 0{,}6^{0}\times 0{,}4^{5} &&\justif{$P(X=k)=\binom{n}{k}p^{k}(1-p)^{n-k}$}\\
+P(X=0) &= 0{,}4^{5} = \res{0{,}010\,24} &&\\[3pt]
+P(X=2) &= \binom{5}{2}\times 0{,}6^{2}\times 0{,}4^{3} &&\justif{$\binom{5}{2}=10$}\\
+P(X=2) &= 10\times 0{,}36\times 0{,}064 = \res{0{,}230\,4} &&\\[3pt]
+P(X=5) &= \binom{5}{5}\times 0{,}6^{5}\times 0{,}4^{0} &&\\
+P(X=5) &= 0{,}6^{5} = \res{0{,}077\,76} &&
+\end{calculs}
+\cas{2.}
+\explique{De même, $P(X=1)=5\times 0{,}6\times 0{,}4^{4}=0{,}0768$,
+$P(X=3)=10\times 0{,}6^{3}\times 0{,}4^{2}=0{,}3456$ et
+$P(X=4)=5\times 0{,}6^{4}\times 0{,}4=0{,}2592$.}{$\binom{5}{1}=\binom{5}{4}=5$,
+$\binom{5}{3}=10$}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$k$ & $0$ & $1$ & $2$ & $3$ & $4$ & $5$\\\hline
+$P(X=k)$ & $0{,}01024$ & $0{,}0768$ & $0{,}2304$ & $0{,}3456$ & $0{,}2592$ & $0{,}07776$\\\hline
+\end{tabular}
+\end{center}
+\explique{Somme : $0{,}01024+0{,}0768+0{,}2304+0{,}3456+0{,}2592+0{,}07776=1$.}{à vérifier
+à chaque tableau de loi}
+\cas{3.}
+\explique{La plus grande probabilité est $0{,}3456$ : la valeur la plus probable est
+\res{$k=3$}.}{proche de $5\times 0{,}6=3$}
+\end{exo}
+
+\begin{exo}[Des $6$ en quatre lancers]
+\cas{1.}
+\explique{Un lancer est une épreuve de Bernoulli, de succès \og obtenir $6$\fg, de
+probabilité $\frac{1}{6}$ ; on la répète $4$ fois de façon identique et indépendante ;
+$X$ compte les succès. Donc $X$ suit la loi binomiale
+\res{$\mathcal{B}\big(4\,;\frac{1}{6}\big)$}.}{épreuve, schéma, loi}
+\cas{2.}
+\begin{calculs}
+P(X=1) &= \binom{4}{1}\times\frac{1}{6}\times\Big(\frac{5}{6}\Big)^{3} &&\justif{$k=1$}\\
+P(X=1) &= 4\times\frac{1}{6}\times\frac{125}{216} = \frac{500}{1\,296} &&\\
+P(X=1) &= \res{\frac{125}{324}} &&\justif{on simplifie par $4$}
+\end{calculs}
+\cas{3.}
+\explique{$1\leq X<3$ signifie $X=1$ ou $X=2$.}{$3$ est exclu}
+\begin{calculs}
+P(X=2) &= \binom{4}{2}\times\Big(\frac{1}{6}\Big)^{2}\times\Big(\frac{5}{6}\Big)^{2} &&\justif{$\binom{4}{2}=6$}\\
+P(X=2) &= 6\times\frac{1}{36}\times\frac{25}{36} = \frac{150}{1\,296} &&\\[3pt]
+P(1\leq X<3) &= \frac{500}{1\,296}+\frac{150}{1\,296} = \frac{650}{1\,296} &&\\
+P(1\leq X<3) &= \res{\frac{325}{648}} &&\justif{on simplifie par $2$}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Retrouver un paramètre]
+\cas{1.}
+\begin{calculs}
+P(X=0) &= (1-p)^{3} &&\justif{$\binom{3}{0}p^{0}=1$}\\
+(1-p)^{3} &= \frac{8}{125} &&\justif{donnée de l'énoncé}\\
+\iff 1-p &= \frac{2}{5} &&\justif{$\big(\frac{2}{5}\big)^{3}=\frac{8}{125}$ ; un seul nombre réel a ce cube}\\
+\iff p &= \res{\frac{3}{5}} &&
+\end{calculs}
+\cas{2.}
+\begin{calculs}
+P(X=1) &= 3\times\frac{3}{5}\times\frac{4}{25} = \frac{36}{125} &&\justif{$\binom{3}{1}=3$, $(1-p)^{2}=\frac{4}{25}$}\\
+P(X=2) &= 3\times\frac{9}{25}\times\frac{2}{5} = \frac{54}{125} &&\\
+P(X=3) &= \Big(\frac{3}{5}\Big)^{3} = \frac{27}{125} &&\justif{somme : $\frac{8+36+54+27}{125}=1$}
+\end{calculs}
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$k$ & $0$ & $1$ & $2$ & $3$\\\hline
+$P(X=k)$ & $\dfrac{8}{125}$ & $\dfrac{36}{125}$ & $\dfrac{54}{125}$ & $\dfrac{27}{125}$\\\hline
+\end{tabular}
+\end{center}
+\end{exo}
+
+\begin{exo}[Des guirlandes de couleur]
+\cas{1.}
+\explique{Pour chaque guirlande, le succès \og verte\fg{} a la probabilité $\frac{1}{4}$ ; les
+six guirlandes sont indépendantes et $X$ compte les succès : $X$ suit la loi binomiale
+\res{$\mathcal{B}\big(6\,;\frac{1}{4}\big)$}.}{quatre couleurs équiprobables}
+\cas{2.}
+\begin{calculs}
+P(X\leq 1) &= P(X=0)+P(X=1) &&\justif{\og au plus une\fg}\\
+P(X\leq 1) &= \Big(\frac{3}{4}\Big)^{6}+6\times\frac{1}{4}\times\Big(\frac{3}{4}\Big)^{5} &&\\
+P(X\leq 1) &= \frac{729}{4\,096}+\frac{1\,458}{4\,096} = \res{\frac{2\,187}{4\,096}} &&\\
+P(X\leq 1) &\approx \res{0{,}534} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P(X\geq 2) &= 1-P(X\leq 1) &&\justif{événement contraire}\\
+P(X\geq 2) &= \frac{1\,909}{4\,096} \approx \res{0{,}466} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[D'après bac 2025 et 2026 : vrai ou faux ?]
+\cas{1.}
+\explique{On note $X$ le nombre de visiteurs sans audioguide parmi les $12$ : on répète
+$12$ fois, de façon identique et indépendante, une épreuve de succès \og sans
+audioguide\fg, de probabilité $0{,}32$ ; $X$ suit la loi $\mathcal{B}(12\,;0{,}32)$.
+\og La moitié opte pour l'audioguide\fg{} s'écrit $X=6$.}{six avec, six sans}
+\begin{calculs}
+P(X=6) &= \binom{12}{6}\times 0{,}32^{6}\times 0{,}68^{6} &&\justif{$\binom{12}{6}=924$}\\
+P(X=6) &= 924\times(0{,}32\times 0{,}68)^{6} &&\justif{$a^{6}b^{6}=(ab)^{6}$}\\
+P(X=6) &= 924\times 0{,}2176^{6} &&
+\end{calculs}
+\explique{L'affirmation est \res{vraie}.}{}
+\cas{2.}
+\begin{calculs}
+P(X=1) &= \binom{3}{1}\times p\times(1-p)^{2} &&\justif{$k=1$, $n=3$}\\
+P(X=1) &= 3p(1-2p+p^{2}) &&\justif{identité remarquable}\\
+P(X=1) &= 3p-6p^{2}+3p^{3} &&
+\end{calculs}
+\explique{L'affirmation est \res{vraie}.}{}
+\end{exo}
+
+\partie{Probabilités cumulées à la calculatrice}
+
+\begin{exo}[Traduire, puis calculer]
+\begin{calculs}
+P(X\leq 5) &\approx \res{0{,}416} &&\justif{directement}\\
+P(X<5) &= P(X\leq 4) \approx \res{0{,}238} &&\justif{$5$ est exclu}\\
+P(X\geq 8) &= 1-P(X\leq 7) \approx \res{0{,}228} &&\justif{le contraire de $X\geq 8$ est $X\leq 7$}\\
+P(X>8) &= 1-P(X\leq 8) \approx \res{0{,}113} &&\justif{le contraire de $X>8$ est $X\leq 8$}\\
+P(4\leq X\leq 9) &= P(X\leq 9)-P(X\leq 3) \approx \res{0{,}845} &&\justif{on retire les valeurs de $0$ à $3$}
+\end{calculs}
+\rem{Erreur fréquente : $P(X\geq 8)=1-P(X\leq 8)$. La valeur $8$ appartient à
+$\{X\geq 8\}$ : on la retire en écrivant $1-P(X\leq 7)$.}
+\end{exo}
+
+\begin{exo}[Des colis abîmés]
+\cas{1.}
+\explique{Chaque colis est abîmé avec la probabilité $0{,}03$ ; $40$ répétitions identiques
+et indépendantes (tirage avec remise) ; $X$ compte les colis abîmés : $X$ suit la loi
+\res{$\mathcal{B}(40\,;0{,}03)$}.}{épreuve, schéma, loi}
+\cas{2.}
+\begin{calculs}
+P(X=0) &= 0{,}97^{40} \approx \res{0{,}296} &&\justif{$\binom{40}{0}\times 0{,}03^{0}=1$}\\
+P(X\geq 1) &= 1-P(X=0) \approx \res{0{,}704} &&\justif{événement contraire}
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P(X\leq 2) &\approx \res{0{,}882} &&\justif{à la calculatrice}
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+P(X>3) &= 1-P(X\leq 3) &&\justif{\og plus de trois\fg{} : $X\geq 4$}\\
+P(X>3) &\approx \res{0{,}031} &&
+\end{calculs}
+\end{exo}
+
+\begin{exo}[Un QCM rempli au hasard]
+\cas{1.}
+\explique{Chaque question est une épreuve de Bernoulli, de succès \og réponse juste\fg, de
+probabilité $\frac{1}{4}$ ; $20$ répétitions identiques et indépendantes ; $X$ compte les
+succès : $X$ suit la loi \res{$\mathcal{B}(20\,;0{,}25)$}.}{}
+\cas{2.}
+\begin{calculs}
+P(X=5) &= \binom{20}{5}\times 0{,}25^{5}\times 0{,}75^{15} &&\justif{$\binom{20}{5}=15\,504$}\\
+P(X=5) &\approx \res{0{,}202} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P(X\leq 3) &\approx \res{0{,}225} &&\justif{à la calculatrice}
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+P(X\geq 10) &= 1-P(X\leq 9) &&\justif{événement contraire}\\
+P(X\geq 10) &\approx \res{0{,}014} &&
+\end{calculs}
+\explique{Répondre au hasard ne permet presque jamais d'avoir la moitié des points :
+environ une chance sur $70$.}{$\frac{1}{0{,}014}\approx 71$}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Amérique du Sud : vrai ou faux ?]
+\explique{La probabilité cherchée est
+$P_{(X\geq 15)}(X\geq 18)$.}{\og sachant qu'il a atteint au moins $15$ fois\fg}
+\begin{calculs}
+P_{(X\geq 15)}(X\geq 18) &= \frac{P\big((X\geq 15)\cap(X\geq 18)\big)}{P(X\geq 15)} &&\justif{définition}\\
+P_{(X\geq 15)}(X\geq 18) &= \frac{P(X\geq 18)}{P(X\geq 15)} &&\justif{$X\geq 18$ entraîne $X\geq 15$}\\
+P_{(X\geq 15)}(X\geq 18) &= \frac{1-P(X\leq 17)}{1-P(X\leq 14)} &&\\
+P_{(X\geq 15)}(X\geq 18) &\approx \frac{0{,}4049}{0{,}9327} \approx 0{,}434 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{L'affirmation est \res{vraie}.}{}
+\end{exo}
+
+\begin{exo}[Des vélos en libre-service]
+\cas{1.}
+\explique{Chaque vélo est disponible avec la probabilité $0{,}7$, indépendamment des
+autres ; $X$ compte les vélos disponibles parmi $50$ : \res{$\mathcal{B}(50\,;0{,}7)$}.}{}
+\cas{2.}
+\begin{calculs}
+P(30\leq X\leq 40) &= P(X\leq 40)-P(X\leq 29) &&\justif{on retire les valeurs de $0$ à $29$}\\
+P(30\leq X\leq 40) &\approx \res{0{,}912} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P(X\geq 40) &= 1-P(X\leq 39) &&\justif{événement contraire}\\
+P(X\geq 40) &\approx \res{0{,}079} &&
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+P(X\leq 30) &\approx \res{0{,}085} &&\justif{directement}
+\end{calculs}
+\end{exo}
+
+\partie{Problèmes de seuil}
+
+\begin{exo}[Des paniers à trois points]
+\cas{1.}
+\explique{$n$ tirs identiques et indépendants, de succès \og tir réussi\fg, de probabilité
+$0{,}2$, donc $X_{n}$ suit la loi \res{$\mathcal{B}(n\,;0{,}2)$}.}{}
+\cas{2.}
+\begin{calculs}
+P(X_{5}\geq 1) &= 1-P(X_{5}=0) &&\justif{contraire de \og aucun tir réussi\fg}\\
+P(X_{5}\geq 1) &= 1-0{,}8^{5} &&\\
+P(X_{5}\geq 1) &\approx \res{0{,}672} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+p_{n} &= 1-P(X_{n}=0) &&\justif{même raisonnement}\\
+p_{n} &= \res{1-0{,}8^{n}} &&\justif{$P(X_{n}=0)=0{,}8^{n}$}
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+p_{n} &\geq 0{,}95 &&\justif{la condition cherchée}\\
+1-0{,}8^{n} &\geq 0{,}95 &&\justif{on remplace $p_{n}$}\\
+\iff -0{,}8^{n} &\geq -0{,}05 &&\justif{on retire $1$}\\
+\iff 0{,}8^{n} &\leq 0{,}05 &&\justif{on multiplie par $-1<0$ : l'ordre change}
+\end{calculs}
+\explique{À la calculatrice : $0{,}8^{13}\approx 0{,}055$ et $0{,}8^{14}\approx 0{,}044$. La
+suite $(0{,}8^{n})$ est géométrique de raison $0{,}8$, avec $0<0{,}8<1$, donc décroissante :
+la condition est fausse pour $n\leq 13$ et vraie pour $n\geq 14$. Il faut au minimum
+\res{$14$ tirs}.}{$0{,}8^{13}>0{,}05\geq 0{,}8^{14}$}
+\end{exo}
+
+\begin{exo}[Des fleurs blanches]
+\cas{1.}
+\explique{Le nombre $X_{n}$ de fleurs blanches suit la loi $\mathcal{B}(n\,;0{,}03)$, et
+\og au moins une\fg{} est le contraire de $X_{n}=0$ : \res{$p_{n}=1-0{,}97^{n}$}.}{tirage
+avec remise : schéma de Bernoulli}
+\cas{2.}
+\begin{calculs}
+1-0{,}97^{n} &\geq 0{,}9 &&\justif{$p_{n}\geq 0{,}9$}\\
+\iff -0{,}97^{n} &\geq -0{,}1 &&\justif{on retire $1$}\\
+\iff 0{,}97^{n} &\leq 0{,}1 &&\justif{on multiplie par $-1<0$ : l'ordre change}
+\end{calculs}
+\explique{À la calculatrice : $0{,}97^{75}\approx 0{,}1018$ et $0{,}97^{76}\approx 0{,}0988$.
+La suite $(0{,}97^{n})$ est géométrique de raison $0{,}97\in\intoo{0}{1}$, donc
+décroissante : il faut semer au minimum \res{$76$ graines}.}{avec le logarithme (ch. 9),
+on le résoudra par le calcul}
+\end{exo}
+
+\begin{exo}[Des lots de roses remboursés]
+\cas{1.}
+\explique{$120$ roses, chacune fanée avec la probabilité $0{,}05$, tirage avec remise : $X$
+suit la loi \res{$\mathcal{B}(120\,;0{,}05)$}.}{}
+\cas{2.}
+\begin{calculs}
+P(X>8) &= 1-P(X\leq 8) &&\justif{\og strictement plus de $8$\fg}\\
+P(X>8) &\approx \res{0{,}15} &&\justif{$P(X\leq 8)\approx 0{,}853$}
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P(X>k) &\leq 0{,}01 &&\justif{probabilité de remboursement au plus $0{,}01$}\\
+\iff 1-P(X\leq k) &\leq 0{,}01 &&\justif{événement contraire}\\
+\iff -P(X\leq k) &\leq -0{,}99 &&\justif{on retire $1$}\\
+\iff P(X\leq k) &\geq 0{,}99 &&\justif{on multiplie par $-1<0$}
+\end{calculs}
+\explique{On cherche donc le plus petit entier $k$ tel que $P(X\leq k)\geq 0{,}99$.}{}
+\cas{4.}
+\begin{python}
+from math import comb
+
+def seuil(s):
+    k = 0
+    P = 0.95**120
+    while P < s:
+        k = k + 1
+        P = P + comb(120, k) * 0.05**k * 0.95**(120 - k)
+    return k
+\end{python}
+\explique{\texttt{P} vaut d'abord $P(X=0)=0{,}95^{120}$ ; à chaque tour, on ajoute
+$P(X=k)$, donc \texttt{P} vaut $P(X\leq k)$. \texttt{seuil(0.99)} renvoie \res{$12$} :
+$P(X\leq 11)\approx 0{,}983$ et $P(X\leq 12)\approx 0{,}993$.}{on rembourse un lot s'il
+contient plus de $12$ roses fanées}
+\end{exo}
+
+\begin{exo}[Prévoir les repas]
+\cas{1.}
+\explique{$X$ suit la loi \res{$\mathcal{B}(120\,;0{,}9)$}.}{$120$ inscrits indépendants}
+\cas{2.}
+\begin{calculs}
+P(X>k) &\leq 0{,}02 &&\justif{on manque de repas si $X>k$}\\
+\iff 1-P(X\leq k) &\leq 0{,}02 &&\justif{événement contraire}\\
+\iff P(X\leq k) &\geq \res{0{,}98} &&\justif{on retire $1$, puis on multiplie par $-1<0$}
+\end{calculs}
+\cas{3.}
+\explique{À la calculatrice : $P(X\leq 113)\approx 0{,}962$ et $P(X\leq 114)\approx 0{,}984$.
+$P(X\leq k)$ augmente avec $k$ : il faut préparer au moins \res{$114$ repas}.}{$0{,}962<0{,}98
+\leq 0{,}984$}
+\end{exo}
+
+\partie{Intervalle de probabilité donnée}
+
+\begin{exo}[Un intervalle pour $\mathcal{B}(50\,;0{,}4)$]
+\cas{1.}
+\explique{$P(X\leq 12)\approx 0{,}013$ et $P(X\leq 13)\approx 0{,}028$ : \res{$a=13$}.}{premier
+$k$ avec $P(X\leq k)>0{,}025$}
+\cas{2.}
+\explique{$P(X\leq 26)\approx 0{,}969$ et $P(X\leq 27)\approx 0{,}984$ : \res{$b=27$}.}{premier
+$k$ avec $P(X\leq k)\geq 0{,}975$}
+\cas{3.}
+\explique{D'après le cours, $I=\res{\intff{13}{27}}$ convient :
+$P(13\leq X\leq 27)=P(X\leq 27)-P(X\leq 12)\approx\res{0{,}971}$.}{au moins $0{,}95$}
+\end{exo}
+
+\begin{exo}[Le taux de germination annoncé]
+\cas{1.}
+\explique{$X$ suit la loi \res{$\mathcal{B}(200\,;0{,}85)$}.}{tirage avec remise, $p=0{,}85$}
+\cas{2.}
+\explique{$P(X\leq 159)\approx 0{,}022$ et $P(X\leq 160)\approx 0{,}034$, donc \res{$a=160$} ;
+$P(X\leq 179)\approx 0{,}9745$ et $P(X\leq 180)\approx 0{,}985$, donc
+\res{$b=180$}.}{$P(160\leq X\leq 180)\approx 0{,}963\geq 0{,}95$}
+\cas{3.}
+\explique{Si l'affirmation est exacte, il y a au moins $95\,\%$ de chances que le nombre de
+graines qui germent, sur $200$, soit \res{compris entre $160$ et $180$}.}{}
+\cas{4.}
+\explique{$155$ n'appartient pas à $\intff{160}{180}$ : une telle observation avait moins de
+$5\,\%$ de chances de se produire. Le jardinier peut \res{mettre en doute l'affirmation} du
+producteur.}{on ne prouve pas qu'elle est fausse}
+\end{exo}
+
+\begin{exo}[Le sport en club]
+\cas{1.}
+\explique{$X$ suit la loi \res{$\mathcal{B}(400\,;0{,}3)$}.}{}
+\cas{2.}
+\explique{$P(X\leq 101)\approx 0{,}021$ et $P(X\leq 102)\approx 0{,}027$, donc \res{$a=102$} ;
+$P(X\leq 137)\approx 0{,}971$ et $P(X\leq 138)\approx 0{,}977$, donc
+\res{$b=138$}.}{$P(102\leq X\leq 138)\approx 0{,}957$}
+\cas{3.}
+\explique{$125$ appartient à $\intff{102}{138}$ : le sondage est compatible avec
+l'affirmation, \res{pas de raison de la mettre en doute}.}{}
+\cas{4.}
+\explique{En divisant par $400$ : la fréquence de pratiquants dans l'échantillon est
+comprise entre $\frac{102}{400}=0{,}255$ et $\frac{138}{400}=0{,}345$ avec une probabilité
+d'au moins $0{,}95$ : \res{$\intff{0{,}255}{0{,}345}$}.}{autour de $0{,}3$}
+\end{exo}
+
+\partie{Exercices type bac}
+
+\begin{exo}[D'après bac 2025, Amérique du Nord]
+\cas{1.}
+\explique{On interroge une personne au hasard : les proportions sont des probabilités.
+\res{$P(C)=0{,}02$}, \res{$P(V)=0{,}9$} et \res{$P_{C}(V)=0{,}62$}.}{\og $62\,\%$ des personnes
+contaminées\fg{} : sachant $C$}
+\cas{2.}
+\begin{calculs}
+P(C\cap V) &= P(C)\times P_{C}(V) &&\justif{règle du chemin}\\
+P(C\cap V) &= 0{,}02\times 0{,}62 = \res{0{,}0124} &&\\[3pt]
+P(\overline{C}\cap V) &= P(V)-P(C\cap V) &&\justif{probabilités totales : $P(V)=P(C\cap V)+P(\overline{C}\cap V)$}\\
+P(\overline{C}\cap V) &= 0{,}9-0{,}0124 = \res{0{,}8876} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P_{\overline{C}}(V) &= \frac{P(\overline{C}\cap V)}{P(\overline{C})} &&\\
+P_{\overline{C}}(V) &= \frac{0{,}8876}{0{,}98} &&\\
+P_{\overline{C}}(V) &\approx \res{0{,}9057} &&
+\end{calculs}
+\explique{On complète : $P_{C}(\overline{V})=0{,}38$ et
+$P_{\overline{C}}(\overline{V})\approx 0{,}0943$.}{règle du nœud}
+\begin{center}
+\begin{tikzpicture}
+  \arbfeuilles{0{,}0124}{}{0{,}8876}{}
+  \arbre{C}{V}{0{,}02}{0{,}98}{0{,}62}{0{,}38}{0{,}9057}{0{,}0943}
+\end{tikzpicture}
+\end{center}
+\cas{4.}
+\begin{calculs}
+P_{V}(C) &= \frac{P(C\cap V)}{P(V)} &&\justif{définition}\\
+P_{V}(C) &= \frac{0{,}0124}{0{,}9} \approx \res{0{,}0138} &&
+\end{calculs}
+\explique{Environ $1{,}38\,\%$ des personnes vaccinées ont été contaminées.}{interprétation}
+\cas{5.}
+\explique{a) Parmi les personnes non contaminées, environ $90{,}57\,\%$ sont vaccinées et
+$9{,}43\,\%$ ne le sont pas ; or $10\times 9{,}43\,\%=94{,}3\,\%>90{,}57\,\%$. Il n'y a
+qu'environ $\frac{90{,}57}{9{,}43}\approx 9{,}6$ fois plus de vaccinés : l'affirmation est
+\res{fausse}.}{on compare les deux branches issues de $\overline{C}$}
+\explique{b) $P_{V}(\overline{C})=1-P_{V}(C)\approx 0{,}9862$ : environ $98{,}62\,\%$ des
+personnes vaccinées n'ont pas été contaminées. L'affirmation est \res{vraie}.}{}
+\cas{6.}
+\explique{a) Interroger une personne est une épreuve de Bernoulli, de succès $C$, de
+probabilité $p=0{,}02$ ; on la répète $n=20$ fois de façon identique et indépendante
+(tirages avec remise) ; $X$ compte les succès. Donc $X$ suit la loi binomiale
+\res{$\mathcal{B}(20\,;0{,}02)$}.}{les trois arguments attendus}
+\explique{b) On rappelle la formule : $P(X=k)=\binom{n}{k}p^{k}(1-p)^{n-k}$.}{l'énoncé la demande}
+\begin{calculs}
+P(X=4) &= \binom{20}{4}\times 0{,}02^{4}\times 0{,}98^{16} &&\justif{$k=4$}\\
+P(X=4) &= 4\,845\times 0{,}02^{4}\times 0{,}98^{16} &&\\
+P(X=4) &\approx \res{0{,}0006} &&\justif{à $10^{-4}$ près ($5{,}6\times 10^{-4}$)}
+\end{calculs}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Centres étrangers]
+\textbf{Partie A.}
+\cas{1.}
+\explique{$P(C)=1-0{,}6-0{,}12=0{,}28$ ; au second niveau, $P_{A}(T)=0{,}9$,
+$P_{B}(T)=0{,}95$, $P_{C}(T)=0{,}85$ et les contraires $0{,}1$, $0{,}05$, $0{,}15$.}{trois
+branches au premier niveau}
+\begin{center}
+\begin{tikzpicture}
+  \node (O) at (0,0) {};
+  \foreach \n/\y/\p/\q/\r in {A/2.4/0{,}6/0{,}9/0{,}1,B/0/0{,}12/0{,}95/0{,}05,C/-2.4/0{,}28/0{,}85/0{,}15}{%
+    \node[evt] (\n) at (3.4,\y) {$\n$};
+    \draw (O.center) -- node[nom,above]{$P(\n)=\p$} (\n);
+    \node[evt] (\n T) at (7.2,\y+0.7) {$T$};
+    \node[evt] (\n nT) at (7.2,\y-0.7) {$\overline{T}$};
+    \draw (\n) -- node[nom,above]{$P_{\n}(T)=\q$} (\n T);
+    \draw (\n) -- node[nom,below]{$P_{\n}(\overline{T})=\r$} (\n nT);
+    \node[right,font=\footnotesize] at (\n T.east) {$P(\n\cap T)$};
+    \node[right,font=\footnotesize] at (\n nT.east) {$P(\n\cap\overline{T})$};}
+\end{tikzpicture}
+\end{center}
+\cas{2.}
+\begin{calculs}
+P(A\cap\overline{T}) &= P(A)\times P_{A}(\overline{T}) &&\justif{règle du chemin}\\
+P(A\cap\overline{T}) &= 0{,}6\times 0{,}1 = \res{0{,}06} &&
+\end{calculs}
+\explique{La probabilité que la lame provienne de A et ne soit pas conforme est
+$0{,}06$.}{interprétation}
+\cas{3.}
+\explique{$A$, $B$ et $C$ forment une partition de l'univers ; d'après la formule des
+probabilités totales :}{trois chemins mènent à $T$}
+\begin{calculs}
+P(T) &= P(A\cap T)+P(B\cap T)+P(C\cap T) &&\\
+P(T) &= 0{,}6\times 0{,}9+0{,}12\times 0{,}95+0{,}28\times 0{,}85 &&\\
+P(T) &= 0{,}54+0{,}114+0{,}238 = \res{0{,}892} &&
+\end{calculs}
+\cas{4.}
+\begin{calculs}
+P_{\overline{T}}(B) &= \frac{P(B\cap\overline{T})}{P(\overline{T})} &&\justif{définition}\\
+P_{\overline{T}}(B) &= \frac{0{,}12\times 0{,}05}{1-0{,}892} = \frac{0{,}006}{0{,}108} &&\\
+P_{\overline{T}}(B) &\approx \res{0{,}056} &&
+\end{calculs}
+\textbf{Partie B.}
+\cas{1.}
+\explique{$X$ suit la loi binomiale de paramètres \res{$n=75$ et $p=0{,}108$}.}{l'énoncé fait
+admettre la loi ; sinon : épreuve, répétition identique et indépendante, comptage}
+\cas{2.}
+\begin{calculs}
+P(X=6) &= \binom{75}{6}\times 0{,}108^{6}\times 0{,}892^{69} &&\justif{$k=6$}\\
+P(X=6) &\approx \res{0{,}120} &&
+\end{calculs}
+\cas{3.}
+\begin{calculs}
+P(X>8) &= 1-P(X\leq 8) &&\justif{\og strictement plus de $8$\fg}\\
+P(X>8) &\approx 0{,}422 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{$0{,}422<0{,}5$ : l'équipementier \res{a raison}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Polynésie]
+\textbf{Partie A.}
+\cas{1. a)}
+\explique{La première machine détient $1$. Une transmission fidèle (probabilité $0{,}9$)
+garde la valeur, une transmission contraire ($0{,}1$) la change : $P(V_{2})=0{,}9$,
+$P_{V_{2}}(V_{3})=0{,}9$, $P_{\overline{V_{2}}}(V_{3})=0{,}1$.}{depuis $\overline{V_{2}}$, il faut
+une transmission contraire pour revenir à $1$}
+\begin{center}
+\begin{tikzpicture}
+  \arbfeuilles{0{,}81}{}{0{,}01}{}
+  \arbre{V_{2}}{V_{3}}{0{,}9}{0{,}1}{0{,}9}{0{,}1}{0{,}1}{0{,}9}
+  \node[evt,left] at (0,0) {$V_{1}$};
+\end{tikzpicture}
+\end{center}
+\cas{b)}
+\begin{calculs}
+P(V_{3}) &= P(V_{2}\cap V_{3})+P(\overline{V_{2}}\cap V_{3}) &&\justif{probabilités totales}\\
+P(V_{3}) &= 0{,}9\times 0{,}9+0{,}1\times 0{,}1 &&\\
+P(V_{3}) &= 0{,}81+0{,}01 = \res{0{,}82} &&
+\end{calculs}
+\explique{La probabilité que la troisième machine détienne la valeur $1$ est $0{,}82$.}{}
+\cas{c)}
+\begin{calculs}
+P_{V_{3}}(V_{2}) &= \frac{P(V_{2}\cap V_{3})}{P(V_{3})} &&\justif{définition}\\
+P_{V_{3}}(V_{2}) &= \frac{0{,}81}{0{,}82} = \frac{81}{82} \approx \res{0{,}988} &&
+\end{calculs}
+\cas{2. a)}
+\explique{Soit $n\in\Ns$. $V_{n}$ et $\overline{V_{n}}$ forment une partition de l'univers ;
+d'après la formule des probabilités totales :}{même arbre, entre les machines $n$ et
+$n+1$}
+\begin{calculs}
+p_{n+1} &= P(V_{n}\cap V_{n+1})+P(\overline{V_{n}}\cap V_{n+1}) &&\\
+p_{n+1} &= 0{,}9\,p_{n}+0{,}1\,(1-p_{n}) &&\justif{$P(\overline{V_{n}})=1-p_{n}$}\\
+p_{n+1} &= 0{,}9\,p_{n}+0{,}1-0{,}1\,p_{n} &&\\
+p_{n+1} &= 0{,}8\,p_{n}+0{,}1 &&
+\end{calculs}
+\cas{b)}
+\explique{Pour tout $n\in\Ns$, on note $P_{n}$ la propriété :
+\og $p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$\fg.}{propriété nommée}
+\explique{\textbf{Initialisation.} $p_{1}=1$ et $0{,}5\times 0{,}8^{0}+0{,}5=1$ : $P_{1}$ est
+vraie.}{}
+\explique{\textbf{Hérédité.} Soit $n\in\Ns$ tel que $P_{n}$ est vraie. Montrons que
+$P_{n+1}$ est vraie.}{}
+\begin{calculs}
+p_{n+1} &= 0{,}8\,p_{n}+0{,}1 &&\justif{question a)}\\
+p_{n+1} &= 0{,}8\,(0{,}5\times 0{,}8^{n-1}+0{,}5)+0{,}1 &&\justif{hypothèse de récurrence}\\
+p_{n+1} &= 0{,}5\times 0{,}8^{n}+0{,}4+0{,}1 &&\justif{$0{,}8\times 0{,}8^{n-1}=0{,}8^{n}$}\\
+p_{n+1} &= 0{,}5\times 0{,}8^{n}+0{,}5 &&
+\end{calculs}
+\explique{Donc $P_{n+1}$ est vraie.}{c'est $P_{n+1}$ : l'exposant est $(n+1)-1=n$}
+\explique{\textbf{Conclusion.} D'après le principe de récurrence, pour tout $n\in\Ns$,
+$p_{n}=0{,}5\times 0{,}8^{n-1}+0{,}5$.}{}
+\cas{c)}
+\explique{$-1<0{,}8<1$, donc $\lim\limits_{n\to+\infty}0{,}8^{n-1}=0$ ; par produit et par
+somme, \res{$\lim\limits_{n\to+\infty}p_{n}=0{,}5$}.}{limite d'une suite géométrique}
+\explique{Après un très grand nombre de transmissions, la dernière machine détient la
+valeur $1$ avec une probabilité proche de $0{,}5$ : la donnée initiale est \og
+perdue\fg.}{interprétation}
+\textbf{Partie B.}
+\cas{1.}
+\explique{\texttt{rand()} renvoie un nombre de $\intfo{0}{1}$ : le test \texttt{rand() < 0.1}
+est vrai avec la probabilité $0{,}1$. La ligne 6 remplace alors \texttt{donnee} par
+$1-\texttt{donnee}$, qui change $0$ en $1$ et $1$ en $0$ : \res{les lignes 5 et 6 simulent une
+transmission contraire, avec la probabilité $0{,}1$}.}{}
+\cas{2.}
+\explique{\texttt{[1, 1, 1, 1, 1]} : quatre transmissions fidèles, de probabilité
+$0{,}9^{4}=0{,}6561\approx\res{0{,}656}$.}{transmissions indépendantes : produit}
+\explique{\texttt{[1, 0, 1, 0, 0, 1, 1]} : contraire, contraire, contraire, fidèle,
+contraire, fidèle ; probabilité $0{,}1^{4}\times 0{,}9^{2}=8{,}1\times 10^{-5}$, soit
+\res{$0{,}000$} à $10^{-3}$ près.}{on lit chaque passage d'un terme au suivant}
+\end{exo}
+
+\end{document}
