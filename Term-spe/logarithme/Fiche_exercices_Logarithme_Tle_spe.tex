@@ -1,0 +1,899 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newcommand{\e}{\mathrm{e}}
+
+\newtcblisting{python}{%
+  listing only,enhanced,breakable,
+  colback=black!3,colframe=black!35,boxrule=0.5pt,arc=1pt,
+  left=6pt,right=6pt,top=2pt,bottom=2pt,
+  listing options={language=Python,basicstyle=\ttfamily\small,
+    keywordstyle=\color{coulMeth}\bfseries,columns=fullflexible,
+    keepspaces=true,showstringspaces=false,aboveskip=0pt,belowskip=0pt}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Logarithme népérien}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}\raggedcolumns
+
+\partiefiche{La fonction logarithme népérien}
+
+\exo[Valeurs exactes]
+Calculer chaque nombre, sans calculatrice.
+\begin{center}
+$A=\ln\left(\e^{5}\right)$ \qquad $B=\e^{\ln(3)}$ \qquad
+$C=\ln\left(\dfrac{1}{\e^{4}}\right)$\\[4pt]
+$D=\ln\left(\sqrt{\e}\right)$ \qquad $E=\e^{-\ln(2)}$ \qquad $F=\e^{2\ln(3)}$
+\end{center}
+
+\exo[Équations avec l'exponentielle]
+Résoudre dans $\R$ chaque équation ; donner la valeur exacte, puis une valeur
+approchée au centième.
+\begin{enumerate}[label=\alph*)]
+  \item $\e^{x}=6$
+  \item $\e^{x}=-2$
+  \item $\e^{3x-1}=2$
+  \item $\e^{4-x}=1$
+  \item $3\e^{x}-1=8$
+\end{enumerate}
+
+\exo[Équations de la forme $\ln(u(x))=m$]
+Pour chaque équation, déterminer l'ensemble des nombres réels $x$ pour lesquels elle a
+un sens, puis la résoudre.
+\begin{enumerate}[label=\alph*)]
+  \item $\ln(x)=2$
+  \item $\ln(x)=-1$
+  \item $\ln(2x)=3$
+  \item $\ln(x+3)=1$
+  \item $\ln(1-x)=0$
+\end{enumerate}
+
+\exo[D'une fonction à l'autre]
+\begin{enumerate}
+  \item La calculatrice affiche $\e^{0{,}7}\approx 2{,}01$. En déduire une valeur
+        approchée de $\ln(2{,}01)$.
+  \item Le point $A\left(3\,;\e^{3}\right)$ appartient à la courbe de la fonction
+        exponentielle. Le point $B\left(\e^{3}\,;3\right)$ appartient-il à la courbe de
+        la fonction $\ln$ ? Justifier.
+  \item Expliquer pourquoi $\ln(-4)$ et $\ln(0)$ n'existent pas.
+  \item En utilisant $\e^{\ln(2)}=2$ et la stricte croissance de la fonction
+        exponentielle, montrer que $\ln(2)>0$.
+\end{enumerate}
+
+\partiefiche{Relation fonctionnelle}
+
+\exo[En fonction de $\ln(2)$ et $\ln(3)$]
+Exprimer chaque nombre en fonction de $\ln(2)$ et de $\ln(3)$.
+\begin{center}
+$A=\ln(12)$ \qquad $B=\ln(18)$ \qquad $C=\ln\left(\dfrac{1}{6}\right)$\\[4pt]
+$D=\ln\left(\sqrt{8}\right)$ \qquad $E=\ln\left(\dfrac{4}{9}\right)$ \qquad
+$F=\ln(72)-\ln(16)$
+\end{center}
+
+\exo[Simplifier]
+Écrire chaque nombre le plus simplement possible.
+\begin{center}
+$A=\ln(50)-2\ln(5)+\ln\left(\dfrac{3}{2}\right)$\\[4pt]
+$B=\ln\left(\sqrt{5}+2\right)+\ln\left(\sqrt{5}-2\right)$\\[4pt]
+$C=\ln\left(\e^{3}\right)-2\ln\left(\sqrt{\e}\right)+\ln\left(\dfrac{1}{\e}\right)$\\[4pt]
+$D=\ln(48)-3\ln(2)-\ln(3)$
+\end{center}
+
+\exo[Des erreurs fréquentes]
+Pour chaque affirmation, dire si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item $\ln(10)-\ln(8)-\ln(2)=0$.
+  \item Pour tous nombres réels $a>0$ et $b>0$, $\ln(a+b)=\ln(a)+\ln(b)$.
+  \item Pour tout nombre réel $x>0$, $\ln\left(x^{2}\right)=2\ln(x)$.
+  \item Pour tout nombre réel $x\neq 0$, $\ln\left(x^{2}\right)=2\ln(x)$.
+  \item Pour tout nombre réel $x>1$, $\ln\left(x^{2}-1\right)=\ln(x-1)+\ln(x+1)$.
+\end{enumerate}
+
+\exo[Le logarithme décimal]
+On appelle \emph{logarithme décimal} la fonction $\log$ définie sur
+$\intoo{0}{+\infty}$ par $\log(x)=\dfrac{\ln(x)}{\ln(10)}$.
+\begin{enumerate}
+  \item Calculer $\log(1)$, $\log(10)$, $\log(1\,000)$ et $\log(0{,}01)$.
+  \item Montrer que, pour tout $n\in\Z$, $\log\left(10^{n}\right)=n$.
+  \item Montrer que, pour tous nombres réels $a>0$ et $b>0$,
+        $\log(ab)=\log(a)+\log(b)$.
+  \item En chimie, le pH d'une solution est $\mathrm{pH}=-\log(c)$, où $c$ est la
+        concentration en ions oxonium, en mol/L.
+  \begin{enumerate}[label=\alph*)]
+    \item Calculer le pH d'une solution de concentration $c=2\times 10^{-4}$~mol/L,
+          arrondi au dixième.
+    \item Montrer que, si l'on divise la concentration par $10$, le pH augmente
+          de $1$.
+  \end{enumerate}
+  \item \emph{Échelle logarithmique.} Les concentrations des solutions usuelles vont
+        de $10^{-14}$ à $1$~mol/L.
+  \begin{enumerate}[label=\alph*)]
+    \item Sur un axe gradué régulièrement de $0$ à $1$, de $10$~cm de long, à quelle
+          distance de $0$ se trouvent $10^{-3}$ et $10^{-7}$ ? Peut-on les distinguer ?
+    \item On place maintenant $\log(c)$ au lieu de $c$. Où se trouvent $10^{-14}$,
+          $10^{-7}$, $10^{-3}$ et $1$ ? Expliquer pourquoi toutes les concentrations
+          tiennent alors lisiblement sur un même axe.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Une suite géométrique et son logarithme]
+Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=5\times 2^{n}$. On note
+$(v_{n})$ la suite définie pour tout $n\in\N$ par $v_{n}=\ln\left(u_{n}\right)$.
+\begin{enumerate}
+  \item Justifier que $v_{n}$ existe pour tout $n\in\N$.
+  \item Montrer que la suite $(v_{n})$ est arithmétique ; préciser sa raison et son
+        premier terme.
+  \item Calculer $S=v_{0}+v_{1}+\dots+v_{9}$, en fonction de $\ln(2)$ et de $\ln(5)$.
+\end{enumerate}
+
+\partiefiche{Équations et inéquations}
+
+\exo[Équations]
+Résoudre chaque équation, après avoir déterminé l'intervalle sur lequel elle a un sens.
+\begin{enumerate}[label=\alph*)]
+  \item $\ln(3x-1)=\ln(x+5)$
+  \item $\ln(x)+\ln(x+3)=\ln(10)$
+  \item $\ln(x-1)+\ln(x+1)=\ln(3)$
+  \item $2\ln(x)=\ln(2x+3)$
+  \item $\ln(2x+4)=\ln(x-1)$
+\end{enumerate}
+
+\exo[Changement de variable]
+Résoudre chaque équation, en posant $X=\ln(x)$ pour a) et b), et $X=\e^{x}$ pour c)
+et d).
+\begin{enumerate}[label=\alph*)]
+  \item $\left(\ln(x)\right)^{2}-3\ln(x)+2=0$
+  \item $2\left(\ln(x)\right)^{2}+\ln(x)-1=0$
+  \item $\e^{2x}-4\e^{x}+3=0$
+  \item $\e^{2x}+\e^{x}-6=0$
+\end{enumerate}
+
+\exo[Inéquations]
+Résoudre chaque inéquation, après avoir déterminé l'intervalle sur lequel elle a un sens.
+\begin{enumerate}[label=\alph*)]
+  \item $\ln(x)<2$
+  \item $\ln(2x+1)\geq 0$
+  \item $\e^{3x-2}>1$
+  \item $\e^{-x}\leq 5$
+  \item $\ln(x+2)\leq\ln(2x-1)$
+  \item $\ln(4-x)>1$
+\end{enumerate}
+
+\exo[Avec un tableau de signes]
+Résoudre chaque inéquation à l'aide d'un tableau de signes.
+\begin{enumerate}[label=\alph*)]
+  \item $(2-x)\ln(x+3)>0$, sur $\intoo{-3}{+\infty}$
+  \item $\left(1+\ln(x)\right)\left(2-\ln(x)\right)\leq 0$, sur $\intoo{0}{+\infty}$
+\end{enumerate}
+
+\exo[Combien de chiffres ?]
+Un nombre entier $N\geq 1$ s'écrit avec $k$ chiffres lorsque
+$10^{k-1}\leq N<10^{k}$.
+\begin{enumerate}
+  \item Combien de chiffres a le nombre $2^{10}=1\,024$ ? Vérifier l'encadrement.
+  \item Soit $k\in\Ns$. Montrer que $10^{k-1}\leq 2^{100}<10^{k}$ équivaut à
+        $k-1\leq\dfrac{100\ln(2)}{\ln(10)}<k$.
+  \item En déduire le nombre de chiffres de $2^{100}$.
+  \item En octobre 2024, un passionné a découvert, grâce à des ordinateurs mis en
+        commun, le plus grand nombre premier connu, $M=2^{136\,279\,841}-1$. On admet que
+        $M$ et $2^{136\,279\,841}$ ont le même nombre de chiffres. Combien de chiffres
+        faut-il pour écrire $M$ ?
+\end{enumerate}
+
+\exo[D'après bac 2026 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item On considère l'inéquation suivante sur $\intoo{7}{+\infty}$ :
+        $\ln\left(2x^{2}-6x-56\right)\geq\ln(4x-8)$.
+
+        \emph{Affirmation} : l'ensemble des solutions de cette inéquation est
+        l'intervalle $\intfo{8}{+\infty}$.
+  \item \emph{Affirmation} : l'équation $\ln(x)+\ln(x-1)=\ln(6)$ admet deux
+        solutions.
+\end{enumerate}
+
+\partiefiche{Seuils : inéquations d'inconnue entière}
+
+\exo[Résoudre dans $\N$]
+Pour chaque inéquation, déterminer le plus petit $n\in\N$ qui la vérifie.
+\begin{enumerate}[label=\alph*)]
+  \item $2^{n}\geq 5\,000$
+  \item $0{,}8^{n}\leq 0{,}001$
+  \item $3\times 1{,}02^{n}>4{,}5$
+  \item $5\times 0{,}9^{n}+2\leq 2{,}5$
+\end{enumerate}
+
+\exo[Une association de covoiturage]
+Une association de covoiturage compte $800$ membres ; leur nombre augmente de $15\,\%$
+par mois. On note $u_{n}$ le nombre de membres $n$ mois plus tard ; ainsi $u_{0}=800$.
+\begin{enumerate}
+  \item Justifier que, pour tout $n\in\N$, $u_{n}=800\times 1{,}15^{n}$.
+  \item Compléter la fonction ci-dessous pour qu'elle renvoie le plus petit $n$ tel
+        que $u_{n}\geq k$.
+  \item Déterminer par le calcul le plus petit $n$ tel que $u_{n}\geq 5\,000$, puis
+        interpréter ce résultat.
+\end{enumerate}
+\begin{python}
+def seuil(k):
+    n = 0
+    u = 800
+    while ............:
+        n = n + 1
+        u = ............
+    return n
+\end{python}
+
+\exo[Contacter la station spatiale]
+À chaque passage de la Station spatiale internationale au-dessus de son club, un
+radioamateur a une probabilité de $0{,}08$ d'établir un contact radio avec l'équipage,
+indépendamment des autres passages. Soit $n\in\Ns$ ; on note $X_{n}$ le nombre de
+contacts établis sur $n$ passages.
+\begin{enumerate}
+  \item Quelle est la loi de $X_{n}$ ?
+  \item Montrer que $P(X_{n}\geq 1)=1-0{,}92^{n}$.
+  \item Déterminer, par le calcul, le plus petit nombre de passages $n$ pour lequel
+        $P(X_{n}\geq 1)\geq 0{,}9$.
+  \item Même question avec $P(X_{n}\geq 1)\geq 0{,}99$. Comparer les deux résultats.
+\end{enumerate}
+
+\exo[Un médicament éliminé]
+Après une injection de $50$~mg d'un médicament, la quantité présente dans le sang
+diminue de $20\,\%$ par heure. On note $q_{n}$ cette quantité, en mg, $n$ heures après
+l'injection.
+\begin{enumerate}
+  \item Exprimer $q_{n}$ en fonction de $n$.
+  \item Au bout de combien d'heures entières la quantité devient-elle inférieure à
+        $1$~mg ?
+  \item On injecte une dose de $D$~mg, avec $D>0$. Montrer que la quantité présente est
+        divisée par deux au bout de $4$~heures, quelle que soit la dose $D$, c'est-à-dire
+        que $4$ est le plus petit $n$ tel que $D\times 0{,}8^{n}\leq\dfrac{D}{2}$.
+\end{enumerate}
+
+\partiefiche{Étude de la fonction logarithme népérien}
+
+\exo[Dériver]
+Pour chaque fonction, définie et dérivable sur $\intoo{0}{+\infty}$ ($p$ sur
+$\intoo{1}{+\infty}$), calculer la dérivée.
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{@{}l@{\hspace{1.2cm}}l@{}}
+$f(x)=5\ln(x)-2x+1$ & $g(x)=x^{2}\ln(x)$\\
+$h(x)=\dfrac{1+\ln(x)}{x}$ & $k(x)=x\ln(x)-x$\\
+$m(x)=\left(\ln(x)\right)^{2}$ & $p(x)=\dfrac{1}{\ln(x)}$
+\end{tabular}
+\end{center}
+
+\exo[Tangentes à la courbe de $\ln$]
+On note $\mathcal{C}$ la courbe de la fonction $\ln$ dans un repère orthonormé.
+\begin{enumerate}
+  \item Déterminer une équation de la tangente $(T_{\e})$ à $\mathcal{C}$ au point
+        d'abscisse $\e$. Montrer qu'elle passe par l'origine du repère.
+  \item En quel point de $\mathcal{C}$ la tangente est-elle parallèle à la droite
+        d'équation $y=2x$ ?
+  \item Soit $a>0$. On note $A$ le point de $\mathcal{C}$ d'abscisse $a$, $R$ le point
+        de coordonnées $\left(0\,;\ln(a)\right)$ et $S$ le point d'intersection de la
+        tangente $(T_{a})$ avec l'axe des ordonnées.
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que $RS=1$.
+    \item En déduire une construction simple de la tangente $(T_{a})$.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[L'algorithme de Briggs]
+Pour dresser ses tables de logarithmes, Henry Briggs calculait des racines carrées
+successives. Soit $x>0$ ; on note $(r_{n})$ la suite définie par $r_{0}=x$ et, pour tout
+$n\in\N$, $r_{n+1}=\sqrt{r_{n}}$. On admet que $r_{n}>0$ pour tout $n\in\N$.
+\begin{enumerate}
+  \item Montrer que, pour tout nombre réel $a>0$, $\ln(a)=2\ln\left(\sqrt{a}\right)$.
+  \item Montrer par récurrence que, pour tout $n\in\N$, $\ln(x)=2^{n}\ln(r_{n})$.
+  \item On admet que $(r_{n})$ converge vers $1$. En utilisant la tangente $(T_{1})$,
+        expliquer pourquoi, pour $n$ grand, $\ln(x)\approx 2^{n}\left(r_{n}-1\right)$.
+  \item Que renvoie \texttt{briggs(2, 10)} (arrondi au dix-millième) ? Comparer avec
+        $\ln(2)$ donné par la calculatrice.
+  \item Montrer que, pour tout $n\in\N$, $\ln(x)\leq 2^{n}\left(r_{n}-1\right)$ :
+        l'algorithme donne une valeur approchée par excès.
+\end{enumerate}
+\begin{python}
+from math import sqrt
+
+def briggs(x, n):
+    r = x
+    for k in range(n):
+        r = sqrt(r)
+    return 2**n * (r - 1)
+\end{python}
+
+\exo[D'après bac 2025 : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}
+  \item \emph{Affirmation} : pour tout nombre réel $x>0$, $\ln(x)-x+1\leq 0$.
+  \item \emph{Affirmation} : la fonction $\ln$ est convexe sur $\intoo{0}{+\infty}$.
+  \item \emph{Affirmation} : dans un repère orthonormé, la courbe de la fonction $\ln$
+        est au-dessous de la droite d'équation $y=\dfrac{x}{\e}$.
+\end{enumerate}
+
+\partiefiche{Croissances comparées}
+
+\exo[Limites]
+Pour chaque fonction, définie sur $\intoo{0}{+\infty}$, déterminer la limite en $0$ et
+en $+\infty$.
+\begin{center}
+\renewcommand{\arraystretch}{2.4}
+\begin{tabular}{@{}l@{\hspace{1.2cm}}l@{}}
+$f(x)=\ln(x)-2x+1$ & $g(x)=x^{2}-5-2\ln(x)$\\
+$h(x)=\dfrac{\ln(x)}{3x}$ & $k(x)=4+x\ln(x)$\\
+$m(x)=x^{2}\ln(x)$ &
+\end{tabular}
+\end{center}
+
+\exo[Le nombre $\e$, limite d'une suite]
+\begin{enumerate}
+  \item Expliquer pourquoi la limite en $0$ de $\dfrac{\ln(1+x)}{x}$ est une forme
+        indéterminée.
+  \item En utilisant le nombre dérivé de la fonction $\ln$ en $1$, montrer que
+        $\lim\limits_{x\to 0}\dfrac{\ln(1+x)}{x}=1$.
+  \item Soit la suite $(u_{n})$ définie pour tout $n\in\Ns$ par
+        $u_{n}=\left(1+\dfrac{1}{n}\right)^{n}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout $n\in\Ns$,
+          $\ln\left(u_{n}\right)=\dfrac{\ln\left(1+\frac{1}{n}\right)}{\frac{1}{n}}$.
+    \item En déduire la limite de la suite $\left(\ln(u_{n})\right)$, puis celle de la
+          suite $(u_{n})$.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Asymptotes et position]
+Soit la fonction $f$ définie sur $\intoo{0}{+\infty}$ par $f(x)=\dfrac{x+\ln(x)}{x}$, de
+courbe $\Cf$ dans un repère.
+\begin{enumerate}
+  \item Déterminer la limite de $f$ en $+\infty$. Interpréter graphiquement.
+  \item Déterminer la limite de $f$ en $0$. Interpréter graphiquement.
+  \item Étudier la position relative de $\Cf$ et de la droite d'équation $y=1$.
+\end{enumerate}
+
+\partiefiche{Étude d'une fonction contenant $\ln(x)$}
+
+\exo[La fonction $x\ln(x)$]
+Soit la fonction $f$ définie sur $\intoo{0}{+\infty}$ par $f(x)=x\ln(x)$.
+\begin{enumerate}
+  \item Déterminer les limites de $f$ en $0$ et en $+\infty$.
+  \item Calculer $f'(x)$, puis dresser le tableau de variations de $f$.
+  \item Résoudre l'équation $f(x)=0$.
+  \item Combien l'équation $f(x)=-0{,}2$ a-t-elle de solutions ? Justifier.
+\end{enumerate}
+
+\exo[Avec une fonction auxiliaire]
+\begin{enumerate}
+  \item Soit la fonction $g$ définie sur $\intoo{0}{+\infty}$ par $g(x)=x+1-\ln(x)$.
+        Étudier les variations de $g$, puis montrer que $g(x)>0$ pour tout nombre réel
+        $x>0$.
+  \item Soit la fonction $f$ définie sur $\intoo{0}{+\infty}$ par
+        $f(x)=\dfrac{(x+1)\ln(x)}{x}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout $x>0$, $f'(x)=\dfrac{g(x)}{x^{2}}$.
+    \item Déterminer les limites de $f$ en $0$ et en $+\infty$.
+    \item Dresser le tableau de variations de $f$.
+    \item Calculer $f(1)$ et en déduire le signe de $f(x)$ selon les valeurs de $x$.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Une équation qu'on ne sait pas résoudre]
+Soit la fonction $f$ définie sur $\intoo{0}{+\infty}$ par $f(x)=x^{2}+\ln(x)-3$.
+\begin{enumerate}
+  \item Déterminer les limites de $f$ en $0$ et en $+\infty$.
+  \item Étudier les variations de $f$.
+  \item Montrer que l'équation $f(x)=0$ admet une unique solution $\alpha$ dans
+        $\intoo{0}{+\infty}$, puis en donner un encadrement d'amplitude $10^{-2}$.
+  \item En déduire le signe de $f(x)$ selon les valeurs de $x$.
+\end{enumerate}
+
+\exo[Une coopérative de panneaux solaires]
+Une coopérative fabrique chaque mois entre $100$ et $2\,000$ panneaux solaires. Pour $x$
+centaines de panneaux, avec $x\in\intff{1}{20}$, son bénéfice mensuel, en milliers
+d'euros, est $B(x)=12\ln(x)-x-4$.
+\begin{enumerate}
+  \item Calculer $B'(x)$ et étudier les variations de $B$ sur $\intff{1}{20}$.
+  \item Combien de panneaux la coopérative doit-elle fabriquer pour que son bénéfice
+        soit maximal ? Donner ce bénéfice, arrondi à la dizaine d'euros.
+  \item Montrer que l'équation $B(x)=0$ admet une unique solution $\alpha$ dans
+        $\intff{1}{12}$, et en donner une valeur approchée au centième.
+  \item À partir de combien de panneaux la coopérative est-elle bénéficiaire ?
+\end{enumerate}
+
+\partiefiche{Fonctions de la forme $\ln(u)$}
+
+\exo[Dériver $\ln(u)$]
+Calculer la dérivée de chaque fonction, sur l'intervalle indiqué.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\ln(2x+1)$, sur $\intoo{-\frac{1}{2}}{+\infty}$
+  \item $g(x)=\ln\left(x^{2}+5\right)$, sur $\R$
+  \item $h(x)=\ln\left(1+\e^{2x}\right)$, sur $\R$
+  \item $k(x)=\ln\left(\dfrac{x+2}{x-3}\right)$, sur $\intoo{3}{+\infty}$
+  \item $m(x)=\ln\left(\ln(x)\right)$, sur $\intoo{1}{+\infty}$
+  \item $p(x)=x\ln\left(x^{2}+1\right)$, sur $\R$
+\end{enumerate}
+
+\exo[Limites par composition]
+\begin{enumerate}
+  \item Soit la fonction $f$ définie sur $\intoo{-\infty}{\frac{1}{3}}$ par
+        $f(x)=\ln(1-3x)$. Déterminer les limites de $f$ en $-\infty$ et en
+        $\frac{1}{3}$.
+  \item Soit la fonction $g$ définie sur $\intoo{0}{+\infty}$ par
+        $g(x)=\ln\left(\dfrac{x+1}{x}\right)$. Déterminer les limites de $g$ en $0$ et
+        en $+\infty$.
+  \item Soit la fonction $h$ définie sur $\R$ par $h(x)=\ln\left(\e^{x}+1\right)-x$.
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout nombre réel $x$, $h(x)=\ln\left(1+\e^{-x}\right)$.
+    \item En déduire la limite de $h$ en $+\infty$.
+  \end{enumerate}
+\end{enumerate}
+
+\exo[Étude d'une fonction $\ln(u)$]
+Soit la fonction $f$ définie par $f(x)=\ln\left(x^{2}+6x+8\right)$, sur
+$I=\intoo{-2}{+\infty}$.
+\begin{enumerate}
+  \item Montrer que $x^{2}+6x+8>0$ pour tout $x\in I$.
+  \item Calculer $f'(x)$ et étudier les variations de $f$ sur $I$.
+  \item Déterminer les limites de $f$ en $-2$ et en $+\infty$, puis dresser le tableau
+        de variations de $f$.
+  \item Résoudre dans $I$ l'équation $f(x)=\ln(15)$.
+\end{enumerate}
+
+\exo[Une inégalité]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=x-\ln\left(x^{2}+1\right)$.
+\begin{enumerate}
+  \item Montrer que, pour tout nombre réel $x$, $f'(x)=\dfrac{(x-1)^{2}}{x^{2}+1}$.
+  \item En déduire les variations de $f$ sur $\R$.
+  \item Déterminer la limite de $f$ en $-\infty$. On admet que
+        $\lim\limits_{x\to+\infty}f(x)=+\infty$ ; dresser le tableau de variations de $f$.
+  \item Calculer $f(0)$, puis en déduire que, pour tout nombre réel $x\geq 0$,
+        $\ln\left(x^{2}+1\right)\leq x$.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2026, Nouvelle-Calédonie]
+On considère la fonction $f$ définie sur $\R$ par $f(x)=\ln\left(1+\e^{x}\right)$. On
+note $\mathcal{C}$ la courbe représentative de la fonction $f$ dans un repère
+orthonormé.
+\begin{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer la limite de la fonction $f$ en $+\infty$.
+    \item Déterminer la limite de la fonction $f$ en $-\infty$. Interpréter
+          graphiquement le résultat.
+  \end{enumerate}
+  \item On admet que la fonction $f$ est dérivable sur $\R$ et on note $f'$ sa
+        fonction dérivée.
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout nombre réel $x$, on a
+          $f'(x)=\dfrac{\e^{x}}{\e^{x}+1}$.
+    \item Étudier le sens de variation de la fonction $f$ sur $\R$.
+  \end{enumerate}
+  \item Déterminer les coordonnées des éventuels points d'intersection de la courbe
+        $\mathcal{C}$ avec les axes du repère.
+  \item On admet que la fonction $f$ est deux fois dérivable sur $\R$ et on note $f''$
+        sa fonction dérivée seconde. On admet que, pour tout nombre réel $x$, on a
+        $f''(x)=\dfrac{\e^{x}}{\left(\e^{x}+1\right)^{2}}$. Étudier la convexité de la
+        fonction $f$ sur $\R$.
+  \item Existe-t-il deux points distincts de la courbe $\mathcal{C}$ ayant des
+        tangentes parallèles ?
+  \item On considère le programme ci-dessous écrit en langage Python. On rappelle
+        qu'en langage Python \texttt{log} désigne la fonction logarithme népérien et
+        \texttt{exp} la fonction exponentielle. Donner la valeur renvoyée par
+        l'instruction \texttt{seuil()} et interpréter le résultat.
+\end{enumerate}
+\begin{python}
+from math import exp
+from math import log
+
+def seuil():
+    x = 0
+    y = log(2)
+    while y >= 0.01:
+        x = x - 0.1
+        y = log(1 + exp(x))
+    return x
+\end{python}
+
+\exo[D'après bac 2026, Amérique du Sud]
+Le but de cet exercice est d'étudier la suite $(u_{n})$ définie par son premier terme
+$u_{0}=0$ et, pour tout $n\in\N$, par $u_{n+1}=\ln\left(3+\e^{u_{n}}\right)-a$, où $a$
+est un entier. Dans la partie A, on étudie le cas $a=0$ et dans la partie B le cas
+$a=1$. On admet que la suite $(u_{n})$ ainsi construite est bien définie.
+
+\smallskip
+\textbf{Partie A : cas $a=0$.} Dans cette partie, $u_{0}=0$ et, pour tout $n\in\N$,
+$u_{n+1}=\ln\left(3+\e^{u_{n}}\right)$.
+\begin{enumerate}
+  \item Soit $(v_{n})$ la suite définie pour tout $n\in\N$ par $v_{n}=\e^{u_{n}}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer la valeur de $v_{0}$.
+    \item Montrer que la suite $(v_{n})$ est une suite arithmétique de raison $3$.
+    \item En déduire l'expression de $v_{n}$ en fonction de $n$.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout $n\in\N$, on a $u_{n}=\ln(1+3n)$.
+    \item Déterminer la limite de la suite $(u_{n})$.
+  \end{enumerate}
+\end{enumerate}
+
+\textbf{Partie B : cas $a=1$.} La suite $(u_{n})$ est ici définie par $u_{0}=0$ et,
+pour tout $n\in\N$, par $u_{n+1}=\ln\left(3+\e^{u_{n}}\right)-1$.
+\begin{enumerate}
+  \item Calculer $u_{1}$ et montrer que $u_{2}=\ln\left(3+\dfrac{4}{\e}\right)-1$.
+\end{enumerate}
+On considère la fonction $f$ définie et dérivable sur l'intervalle $\intff{0}{1}$ par
+$f(x)=\ln\left(3+\e^{x}\right)-1$. On admet que la fonction $f$ est strictement
+croissante sur $\intff{0}{1}$. On remarquera que, pour tout $n\in\N$,
+$u_{n+1}=f\left(u_{n}\right)$.
+\begin{enumerate}[resume]
+  \item Montrer par récurrence que, pour tout $n\in\N$, on a
+        $0\leq u_{n}\leq u_{n+1}\leq 1$.
+  \item Justifier que la suite $(u_{n})$ est convergente.
+  \item On note $\ell$ la limite de la suite $(u_{n})$ et on admet que $\ell$ vérifie
+        l'égalité $f(\ell)=\ell$. Montrer que $\ell=\ln\left(\dfrac{3}{\e-1}\right)$.
+  \item Le script Python ci-dessous est celui d'une fonction \texttt{seuil} qui prend
+        en entrée un nombre réel $d$ strictement positif et renvoie le premier indice
+        $n$ tel que $u_{n}\geq\ell-d$. Parmi les quatre propositions ci-dessous, dire,
+        sans justification, laquelle doit être écrite à la ligne 6.
+\end{enumerate}
+\begin{python}
+from math import *
+def seuil(d):
+    N = 0
+    U = 0
+    L = log(3/(exp(1)-1))
+    ......................
+        U = log(3+exp(U))-1
+        N = N+1
+    return N
+\end{python}
+\begin{center}
+1. \texttt{while U <= L + d:} \qquad 2. \texttt{while U > L + d:}\\
+3. \texttt{while U < L - d:} \qquad 4. \texttt{while U >= L - d:}
+\end{center}
+
+\exo[D'après bac 2026, Métropole]
+On considère la fonction $f$ définie sur l'intervalle $\intoo{-1}{+\infty}$ par
+$f(x)=a+\dfrac{b\ln(x+1)}{x+1}$, où $a$ et $b$ sont des nombres réels. On admet que la
+fonction $f$ est deux fois dérivable sur $\intoo{-1}{+\infty}$ ; on note $f'$ sa
+fonction dérivée et $f''$ sa fonction dérivée seconde.
+
+\smallskip
+\textbf{Partie A.} L'objectif de cette partie est de déterminer les valeurs de $a$ et
+$b$ de sorte que la courbe représentative de la fonction $f$ corresponde à celle tracée
+ci-dessous. La droite $(T_{0})$ est la tangente à cette courbe au point $A(0\,;1)$.
+\begin{center}
+\begin{tikzpicture}[x=0.6cm,y=0.6cm]
+  \repere{-1}{-1}{7}{6}
+  \gradx{1} \grady{1}
+  \draw[coulCourbe,line width=1.1pt,domain=-0.29:7,samples=120]
+    plot (\x,{1+4*ln(\x+1)/(\x+1)});
+  \draw[dashed,thick] (-0.5,-1)--(1.25,6);
+  \path (0,1) node[croix]{} node[above left,font=\footnotesize]{$A$};
+  \node[font=\footnotesize] at (1.75,5.6) {$(T_{0})$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Justifier que $a=1$.
+  \item En utilisant le graphique :
+  \begin{enumerate}[label=\alph*)]
+    \item donner la valeur de $f'(0)$, en justifiant ;
+    \item donner le signe de $f''(1)$, en justifiant.
+  \end{enumerate}
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Montrer que, pour tout nombre réel $x$ de $\intoo{-1}{+\infty}$,
+          $f'(x)=\dfrac{b\left(1-\ln(x+1)\right)}{(x+1)^{2}}$.
+    \item En déduire la valeur de $b$.
+  \end{enumerate}
+\end{enumerate}
+
+\textbf{Partie B.} On admet dans la suite que la fonction $f$ est définie sur
+$\intoo{-1}{+\infty}$ par $f(x)=1+\dfrac{4\ln(x+1)}{x+1}$.
+\begin{enumerate}
+  \item Justifier que la droite d'équation $y=1$ est asymptote à la courbe
+        représentative de la fonction $f$.
+  \item Résoudre l'inéquation $1-\ln(x+1)>0$ sur $\intoo{-1}{+\infty}$.
+  \item On admet que $\lim\limits_{x\to-1}f(x)=-\infty$. Dresser le tableau de
+        variations complet de la fonction $f$ en indiquant la valeur exacte de son
+        extremum. Justifier.
+  \item Montrer que l'équation $f(x)=1{,}5$ admet une unique solution dans l'intervalle
+        $\intfo{2}{+\infty}$. En donner une valeur arrondie à $10^{-1}$.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}

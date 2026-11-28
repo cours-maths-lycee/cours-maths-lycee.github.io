@@ -1,0 +1,1225 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{9}{Fonction logarithme népérien}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{LOGARITHME NÉPÉRIEN}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\newcommand{\e}{\mathrm{e}}
+
+\begin{remarquebox}[Durée du chapitre]
+À titre indicatif, ce chapitre est prévu pour un volume de $14$~h d'enseignement
+($7$ séances de $2$~h). Une partie importante des exercices est à faire en autonomie.
+\end{remarquebox}
+
+\partiecours{La fonction logarithme népérien}
+
+Pour résoudre $\e^{x}=5$, la calculatrice ne donne qu'une valeur approchée,
+$x\approx 1{,}609$. Le logarithme népérien donne un nom à la solution exacte :
+$\ln(5)$.
+
+\begin{remarquebox}[Rappels sur la fonction exponentielle (1\textsuperscript{re} et chapitre~5)]
+La fonction exponentielle est dérivable, donc continue, et strictement croissante sur
+$\R$ ; $\lim\limits_{x\to-\infty}\e^{x}=0$ et $\lim\limits_{x\to+\infty}\e^{x}=+\infty$.
+Pour tous nombres réels $a$ et $b$ et pour tout $n\in\Z$ :
+\begin{center}
+$\e^{a}>0$ \qquad $\e^{a+b}=\e^{a}\times\e^{b}$ \qquad $\e^{a-b}=\dfrac{\e^{a}}{\e^{b}}$
+\qquad $\left(\e^{a}\right)^{n}=\e^{na}$\\[3pt]
+$\e^{a}=\e^{b}\iff a=b$ \qquad $\e^{a}<\e^{b}\iff a<b$
+\end{center}
+\end{remarquebox}
+
+\begin{proprietebox}[Propriété 1 --- Équation $\e^{x}=a$]
+Pour tout nombre réel $a>0$, l'équation $\e^{x}=a$ admet une unique solution dans $\R$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration.} La fonction exponentielle est continue et
+strictement croissante sur $\R$, de limite $0$ en $-\infty$ et $+\infty$ en $+\infty$.
+Comme $a\in\intoo{0}{+\infty}$, d'après le corollaire du théorème des valeurs
+intermédiaires (chapitre~6), l'équation $\e^{x}=a$ admet une unique solution dans $\R$.
+
+\smallskip
+Si $a\leq 0$, l'équation $\e^{x}=a$ n'a pas de solution, car $\e^{x}>0$ pour tout
+nombre réel $x$.
+\end{proprietebox}
+
+\begin{definitionbox}[Définition 1 --- Logarithme népérien]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $a>0$. Le \textbf{logarithme népérien} de $a$, noté $\ln(a)$, est l'unique
+solution de l'équation $\e^{x}=a$ :
+\begin{center}
+$\e^{\ln(a)}=a$.
+\end{center}
+La \textbf{fonction logarithme népérien}, notée $\ln$, est la fonction définie sur
+$\intoo{0}{+\infty}$ par $x\longmapsto\ln(x)$.
+
+\smallskip
+$\ln(0)$ et $\ln(-2)$ n'existent pas : on ne prend le logarithme que d'un nombre
+strictement positif.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.55cm,y=0.55cm]
+  \repere{-3}{-1}{3}{6}
+  \gradx{-2,-1} \grady{1,2,3,5}
+  \draw[coulCourbe,line width=1.1pt,domain=-3:1.75,samples=80] plot (\x,{exp(\x)});
+  \draw[dashed,coulCourbeB,->,>=stealth] (0,4)--(1.386,4);
+  \draw[dashed,coulCourbeB,->,>=stealth] (1.386,4)--(1.386,0);
+  \path[coulCourbeB] (1.386,4) node[croix]{};
+  \node[left,font=\scriptsize,coulCourbeB] at (0,4) {$a$};
+  \node[below,font=\scriptsize,coulCourbeB] at (1.386,-0.05) {$\ln(a)$};
+  \node[coulCourbe,font=\footnotesize] at (-1.6,1.4) {$y=\e^{x}$};
+\end{tikzpicture}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Logarithme et exponentielle]
+\begin{itemize}
+  \item Pour tout nombre réel $x>0$ et tout nombre réel $y$ : $\e^{y}=x\iff y=\ln(x)$.
+  \item $\ln(1)=0$ \quad et \quad $\ln(\e)=1$.
+  \item Pour tout nombre réel $y$, $\ln\left(\e^{y}\right)=y$ ; pour tout nombre réel
+        $x>0$, $\e^{\ln(x)}=x$.
+\end{itemize}
+On dit que les fonctions $\exp$ et $\ln$ sont \textbf{réciproques} l'une de l'autre :
+l'une défait ce que fait l'autre.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration.} Le premier point est la définition. Comme
+$\e^{0}=1$, $0$ est la solution de $\e^{x}=1$, donc $\ln(1)=0$ ; comme $\e^{1}=\e$, on
+a $\ln(\e)=1$. Pour tout nombre réel $y$, $y$ est la solution de l'équation
+$\e^{x}=\e^{y}$, donc $\ln\left(\e^{y}\right)=y$. La dernière égalité est la
+définition de $\ln(x)$.
+\end{proprietebox}
+
+Sauf pour quelques valeurs remarquables, dont on connaît la valeur exacte
+($\ln(1)=0$, $\ln(\e)=1$, $\ln\left(\e^{2}\right)=2$…), les logarithmes sont, comme les
+exponentielles, des nombres irrationnels. On garde la valeur exacte, $\ln(5)$, dans les
+calculs ; pour en connaître une valeur approchée, on utilise la calculatrice :
+$\ln(5)\approx 1{,}609$.
+
+\begin{methodebox}[Méthode 1 --- Utiliser la définition du logarithme]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Calculer $A=\ln\left(\e^{3}\right)$, $B=\e^{\ln(7)}$ et
+        $C=\ln\left(\dfrac{1}{\e^{2}}\right)$.
+  \item Résoudre dans $\R$ l'équation $\e^{2x-1}=5$.
+  \item Résoudre dans $\intoo{0}{+\infty}$ l'équation $\ln(x)=3$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \ln\left(\e^{3}\right) &\qquad& \rem{$\ln\left(\e^{y}\right)=y$}\\
+A &= \res{3} &&\\
+B &= \e^{\ln(7)} &\qquad& \rem{$\e^{\ln(x)}=x$, avec $7>0$}\\
+B &= \res{7} &&\\
+C &= \ln\left(\e^{-2}\right) &\qquad& \rem{$\frac{1}{\e^{a}}=\e^{-a}$}\\
+C &= \res{-2} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+\e^{2x-1} &= 5 &\qquad& \rem{$5>0$ : l'équation a une solution}\\
+\iff 2x-1 &= \ln(5) && \rem{$\e^{y}=a\iff y=\ln(a)$}\\
+\iff 2x &= \ln(5)+1 &&\\
+\iff x &= \frac{\ln(5)+1}{2} && \rem{on divise par $2>0$}
+\end{calculs}
+\explique{\res{$S=\ens{\dfrac{\ln(5)+1}{2}}$}, avec $\dfrac{\ln(5)+1}{2}\approx 1{,}30$.}{la
+valeur exacte, puis une valeur approchée}
+\cas{c)}
+\begin{calculs}
+\ln(x) &= 3 &\qquad& \rem{$x>0$}\\
+\iff x &= \e^{3} && \rem{$y=\ln(x)\iff \e^{y}=x$}
+\end{calculs}
+\explique{$\e^{3}>0$, donc \res{$S=\ens{\e^{3}}$}, avec $\e^{3}\approx 20{,}09$.}{la
+solution est bien dans $\intoo{0}{+\infty}$}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Calculer $A=\ln\left(\e^{7}\right)$, $B=\e^{\ln(10)}$ et
+        $C=\ln\left(\dfrac{1}{\e^{3}}\right)$.
+  \item Résoudre dans $\R$ l'équation $\e^{3x+2}=4$.
+  \item Résoudre dans $\intoo{0}{+\infty}$ l'équation $\ln(x)=-2$.
+\end{questions}
+\reponse{a) $A=7$, $B=10$, $C=-3$ ;\; b)~$S=\ens{\frac{\ln(4)-2}{3}}$, environ
+$-0{,}20$ ;\; c)~$S=\ens{\e^{-2}}$, environ $0{,}14$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 4}
+
+\partiecours{Relation fonctionnelle}
+
+L'exponentielle change une somme en produit : $\e^{a+b}=\e^{a}\times\e^{b}$. Le
+logarithme fait l'inverse : il change un produit en somme.
+
+\begin{proprietebox}[Théorème 1 --- Relation fonctionnelle]
+Pour tous nombres réels $a>0$ et $b>0$ : \quad $\ln(a\times b)=\ln(a)+\ln(b)$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration.} On calcule l'exponentielle de
+$\ln(a)+\ln(b)$ :
+\begin{calculs}
+\e^{\ln(a)+\ln(b)} &= \e^{\ln(a)}\times\e^{\ln(b)} &\qquad& \rem{$\e^{x+y}=\e^{x}\times\e^{y}$}\\
+\e^{\ln(a)+\ln(b)} &= ab && \rem{$\e^{\ln(x)}=x$ pour $x>0$}
+\end{calculs}
+Donc $\ln(a)+\ln(b)$ est la solution de l'équation $\e^{x}=ab$, c'est-à-dire
+$\ln(ab)$.
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 3 --- Conséquences]
+Pour tous nombres réels $a>0$ et $b>0$ et pour tout $n\in\Z$ :
+\begin{center}
+$\ln\left(\dfrac{1}{a}\right)=-\ln(a)$ \qquad
+$\ln\left(\dfrac{a}{b}\right)=\ln(a)-\ln(b)$ \qquad
+$\ln\left(a^{n}\right)=n\ln(a)$ \qquad
+$\ln\left(\sqrt{a}\right)=\dfrac{1}{2}\ln(a)$
+\end{center}
+
+\textbf{\color{coulMeth}Démonstration.}
+\begin{itemize}
+  \item $\ln\left(\frac{1}{a}\right)+\ln(a)=\ln\left(\frac{1}{a}\times a\right)$, et
+        $\ln\left(\frac{1}{a}\times a\right)=\ln(1)=0$, donc
+        $\ln\left(\frac{1}{a}\right)=-\ln(a)$.
+  \item $\ln\left(\frac{a}{b}\right)=\ln\left(a\times\frac{1}{b}\right)$, et
+        $\ln\left(a\times\frac{1}{b}\right)=\ln(a)-\ln(b)$ d'après le point
+        précédent.
+  \item Pour $n\in\N$, par récurrence. Soit $P_{n}$ la propriété
+        « $\ln\left(a^{n}\right)=n\ln(a)$ ». \emph{Initialisation :}
+        $\ln\left(a^{0}\right)=\ln(1)=0$ et $0\times\ln(a)=0$ : $P_{0}$ est vraie.
+        \emph{Hérédité :} soit $n\in\N$ tel que $P_{n}$ est vraie. Montrons que
+        $P_{n+1}$ est vraie.
+\begin{calculs}
+\ln\left(a^{n+1}\right) &= \ln\left(a^{n}\times a\right) &\qquad& \rem{$a^{n+1}=a^{n}\times a$}\\
+\ln\left(a^{n+1}\right) &= \ln\left(a^{n}\right)+\ln(a) && \rem{relation fonctionnelle}\\
+\ln\left(a^{n+1}\right) &= n\ln(a)+\ln(a) && \rem{hypothèse de récurrence}\\
+\ln\left(a^{n+1}\right) &= (n+1)\ln(a) &&
+\end{calculs}
+        \emph{Conclusion :} d'après le principe de récurrence, $P_{n}$ est vraie pour
+        tout $n\in\N$. Pour $-n$, $a^{-n}=\frac{1}{a^{n}}$, donc
+        $\ln\left(a^{-n}\right)=-\ln\left(a^{n}\right)=-n\ln(a)$.
+  \item $2\ln\left(\sqrt{a}\right)=\ln\left(\sqrt{a}^{\,2}\right)=\ln(a)$, donc
+        $\ln\left(\sqrt{a}\right)=\frac{1}{2}\ln(a)$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{remarquebox}[Attention]
+Il n'y a pas de formule pour $\ln(a+b)$ : $\ln(1+1)=\ln(2)\approx 0{,}69$, alors que
+$\ln(1)+\ln(1)=0$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 2 --- Transformer une écriture avec des logarithmes]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Exprimer $A=\ln(40)$ et $B=\ln(0{,}8)$ en fonction de $\ln(2)$ et $\ln(5)$.
+  \item Écrire $C=3\ln(2)+\ln(5)-\ln(4)$ sous la forme $\ln(k)$, avec $k>0$.
+  \item Écrire $D=\ln\left(\sqrt{7}-2\right)+\ln\left(\sqrt{7}+2\right)$ sous la forme
+        $\ln(k)$, avec $k>0$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+A &= \ln\left(2^{3}\times 5\right) &\qquad& \rem{$40=8\times 5$ : on décompose}\\
+A &= \ln\left(2^{3}\right)+\ln(5) && \rem{$\ln(ab)=\ln(a)+\ln(b)$}\\
+A &= \res{3\ln(2)+\ln(5)} && \rem{$\ln\left(a^{n}\right)=n\ln(a)$}\\
+B &= \ln\left(\frac{2^{2}}{5}\right) && \rem{$0{,}8=\frac{4}{5}$}\\
+B &= \ln\left(2^{2}\right)-\ln(5) && \rem{$\ln\left(\frac{a}{b}\right)=\ln(a)-\ln(b)$}\\
+B &= \res{2\ln(2)-\ln(5)} &&
+\end{calculs}
+\cas{b)}
+\begin{calculs}
+C &= \ln\left(2^{3}\right)+\ln(5)-\ln(4) &\qquad& \rem{$n\ln(a)=\ln\left(a^{n}\right)$}\\
+C &= \ln\left(\frac{8\times 5}{4}\right) && \rem{les formules, lues de droite à gauche}\\
+C &= \res{\ln(10)} &&
+\end{calculs}
+\cas{c)}
+\explique{$\sqrt{7}\approx 2{,}65$, donc $\sqrt{7}-2>0$ : les deux logarithmes
+existent.}{on vérifie que les nombres sont strictement positifs}
+\begin{calculs}
+D &= \ln\left(\left(\sqrt{7}-2\right)\left(\sqrt{7}+2\right)\right) &\qquad& \rem{$\ln(a)+\ln(b)=\ln(ab)$}\\
+D &= \ln(7-4) && \rem{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+D &= \res{\ln(3)} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Exprimer $A=\ln(24)$ et $B=\ln(0{,}75)$ en fonction de $\ln(2)$ et $\ln(3)$.
+  \item Écrire $C=2\ln(3)+\ln(4)-\ln(6)$ sous la forme $\ln(k)$, avec $k>0$.
+  \item Écrire $D=\ln\left(\sqrt{5}-1\right)+\ln\left(\sqrt{5}+1\right)$ sous la forme
+        $\ln(k)$, avec $k>0$.
+\end{questions}
+\reponse{a) $A=3\ln(2)+\ln(3)$, $B=\ln(3)-2\ln(2)$ ;\; b)~$C=\ln(6)$ ;\;
+c)~$D=\ln(4)$.}
+\end{methodebox}
+
+\afaire{exercices 5 à 9}
+
+\partiecours{Équations et inéquations}
+
+\begin{proprietebox}[Propriété 4 --- Comparer deux logarithmes]
+Pour tous nombres réels $a>0$ et $b>0$ :
+\begin{center}
+$\ln(a)=\ln(b)\iff a=b$ \qquad\qquad $\ln(a)<\ln(b)\iff a<b$
+\end{center}
+La fonction $\ln$ est donc strictement croissante sur $\intoo{0}{+\infty}$. En
+particulier, avec $\ln(1)=0$ : \quad $\ln(x)>0\iff x>1$ \quad et \quad
+$\ln(x)<0\iff 0<x<1$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration.} $a=\e^{\ln(a)}$ et $b=\e^{\ln(b)}$ ; comme la
+fonction exponentielle est strictement croissante sur $\R$,
+$\e^{\ln(a)}<\e^{\ln(b)}\iff\ln(a)<\ln(b)$, soit $a<b\iff\ln(a)<\ln(b)$. De même
+pour l'égalité.
+\end{proprietebox}
+
+Avant de résoudre une équation ou une inéquation qui contient $\ln(\dots)$, on cherche
+les nombres $x$ pour lesquels chaque logarithme existe : c'est l'ensemble sur lequel on
+résout. Les solutions trouvées doivent lui appartenir.
+
+\begin{methodebox}[Méthode 3 --- Résoudre une équation avec des logarithmes]
+\etapeexemples
+Résoudre les équations suivantes.
+\begin{questions}[label=\alph*)]
+  \item $\ln(2x-4)=\ln(x+1)$
+  \item $\ln(x)+\ln(x-2)=\ln(8)$
+  \item $\left(\ln(x)\right)^{2}-\ln(x)-2=0$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$2x-4>0\iff x>2$ et $x+1>0\iff x>-1$ : on résout sur
+$I=\intoo{2}{+\infty}$.}{les deux logarithmes doivent exister}
+\begin{calculs}
+\ln(2x-4) &= \ln(x+1) &\qquad& \rem{$x\in I$}\\
+\iff 2x-4 &= x+1 && \rem{$\ln(a)=\ln(b)\iff a=b$}\\
+\iff x &= 5 &&
+\end{calculs}
+\explique{$5\in I$, donc \res{$S=\ens{5}$}.}{on vérifie que la solution est dans $I$}
+\cas{b)}
+\explique{$x>0$ et $x-2>0$, soit $x>2$ : on résout sur $I=\intoo{2}{+\infty}$.}{les
+deux logarithmes doivent exister}
+\begin{calculs}
+\ln(x)+\ln(x-2) &= \ln(8) &\qquad& \rem{$x\in I$}\\
+\iff \ln\bigl(x(x-2)\bigr) &= \ln(8) && \rem{$\ln(a)+\ln(b)=\ln(ab)$, avec $a>0$ et $b>0$}\\
+\iff x(x-2) &= 8 && \rem{$\ln(a)=\ln(b)\iff a=b$}\\
+\iff x^{2}-2x-8 &= 0 &&
+\end{calculs}
+\explique{On résout cette équation du second degré :}{}
+\begin{calculs}
+\Delta &= (-2)^{2}-4\times 1\times(-8) &\qquad& \rem{$\Delta=b^{2}-4ac$}\\
+\Delta &= 36 &&\\
+x_{1} &= \frac{2-6}{2} = -2 && \rem{$\frac{-b-\sqrt{\Delta}}{2a}$}\\
+x_{2} &= \frac{2+6}{2} = 4 && \rem{$\frac{-b+\sqrt{\Delta}}{2a}$}
+\end{calculs}
+\explique{$-2\notin I$ et $4\in I$, donc \res{$S=\ens{4}$}.}{on ne garde que les
+solutions de $I$}
+\cas{c)}
+\explique{On résout sur $\intoo{0}{+\infty}$. On pose $X=\ln(x)$ : l'équation devient
+$X^{2}-X-2=0$.}{changement de variable : une équation du second degré en $X$}
+\begin{calculs}
+\Delta &= (-1)^{2}-4\times 1\times(-2) &\qquad&\\
+\Delta &= 9 &&\\
+X_{1} &= \frac{1-3}{2} = -1 &&\\
+X_{2} &= \frac{1+3}{2} = 2 &&
+\end{calculs}
+\explique{$\ln(x)=-1\iff x=\e^{-1}$ \quad et \quad $\ln(x)=2\iff x=\e^{2}$.}{on revient
+à $x$ : $y=\ln(x)\iff x=\e^{y}$}
+\explique{Les deux sont dans $\intoo{0}{+\infty}$ : \res{$S=\ens{\e^{-1}\,;\e^{2}}$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Résoudre les équations suivantes.
+\begin{questions}[label=\alph*)]
+  \item $\ln(3x-3)=\ln(x+5)$
+  \item $\ln(x)+\ln(x+2)=\ln(15)$
+  \item $\left(\ln(x)\right)^{2}-2\ln(x)-3=0$
+\end{questions}
+\reponse{a) $S=\ens{4}$ ;\; b)~$S=\ens{3}$ ;\; c)~$S=\ens{\e^{-1}\,;\e^{3}}$.}
+\end{methodebox}
+
+\begin{methodebox}[Méthode 4 --- Résoudre une inéquation avec des logarithmes ou des exponentielles]
+\etapeexemples
+Résoudre les inéquations suivantes.
+\begin{questions}[label=\alph*)]
+  \item $\ln(2x-1)\geq 3$
+  \item $\e^{1-2x}\leq 4$
+  \item $\ln(x+3)<\ln(7-x)$
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On cherche d'abord sur quel intervalle le logarithme est défini :
+$2x-1>0\iff x>\frac{1}{2}$, on résout sur $I=\intoo{\frac{1}{2}}{+\infty}$.}{le
+logarithme doit exister}
+\begin{calculs}
+\ln(2x-1) &\geq 3 &\qquad& \rem{$x\in I$}\\
+\iff 2x-1 &\geq \e^{3} && \rem{la fonction $\exp$ est strictement croissante sur $\R$}\\
+\iff 2x &\geq \e^{3}+1 &&\\
+\iff x &\geq \frac{\e^{3}+1}{2} && \rem{on divise par $2>0$}
+\end{calculs}
+\explique{$\frac{\e^{3}+1}{2}\approx 10{,}54>\frac{1}{2}$, donc
+\res{$S=\intfo{\dfrac{\e^{3}+1}{2}}{+\infty}$}.}{on garde les solutions de $I$}
+\cas{b)}
+\explique{L'exponentielle existe pour tout nombre réel : on résout sur $\R$.}{}
+\begin{calculs}
+\e^{1-2x} &\leq 4 &\qquad&\\
+\iff 1-2x &\leq \ln(4) && \rem{la fonction $\ln$ est strictement croissante sur $\intoo{0}{+\infty}$}\\
+\iff -2x &\leq \ln(4)-1 &&\\
+\iff x &\geq \frac{1-\ln(4)}{2} && \rem{on divise par $-2<0$ : le sens change}
+\end{calculs}
+\explique{\res{$S=\intfo{\dfrac{1-\ln(4)}{2}}{+\infty}$}.}{}
+\cas{c)}
+\explique{On cherche d'abord sur quel intervalle les logarithmes sont définis :
+$x+3>0\iff x>-3$ et $7-x>0\iff x<7$, on résout sur $I=\intoo{-3}{7}$.}{les deux
+logarithmes doivent exister}
+\begin{calculs}
+\ln(x+3) &< \ln(7-x) &\qquad& \rem{$x\in I$}\\
+\iff x+3 &< 7-x && \rem{la fonction $\ln$ est strictement croissante sur $\intoo{0}{+\infty}$}\\
+\iff 2x &< 4 &&\\
+\iff x &< 2 &&
+\end{calculs}
+\explique{Avec $x\in I$ : \res{$S=\intoo{-3}{2}$}.}{les nombres de $I$ inférieurs à $2$}
+\end{correction}
+
+\etape{À vous de jouer}
+Résoudre les inéquations suivantes.
+\begin{questions}[label=\alph*)]
+  \item $\ln(3x-2)\geq 1$
+  \item $\e^{2-3x}\leq 5$
+  \item $\ln(x+4)<\ln(6-x)$
+\end{questions}
+\reponse{a) $S=\intfo{\frac{\e+2}{3}}{+\infty}$ ;\; b)~$S=\intfo{\frac{2-\ln(5)}{3}}{+\infty}$
+;\; c)~$S=\intoo{-4}{1}$.}
+\end{methodebox}
+
+\afaire{exercices 10 à 15}
+
+\partiecours{Seuils : inéquations d'inconnue entière}
+
+Au chapitre~2, on cherchait un seuil avec un algorithme ; au chapitre~7, avec la table
+de la calculatrice. Le logarithme le donne par le calcul : la composition par la
+fonction $\ln$ permet de transformer les exposants en multiplications,
+$\ln\left(q^{n}\right)=n\ln(q)$. Le point délicat est le signe de $\ln(q)$ quand on
+divise :
+\begin{center}
+si $q>1$, alors $\ln(q)>0$ \qquad\qquad si $0<q<1$, alors $\ln(q)<0$ : le sens de
+l'inégalité change.
+\end{center}
+
+\begin{methodebox}[Méthode 5 --- Déterminer un seuil par le calcul]
+\etapeexemples
+\begin{questions}[label=\alph*)]
+  \item Le nombre d'abonnés au service de vélos électriques d'une ville augmente de
+        $4\,\%$ par an. On modélise ce nombre, $n$ années après l'ouverture, par
+        $u_{n}=2\,000\times 1{,}04^{n}$. Déterminer le plus petit $n\in\N$ tel que
+        $u_{n}\geq 3\,000$.
+  \item Lors d'une nuit d'observation, un radiotélescope a une probabilité de $0{,}1$
+        de capter un sursaut radio, indépendamment des autres nuits. Soit $n\in\Ns$ ;
+        on note $X_{n}$ le nombre de nuits, sur $n$ nuits, où il en capte un ; $X_{n}$
+        suit la loi binomiale $\mathcal{B}(n\,;0{,}1)$. Déterminer le plus petit
+        nombre de nuits $n$ tel que $P(X_{n}\geq 1)\geq 0{,}99$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Soit $n\in\N$.}{on introduit la variable}
+\begin{calculs}
+2\,000\times 1{,}04^{n} &\geq 3\,000 &\qquad& \rem{l'inéquation $u_{n}\geq 3\,000$}\\
+\iff 1{,}04^{n} &\geq 1{,}5 && \rem{on divise par $2\,000>0$}\\
+\iff \ln\left(1{,}04^{n}\right) &\geq \ln(1{,}5) && \rem{$\ln$ est strictement croissante sur $\intoo{0}{+\infty}$}\\
+\iff n\ln(1{,}04) &\geq \ln(1{,}5) && \rem{$\ln\left(q^{n}\right)=n\ln(q)$}\\
+\iff n &\geq \frac{\ln(1{,}5)}{\ln(1{,}04)} && \rem{on divise par $\ln(1{,}04)>0$, car $1{,}04>1$}
+\end{calculs}
+\explique{$\dfrac{\ln(1{,}5)}{\ln(1{,}04)}\approx 10{,}34$ et $n$ est un entier : le
+plus petit est \res{$n=11$}.}{le premier entier après $10{,}34$}
+\explique{Le nombre d'abonnés atteint $3\,000$ la onzième année après l'ouverture.}{on
+conclut par une phrase}
+\cas{b)}
+\explique{$P(X_{n}\geq 1)=1-P(X_{n}=0)$, soit $P(X_{n}\geq 1)=1-0{,}9^{n}$.}{chapitre~7 : « au moins un
+succès »}
+\begin{calculs}
+1-0{,}9^{n} &\geq 0{,}99 &\qquad&\\
+\iff -0{,}9^{n} &\geq -0{,}01 &&\\
+\iff 0{,}9^{n} &\leq 0{,}01 && \rem{on multiplie par $-1<0$ : le sens change}\\
+\iff \ln\left(0{,}9^{n}\right) &\leq \ln(0{,}01) && \rem{$\ln$ est strictement croissante sur $\intoo{0}{+\infty}$}\\
+\iff n\ln(0{,}9) &\leq \ln(0{,}01) && \rem{$\ln\left(q^{n}\right)=n\ln(q)$}\\
+\iff n &\geq \frac{\ln(0{,}01)}{\ln(0{,}9)} && \rem{on divise par $\ln(0{,}9)<0$, car $0<0{,}9<1$ : le sens change}
+\end{calculs}
+\explique{$\dfrac{\ln(0{,}01)}{\ln(0{,}9)}\approx 43{,}71$ : il faut au moins
+\res{$44$ nuits}.}{le premier entier après $43{,}71$}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{questions}[label=\alph*)]
+  \item Le nombre de foyers équipés de panneaux solaires dans une région augmente de
+        $5\,\%$ par an. On modélise ce nombre, $n$ années après le début d'un programme
+        d'aide, par $v_{n}=1\,500\times 1{,}05^{n}$. Déterminer le plus petit $n\in\N$
+        tel que $v_{n}\geq 2\,400$.
+  \item Lors d'une nuit d'observation, un astronome amateur a une probabilité de
+        $0{,}15$ de photographier une étoile filante brillante, indépendamment des
+        autres nuits. Soit $n\in\Ns$ ; on note $Y_{n}$ le nombre de nuits, sur $n$ nuits,
+        où il en photographie une ; $Y_{n}$ suit la loi binomiale
+        $\mathcal{B}(n\,;0{,}15)$. Déterminer le plus petit nombre de nuits $n$ tel que
+        $P(Y_{n}\geq 1)\geq 0{,}95$.
+\end{questions}
+\reponse{a) $n=10$ ($n\geq\frac{\ln(1{,}6)}{\ln(1{,}05)}\approx 9{,}63$) ;\; b)~$19$
+nuits ($n\geq\frac{\ln(0{,}05)}{\ln(0{,}85)}\approx 18{,}43$).}
+\end{methodebox}
+
+\afaire{exercices 16 à 19}
+
+\partiecours{Étude de la fonction logarithme népérien}
+
+\begin{proprietebox}[Théorème 2 --- Dérivée de la fonction logarithme népérien]
+La fonction $\ln$ est dérivable (admis), donc continue, sur $\intoo{0}{+\infty}$, et
+pour tout nombre réel $x>0$ : \quad $\ln'(x)=\dfrac{1}{x}$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible).
+
+\smallskip
+Pour tout $x>0$, $\e^{\ln(x)}=x$. On dérive les deux membres ; à gauche, on reconnaît
+$\e^{u}$ avec $u=\ln$, de dérivée $u'\e^{u}$ (chapitre~6) :
+\begin{calculs}
+\ln'(x)\times\e^{\ln(x)} &= 1 &\qquad& \rem{la dérivée de $x\mapsto x$ est $1$}\\
+\ln'(x)\times x &= 1 && \rem{$\e^{\ln(x)}=x$}\\
+\ln'(x) &= \frac{1}{x} && \rem{on divise par $x\neq 0$}
+\end{calculs}
+
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 5 --- Variations, convexité, limites]
+\begin{itemize}
+  \item Pour tout $x>0$, on a $\ln'(x)=\frac{1}{x}>0$ : la fonction $\ln$ est
+        \textbf{strictement croissante} sur $\intoo{0}{+\infty}$.
+  \item Pour tout $x>0$, on a $\ln''(x)=-\frac{1}{x^{2}}<0$ : la fonction $\ln$ est
+        \textbf{concave} sur $\intoo{0}{+\infty}$.
+  \item $\lim\limits_{x\to+\infty}\ln(x)=+\infty$ \quad et \quad
+        $\lim\limits_{x\to 0}\ln(x)=-\infty$ ($x$ ne s'approche de $0$ que par
+        valeurs positives) : l'axe des ordonnées est asymptote à la courbe.
+\end{itemize}
+
+\textbf{\color{coulMeth}Démonstration des limites.} Soit $A\in\R$. Pour tout
+$x>\e^{A}$, $\ln(x)>\ln\left(\e^{A}\right)=A$ (croissance de $\ln$) : l'intervalle
+$\intfo{A}{+\infty}$ contient tous les $\ln(x)$ dès que $x>\e^{A}$, donc
+$\lim\limits_{x\to+\infty}\ln(x)=+\infty$. En $0$ : pour tout $x>0$,
+$\ln(x)=-\ln\left(\frac{1}{x}\right)$ ; on pose $X=\frac{1}{x}$, qui tend vers
+$+\infty$ quand $x$ tend vers $0$ ; par composition,
+$\lim\limits_{x\to 0}\ln\left(\frac{1}{x}\right)=+\infty$, donc
+$\lim\limits_{x\to 0}\ln(x)=-\infty$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=3.2]{$x$/0.8,$\ln'(x)$/0.8,$\ln(x)$/1.6}{$0$,$1$,$+\infty$}
+  \tkzTabLine{d,+,t,+,}
+  \tkzTabVar{D-/$-\infty$,R/,+/$+\infty$}
+  \tkzTabIma{1}{3}{2}{$0$}
+\end{tikzpicture}
+\end{center}
+\end{proprietebox}
+
+\begin{proprietebox}[Propriété 6 --- Courbe représentative]
+\begin{minipage}[c]{0.52\linewidth}\raggedright
+\begin{itemize}
+  \item Valeurs à connaître : $\ln(1)=0$, $\ln(\e)=1$ ; $\ln(2)\approx 0{,}69$.
+  \item La courbe de $\ln$ et celle de $\exp$ sont \textbf{symétriques par rapport à
+        la droite d'équation $y=x$} : le point $(a\,;b)$ est sur l'une si et seulement
+        si le point $(b\,;a)$ est sur l'autre, car $b=\ln(a)\iff a=\e^{b}$.
+  \item Tangente au point d'abscisse $1$ :
+        $(T_{1})\colon y=\ln'(1)(x-1)+\ln(1)$, soit $(T_{1})\colon y=x-1$.
+  \item Comme $\ln$ est concave, sa courbe est en dessous de ses tangentes
+        (chapitre~6) : pour tout $x>0$, $\ln(x)\leq x-1$.
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.45\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-3}{-3}{6}{6}
+  \gradx{-2,-1,1,2,3,4,5} \grady{-2,-1,1,2,3,4,5}
+  \draw[coulCourbe,line width=1.1pt,domain=0.05:6,samples=100] plot (\x,{ln(\x)});
+  \draw[coulCourbeB,line width=0.9pt,domain=-3:1.79,samples=80] plot (\x,{exp(\x)});
+  \draw[dashed,black!60] (-3,-3)--(6,6);
+  \draw[coulCourbeC,line width=0.8pt] (-1,-2)--(5,4);
+  \node[coulCourbe,font=\footnotesize] at (4.9,0.55) {$y=\ln(x)$};
+  \node[coulCourbeB,font=\footnotesize] at (-1.6,2.6) {$y=\e^{x}$};
+  \node[black!60,font=\footnotesize,above left] at (6,6) {$y=x$};
+  \node[coulCourbeC,font=\footnotesize,right] at (5,4) {$(T_{1})$};
+  \path[coulCourbe] (1,0) node[croix]{} (2.718,1) node[croix]{};
+\end{tikzpicture}
+\end{minipage}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Dériver une fonction contenant $\ln(x)$]
+\etapeexemples
+Pour chacune des fonctions $f$, $g$ et $h$, définies et dérivables sur
+$\intoo{0}{+\infty}$, calculer la dérivée.
+\begin{center}
+$f(x)=3x+2-5\ln(x)$ \qquad $g(x)=x\ln(x)$ \qquad $h(x)=\dfrac{\ln(x)}{x}$
+\end{center}
+\begin{correction}
+\cas{Fonction $f$}
+\begin{calculs}
+f'(x) &= 3-5\times\frac{1}{x} &\qquad& \rem{$\ln'(x)=\frac{1}{x}$}\\
+f'(x) &= \frac{3x\fois{x}}{1\fois{x}}-\frac{5}{x} && \rem{même dénominateur}\\
+f'(x) &= \res{\frac{3x-5}{x}} &&
+\end{calculs}
+\cas{Fonction $g$}
+\explique{On pose $u(x)=x$ et $v(x)=\ln(x)$ : $u'(x)=1$ et $v'(x)=\frac{1}{x}$.}{un
+produit}
+\begin{calculs}
+g'(x) &= u'(x)v(x)+u(x)v'(x) &\qquad& \rem{$(uv)'=u'v+uv'$}\\
+g'(x) &= 1\times\ln(x)+x\times\frac{1}{x} &&\\
+g'(x) &= \res{\ln(x)+1} && \rem{$x\neq 0$}
+\end{calculs}
+\cas{Fonction $h$}
+\explique{On pose $u(x)=\ln(x)$ et $v(x)=x$ : $u'(x)=\frac{1}{x}$ et $v'(x)=1$.}{un
+quotient}
+\begin{calculs}
+h'(x) &= \frac{u'(x)v(x)-u(x)v'(x)}{\left(v(x)\right)^{2}} &\qquad& \rem{$\left(\frac{u}{v}\right)'=\frac{u'v-uv'}{v^{2}}$}\\
+h'(x) &= \frac{\frac{1}{x}\times x-\ln(x)\times 1}{x^{2}} &&\\
+h'(x) &= \res{\frac{1-\ln(x)}{x^{2}}} &&
+\end{calculs}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chacune des fonctions $k$, $m$ et $p$, définies et dérivables sur
+$\intoo{0}{+\infty}$, calculer la dérivée.
+\begin{center}
+$k(x)=4x-1-2\ln(x)$ \qquad $m(x)=x^{2}\ln(x)$ \qquad $p(x)=\dfrac{\ln(x)}{x^{2}}$
+\end{center}
+\reponse{$k'(x)=\frac{4x-2}{x}$ ;\; $m'(x)=x\left(2\ln(x)+1\right)$ ;\;
+$p'(x)=\frac{1-2\ln(x)}{x^{3}}$.}
+\end{methodebox}
+
+\afaire{exercices 20 à 23}
+
+\partiecours{Croissances comparées}
+
+$\ln(1\,000\,000)\approx 13{,}8$ : le logarithme tend vers $+\infty$, mais très
+lentement, bien moins vite que $x$. Pour $\frac{\ln(x)}{x}$ en $+\infty$ ou $x\ln(x)$
+en $0$, les opérations donnent une forme indéterminée ; le théorème suivant la lève.
+
+\begin{proprietebox}[Théorème 3 --- Croissances comparées]
+Pour tout $n\in\Ns$ :
+\begin{center}
+$\lim\limits_{x\to+\infty}\dfrac{\ln(x)}{x}=0$ \qquad
+$\lim\limits_{x\to 0}x\ln(x)=0$ \qquad
+$\lim\limits_{x\to+\infty}\dfrac{\ln(x)}{x^{n}}=0$ \qquad
+$\lim\limits_{x\to 0}x^{n}\ln(x)=0$
+\end{center}
+\textbf{Intuitivement :} les puissances de $x$ imposent leur limite au logarithme.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible) de $\lim\limits_{x\to 0}x\ln(x)=0$.
+
+\smallskip
+Pour tout $x>0$, on pose $X=\ln(x)$ : $x=\e^{X}$, donc $x\ln(x)=X\e^{X}$. Quand $x$
+tend vers $0$, $X=\ln(x)$ tend vers $-\infty$ ; or
+$\lim\limits_{X\to-\infty}X\e^{X}=0$ par croissances comparées (chapitre~5). Par
+composition, $\lim\limits_{x\to 0}x\ln(x)=0$.
+
+\smallskip
+De même, avec $X=\ln(x)$ : $\frac{\ln(x)}{x}=\frac{X}{\e^{X}}$, et $X$ tend vers
+$+\infty$ quand $x$ tend vers $+\infty$ ; comme
+$\lim\limits_{X\to+\infty}\frac{\e^{X}}{X}=+\infty$, par quotient
+$\lim\limits_{X\to+\infty}\frac{X}{\e^{X}}=0$. Pour $n\geq 2$ :
+$\frac{\ln(x)}{x^{n}}=\frac{1}{x^{n-1}}\times\frac{\ln(x)}{x}$ et
+$x^{n}\ln(x)=x^{n-1}\times x\ln(x)$, qui tendent vers $0$ par produit.
+
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer une limite par croissances comparées]
+\etapeexemples
+Calculer les limites suivantes.
+\begin{center}
+a)~$\lim\limits_{x\to+\infty}\left(x-3\ln(x)\right)$ \qquad
+b)~$\lim\limits_{x\to+\infty}\dfrac{2\ln(x)+5}{x}$ \qquad
+c)~$\lim\limits_{x\to 0}\left(x\ln(x)+4x+1\right)$
+\end{center}
+\begin{correction}
+\cas{a)}
+\explique{Forme « $+\infty-\infty$ » : pour tout $x>0$, on factorise par $x$.}{on
+fait apparaître $\frac{\ln(x)}{x}$}
+\begin{calculs}
+x-3\ln(x) &= x\left(1-3\times\frac{\ln(x)}{x}\right) &\qquad& \rem{$x\neq 0$}
+\end{calculs}
+\explique{Par croissances comparées, $\lim\limits_{x\to+\infty}\frac{\ln(x)}{x}=0$,
+donc par produit et somme $\lim\limits_{x\to+\infty}\left(1-3\frac{\ln(x)}{x}\right)=1$.
+Comme $\lim\limits_{x\to+\infty}x=+\infty$, par produit,
+\res{$\lim\limits_{x\to+\infty}\left(x-3\ln(x)\right)=+\infty$}.}{chaque étape cite sa
+règle}
+\cas{b)}
+\explique{Forme « $\frac{+\infty}{+\infty}$ » : pour tout $x>0$, on sépare en deux
+fractions.}{}
+\begin{calculs}
+\frac{2\ln(x)+5}{x} &= 2\times\frac{\ln(x)}{x}+\frac{5}{x} &\qquad&
+\end{calculs}
+\explique{$\lim\limits_{x\to+\infty}\frac{\ln(x)}{x}=0$ (croissances comparées) et
+$\lim\limits_{x\to+\infty}\frac{5}{x}=0$ ; par produit et somme,
+\res{$\lim\limits_{x\to+\infty}\dfrac{2\ln(x)+5}{x}=0$}.}{}
+\cas{c)}
+\explique{$x\ln(x)$ est de la forme « $0\times(-\infty)$ » ; par croissances
+comparées, $\lim\limits_{x\to 0}x\ln(x)=0$. De plus $\lim\limits_{x\to 0}(4x+1)=1$ ;
+par somme, \res{$\lim\limits_{x\to 0}\left(x\ln(x)+4x+1\right)=1$}.}{le théorème lève
+l'indétermination}
+\end{correction}
+
+\etape{À vous de jouer}
+Calculer les limites suivantes.
+\begin{center}
+a)~$\lim\limits_{x\to+\infty}\left(2x-\ln(x)\right)$ \qquad
+b)~$\lim\limits_{x\to+\infty}\dfrac{3\ln(x)-1}{x}$ \qquad
+c)~$\lim\limits_{x\to 0}\left(2x\ln(x)-x+3\right)$
+\end{center}
+\reponse{a) $+\infty$ ;\; b)~$0$ ;\; c)~$3$.}
+\end{methodebox}
+
+\afaire{exercices 24 à 26}
+
+\partiecours{Étude d'une fonction contenant $\ln(x)$}
+
+Les sujets de bac enchaînent limites, dérivée et tableau de variations, puis en
+tirent le signe de la fonction ou le nombre de solutions d'une équation.
+
+\begin{methodebox}[Méthode 8 --- Étudier une fonction contenant $\ln(x)$]
+\etapeexemples
+Soit la fonction $f$ définie et dérivable sur $\intoo{0}{+\infty}$ par
+$f(x)=x^{2}-2\ln(x)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer les limites de $f$ en $0$ et en $+\infty$.
+  \item Calculer $f'(x)$ et dresser le tableau de variations de $f$.
+  \item En déduire que $f(x)>0$ pour tout $x>0$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Quand $x$ tend vers $0$, on a $\lim\limits_{x\to 0}x^{2}=0$ et $\lim\limits_{x\to 0}\ln(x)=-\infty$,
+donc $\lim\limits_{x\to 0}\left(-2\ln(x)\right)=+\infty$ ; par somme,
+\res{$\lim\limits_{x\to 0}f(x)=+\infty$}.}{pas de forme indéterminée}
+\explique{En $+\infty$ : forme « $+\infty-\infty$ ». Pour tout $x>0$,
+$f(x)=x^{2}\left(1-2\times\frac{\ln(x)}{x^{2}}\right)$. Par croissances comparées,
+$\lim\limits_{x\to+\infty}\frac{\ln(x)}{x^{2}}=0$, donc la parenthèse tend vers $1$ ;
+par produit, \res{$\lim\limits_{x\to+\infty}f(x)=+\infty$}.}{on factorise par le terme
+qui l'emporte}
+\cas{b)}
+\begin{calculs}
+f'(x) &= 2x-\frac{2}{x} &\qquad& \rem{$\ln'(x)=\frac{1}{x}$}\\
+f'(x) &= \frac{2x^{2}-2}{x} && \rem{même dénominateur}\\
+f'(x) &= \res{\frac{2(x-1)(x+1)}{x}} && \rem{$x^{2}-1=(x-1)(x+1)$}
+\end{calculs}
+\explique{Pour tout $x>0$, $x>0$ et $x+1>0$ : $f'(x)$ est du signe de $x-1$, négatif
+sur $\intoo{0}{1}$, positif sur $\intoo{1}{+\infty}$.}{on étudie le signe de chaque
+facteur}
+\begin{calculs}
+f(1) &= 1^{2}-2\ln(1) = 1 &\qquad& \rem{$\ln(1)=0$}
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.8]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$0$,$1$,$+\infty$}
+  \tkzTabLine{d,-,z,+,}
+  \tkzTabVar{D+/$+\infty$,-/$1$,+/$+\infty$}
+\end{tikzpicture}
+\end{center}
+\explique{$f$ est \res{strictement décroissante sur $\intof{0}{1}$, strictement
+croissante sur $\intfo{1}{+\infty}$}, de minimum $f(1)=1$.}{on conclut par une phrase}
+\cas{c)}
+\explique{Le minimum de $f$ sur $\intoo{0}{+\infty}$ est $f(1)=1$ : pour tout $x>0$,
+\res{$f(x)\geq 1>0$}.}{on lit le minimum dans le tableau}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la fonction $h$ définie et dérivable sur $\intoo{0}{+\infty}$ par
+$h(x)=x^{2}-4\ln(x)$.
+\begin{questions}[label=\alph*)]
+  \item Déterminer les limites de $h$ en $0$ et en $+\infty$.
+  \item Calculer $h'(x)$ et dresser le tableau de variations de $h$.
+  \item En déduire que $h(x)>0$ pour tout $x>0$.
+\end{questions}
+\reponse{a) $+\infty$ en $0$ et en $+\infty$ ;\; b)~$h'(x)=\frac{2\left(x-\sqrt{2}\right)\left(x+\sqrt{2}\right)}{x}$,
+$h$ strictement décroissante sur $\intof{0}{\sqrt{2}}$, strictement croissante sur
+$\intfo{\sqrt{2}}{+\infty}$ ;\; c)~minimum $h\left(\sqrt{2}\right)=2-2\ln(2)\approx 0{,}61>0$.}
+\end{methodebox}
+
+\afaire{exercices 27 à 30}
+
+\partiecours{Fonctions de la forme $\ln(u)$}
+
+\begin{proprietebox}[Propriété 7 --- Dérivée de $\ln(u)$]
+Soit $u$ une fonction dérivable et \textbf{strictement positive} sur un intervalle $I$.
+La fonction $\ln(u)$ est dérivable sur $I$ et
+\begin{center}
+$\left(\ln(u)\right)'=\dfrac{u'}{u}$.
+\end{center}
+Comme $u>0$, $\left(\ln(u)\right)'$ a le signe de $u'$ : $\ln(u)$ a les mêmes variations
+que $u$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration.} $\ln(u)=v\circ u$ avec $v=\ln$, et
+$v'(X)=\frac{1}{X}$. D'après la dérivée d'une fonction composée (chapitre~6),
+$\left(v\circ u\right)'(x)=u'(x)\times v'\bigl(u(x)\bigr)$, soit
+$u'(x)\times\frac{1}{u(x)}=\frac{u'(x)}{u(x)}$.
+\end{proprietebox}
+
+Les limites de $\ln(u)$ se calculent par composition (chapitre~5) : on cherche la
+limite de $u(x)$, puis celle de $\ln(X)$.
+
+\begin{methodebox}[Méthode 9 --- Étudier une fonction de la forme $\ln(u)$]
+\etapeexemples
+Soit la fonction $f$ définie par $f(x)=\ln\left(x^{2}-2x+5\right)$.
+\begin{questions}[label=\alph*)]
+  \item Justifier que $f$ est définie sur $\R$.
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item Calculer $f'(x)$ et dresser le tableau de variations de $f$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Pour $x^{2}-2x+5$ : $\Delta=(-2)^{2}-4\times 1\times 5=-16<0$, et le
+coefficient de $x^{2}$ est positif. Donc \res{$x^{2}-2x+5>0$ pour tout nombre réel
+$x$} : $f$ est définie sur $\R$.}{un trinôme sans racine a le signe de $a$}
+\cas{b)}
+\explique{Pour tout $x\neq 0$,
+$x^{2}-2x+5=x^{2}\left(1-\frac{2}{x}+\frac{5}{x^{2}}\right)$ ; la parenthèse tend vers
+$1$ et $x^{2}$ vers $+\infty$ en $+\infty$ comme en $-\infty$ : par produit,
+$x^{2}-2x+5$ tend vers $+\infty$.}{on factorise par le terme de plus haut degré}
+\explique{On pose $X=x^{2}-2x+5$. Comme $\lim\limits_{X\to+\infty}\ln(X)=+\infty$, par
+composition, \res{$\lim\limits_{x\to-\infty}f(x)=+\infty$ et
+$\lim\limits_{x\to+\infty}f(x)=+\infty$}.}{puis le logarithme}
+\cas{c)}
+\explique{On pose $u(x)=x^{2}-2x+5$ : $u$ est dérivable et strictement positive sur
+$\R$, et $u'(x)=2x-2$. Pour tout $x\in\R$ :}{forme $\ln(u)$}
+\begin{calculs}
+f'(x) &= \frac{u'(x)}{u(x)} &\qquad& \rem{$\left(\ln(u)\right)'=\frac{u'}{u}$}\\
+f'(x) &= \res{\frac{2x-2}{x^{2}-2x+5}} &&
+\end{calculs}
+\explique{Le dénominateur est strictement positif : $f'(x)$ est du signe de $2x-2$,
+négatif pour $x<1$, positif pour $x>1$.}{d'après la question a)}
+\begin{calculs}
+f(1) &= \ln(1-2+5) = \ln(4) &\qquad& \rem{la valeur du minimum}
+\end{calculs}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \tkzTabInit[lgt=2,espcl=2.8]{$x$/0.8,$f'(x)$/0.8,$f(x)$/1.6}{$-\infty$,$1$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$+\infty$,-/$\ln(4)$,+/$+\infty$}
+\end{tikzpicture}
+\end{center}
+\explique{$f$ est \res{strictement décroissante sur $\intof{-\infty}{1}$, strictement
+croissante sur $\intfo{1}{+\infty}$}, de minimum $f(1)=\ln(4)$.}{mêmes variations que
+$u$}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la fonction $g$ définie par $g(x)=\ln\left(x^{2}+4x+13\right)$.
+\begin{questions}[label=\alph*)]
+  \item Justifier que $g$ est définie sur $\R$.
+  \item Déterminer les limites de $g$ en $-\infty$ et en $+\infty$.
+  \item Calculer $g'(x)$ et dresser le tableau de variations de $g$.
+\end{questions}
+\reponse{a) $\Delta=-36<0$ ;\; b)~$+\infty$ en $-\infty$ et en $+\infty$ ;\;
+c)~$g'(x)=\frac{2x+4}{x^{2}+4x+13}$, $g$ strictement décroissante sur
+$\intof{-\infty}{-2}$, strictement croissante sur $\intfo{-2}{+\infty}$, de minimum
+$g(-2)=\ln(9)$.}
+\end{methodebox}
+
+\afaire{exercices 31 à 34, puis les exercices type bac 35 à 37}
+
+\end{document}
