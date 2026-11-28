@@ -1,0 +1,1438 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\iflycee@unecolonne
+\lycee@unecolonnetrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.8pt,arc=2pt,
+  left=6pt,right=6pt,top=8pt,bottom=5pt,
+  before skip=9pt,after skip=4pt,
+  coltitle=white,fonttitle=\bfseries\small,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+\newcounter{exo}
+\newtcolorbox{exercice}[1][]{exercice corrige,
+  phantom={\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+\geometry{top=1.8cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+\renewcommand{\lycee@pied}{\thepage}
+
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\tcbset{exercice corrige/.style={
+  enhanced,breakable,before upper=\raggedright,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  before skip=8pt,after skip=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt}}}
+
+\newcommand{\entetefiche}[2]{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.92\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.4pt,arc=3pt,halign=center,top=6pt,bottom=6pt]
+      {\large\bfseries\color{coulPart} CORRIGÉ --- FICHE D'EXERCICES}\\[3pt]
+      {\normalsize\bfseries #1}\\[2pt]
+      {\normalsize #2}
+    \end{tcolorbox}
+  \end{center}}
+
+\newcounter{partie}
+\newcommand{\partie}[1]{%
+  \stepcounter{partie}%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}\Roman{partie} --- #1\signet{1}{\Roman{partie} --- #1}
+  \end{tcolorbox}}
+\newcommand{\partiesansnum}[1]{%
+  \besoinplace{8\baselineskip}\vspace{4pt}%
+  \begin{tcolorbox}[enhanced,colback=coulPart!8,colframe=coulPart,boxrule=0pt,
+      leftrule=3pt,arc=0pt,left=6pt,right=4pt,top=3pt,bottom=3pt,
+      before skip=6pt,after skip=2pt]
+    \bfseries\color{coulPart}#1\signet{1}{#1}
+  \end{tcolorbox}}
+
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\newlist{expr}{enumerate}{1}
+\setlist[expr]{label={\Alph*\ $=$},leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\res}[1]{{\color{coulRep}#1}}
+\newcommand{\rem}[1]{\par\smallskip{\small\itshape\color{black!60}$\rightarrow$ #1}}
+\newenvironment{calculs}{\par\smallskip\noindent$\displaystyle\begin{aligned}[t]}%
+  {\end{aligned}$\par\smallskip}
+\newcommand{\justif}[1]{\quad\text{\small\itshape\color{black!60}#1}}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.6\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.37\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+
+\setlength{\parskip}{2pt}
+
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=1.8cm,bottom=1.6cm,left=1.8cm,right=1.8cm,headheight=14pt,footskip=30pt}
+\entete{Chapitre 5 --- Limites de fonctions --- corrigé}{Terminale spécialité}
+\setlength{\parindent}{0pt}
+\setlength{\jot}{4pt}
+
+\let\casligne\cas
+\renewcommand{\cas}[1]{\casligne{#1}\par\nopagebreak}
+
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\limx}[1]{\lim\limits_{x\to #1}}
+
+\begin{document}
+
+\entetefiche{Chapitre 5 --- Limites de fonctions}{Terminale spécialité mathématiques}
+
+\partie{Limite d'une fonction en l'infini}
+
+\begin{exo}[Lire des limites et des asymptotes]
+\cas{1.}
+\explique{Quand $x$ tend vers $-\infty$ ou vers $+\infty$, la courbe $\Cf$ se rapproche de
+la droite d'équation $y=-2$ : on conjecture que \res{$\limx{-\infty}f(x)=-2$} et
+\res{$\limx{+\infty}f(x)=-2$}.}{méthode 1 du cours}
+\explique{Vers la gauche, $\Cg$ se rapproche de la droite d'équation $y=2$ ; vers la
+droite, elle monte sans limite : on conjecture que \res{$\limx{-\infty}g(x)=2$} et
+\res{$\limx{+\infty}g(x)=+\infty$}.}{}
+\cas{2.}
+\explique{$\Cf$ semble admettre la droite d'équation \res{$y=-2$} pour asymptote
+horizontale \res{en $-\infty$ et en $+\infty$}.}{une limite finie $\ell$ donne
+l'asymptote $y=\ell$}
+\explique{$\Cg$ semble admettre la droite d'équation \res{$y=2$} pour asymptote
+horizontale \res{en $-\infty$} seulement.}{en $+\infty$, la limite est infinie : pas
+d'asymptote horizontale}
+\cas{3.}
+\explique{\res{Quand $x$ tend vers $-\infty$, les points de $\Cg$ se rapprochent autant
+qu'on veut de la droite d'équation $y=2$} : $g(x)$ devient aussi proche de $2$ que l'on
+veut.}{la phrase dit ce que signifie $\limx{-\infty}g(x)=2$}
+\end{exo}
+
+\begin{exo}[Conjecturer avec des valeurs]
+\explique{On calcule les images demandées (valeurs arrondies pour $h$).}{à la
+calculatrice, ou de tête : $\frac{1}{10}=0{,}1$}
+\begin{center}
+{\renewcommand{\arraystretch}{1.5}\setlength{\tabcolsep}{5pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $-1\,000$ & $-100$ & $-10$ & $10$ & $100$ & $1\,000$\\ \hline
+$f(x)$ & $4{,}001$ & $4{,}01$ & $4{,}1$ & $3{,}9$ & $3{,}99$ & $3{,}999$\\ \hline
+$g(x)$ & $999\,997$ & $9\,997$ & $97$ & $97$ & $9\,997$ & $999\,997$\\ \hline
+$h(x)$ & $\approx 0{,}000005$ & $\approx 0{,}0005$ & $\approx 0{,}05$ & $\approx 0{,}05$
+  & $\approx 0{,}0005$ & $\approx 0{,}000005$\\ \hline
+$k(x)$ & $1\,000\,000\,001$ & $1\,000\,001$ & $1\,001$ & $-999$ & $-999\,999$
+  & $-999\,999\,999$\\ \hline
+\end{tabular}}
+\end{center}
+\cas{a)}
+\explique{On conjecture que \res{$\limx{-\infty}f(x)=4$} et \res{$\limx{+\infty}f(x)=4$}
+: la droite d'équation \res{$y=4$} est asymptote horizontale à $\Cf$ en $-\infty$ et en
+$+\infty$.}{$4{,}00\ldots1$ et $3{,}99\ldots9$}
+\cas{b)}
+\explique{On conjecture que \res{$\limx{-\infty}g(x)=+\infty$} et
+\res{$\limx{+\infty}g(x)=+\infty$}.}{les images dépassent tout nombre}
+\cas{c)}
+\explique{On conjecture que \res{$\limx{-\infty}h(x)=0$} et \res{$\limx{+\infty}h(x)=0$} :
+l'axe des abscisses (\res{$y=0$}) est asymptote horizontale à la courbe de $h$ en
+$-\infty$ et en $+\infty$.}{le dénominateur devient très grand}
+\cas{d)}
+\explique{On conjecture que \res{$\limx{-\infty}k(x)=+\infty$} et
+\res{$\limx{+\infty}k(x)=-\infty$}.}{$x^{3}$ a le signe de $x$}
+\rem{Des valeurs ne démontrent rien : elles font conjecturer. Les opérations sur les
+limites (partie III) le démontreront.}
+\end{exo}
+
+\begin{exo}[Un tableau de variations]
+\cas{1.}
+\explique{On lit les valeurs aux extrémités de la ligne de $f$ :
+\res{$\limx{-\infty}f(x)=-1$} et \res{$\limx{+\infty}f(x)=2$}.}{aux bords du tableau}
+\cas{2.}
+\explique{Comme $\limx{-\infty}f(x)=-1$, la droite d'équation \res{$y=-1$} est asymptote
+horizontale à $\Cf$ en $-\infty$.}{une phrase par asymptote}
+\explique{Comme $\limx{+\infty}f(x)=2$, la droite d'équation \res{$y=2$} est asymptote
+horizontale à $\Cf$ en $+\infty$.}{}
+\cas{3.}
+\explique{Une courbe possible : elle monte depuis la droite $y=-1$ jusqu'au point
+$(0\,;3)$, puis descend en se rapprochant de la droite $y=2$.}{il en existe bien
+d'autres}
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-7}{-2}{7}{4}
+  \gradx{-6,-4,-2,2,4,6} \grady{-1,1,2,3}
+  \draw[dashed,coulCourbeB,line width=0.8pt] (-7,-1)--(0,-1);
+  \draw[dashed,coulCourbeB,line width=0.8pt] (0,2)--(7,2);
+  \draw[coulCourbe,line width=1.1pt,domain=-7:0,samples=60] plot (\x,{-1+4/(1+\x*\x)});
+  \draw[coulCourbe,line width=1.1pt,domain=0:7,samples=60] plot (\x,{2+1/(1+\x*\x)});
+  \node[coulCourbe,font=\footnotesize] at (2.4,3.4) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize,below] at (-5,-1) {$y=-1$};
+  \node[coulCourbeB,font=\footnotesize,above] at (5.5,2) {$y=2$};
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\partie{Limite d'une fonction en un nombre réel}
+
+\begin{exo}[Conjecturer une limite en un nombre réel]
+\cas{1. a)}
+\explique{Par exemple, $f(1{,}01)=\frac{4}{0{,}01}=400$ et $f(0{,}99)=\frac{4}{-0{,}01}=-400$.}{le
+dénominateur $x-1$ est petit : le quotient est grand}
+\begin{center}
+{\renewcommand{\arraystretch}{1.5}\setlength{\tabcolsep}{6pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $0{,}9$ & $0{,}99$ & $0{,}999$ & $1{,}001$ & $1{,}01$ & $1{,}1$\\ \hline
+$f(x)$ & $-40$ & $-400$ & $-4\,000$ & $4\,000$ & $400$ & $40$\\ \hline
+\end{tabular}}
+\end{center}
+\cas{1. b)}
+\explique{On conjecture que \res{$\limx{1^{+}}f(x)=+\infty$} et
+\res{$\limx{1^{-}}f(x)=-\infty$}.}{à droite : $x>1$ ; à gauche : $x<1$}
+\explique{La droite d'équation \res{$x=1$} est asymptote verticale à $\Cf$.}{une limite
+infinie en $a$ donne l'asymptote $x=a$}
+\cas{2.}
+\explique{Par exemple, $g(-1{,}9)=\frac{1}{0{,}1^{2}}=\frac{1}{0{,}01}=100$ et
+$g(-2{,}1)=\frac{1}{(-0{,}1)^{2}}=100$.}{un carré est positif des deux côtés}
+\begin{center}
+{\renewcommand{\arraystretch}{1.5}\setlength{\tabcolsep}{6pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x$ & $-2{,}1$ & $-2{,}01$ & $-2{,}001$ & $-1{,}999$ & $-1{,}99$ & $-1{,}9$\\ \hline
+$g(x)$ & $100$ & $10\,000$ & $1\,000\,000$ & $1\,000\,000$ & $10\,000$ & $100$\\ \hline
+\end{tabular}}
+\end{center}
+\explique{On conjecture que \res{$\limx{-2^{-}}g(x)=+\infty$} et
+\res{$\limx{-2^{+}}g(x)=+\infty$} : la droite d'équation \res{$x=-2$} est asymptote
+verticale à la courbe de $g$.}{la courbe monte des deux côtés}
+\end{exo}
+
+\begin{exo}[Lire deux asymptotes verticales]
+\cas{1.}
+\explique{Aux deux bouts, la courbe se rapproche de l'axe des abscisses :
+\res{$\limx{-\infty}f(x)=0$} et \res{$\limx{+\infty}f(x)=0$}.}{}
+\cas{2.}
+\explique{En $-1$ : \res{$\limx{-1^{-}}f(x)=+\infty$} et
+\res{$\limx{-1^{+}}f(x)=-\infty$}.}{à gauche de $-1$, la courbe monte ; à droite, elle
+descend}
+\explique{En $2$ : \res{$\limx{2^{-}}f(x)=-\infty$} et \res{$\limx{2^{+}}f(x)=+\infty$}.}{}
+\cas{3.}
+\explique{On conjecture que $\Cf$ admet trois asymptotes : les droites d'équations
+\res{$x=-1$} et \res{$x=2$} (verticales), et l'axe des abscisses, d'équation \res{$y=0$}
+(horizontale en $-\infty$ et en $+\infty$).}{}
+\end{exo}
+
+\begin{exo}[Une valeur interdite dans un tableau]
+\cas{1.}
+\explique{\res{$\limx{-\infty}f(x)=1$}, \res{$\limx{+\infty}f(x)=1$},
+\res{$\limx{0^{-}}f(x)=-\infty$} et \res{$\limx{0^{+}}f(x)=+\infty$}.}{la double barre
+sépare la limite à gauche et la limite à droite en $0$}
+\cas{2.}
+\explique{Comme $f$ tend vers $1$ en $-\infty$ et en $+\infty$, la droite d'équation
+\res{$y=1$} est asymptote horizontale à $\Cf$ en $-\infty$ et en $+\infty$.}{}
+\explique{Comme $f$ a une limite infinie en $0$, la droite d'équation \res{$x=0$} (l'axe
+des ordonnées) est asymptote verticale à $\Cf$.}{}
+\cas{3.}
+\explique{Une courbe possible : à gauche de l'axe des ordonnées, elle descend depuis la
+droite $y=1$ vers $-\infty$ ; à droite, elle descend depuis $+\infty$ vers la droite
+$y=1$.}{par exemple la courbe de $x\mapsto 1+\frac{1}{x}$}
+\begin{center}
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-7}{-4}{7}{5}
+  \gradx{-6,-4,-2,2,4,6} \grady{-3,-2,-1,1,2,3,4}
+  \draw[dashed,coulCourbeB,line width=0.8pt] (-7,1)--(7,1);
+  \draw[coulCourbe,line width=1.1pt,domain=-7:-0.2,samples=80] plot (\x,{1+1/\x});
+  \draw[coulCourbe,line width=1.1pt,domain=0.25:7,samples=80] plot (\x,{1+1/\x});
+  \node[coulCourbe,font=\footnotesize] at (1.8,3.6) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize,above] at (-5,1) {$y=1$};
+\end{tikzpicture}
+\end{center}
+\end{exo}
+
+\partie{Opérations sur les limites}
+
+\begin{exo}[Calculer par opérations en l'infini]
+\cas{a)}
+\explique{$\limx{+\infty}x^{3}=+\infty$ et $\limx{+\infty}(4x-1)=+\infty$, donc par
+somme, \res{$\limx{+\infty}f(x)=+\infty$}.}{$+\infty+\infty$ : pas de forme
+indéterminée}
+\cas{b)}
+\explique{$\limx{-\infty}\frac{1}{x}=0$, donc par somme,
+$\limx{-\infty}\left(2-\frac{1}{x}\right)=2$.}{}
+\explique{$\limx{-\infty}x^{2}=+\infty$, donc par somme,
+$\limx{-\infty}\left(x^{2}+3\right)=+\infty$.}{$x^{2}$ : puissance paire}
+\explique{Par produit, \res{$\limx{-\infty}g(x)=+\infty$}.}{$2\times(+\infty)$}
+\cas{c)}
+\explique{$\limx{-\infty}x^{2}=+\infty$, donc par quotient,
+$\limx{-\infty}\frac{5}{x^{2}}=0$, et par somme, \res{$\limx{-\infty}h(x)=3$}.}{$\frac{5}{+\infty}=0$}
+\cas{d)}
+\explique{$\limx{+\infty}x=+\infty$ et $\limx{+\infty}\sqrt{x}=+\infty$, donc par
+produit, $\limx{+\infty}x\sqrt{x}=+\infty$, et par somme,
+\res{$\limx{+\infty}k(x)=+\infty$}.}{}
+\cas{e)}
+\explique{$\limx{-\infty}\left(x^{2}+1\right)=+\infty$, donc par quotient,
+\res{$\limx{-\infty}m(x)=0$}.}{$\frac{-4}{+\infty}=0$}
+\cas{f)}
+\explique{$\limx{+\infty}\frac{1}{x}=0$ et $\limx{+\infty}\left(-\sqrt{x}\right)=-\infty$,
+donc par somme, \res{$\limx{+\infty}p(x)=-\infty$}.}{$0-\infty$}
+\end{exo}
+
+\begin{exo}[À gauche et à droite]
+\cas{a)}
+\explique{$\limx{2}(3x+1)=7$.}{on remplace $x$ par $2$}
+\explique{Si $x<2$, alors $x-2<0$ : $\limx{2^{-}}(x-2)=0^{-}$. Par quotient,
+\res{$\limx{2^{-}}f(x)=-\infty$}.}{$\frac{7}{0^{-}}$ : règle des signes}
+\explique{Si $x>2$, alors $x-2>0$ : $\limx{2^{+}}(x-2)=0^{+}$. Par quotient,
+\res{$\limx{2^{+}}f(x)=+\infty$}.}{$\frac{7}{0^{+}}$}
+\cas{b)}
+\explique{$\limx{-4}(1-x)=5$.}{$1-(-4)=5$}
+\explique{Si $x<-4$, alors $x+4<0$ : $\limx{-4^{-}}(x+4)=0^{-}$. Par quotient,
+\res{$\limx{-4^{-}}g(x)=-\infty$}.}{$\frac{5}{0^{-}}$}
+\explique{Si $x>-4$, alors $x+4>0$ : $\limx{-4^{+}}(x+4)=0^{+}$. Par quotient,
+\res{$\limx{-4^{+}}g(x)=+\infty$}.}{$\frac{5}{0^{+}}$}
+\cas{c)}
+\explique{Pour tout nombre réel $x\neq 3$, $(x-3)^{2}>0$ : $\limx{3}(x-3)^{2}=0^{+}$, des
+deux côtés. Par quotient, \res{$\limx{3^{-}}h(x)=+\infty$} et
+\res{$\limx{3^{+}}h(x)=+\infty$}.}{un carré non nul est positif}
+\cas{d)}
+\explique{$\limx{0}(x+1)=1$ et, pour tout nombre réel $x\neq 0$, $x^{2}>0$ :
+$\limx{0}x^{2}=0^{+}$. Par quotient, \res{$\limx{0^{-}}k(x)=+\infty$} et
+\res{$\limx{0^{+}}k(x)=+\infty$}.}{$\frac{1}{0^{+}}$ des deux côtés}
+\end{exo}
+
+\begin{exo}[Avec un tableau de signes]
+\cas{1.}
+\explique{On a $x^{2}-1=(x-1)(x+1)$, qui s'annule en $-1$ et en $1$.}{$a^{2}-b^{2}=(a-b)(a+b)$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=2.2,espcl=2]{$x$/0.7,$x+1$/0.7,$x-1$/0.7,$x^{2}-1$/0.7}{$-\infty$,$-1$,$1$,$+\infty$}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,+,z,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$x^{2}-1>0$ sur $\intoo{-\infty}{-1}$ et sur $\intoo{1}{+\infty}$,
+$x^{2}-1<0$ sur $\intoo{-1}{1}$}.}{règle des signes d'un produit}
+\cas{2.}
+\explique{Au voisinage de $-1$, on a $\limx{-1}(2x+3)=1$. D'après le tableau,
+$\limx{-1^{-}}\left(x^{2}-1\right)=0^{+}$ et $\limx{-1^{+}}\left(x^{2}-1\right)=0^{-}$. Par
+quotient, \res{$\limx{-1^{-}}f(x)=+\infty$} et \res{$\limx{-1^{+}}f(x)=-\infty$}.}{$\frac{1}{0^{+}}$
+puis $\frac{1}{0^{-}}$}
+\explique{Au voisinage de $1$, on a $\limx{1}(2x+3)=5$, $\limx{1^{-}}\left(x^{2}-1\right)=0^{-}$ et
+$\limx{1^{+}}\left(x^{2}-1\right)=0^{+}$. Par quotient, \res{$\limx{1^{-}}f(x)=-\infty$} et
+\res{$\limx{1^{+}}f(x)=+\infty$}.}{$\frac{5}{0^{-}}$ puis $\frac{5}{0^{+}}$}
+\cas{3.}
+\explique{En l'infini, le numérateur et le dénominateur tendent vers l'infini : forme
+indéterminée « $\frac{\infty}{\infty}$ ». Pour tout nombre réel $x$ différent de $0$, de
+$-1$ et de $1$ :}{on factorise par le terme de plus haut degré}
+\begin{calculs}
+f(x) &= \frac{x\left(2+\frac{3}{x}\right)}{x^{2}\left(1-\frac{1}{x^{2}}\right)} &&\justif{on
+factorise par $x$ en haut, par $x^{2}$ en bas}\\
+f(x) &= \frac{2+\frac{3}{x}}{x\left(1-\frac{1}{x^{2}}\right)} &&\justif{on simplifie par $x$}
+\end{calculs}
+\explique{Par somme, le numérateur tend vers $2$ ; par produit, le dénominateur tend vers
+$-\infty$ en $-\infty$ et vers $+\infty$ en $+\infty$. Par quotient,
+\res{$\limx{-\infty}f(x)=0$} et \res{$\limx{+\infty}f(x)=0$}.}{$\frac{2}{\infty}=0$}
+\cas{4.}
+\explique{Les droites d'équations \res{$x=-1$} et \res{$x=1$} sont asymptotes verticales
+à $\Cf$ ; l'axe des abscisses, d'équation \res{$y=0$}, est asymptote horizontale à $\Cf$
+en $-\infty$ et en $+\infty$.}{limites infinies en $-1$ et $1$, limite $0$ en l'infini}
+\end{exo}
+
+\begin{exo}[Le coût moyen d'une pièce imprimée]
+\cas{1.}
+\begin{calculs}
+C(100) &= 3+\frac{200}{100} = 5 &&\\
+C(1\,000) &= 3+\frac{200}{1\,000} = 3{,}2 &&
+\end{calculs}
+\explique{Le coût moyen est de \res{$5$~euros} pour $100$ pièces et de \res{$3{,}20$~euros}
+pour $1\,000$ pièces.}{}
+\cas{2.}
+\explique{$\limx{+\infty}\frac{200}{x}=0$, donc par somme,
+\res{$\limx{+\infty}C(x)=3$}.}{$\frac{200}{+\infty}=0$}
+\explique{Quand le nombre de pièces devient très grand, le coût moyen d'une pièce se
+rapproche de \res{$3$~euros}.}{les $200$~euros se répartissent sur beaucoup de pièces}
+\cas{3.}
+\explique{Pour $x>0$, $\limx{0^{+}}x=0^{+}$, donc par quotient,
+$\limx{0^{+}}\frac{200}{x}=+\infty$, et par somme, \res{$\limx{0^{+}}C(x)=+\infty$}.}{$\frac{200}{0^{+}}$}
+\explique{Avec très peu de pièces, le coût moyen d'une pièce devient \res{très
+élevé}.}{les $200$~euros pèsent sur peu de pièces}
+\cas{4.}
+\explique{La droite d'équation \res{$y=3$} est asymptote horizontale à la courbe de $C$ en
+$+\infty$, et l'axe des ordonnées, d'équation \res{$x=0$}, est asymptote
+verticale.}{question 2, puis question 3}
+\end{exo}
+
+\partie{Lever une indétermination}
+
+\begin{exo}[Factoriser par le terme de plus haut degré]
+\cas{a)}
+\explique{$\limx{+\infty}x^{2}=+\infty$ et $\limx{+\infty}(-6x)=-\infty$ : forme
+indéterminée « $\infty-\infty$ ». Pour tout nombre réel $x\neq 0$ :}{méthode 4 du cours}
+\begin{calculs}
+f(x) &= x^{2}\left(1-\frac{6}{x}+\frac{1}{x^{2}}\right) &&\justif{on factorise par $x^{2}$}
+\end{calculs}
+\explique{Par somme, la parenthèse tend vers $1$ ; par produit,
+\res{$\limx{+\infty}f(x)=+\infty$}.}{$(+\infty)\times 1$}
+\cas{b)}
+\explique{$\limx{-\infty}\left(-2x^{4}\right)=-\infty$ et
+$\limx{-\infty}3x^{2}=+\infty$ : forme indéterminée « $\infty-\infty$ ». Pour tout
+nombre réel $x\neq 0$ :}{}
+\begin{calculs}
+g(x) &= x^{4}\left(-2+\frac{3}{x^{2}}+\frac{1}{x^{3}}\right) &&\justif{on factorise par $x^{4}$}
+\end{calculs}
+\explique{La parenthèse tend vers $-2$ par somme ; $\limx{-\infty}x^{4}=+\infty$, donc par
+produit, \res{$\limx{-\infty}g(x)=-\infty$}.}{$(+\infty)\times(-2)$}
+\cas{c)}
+\explique{Le numérateur est une forme « $\infty-\infty$ » et le dénominateur tend vers
+$+\infty$ : forme indéterminée. Pour tout nombre réel $x\neq 0$ :}{}
+\begin{calculs}
+h(x) &= \frac{x^{2}\left(3-\frac{1}{x}\right)}{x^{2}\left(1+\frac{4}{x^{2}}\right)} &&\justif{on
+factorise en haut et en bas par $x^{2}$}\\
+h(x) &= \frac{3-\frac{1}{x}}{1+\frac{4}{x^{2}}} &&\justif{on simplifie par $x^{2}\neq 0$}
+\end{calculs}
+\explique{Par somme, le numérateur tend vers $3$ et le dénominateur vers $1$ ; par
+quotient, \res{$\limx{+\infty}h(x)=3$}.}{$\frac{3}{1}$}
+\cas{d)}
+\explique{$\limx{-\infty}(5x-2)=-\infty$ et $\limx{-\infty}\left(x^{2}+1\right)=+\infty$ :
+forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout nombre réel $x\neq 0$ :}{}
+\begin{calculs}
+k(x) &= \frac{x\left(5-\frac{2}{x}\right)}{x^{2}\left(1+\frac{1}{x^{2}}\right)} &&\justif{par
+$x$ en haut, par $x^{2}$ en bas}\\
+k(x) &= \frac{5-\frac{2}{x}}{x\left(1+\frac{1}{x^{2}}\right)} &&\justif{on simplifie par $x$}
+\end{calculs}
+\explique{Le numérateur tend vers $5$ ; par produit, le dénominateur tend vers $-\infty$.
+Par quotient, \res{$\limx{-\infty}k(x)=0$}.}{$\frac{5}{-\infty}=0$ : degré du haut plus
+petit}
+\cas{e)}
+\explique{Le numérateur et le dénominateur tendent vers $+\infty$ : forme indéterminée
+« $\frac{\infty}{\infty}$ ». Pour tout nombre réel $x>\frac{1}{2}$ :}{alors $x\neq 0$}
+\begin{calculs}
+m(x) &= \frac{x^{2}\left(1+\frac{2}{x}\right)}{x\left(2-\frac{1}{x}\right)} &&\justif{par
+$x^{2}$ en haut, par $x$ en bas}\\
+m(x) &= \frac{x\left(1+\frac{2}{x}\right)}{2-\frac{1}{x}} &&\justif{on simplifie par $x$}
+\end{calculs}
+\explique{Par produit, le numérateur tend vers $+\infty$ ; le dénominateur tend vers $2$.
+Par quotient, \res{$\limx{+\infty}m(x)=+\infty$}.}{$\frac{+\infty}{2}$ : degré du haut plus
+grand}
+\cas{f)}
+\explique{Le numérateur est une forme « $\infty-\infty$ » et le dénominateur tend vers
+$-\infty$ : forme indéterminée. Pour tout nombre réel $x\leq -2$ :}{alors $x\neq 0$}
+\begin{calculs}
+p(x) &= \frac{x^{3}\left(4-\frac{1}{x^{2}}\right)}{x^{3}\left(2+\frac{5}{x^{3}}\right)} &&\justif{on
+factorise par $x^{3}$}\\
+p(x) &= \frac{4-\frac{1}{x^{2}}}{2+\frac{5}{x^{3}}} &&\justif{on simplifie par $x^{3}\neq 0$}
+\end{calculs}
+\explique{Par somme puis par quotient, \res{$\limx{-\infty}p(x)=2$}.}{$\frac{4}{2}$ : même
+degré, quotient des coefficients dominants}
+\end{exo}
+
+\begin{exo}[Une forme « $\frac{0}{0}$ » en un nombre réel]
+\cas{a)}
+\explique{$\limx{4}\left(x^{2}-16\right)=0$ et $\limx{4}(x-4)=0$ : forme indéterminée
+« $\frac{0}{0}$ ». Pour tout nombre réel $x\neq 4$ :}{}
+\begin{calculs}
+f(x) &= \frac{(x-4)(x+4)}{x-4} &&\justif{$a^{2}-b^{2}=(a-b)(a+b)$}\\
+f(x) &= x+4 &&\justif{on simplifie par $x-4\neq 0$}
+\end{calculs}
+\explique{$\limx{4}(x+4)=8$, donc \res{$\limx{4}f(x)=8$}.}{on remplace $x$ par $4$}
+\cas{b)}
+\explique{$\limx{2}\left(x^{2}-5x+6\right)=4-10+6=0$ et $\limx{2}(x-2)=0$ : forme
+indéterminée « $\frac{0}{0}$ ».}{$2$ est donc racine du numérateur}
+\explique{Le discriminant de $x^{2}-5x+6$ vaut $25-24$, soit $1$ ; les racines sont $2$
+et $3$, donc $x^{2}-5x+6=(x-2)(x-3)$. Pour tout nombre réel $x\neq 2$ :}{$x_{1,2}=\frac{5\pm 1}{2}$}
+\begin{calculs}
+g(x) &= \frac{(x-2)(x-3)}{x-2} &&\\
+g(x) &= x-3 &&\justif{on simplifie par $x-2\neq 0$}
+\end{calculs}
+\explique{$\limx{2}(x-3)=-1$, donc \res{$\limx{2}g(x)=-1$}.}{}
+\cas{c)}
+\explique{$\limx{-3}\left(x^{2}+x-6\right)=9-3-6=0$ et $\limx{-3}(x+3)=0$ : forme
+indéterminée « $\frac{0}{0}$ ».}{}
+\explique{Le discriminant de $x^{2}+x-6$ vaut $1+24$, soit $25$ ; les racines sont $-3$
+et $2$, donc $x^{2}+x-6=(x+3)(x-2)$. Pour tout nombre réel $x\neq -3$ :}{$x_{1,2}=\frac{-1\pm 5}{2}$}
+\begin{calculs}
+h(x) &= \frac{(x+3)(x-2)}{x+3} &&\\
+h(x) &= x-2 &&\justif{on simplifie par $x+3\neq 0$}
+\end{calculs}
+\explique{$\limx{-3}(x-2)=-5$, donc \res{$\limx{-3}h(x)=-5$}.}{}
+\cas{d)}
+\explique{$\limx{-1}\left(x^{2}-1\right)=0$ et $\limx{-1}\left(x^{2}+x\right)=0$ : forme
+indéterminée « $\frac{0}{0}$ ». Pour tout nombre réel $x$ différent de $0$ et de $-1$ :}{}
+\begin{calculs}
+k(x) &= \frac{(x-1)(x+1)}{x(x+1)} &&\justif{$x^{2}+x=x(x+1)$}\\
+k(x) &= \frac{x-1}{x} &&\justif{on simplifie par $x+1\neq 0$}
+\end{calculs}
+\explique{$\limx{-1}\frac{x-1}{x}=\frac{-2}{-1}$, donc \res{$\limx{-1}k(x)=2$}.}{on remplace
+$x$ par $-1$}
+\end{exo}
+
+\begin{exo}[Avec la quantité conjuguée]
+\cas{a)}
+\explique{Par composition, $\limx{+\infty}\sqrt{x+4}=+\infty$ ; de plus
+$\limx{+\infty}\sqrt{x}=+\infty$ : forme indéterminée « $\infty-\infty$ ». Pour tout
+$x\geq 0$ :}{la quantité conjuguée de $\sqrt{a}-\sqrt{b}$ est $\sqrt{a}+\sqrt{b}$}
+\begin{calculs}
+f(x) &= \frac{\left(\sqrt{x+4}-\sqrt{x}\right)\left(\sqrt{x+4}+\sqrt{x}\right)}{\sqrt{x+4}+\sqrt{x}}
+&&\justif{on multiplie en haut et en bas par la quantité conjuguée}\\
+f(x) &= \frac{(x+4)-x}{\sqrt{x+4}+\sqrt{x}} &&\justif{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+f(x) &= \frac{4}{\sqrt{x+4}+\sqrt{x}} &&
+\end{calculs}
+\explique{Par somme, le dénominateur tend vers $+\infty$ ; par quotient,
+\res{$\limx{+\infty}f(x)=0$}.}{$\frac{4}{+\infty}=0$}
+\cas{b)}
+\explique{$\limx{+\infty}\sqrt{x^{2}+1}=+\infty$ (par composition) et
+$\limx{+\infty}(-x)=-\infty$ : forme indéterminée « $\infty-\infty$ ». Pour tout
+nombre réel $x\geq 0$ :}{}
+\begin{calculs}
+g(x) &= \frac{\left(\sqrt{x^{2}+1}-x\right)\left(\sqrt{x^{2}+1}+x\right)}{\sqrt{x^{2}+1}+x} &&\\
+g(x) &= \frac{x^{2}+1-x^{2}}{\sqrt{x^{2}+1}+x} &&\justif{$(a-b)(a+b)=a^{2}-b^{2}$}\\
+g(x) &= \frac{1}{\sqrt{x^{2}+1}+x} &&
+\end{calculs}
+\explique{Par somme, le dénominateur tend vers $+\infty$ ; par quotient,
+\res{$\limx{+\infty}g(x)=0$}.}{}
+\cas{c)}
+\explique{$\limx{9}\left(\sqrt{x}-3\right)=0$ et $\limx{9}(x-9)=0$ : forme indéterminée
+« $\frac{0}{0}$ ». Pour tout nombre réel $x\geq 0$, $x\neq 9$ :}{$\sqrt{9}=3$}
+\begin{calculs}
+h(x) &= \frac{\left(\sqrt{x}-3\right)\left(\sqrt{x}+3\right)}{(x-9)\left(\sqrt{x}+3\right)}
+&&\justif{on multiplie en haut et en bas par $\sqrt{x}+3$}\\
+h(x) &= \frac{x-9}{(x-9)\left(\sqrt{x}+3\right)} &&\justif{$\left(\sqrt{x}\right)^{2}=x$}\\
+h(x) &= \frac{1}{\sqrt{x}+3} &&\justif{on simplifie par $x-9\neq 0$}
+\end{calculs}
+\explique{$\limx{9}\left(\sqrt{x}+3\right)=6$, donc \res{$\limx{9}h(x)=\frac{1}{6}$}.}{on
+remplace $x$ par $9$}
+\end{exo}
+
+\begin{exo}[Deux valeurs interdites]
+\cas{1.}
+\explique{$x^{2}-1=0$ équivaut à $x=1$ ou $x=-1$ : \res{$f$ est définie sur
+$\R\setminus\ens{-1\,;1}$}.}{le dénominateur ne doit pas s'annuler}
+\cas{2.}
+\begin{calculs}
+(x-1)(2x+1) &= 2x^{2}+x-2x-1 &&\justif{on développe}\\
+(x-1)(2x+1) &= 2x^{2}-x-1 &&
+\end{calculs}
+\explique{Pour tout nombre réel $x\in\R\setminus\ens{-1\,;1}$ :}{}
+\begin{calculs}
+f(x) &= \frac{(x-1)(2x+1)}{(x-1)(x+1)} &&\justif{$x^{2}-1=(x-1)(x+1)$}\\
+f(x) &= \frac{\barre{(x-1)}(2x+1)}{\barre{(x-1)}(x+1)} &&\justif{on simplifie par $x-1\neq 0$}\\
+f(x) &= \frac{2x+1}{x+1} &&
+\end{calculs}
+\explique{L'égalité \res{$f(x)=\frac{2x+1}{x+1}$} est vraie pour tout nombre réel $x$
+différent de $-1$ et de $1$.}{en $1$, $f$ n'est pas définie, même si la fraction
+simplifiée l'est}
+\cas{3.}
+\explique{Forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout $x\in\R\setminus\ens{-1\,;0\,;1}$ :}{on
+part de la forme simplifiée}
+\begin{calculs}
+f(x) &= \frac{x\left(2+\frac{1}{x}\right)}{x\left(1+\frac{1}{x}\right)} &&\justif{on factorise par $x$}\\
+f(x) &= \frac{2+\frac{1}{x}}{1+\frac{1}{x}} &&\justif{on simplifie par $x$}
+\end{calculs}
+\explique{Par somme puis par quotient, \res{$\limx{-\infty}f(x)=2$} et
+\res{$\limx{+\infty}f(x)=2$}.}{}
+\cas{4.}
+\explique{$\limx{1}\frac{2x+1}{x+1}=\frac{3}{2}$, donc \res{$\limx{1}f(x)=\frac{3}{2}$}.}{on
+remplace $x$ par $1$ dans la forme simplifiée}
+\explique{Au voisinage de $-1$, on a $\limx{-1}(2x+1)=-1$. Si $x<-1$, $\limx{-1^{-}}(x+1)=0^{-}$ ; si
+$x>-1$, $\limx{-1^{+}}(x+1)=0^{+}$. Par quotient, \res{$\limx{-1^{-}}f(x)=+\infty$} et
+\res{$\limx{-1^{+}}f(x)=-\infty$}.}{$\frac{-1}{0^{-}}$ puis $\frac{-1}{0^{+}}$}
+\cas{5.}
+\explique{\res{La droite d'équation $x=1$ n'est pas asymptote} à $\Cf$ : la limite de
+$f$ en $1$ est finie ($\frac{3}{2}$).}{la courbe a un « trou » au point
+$\left(1\,;\frac{3}{2}\right)$}
+\explique{\res{La droite d'équation $x=-1$ est asymptote verticale} à $\Cf$ : les
+limites de $f$ en $-1$ sont infinies.}{}
+\rem{Une valeur interdite ne donne pas toujours une asymptote : il faut une limite
+infinie.}
+\end{exo}
+
+\partie{Asymptotes et position relative}
+
+\begin{exo}[Asymptotes et position]
+\cas{1.}
+\explique{Soit $x\neq -2$. On part de l'expression proposée :}{méthode 5 du cours}
+\begin{calculs}
+3-\frac{7}{x+2} &= \frac{3(x+2)-7}{x+2} &&\justif{même dénominateur}\\
+3-\frac{7}{x+2} &= \frac{3x-1}{x+2} &&\justif{$3x+6-7=3x-1$}\\
+3-\frac{7}{x+2} &= f(x) &&
+\end{calculs}
+\cas{2.}
+\explique{$\limx{+\infty}(x+2)=+\infty$, donc par quotient,
+$\limx{+\infty}\frac{7}{x+2}=0$, et par somme, \res{$\limx{+\infty}f(x)=3$}. De même,
+\res{$\limx{-\infty}f(x)=3$}.}{on se sert de la forme du 1.}
+\explique{La droite d'équation \res{$y=3$} est asymptote horizontale à $\Cf$ en $-\infty$
+et en $+\infty$.}{}
+\cas{3.}
+\explique{Si $x<-2$, $\limx{-2^{-}}(x+2)=0^{-}$ : par quotient,
+$\limx{-2^{-}}\frac{7}{x+2}=-\infty$, et par somme, \res{$\limx{-2^{-}}f(x)=+\infty$}.}{$3-(-\infty)$}
+\explique{Si $x>-2$, $\limx{-2^{+}}(x+2)=0^{+}$ : de même,
+\res{$\limx{-2^{+}}f(x)=-\infty$}.}{$3-(+\infty)$}
+\explique{La droite d'équation \res{$x=-2$} est asymptote verticale à $\Cf$.}{}
+\cas{4.}
+\explique{Pour tout nombre réel $x\neq -2$, on a $f(x)-3=-\frac{7}{x+2}$, du signe
+contraire de $x+2$.}{on étudie le signe de $f(x)-3$}
+\explique{\res{Si $x>-2$}, $f(x)-3<0$ : \res{$\Cf$ est en dessous} de la droite
+d'équation $y=3$.}{}
+\explique{\res{Si $x<-2$}, $f(x)-3>0$ : \res{$\Cf$ est au-dessus} de la droite
+d'équation $y=3$.}{}
+\end{exo}
+
+\begin{exo}[Toujours au-dessus]
+\cas{1.}
+\explique{Soit $x\in\R$ :}{}
+\begin{calculs}
+2+\frac{1}{x^{2}+1} &= \frac{2\left(x^{2}+1\right)+1}{x^{2}+1} &&\justif{même dénominateur}\\
+2+\frac{1}{x^{2}+1} &= \frac{2x^{2}+3}{x^{2}+1} &&\\
+2+\frac{1}{x^{2}+1} &= g(x) &&
+\end{calculs}
+\cas{2.}
+\explique{$\limx{+\infty}\left(x^{2}+1\right)=+\infty$, donc par quotient,
+$\limx{+\infty}\frac{1}{x^{2}+1}=0$, et par somme, \res{$\limx{+\infty}g(x)=2$}. De même,
+\res{$\limx{-\infty}g(x)=2$}.}{$x^{2}$ tend vers $+\infty$ des deux côtés}
+\explique{La droite d'équation \res{$y=2$} est asymptote horizontale à $\Cg$ en $-\infty$
+et en $+\infty$.}{}
+\cas{3.}
+\explique{Pour tout nombre réel $x$, $g(x)-2=\frac{1}{x^{2}+1}>0$ : \res{$\Cg$ est
+toujours au-dessus} de la droite d'équation $y=2$.}{$x^{2}+1\geq 1>0$}
+\cas{4.}
+\explique{Le dénominateur $x^{2}+1$ ne s'annule jamais : $g$ est définie sur $\R$, sans
+valeur interdite. En tout nombre réel $a$, $\limx{a}g(x)=g(a)$, qui est fini :
+\res{aucune limite infinie, donc pas d'asymptote verticale}.}{une asymptote verticale
+demande une limite infinie}
+\end{exo}
+
+\begin{exo}[La vitesse moyenne d'une cycliste]
+\cas{1.}
+\explique{Durée $=\frac{\text{distance}}{\text{vitesse}}$ : la montée dure
+\res{$\frac{d}{15}$~h} et la descente \res{$\frac{d}{v}$~h}.}{}
+\explique{La cycliste parcourt $2d$~km en $\frac{d}{15}+\frac{d}{v}$ heures :}{vitesse
+moyenne $=\frac{\text{distance totale}}{\text{durée totale}}$}
+\begin{calculs}
+V(v) &= \frac{2d}{\frac{d}{15}+\frac{d}{v}} &&\\
+V(v) &= \frac{2d}{\frac{d\times v+d\times 15}{15v}} &&\justif{même dénominateur $15v$}\\
+V(v) &= 2d\times\frac{15v}{d(v+15)} &&\justif{diviser, c'est multiplier par l'inverse}\\
+V(v) &= \frac{30v}{v+15} &&\justif{on simplifie par $d\neq 0$}
+\end{calculs}
+\rem{La vitesse moyenne n'est pas la moyenne des deux vitesses : la cycliste passe plus
+de temps dans la montée.}
+\cas{2.}
+\begin{calculs}
+V(15) &= \frac{450}{30} = 15 &&\\
+V(45) &= \frac{1\,350}{60} = 22{,}5 &&
+\end{calculs}
+\explique{\res{$V(15)=15$~km/h} et \res{$V(45)=22{,}5$~km/h}.}{à $45$~km/h dans la
+descente, la moyenne n'est pas $30$}
+\cas{3.}
+\explique{Forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout $v>0$ :}{}
+\begin{calculs}
+V(v) &= \frac{30v}{v\left(1+\frac{15}{v}\right)} &&\justif{on factorise par $v$}\\
+V(v) &= \frac{30}{1+\frac{15}{v}} &&\justif{on simplifie par $v\neq 0$}
+\end{calculs}
+\explique{Par somme, le dénominateur tend vers $1$ ; par quotient,
+\res{$\lim\limits_{v\to+\infty}V(v)=30$}.}{}
+\cas{4.}
+\explique{Soit $v>0$ :}{}
+\begin{calculs}
+30-V(v) &= \frac{30(v+15)}{v+15}-\frac{30v}{v+15} &&\justif{même dénominateur}\\
+30-V(v) &= \frac{30v+450-30v}{v+15} &&\\
+30-V(v) &= \frac{450}{v+15} &&
+\end{calculs}
+\cas{5.}
+\explique{Pour tout $v>0$, $v+15>0$, donc $30-V(v)>0$, soit $V(v)<30$ : \res{la moyenne
+reste toujours inférieure à $30$~km/h}, même si la descente est très rapide.}{}
+\explique{Graphiquement, la courbe de $V$ est \res{en dessous de son asymptote
+horizontale}, la droite d'équation $y=30$, et s'en rapproche quand $v$ devient
+grand.}{question 3}
+\end{exo}
+
+\partie{Limite d'une fonction composée}
+
+\begin{exo}[Calculer la limite d'une composée]
+\cas{a)}
+\explique{On pose $X=4-\frac{1}{x}$. $\limx{+\infty}\frac{1}{x}=0$, donc par somme,
+$\limx{+\infty}X=4$.}{d'abord ce qui est sous la racine}
+\explique{$\lim\limits_{X\to 4}\sqrt{X}=2$, donc par composition,
+\res{$\limx{+\infty}f(x)=2$}.}{puis la racine}
+\cas{b)}
+\explique{On pose $X=x^{2}+x+1$. Forme indéterminée « $\infty-\infty$ » ; pour tout
+nombre réel $x\neq 0$, $X=x^{2}\left(1+\frac{1}{x}+\frac{1}{x^{2}}\right)$, donc par produit,
+$\limx{-\infty}X=+\infty$.}{on factorise par $x^{2}$}
+\explique{$\lim\limits_{X\to+\infty}\sqrt{X}=+\infty$, donc par composition,
+\res{$\limx{-\infty}g(x)=+\infty$}.}{}
+\cas{c)}
+\explique{On pose $X=3+\frac{1}{x}$. Par somme, $\limx{-\infty}X=3$.}{}
+\explique{$\lim\limits_{X\to 3}\frac{1}{X^{2}}=\frac{1}{9}$, donc par composition,
+\res{$\limx{-\infty}h(x)=\frac{1}{9}$}.}{on remplace $X$ par $3$}
+\cas{d)}
+\explique{On pose $X=\frac{2x+1}{x-3}$. Forme indéterminée « $\frac{\infty}{\infty}$ » ;
+pour tout $x>3$, $X=\frac{2+\frac{1}{x}}{1-\frac{3}{x}}$, donc
+$\limx{+\infty}X=2$.}{on factorise par $x$ et on simplifie}
+\explique{$\lim\limits_{X\to 2}\sqrt{X}=\sqrt{2}$, donc par composition,
+\res{$\limx{+\infty}k(x)=\sqrt{2}$}.}{}
+\end{exo}
+
+\begin{exo}[Une racine au dénominateur]
+\cas{1.}
+\explique{On pose $X=x-2$ : $\limx{2^{+}}X=0^{+}$. Or $\lim\limits_{X\to 0^{+}}\sqrt{X}=0$
+avec $\sqrt{X}>0$, donc par composition, $\limx{2^{+}}\sqrt{x-2}=0^{+}$.}{la racine d'un
+nombre positif non nul est positive}
+\explique{Par quotient, \res{$\limx{2^{+}}f(x)=+\infty$}.}{$\frac{1}{0^{+}}$}
+\cas{2.}
+\explique{$\limx{+\infty}(x-2)=+\infty$ et $\lim\limits_{X\to+\infty}\sqrt{X}=+\infty$, donc
+par composition, $\limx{+\infty}\sqrt{x-2}=+\infty$, et par quotient,
+\res{$\limx{+\infty}f(x)=0$}.}{$\frac{1}{+\infty}$}
+\cas{3.}
+\explique{La droite d'équation \res{$x=2$} est asymptote verticale à $\Cf$, et l'axe des
+abscisses, d'équation \res{$y=0$}, est asymptote horizontale à $\Cf$ en $+\infty$.}{}
+\end{exo}
+
+\begin{exo}[La racine d'un quotient]
+\cas{1.}
+\explique{$2x-1$ s'annule en $\frac{1}{2}$ et $x+3$ en $-3$ (valeur interdite).}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=2.2,espcl=2]{$x$/0.7,$2x-1$/0.7,$x+3$/0.7,$g(x)$/0.9}{$-\infty$,$-3$,$\frac{1}{2}$,$+\infty$}
+  \tkzTabLine{,-,t,-,z,+,}
+  \tkzTabLine{,-,z,+,t,+,}
+  \tkzTabLine{,+,d,-,z,+,}
+\end{tikzpicture}
+\end{center}
+\explique{Donc \res{$D=\intoo{-\infty}{-3}\cup\intfo{\frac{1}{2}}{+\infty}$}.}{la double
+barre en $-3$ : valeur interdite exclue}
+\cas{2.}
+\explique{Forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout nombre réel $x$
+différent de $0$ et de $-3$ :}{}
+\begin{calculs}
+g(x) &= \frac{x\left(2-\frac{1}{x}\right)}{x\left(1+\frac{3}{x}\right)} &&\justif{on factorise par $x$}\\
+g(x) &= \frac{2-\frac{1}{x}}{1+\frac{3}{x}} &&\justif{on simplifie par $x$}
+\end{calculs}
+\explique{Par somme puis par quotient, \res{$\limx{-\infty}g(x)=2$} et
+\res{$\limx{+\infty}g(x)=2$}.}{}
+\cas{3.}
+\explique{$\limx{-3}(2x-1)=-7$ et, si $x<-3$, $\limx{-3^{-}}(x+3)=0^{-}$. Par quotient,
+\res{$\limx{-3^{-}}g(x)=+\infty$}.}{$\frac{-7}{0^{-}}$}
+\cas{4.}
+\explique{On pose $X=g(x)$. En $-\infty$ et en $+\infty$, $X$ tend vers $2$ ; or
+$\lim\limits_{X\to 2}\sqrt{X}=\sqrt{2}$, donc par composition,
+\res{$\limx{-\infty}f(x)=\sqrt{2}$} et \res{$\limx{+\infty}f(x)=\sqrt{2}$}.}{question 2}
+\explique{À gauche en $-3$, $X$ tend vers $+\infty$ ; or
+$\lim\limits_{X\to+\infty}\sqrt{X}=+\infty$, donc par composition,
+\res{$\limx{-3^{-}}f(x)=+\infty$}.}{question 3}
+\cas{5.}
+\explique{La droite d'équation \res{$y=\sqrt{2}$} est asymptote horizontale à la courbe de
+$f$ en $-\infty$ et en $+\infty$ ; la droite d'équation \res{$x=-3$} est asymptote
+verticale.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Asie : vrai ou faux ?]
+\explique{En $+\infty$, forme indéterminée « $\frac{\infty}{\infty}$ ». Soit $x>1$ ; alors
+$x-1>0$ et $x+1>0$ :}{on transforme l'écriture}
+\begin{calculs}
+f(x) &= \frac{x-1}{\sqrt{(x-1)(x+1)}} &&\justif{$x^{2}-1=(x-1)(x+1)$}\\
+f(x) &= \frac{\sqrt{x-1}\times\sqrt{x-1}}{\sqrt{x-1}\times\sqrt{x+1}} &&\justif{$x-1=\left(\sqrt{x-1}\right)^{2}$
+car $x-1>0$}\\
+f(x) &= \frac{\sqrt{x-1}}{\sqrt{x+1}} &&\justif{on simplifie par $\sqrt{x-1}\neq 0$}\\
+f(x) &= \sqrt{\frac{x-1}{x+1}} &&
+\end{calculs}
+\explique{On pose $X=\frac{x-1}{x+1}=\frac{1-\frac{1}{x}}{1+\frac{1}{x}}$ : par somme puis
+par quotient, $\limx{+\infty}X=1$.}{on factorise par $x$}
+\explique{$\lim\limits_{X\to 1}\sqrt{X}=1$, donc par composition,
+$\limx{+\infty}f(x)=1$ : \res{l'affirmation est vraie}.}{}
+\end{exo}
+
+\partie{Limites et comparaison}
+
+\begin{exo}[Comparaison ou gendarmes]
+\cas{a)}
+\explique{Soit $x\in\R$.}{limite infinie attendue : une seule inégalité}
+\begin{calculs}
+\sin(x) &\geq -1 &&\justif{un sinus est entre $-1$ et $1$}\\
+3\sin(x) &\geq -3 &&\justif{on multiplie par $3>0$}\\
+f(x) &\geq x^{2}-3 &&\justif{on ajoute $x^{2}$}
+\end{calculs}
+\explique{$\limx{+\infty}\left(x^{2}-3\right)=+\infty$, donc par comparaison,
+\res{$\limx{+\infty}f(x)=+\infty$}.}{}
+\cas{b)}
+\explique{Soit $x\in\R$.}{}
+\begin{calculs}
+\cos(x) &\leq 1 &&\\
+2\cos(x) &\leq 2 &&\justif{on multiplie par $2>0$}\\
+g(x) &\leq -3x+2 &&\justif{on ajoute $-3x$}
+\end{calculs}
+\explique{$\limx{+\infty}(-3x+2)=-\infty$, donc par comparaison,
+\res{$\limx{+\infty}g(x)=-\infty$}.}{$g$ est poussée vers le bas}
+\cas{c)}
+\explique{Soit $x>0$.}{limite finie attendue : un encadrement}
+\begin{calculs}
+-1 \leq \cos(x) &\leq 1 &&\\
+-\frac{1}{x} \leq \frac{\cos(x)}{x} &\leq \frac{1}{x} &&\justif{on divise par $x>0$ : l'ordre
+est conservé}\\
+-\frac{1}{x} \leq h(x) &\leq \frac{1}{x} &&
+\end{calculs}
+\explique{$\limx{+\infty}\left(-\frac{1}{x}\right)=0$ et $\limx{+\infty}\frac{1}{x}=0$, donc
+d'après le théorème des gendarmes, \res{$\limx{+\infty}h(x)=0$}.}{}
+\cas{d)}
+\explique{Soit $x>0$.}{}
+\begin{calculs}
+-1 \leq \sin(x) &\leq 1 &&\\
+-\frac{1}{x^{2}} \leq \frac{\sin(x)}{x^{2}} &\leq \frac{1}{x^{2}} &&\justif{on divise par $x^{2}>0$}\\
+5-\frac{1}{x^{2}} \leq k(x) &\leq 5+\frac{1}{x^{2}} &&\justif{on ajoute $5$}
+\end{calculs}
+\explique{Les deux encadrants tendent vers $5$ par somme ; d'après le théorème des
+gendarmes, \res{$\limx{+\infty}k(x)=5$}.}{}
+\end{exo}
+
+\begin{exo}[En $+\infty$ et en $-\infty$]
+\cas{1.}
+\explique{Soit $x\in\R$.}{}
+\begin{calculs}
+-1 \leq \cos(x) &\leq 1 &&\\
+-3 \leq 3\cos(x) &\leq 3 &&\justif{on multiplie par $3>0$}\\
+2x-3 \leq 2x+3\cos(x) &\leq 2x+3 &&\justif{on ajoute $2x$}\\
+2x-3 \leq f(x) &\leq 2x+3 &&
+\end{calculs}
+\cas{2.}
+\explique{$f(x)\geq 2x-3$ et $\limx{+\infty}(2x-3)=+\infty$, donc par comparaison,
+\res{$\limx{+\infty}f(x)=+\infty$}.}{on se sert de la minoration}
+\cas{3.}
+\explique{$f(x)\leq 2x+3$ et $\limx{-\infty}(2x+3)=-\infty$, donc par comparaison,
+\res{$\limx{-\infty}f(x)=-\infty$}.}{en $-\infty$, on se sert de la majoration}
+\end{exo}
+
+\begin{exo}[Encadrer une racine carrée]
+\cas{1.}
+\explique{Soit $x>0$. On a $x^{2}+1-x^{2}=1\geq 0$, donc $x^{2}\leq x^{2}+1$.}{on étudie le
+signe des différences}
+\explique{De plus, $(x+1)^{2}-\left(x^{2}+1\right)=x^{2}+2x+1-x^{2}-1=2x>0$, donc
+$x^{2}+1\leq(x+1)^{2}$. Ainsi \res{$x^{2}\leq x^{2}+1\leq(x+1)^{2}$}.}{$x>0$}
+\cas{2.}
+\explique{Soit $x>0$.}{}
+\begin{calculs}
+\sqrt{x^{2}} \leq \sqrt{x^{2}+1} &\leq \sqrt{(x+1)^{2}} &&\justif{la racine carrée est
+croissante sur $\intfo{0}{+\infty}$}\\
+x \leq \sqrt{x^{2}+1} &\leq x+1 &&\justif{$x>0$ et $x+1>0$}\\
+\frac{x}{x} \leq \frac{\sqrt{x^{2}+1}}{x} &\leq \frac{x+1}{x} &&\justif{on divise par $x>0$}\\
+1 \leq f(x) &\leq \frac{x+1}{x} &&
+\end{calculs}
+\cas{3.}
+\explique{Pour tout $x>0$, $\frac{x+1}{x}=1+\frac{1}{x}$, donc par somme,
+\res{$\limx{+\infty}\frac{x+1}{x}=1$}.}{}
+\explique{Les deux encadrants tendent vers $1$ ; d'après le théorème des gendarmes,
+\res{$\limx{+\infty}f(x)=1$}.}{}
+\cas{4.}
+\explique{La droite d'équation \res{$y=1$} est asymptote horizontale à la courbe de $f$ en
+$+\infty$.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Antilles-Guyane : vrai ou faux ?]
+\cas{a)}
+\explique{Pour tout $x>5$, $f(x)\geq x^{2}$, et $\limx{+\infty}x^{2}=+\infty$ : par
+comparaison, $\limx{+\infty}f(x)=+\infty$. \res{L'affirmation est vraie}.}{le théorème
+demande l'inégalité seulement pour $x$ assez grand}
+\cas{b)}
+\explique{Soit $x>0$.}{}
+\begin{calculs}
+-1 \leq \sin(x) &\leq 1 &&\\
+-\frac{1}{x} \leq \frac{\sin(x)}{x} &\leq \frac{1}{x} &&\justif{on divise par $x>0$}\\
+1-\frac{1}{x} \leq f(x) &\leq 1+\frac{1}{x} &&\justif{on ajoute $1$}
+\end{calculs}
+\explique{Les deux encadrants tendent vers $1$ ; d'après le théorème des gendarmes,
+$\limx{+\infty}f(x)=1$. La droite d'équation $y=1$ est donc asymptote horizontale à la
+courbe de $f$ en $+\infty$ : \res{l'affirmation est vraie}.}{}
+\cas{c)}
+\explique{On cherche un contre-exemple : la fonction $g$ définie sur $\R$ par
+$g(x)=x+2\sin(x)$.}{une seule fonction suffit à montrer que c'est faux}
+\explique{Pour tout nombre réel $x$, $\sin(x)\geq -1$, donc $g(x)\geq x-2$ ; comme
+$\limx{+\infty}(x-2)=+\infty$, par comparaison, $\limx{+\infty}g(x)=+\infty$.}{}
+\explique{Soit $k\in\N$. On a $\sin\left(2k\pi+\frac{\pi}{2}\right)=1$ et
+$\sin(2k\pi+\pi)=0$, donc :}{le sinus est $2\pi$-périodique}
+\begin{calculs}
+g\left(2k\pi+\tfrac{\pi}{2}\right) &= 2k\pi+\frac{\pi}{2}+2 &&\justif{$\frac{\pi}{2}+2\approx 3{,}57$}\\
+g(2k\pi+\pi) &= 2k\pi+\pi &&\justif{$\pi\approx 3{,}14$}
+\end{calculs}
+\explique{Ainsi $2k\pi+\frac{\pi}{2}<2k\pi+\pi$, mais
+$g\left(2k\pi+\frac{\pi}{2}\right)>g(2k\pi+\pi)$ : $g$ n'est croissante sur aucun intervalle
+$\intoo{a}{+\infty}$, car pour $k$ assez grand, ces deux nombres sont dans
+$\intoo{a}{+\infty}$. \res{L'affirmation est fausse}.}{la courbe « ondule » en montant}
+\end{exo}
+
+\partie{Limites de la fonction exponentielle}
+
+\begin{exo}[Avec des exponentielles]
+\cas{a)}
+\explique{On pose $X=2x+1$ : $\limx{-\infty}X=-\infty$ et $\lim\limits_{X\to-\infty}\e^{X}=0$,
+donc par composition, \res{$\limx{-\infty}f(x)=0$}.}{d'abord l'exposant}
+\explique{$\limx{+\infty}X=+\infty$ et $\lim\limits_{X\to+\infty}\e^{X}=+\infty$, donc par
+composition, \res{$\limx{+\infty}f(x)=+\infty$}.}{}
+\cas{b)}
+\explique{$\limx{-\infty}\e^{x}=0$, donc par somme, \res{$\limx{-\infty}g(x)=7$} ;
+$\limx{+\infty}\e^{x}=+\infty$, donc par somme, \res{$\limx{+\infty}g(x)=-\infty$}.}{}
+\cas{c)}
+\explique{On pose $X=-x^{2}$ : $\limx{+\infty}X=-\infty$. Or
+$\lim\limits_{X\to-\infty}\e^{X}=0$, donc par composition,
+\res{$\limx{+\infty}h(x)=0$}.}{}
+\cas{d)}
+\explique{$\limx{-\infty}(3-x)=+\infty$ ; avec $X=-x$, par composition,
+$\limx{-\infty}\e^{-x}=\lim\limits_{X\to+\infty}\e^{X}=+\infty$.}{}
+\explique{Par produit, \res{$\limx{-\infty}k(x)=+\infty$}.}{$(+\infty)\times(+\infty)$}
+\cas{e)}
+\explique{En $-\infty$ : par composition, $\limx{-\infty}\e^{-x}=+\infty$, donc par somme,
+$\limx{-\infty}\left(1+\e^{-x}\right)=+\infty$. Par produit,
+\res{$\limx{-\infty}m(x)=-\infty$}.}{$(-\infty)\times(+\infty)$}
+\explique{En $+\infty$ : par composition, $\limx{+\infty}\e^{-x}=0$, donc la parenthèse tend
+vers $1$. Par produit, \res{$\limx{+\infty}m(x)=+\infty$}.}{$(+\infty)\times 1$}
+\cas{f)}
+\explique{On pose $X=\frac{1}{x}$.}{}
+\explique{En $+\infty$ : $X$ tend vers $0$ et $\lim\limits_{X\to 0}\e^{X}=\e^{0}=1$, donc par
+composition, \res{$\limx{+\infty}p(x)=1$}.}{on remplace $X$ par $0$}
+\explique{À gauche en $0$, on a $\limx{0^{-}}X=-\infty$, donc par composition,
+\res{$\limx{0^{-}}p(x)=0$}.}{$\e^{X}\to 0$ en $-\infty$}
+\explique{À droite en $0$, on a $\limx{0^{+}}X=+\infty$, donc par composition,
+\res{$\limx{0^{+}}p(x)=+\infty$}.}{}
+\end{exo}
+
+\begin{exo}[Factoriser par $\e^{x}$]
+\cas{1.}
+\explique{$\limx{-\infty}\e^{x}=0$, donc par somme le numérateur tend vers $-3$ et le
+dénominateur vers $4$. Par quotient, \res{$\limx{-\infty}f(x)=-\frac{3}{4}$}.}{pas de forme
+indéterminée en $-\infty$}
+\cas{2.}
+\explique{Soit $x\in\R$ :}{on part de l'expression proposée}
+\begin{calculs}
+\frac{2-3\e^{-x}}{1+4\e^{-x}} &= \frac{\e^{x}\left(2-3\e^{-x}\right)}{\e^{x}\left(1+4\e^{-x}\right)}
+&&\justif{on multiplie en haut et en bas par $\e^{x}\neq 0$}\\
+\frac{2-3\e^{-x}}{1+4\e^{-x}} &= \frac{2\e^{x}-3}{\e^{x}+4} &&\justif{$\e^{x}\times\e^{-x}=\e^{0}=1$}\\
+\frac{2-3\e^{-x}}{1+4\e^{-x}} &= f(x) &&
+\end{calculs}
+\cas{3.}
+\explique{En $+\infty$, forme indéterminée « $\frac{\infty}{\infty}$ » pour la première
+écriture. Par composition, $\limx{+\infty}\e^{-x}=0$ ; par somme, le numérateur de la
+nouvelle écriture tend vers $2$ et le dénominateur vers $1$. Par quotient,
+\res{$\limx{+\infty}f(x)=2$}.}{}
+\cas{4.}
+\explique{La droite d'équation \res{$y=-\frac{3}{4}$} est asymptote horizontale à $\Cf$ en
+$-\infty$, et la droite d'équation \res{$y=2$} en $+\infty$.}{}
+\end{exo}
+
+\begin{exo}[Avec le nombre $\e$]
+\cas{1.}
+\explique{Pour tout $n\in\N$, $u_{n+1}=\e^{n+1}=\e^{n}\times\e$, soit $u_{n+1}=\e\times u_{n}$
+: \res{$(u_{n})$ est géométrique de raison $\e$}, de premier terme $u_{0}=\e^{0}=1$.}{$\e^{a+b}=\e^{a}\times\e^{b}$}
+\explique{Comme $\e>1$ et $u_{0}>0$, \res{$\lim\limits_{n\to+\infty}u_{n}=+\infty$}.}{$\e\approx 2{,}718$
+; limite de $q^{n}$ pour $q>1$}
+\cas{2.}
+\explique{Comme suite géométrique : pour tout $n\in\N$, $v_{n+1}=\e^{-n-1}=\frac{1}{\e}\times
+v_{n}$ ; la raison $\frac{1}{\e}$ vérifie $0<\frac{1}{\e}<1$, donc
+\res{$\lim\limits_{n\to+\infty}v_{n}=0$}.}{$\frac{1}{\e}\approx 0{,}37$}
+\explique{Avec la fonction exponentielle : on pose $X=-n$, qui tend vers $-\infty$ ; comme
+$\lim\limits_{X\to-\infty}\e^{X}=0$, par composition, $\lim\limits_{n\to+\infty}v_{n}=0$.}{la
+composition vaut aussi pour une suite}
+\cas{3.}
+\explique{Forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout $n\in\N$ :}{on factorise
+par $\e^{n}$, comme par $\e^{x}$}
+\begin{calculs}
+w_{n} &= \frac{\e^{n}\left(3-\e^{-n}\right)}{\e^{n}\left(1+2\e^{-n}\right)} &&\justif{$\e^{n}\times\e^{-n}=1$}\\
+w_{n} &= \frac{3-\e^{-n}}{1+2\e^{-n}} &&\justif{on simplifie par $\e^{n}\neq 0$}
+\end{calculs}
+\explique{D'après la question 2, $\e^{-n}$ tend vers $0$ ; par somme puis par quotient,
+\res{$\lim\limits_{n\to+\infty}w_{n}=3$}.}{}
+\end{exo}
+
+\begin{exo}[La charge d'une batterie]
+\cas{1.}
+\begin{calculs}
+Q(0) &= 500\left(1-\e^{0}\right) = 0 &&\justif{$\e^{0}=1$}\\
+Q(5) &= 500\left(1-\e^{-2}\right) &&\justif{$-0{,}4\times 5=-2$}\\
+Q(5) &\approx 432 &&\justif{à la calculatrice}
+\end{calculs}
+\explique{La batterie est vide au branchement (\res{$Q(0)=0$}) et stocke environ
+\res{$432$~Wh} au bout de $5$~h.}{}
+\cas{2.}
+\explique{On pose $X=-0{,}4t$ : $\lim\limits_{t\to+\infty}X=-\infty$, et
+$\lim\limits_{X\to-\infty}\e^{X}=0$. Par composition, $\lim\limits_{t\to+\infty}\e^{-0{,}4t}=0$,
+puis par somme et par produit, \res{$\lim\limits_{t\to+\infty}Q(t)=500$}.}{$500\times(1-0)$}
+\explique{À long terme, l'énergie stockée se rapproche de \res{$500$~Wh}, la capacité de la
+batterie.}{}
+\cas{3.}
+\explique{$Q$ est dérivable sur $\intfo{0}{+\infty}$ ; la dérivée de $t\mapsto\e^{-0{,}4t}$ est
+$t\mapsto -0{,}4\,\e^{-0{,}4t}$ :}{dérivée de $\e^{at+b}$ : $a\,\e^{at+b}$}
+\begin{calculs}
+Q'(t) &= 500\left(0-\left(-0{,}4\,\e^{-0{,}4t}\right)\right) &&\\
+Q'(t) &= 200\,\e^{-0{,}4t} &&
+\end{calculs}
+\explique{Pour tout $t\geq 0$, $\e^{-0{,}4t}>0$, donc $Q'(t)>0$ : \res{$Q$ est strictement
+croissante} sur $\intfo{0}{+\infty}$.}{une exponentielle est positive}
+\cas{4.}
+\explique{Pour tout $t\geq 0$, $Q(t)-500=-500\,\e^{-0{,}4t}<0$ : la courbe de $Q$ est
+\res{en dessous de son asymptote}, la droite d'équation $y=500$.}{on étudie le signe de
+$Q(t)-500$}
+\explique{Dans ce modèle, la batterie se charge sans jamais atteindre exactement
+$500$~Wh.}{}
+\end{exo}
+
+\partie{Croissances comparées}
+
+\begin{exo}[Calculer par croissances comparées]
+\cas{a)}
+\explique{$\limx{+\infty}\e^{x}=+\infty$ et $\limx{+\infty}\left(-x^{2}\right)=-\infty$ : forme
+indéterminée « $\infty-\infty$ ». Soit $x\in\R$ :}{on factorise par $\e^{x}$, qui
+l'emporte}
+\begin{calculs}
+f(x) &= \e^{x}\left(1-x^{2}\e^{-x}\right) &&\justif{$\e^{x}\times x^{2}\e^{-x}=x^{2}$}
+\end{calculs}
+\explique{Par croissances comparées, $\limx{+\infty}x^{2}\e^{-x}=0$, donc par somme, la
+parenthèse tend vers $1$. Par produit, \res{$\limx{+\infty}f(x)=+\infty$}.}{$(+\infty)\times 1$}
+\cas{b)}
+\explique{Forme indéterminée « $\infty\times 0$ ». On développe :}{}
+\begin{calculs}
+g(x) &= x^{2}\e^{-x}+\e^{-x} &&
+\end{calculs}
+\explique{Par croissances comparées, $\limx{+\infty}x^{2}\e^{-x}=0$ ; de plus
+$\limx{+\infty}\e^{-x}=0$. Par somme, \res{$\limx{+\infty}g(x)=0$}.}{}
+\cas{c)}
+\explique{$\limx{-\infty}(x-3)=-\infty$ et $\limx{-\infty}\e^{x}=0$ : forme indéterminée
+« $\infty\times 0$ ». On développe :}{}
+\begin{calculs}
+h(x) &= x\e^{x}-3\e^{x} &&
+\end{calculs}
+\explique{Par croissances comparées, $\limx{-\infty}x\e^{x}=0$ ; de plus
+$\limx{-\infty}\e^{x}=0$. Par produit et par somme, \res{$\limx{-\infty}h(x)=0$}.}{$0-3\times 0$}
+\cas{d)}
+\explique{Par croissances comparées (avec $n=3$), \res{$\limx{+\infty}k(x)=+\infty$}.}{le
+théorème donne directement cette limite}
+\cas{e)}
+\explique{$\limx{+\infty}(x+2)=+\infty$ et $\limx{+\infty}\left(-\e^{x}\right)=-\infty$ : forme
+indéterminée « $\infty-\infty$ ». Soit $x\in\R$ :}{}
+\begin{calculs}
+m(x) &= \e^{x}\left(x\e^{-x}+2\e^{-x}-1\right) &&\justif{on factorise par $\e^{x}$}
+\end{calculs}
+\explique{Par croissances comparées, $\limx{+\infty}x\e^{-x}=0$, et
+$\limx{+\infty}\e^{-x}=0$ : la parenthèse tend vers $-1$. Par produit,
+\res{$\limx{+\infty}m(x)=-\infty$}.}{$(+\infty)\times(-1)$}
+\cas{f)}
+\explique{$\limx{+\infty}\e^{2x}=+\infty$ (par composition) et
+$\limx{+\infty}\left(-x\e^{x}\right)=-\infty$ : forme indéterminée « $\infty-\infty$ ».
+Soit $x\in\R$ :}{}
+\begin{calculs}
+p(x) &= \e^{2x}\left(1-x\e^{-x}\right) &&\justif{$\e^{2x}\times x\e^{-x}=x\e^{x}$}
+\end{calculs}
+\explique{Par croissances comparées, $\limx{+\infty}x\e^{-x}=0$ : la parenthèse tend vers
+$1$. Par produit, \res{$\limx{+\infty}p(x)=+\infty$}.}{}
+\end{exo}
+
+\begin{exo}[Croissances comparées et composée]
+\cas{1. a)}
+\explique{Pour tout nombre réel $x$, $\frac{1}{2}\times 2x\,\e^{-2x}=x\e^{-2x}$, soit
+\res{$f(x)=\frac{1}{2}\times 2x\,\e^{-2x}$}.}{$\frac{1}{2}\times 2=1$}
+\cas{1. b)}
+\explique{En $+\infty$, forme indéterminée « $\infty\times 0$ ». On pose $X=2x$ :
+$\limx{+\infty}X=+\infty$, et par croissances comparées,
+$\lim\limits_{X\to+\infty}X\e^{-X}=0$.}{on fait apparaître $X\e^{-X}$}
+\explique{Par composition, $\limx{+\infty}2x\,\e^{-2x}=0$, puis par produit,
+\res{$\limx{+\infty}f(x)=0$}.}{$\frac{1}{2}\times 0$}
+\cas{2.}
+\explique{En $-\infty$ : pour tout $x\neq 0$, $g(x)=\e^{2x}\times\frac{1}{x}$. Par
+composition, $\limx{-\infty}\e^{2x}=0$, et $\limx{-\infty}\frac{1}{x}=0$. Par produit,
+\res{$\limx{-\infty}g(x)=0$}.}{pas de forme indéterminée}
+\explique{En $+\infty$, forme indéterminée « $\frac{\infty}{\infty}$ ». Pour tout $x\neq 0$,
+$g(x)=2\times\frac{\e^{2x}}{2x}$. On pose $X=2x$ : $\limx{+\infty}X=+\infty$ et
+$\lim\limits_{X\to+\infty}\frac{\e^{X}}{X}=+\infty$ (croissances comparées).}{$\frac{\e^{2x}}{x}=\frac{2\,\e^{2x}}{2x}$}
+\explique{Par composition puis par produit, \res{$\limx{+\infty}g(x)=+\infty$}.}{}
+\end{exo}
+
+\begin{exo}[D'après bac 2026, Polynésie : vrai ou faux ?]
+\cas{a)}
+\explique{En $+\infty$, forme indéterminée « $\infty\times 0$ ». Pour tout nombre réel $x$,
+$f(x)=x\e^{-x}+\e^{-x}$.}{on développe}
+\explique{Par croissances comparées, $\limx{+\infty}x\e^{-x}=0$ ; de plus
+$\limx{+\infty}\e^{-x}=0$. Par somme, $\limx{+\infty}f(x)=0$, et non $+\infty$ :
+\res{l'affirmation est fausse}.}{}
+\cas{b)}
+\explique{Par croissances comparées (avec $n=2$), $\limx{-\infty}x^{2}\e^{x}=0$ :
+\res{l'affirmation est fausse}.}{c'est une forme « $\infty\times 0$ » que le théorème lève}
+\cas{c)}
+\explique{Forme indéterminée « $\infty-\infty$ ». Pour tout nombre réel $x$,
+$\e^{x}-x^{10}=\e^{x}\left(1-x^{10}\e^{-x}\right)$.}{on factorise par $\e^{x}$}
+\explique{Par croissances comparées, $\limx{+\infty}x^{10}\e^{-x}=0$ : la parenthèse tend vers
+$1$, et par produit, $\limx{+\infty}\left(\e^{x}-x^{10}\right)=+\infty$. \res{L'affirmation est
+vraie}.}{même $x^{10}$ est battu par $\e^{x}$}
+\end{exo}
+
+\begin{exo}[Une étude complète]
+\cas{1.}
+\explique{Forme indéterminée « $\infty\times 0$ ». Pour tout nombre réel $x$,
+$f(x)=x\e^{x}-\e^{x}$.}{on développe}
+\explique{Par croissances comparées, $\limx{-\infty}x\e^{x}=0$ ; de plus
+$\limx{-\infty}\e^{x}=0$. Par somme, \res{$\limx{-\infty}f(x)=0$}.}{}
+\explique{L'axe des abscisses, d'équation \res{$y=0$}, est asymptote horizontale à $\Cf$ en
+$-\infty$.}{}
+\cas{2.}
+\explique{$\limx{+\infty}(x-1)=+\infty$ et $\limx{+\infty}\e^{x}=+\infty$, donc par produit,
+\res{$\limx{+\infty}f(x)=+\infty$}.}{pas de forme indéterminée}
+\cas{3.}
+\explique{$f=uv$ avec $u(x)=x-1$ et $v(x)=\e^{x}$, dérivables sur $\R$ : $u'(x)=1$ et
+$v'(x)=\e^{x}$.}{$(uv)'=u'v+uv'$}
+\begin{calculs}
+f'(x) &= 1\times\e^{x}+(x-1)\,\e^{x} &&\\
+f'(x) &= (1+x-1)\,\e^{x} &&\justif{on factorise par $\e^{x}$}\\
+f'(x) &= x\e^{x} &&
+\end{calculs}
+\cas{4.}
+\explique{Pour tout nombre réel $x$, $\e^{x}>0$ : $f'(x)$ a le signe de $x$. De plus
+$f(0)=(0-1)\e^{0}=-1$.}{}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$x$/0.7,$f'(x)$/0.7,$f(x)$/1.6}{$-\infty$,$0$,$+\infty$}
+  \tkzTabLine{,-,z,+,}
+  \tkzTabVar{+/$0$,-/$-1$,+/$+\infty$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est décroissante sur $\intof{-\infty}{0}$ et croissante sur
+$\intfo{0}{+\infty}$}, de minimum $f(0)=-1$.}{limites des questions 1 et 2}
+\cas{5.}
+\explique{L'asymptote est l'axe des abscisses : on étudie le signe de $f(x)$, qui est celui
+de $x-1$, car $\e^{x}>0$.}{signe de $f(x)-0$}
+\explique{\res{Si $x<1$}, $f(x)<0$ : \res{$\Cf$ est en dessous} de l'axe des abscisses ;
+\res{si $x>1$}, \res{$\Cf$ est au-dessus} ; elle le coupe au point $(1\,;0)$.}{}
+\end{exo}
+
+\partie{Exercices type bac}
+
+\begin{exo}[D'après bac 2026, Métropole]
+\cas{1.}
+\explique{$\lim\limits_{t\to+\infty}4t=+\infty$ et $\lim\limits_{t\to+\infty}\e^{-\frac{3}{2}t}=0$ :
+forme indéterminée « $\infty\times 0$ ». Mais, pour tout $t\geq 0$ :}{rédaction du corrigé
+du bac}
+\begin{calculs}
+f(t) &= \frac{8}{3}\times\frac{3}{2}t\,\e^{-\frac{3}{2}t} &&\justif{$\frac{8}{3}\times\frac{3}{2}=4$}\\
+f(t) &= \frac{8}{3}\,X\e^{-X} &&\justif{avec $X=\frac{3}{2}t$}
+\end{calculs}
+\explique{$\lim\limits_{t\to+\infty}\frac{3}{2}t=+\infty$ et, par croissances comparées,
+$\lim\limits_{X\to+\infty}X\e^{-X}=0$. Par composition et par produit,
+\res{$\lim\limits_{t\to+\infty}f(t)=0$}.}{}
+\explique{À long terme, \res{le médicament disparaît du sang}.}{l'interprétation est
+demandée : une phrase}
+\cas{2. a)}
+\explique{$f=uv$ avec $u(t)=4t$ et $v(t)=\e^{-\frac{3}{2}t}$ : $u'(t)=4$ et
+$v'(t)=-\frac{3}{2}\e^{-\frac{3}{2}t}$.}{dérivée de $\e^{at+b}$ : $a\,\e^{at+b}$}
+\begin{calculs}
+f'(t) &= 4\,\e^{-\frac{3}{2}t}+4t\times\left(-\frac{3}{2}\right)\e^{-\frac{3}{2}t} &&\justif{$(uv)'=u'v+uv'$}\\
+f'(t) &= 4\,\e^{-\frac{3}{2}t}-6t\,\e^{-\frac{3}{2}t} &&\\
+f'(t) &= (4-6t)\,\e^{-\frac{3}{2}t} &&\justif{on factorise par l'exponentielle}
+\end{calculs}
+\cas{2. b)}
+\explique{Pour tout $t\geq 0$, $\e^{-\frac{3}{2}t}>0$ : $f'(t)$ a le signe de $4-6t$, qui
+s'annule en $t=\frac{2}{3}$, positif avant et négatif après.}{$4-6t>0$ équivaut à
+$t<\frac{2}{3}$}
+\explique{$f(0)=0$ et $f\left(\frac{2}{3}\right)=4\times\frac{2}{3}\times\e^{-1}$, soit
+$\frac{8}{3\e}\approx 0{,}98$.}{$\frac{3}{2}\times\frac{2}{3}=1$}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.6]{$t$/0.7,$f'(t)$/0.7,$f(t)$/1.6}{$0$,$\frac{2}{3}$,$+\infty$}
+  \tkzTabLine{,+,z,-,}
+  \tkzTabVar{-/$0$,+/$\frac{8}{3\e}$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est croissante sur $\intff{0}{\frac{2}{3}}$ et décroissante sur
+$\intfo{\frac{2}{3}}{+\infty}$}.}{limite en $+\infty$ : question 1}
+\cas{2. c)}
+\explique{D'après le tableau, la quantité est maximale pour $t=\frac{2}{3}$ : au bout de
+\res{$\frac{2}{3}$~h, soit $40$~min}.}{$\frac{2}{3}\times 60=40$}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Amérique du Nord]
+\cas{1.}
+\explique{Forme indéterminée « $\infty\times 0$ ». On développe : pour tout nombre réel
+$x$,}{}
+\begin{calculs}
+f(x) &= x^{2}\e^{-x}+3x\e^{-x}+2\e^{-x} &&
+\end{calculs}
+\explique{Par croissances comparées, $\limx{+\infty}x^{2}\e^{-x}=0$ et
+$\limx{+\infty}x\e^{-x}=0$ ; de plus $\limx{+\infty}\e^{-x}=0$. Par produit et par somme,
+\res{$\limx{+\infty}f(x)=0$}.}{}
+\cas{2.}
+\explique{Pour tout nombre réel $x\neq 0$,
+$x^{2}+3x+2=x^{2}\left(1+\frac{3}{x}+\frac{2}{x^{2}}\right)$, donc par produit,
+$\limx{-\infty}\left(x^{2}+3x+2\right)=+\infty$.}{forme « $\infty-\infty$ » levée en
+factorisant par $x^{2}$}
+\explique{Par composition, $\limx{-\infty}\e^{-x}=+\infty$. Par produit,
+\res{$\limx{-\infty}f(x)=+\infty$}.}{$(+\infty)\times(+\infty)$}
+\cas{3. a)}
+\explique{$f=uv$ avec $u(x)=x^{2}+3x+2$ et $v(x)=\e^{-x}$ : $u'(x)=2x+3$ et
+$v'(x)=-\e^{-x}$.}{}
+\begin{calculs}
+f'(x) &= (2x+3)\,\e^{-x}+\left(x^{2}+3x+2\right)\left(-\e^{-x}\right) &&\justif{$(uv)'=u'v+uv'$}\\
+f'(x) &= \left(2x+3-x^{2}-3x-2\right)\e^{-x} &&\justif{on factorise par $\e^{-x}$}\\
+f'(x) &= \left(-x^{2}-x+1\right)\e^{-x} &&
+\end{calculs}
+\cas{3. b)}
+\explique{Pour tout nombre réel $x$, $\e^{-x}>0$ : $f'(x)$ a le signe de $-x^{2}-x+1$.}{}
+\explique{Son discriminant vaut $(-1)^{2}-4\times(-1)\times 1$, soit $5>0$ ; ses racines sont
+$\alpha=\frac{-1-\sqrt{5}}{2}\approx -1{,}62$ et $\beta=\frac{-1+\sqrt{5}}{2}\approx 0{,}62$.}{$x=\frac{1\pm\sqrt{5}}{-2}$}
+\explique{Le coefficient de $x^{2}$ vaut $-1<0$ : le trinôme est négatif à l'extérieur des
+racines, positif entre elles.}{signe de $a$ à l'extérieur des racines}
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.6,espcl=2.4]{$x$/0.7,$f'(x)$/0.7,$f(x)$/1.6}{$-\infty$,$\alpha$,$\beta$,$+\infty$}
+  \tkzTabLine{,-,z,+,z,-,}
+  \tkzTabVar{+/$+\infty$,-/$f(\alpha)$,+/$f(\beta)$,-/$0$}
+\end{tikzpicture}
+\end{center}
+\explique{\res{$f$ est décroissante sur $\intof{-\infty}{\alpha}$, croissante sur
+$\intff{\alpha}{\beta}$ et décroissante sur $\intfo{\beta}{+\infty}$}.}{limites des
+questions 1 et 2}
+\cas{4.}
+\explique{Soit $x\geq 0$. Alors $x^{2}\geq 0$ et $3x\geq 0$, donc $x^{2}+3x+2\geq 2>0$ ; de
+plus $\e^{-x}>0$. Par produit, \res{$f(x)>0$ sur $\intfo{0}{+\infty}$}.}{produit de deux
+nombres positifs}
+\end{exo}
+
+\begin{exo}[D'après bac 2025, Centres étrangers]
+\textbf{Partie A}
+\cas{1.}
+\explique{On lit l'ordonnée du point de $\Cf$ d'abscisse $10$ : dans la limite de précision
+du graphique, \res{$f(10)\approx 0{,}9$}.}{la calculatrice donne $f(10)\approx 0{,}88$}
+\cas{2.}
+\explique{Comme $\limx{+\infty}f(x)=1$, \res{$\Cf$ admet une asymptote horizontale d'équation
+$y=1$} au voisinage de $+\infty$.}{}
+\cas{3.}
+\explique{Le point $A(0\,;0{,}5)$ est sur $\Cf$, donc $f(0)=0{,}5$, soit
+$\frac{1}{a+\e^{0}}=\frac{1}{2}$, donc $\frac{1}{a+1}=\frac{1}{2}$.}{$\e^{0}=1$}
+\explique{Ainsi $a+1=2$ : \res{$a=1$}.}{deux fractions de même numérateur égales : mêmes
+dénominateurs}
+\cas{4.}
+\begin{calculs}
+m &= \frac{y_{B}-y_{A}}{x_{B}-x_{A}} &&\\
+m &= \frac{1-0{,}5}{10-0} &&\\
+m &= 0{,}05 &&
+\end{calculs}
+\explique{Le coefficient directeur de la droite $(AB)$ est \res{$0{,}05$}.}{}
+\cas{5. a)}
+\explique{Avec $a=1$, $f=\frac{1}{u}$ où $u(x)=1+\e^{-bx}$, et $u'(x)=-b\,\e^{-bx}$.}{dérivée
+de $\frac{1}{u}$ : $-\frac{u'}{u^{2}}$}
+\begin{calculs}
+f'(x) &= -\frac{-b\,\e^{-bx}}{\left(1+\e^{-bx}\right)^{2}} &&\\
+f'(x) &= \frac{b\,\e^{-bx}}{\left(1+\e^{-bx}\right)^{2}} &&
+\end{calculs}
+\explique{Pour tout $x\geq 0$, \res{$f'(x)=\frac{b\,\e^{-bx}}{\left(1+\e^{-bx}\right)^{2}}$}.}{}
+\cas{5. b)}
+\explique{La droite $(AB)$ est tangente à $\Cf$ au point d'abscisse $0$, donc $f'(0)$ est
+son coefficient directeur, donc $f'(0)=0{,}05$.}{nombre dérivé = pente de la tangente}
+\begin{calculs}
+f'(0) &= \frac{b\times\e^{0}}{\left(1+\e^{0}\right)^{2}} = \frac{b}{4} &&
+\end{calculs}
+\explique{Ainsi $\frac{b}{4}=0{,}05$ : \res{$b=0{,}2$}.}{$4\times 0{,}05=0{,}2$}
+
+\medskip
+\textbf{Partie B}
+\cas{1.}
+\explique{On pose $X=-0{,}2x$ : $\limx{+\infty}X=-\infty$ et
+$\lim\limits_{X\to-\infty}\e^{X}=0$, donc par composition, $\limx{+\infty}\e^{-0{,}2x}=0$.}{}
+\explique{Par somme, le dénominateur tend vers $1$ ; par quotient,
+\res{$\limx{+\infty}f(x)=1$}.}{c'est la limite admise en partie A}
+\cas{2.}
+\explique{D'après la partie A avec $b=0{,}2$, pour tout $x\geq 0$,
+$f'(x)=\frac{0{,}2\,\e^{-0{,}2x}}{\left(1+\e^{-0{,}2x}\right)^{2}}$.}{}
+\explique{Une exponentielle et un carré non nul sont positifs : $f'(x)>0$, donc \res{$f$ est
+strictement croissante sur $\intfo{0}{+\infty}$}.}{de $f(0)=0{,}5$ vers $1$}
+\end{exo}
+
+\end{document}

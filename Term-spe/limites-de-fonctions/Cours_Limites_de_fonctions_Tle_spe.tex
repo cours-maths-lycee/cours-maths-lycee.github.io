@@ -1,0 +1,1292 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.1}
+\documentclass[11pt,a4paper]{article}
+\makeatletter
+\newif\ifeleve
+\elevefalse
+
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\newcommand{\res}[1]{#1}
+\geometry{top=2cm,bottom=1cm,left=1cm,right=1cm,headheight=14pt,footskip=0.6cm}
+
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\RequirePackage{tkz-tab}
+
+\newcounter{partiecours}
+\renewcommand{\thepartiecours}{\Roman{partiecours}}
+\newcommand{\partiecours}[1]{%
+  \refstepcounter{partiecours}%
+  \Needspace*{8\baselineskip}%
+  \bigskip
+  \noindent\begin{tcolorbox}[enhanced,colback=coulPart,colframe=coulPart,
+      boxrule=0pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+      before skip=6pt,after skip=10pt]
+    \color{white}\bfseries\large \thepartiecours{} --- #1%
+    \signet[partie-\arabic{partiecours}]{1}{\thepartiecours{} --- #1}
+  \end{tcolorbox}%
+  \addcontentsline{toc}{section}{\thepartiecours{} --- #1}%
+}
+
+\newtcolorbox{boitecours}[3][]{%
+  enhanced,breakable,
+  colback=white,colframe=#2,coltitle=white,
+  fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=#2,arc=2pt,boxrule=0pt},
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  title={#3},#1}
+
+\newcounter{methode}
+\newenvironment{definitionbox}[1][Définition]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulDef}{#1}}{\end{boitecours}}
+\newenvironment{proprietebox}[1][Propriété]%
+  {\begin{boitecours}[phantom={\signet{2}{#1}}]{coulProp}{#1}}{\end{boitecours}}
+\newenvironment{methodebox}[1][Méthode]{\stepcounter{methode}%
+  \begin{boitecours}[phantom={\signet[methode-\arabic{methode}]{2}{#1}}]{coulMeth}{#1}}%
+  {\end{boitecours}}
+
+\newcommand{\etape}[1]{\par\smallskip\textbf{\color{coulMeth}#1}\par\nobreak\smallskip}
+\newcommand{\enonce}[1]{\emph{#1}\par\smallskip}
+\newcommand{\reponse}[1]{\par\smallskip
+  {\footnotesize\itshape\color{black!55}Réponses : #1}}
+\newcommand{\demo}[1]{\textbf{\color{coulMeth}Démonstration.} #1}
+\newcommand{\afaire}[1]{%
+  \par\smallskip
+  \noindent{\small\color{coulExo}$\blacktriangleright$\ \textbf{À faire :}
+    fiche d'exercices du chapitre, #1.}\par\smallskip}
+
+\newenvironment{calculs}{\setlength{\jot}{5pt}\@fleqntrue\@mathmargin\retraitcalculs
+  \setlength{\abovedisplayskip}{4pt}\setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{4pt}\setlength{\belowdisplayshortskip}{4pt}%
+  \csname alignat*\endcsname{2}}%
+  {\csname endalignat*\endcsname}
+\newcommand{\rem}[1]{\text{\small\itshape\color{black!60}#1}}
+\newcommand{\explique}[2]{\par\smallskip\noindent
+  \begin{minipage}[t]{0.57\linewidth}\raggedright #1\end{minipage}\hfill
+  \begin{minipage}[t]{0.40\linewidth}\raggedright\leavevmode
+    {\small\itshape\color{black!60}#2}\end{minipage}\par}
+\newcommand{\cas}[1]{\par\smallskip\noindent\textbf{\color{coulExo}#1}\vadjust{\nobreak}}
+\newcommand{\calc}[1]{\par\smallskip\textbf{\color{coulExo}#1}\par\nobreak}
+
+\newtcolorbox{remarquebox}[1][Remarque]{%
+  enhanced,breakable,colback=white,colframe=coulRem,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulRem}#1}\par\smallskip}}
+
+\newtcolorbox{exemplebox}[1][Exemple]{%
+  enhanced,breakable,colback=white,colframe=coulEx,
+  boxrule=0pt,leftrule=2.5pt,arc=0pt,outer arc=0pt,
+  left=8pt,right=6pt,top=5pt,bottom=5pt,
+  before upper={\textbf{\color{coulEx}#1}\par\smallskip}}
+
+\pgfplotsset{
+  repere/.style={
+    axis lines=middle,
+    axis line style={-{Stealth[length=2.4mm]},thick},
+    every axis x label/.style={at={(ticklabel* cs:1.0)},anchor=west},
+    every axis y label/.style={at={(ticklabel* cs:1.0)},anchor=south},
+    label style={font=\footnotesize},
+    tick label style={font=\scriptsize},
+    grid=both,
+    major grid style={grille},
+    minor tick num=0,
+    tick align=inside,
+    clip mode=individual,
+  },
+}
+\tikzset{
+  courbe/.style={coulCourbe,line width=1.1pt,smooth},
+  courbeB/.style={coulCourbeB,line width=1.1pt,smooth},
+  courbeC/.style={coulCourbeC,line width=1.1pt,smooth},
+}
+
+\newlist{etapes}{enumerate}{1}
+\setlist[etapes]{label=\textbf{\arabic*.},leftmargin=*,itemsep=1pt,topsep=2pt}
+
+\newlist{expressions}{enumerate}{1}
+\setlist[expressions]{label={\Alph*\ $=$},leftmargin=*,itemsep=3pt,topsep=3pt}
+
+\newcounter{exo}
+\renewcommand{\theexo}{\ifnum\value{exo}<10 0\fi\arabic{exo}}
+\newtcolorbox{exercice}[1][]{%
+  enhanced,breakable,
+  colback=white,colframe=coulExo,
+  boxrule=0.9pt,arc=2pt,
+  left=8pt,right=8pt,top=8pt,bottom=6pt,
+  coltitle=white,fonttitle=\bfseries,
+  attach boxed title to top left={xshift=8pt,yshift=-\tcboxedtitleheight/2},
+  boxed title style={colback=coulExo,arc=2pt,boxrule=0pt},
+  phantom={\signet{2}{Exercice \arabic{exo}}},
+  title={Exercice \theexo\ifx\relax#1\relax\else{} --- #1\fi}}
+\newenvironment{exo}[1][\relax]{\refstepcounter{exo}\begin{exercice}[#1]}{\end{exercice}}
+
+  \newenvironment{correction}{\par}{\par}
+  \newcommand{\autableau}{}
+  \newcommand{\etapeexemples}{\etape{Exemples corrigés}}
+  \newcommand{\etapetableau}[1]{\etape{#1}}
+  \newenvironment{exempletableau}[1][Exemple]%
+    {\begin{exemplebox}[#1]}{\end{exemplebox}}
+
+\RequirePackage{comment}
+\excludecomment{correctionavj}
+
+\newcommand{\coursEntete}{}
+\newcommand{\coursNiveau}{}
+\newcommand{\coursTitre}{}
+\newcommand{\coursSurTitre}{}
+\newcommand{\coursSousTitre}{}
+
+\newcommand{\enteteCours}[1]{\renewcommand{\coursEntete}{#1}}
+\newcommand{\chapitrecours}[2]{\enteteCours{Chapitre #1 --- #2}}
+\newcommand{\niveaucours}[1]{\renewcommand{\coursNiveau}{#1}}
+\newcommand{\titrecours}[3][]{%
+  \renewcommand{\coursTitre}{#2}%
+  \renewcommand{\coursSurTitre}{#1}%
+  \renewcommand{\coursSousTitre}{#3}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{coulPart}\textbf{\coursEntete}}
+\fancyhead[R]{\footnotesize\color{coulPart}\textbf{\coursNiveau}}
+\fancyfoot[C]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parskip}{2pt}
+
+\newcommand{\lycee@mentioneleve}{\\[2pt]{\small\itshape Version élève}}
+\AtBeginDocument{%
+  \begin{center}
+    \begin{tcolorbox}[enhanced,width=0.72\linewidth,colback=white,colframe=coulPart,
+        boxrule=1.6pt,arc=3pt,halign=center,top=10pt,bottom=10pt]
+      \ifx\coursSurTitre\empty
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[4pt]
+      \else
+        {\Huge\bfseries\color{coulPart} \coursTitre}\\[3pt]
+        {\Large\bfseries\color{coulPart} \coursSurTitre}\\[5pt]
+      \fi
+      {\normalsize \coursSousTitre}%
+      
+    \end{tcolorbox}
+  \end{center}%
+}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+
+\usetikzlibrary{decorations.text}
+\definecolor{lycee@metal}{HTML}{1F4E79}
+\definecolor{lycee@manche}{HTML}{8A5A2B}
+\definecolor{lycee@etincelle}{HTML}{F28C28}
+\newcommand{\lycee@pluriel}[2]{#1 #2\ifnum#1>1 s\fi}
+\newcommand{\lycee@sceau}{%
+  \edef\lycee@bas{\lycee@pluriel{\lyceerelectures}{relecture} et
+    \lycee@pluriel{\lyceerodages}{rodage}}%
+  \begin{tikzpicture}[line join=round]
+    \fill[coulPart!10,draw=coulPart,line width=.8pt] (0:2.2)
+      \foreach \i in {1,...,71}{ -- (\i*5:{isodd(\i)?2.1:2.2}) } -- cycle;
+    \draw[coulPart,line width=1.2pt] (0,0) circle (1.93);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.85);
+    \draw[coulPart,line width=.4pt] (0,0) circle (1.2);
+    \path[decorate,decoration={text along path,text align=center,
+        text={|\fontsize{9.5}{11}\selectfont\bfseries\color{coulPart}|TEST{\'E} AVEC MES {\'E}L{\`E}VES}}]
+      (180:1.45) arc (180:0:1.45);
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8.5}{10}\noexpand\selectfont\noexpand\color{coulPart}|\lycee@bas}}]
+      (195:1.68) arc (195:345:1.68);
+    \begin{scope}[x=.25mm,y=-.25mm]
+      \begin{scope}[shift={(-32,-40)}]%
+        \fill[lycee@metal] (23,31) rectangle (41,49);
+        \draw[lycee@etincelle,line width=.5pt,line cap=round]
+          (20,30)--(15,27) (19,34)--(14,35) (44,30)--(49,27) (45,34)--(50,35);
+        \fill[lycee@manche,rounded corners=.3mm] (38,24.6) rectangle (60,27.6);
+        \fill[lycee@metal,rounded corners=.4mm] (25,20) rectangle (39,31);
+        \fill[lycee@etincelle,rounded corners=.2mm] (25,20) rectangle (28,31);
+      \end{scope}
+    \end{scope}
+    \ifdefined\lyceesceauplusieurs\def\lycee@annee{Ann{\'e}es~:}\else
+      \def\lycee@annee{Ann{\'e}e}\fi
+    \path[decorate,decoration={text along path,text align=center,
+        text/.expanded={|\noexpand\fontsize{8}{10}\noexpand\selectfont\noexpand\color{coulPart}|%
+          \unexpanded\expandafter{\lycee@annee} \unexpanded\expandafter{\lyceesceauannees}}}]
+      (95:1.08) arc (95:445:1.08);
+  \end{tikzpicture}}
+\AtEndDocument{\ifdefined\lyceesceauannees
+  \par\besoinplace{5cm}\vspace{1.5em}%
+  \begin{center}\lycee@sceau\end{center}\fi}
+\makeatother
+
+\chapitrecours{5}{Limites de fonctions}
+\niveaucours{T\textsuperscript{le} spécialité}
+\titrecours{LIMITES DE FONCTIONS}{Cours --- Terminale spécialité}
+
+\begin{document}
+
+\newcommand{\e}{\mathrm{e}}
+
+\begin{remarquebox}[Durée du chapitre]
+À titre indicatif, ce chapitre est prévu pour un volume de $12$~h d'enseignement
+($6$ séances de $2$~h). Une partie importante des exercices est à faire en autonomie.
+\end{remarquebox}
+
+\partiecours{Limite d'une fonction en l'infini}
+
+Au chapitre~2, on a étudié ce que deviennent les termes $u_{n}$ d'une suite quand $n$
+devient très grand. Pour une fonction, la variable $x$ est un nombre réel : on se demande
+ce que devient $f(x)$ quand $x$ devient très grand (en $+\infty$) ou très grand en valeur
+absolue et négatif (en $-\infty$).
+
+\smallskip
+Exemple : soit la fonction $f$ définie pour tout nombre réel $x\neq 0$ par
+$f(x)=3+\frac{1}{x}$. On a $f(10)=3{,}1$ ; $f(100)=3{,}01$ et $f(1\,000)=3{,}001$ :
+l'écriture décimale de $f(x)$ commence par $3{,}00\ldots$ avec de plus en plus de zéros.
+Les valeurs de $f(x)$ finissent par être aussi proches de $3$ qu'on le veut.
+
+\begin{definitionbox}[Définition 1 --- Limite finie en l'infini, asymptote horizontale]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\textbf{Intuitivement :} $f$ a pour limite le nombre réel $\ell$ en $+\infty$ si $f(x)$
+finit par rester aussi près de $\ell$ qu'on le veut quand $x$ devient très grand.
+
+\smallskip
+\textbf{Définition :} $f$ a pour \textbf{limite} $\ell$ en $+\infty$ si tout intervalle
+ouvert contenant $\ell$ contient toutes les valeurs $f(x)$ dès que $x$ est assez grand.
+On note $\lim\limits_{x\to+\infty}f(x)=\ell$. On définit de même
+$\lim\limits_{x\to-\infty}f(x)=\ell$.
+
+\smallskip
+Dans ce cas, la droite d'équation $y=\ell$ est \textbf{asymptote horizontale} à $\Cf$
+en $+\infty$ (ou en $-\infty$) : la courbe s'en rapproche autant qu'on le veut.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \fill[red!12] (0,2.4) rectangle (10.5,3.6);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(11,0) node[below left]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,6.5) node[below left]{$y$};
+  \draw[dashed,black!60] (0,3)--(10.5,3) node[above left,font=\footnotesize]{$y=\ell$};
+  \draw[coulCourbe,line width=1.1pt,domain=0.45:10.5,samples=80] plot (\x,{3+1.2/\x});
+  \draw[dotted,black!60] (2,0)--(2,6.2);
+  \draw (2,0.07)--(2,-0.07) node[below,font=\footnotesize]{$x$ assez grand};
+  \node[coulCourbe,font=\footnotesize] at (1.3,6) {$\Cf$};
+\end{tikzpicture}
+
+{\footnotesize Dès que $x$ est assez grand, la courbe reste dans la bande rouge, aussi
+étroite soit-elle.}
+\end{minipage}
+\end{definitionbox}
+
+\begin{definitionbox}[Définition 2 --- Limite infinie en l'infini]
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\textbf{Intuitivement :} $f$ a pour limite $+\infty$ en $+\infty$ si $f(x)$ finit par
+dépasser n'importe quel seuil quand $x$ devient très grand.
+
+\smallskip
+\textbf{Définition :} $\lim\limits_{x\to+\infty}f(x)=+\infty$ si, pour tout nombre réel
+$A$, l'intervalle $\intoo{A}{+\infty}$ contient toutes les valeurs $f(x)$ dès que $x$
+est assez grand. On définit de même une limite $-\infty$ (avec $\intoo{-\infty}{A}$),
+et les limites infinies en $-\infty$.
+
+\smallskip
+Une fonction peut n'avoir aucune limite en $+\infty$ : $\cos(x)$ oscille sans cesse
+entre $-1$ et $1$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.42\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(9,0) node[below left]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,7) node[below left]{$y$};
+  \draw[dashed,black!60] (0,4)--(8.5,4);
+  \node[left,font=\footnotesize] at (0,4) {$A$};
+  \draw[coulCourbe,line width=1.1pt,domain=0:8.2,samples=80] plot (\x,{0.09*\x*\x+0.3*sin(150*\x)+0.5});
+  \node[coulCourbe,font=\footnotesize] at (7.6,7) {$\Cf$};
+\end{tikzpicture}
+
+{\footnotesize Quel que soit le seuil $A$, la courbe finit par rester au-dessus.}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 1 --- Limites des fonctions de référence en l'infini]
+Pour tout $n\in\Ns$ :
+\begin{center}
+$\lim\limits_{x\to+\infty}x^{n}=+\infty$ \qquad
+$\lim\limits_{x\to+\infty}\sqrt{x}=+\infty$ \qquad
+$\lim\limits_{x\to+\infty}\dfrac{1}{x^{n}}=0$ \qquad
+$\lim\limits_{x\to-\infty}\dfrac{1}{x^{n}}=0$ \qquad
+$\lim\limits_{x\to+\infty}\dfrac{1}{\sqrt{x}}=0$
+\end{center}
+En $-\infty$ : $\lim\limits_{x\to-\infty}x^{n}=+\infty$ si $n$ est pair ($x^{2}$, $x^{4}$),
+et $\lim\limits_{x\to-\infty}x^{n}=-\infty$ si $n$ est impair ($x$, $x^{3}$) : le signe
+de $x^{n}$ suit la règle des signes.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 1 --- Lire des limites en l'infini et une asymptote sur un graphique]
+\etapeexemples
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On donne la courbe $\Cf$ d'une fonction $f$ définie sur $\R$.
+\begin{questions}[label=\alph*)]
+  \item Conjecturer les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item La courbe $\Cf$ semble-t-elle admettre une asymptote horizontale ? Si oui,
+        donner son équation.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-3}{-1}{6}{6}
+  \gradx{-2,-1,1,2,3,4,5} \grady{1,2,3,4,5}
+  \draw[coulCourbe,line width=1.1pt,domain=-1.6:6,samples=80] plot (\x,{1+exp(-\x)});
+  \node[coulCourbe,font=\footnotesize] at (-2.2,5.3) {$\Cf$};
+\end{tikzpicture}
+\end{minipage}
+\begin{correction}
+\cas{a)}
+\explique{Quand $x$ devient très grand, la courbe se rapproche de la droite d'ordonnée
+$1$ : on conjecture que \res{$\lim\limits_{x\to+\infty}f(x)=1$}.}{la courbe « s'aplatit »
+vers $y=1$}
+\explique{Quand $x$ tend vers $-\infty$, la courbe monte au-delà de toute hauteur : on
+conjecture que \res{$\lim\limits_{x\to-\infty}f(x)=+\infty$}.}{une lecture, pas une
+preuve}
+\cas{b)}
+\explique{Comme $\lim\limits_{x\to+\infty}f(x)=1$, la droite d'équation \res{$y=1$} semble
+asymptote horizontale à $\Cf$ en $+\infty$.}{limite finie $\Rightarrow$ asymptote
+horizontale}
+\explique{En $-\infty$, la limite est infinie : pas d'asymptote horizontale de ce
+côté.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+On donne la courbe $\Cg$ d'une fonction $g$ définie sur $\R$.
+\begin{questions}[label=\alph*)]
+  \item Conjecturer les limites de $g$ en $-\infty$ et en $+\infty$.
+  \item La courbe $\Cg$ semble-t-elle admettre une asymptote horizontale ? Si oui,
+        donner son équation.
+\end{questions}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.45cm,y=0.45cm]
+  \repere{-6}{-6}{3}{1}
+  \gradx{-5,-4,-3,-2,-1,1,2} \grady{-5,-4,-3,-2,-1}
+  \draw[coulCourbe,line width=1.1pt,domain=-6:1.6,samples=80] plot (\x,{-1-exp(\x)});
+  \node[coulCourbe,font=\footnotesize] at (2.3,-5.3) {$\Cg$};
+\end{tikzpicture}
+\end{minipage}
+\reponse{a) $\lim\limits_{x\to-\infty}g(x)=-1$ ; $\lim\limits_{x\to+\infty}g(x)=-\infty$.\;
+b)~asymptote $y=-1$ en $-\infty$.}
+\end{methodebox}
+
+\afaire{exercices 1 à 3}
+
+\partiecours{Limite d'une fonction en un nombre réel}
+
+La fonction inverse n'est pas définie en $0$. Mais que se passe-t-il quand $x$ se
+rapproche de $0$ ? Il faut distinguer deux cas.
+\begin{itemize}
+  \item On a $\frac{1}{0{,}1}=10$ ; $\frac{1}{0{,}01}=100$ et $\frac{1}{0{,}001}=1\,000$ :
+        quand $x$ se rapproche de $0$ en restant positif, $\frac{1}{x}$ devient aussi
+        grand qu'on le veut. On note $x\to 0^{+}$ pour signifier que $x$ s'approche de
+        $0$ par valeurs positives ; on note aussi $\begin{smallmatrix}x\to 0\\ x>0\end{smallmatrix}$.
+  \item On a $\frac{1}{-0{,}1}=-10$ ; $\frac{1}{-0{,}01}=-100$ et
+        $\frac{1}{-0{,}001}=-1\,000$ : quand $x$ se rapproche de $0$ en restant négatif,
+        $\frac{1}{x}$ part en direction de $-\infty$. On note $x\to 0^{-}$ pour signifier
+        que $x$ s'approche de $0$ par valeurs négatives ; on note aussi
+        $\begin{smallmatrix}x\to 0\\ x<0\end{smallmatrix}$.
+\end{itemize}
+La limite dépend donc du côté par lequel on s'approche de $0$.
+
+\begin{definitionbox}[Définition 3 --- Limite infinie en un nombre réel, asymptote verticale]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $a$ un nombre réel, où $f$ n'est pas définie, mais qui est une borne de son
+ensemble de définition.
+
+\smallskip
+\textbf{Intuitivement :} $f$ a pour limite $+\infty$ en $a$ si $f(x)$ finit par dépasser
+n'importe quel seuil quand $x$ se rapproche de $a$.
+
+\smallskip
+\textbf{Définition :} $\lim\limits_{x\to a}f(x)=+\infty$ si, pour tout nombre réel $A$,
+l'intervalle $\intoo{A}{+\infty}$ contient toutes les valeurs $f(x)$ dès que $x$ est
+assez proche de $a$. On définit de même une limite $-\infty$ en $a$.
+
+\smallskip
+Si l'on ne garde que les $x>a$, on parle de \textbf{limite à droite}, notée
+$\lim\limits_{\substack{x\to a\\ x>a}}f(x)$ ou $\lim\limits_{x\to a^{+}}f(x)$ ; avec
+$x<a$, de \textbf{limite à gauche}, notée $\lim\limits_{\substack{x\to a\\ x<a}}f(x)$ ou
+$\lim\limits_{x\to a^{-}}f(x)$.
+
+\smallskip
+Si $f$ a une limite infinie en $a$ (à droite ou à gauche), la droite d'équation $x=a$
+est \textbf{asymptote verticale} à $\Cf$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-4}{-4}{4}{4}
+  \gradx{-3,-2,-1,1,2,3} \grady{-3,-2,-1,1,2,3}
+  \draw[coulCourbe,line width=1.1pt,domain=0.25:4,samples=60] plot (\x,{1/\x});
+  \draw[coulCourbe,line width=1.1pt,domain=-4:-0.25,samples=60] plot (\x,{1/\x});
+  \node[coulCourbe,font=\footnotesize] at (1.3,3.4) {$\Cf$};
+\end{tikzpicture}
+
+{\footnotesize Fonction inverse : $\lim\limits_{x\to 0^{+}}\frac{1}{x}=+\infty$ et
+$\lim\limits_{x\to 0^{-}}\frac{1}{x}=-\infty$ ; l'axe des ordonnées ($x=0$) est
+asymptote verticale.}
+\end{minipage}
+\end{definitionbox}
+
+\begin{proprietebox}[Propriété 2 --- Limites en un nombre réel]
+\begin{itemize}
+  \item Au voisinage de $0$, on a $\lim\limits_{x\to 0^{+}}\dfrac{1}{x}=+\infty$ ;
+        $\lim\limits_{x\to 0^{-}}\dfrac{1}{x}=-\infty$ ;
+        $\lim\limits_{x\to 0}\dfrac{1}{x^{2}}=+\infty$ ;
+        $\lim\limits_{x\to 0^{+}}\dfrac{1}{\sqrt{x}}=+\infty$.
+  \item Si $f$ est un polynôme, la racine carrée, la fonction inverse, la fonction
+        exponentielle, ou s'obtient à partir d'elles par sommes, produits et quotients,
+        et si $f$ est définie en $a$, alors $\lim\limits_{x\to a}f(x)=f(a)$ (admis) :
+        par exemple, $\lim\limits_{x\to 2}\left(x^{2}+1\right)=5$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{remarquebox}[Continuité]
+Une fonction qui vérifie $\lim\limits_{x\to a}f(x)=f(a)$ en tout nombre réel $a$ d'un
+intervalle est dite \textbf{continue} sur cet intervalle : sa courbe se trace sans lever
+le crayon. Cette notion sera étudiée au chapitre~6 ; ici, on retient seulement que, pour
+les fonctions de la propriété~2, on obtient la limite en $a$ en remplaçant $x$ par $a$.
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 2 --- Conjecturer une limite en un nombre réel]
+\etapeexemples
+Soit la fonction $f$ définie pour tout nombre réel $x\neq 2$ par $f(x)=\dfrac{3}{x-2}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $f(2{,}1)$ ; $f(2{,}01)$ ; $f(2{,}001)$, puis $f(1{,}9)$ ; $f(1{,}99)$ ;
+        $f(1{,}999)$.
+  \item Conjecturer la limite à droite et la limite à gauche de $f$ en $2$, et en
+        donner une interprétation graphique.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\begin{calculs}
+f(2{,}1) &= \frac{3}{0{,}1} = 30 &\qquad& \rem{$2{,}1-2=0{,}1$}\\
+f(2{,}01) &= \frac{3}{0{,}01} = 300 &&\\
+f(2{,}001) &= \frac{3}{0{,}001} = 3\,000 &&\\
+f(1{,}9) &= \frac{3}{-0{,}1} = -30 &\qquad& \rem{$1{,}9-2=-0{,}1$}\\
+f(1{,}99) &= \frac{3}{-0{,}01} = -300 &&\\
+f(1{,}999) &= \frac{3}{-0{,}001} = \res{-3\,000} &&
+\end{calculs}
+\cas{b)}
+\explique{À droite de $2$, $f(x)$ devient aussi grand qu'on le veut : on conjecture que
+\res{$\lim\limits_{x\to 2^{+}}f(x)=+\infty$}.}{$x>2$}
+\explique{À gauche de $2$, on conjecture que
+\res{$\lim\limits_{x\to 2^{-}}f(x)=-\infty$}.}{$x<2$}
+\explique{La droite d'équation \res{$x=2$} semble asymptote verticale à $\Cf$.}{limite
+infinie en $2$}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la fonction $g$ définie pour tout nombre réel $x\neq -1$ par
+$g(x)=\dfrac{-2}{x+1}$.
+\begin{questions}[label=\alph*)]
+  \item Calculer $g(-0{,}9)$ ; $g(-0{,}99)$ ; $g(-0{,}999)$, puis $g(-1{,}1)$ ;
+        $g(-1{,}01)$ ; $g(-1{,}001)$.
+  \item Conjecturer la limite à droite et la limite à gauche de $g$ en $-1$, et en
+        donner une interprétation graphique.
+\end{questions}
+\reponse{a) $-20$ ; $-200$ ; $-2\,000$ ; $20$ ; $200$ ; $2\,000$.\; b)~$-\infty$ à droite,
+$+\infty$ à gauche ; asymptote $x=-1$.}
+\end{methodebox}
+
+\afaire{exercices 4 à 6}
+
+\partiecours{Opérations sur les limites}
+
+Les règles de calcul vues pour les suites au chapitre~2 restent vraies pour les
+fonctions (admis), en $+\infty$, en $-\infty$ ou en un nombre réel $a$. Dans les
+tableaux, $\ell$ et $\ell'$ sont des nombres réels, « $\infty$ » désigne $+\infty$ ou
+$-\infty$, et le signe du résultat suit la règle des signes. On écrit
+$\lim g(x)=0^{+}$ quand $g(x)$ tend vers $0$ en restant positif, $0^{-}$ en restant
+négatif.
+
+\begin{proprietebox}[Propriété 3 --- Opérations sur les limites]
+\textbf{Somme}
+
+\smallskip
+\begin{center}
+{\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{7pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$\lim f(x)$ & $\ell$ & $\ell$ & $\ell$ & $+\infty$ & $-\infty$ & $+\infty$\\ \hline
+$\lim g(x)$ & $\ell'$ & $+\infty$ & $-\infty$ & $+\infty$ & $-\infty$ & $-\infty$\\ \hline
+$\lim \bigl(f(x)+g(x)\bigr)$ & $\ell+\ell'$ & $+\infty$ & $-\infty$ & $+\infty$ &
+$-\infty$ & \textbf{F.I.}\\ \hline
+\end{tabular}}
+\end{center}
+
+\textbf{Produit}
+
+\smallskip
+\begin{center}
+{\renewcommand{\arraystretch}{1.8}\setlength{\tabcolsep}{7pt}%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$\lim f(x)$ & $\ell$ & $\ell\neq 0$ & $\infty$ & $0$\\ \hline
+$\lim g(x)$ & $\ell'$ & $\infty$ & $\infty$ & $\infty$\\ \hline
+$\lim \bigl(f(x)\times g(x)\bigr)$ & $\ell\times\ell'$ & $\infty$ & $\infty$ &
+\textbf{F.I.}\\ \hline
+\end{tabular}}
+\end{center}
+
+\textbf{Quotient}
+
+\smallskip
+\begin{center}
+{\renewcommand{\arraystretch}{2.4}\setlength{\tabcolsep}{6pt}%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$\lim f(x)$ & $\ell$ & $\ell$ & $\ell\neq 0$ ou $\infty$ & $\infty$ & $\infty$ & $0$\\ \hline
+$\lim g(x)$ & $\ell'\neq 0$ & $\infty$ & $0^{+}$ ou $0^{-}$ & $\ell'$ & $\infty$ & $0$\\ \hline
+$\lim \dfrac{f(x)}{g(x)}$ & $\dfrac{\ell}{\ell'}$ & $0$ & $\infty$ & $\infty$ &
+\textbf{F.I.} & \textbf{F.I.}\\ \hline
+\end{tabular}}
+\end{center}
+
+\textbf{En mots :} un nombre divisé par « très grand » devient « très petit » ; un nombre
+non nul divisé par « très proche de zéro » devient « très grand ».
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 3 --- Calculer une limite par opérations]
+\etapeexemples
+Pour chaque fonction, déterminer la ou les limites demandées.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\intfo{0}{+\infty}$ par $f(x)=x^{3}+2\sqrt{x}-1$, en
+        $+\infty$.
+  \item La fonction $g$ définie pour tout nombre réel $x\neq 0$ par
+        $g(x)=\left(3-\dfrac{1}{x}\right)\left(x^{2}+1\right)$, en $-\infty$.
+  \item La fonction $h$ définie pour tout nombre réel $x\neq 3$ par
+        $h(x)=\dfrac{2x-1}{x-3}$, à gauche et à droite en $3$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\lim\limits_{x\to+\infty}\sqrt{x}=+\infty$, donc par produit,
+$\lim\limits_{x\to+\infty}2\sqrt{x}=+\infty$.}{produit par $2>0$}
+\explique{$\lim\limits_{x\to+\infty}x^{3}=+\infty$, donc par somme,
+\res{$\lim\limits_{x\to+\infty}f(x)=+\infty$}.}{$+\infty+\infty-1$}
+\cas{b)}
+\explique{$\lim\limits_{x\to-\infty}\frac{1}{x}=0$, donc par somme,
+$\lim\limits_{x\to-\infty}\left(3-\frac{1}{x}\right)=3$.}{}
+\explique{$\lim\limits_{x\to-\infty}x^{2}=+\infty$, donc par somme,
+$\lim\limits_{x\to-\infty}\left(x^{2}+1\right)=+\infty$.}{$x^{2}$ : puissance paire}
+\explique{Par produit, \res{$\lim\limits_{x\to-\infty}g(x)=+\infty$}.}{$3\times(+\infty)$}
+\cas{c)}
+\explique{$\lim\limits_{x\to 3}(2x-1)=5$.}{polynôme défini en $3$ : on remplace $x$
+par $3$}
+\explique{Si $x<3$, alors $x-3<0$ : $\lim\limits_{x\to 3^{-}}(x-3)=0^{-}$. Par quotient,
+\res{$\lim\limits_{x\to 3^{-}}h(x)=-\infty$}.}{$\frac{5}{0^{-}}$ : règle des signes}
+\explique{Si $x>3$, alors $x-3>0$ : $\lim\limits_{x\to 3^{+}}(x-3)=0^{+}$. Par quotient,
+\res{$\lim\limits_{x\to 3^{+}}h(x)=+\infty$}.}{$\frac{5}{0^{+}}$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque fonction, déterminer la ou les limites demandées.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\intfo{0}{+\infty}$ par $f(x)=2x^{2}+\sqrt{x}-5$, en
+        $+\infty$.
+  \item La fonction $g$ définie pour tout nombre réel $x\neq 0$ par
+        $g(x)=\left(2+\dfrac{1}{x^{2}}\right)\left(x^{3}-1\right)$, en $-\infty$.
+  \item La fonction $h$ définie pour tout nombre réel $x\neq -1$ par
+        $h(x)=\dfrac{3-x}{x+1}$, à gauche et à droite en $-1$.
+\end{questions}
+\reponse{a) $+\infty$.\; b)~$-\infty$.\; c)~$-\infty$ à gauche, $+\infty$ à droite.}
+\end{methodebox}
+
+\afaire{exercices 7 à 10}
+
+\partiecours{Lever une indétermination}
+
+Comme pour les suites, les quatre formes indéterminées sont « $\infty-\infty$ »,
+« $0\times\infty$ », « $\frac{\infty}{\infty}$ » et « $\frac{0}{0}$ » : il faut
+transformer l'écriture de $f(x)$, puis appliquer les opérations. En l'infini, on
+\textbf{factorise par le terme de plus haut degré}. En un nombre réel $a$, une forme
+« $\frac{0}{0}$ » se lève souvent en factorisant par $(x-a)$, puis en simplifiant.
+
+\begin{methodebox}[Méthode 4 --- Lever une indétermination]
+\etapeexemples
+Pour chaque fonction, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\R$ par $f(x)=2x^{3}+5x^{2}+1$, en $-\infty$.
+  \item La fonction $g$ définie sur $\R$ par $g(x)=\dfrac{4x^{2}-x}{2x^{2}+3}$, en
+        $+\infty$.
+  \item La fonction $h$ définie pour tout nombre réel $x\neq 3$ par
+        $h(x)=\dfrac{x^{2}-9}{x-3}$, en $3$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\lim\limits_{x\to-\infty}2x^{3}=-\infty$ et
+$\lim\limits_{x\to-\infty}5x^{2}=+\infty$ : c'est une forme indéterminée
+« $\infty-\infty$ ».}{on le signale d'abord}
+\explique{Pour tout nombre réel $x\neq 0$ :}{on peut diviser par $x^{3}$}
+\begin{calculs}
+f(x) &= x^{3}\left(2+\frac{5x^{2}}{x^{3}}+\frac{1}{x^{3}}\right) &\qquad& \rem{on
+factorise par $x^{3}$, terme de plus haut degré}\\
+f(x) &= x^{3}\left(2+\frac{5}{x}+\frac{1}{x^{3}}\right) &\qquad& \rem{on simplifie
+$\frac{5x^{2}}{x^{3}}$}
+\end{calculs}
+\explique{Par somme, la parenthèse tend vers $2$ ; $\lim\limits_{x\to-\infty}x^{3}=-\infty$,
+donc par produit, \res{$\lim\limits_{x\to-\infty}f(x)=-\infty$}.}{$(-\infty)\times 2$}
+\cas{b)}
+\explique{Le numérateur et le dénominateur tendent vers $+\infty$ : forme indéterminée
+« $\frac{\infty}{\infty}$ ». Pour tout nombre réel $x\neq 0$ :}{on peut simplifier par
+$x^{2}$}
+\begin{calculs}
+g(x) &= \frac{x^{2}\left(4-\frac{1}{x}\right)}{x^{2}\left(2+\frac{3}{x^{2}}\right)} &\qquad&
+\rem{on factorise en haut et en bas par $x^{2}$}\\
+g(x) &= \frac{4-\frac{1}{x}}{2+\frac{3}{x^{2}}} &\qquad& \rem{on simplifie par
+$x^{2}\neq 0$}
+\end{calculs}
+\explique{Par somme, le numérateur tend vers $4$ et le dénominateur vers $2$ ; par
+quotient, \res{$\lim\limits_{x\to+\infty}g(x)=2$}.}{$\frac{4}{2}=2$}
+\cas{c)}
+\explique{$\lim\limits_{x\to 3}\left(x^{2}-9\right)=0$ et $\lim\limits_{x\to 3}(x-3)=0$ :
+forme indéterminée « $\frac{0}{0}$ ». Pour tout nombre réel $x\neq 3$ :}{on factorise
+par $x-3$}
+\begin{calculs}
+h(x) &= \frac{x^{2}-9}{x-3} &&\\
+h(x) &= \frac{(x-3)(x+3)}{x-3} &\qquad& \rem{$a^{2}-b^{2}=(a-b)(a+b)$}\\
+h(x) &= \frac{\barre{(x-3)}(x+3)}{\barre{x-3}} &\qquad& \rem{on simplifie par
+$x-3\neq 0$}\\
+h(x) &= x+3 &\qquad& \rem{pour tout $x\neq 3$}
+\end{calculs}
+\explique{$\lim\limits_{x\to 3}(x+3)=6$, donc \res{$\lim\limits_{x\to 3}h(x)=6$}.}{la
+courbe a un « trou » au point $(3\,;6)$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque fonction, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\R$ par $f(x)=-x^{3}+4x+2$, en $-\infty$.
+  \item La fonction $g$ définie pour tout nombre réel $x\neq 0$ et $x\neq\frac{1}{3}$
+        par $g(x)=\dfrac{9x^{2}+1}{3x^{2}-x}$, en $+\infty$.
+  \item La fonction $h$ définie pour tout nombre réel $x\neq -2$ par
+        $h(x)=\dfrac{x^{2}-4}{x+2}$, en $-2$.
+\end{questions}
+\reponse{a) $+\infty$.\; b)~$3$.\; c)~$-4$.}
+\end{methodebox}
+
+\begin{remarquebox}[Quotient de degrés différents]
+La même factorisation conclut : pour tout nombre réel $x\neq 0$, on a
+$\frac{x^{2}+5}{2x-1}=x\times\frac{1+\frac{5}{x^{2}}}{2-\frac{1}{x}}$, qui tend vers
+$+\infty$ en $+\infty$ par produit. En l'infini, le terme de plus haut degré du
+numérateur et celui du dénominateur décident.
+\end{remarquebox}
+
+\afaire{exercices 11 à 14}
+
+\partiecours{Asymptotes et position relative}
+
+Une limite finie en $\pm\infty$ donne une asymptote horizontale ; une limite infinie en
+un nombre réel $a$ donne une asymptote verticale (parties~I et~II). Pour savoir si
+$\Cf$ est au-dessus ou en dessous de son asymptote $y=\ell$, on étudie le
+\textbf{signe de $f(x)-\ell$}, comme pour la position de deux courbes en 1\textsuperscript{re}.
+
+\begin{methodebox}[Méthode 5 --- Déterminer les asymptotes et la position de la courbe]
+\etapeexemples
+Soit la fonction $f$ définie pour tout nombre réel $x\neq 1$ par
+$f(x)=\dfrac{2x+1}{x-1}$, et $\Cf$ sa courbe.
+\begin{questions}[label=\alph*)]
+  \item Montrer que, pour tout nombre réel $x\neq 1$, $f(x)=2+\dfrac{3}{x-1}$.
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$, et en déduire une
+        asymptote à $\Cf$.
+  \item Déterminer les limites de $f$ à gauche et à droite en $1$, et en déduire une
+        asymptote à $\Cf$.
+  \item Étudier la position de $\Cf$ par rapport à la droite d'équation $y=2$.
+\end{questions}
+\begin{correction}
+\begin{minipage}[t]{0.58\linewidth}\raggedright
+\cas{a)}
+\explique{Soit $x\neq 1$. On part de l'expression proposée :}{}
+\begin{calculs}
+2+\frac{3}{x-1} &= \frac{2(x-1)+3}{x-1} &\qquad& \rem{même dénominateur}\\
+2+\frac{3}{x-1} &= \frac{2x+1}{x-1} &&\\
+2+\frac{3}{x-1} &= f(x) &&
+\end{calculs}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.38\linewidth}\centering
+\vspace{0pt}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-4}{-3}{6}{7}
+  \gradx{-3,-2,-1,1,2,3,4,5} \grady{-2,-1,1,2,3,4,5,6}
+  \draw[dashed,coulCourbeB,line width=0.8pt] (-4,2)--(6,2);
+  \draw[dashed,coulCourbeB,line width=0.8pt] (1,-3)--(1,7);
+  \draw[coulCourbe,line width=1.1pt,domain=-4:0.4,samples=60] plot (\x,{2+3/(\x-1)});
+  \draw[coulCourbe,line width=1.1pt,domain=1.6:6,samples=60] plot (\x,{2+3/(\x-1)});
+  \node[coulCourbe,font=\footnotesize] at (3.2,5.6) {$\Cf$};
+  \node[coulCourbeB,font=\footnotesize,above] at (-2.6,2) {$y=2$};
+  \node[coulCourbeB,font=\footnotesize,right] at (1,-2.3) {$x=1$};
+\end{tikzpicture}
+\end{minipage}
+\cas{b)}
+\explique{$\lim\limits_{x\to+\infty}(x-1)=+\infty$, donc par quotient,
+$\lim\limits_{x\to+\infty}\frac{3}{x-1}=0$, et par somme,
+\res{$\lim\limits_{x\to+\infty}f(x)=2$}. De même,
+$\lim\limits_{x\to-\infty}f(x)=2$.}{on se sert de la forme du a)}
+\explique{La droite d'équation \res{$y=2$} est asymptote horizontale à $\Cf$ en $-\infty$
+et en $+\infty$.}{}
+\cas{c)}
+\explique{Si $x<1$, alors $\lim\limits_{x\to 1^{-}}(x-1)=0^{-}$ : par quotient,
+$\lim\limits_{x\to 1^{-}}\frac{3}{x-1}=-\infty$, et par somme,
+\res{$\lim\limits_{x\to 1^{-}}f(x)=-\infty$}.}{on se sert de la forme du a)}
+\explique{Si $x>1$, alors $\lim\limits_{x\to 1^{+}}(x-1)=0^{+}$ : de même,
+\res{$\lim\limits_{x\to 1^{+}}f(x)=+\infty$}.}{}
+\explique{La droite d'équation \res{$x=1$} est asymptote verticale à $\Cf$.}{}
+\cas{d)}
+\explique{Pour tout nombre réel $x\neq 1$, on a $f(x)-2=\frac{3}{x-1}$, du signe de
+$x-1$.}{on étudie le signe de $f(x)-2$}
+\explique{\res{Si $x>1$}, $f(x)-2>0$ : \res{$\Cf$ est au-dessus} de la droite
+$y=2$.}{}
+\explique{\res{Si $x<1$}, $f(x)-2<0$ : \res{$\Cf$ est en dessous} de la droite
+$y=2$.}{ce que montre la figure}
+\end{correction}
+
+\etape{À vous de jouer}
+Soit la fonction $g$ définie pour tout nombre réel $x\neq -1$ par
+$g(x)=\dfrac{-x+5}{x+1}$, et $\Cg$ sa courbe.
+\begin{questions}[label=\alph*)]
+  \item Montrer que, pour tout nombre réel $x\neq -1$, $g(x)=-1+\dfrac{6}{x+1}$.
+  \item Déterminer les limites de $g$ en $-\infty$ et en $+\infty$, et en déduire une
+        asymptote à $\Cg$.
+  \item Déterminer les limites de $g$ à gauche et à droite en $-1$, et en déduire une
+        asymptote à $\Cg$.
+  \item Étudier la position de $\Cg$ par rapport à la droite d'équation $y=-1$.
+\end{questions}
+\reponse{b) $-1$ en $\pm\infty$, asymptote $y=-1$.\; c)~$-\infty$ à gauche, $+\infty$ à
+droite, asymptote $x=-1$.\; d)~au-dessus si $x>-1$, en dessous si $x<-1$.}
+\end{methodebox}
+
+\afaire{exercices 15 à 17}
+
+\partiecours{Limite d'une fonction composée}
+
+Pour la limite de $\sqrt{9-\frac{2}{x}}$ en $+\infty$, on regarde d'abord ce que devient
+l'expression sous la racine, $X=9-\frac{2}{x}$, puis ce que devient $\sqrt{X}$ : on
+calcule la limite en deux temps.
+
+\begin{proprietebox}[Propriété 4 --- Limite d'une fonction composée (admis)]
+Soit $\alpha$, $\beta$, $\gamma$ des nombres réels, ou $+\infty$, ou $-\infty$. Si
+$\lim\limits_{x\to\alpha}u(x)=\beta$ et $\lim\limits_{X\to\beta}v(X)=\gamma$, alors
+$\lim\limits_{x\to\alpha}v\bigl(u(x)\bigr)=\gamma$.
+
+\smallskip
+En pratique, on pose $X=u(x)$ : on cherche la limite de $X$, puis celle de $v(X)$.
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 6 --- Calculer la limite d'une fonction composée]
+\etapeexemples
+Pour chaque fonction, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\intoo{1}{+\infty}$ par $f(x)=\sqrt{9-\dfrac{2}{x}}$,
+        en $+\infty$.
+  \item La fonction $g$ définie sur $\R$ par $g(x)=\sqrt{x^{2}+4}$, en $-\infty$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On pose $X=9-\frac{2}{x}$. $\lim\limits_{x\to+\infty}\frac{2}{x}=0$, donc par
+somme, $\lim\limits_{x\to+\infty}X=9$.}{d'abord ce qui est sous la racine}
+\explique{$\lim\limits_{X\to 9}\sqrt{X}=\sqrt{9}=3$, donc par composition,
+\res{$\lim\limits_{x\to+\infty}f(x)=3$}.}{puis la racine}
+\cas{b)}
+\explique{On pose $X=x^{2}+4$. $\lim\limits_{x\to-\infty}x^{2}=+\infty$, donc par somme,
+$\lim\limits_{x\to-\infty}X=+\infty$.}{}
+\explique{$\lim\limits_{X\to+\infty}\sqrt{X}=+\infty$, donc par composition,
+\res{$\lim\limits_{x\to-\infty}g(x)=+\infty$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque fonction, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\intoo{0}{+\infty}$ par
+        $f(x)=\sqrt{4+\dfrac{5}{x^{2}}}$, en $+\infty$.
+  \item La fonction $g$ définie sur $\R$ par $g(x)=\sqrt{3x^{2}+1}$, en $+\infty$.
+\end{questions}
+\reponse{a) $2$.\; b)~$+\infty$.}
+\end{methodebox}
+
+\afaire{exercices 18 à 21}
+
+\partiecours{Limites et comparaison}
+
+La fonction $x\mapsto 3x-\cos(x)$ ne se traite pas avec les tableaux : $\cos(x)$ n'a pas
+de limite en $+\infty$. Mais $\cos(x)$ reste entre $-1$ et $1$ : comme pour les suites,
+on compare la fonction à une fonction plus simple.
+
+\begin{proprietebox}[Théorème 1 --- Théorèmes de comparaison et des gendarmes (admis)]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+Soit $f$, $g$, $h$ des fonctions et $a$ un nombre réel.
+
+\smallskip
+\textbf{Comparaison :} si, pour tout $x>a$, $f(x)\leq g(x)$, alors
+\begin{itemize}
+  \item si $\lim\limits_{x\to+\infty}f(x)=+\infty$, alors
+        $\lim\limits_{x\to+\infty}g(x)=+\infty$ : $f$ « pousse » $g$ vers le haut ;
+  \item si $\lim\limits_{x\to+\infty}g(x)=-\infty$, alors
+        $\lim\limits_{x\to+\infty}f(x)=-\infty$.
+\end{itemize}
+
+\textbf{Gendarmes :} si, pour tout $x>a$, $f(x)\leq g(x)\leq h(x)$, et si $f$ et $h$
+ont la même limite $\ell$ en $+\infty$, alors $\lim\limits_{x\to+\infty}g(x)=\ell$.
+
+\smallskip
+Ces théorèmes restent vrais en $-\infty$ et en un nombre réel.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(12,0) node[below left]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,-3.5)--(0,4) node[below left]{$y$};
+  \draw[coulCourbeB,line width=0.9pt,domain=0.8:11.5,samples=60] plot (\x,{3/\x});
+  \draw[coulCourbeB,line width=0.9pt,domain=0.8:11.5,samples=60] plot (\x,{-3/\x});
+  \draw[coulCourbe,line width=1.1pt,domain=0.8:11.5,samples=150] plot (\x,{3*sin(120*\x)/\x});
+  \node[coulCourbeB,font=\footnotesize] at (2.4,3.2) {$\mathcal{C}_{h}$};
+  \node[coulCourbeB,font=\footnotesize] at (2.4,-3.2) {$\mathcal{C}_{f}$};
+\end{tikzpicture}
+
+{\footnotesize Gendarmes : coincée entre $\mathcal{C}_{f}$ et $\mathcal{C}_{h}$, la
+courbe de $g$ est forcée vers $0$.}
+\end{minipage}
+\end{proprietebox}
+
+\begin{remarquebox}[Comparaison ou gendarmes ?]
+On choisit le théorème selon la limite attendue :
+\begin{itemize}
+  \item \textbf{limite infinie} : une seule inégalité suffit, on utilise un
+        \textbf{théorème de comparaison}. Par exemple, pour tout $x\in\R$, on a
+        $x^{2}+\sin(x)\geq x^{2}-1$ et $\lim\limits_{x\to+\infty}\left(x^{2}-1\right)=+\infty$,
+        donc par comparaison, $\lim\limits_{x\to+\infty}\left(x^{2}+\sin(x)\right)=+\infty$ ;
+  \item \textbf{limite finie} : il faut encadrer des deux côtés, on utilise le
+        \textbf{théorème des gendarmes}. Par exemple, pour tout $x>0$, on a
+        $-\frac{1}{x^{2}}\leq\frac{\cos(x)}{x^{2}}\leq\frac{1}{x^{2}}$, et les deux bornes
+        tendent vers $0$ en $+\infty$, donc d'après le théorème des gendarmes,
+        $\lim\limits_{x\to+\infty}\frac{\cos(x)}{x^{2}}=0$.
+\end{itemize}
+\end{remarquebox}
+
+\begin{methodebox}[Méthode 7 --- Calculer une limite par comparaison ou encadrement]
+\etapeexemples
+Pour chaque fonction, déterminer la limite en $+\infty$.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\R$ par $f(x)=3x-\cos(x)$.
+  \item La fonction $g$ définie sur $\intoo{0}{+\infty}$ par $g(x)=\dfrac{\sin(x)}{x}$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{Soit $x\in\R$.}{}
+\begin{calculs}
+\cos(x) &\leq 1 &\qquad& \rem{un cosinus est entre $-1$ et $1$}\\
+-\cos(x) &\geq -1 &\qquad& \rem{on multiplie par $-1<0$ : l'ordre change}\\
+3x-\cos(x) &\geq 3x-1 &\qquad& \rem{on ajoute $3x$}\\
+f(x) &\geq 3x-1 &\qquad& \rem{on reconnaît $f(x)$}
+\end{calculs}
+\explique{$\lim\limits_{x\to+\infty}(3x-1)=+\infty$, donc par comparaison,
+\res{$\lim\limits_{x\to+\infty}f(x)=+\infty$}.}{$\Cf$ est au-dessus d'une droite qui
+monte vers $+\infty$}
+\cas{b)}
+\explique{Soit $x>0$.}{}
+\begin{calculs}
+-1 \leq \sin(x) &\leq 1 &\qquad& \rem{un sinus est entre $-1$ et $1$}\\
+-\frac{1}{x} \leq \frac{\sin(x)}{x} &\leq \frac{1}{x} &\qquad& \rem{on divise par
+$x>0$ : l'ordre est conservé}\\
+-\frac{1}{x} \leq g(x) &\leq \frac{1}{x} &\qquad& \rem{on reconnaît $g(x)$}
+\end{calculs}
+\explique{$\lim\limits_{x\to+\infty}\left(-\frac{1}{x}\right)=0$ et
+$\lim\limits_{x\to+\infty}\frac{1}{x}=0$, donc d'après le théorème des gendarmes,
+\res{$\lim\limits_{x\to+\infty}g(x)=0$}.}{même limite des deux côtés}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque fonction, déterminer la limite en $+\infty$.
+\begin{questions}[label=\alph*)]
+  \item La fonction $f$ définie sur $\R$ par $f(x)=-2x+\sin(x)$.
+  \item La fonction $g$ définie sur $\intoo{0}{+\infty}$ par
+        $g(x)=\dfrac{2+\cos(x)}{x^{2}}$.
+\end{questions}
+\reponse{a) $f(x)\leq -2x+1$ : $-\infty$.\; b)~$\frac{1}{x^{2}}\leq g(x)\leq\frac{3}{x^{2}}$ : $0$.}
+\end{methodebox}
+
+\afaire{exercices 22 à 25}
+
+\partiecours{Limites de la fonction exponentielle}
+
+\begin{remarquebox}[Rappels de 1\textsuperscript{re} sur la fonction exponentielle]
+La fonction exponentielle est dérivable sur $\R$, avec $\exp'=\exp$ et $\exp(0)=1$ ; on
+note $\exp(x)=\e^{x}$. Pour tous nombres réels $a$ et $b$ et pour tout $n\in\N$ :
+\begin{center}
+$\e^{x}>0$ \qquad $\e^{a+b}=\e^{a}\times\e^{b}$ \qquad $\e^{-a}=\dfrac{1}{\e^{a}}$ \qquad
+$\left(\e^{a}\right)^{n}=\e^{na}$
+\end{center}
+La fonction exponentielle est strictement croissante sur $\R$ : $\e^{a}<\e^{b}$ équivaut
+à $a<b$.
+\end{remarquebox}
+
+\begin{proprietebox}[Propriété 5 --- Limites de l'exponentielle en l'infini]
+\begin{minipage}[c]{0.58\linewidth}\raggedright
+\begin{center}
+$\lim\limits_{x\to+\infty}\e^{x}=+\infty$ \qquad $\lim\limits_{x\to-\infty}\e^{x}=0$
+\end{center}
+L'axe des abscisses (la droite $y=0$) est asymptote horizontale à la courbe de la fonction
+exponentielle en $-\infty$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration.} Soit $h$ la fonction définie sur $\R$ par
+$h(x)=\e^{x}-x$. On a $h'(x)=\e^{x}-1$, positif pour $x\geq 0$ et négatif pour
+$x\leq 0$ (croissance de l'exponentielle et $\e^{0}=1$) : $h$ a pour minimum
+$h(0)=1$. Donc, pour tout nombre réel $x$, $h(x)\geq 1>0$, soit $\e^{x}>x$.
+\end{minipage}\hfill
+\begin{minipage}[c]{0.38\linewidth}\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm]
+  \repere{-5}{-1}{3}{7}
+  \gradx{-4,-3,-2,-1,1,2} \grady{1,2,3,4,5,6}
+  \draw[coulCourbe,line width=1.1pt,domain=-5:1.9,samples=80] plot (\x,{exp(\x)});
+  \draw[coulCourbeB,line width=0.8pt,domain=-1:3] plot (\x,{\x});
+  \node[coulCourbe,font=\footnotesize] at (0.8,5.8) {$y=\e^{x}$};
+  \node[coulCourbeB,font=\footnotesize] at (2.6,1.8) {$y=x$};
+\end{tikzpicture}
+\end{minipage}
+
+\smallskip
+\begin{itemize}
+  \item Comme $\e^{x}>x$ et $\lim\limits_{x\to+\infty}x=+\infty$, par comparaison,
+        $\lim\limits_{x\to+\infty}\e^{x}=+\infty$.
+  \item Pour tout nombre réel $x$, $\e^{x}=\frac{1}{\e^{-x}}$. On pose $X=-x$ :
+        $\lim\limits_{x\to-\infty}X=+\infty$ et $\lim\limits_{X\to+\infty}\e^{X}=+\infty$,
+        donc par composition $\lim\limits_{x\to-\infty}\e^{-x}=+\infty$, et par quotient
+        $\lim\limits_{x\to-\infty}\e^{x}=0$.
+\end{itemize}
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 8 --- Calculer une limite avec des exponentielles]
+\etapeexemples
+Pour chaque fonction, définie sur $\R$, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\e^{1-2x}$, en $+\infty$.
+  \item $g(x)=(2-x)\,\e^{-x}$, en $-\infty$.
+  \item $h(x)=\dfrac{3\e^{x}-1}{\e^{x}+2}$, en $+\infty$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{On pose $X=1-2x$ : $\lim\limits_{x\to+\infty}X=-\infty$.}{d'abord l'exposant}
+\explique{$\lim\limits_{X\to-\infty}\e^{X}=0$, donc par composition,
+\res{$\lim\limits_{x\to+\infty}f(x)=0$}.}{}
+\cas{b)}
+\explique{$\lim\limits_{x\to-\infty}(2-x)=+\infty$.}{$-x$ devient très grand}
+\explique{Avec $X=-x$, par composition, $\lim\limits_{x\to-\infty}\e^{-x}=\lim\limits_{X\to+\infty}\e^{X}=+\infty$.}{}
+\explique{Par produit, \res{$\lim\limits_{x\to-\infty}g(x)=+\infty$}.}{$(+\infty)\times(+\infty)$}
+\cas{c)}
+\explique{Le numérateur et le dénominateur tendent vers $+\infty$ : forme indéterminée
+« $\frac{\infty}{\infty}$ ». On factorise par $\e^{x}$, qui « grandit le plus vite ».
+Soit $x\in\R$ :}{comme le terme de plus haut degré}
+\begin{calculs}
+h(x) &= \frac{\e^{x}\left(3-\e^{-x}\right)}{\e^{x}\left(1+2\e^{-x}\right)} &\qquad&
+\rem{$\e^{x}\times\e^{-x}=\e^{0}=1$}\\
+h(x) &= \frac{3-\e^{-x}}{1+2\e^{-x}} &\qquad& \rem{on simplifie par $\e^{x}\neq 0$}
+\end{calculs}
+\explique{Avec $X=-x$, par composition, $\lim\limits_{x\to+\infty}\e^{-x}=\lim\limits_{X\to-\infty}\e^{X}=0$.}{}
+\explique{Par somme, le numérateur tend vers $3$ et le dénominateur vers $1$ ; par
+quotient, \res{$\lim\limits_{x\to+\infty}h(x)=3$}.}{}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque fonction, définie sur $\R$, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\e^{3-x}$, en $+\infty$.
+  \item $g(x)=(1-2x)\,\e^{-x}$, en $-\infty$.
+  \item $h(x)=\dfrac{2\e^{x}+5}{4\e^{x}+1}$, en $+\infty$.
+\end{questions}
+\reponse{a) $0$.\; b)~$+\infty$.\; c)~$\frac{1}{2}$.}
+\end{methodebox}
+
+\afaire{exercices 26 à 29}
+
+\partiecours{Croissances comparées}
+
+On a $20^{3}=8\,000$, alors que $\e^{20}\approx 485\,000\,000$ : en $+\infty$,
+l'exponentielle grandit bien plus vite que les puissances de $x$. Pour $x^{3}\e^{-x}$
+ou $\e^{x}-x^{3}$, les tableaux donnent une forme indéterminée ; le théorème suivant
+la lève.
+
+\begin{proprietebox}[Théorème 2 --- Croissances comparées]
+Pour tout $n\in\Ns$ :
+\begin{center}
+$\lim\limits_{x\to+\infty}\dfrac{\e^{x}}{x^{n}}=+\infty$ \qquad
+$\lim\limits_{x\to+\infty}x^{n}\e^{-x}=0$ \qquad
+$\lim\limits_{x\to-\infty}x^{n}\e^{x}=0$
+\end{center}
+\textbf{Intuitivement :} en l'infini, l'exponentielle l'emporte sur toute puissance de $x$.
+
+\smallskip
+\textbf{\color{coulMeth}Démonstration} (exigible) de la première limite.
+
+\smallskip
+\emph{Cas $n=1$.} D'après la partie~VIII, $\e^{t}>t$ pour tout nombre réel $t$. Soit
+$x>0$ ; avec $t=\frac{x}{2}$ :
+\begin{calculs}
+\e^{\frac{x}{2}} &> \frac{x}{2}>0 &\qquad& \rem{on applique $\e^{t}>t$ en $t=\frac{x}{2}$}\\
+\left(\e^{\frac{x}{2}}\right)^{2} &> \frac{x^{2}}{4} &\qquad& \rem{deux nombres positifs
+sont rangés comme leurs carrés}\\
+\e^{x} &> \frac{x^{2}}{4} &\qquad& \rem{$\left(\e^{a}\right)^{2}=\e^{2a}$}\\
+\frac{\e^{x}}{x} &> \frac{x}{4} &\qquad& \rem{on divise par $x>0$}
+\end{calculs}
+Comme $\lim\limits_{x\to+\infty}\frac{x}{4}=+\infty$, par comparaison,
+$\lim\limits_{x\to+\infty}\frac{\e^{x}}{x}=+\infty$.
+
+\smallskip
+\emph{Cas général.} Soit $n\in\Ns$ et $x>0$. Comme $\e^{x}=\left(\e^{\frac{x}{n}}\right)^{n}$ :
+\begin{calculs}
+\frac{\e^{x}}{x^{n}} &= \left(\frac{\e^{\frac{x}{n}}}{x}\right)^{n} &\qquad& \rem{$\frac{a^{n}}{b^{n}}=\left(\frac{a}{b}\right)^{n}$}\\
+\frac{\e^{x}}{x^{n}} &= \left(\frac{1}{n}\times\frac{\e^{\frac{x}{n}}}{\frac{x}{n}}\right)^{n} &\qquad& \rem{$x=n\times\frac{x}{n}$}
+\end{calculs}
+On pose $X=\frac{x}{n}$ : $\lim\limits_{x\to+\infty}X=+\infty$ et
+$\lim\limits_{X\to+\infty}\frac{\e^{X}}{X}=+\infty$ (cas $n=1$) ; par composition, puis
+par produit par $\frac{1}{n}>0$, la parenthèse tend vers $+\infty$. Par produit de $n$
+facteurs qui tendent vers $+\infty$, $\lim\limits_{x\to+\infty}\frac{\e^{x}}{x^{n}}=+\infty$.
+
+\smallskip
+Les deux autres limites s'en déduisent : $x^{n}\e^{-x}=\frac{1}{\e^{x}/x^{n}}$ tend vers
+$0$ par quotient ; et, en posant $X=-x$, $x^{n}\e^{x}=(-1)^{n}X^{n}\e^{-X}$ tend vers $0$
+quand $X$ tend vers $+\infty$.
+
+\end{proprietebox}
+
+\begin{methodebox}[Méthode 9 --- Calculer une limite par croissances comparées]
+\etapeexemples
+Pour chaque fonction, définie sur $\R$, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\e^{x}-x^{3}$, en $+\infty$.
+  \item $g(x)=\left(x^{2}+3\right)\e^{-x}$, en $+\infty$.
+  \item $h(x)=(2x-1)\,\e^{x}$, en $-\infty$.
+\end{questions}
+\begin{correction}
+\cas{a)}
+\explique{$\lim\limits_{x\to+\infty}\e^{x}=+\infty$ et
+$\lim\limits_{x\to+\infty}\left(-x^{3}\right)=-\infty$ : forme indéterminée
+« $\infty-\infty$ ». Soit $x\in\R$ :}{on factorise par $\e^{x}$, qui l'emporte}
+\begin{calculs}
+f(x) &= \e^{x}\left(1-x^{3}\e^{-x}\right) &\qquad& \rem{$\e^{x}\times x^{3}\e^{-x}=x^{3}$}
+\end{calculs}
+\explique{Par croissances comparées, $\lim\limits_{x\to+\infty}x^{3}\e^{-x}=0$, donc par
+somme, la parenthèse tend vers $1$.}{}
+\explique{Par produit, \res{$\lim\limits_{x\to+\infty}f(x)=+\infty$}.}{$(+\infty)\times 1$}
+\cas{b)}
+\explique{$\lim\limits_{x\to+\infty}\left(x^{2}+3\right)=+\infty$ et
+$\lim\limits_{x\to+\infty}\e^{-x}=0$ : forme indéterminée « $\infty\times 0$ ». On
+développe :}{}
+\begin{calculs}
+g(x) &= x^{2}\e^{-x}+3\e^{-x} &&
+\end{calculs}
+\explique{Par croissances comparées, $\lim\limits_{x\to+\infty}x^{2}\e^{-x}=0$ ; de plus
+$\lim\limits_{x\to+\infty}\e^{-x}=0$. Par somme, \res{$\lim\limits_{x\to+\infty}g(x)=0$}.}{}
+\cas{c)}
+\explique{$\lim\limits_{x\to-\infty}(2x-1)=-\infty$ et $\lim\limits_{x\to-\infty}\e^{x}=0$ :
+forme indéterminée « $\infty\times 0$ ». On développe :}{}
+\begin{calculs}
+h(x) &= 2x\e^{x}-\e^{x} &&
+\end{calculs}
+\explique{Par croissances comparées, $\lim\limits_{x\to-\infty}x\e^{x}=0$ ; de plus
+$\lim\limits_{x\to-\infty}\e^{x}=0$. Par produit et par somme,
+\res{$\lim\limits_{x\to-\infty}h(x)=0$}.}{$2\times 0-0$}
+\end{correction}
+
+\etape{À vous de jouer}
+Pour chaque fonction, définie sur $\R$, déterminer la limite demandée.
+\begin{questions}[label=\alph*)]
+  \item $f(x)=\e^{x}-2x^{2}$, en $+\infty$.
+  \item $g(x)=\left(x^{3}-1\right)\e^{-x}$, en $+\infty$.
+  \item $h(x)=(3x+4)\,\e^{x}$, en $-\infty$.
+\end{questions}
+\reponse{a) $+\infty$.\; b)~$0$.\; c)~$0$.}
+\end{methodebox}
+
+\afaire{exercices 30 à 33, puis les exercices type bac 34 à 36}
+
+\end{document}

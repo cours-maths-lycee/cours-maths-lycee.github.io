@@ -1,0 +1,809 @@
+% Luc Destombe --- licence CC BY-NC-SA 4.0
+% https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr
+% Fichier autonome : compiler avec pdflatex, deux fois (signets, nombre de pages).
+\def\lyceeversion{1.0}
+\documentclass[a4paper,10pt]{article}
+\makeatletter
+\newif\iflycee@niveaux
+\lycee@niveauxtrue
+\newif\iflycee@cm
+\newif\iflycee@palatino
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[french]{babel}
+\RequirePackage{etoolbox}
+
+\newcommand{\ShorthandsOff}{\@ifundefined{shorthandoff}{}{\shorthandoff{;:!?}}}
+\newcommand{\ShorthandsOn}{\@ifundefined{shorthandon}{}{\shorthandon{;:!?}}}
+\ShorthandsOff
+\AtBeginDocument{\ShorthandsOn}
+\AtBeginEnvironment{tikzpicture}{\ShorthandsOff}
+
+\RequirePackage{geometry}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{multicol}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+
+\RequirePackage{amsmath,amssymb}
+\iflycee@cm\else\RequirePackage{fourier}\fi
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\renewcommand{\ttdefault}{lmtt}
+\begingroup\catcode`\_=\active \catcode`\^=\active
+\global\let_\sb \global\let^\sp
+\endgroup
+\AtBeginDocument{\catcode`\_=12 \mathcode`\_="8000
+  \catcode`\^=12 \mathcode`\^="8000 }
+\newlength{\retraitcalculs}
+\setlength{\retraitcalculs}{2em}
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,babel,shapes.misc}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{coulDef}{HTML}{1F4E79}
+\definecolor{coulProp}{HTML}{7030A0}
+\definecolor{coulRem}{HTML}{C55A11}
+\definecolor{coulEx}{HTML}{2E7D32}
+\definecolor{coulExo}{HTML}{B03A2E}
+\definecolor{coulPart}{HTML}{1F4E79}
+\definecolor{coulMeth}{HTML}{1B6E4F}
+\definecolor{coulCourbe}{HTML}{0B5ED7}
+\definecolor{coulCourbeB}{HTML}{C00000}
+\definecolor{coulCourbeC}{HTML}{2E7D32}
+\definecolor{coulGrille}{HTML}{8C8C8C}
+\definecolor{coulRep}{HTML}{1B6E4F}
+\definecolor{coulBar}{HTML}{2E7D32}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rs}{\mathbb{R}^{*}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ns}{\mathbb{N}^{*}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\approx}{\simeq}
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\norme}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\intervalle}[2]{\left[#1\,;#2\right]}
+\RequirePackage{cancel}
+\renewcommand{\CancelColor}{\color{coulExo}}
+\newcommand{\fois}[1]{\times{\color{coulExo}#1}}
+\newcommand{\barre}[1]{\cancel{#1}}
+\newlength{\lycee@eqh}\newlength{\lycee@eqd}
+\newsavebox{\lycee@eqa}\newsavebox{\lycee@eqb}\newsavebox{\lycee@eqc}
+\newcommand{\lycee@eqcol}[1]{\hbox{$\renewcommand{\arraystretch}{1.35}%
+  \begin{array}[t]{@{}>{\displaystyle}r@{}>{\displaystyle{}}l@{}}#1\end{array}$}}
+\newcommand{\lycee@eqmesure}[1]{%
+  \ifdim\ht#1>\lycee@eqh\setlength{\lycee@eqh}{\ht#1}\fi
+  \ifdim\dp#1>\lycee@eqd\setlength{\lycee@eqd}{\dp#1}\fi}
+\newcommand{\lycee@eqtrait}{\hspace{1.2em}ou\hspace{1.2em}}
+\newcommand{\lycee@eqiff}{$\iff$\hspace{0.8em}}
+\newcommand{\eqproduit}[2]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B=0 \iff A=0$ ou $B=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\endgroup\par\smallskip}
+\newcommand{\eqproduittrois}[3]{\par\smallskip\noindent C'est une équation produit :
+  $A\times B\times C=0 \iff A=0$ ou $B=0$ ou $C=0$.\par\nopagebreak\smallskip
+  \begingroup\setlength{\lycee@eqh}{0pt}\setlength{\lycee@eqd}{0pt}%
+  \setbox\lycee@eqa=\lycee@eqcol{#1}\setbox\lycee@eqb=\lycee@eqcol{#2}\setbox\lycee@eqc=\lycee@eqcol{#3}%
+  \lycee@eqmesure\lycee@eqa\lycee@eqmesure\lycee@eqb\lycee@eqmesure\lycee@eqc%
+  \noindent\hspace*{\retraitcalculs}\lycee@eqiff\usebox\lycee@eqa\lycee@eqtrait\usebox\lycee@eqb\lycee@eqtrait\usebox\lycee@eqc\endgroup
+  \par\smallskip}
+
+\tikzset{grille/.style={coulGrille,line width=0.4pt}}
+\newcommand{\quadrillage}[4]{\draw[grille,step=1] (#1,#2) grid (#3,#4);}
+\tikzset{
+  croix/.style={cross out,draw,line width=0.6pt,inner sep=0pt,minimum size=4pt},
+  croixdroite/.style={croix,rotate=45,line width=0.8pt},
+}
+\newcommand{\pt}[3]{\path (#1) node[croix]{} node[#2,font=\small,inner sep=2.5pt]{$#3$};}
+
+\newcommand{\lycee@repere}[4]{%
+  \draw[grille,step=1] (#1,#2) grid (#3,#4);
+  \draw[-{Stealth[length=2mm]},thick] (#1,0)--({#3+0.4},0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,#2)--(0,{#4+0.4}) node[below left=-1pt]{$y$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};}
+\newcommand{\lycee@gradx}[1]{\foreach \k/\l in {#1}{%
+  \draw (\k,0.07)--(\k,-0.07) node[below,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@grady}[1]{\foreach \k/\l in {#1}{%
+  \draw (0.07,\k)--(-0.07,\k) node[left,font=\scriptsize,inner sep=1.5pt]{$\l$};}}
+\newcommand{\lycee@intff}[2]{\left[#1\,;#2\right]}
+\newcommand{\lycee@intfo}[2]{\left[#1\,;#2\right[}
+\newcommand{\lycee@intof}[2]{\left]#1\,;#2\right]}
+\newcommand{\lycee@intoo}[2]{\left]#1\,;#2\right[}
+\newcommand{\lycee@ens}[1]{\left\{#1\right\}}
+\AtBeginDocument{%
+  \providecommand{\repere}{\lycee@repere}%
+  \providecommand{\gradx}{\lycee@gradx}%
+  \providecommand{\grady}{\lycee@grady}%
+  \providecommand{\Cf}{\mathcal{C}\sb{f}}%
+  \providecommand{\Cg}{\mathcal{C}\sb{g}}%
+  \providecommand{\intff}{\lycee@intff}%
+  \providecommand{\intfo}{\lycee@intfo}%
+  \providecommand{\intof}{\lycee@intof}%
+  \providecommand{\intoo}{\lycee@intoo}%
+  \providecommand{\ens}{\lycee@ens}}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions,1]{label=\arabic*\textdegree),leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[questions,2]{label=\alph*),leftmargin=*,itemsep=1pt,topsep=2pt}
+\setlist[questions,3]{label=\roman*),leftmargin=*,itemsep=1pt,topsep=1pt}
+\setlist[itemize]{label=\textbullet,leftmargin=*,itemsep=2pt,topsep=3pt}
+
+\newcommand{\besoinplace}[1]{\par\penalty\@M\begingroup
+  \dimen@=#1\relax\dimen@ii=\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+
+\newcommand{\lycee@pied}{\thepage/\pageref{LastPage}}
+\newcommand{\entete}[2]{%
+  \pagestyle{fancy}\fancyhf{}%
+  \fancyhead[L]{\footnotesize\color{coulPart}\textbf{#1}}%
+  \fancyhead[R]{\footnotesize\color{coulPart}\textbf{#2}}%
+  \fancyfoot[C]{\footnotesize\lycee@pied}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{coulPart!40}\leaders\hrule height \headrulewidth\hfill}}}
+
+\RequirePackage{ccicons}
+\newcommand{\lycee@licence}{{\scriptsize\color{gray}%
+  \copyright\ Luc Destombe --- \ccbyncsa\ CC BY-NC-SA 4.0}}
+\newif\iflycee@licence \lycee@licencetrue
+\newcommand{\sanslicence}{\lycee@licencefalse}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin+\textwidth\relax
+    \llap{\raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@licence}}}}}\fi}
+
+\newcommand{\lycee@site}{faire-des-maths.fr}
+\newcommand{\lycee@version}{{\scriptsize\color{gray}\lycee@site
+  \ifdefined\lyceeversion\ --- Version~\lyceeversion\fi}}
+\AtBeginDocument{\iflycee@licence\AddToHookNext{shipout/foreground}{%
+  \put(0,0){\rlap{\kern\dimexpr1in+\hoffset+\oddsidemargin\relax
+    \raisebox{-\dimexpr1in+\voffset+\topmargin+\headheight+\headsep
+      +\textheight+\footskip\relax}{\lycee@version}}}}\fi}
+
+\newcommand{\formulesserrees}{%
+  \setlength{\abovedisplayskip}{3pt}\setlength{\belowdisplayskip}{3pt}%
+  \setlength{\abovedisplayshortskip}{2pt}\setlength{\belowdisplayshortskip}{3pt}}
+
+\setlength{\parindent}{0pt}
+
+\RequirePackage[implicit=false,hidelinks,pdfencoding=auto,psdextra,bookmarksopen,
+  bookmarksopenlevel=1,pdfcreator={},pdfproducer={}]{hyperref}
+\RequirePackage{bookmark}
+\hypersetup{pdfauthor={Luc Destombe},pdfkeywords={CC BY-NC-SA 4.0}}
+\newcounter{lycee@signet}
+\newcommand{\signet}[3][]{\stepcounter{lycee@signet}%
+  \edef\lycee@dest{\if\relax\detokenize{#1}\relax
+    signet.\arabic{lycee@signet}\else#1\fi}%
+  \hypertarget{\lycee@dest}{}\bookmark[level=#2,dest=\lycee@dest]{#3}}
+\pdfstringdefDisableCommands{%
+  \def\R{R}\def\N{N}\def\Z{Z}\def\Q{Q}\def\vect#1{#1}\def\Cf{Cf}\def\Cg{Cg}\def\fois#1{×#1}%
+  \def\barre#1{#1}\def\intervalle#1#2{[#1;#2]}\def\intff#1#2{[#1;#2]}%
+  \def\textsuperscript#1{#1}\def\dfrac#1#2{#1/#2}\def\frac#1#2{#1/#2}%
+  \def\vec#1{#1⃗}}%
+\RequirePackage[official]{eurosym}
+
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.6cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\footnotesize Page \thepage{} / \pageref{LastPage}}
+
+\newcommand{\titrefiche}[2]{%
+  \begin{center}
+    \Large\textbf{#1}\\[2pt]
+    \large\textbf{#2}\\[2pt]
+  \end{center}
+  \vspace{0.10cm}}
+
+\setlength{\columnseprule}{0.4pt}
+\setlength{\columnsep}{15pt}
+\renewcommand{\columnseprulecolor}{\color{black!45}}
+\setlength{\multicolsep}{2pt}
+
+\newcounter{partiefiche}
+\renewcommand{\thepartiefiche}{\Roman{partiefiche}}
+\newif\ifapresbandeau
+\newcommand{\lycee@bandeau}[1]{%
+  \par\penalty-600
+  \vspace{0.08cm}%
+  \noindent\colorbox{coulPart}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \color{white}\bfseries\raggedright\strut#1\strut}}%
+  \nopagebreak\par\nopagebreak
+  \vspace{0.06cm}\nopagebreak
+  \apresbandeautrue}
+\newcommand{\partiefiche}[1]{%
+  \refstepcounter{partiefiche}%
+  \lycee@bandeau{\signet{1}{\thepartiefiche{} --- #1}\thepartiefiche{} --- #1}}
+\newcommand{\partiefichesansnum}[1]{\lycee@bandeau{\signet{1}{#1}#1}}
+
+\newcounter{exo}
+\newlength{\espaceexo}\setlength{\espaceexo}{7pt}
+\newlength{\espacetitre}\setlength{\espacetitre}{2pt}
+\newcommand{\exo}[1][\relax]{%
+  \par
+  \ifapresbandeau\apresbandeaufalse\else\penalty-150\addvspace{\espaceexo}\fi
+  \refstepcounter{exo}%
+  \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+  \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+  \ifx\relax#1\relax\else\textbf{ : #1}\fi
+  \par\nopagebreak\vspace{\espacetitre}\nopagebreak
+  \ignorespaces}
+
+\setlist[enumerate]{nosep,leftmargin=*,itemsep=2pt,topsep=2pt}
+\setlist[itemize]{nosep,leftmargin=*,topsep=2pt}
+\newcommand{\choix}[3]{\par\hspace*{1em}%
+  \makebox[0.3\linewidth][l]{a) #1}\makebox[0.3\linewidth][l]{b) #2}c) #3}
+\newcommand{\deux}[2]{\par\hspace*{0.6em}%
+  \makebox[0.48\linewidth][l]{#1}#2}
+\newcommand{\trois}[3]{\par\hspace*{0.6em}%
+  \makebox[0.32\linewidth][l]{#1}\makebox[0.32\linewidth][l]{#2}#3}
+
+  \renewcommand{\exo}[1][\relax]{%
+    \ifapresbandeau\apresbandeaufalse\else\par\penalty-150\fi
+    \refstepcounter{exo}%
+    \vspace{0.05cm}%
+    \noindent\signet[exercice-\arabic{exo}]{2}{Exercice \arabic{exo}}%
+    \textbf{\color{coulExo}\underline{Exercice \theexo}}%
+    \ifx\relax#1\relax\else\textbf{ : #1}\fi%
+    \par\nopagebreak
+    \ignorespaces}
+  \newcommand{\rappel}[1]{%
+    \par\vspace{0.06cm}\nopagebreak
+    \noindent\fcolorbox{black!35}{black!5}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+        \small\textbf{Rappel.} #1}}%
+    \par\vspace{0.06cm}\nopagebreak}
+  \setlist[enumerate]{nosep,leftmargin=*}
+  \setlist[itemize]{nosep,leftmargin=*}
+  \setlength{\multicolsep}{3pt plus 1pt minus 1pt}
+  \setlength{\premulticols}{10pt}
+  \setlength{\postmulticols}{10pt}
+  \newlist{expr}{enumerate}{1}
+  \setlist[expr]{label={\Alph*\ $=$},nosep,leftmargin=*,itemsep=0pt}
+
+\renewenvironment{center}{\par\addvspace{3pt}\centering}{\par\addvspace{3pt}}
+\formulesserrees
+\AtBeginDocument{\formulesserrees}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\setlength{\parskip}{0pt}
+
+\RequirePackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 1fil}
+\AtBeginDocument{\RaggedRight\binoppenalty=10000 \relpenalty=10000 }
+\g@addto@macro\@parboxrestore{\RaggedRight}
+\makeatother
+\usepackage{tkz-tab}
+\geometry{top=0.8cm,bottom=1.3cm,left=1cm,right=1cm,footskip=0.7cm,headheight=12pt}
+
+\newcommand{\e}{\mathrm{e}}
+
+\begin{document}
+\titrefiche{Terminale spécialité --- Limites de fonctions}{Fiche d'exercices du chapitre}
+
+\begin{multicols}{2}
+
+\partiefiche{Limite d'une fonction en l'infini}
+
+\exo[Lire des limites et des asymptotes]
+On donne les courbes $\Cf$ et $\Cg$ de deux fonctions $f$ et $g$ définies sur $\R$.
+\begin{center}
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-6}{-3}{6}{2}
+  \gradx{-4,-2,2,4} \grady{-2,-1,1}
+  \draw[coulCourbe,line width=1.1pt,domain=-6:6,samples=80] plot (\x,{-2+3/(1+\x*\x)});
+  \node[coulCourbe,font=\footnotesize] at (1.6,1.4) {$\Cf$};
+\end{tikzpicture}\hfill
+\begin{tikzpicture}[x=0.32cm,y=0.32cm]
+  \repere{-6}{-1}{3}{6}
+  \gradx{-4,-2,2} \grady{1,2,3,4,5}
+  \draw[coulCourbe,line width=1.1pt,domain=-6:1.8,samples=80] plot (\x,{2+0.5*exp(\x)});
+  \node[coulCourbe,font=\footnotesize] at (-0.4,5.2) {$\Cg$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Conjecturer les limites de $f$ et de $g$ en $-\infty$ et en $+\infty$.
+  \item Pour chaque courbe, donner l'équation des asymptotes horizontales qu'elle semble
+        admettre, en précisant en $-\infty$ ou en $+\infty$.
+  \item Écrire en une phrase complète ce que signifie, pour la courbe $\Cg$, la limite de
+        $g$ en $-\infty$.
+\end{enumerate}
+
+\exo[Conjecturer avec des valeurs]
+Pour chaque fonction $f$, $g$, $h$, $k$ définie ci-dessous, calculer l'image de $10$, de
+$100$ et de $1\,000$, puis de $-10$, de $-100$ et de $-1\,000$, et conjecturer les
+limites en $+\infty$ et en $-\infty$. Interpréter graphiquement les limites finies.
+\begin{enumerate}[label=\alph*)]
+  \item $f$ définie pour tout nombre réel $x\neq 0$ par $f(x)=4-\dfrac{1}{x}$.
+  \item $g$ définie sur $\R$ par $g(x)=x^{2}-3$.
+  \item $h$ définie sur $\R$ par $h(x)=\dfrac{5}{x^{2}+1}$.
+  \item $k$ définie sur $\R$ par $k(x)=1-x^{3}$.
+\end{enumerate}
+
+\exo[Un tableau de variations]
+Voici le tableau de variations d'une fonction $f$ définie sur $\R$.
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.4,espcl=2.2]{$x$/0.7,$f(x)$/1.4}{$-\infty$,$0$,$+\infty$}
+  \tkzTabVar{-/$-1$,+/$3$,-/$2$}
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Lire les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item En déduire, en phrases complètes, les asymptotes de la courbe $\Cf$.
+  \item Tracer à main levée une courbe qui peut représenter $f$, avec ses asymptotes.
+\end{enumerate}
+
+\partiefiche{Limite d'une fonction en un nombre réel}
+
+\exo[Conjecturer une limite en un nombre réel]
+\begin{enumerate}
+  \item Soit la fonction $f$ définie pour tout nombre réel $x\neq 1$ par
+        $f(x)=\dfrac{4}{x-1}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Calculer $f(1{,}1)$ ; $f(1{,}01)$ ; $f(1{,}001)$, puis $f(0{,}9)$ ;
+          $f(0{,}99)$ ; $f(0{,}999)$.
+    \item Conjecturer la limite à droite et la limite à gauche de $f$ en $1$, et en
+          donner une interprétation graphique.
+  \end{enumerate}
+  \item Mêmes questions pour la fonction $g$ définie pour tout nombre réel $x\neq -2$ par
+        $g(x)=\dfrac{1}{(x+2)^{2}}$, avec $x=-1{,}9$ ; $-1{,}99$ ; $-1{,}999$, puis
+        $x=-2{,}1$ ; $-2{,}01$ ; $-2{,}001$.
+\end{enumerate}
+
+\exo[Lire deux asymptotes verticales]
+La courbe $\Cf$ ci-dessous représente une fonction $f$ définie sur
+$\R\setminus\ens{-1\,;2}$.
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=0.4cm]
+  \repere{-5}{-4}{6}{4}
+  \gradx{-4,-3,-2,-1,1,2,3,4,5} \grady{-3,-2,-1,1,2,3}
+  \begin{scope}
+  \clip (-5,-4) rectangle (6,4);
+  \draw[coulCourbe,line width=1.1pt,domain=-5:-1.07,samples=80] plot (\x,{1/((\x+1)*(\x-2))});
+  \draw[coulCourbe,line width=1.1pt,domain=-0.92:1.92,samples=100] plot (\x,{1/((\x+1)*(\x-2))});
+  \draw[coulCourbe,line width=1.1pt,domain=2.07:6,samples=80] plot (\x,{1/((\x+1)*(\x-2))});
+  \end{scope}
+  \node[coulCourbe,font=\footnotesize] at (3.6,1.4) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Lire les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item Lire la limite à gauche et la limite à droite de $f$ en $-1$, puis en $2$.
+  \item Donner les équations des asymptotes à $\Cf$ que l'on peut conjecturer.
+\end{enumerate}
+
+\exo[Une valeur interdite dans un tableau]
+Voici le tableau de variations d'une fonction $f$ définie sur
+$\intoo{-\infty}{0}\cup\intoo{0}{+\infty}$.
+\begin{center}
+\begin{tikzpicture}
+  \tkzTabInit[lgt=1.4,espcl=2.2]{$x$/0.7,$f(x)$/1.4}{$-\infty$,$0$,$+\infty$}
+  \tkzTabVar{+/$1$,-D+/$-\infty$/$+\infty$,-/$1$}
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}
+  \item Lire les limites de $f$ en $-\infty$, en $+\infty$, à gauche et à droite en $0$.
+  \item En déduire, en phrases complètes, les asymptotes de la courbe $\Cf$.
+  \item Tracer à main levée une courbe qui peut représenter $f$, avec ses asymptotes.
+\end{enumerate}
+
+\partiefiche{Opérations sur les limites}
+
+\exo[Calculer par opérations en l'infini]
+Pour chaque fonction, déterminer la limite demandée en citant la règle utilisée.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x^{3}+4x-1$, définie sur $\R$, en $+\infty$.
+  \item $g(x)=\left(2-\dfrac{1}{x}\right)\left(x^{2}+3\right)$, définie pour $x\neq 0$,
+        en $-\infty$.
+  \item $h(x)=3-\dfrac{5}{x^{2}}$, définie pour $x\neq 0$, en $-\infty$.
+  \item $k(x)=x\sqrt{x}+2$, définie sur $\intfo{0}{+\infty}$, en $+\infty$.
+  \item $m(x)=\dfrac{-4}{x^{2}+1}$, définie sur $\R$, en $-\infty$.
+  \item $p(x)=\dfrac{1}{x}-\sqrt{x}$, définie sur $\intoo{0}{+\infty}$, en $+\infty$.
+\end{enumerate}
+
+\exo[À gauche et à droite]
+Pour chaque fonction, déterminer la limite à gauche et la limite à droite en la valeur
+interdite.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\dfrac{3x+1}{x-2}$, définie pour tout nombre réel $x\neq 2$.
+  \item $g(x)=\dfrac{1-x}{x+4}$, définie pour tout nombre réel $x\neq -4$.
+  \item $h(x)=\dfrac{5}{(x-3)^{2}}$, définie pour tout nombre réel $x\neq 3$.
+  \item $k(x)=\dfrac{x+1}{x^{2}}$, définie pour tout nombre réel $x\neq 0$.
+\end{enumerate}
+
+\exo[Avec un tableau de signes]
+Soit la fonction $f$ définie sur $\R\setminus\ens{-1\,;1}$ par
+$f(x)=\dfrac{2x+3}{x^{2}-1}$.
+\begin{enumerate}
+  \item Dresser le tableau de signes de $x^{2}-1$ sur $\R$.
+  \item Déterminer les limites de $f$ à gauche et à droite en $-1$, puis en $1$.
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item Interpréter graphiquement tous ces résultats.
+\end{enumerate}
+
+\exo[Le coût moyen d'une pièce imprimée]
+Un atelier imprime en 3D des pièces de rechange pour vélos. Pour $x$ pièces, le coût
+moyen d'une pièce, en euro, est $C(x)=3+\dfrac{200}{x}$, pour $x>0$.
+\begin{enumerate}
+  \item Calculer $C(100)$ et $C(1\,000)$.
+  \item Déterminer la limite de $C$ en $+\infty$ et l'interpréter dans le contexte.
+  \item Déterminer la limite de $C$ à droite en $0$ et l'interpréter dans le contexte.
+  \item En déduire les asymptotes de la courbe de $C$.
+\end{enumerate}
+
+\partiefiche{Lever une indétermination}
+
+\exo[Factoriser par le terme de plus haut degré]
+Pour chaque fonction, indiquer la forme indéterminée, puis déterminer la limite demandée.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x^{2}-6x+1$, définie sur $\R$, en $+\infty$.
+  \item $g(x)=-2x^{4}+3x^{2}+x$, définie sur $\R$, en $-\infty$.
+  \item $h(x)=\dfrac{3x^{2}-x}{x^{2}+4}$, définie sur $\R$, en $+\infty$.
+  \item $k(x)=\dfrac{5x-2}{x^{2}+1}$, définie sur $\R$, en $-\infty$.
+  \item $m(x)=\dfrac{x^{2}+2x}{2x-1}$, définie pour $x\neq\frac{1}{2}$, en $+\infty$.
+  \item $p(x)=\dfrac{4x^{3}-x}{2x^{3}+5}$, définie sur $\intof{-\infty}{-2}$, en $-\infty$.
+\end{enumerate}
+
+\exo[Une forme « $\frac{0}{0}$ » en un nombre réel]
+Pour chaque fonction, factoriser le numérateur (et le dénominateur), simplifier, puis
+déterminer la limite demandée.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\dfrac{x^{2}-16}{x-4}$, définie pour $x\neq 4$, en $4$.
+  \item $g(x)=\dfrac{x^{2}-5x+6}{x-2}$, définie pour $x\neq 2$, en $2$.
+  \item $h(x)=\dfrac{x^{2}+x-6}{x+3}$, définie pour $x\neq -3$, en $-3$.
+  \item $k(x)=\dfrac{x^{2}-1}{x^{2}+x}$, définie pour $x\neq 0$ et $x\neq -1$, en $-1$.
+\end{enumerate}
+
+\exo[Avec la quantité conjuguée]
+Pour chaque fonction, multiplier par la quantité conjuguée, puis déterminer la limite
+demandée.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\sqrt{x+4}-\sqrt{x}$, définie sur $\intfo{0}{+\infty}$, en $+\infty$.
+  \item $g(x)=\sqrt{x^{2}+1}-x$, définie sur $\R$, en $+\infty$.
+  \item $h(x)=\dfrac{\sqrt{x}-3}{x-9}$, définie sur $\intfo{0}{9}\cup\intoo{9}{+\infty}$,
+        en $9$.
+\end{enumerate}
+
+\exo[Deux valeurs interdites]
+Soit la fonction $f$ définie par $f(x)=\dfrac{2x^{2}-x-1}{x^{2}-1}$.
+\begin{enumerate}
+  \item Déterminer l'ensemble de définition de $f$.
+  \item Vérifier que $2x^{2}-x-1=(x-1)(2x+1)$, puis simplifier $f(x)$ en précisant
+        pour quels $x$ l'égalité obtenue est vraie.
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$.
+  \item Déterminer la limite de $f$ en $1$, puis les limites à gauche et à droite en
+        $-1$.
+  \item La droite d'équation $x=1$ est-elle asymptote à $\Cf$ ? Et la droite d'équation
+        $x=-1$ ? Justifier.
+\end{enumerate}
+
+\partiefiche{Asymptotes et position relative}
+
+\exo[Asymptotes et position]
+Soit la fonction $f$ définie pour tout nombre réel $x\neq -2$ par
+$f(x)=\dfrac{3x-1}{x+2}$, et $\Cf$ sa courbe.
+\begin{enumerate}
+  \item Montrer que, pour tout nombre réel $x\neq -2$, $f(x)=3-\dfrac{7}{x+2}$.
+  \item Déterminer les limites de $f$ en $-\infty$ et en $+\infty$, et en déduire une
+        asymptote à $\Cf$.
+  \item Déterminer les limites de $f$ à gauche et à droite en $-2$, et en déduire une
+        asymptote à $\Cf$.
+  \item Étudier la position de $\Cf$ par rapport à la droite d'équation $y=3$.
+\end{enumerate}
+
+\exo[Toujours au-dessus]
+Soit la fonction $g$ définie sur $\R$ par $g(x)=\dfrac{2x^{2}+3}{x^{2}+1}$, et $\Cg$
+sa courbe.
+\begin{enumerate}
+  \item Montrer que, pour tout nombre réel $x$, $g(x)=2+\dfrac{1}{x^{2}+1}$.
+  \item Déterminer les limites de $g$ en $-\infty$ et en $+\infty$. Interpréter
+        graphiquement.
+  \item Étudier la position de $\Cg$ par rapport à son asymptote.
+  \item Expliquer pourquoi $\Cg$ n'a pas d'asymptote verticale.
+\end{enumerate}
+
+\exo[La vitesse moyenne d'une cycliste]
+Une cycliste monte un col de $d$~km à la vitesse moyenne de $15$~km/h, puis redescend
+par la même route à la vitesse moyenne de $v$~km/h, avec $v>0$.
+\begin{enumerate}
+  \item Exprimer, en fonction de $d$ et de $v$, la durée de la montée, celle de la
+        descente, puis montrer que sa vitesse moyenne sur tout le trajet est
+        $V(v)=\dfrac{30v}{v+15}$.
+  \item Calculer $V(15)$ et $V(45)$.
+  \item Déterminer la limite de $V$ en $+\infty$.
+  \item Montrer que, pour tout $v>0$, $30-V(v)=\dfrac{450}{v+15}$.
+  \item En déduire que, quelle que soit sa vitesse dans la descente, la cycliste ne
+        peut pas atteindre une moyenne de $30$~km/h. Interpréter graphiquement.
+\end{enumerate}
+
+\partiefiche{Limite d'une fonction composée}
+
+\exo[Calculer la limite d'une composée]
+Pour chaque fonction, déterminer la limite demandée en posant $X=\ldots$
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\sqrt{4-\dfrac{1}{x}}$, définie sur $\intoo{1}{+\infty}$, en $+\infty$.
+  \item $g(x)=\sqrt{x^{2}+x+1}$, définie sur $\R$, en $-\infty$.
+  \item $h(x)=\dfrac{1}{\left(3+\frac{1}{x}\right)^{2}}$, définie sur
+        $\intoo{-\infty}{-1}$, en $-\infty$.
+  \item $k(x)=\sqrt{\dfrac{2x+1}{x-3}}$, définie sur $\intoo{3}{+\infty}$, en $+\infty$.
+\end{enumerate}
+
+\exo[Une racine au dénominateur]
+Soit la fonction $f$ définie sur $\intoo{2}{+\infty}$ par $f(x)=\dfrac{1}{\sqrt{x-2}}$.
+\begin{enumerate}
+  \item Déterminer la limite de $f$ à droite en $2$.
+  \item Déterminer la limite de $f$ en $+\infty$.
+  \item En déduire les asymptotes de la courbe $\Cf$.
+\end{enumerate}
+
+\exo[La racine d'un quotient]
+Soit la fonction $g$ définie pour tout nombre réel $x\neq -3$ par
+$g(x)=\dfrac{2x-1}{x+3}$.
+\begin{enumerate}
+  \item Dresser le tableau de signes de $g(x)$, puis en déduire l'ensemble $D$ des
+        nombres réels $x$ pour lesquels $g(x)\geq 0$.
+  \item Déterminer les limites de $g$ en $-\infty$ et en $+\infty$.
+  \item Déterminer la limite de $g$ à gauche en $-3$.
+  \item Soit $f$ la fonction définie sur $D$ par $f(x)=\sqrt{\dfrac{2x-1}{x+3}}$.
+        Déterminer les limites de $f$ en $-\infty$, en $+\infty$ et à gauche en $-3$.
+  \item En déduire les asymptotes de la courbe de $f$.
+\end{enumerate}
+
+\exo[D'après bac 2026, Asie : vrai ou faux ?]
+Indiquer si l'affirmation suivante est vraie ou fausse, en justifiant.
+
+On considère la fonction $f$ définie sur l'intervalle $\intoo{1}{+\infty}$ par :
+$f(x)=\dfrac{x-1}{\sqrt{x^{2}-1}}$.
+
+\textbf{Affirmation :} la fonction $f$ admet pour limite $1$ en $+\infty$.
+
+\partiefiche{Limites et comparaison}
+
+\exo[Comparaison ou gendarmes]
+Pour chaque fonction, déterminer la limite en $+\infty$ en justifiant par un théorème
+de comparaison ou par le théorème des gendarmes.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=x^{2}+3\sin(x)$, définie sur $\R$.
+  \item $g(x)=-3x+2\cos(x)$, définie sur $\R$.
+  \item $h(x)=\dfrac{\cos(x)}{x}$, définie sur $\intoo{0}{+\infty}$.
+  \item $k(x)=5+\dfrac{\sin(x)}{x^{2}}$, définie sur $\intoo{0}{+\infty}$.
+\end{enumerate}
+
+\exo[En $+\infty$ et en $-\infty$]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=2x+3\cos(x)$.
+\begin{enumerate}
+  \item Montrer que, pour tout nombre réel $x$, $2x-3\leq f(x)\leq 2x+3$.
+  \item En déduire la limite de $f$ en $+\infty$.
+  \item En déduire la limite de $f$ en $-\infty$.
+\end{enumerate}
+
+\exo[Encadrer une racine carrée]
+Soit la fonction $f$ définie sur $\intoo{0}{+\infty}$ par $f(x)=\dfrac{\sqrt{x^{2}+1}}{x}$.
+\begin{enumerate}
+  \item Montrer que, pour tout $x>0$, $x^{2}\leq x^{2}+1\leq (x+1)^{2}$.
+  \item En déduire que, pour tout $x>0$, $1\leq f(x)\leq\dfrac{x+1}{x}$.
+  \item Déterminer la limite de $\dfrac{x+1}{x}$ en $+\infty$, puis celle de $f$.
+  \item Interpréter graphiquement le résultat.
+\end{enumerate}
+
+\exo[D'après bac 2026, Antilles-Guyane : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item Si une fonction $f$ vérifie $f(x)\geq x^{2}$ pour tout $x>5$, alors
+        $\lim\limits_{x\to+\infty}f(x)=+\infty$.
+  \item On considère la fonction $f$ définie sur l'intervalle $\intoo{0}{+\infty}$ par
+        $f(x)=1+\dfrac{\sin(x)}{x}$. La droite d'équation $y=1$ est une asymptote
+        horizontale de la courbe représentative de la fonction $f$.
+  \item Une fonction qui a pour limite $+\infty$ en $+\infty$ est croissante sur un
+        intervalle $\intoo{a}{+\infty}$. (On pourra comparer les images de
+        $2k\pi+\frac{\pi}{2}$ et de $2k\pi+\pi$ par $x\mapsto x+2\sin(x)$, pour
+        $k\in\N$.)
+\end{enumerate}
+
+\partiefiche{Limites de la fonction exponentielle}
+
+\exo[Avec des exponentielles]
+Pour chaque fonction, définie sur $\R$ (sur $\R\setminus\ens{0}$ pour $p$), déterminer
+les limites demandées.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\e^{2x+1}$, en $-\infty$ et en $+\infty$.
+  \item $g(x)=7-\e^{x}$, en $-\infty$ et en $+\infty$.
+  \item $h(x)=\e^{-x^{2}}$, en $+\infty$.
+  \item $k(x)=(3-x)\,\e^{-x}$, en $-\infty$.
+  \item $m(x)=x\left(1+\e^{-x}\right)$, en $-\infty$ et en $+\infty$.
+  \item $p(x)=\e^{\frac{1}{x}}$, en $+\infty$, puis à gauche et à droite en $0$.
+\end{enumerate}
+
+\exo[Factoriser par $\e^{x}$]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=\dfrac{2\e^{x}-3}{\e^{x}+4}$, et $\Cf$
+sa courbe.
+\begin{enumerate}
+  \item Déterminer la limite de $f$ en $-\infty$.
+  \item Montrer que, pour tout nombre réel $x$, $f(x)=\dfrac{2-3\e^{-x}}{1+4\e^{-x}}$.
+  \item En déduire la limite de $f$ en $+\infty$.
+  \item Interpréter graphiquement les deux limites.
+\end{enumerate}
+
+\exo[Avec le nombre $\e$]
+\begin{enumerate}
+  \item Soit la suite $(u_{n})$ définie pour tout $n\in\N$ par $u_{n}=\e^{n}$. Montrer
+        que $(u_{n})$ est géométrique, puis déterminer sa limite.
+  \item Soit la suite $(v_{n})$ définie pour tout $n\in\N$ par $v_{n}=\e^{-n}$.
+        Déterminer sa limite de deux façons : comme suite géométrique, puis avec la
+        limite de $\e^{x}$ en $-\infty$.
+  \item Soit la suite $(w_{n})$ définie pour tout $n\in\N$ par
+        $w_{n}=\dfrac{3\e^{n}-1}{\e^{n}+2}$. Déterminer sa limite.
+\end{enumerate}
+
+\exo[La charge d'une batterie]
+On branche la batterie déchargée d'un vélo électrique. L'énergie stockée, en
+wattheure (Wh), $t$ heures après le branchement, est modélisée par
+$Q(t)=500\left(1-\e^{-0{,}4t}\right)$, pour $t\geq 0$.
+\begin{enumerate}
+  \item Calculer $Q(0)$, puis une valeur approchée de $Q(5)$ à l'unité.
+  \item Déterminer la limite de $Q$ en $+\infty$ et l'interpréter dans le contexte.
+  \item Calculer $Q'(t)$ et en déduire le sens de variation de $Q$ sur
+        $\intfo{0}{+\infty}$.
+  \item Étudier la position de la courbe de $Q$ par rapport à son asymptote.
+        Interpréter dans le contexte.
+\end{enumerate}
+
+\partiefiche{Croissances comparées}
+
+\exo[Calculer par croissances comparées]
+Pour chaque fonction, définie sur $\R$ (sur $\intoo{0}{+\infty}$ pour $k$), déterminer
+la limite demandée.
+\begin{enumerate}[label=\alph*)]
+  \item $f(x)=\e^{x}-x^{2}$, en $+\infty$.
+  \item $g(x)=\left(x^{2}+1\right)\e^{-x}$, en $+\infty$.
+  \item $h(x)=(x-3)\,\e^{x}$, en $-\infty$.
+  \item $k(x)=\dfrac{\e^{x}}{x^{3}}$, en $+\infty$.
+  \item $m(x)=x+2-\e^{x}$, en $+\infty$.
+  \item $p(x)=\e^{2x}-x\e^{x}$, en $+\infty$.
+\end{enumerate}
+
+\exo[Croissances comparées et composée]
+\begin{enumerate}
+  \item Soit la fonction $f$ définie sur $\R$ par $f(x)=x\e^{-2x}$.
+  \begin{enumerate}[label=\alph*)]
+    \item Vérifier que, pour tout nombre réel $x$, $f(x)=\dfrac{1}{2}\times 2x\,\e^{-2x}$.
+    \item En posant $X=2x$, déterminer la limite de $f$ en $+\infty$.
+  \end{enumerate}
+  \item Soit la fonction $g$ définie pour tout nombre réel $x\neq 0$ par
+        $g(x)=\dfrac{\e^{2x}}{x}$. Déterminer les limites de $g$ en $-\infty$ et en
+        $+\infty$.
+\end{enumerate}
+
+\exo[D'après bac 2026, Polynésie : vrai ou faux ?]
+Pour chaque affirmation, indiquer si elle est vraie ou fausse, en justifiant.
+\begin{enumerate}[label=\alph*)]
+  \item Soit $f$ la fonction définie sur $\R$ par $f(x)=(x+1)\e^{-x}$. La limite de la
+        fonction $f$ en $+\infty$ est $+\infty$.
+  \item $\lim\limits_{x\to-\infty}x^{2}\e^{x}=+\infty$.
+  \item $\lim\limits_{x\to+\infty}\left(\e^{x}-x^{10}\right)=+\infty$.
+\end{enumerate}
+
+\exo[Une étude complète]
+Soit la fonction $f$ définie sur $\R$ par $f(x)=(x-1)\,\e^{x}$, et $\Cf$ sa courbe.
+\begin{enumerate}
+  \item Déterminer la limite de $f$ en $-\infty$. Interpréter graphiquement.
+  \item Déterminer la limite de $f$ en $+\infty$.
+  \item Montrer que, pour tout nombre réel $x$, $f'(x)=x\e^{x}$.
+  \item Dresser le tableau de variations de $f$, limites comprises.
+  \item Étudier la position de $\Cf$ par rapport à son asymptote.
+\end{enumerate}
+
+\partiefichesansnum{Exercices type bac}
+
+\exo[D'après bac 2026, Métropole]
+Un essai clinique est réalisé auprès de plusieurs patients volontaires afin de valider
+ou non l'efficacité d'un médicament.
+
+On demande au patient d'avaler le médicament sous la forme d'un comprimé de 1 mg puis
+on étudie la quantité de ce médicament présente dans le sang au cours du temps.
+
+La quantité de ce médicament en fonction du temps écoulé après la prise du comprimé, en
+mg, est modélisée par la fonction $f$ dérivable sur $\intfo{0}{+\infty}$, définie par :
+\[f(t)=4t\e^{-\frac{3}{2}t},\quad t\ \text{étant exprimé en heures}.\]
+\begin{enumerate}
+  \item Déterminer $\lim\limits_{t\to+\infty}f(t)$.
+        Interpréter ce résultat dans le contexte de l'exercice.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Vérifier en détaillant les calculs que pour tout réel $t$ positif,
+          $f'(t)=(4-6t)\e^{-\frac{3}{2}t}$.
+    \item Étudier le signe de la dérivée et en déduire le tableau de variations de la
+          fonction $f$ sur $\intfo{0}{+\infty}$.
+    \item Au bout de combien de temps la quantité de ce médicament présente dans le sang
+          est-elle maximale ?
+  \end{enumerate}
+\end{enumerate}
+
+\exo[D'après bac 2025, Amérique du Nord]
+On considère la fonction $f$ définie pour tout nombre réel $x$ par :
+\[f(x)=\left(x^{2}+3x+2\right)\e^{-x}.\]
+\begin{enumerate}
+  \item Démontrer que la limite de la fonction $f$ en $+\infty$ est égale à $0$.
+  \item Démontrer que la limite de la fonction $f$ en $-\infty$ est égale à $+\infty$.
+  \item On admet que la fonction $f$ est dérivable sur $\R$. On note $f'$ la fonction
+        dérivée de $f$ sur $\R$.
+  \begin{enumerate}[label=\alph*)]
+    \item Vérifier que, pour tout nombre réel $x$, $f'(x)=\left(-x^{2}-x+1\right)\e^{-x}$.
+    \item Déterminer le signe de la fonction dérivée $f'$ sur $\R$ puis en déduire les
+          variations de la fonction $f$ sur $\R$.
+  \end{enumerate}
+  \item Expliquer pourquoi la fonction $f$ est positive sur l'intervalle
+        $\intfo{0}{+\infty}$.
+\end{enumerate}
+
+\exo[D'après bac 2025, Centres étrangers]
+\textbf{Partie A}
+
+On considère la fonction $f$ définie sur l'intervalle $\intfo{0}{+\infty}$ par :
+\[f(x)=\dfrac{1}{a+\e^{-bx}}\]
+où $a$ et $b$ sont deux constantes réelles strictement positives.
+
+On admet que la fonction $f$ est dérivable sur l'intervalle $\intfo{0}{+\infty}$.
+La fonction $f$ admet pour représentation graphique la courbe $\Cf$ ci-dessous :
+\begin{center}
+\begin{tikzpicture}[x=0.2cm,y=3.5cm]
+  \foreach \k in {0,5,...,30} \draw[grille] (\k,0)--(\k,1.1);
+  \foreach \k in {0,0.1,...,1.05} \draw[grille] (0,\k)--(33,\k);
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(33.5,0) node[below left=-1pt]{$x$};
+  \draw[-{Stealth[length=2mm]},thick] (0,0)--(0,1.15) node[below left=-1pt]{$y$};
+  \foreach \k in {5,10,...,30} \draw (\k,0.02)--(\k,-0.02) node[below,font=\scriptsize]{$\k$};
+  \draw (0.4,0.5)--(-0.4,0.5) node[left,font=\scriptsize]{$0{,}5$};
+  \draw (0.4,1)--(-0.4,1) node[left,font=\scriptsize]{$1$};
+  \node[below left,font=\scriptsize,inner sep=1.5pt] at (0,0) {$0$};
+  \draw[coulCourbeB,line width=0.7pt] (0,0.5)--(12,1.1);
+  \draw[coulCourbe,line width=1.1pt,domain=0:33,samples=80] plot (\x,{1/(1+exp(-0.2*\x))});
+  \path (0,0.5) node[croix]{} node[below right,font=\footnotesize]{A};
+  \path (10,1) node[croix]{} node[below right,font=\footnotesize]{B};
+  \node[coulCourbe,font=\footnotesize] at (29,0.9) {$\Cf$};
+\end{tikzpicture}
+\end{center}
+On considère les points $A(0\,;0{,}5)$ et $B(10\,;1)$.
+
+On admet que la droite $(AB)$ est tangente à la courbe $\Cf$ au point $A$.
+\begin{enumerate}
+  \item Par lecture graphique, donner une valeur approchée de $f(10)$.
+  \item On admet que $\lim\limits_{x\to+\infty}f(x)=1$. Donner une interprétation
+        graphique de ce résultat.
+  \item Justifier que $a=1$.
+  \item Déterminer le coefficient directeur de la droite $(AB)$.
+  \item
+  \begin{enumerate}[label=\alph*)]
+    \item Déterminer l'expression de $f'(x)$ en fonction de $x$ et de la constante $b$.
+    \item En déduire la valeur de $b$.
+  \end{enumerate}
+\end{enumerate}
+
+\textbf{Partie B}
+
+On admet, dans la suite de l'exercice, que la fonction $f$ est définie sur
+l'intervalle $\intfo{0}{+\infty}$ par :
+\[f(x)=\dfrac{1}{1+\e^{-0{,}2x}}\]
+\begin{enumerate}
+  \item Déterminer $\lim\limits_{x\to+\infty}f(x)$.
+  \item Étudier les variations de la fonction $f$ sur l'intervalle $\intfo{0}{+\infty}$.
+\end{enumerate}
+
+\end{multicols}
+
+\end{document}
